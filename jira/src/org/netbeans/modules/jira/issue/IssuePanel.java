@@ -126,10 +126,8 @@ import javax.swing.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
@@ -265,7 +263,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         // Project combo
         projectCombo.setRenderer(new ProjectRenderer());
 
-        // Issue type combo
+        // NbJiraIssue type combo
         issueTypeCombo.setRenderer(new TypeRenderer());
 
         // Priority combo
@@ -571,11 +569,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    Issue parentIssue = issue.getRepository().getIssueCache().getIssue(parentKey);
+                    NbJiraIssue parentIssue = issue.getRepository().getIssueCache().getIssue(parentKey);
                     if (parentIssue == null) {
                         parentIssue = issue.getRepository().getIssue(parentKey);
                     }
-                    final Issue parent = parentIssue;
+                    final NbJiraIssue parent = parentIssue;
                     if(parent == null) {
                         // how could this be possible? parent removed?
                         Jira.LOG.log(Level.INFO, "issue {0} is referencing not available parent with key {1}", new Object[]{issue.getKey(), parentKey}); // NOI18N
@@ -593,7 +591,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             LinkButton parentButton = new LinkButton(new AbstractAction() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
-                                    parent.open();
+                                    JiraUtils.openIssue(parent);
                                 }
                             });
                             parentButton.setText(parentKey+':');
@@ -656,7 +654,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
             if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                JLabel label = KenaiUtil.createUserWidget(reporter, host, KenaiUtil.getChatLink(issue));
+                JLabel label = KenaiUtil.createUserWidget(reporter, host, KenaiUtil.getChatLink(issue.getID()));
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(reporterStatusLabel, label);
                 reporterStatusLabel = label;
@@ -683,7 +681,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             String selectedAssignee = (assigneeField.getParent() == null) ? assigneeCombo.getSelectedItem().toString() : assigneeField.getText();
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                JLabel label = KenaiUtil.createUserWidget(assignee, host, KenaiUtil.getChatLink(issue));
+                JLabel label = KenaiUtil.createUserWidget(assignee, host, KenaiUtil.getChatLink(issue.getID()));
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(assigneeStatusLabel, label);
                 assigneeStatusLabel = label;
@@ -732,7 +730,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             attachmentsPanel.setIssue(issue);
             UIUtils.keepFocusedComponentVisible(attachmentsPanel);
 
-            // Issue-links
+            // NbJiraIssue-links
             boolean anyLink = (issue.getLinkedIssues().length != 0);
             issueLinksLabel.setVisible(anyLink);
             issueLinksPanel.setVisible(anyLink);
@@ -758,7 +756,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 int row = subTaskTable.rowAtPoint(p);
                                 TableModel model = subTaskTable.getModel();
                                 final String issueKey = (String)model.getValueAt(row,0);
-                                Issue.open(issue.getRepository(), issueKey);
+                                JiraUtils.openIssue(issue);
                             }
                         }
                     });
@@ -1031,8 +1029,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     };
 
     private void attachIssueListener(final NbJiraIssue issue) {
-        IssueCacheUtils.removeCacheListener(issue, cacheListener);
-        IssueCacheUtils.addCacheListener(issue, cacheListener);
+        final IssueCache<NbJiraIssue, TaskData> cache = issue.getRepository().getIssueCache();
+        cache.removePropertyChangeListener(issue, cacheListener);
+        cache.addPropertyChangeListener(issue, cacheListener);
     }
 
     private static void fixPrefSize(JTextField textField) {
@@ -1135,7 +1134,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                JiraIssueProvider provider = JiraIssueProvider.getInstance();
+                JiraTaskListProvider provider = JiraTaskListProvider.getInstance();
                 if (provider == null || issue.isNew()) { // do not enable button for new issues
                     return;
                 }
@@ -1156,14 +1155,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         });
     }
 
-    private void attachTasklistListener (JiraIssueProvider provider) {
+    private void attachTasklistListener (JiraTaskListProvider provider) {
         if (tasklistListener == null) { // is not attached yet
             // listens on events comming from the tasklist, like when an issue is removed, etc.
             // needed to correctly update tasklistButton label and status
             tasklistListener = new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if (JiraIssueProvider.PROPERTY_ISSUE_REMOVED.equals(evt.getPropertyName()) && issue.equals(evt.getOldValue())) {
+                    if (JiraTaskListProvider.PROPERTY_ISSUE_REMOVED.equals(evt.getPropertyName()) && issue.equals(evt.getOldValue())) {
                         Runnable inAWT = new Runnable() {
                             @Override
                             public void run() {
@@ -1955,16 +1954,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                IssueCache cache = issue.getRepository().getIssueCache();
+                IssueCache<NbJiraIssue, TaskData> cache = issue.getRepository().getIssueCache();
                 String parentKey = issue.getParentKey();
                 if ((parentKey != null) && (parentKey.trim().length()>0)) {
-                    Issue parentIssue = cache.getIssue(parentKey);
+                    NbJiraIssue parentIssue = cache.getIssue(parentKey);
                     if (parentIssue != null) {
                         parentIssue.refresh();
                     }
                 }
                 for (String subTaskKey : issue.getSubtaskKeys()) {
-                    Issue subTask = cache.getIssue(subTaskKey);
+                    NbJiraIssue subTask = cache.getIssue(subTaskKey);
                     if (subTask != null) {
                         subTask.refresh();
                     }
@@ -2047,7 +2046,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     if(ret) {
                         reloadFormInAWT(true);
                         if (wasNew && (issue.getParentKey() != null) && (issue.getParentKey().trim().length() > 0)) {
-                            Issue parent = issue.getRepository().getIssue(issue.getParentKey());
+                            NbJiraIssue parent = issue.getRepository().getIssue(issue.getParentKey());
                             parent.refresh();
                         }
                     }
@@ -2182,7 +2181,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void tasklistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tasklistButtonActionPerformed
         tasklistButton.setEnabled(false);
-        JiraIssueProvider provider = JiraIssueProvider.getInstance();
+        JiraTaskListProvider provider = JiraTaskListProvider.getInstance();
         if (provider.isAdded(issue)) {
             provider.remove(issue);
         } else {
@@ -2209,7 +2208,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         } catch (CoreException cex) {
             Jira.LOG.log(Level.INFO, cex.getMessage(), cex);
         }
-        subTask.open();
+        JiraUtils.openIssue(subTask);
     }//GEN-LAST:event_createSubtaskButtonActionPerformed
 
     private void assigneeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_assigneeComboActionPerformed
@@ -2318,7 +2317,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     @Override
     public Dimension getPreferredSize() {
-        return getMinimumSize(); // Issue 176085
+        return getMinimumSize(); // NbJiraIssue 176085
     }
 
     @Override
@@ -2340,7 +2339,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     public boolean getScrollableTracksViewportWidth() {
         JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
         if (scrollPane!=null) {
-             // Issue 176085
+             // NbJiraIssue 176085
             int minWidth = getMinimumSize().width;
             int width = scrollPane.getSize().width;
             Insets insets = scrollPane.getInsets();
@@ -2391,7 +2390,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     void opened() {
-        undoRedoSupport = UndoRedoSupport.getSupport(issue); 
+        undoRedoSupport = Jira.getInstance().getUndoRedoSupport(issue);
         undoRedoSupport.register(addCommentArea); 
         undoRedoSupport.register(environmentArea); 
         
@@ -2403,7 +2402,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if(issue != null) {
             commentsPanel.storeSettings();
             if (undoRedoSupport != null) {
-                undoRedoSupport.unregisterAll(issue);
+                undoRedoSupport.unregisterAll();
                 undoRedoSupport = null;
             }
         }

@@ -47,9 +47,11 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import org.netbeans.api.java.source.*;
-import org.netbeans.modules.java.hints.jackpot.refactoring.RefTestBase;
-import org.netbeans.modules.java.hints.jackpot.refactoring.InvertBooleanRefactoring;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.errors.TaskCache;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
@@ -147,11 +149,13 @@ public class InvertBooleanRefactoringPluginImplTest extends RefTestBase {
                 VariableTree var = (VariableTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(1);
 
                 TreePath tp = TreePath.getPath(cut, var);
-                r[0] = new InvertBooleanRefactoring(TreePathHandle.create(tp, parameter), "c");
+                r[0] = new InvertBooleanRefactoring(TreePathHandle.create(tp, parameter));
+                r[0].setNewName("c");
             }
         }, true);
 
         RefactoringSession rs = RefactoringSession.create("Session");
+        Thread.sleep(1000);
         r[0].prepare(rs);
         rs.doRefactoring(true);
 
@@ -173,11 +177,13 @@ public class InvertBooleanRefactoringPluginImplTest extends RefTestBase {
                 MethodTree var = (MethodTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(1);
 
                 TreePath tp = TreePath.getPath(cut, var);
-                r[0] = new InvertBooleanRefactoring(TreePathHandle.create(tp, parameter), "c");
+                r[0] = new InvertBooleanRefactoring(TreePathHandle.create(tp, parameter));
+                r[0].setNewName("c");
             }
         }, true);
 
         RefactoringSession rs = RefactoringSession.create("Session");
+        Thread.sleep(1000);
         r[0].prepare(rs);
         rs.doRefactoring(true);
 

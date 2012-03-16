@@ -146,7 +146,7 @@ public final class MainWindow {
            return;
        }
        inited = true;
-
+       
        JPanel contentPane = new JPanel(new BorderLayout()) {
            @Override
            public void paint(Graphics g) {
@@ -390,7 +390,10 @@ public final class MainWindow {
    }
 
    public void setVisible(boolean visible) {
-       frame.setVisible(visible);
+        if ("false".equals(System.getProperty("org.netbeans.core.WindowSystem.show"))) { // NOI18N
+            return;
+        }
+        frame.setVisible(visible);
    }
 
    public int getExtendedState() {
@@ -653,7 +656,8 @@ public final class MainWindow {
 
 
    public void setFullScreenMode( boolean fullScreenMode ) {
-       if( isFullScreenMode == fullScreenMode || isSwitchingFullScreenMode ) {
+       if( isFullScreenMode == fullScreenMode || isSwitchingFullScreenMode 
+               || Utilities.isMac()) { //Mac OS X has its own built-in full screen support, see applemenu module
            return;
        }
        isSwitchingFullScreenMode = true;
@@ -746,7 +750,7 @@ public final class MainWindow {
                    isSwitchingFullScreenMode = false;
                    if( null != activeTc )
                        activeTc.requestFocusInWindow();
-               }
+                }
            });
        }
    }

@@ -50,6 +50,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -63,7 +64,7 @@ public class CaretListeningFactory extends CaretAwareJavaSourceTaskFactory {
     private static CaretListeningFactory INSTANCE;
     
     public CaretListeningFactory() {
-        super(Phase.RESOLVED, Priority.LOW);
+        super(Phase.RESOLVED, Priority.LOW, TaskIndexingMode.ALLOWED_DURING_SCAN);
         INSTANCE = this;
     }
 

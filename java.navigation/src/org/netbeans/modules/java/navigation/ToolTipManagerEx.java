@@ -47,6 +47,7 @@ package org.netbeans.modules.java.navigation;
 import java.awt.event.*;
 import java.awt.*;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -75,7 +76,7 @@ import org.openide.util.Utilities;
  * 
  * @author S. Aubrecht
  */
-final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener  {
+final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener, Callable<Boolean>  {
     
     private static final Logger LOG = Logger.getLogger(ToolTipManagerEx.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(ToolTipManagerEx.class.getName(), 1, false, false);
@@ -87,6 +88,7 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
     private MouseEvent mouseEvent;
     private boolean showImmediately;
     private transient Popup tipWindow;
+    private volatile boolean cancelled;
     /** The Window tip is being displayed in. This will be non-null if
      * the Window tip is in differs from that of insideComponent's Window.
      */
@@ -212,10 +214,17 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
     public int getReshowDelay() {
         return exitTimer.getInitialDelay();
     }
+    
+    @Override
+    public Boolean call() throws Exception {
+        return cancelled;
+    }
 
     protected void showTipWindow() {
         if(insideComponent == null || !insideComponent.isShowing())
             return;
+        cancelled = false;
+        LOG.fine("cancelled=false");    //NOI18N
 	for (Container p = insideComponent.getParent(); p != null; p = p.getParent()) {
             if (p instanceof JPopupMenu) break;
 	    if (p instanceof Window) {
@@ -273,6 +282,8 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
                 window.removeMouseListener(this);
                 window = null;
             }
+            cancelled = true;
+            LOG.fine("cancelled=true");    //NOI18N
             tipWindow.hide();
 	    tipWindow = null;
 	    tipShowing = false;

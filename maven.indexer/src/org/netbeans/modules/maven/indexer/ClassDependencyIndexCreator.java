@@ -81,7 +81,7 @@ import org.apache.maven.index.creator.MinimalArtifactInfoIndexCreator;
 import org.apache.maven.index.expr.StringSearchExpression;
 import org.codehaus.plexus.util.Base64;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery.ClassUsageResult;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.ClassUsage;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -178,7 +178,7 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
         doc.add(FLD_NB_DEPENDENCY_CLASS.toField(b.toString()));
     }
 
-    static void search(String className, NexusIndexer indexer, Collection<IndexingContext> contexts, List<? super ClassUsageResult> results) throws IOException {
+    static void search(String className, NexusIndexer indexer, Collection<IndexingContext> contexts, List<? super ClassUsage> results) throws IOException {
         String searchString = crc32base64(className.replace('.', '/'));
         Query refClassQuery = indexer.constructQuery(ClassDependencyIndexCreator.FLD_NB_DEPENDENCY_CLASS.getOntology(), new StringSearchExpression(searchString));
         TopScoreDocCollector collector = TopScoreDocCollector.create(NexusRepositoryIndexerImpl.MAX_RESULT_COUNT, true);
@@ -198,7 +198,7 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
                     ai.repository = context.getRepositoryId();
                     List<NBVersionInfo> version = NexusRepositoryIndexerImpl.convertToNBVersionInfo(Collections.singleton(ai));
                     if (!version.isEmpty()) {
-                        results.add(new ClassUsageResult(version.get(0), refClasses));
+                        results.add(new ClassUsage(version.get(0), refClasses));
                     }
                 }
             }

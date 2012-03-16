@@ -68,12 +68,12 @@
                 <h:commandLink action="${r"#{"}${managedBean}${r".update}"}" value="${r"#{"}bundle.Edit${entityName}SaveLink${r"}"}"/>
                 <br />
                 <br />
-                <h:commandLink action="View" value="${r"#{"}bundle.Edit${entityName}ViewLink${r"}"}" immediate="true"/>
+                <h:link outcome="View" value="${r"#{"}bundle.Edit${entityName}ViewLink${r"}"}"/>
                 <br />
                 <h:commandLink action="${r"#{"}${managedBean}${r".prepareList}"}" value="${r"#{"}bundle.Edit${entityName}ShowAllLink${r"}"}" immediate="true"/>
                 <br />
                 <br />
-                <h:commandLink value="${r"#{"}bundle.Edit${entityName}IndexLink${r"}"}" action="/index" immediate="true" />
+                <h:link outcome="/index" value="${r"#{"}bundle.Edit${entityName}IndexLink${r"}"}" />
             </h:form>
         </ui:define>
     </ui:composition>

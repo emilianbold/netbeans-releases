@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTML.Tag;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
 import org.netbeans.modules.java.source.JavadocHelper;
@@ -243,12 +244,18 @@ class HTMLJavadocParser {
         final int CLASS_DATA_START = 1;
         // start of the text we need. Located just after first P.
         final int TEXT_START = 2;
+        // div tag after the CLASS_DATA_START
+        final int INSIDE_DIV = 3;
+        // div tag after the INSIDE_DIV
+        final int AFTER_DIV = 4;
 
         final int state[] = new int[] {INIT};
         final int offset[] = new int[] {-1, -1, -1, -1};
 
         HTMLEditorKit.ParserCallback callback = new HTMLEditorKit.ParserCallback() {
 
+            int div_counter = 0;
+            int li_counter = 0;
             int nextHRPos = -1;
             int lastHRPos = -1;
 
@@ -267,8 +274,17 @@ class HTMLJavadocParser {
                         offset[1] = pos + 3;
                     else
                         state[0] = TEXT_START;
-                }
-                if (t == HTML.Tag.A && state[0] == TEXT_START) {
+                } else if (t == HTML.Tag.DIV) {
+                    if (state[0] == CLASS_DATA_START && a.containsAttribute(HTML.Attribute.CLASS, "block")) {
+                        state[0] = INSIDE_DIV;
+                        if (offset[2] == -1)
+                            offset[2] = pos;
+                    }
+                    if (state[0] == INSIDE_DIV)
+                        div_counter++;
+                } else if (t == HTML.Tag.LI && state[0] == AFTER_DIV) {
+                    li_counter++;
+                } else if (t == HTML.Tag.A && state[0] == TEXT_START) {
                     String attrName = (String)a.getAttribute(HTML.Attribute.NAME);
                     if (attrName!=null && attrName.length()>0){
                         if (nextHRPos!=-1){
@@ -276,6 +292,24 @@ class HTMLJavadocParser {
                         }else{
                             offset[3] = pos;
                         }
+                        state[0] = INIT;
+                    }
+                }
+            }
+
+            public void handleEndTag(Tag t, int pos) {
+                if (t == HTML.Tag.DIV && state[0] == INSIDE_DIV) {
+                    if (--div_counter == 0) {
+                        if (offset[0] > -1 && offset[1] == -1) {
+                            state[0] = CLASS_DATA_START;
+                            offset[1] = pos;
+                        } else {
+                            state[0] = AFTER_DIV;
+                        }
+                    }
+                } else if (t == HTML.Tag.LI && state[0] == AFTER_DIV) {
+                    if (--li_counter < 0) {
+                        offset[3] = pos;
                         state[0] = INIT;
                     }
                 }
@@ -297,10 +331,14 @@ class HTMLJavadocParser {
             }
             
             public void handleText(char[] data, int pos) {
-                if (state[0] == CLASS_DATA_START && "Deprecated.".equals(new String(data))) //NOI18N
+                if (state[0] == CLASS_DATA_START && "Deprecated.".equals(new String(data))) { //NOI18N
                     offset[0] = lastHRPos + 4;
-                else if (state[0] == TEXT_START && offset[2] < 0)
+                } else if (state[0] == INSIDE_DIV && "Deprecated.".equals(new String(data))) { //NOI18N
+                    offset[0] = offset[2];
+                    offset[2] = -1;
+                } else if (state[0] == TEXT_START && offset[2] < 0) {
                     offset[2] = pos;
+                }
             }
         };        
 
@@ -319,8 +357,8 @@ class HTMLJavadocParser {
         final int A_CLOSE = 2;
         // PRE close tag after the A_CLOSE
         final int PRE_CLOSE = 3;
-        // div tag after the A_CLOSE
-        final int INSIDE_DIV = 3;
+        // div tag after the PRE_CLOSE
+        final int INSIDE_DIV = 4;
 
         final int state[] = new int[1];
         final int offset[] = new int[2];
@@ -332,15 +370,15 @@ class HTMLJavadocParser {
         HTMLEditorKit.ParserCallback callback = new HTMLEditorKit.ParserCallback() {
 
             int div_counter = 0;
+            int dl_counter = 0;
+            int li_counter = 0;
             int hrPos = -1;
             boolean startWithNextText;
 
             @Override
             public void handleSimpleTag(HTML.Tag t, MutableAttributeSet a, int pos) {
-                if (t == HTML.Tag.HR && state[0]!=INIT){
-                    if (state[0] == PRE_CLOSE){
-                        hrPos = pos;
-                    }
+                if (t == HTML.Tag.HR && state[0] == PRE_CLOSE){
+                    hrPos = pos;
                 }
             }
 
@@ -353,21 +391,25 @@ class HTMLJavadocParser {
                         // we have found desired javadoc member info anchor
                         state[0] = A_OPEN;
                     } else {
-                        if ((state[0] == PRE_CLOSE || state[0] == INSIDE_DIV) && attrName!=null){
+                        if ((state[0] == PRE_CLOSE) && attrName!=null && hrPos != -1){
                             // reach the end of retrieved javadoc info
                             state[0] = INIT;
-                            offset[1] = (hrPos!=-1) ? hrPos : pos;
+                            offset[1] = hrPos;
                         }
                     }
+                } else if (t == HTML.Tag.DL && state[0] == PRE_CLOSE) {
+                    dl_counter++;
+                } else if (t == HTML.Tag.LI && state[0] == PRE_CLOSE) {
+                    li_counter++;
                 } else if (t == HTML.Tag.DD && state[0] == PRE_CLOSE && offset[0] < 0){
-                    offset[0] = pos;
-                } else if (t == HTML.Tag.DIV && (state[0] == A_CLOSE || state[0] == INSIDE_DIV)){
+                        offset[0] = pos;
+                } else if (t == HTML.Tag.DIV && (state[0] == PRE_CLOSE || state[0] == INSIDE_DIV)){
                     state[0] = INSIDE_DIV;
                     div_counter++;
                     if (offset[0] < 0) {
                         if (div_counter == 2) {
                           offset[0] = pos;
-                        } else if (a.containsAttribute(HTML.Attribute.CLASS, "block") && div_counter == 1) {
+                        } else if (div_counter == 1 && a.containsAttribute(HTML.Attribute.CLASS, "block")) {
                             startWithNextText = true;
                         }
                     }
@@ -381,12 +423,15 @@ class HTMLJavadocParser {
                     state[0] = A_CLOSE;
                 } else if (t == HTML.Tag.PRE && state[0] == A_CLOSE){
                     state[0] = PRE_CLOSE;
+                } else if (t == HTML.Tag.DL && state[0] == PRE_CLOSE) {
+                    if (--dl_counter == 0)
+                        hrPos = pos;
+                } else if (t == HTML.Tag.LI && state[0] == PRE_CLOSE) {
+                    if (--li_counter < 0)
+                        hrPos = pos;
                 } else if (t == HTML.Tag.DIV && state[0] == INSIDE_DIV) {
-                    state[0] = INSIDE_DIV;
-                    if (div_counter == 1) {
-                      hrPos = pos;
-                    }
-                    div_counter--;
+                    if (--div_counter == 0)
+                        state[0] = PRE_CLOSE;
                 }
             }
 

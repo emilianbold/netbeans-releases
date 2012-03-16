@@ -43,6 +43,7 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
+import java.awt.BorderLayout;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityListener;
 import org.netbeans.modules.profiler.ppoints.ui.WizardPanel1UI;
@@ -52,9 +53,7 @@ import org.openide.util.NbBundle;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.text.MessageFormat;
-import javax.swing.BorderFactory;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -104,6 +103,9 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
             component.addValidityListener(this);
             component.init(ppFactories);
             setValid(component.areSettingsValid());
+            
+            if (component.hasDefaultScope())
+                selectedProject = component.getSelectedProject();
 
             return component;
         }
@@ -162,8 +164,23 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
             customizerScrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
             customizerScrollPane.setOpaque(false);
             customizerScrollPane.getViewport().setOpaque(false);
-
-            return customizerScrollPane;
+            String hint = ppFactories[selectedPPFactoryIndex].getHint();
+            if (hint != null && !hint.isEmpty()) {
+                JPanel panel = new JPanel(new BorderLayout(0, 0));
+                panel.setOpaque(false);
+                panel.add(customizerScrollPane, BorderLayout.CENTER);
+                JTextArea area = new JTextArea(hint);
+                area.setOpaque(false);
+                area.setWrapStyleWord(true);
+                area.setLineWrap(true);
+                area.setEnabled(false);
+                area.setFont(UIManager.getFont("Label.font")); //NOI18N
+                area.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
+                panel.add(area, BorderLayout.SOUTH);
+                return panel;
+            } else {
+                return customizerScrollPane;
+            }
         }
 
         public void hiding(boolean cancelled) {
@@ -194,7 +211,7 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
             // TODO: selectedPPFactoryIndex or selectedProject could be -1/null, create() can return null
             profilingPoint = ppFactories[selectedPPFactoryIndex].create(selectedProject);
             customizer = profilingPoint.getCustomizer();
-            ((JScrollPane) getComponent()).setViewportView(customizer);
+            getContainer().setViewportView(customizer);
         }
 
         private void registerCustomizerListener() {
@@ -204,7 +221,7 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
         }
 
         private void releaseCurrentCustomizer() {
-            ((JScrollPane) getComponent()).setViewportView(null);
+            resetComponent();
             customizer = null;
         }
 
@@ -212,6 +229,15 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
             if (customizer != null) {
                 customizer.removeValidityListener(this);
             }
+        }
+        
+        private JScrollPane getContainer() {
+            Component container = getComponent();
+            if (!(container instanceof JScrollPane))
+                container = ((JComponent)container).getComponent(0);
+            if (!(container instanceof JScrollPane))
+                container = ((JComponent)getComponent()).getComponent(1);
+            return (JScrollPane)container;
         }
     }
 
@@ -235,6 +261,10 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
             }
 
             return component;
+        }
+        
+        protected void resetComponent() {
+            component = null;
         }
 
         public void setValid(boolean valid) {

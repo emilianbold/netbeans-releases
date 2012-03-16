@@ -47,6 +47,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -81,7 +82,9 @@ public class RenameTestCase extends RemoteFileTestBase  {
             assertNotNull(tmpDirFO);
             FileObject oldFO = tmpDirFO.createData("file_1");
             String newName = "file_1_renamed";
-            oldFO.rename(oldFO.lock(), newName, null);
+            FileLock lock = oldFO.lock();
+            oldFO.rename(lock, newName, null);
+            lock.releaseLock();
             FileObject newFO = tmpDirFO.getFileObject(newName);
             assertNotNull(newFO);
             assertTrue(newFO == oldFO);
@@ -102,6 +105,31 @@ public class RenameTestCase extends RemoteFileTestBase  {
             FileObject newFO = tmpDirFO.getFileObject(newName);
             assertNotNull(newFO);
             assertTrue(newFO == oldFO);
+        } finally {
+            removeRemoteDirIfNotNull(tmpDir);
+        }
+    }
+
+    @ForAllEnvironments
+    public void testRenameLinkChild() throws Exception {
+        String tmpDir = null;
+        try {
+            tmpDir = mkTempAndRefreshParent(true);
+            runScript(
+                    "cd " + tmpDir + "; " +
+                    "mkdir real_dir; " + 
+                    "ln -s real_dir lnk_dir; " +
+                    "cd real_dir; " +
+                    "touch file_1; " +
+                    "touch file_2; " +
+                    "");
+            FileObject tmpDirFO = getFileObject(tmpDir);
+            tmpDirFO.refresh();
+            FileObject fo1 = tmpDirFO.getFileObject("lnk_dir/file_1");
+            assertNotNull(fo1);
+            FileObject fo2 = tmpDirFO.getFileObject("lnk_dir/file_2");
+            assertNotNull(fo2);
+            fo1.move(fo1.lock(), fo2.getParent(), "file1-renamed", "new-ext");
         } finally {
             removeRemoteDirIfNotNull(tmpDir);
         }

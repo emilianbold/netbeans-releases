@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -84,18 +85,21 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
     
-    public static<T> FunctionDDImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
+    public static<T> FunctionDDImpl<T> create(AST ast, CsmFile file, FileContent fileContent, CsmScope scope, boolean global) throws AstRendererException {
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
         
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0 && !global) {
+            name = QualifiedNameCache.getManager().getString("lambda"); // NOI18N
+        }        
         if (name.length() == 0) {
             throw new AstRendererException((FileImpl) file, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
         
-        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
@@ -109,7 +113,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         
         functionDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         functionDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, functionDDImpl, file));
-        functionDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionDDImpl, file, global), 
+        functionDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionDDImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, functionDDImpl);
         if (body == null) {
@@ -120,7 +124,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         
 
         postObjectCreateRegistration(global, functionDDImpl);
-        nameHolder.addReference(file, functionDDImpl);
+        nameHolder.addReference(fileContent, functionDDImpl);
         return functionDDImpl;
     }
 

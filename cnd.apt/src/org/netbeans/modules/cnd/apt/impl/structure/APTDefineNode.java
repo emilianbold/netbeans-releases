@@ -161,12 +161,12 @@ public final class APTDefineNode extends APTMacroBaseNode
                             assert lastParam instanceof APTBaseLanguageFilter.FilterToken : "it must be filtered ellipsis token " + lastParam;
                             APTToken originalToken = ((APTBaseLanguageFilter.FilterToken)lastParam).getOriginalToken();
                             assert originalToken != null;
-                            assert originalToken.getType() == APTTokenTypes.ID : "original token must be ID " + originalToken;
+                            assert originalToken.getType() == APTTokenTypes.IDENT : "original token must be ID " + originalToken;
                             CharSequence name = originalToken.getTextID();
                             params.set(index, APTUtils.VA_ARGS_TOKEN);
                             for (int i = 0; i < bodyTokens.size(); i++) {
                                 APTToken cur = bodyTokens.get(i);
-                                if (cur.getType() == APTTokenTypes.ID && cur.getTextID().equals(name)) {
+                                if (cur.getType() == APTTokenTypes.IDENT && cur.getTextID().equals(name)) {
                                     bodyTokens.set(i, APTUtils.VA_ARGS_TOKEN);
                                 }
                             }
@@ -212,7 +212,7 @@ public final class APTDefineNode extends APTMacroBaseNode
                 case IN_PARAMS:
                 {
                     switch (token.getType()) {
-                        case APTTokenTypes.ID:
+                        case APTTokenTypes.IDENT:
                             params.add(token);
                             stateAndHashCode = IN_PARAMS_AFTER_ID;
                             break;
@@ -307,7 +307,7 @@ public final class APTDefineNode extends APTMacroBaseNode
                     // skip comments
                     if (APTUtils.isCommentToken(token.getType())) {
                         // stay in the current state
-                    } else if (token.getType() == APTTokenTypes.ID) {
+                    } else if (token.getType() == APTTokenTypes.IDENT) {
                         // error check: token after # must be parameter
                         stateAndHashCode = isInParamList(token) ? IN_BODY : ERROR;
                     } else {
@@ -382,6 +382,7 @@ public final class APTDefineNode extends APTMacroBaseNode
     }
 
     @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object obj) {
         if (!super.equals(obj)) {
             return false;

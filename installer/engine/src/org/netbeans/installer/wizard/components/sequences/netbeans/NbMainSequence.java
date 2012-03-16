@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -38,16 +38,26 @@
  */
 package org.netbeans.installer.wizard.components.sequences.netbeans;
 
-import org.netbeans.installer.wizard.components.sequences.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.installer.wizard.components.panels.netbeans.NbPostInstallSummaryPanel;
-import org.netbeans.installer.wizard.components.panels.netbeans.NbPreInstallSummaryPanel;
-import org.netbeans.installer.product.components.Product;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipOutputStream;
 import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.ExecutionMode;
+import org.netbeans.installer.utils.progress.CompositeProgress;
+import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.wizard.components.WizardAction;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.components.WizardSequence;
 import org.netbeans.installer.wizard.components.actions.DownloadConfigurationLogicAction;
@@ -55,11 +65,12 @@ import org.netbeans.installer.wizard.components.actions.DownloadInstallationData
 import org.netbeans.installer.wizard.components.actions.InstallAction;
 import org.netbeans.installer.wizard.components.actions.UninstallAction;
 import org.netbeans.installer.wizard.components.actions.netbeans.NbMetricsAction;
-import org.netbeans.installer.wizard.components.actions.netbeans.NbRegistrationAction;
-import org.netbeans.installer.wizard.components.actions.netbeans.NbServiceTagCreateAction;
 import org.netbeans.installer.wizard.components.actions.netbeans.NbShowUninstallationSurveyAction;
 import org.netbeans.installer.wizard.components.panels.LicensesPanel;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbJUnitLicensePanel;
+import org.netbeans.installer.wizard.components.panels.netbeans.NbPostInstallSummaryPanel;
+import org.netbeans.installer.wizard.components.panels.netbeans.NbPreInstallSummaryPanel;
+import org.netbeans.installer.wizard.components.sequences.ProductWizardSequence;
 
 /**
  *
@@ -79,8 +90,6 @@ public class NbMainSequence extends WizardSequence {
     private InstallAction installAction;
     private NbPostInstallSummaryPanel nbPostInstallSummaryPanel;
     private NbMetricsAction metricsAction;
-    private NbServiceTagCreateAction serviceTagAction;
-    private NbRegistrationAction nbRegistrationAction;
     private NbShowUninstallationSurveyAction showUninstallationSurveyAction;
     private Map<Product, ProductWizardSequence> productSequences;
 
@@ -94,8 +103,6 @@ public class NbMainSequence extends WizardSequence {
         installAction = new InstallAction();
         nbPostInstallSummaryPanel = new NbPostInstallSummaryPanel();
         metricsAction = new NbMetricsAction();
-        serviceTagAction = new NbServiceTagCreateAction();
-        nbRegistrationAction = new NbRegistrationAction();
         showUninstallationSurveyAction = new NbShowUninstallationSurveyAction();
         productSequences = new HashMap<Product, ProductWizardSequence>();
 
@@ -105,6 +112,192 @@ public class NbMainSequence extends WizardSequence {
                 DEFAULT_IA_DESCRIPTION);
     }
     
+    private static class PopulateCacheAction extends WizardAction {
+        private final Product nbBase;
+        CompositeProgress compositeProgress;
+        public PopulateCacheAction(Product p) {
+            this.nbBase = p;
+            this.compositeProgress = new CompositeProgress();
+        }
+
+        @Override
+        public void execute() {
+            LogManager.log("running headless NetBeans IDE : ");
+            getWizardUi().setProgress(compositeProgress);
+            compositeProgress.setTitle(ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.title")); // NOI18N
+            Progress initProgress = new Progress();
+            compositeProgress.addChild(initProgress, 3);
+            initProgress.setPercentage(Progress.COMPLETE);
+            
+            File nbInstallLocation = nbBase.getInstallationLocation();
+            LogManager.log("    nbLocation = " + nbInstallLocation);
+            
+            String runIDE = new File(nbInstallLocation, "bin").getPath(); // NOI18N
+            if (SystemUtils.isWindows()) {
+                runIDE += File.separator + "netbeans.exe"; // NOI18N
+            } else {
+                runIDE += File.separator + "netbeans"; // NOI18N
+            }
+            
+            File tmpUserDir = new File(SystemUtils.getTempDirectory(), "tmpnb"); // NOI18N
+            File tmpCacheDir = new File(tmpUserDir, "var" + File.separator + "cache"); // NOI18N
+            
+            String[] commands = new String [] {
+                    runIDE,
+                    "-J-Dnetbeans.close=true",
+                    "--nosplash",
+                    "-J-Dorg.netbeans.core.WindowSystem.show=false",
+                    "--userdir",
+                    tmpUserDir.getPath()};
+            LogManager.log("    Run " + Arrays.asList(commands));
+            CountdownProgress countdownProgress = new CountdownProgress(compositeProgress, 25*1000, 72,
+                    (ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.generate"))); // NOI18N
+            countdownProgress.countdown();
+            try {
+                SystemUtils.executeCommand(nbInstallLocation, commands);
+                LogManager.log("    .... success ");
+            } catch (IOException ioe) {
+                LogManager.log("    .... exception ", ioe);
+                return ;
+            } finally {
+                LogManager.log("    .... done. ");
+            }
+            
+            LogManager.log("preparing caches : ");
+            
+            LogManager.log("    temporary cache location = " + tmpCacheDir);
+            
+            // zip OSGi cache
+            try {
+                LogManager.log("    zipping OSGi caches");
+                File zipFile = new File(tmpCacheDir, "populate.zip");
+                ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile));            
+                FileUtils.zip(new File (tmpCacheDir, "netigso"), zos, tmpCacheDir, new ArrayList <File> ());
+                zos.close();
+                LogManager.log("    .... success ");
+            } catch (IOException ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+                return ;
+            } finally {
+                LogManager.log("    .... done. ");
+                countdownProgress.stop();
+            }
+            
+            // remove useless files
+            LogManager.log("    remove useless files from cache");
+            Progress removeUselessFileProgress = new Progress();
+            compositeProgress.addChild(removeUselessFileProgress, 25);
+            removeUselessFileProgress.setDetail((ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.cleaning"))); // NOI18N
+            try {
+                FileUtils.deleteFile(new File(tmpCacheDir, "netigso"), true, removeUselessFileProgress);
+                FileUtils.deleteFile(new File(tmpCacheDir, "lastModified"), true, removeUselessFileProgress);
+                
+                String[] splashFileNames = tmpCacheDir.list(new FilenameFilter() {
+
+                                    @Override
+                                    public boolean accept(File dir, String name) {
+                                        return name.startsWith("splash"); // NOI18N
+                                    }
+                                });
+                
+                if (splashFileNames != null) {
+                    for (String name : splashFileNames) {
+                        FileUtils.deleteFile(new File(tmpCacheDir, name), removeUselessFileProgress);
+                    }
+                }
+            } catch (IOException ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+                return ;
+            } finally {
+                LogManager.log("    .... done. ");
+            }
+            
+            LogManager.log("copying pupulate caches : ");
+            File populateCacheDir = new File(nbInstallLocation, "nb"/*nb cluster*/ + File.separator + "var" + File.separator + "cache");
+            LogManager.log("    pupulate cache location = " + populateCacheDir);
+            try {
+                FileUtils.copyFile(tmpCacheDir, populateCacheDir, true, removeUselessFileProgress);
+            } catch (IOException ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+                return ;
+            } finally {
+                LogManager.log("    .... done. ");
+                try {
+                    FileUtils.deleteFile(tmpUserDir, true, removeUselessFileProgress);
+                } catch (IOException ioe) {
+                    LogManager.log("    .... exception " + ioe.getMessage());
+                }
+            }
+            
+            
+            // adding files into list of installed files
+            LogManager.log("add pupulate caches in installed list: ");
+            try {
+                for (File f : populateCacheDir.listFiles()) {
+                    nbBase.getInstalledFiles().add(f);
+                }
+            } catch (IOException ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+            } finally {
+                LogManager.log("    .... done. ");
+            }
+        }
+        
+    }
+
+    // a candidate to be placed somewhere in utils
+    private static class CountdownProgress {
+
+        private final CompositeProgress main;
+        private final long time;
+        private final int percentage;
+        private final String title;
+        private final ScheduledExecutorService scheduler =
+                Executors.newScheduledThreadPool(1);
+        private int current;
+        private ScheduledFuture<?> ticTac;
+
+        public CountdownProgress(CompositeProgress main, long time, int percentage, String title) {
+            this.main = main;
+            this.time = time;
+            this.percentage = percentage;
+            this.title = title;
+            this.current = 0;
+        }
+
+        public void countdown() {
+            final Progress countdown = new Progress();
+            countdown.setDetail(title);
+            main.addChild(countdown, percentage);
+            current = 0;
+            final Runnable tic = new Runnable() {
+
+                @Override
+                public void run() {
+                    countdown.setPercentage(current++);
+                }
+            };
+            ticTac = scheduler.scheduleAtFixedRate(tic, 0, time / percentage, TimeUnit.MILLISECONDS);
+
+            // schedule timout
+            scheduler.schedule(new Runnable() {
+
+                @Override
+                public void run() {
+                    ticTac.cancel(true);
+                }
+            }, time, TimeUnit.MILLISECONDS);
+
+
+        }
+
+        public void stop() {
+            if (!ticTac.isDone() && !ticTac.isCancelled()) {
+                ticTac.cancel(true);
+            }
+        }
+    }
+
     @Override
     public void executeForward() {
         final Registry registry = Registry.getInstance();
@@ -145,13 +338,19 @@ public class NbMainSequence extends WizardSequence {
         if (toInstall.size() > 0) {
             addChild(downloadInstallationDataAction);
             addChild(installAction);
-            addChild(serviceTagAction);
+            Product nbBase = toInstall.get(0);
+            if ("nb-base".equals(nbBase.getUid())) { // NOI18N
+                PopulateCacheAction pupolateCacheAction = new PopulateCacheAction(nbBase);
+                addChild(pupolateCacheAction);
+                pupolateCacheAction.setProperty(InstallAction.TITLE_PROPERTY, DEFAULT_IA_TITLE);
+                pupolateCacheAction.setProperty(InstallAction.DESCRIPTION_PROPERTY, DEFAULT_IA_DESCRIPTION);
+                
+            }
         }
 
         addChild(nbPostInstallSummaryPanel);
         if (toInstall.size() > 0) {
             addChild(metricsAction);
-            addChild(nbRegistrationAction);
         }
         if (toUninstall.size() > 0) {
             addChild(showUninstallationSurveyAction);

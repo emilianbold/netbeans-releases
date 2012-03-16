@@ -54,6 +54,9 @@ import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.Exceptions;
 
 /**
@@ -61,6 +64,9 @@ import org.openide.util.Exceptions;
 *
 * @author   Petr Jiricka
 */
+@ActionID(id = "org.netbeans.modules.web.core.EditQueryStringAction", category = "Build")
+@ActionRegistration(lazy = false, displayName = "#LBL_EditQueryString")
+@ActionReference(path = "Shortcuts", name = "C-Q")
 public class EditQueryStringAction extends CookieAction {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -8487176709444303658L;

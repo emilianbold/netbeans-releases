@@ -489,6 +489,16 @@ public final class ModuleManager extends Modules {
         }
     }
 
+    private static int countEnabled(List<Module> toEnable) {
+        int cnt = 0;
+        for (Module m : toEnable) {
+            if (m.isEnabled()) {
+                cnt++;
+            }
+        }
+        return cnt;
+    }
+
     /** A classloader giving access to all the module classloaders at once. */
     private final class SystemClassLoader extends JarClassLoader {
 
@@ -874,7 +884,11 @@ public final class ModuleManager extends Modules {
      * @see #enable(Set)
      */
     public final void enable(Module m) throws IllegalArgumentException, InvalidException {
-        enable(Collections.singleton(m));
+        enable(m, true);
+    }
+    
+    final void enable(Module m, boolean honor) throws IllegalArgumentException, InvalidException {
+        enable(Collections.singleton(m), honor);
     }
 
     /** Disable a single module.
@@ -899,6 +913,9 @@ public final class ModuleManager extends Modules {
      * a case should contain a reference to the offending module.
      */
     public void enable(Set<Module> modules) throws IllegalArgumentException, InvalidException {
+        enable(modules, true);
+    }
+    private void enable(Set<Module> modules, boolean honorAutoloadEager) throws IllegalArgumentException, InvalidException {
         assertWritable();
         Util.err.log(Level.FINE, "enable: {0}", modules);
         /* Consider eager modules:
@@ -908,7 +925,7 @@ public final class ModuleManager extends Modules {
          */
         ev.log(Events.PERF_START, "ModuleManager.enable"); // NOI18N
         // Basic problems will be caught here, and we also get the autoloads:
-        List<Module> toEnable = simulateEnable(modules);
+        List<Module> toEnable = simulateEnable(modules, honorAutoloadEager);
         ev.log(Events.PERF_TICK, "checked the required ordering and autoloads"); // NOI18N
 
         Util.err.fine("enable: toEnable=" + toEnable); // NOI18N
@@ -1077,7 +1094,7 @@ public final class ModuleManager extends Modules {
             Util.err.fine("enable: fixing classloader");
             installer.classLoaderUp(classLoader);
             Util.err.fine("enable: continuing to installation");
-            Set<Module> enableMore = NetigsoFramework.turnOn(classLoader, this.modules);
+            Set<Module> enableMore = NetigsoFramework.turnOn(this, classLoader, this.modules);
             if (!enableMore.isEmpty()) {
                 Util.err.log(Level.FINE, "netigso needs additional modules: {0}", enableMore);
                 List<Module> toEnableMore = simulateEnable(enableMore, false);
@@ -1085,6 +1102,9 @@ public final class ModuleManager extends Modules {
                 toEnable.addAll(toEnableMore);
                 Util.err.log(Level.FINE, "Adding {0} and trying again", toEnableMore);
                 continue;
+            }
+            if (!toEnable.isEmpty() && countEnabled(toEnable) == 0) {
+                throw new InvalidException("No module could be enabled: " + toEnable);
             }
             installer.load(toEnable);
             NetigsoFramework.startFramework();

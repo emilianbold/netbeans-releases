@@ -53,6 +53,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
+import javax.swing.UIManager;
 
 
 /**
@@ -91,7 +92,7 @@ public final class Mnemonics extends Object {
         } else {
             setText(item, text.substring(0, i) + text.substring(i + 1));
             //#67807 no mnemonics on macosx
-            if (Utilities.isMac()) {
+            if (isAquaLF()) {
                 setMnemonic(item, 0);
             } else {
                 char ch = text.charAt(i + 1);
@@ -293,7 +294,7 @@ public final class Mnemonics extends Object {
      * @param mnem Mnemonic char to set, latin [a-z,A-Z], digit [0-9], or any VK_ code
      */
     private static void setMnemonic(Object item, int mnem) {
-        if (Utilities.isMac()) {
+        if (isAquaLF()) {
             // there shall be no mnemonics on macosx.
             //#55864
             return;
@@ -320,5 +321,9 @@ public final class Mnemonics extends Object {
      */
     private static ResourceBundle getBundle() {
         return ResourceBundle.getBundle("org.openide.awt.Mnemonics"); // NOI18N
+    }
+    
+    static boolean isAquaLF() {
+        return "Aqua".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
     }
 }

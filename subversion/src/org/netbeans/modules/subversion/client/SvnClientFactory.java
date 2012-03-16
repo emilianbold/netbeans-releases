@@ -62,6 +62,7 @@ import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient;
+import org.openide.modules.Places;
 import org.openide.util.Utilities;
 
 /**
@@ -298,7 +299,7 @@ public class SvnClientFactory {
 
     private boolean setupJavaHl () {
 
-        String jhlInitFile = System.getProperty("netbeans.user") + "/config/svn/jhlinit";
+        String jhlInitFile = Places.getUserDirectory().getAbsolutePath() + "/config/svn/jhlinit";
         File initFile = new File(jhlInitFile);
 
         if(checkJavahlCrash(initFile)) {

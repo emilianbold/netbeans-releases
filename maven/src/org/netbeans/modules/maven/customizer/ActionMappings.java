@@ -67,6 +67,7 @@ import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
@@ -77,6 +78,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -220,6 +222,18 @@ public class ActionMappings extends javax.swing.JPanel {
             }
         };
     }
+
+    public static void showAddPropertyPopupMenu(JButton btn, JTextArea area, JTextField goalsField, @NullAllowed NbMavenProjectImpl project) {
+        JPopupMenu menu = new JPopupMenu();
+        menu.add(new SkipTestsAction(area));
+        menu.add(new DebugMavenAction(area));
+        menu.add(new EnvVarAction(area));
+        menu.add(createGlobalVarSubmenu(area));
+        if (project != null) {
+            menu.add(new PluginPropertyAction(area, goalsField, project));
+        }
+        menu.show(btn, btn.getSize().width, 0);
+    }
     
     private void addListeners() {
         comConfiguration.addActionListener(comboListener);
@@ -261,10 +275,10 @@ public class ActionMappings extends javax.swing.JPanel {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override public void run() {
                         if (provider != null) {
-                            goalcompleter.setValueList(strs);
+                            goalcompleter.setValueList(strs, false); //do not bother about partial results, too many intermediate apis..
                         }
                         if (profiles != null) {
-                            profilecompleter.setValueList(profiles);
+                            profilecompleter.setValueList(profiles, false);
                         }
                     }
                 });
@@ -346,7 +360,6 @@ public class ActionMappings extends javax.swing.JPanel {
         lblMappings.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
 
         jScrollPane2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         lblHint.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         jScrollPane2.setViewportView(lblHint);
@@ -367,37 +380,36 @@ public class ActionMappings extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 668, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblConfiguration)
-                            .addComponent(lblGoals)
-                            .addComponent(lblMappings))
-                        .addGap(28, 28, 28)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtGoals, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(btnRemove)
-                                    .addComponent(btnAdd)))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(comConfiguration, 0, 389, Short.MAX_VALUE)
-                                .addGap(143, 143, 143))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblProfiles)
-                            .addComponent(lblProperties)
-                            .addComponent(btnAddProps))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtProfiles, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(cbRecursively)
-                                .addGap(18, 18, 18)
-                                .addComponent(cbBuildWithDeps))
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE))))
+                    .addComponent(lblConfiguration)
+                    .addComponent(lblGoals)
+                    .addComponent(lblMappings)
+                    .addComponent(lblProfiles)
+                    .addComponent(lblProperties)
+                    .addComponent(btnAddProps))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtGoals, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+                    .addComponent(txtProfiles, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+                    .addComponent(comConfiguration, 0, 549, Short.MAX_VALUE))
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(122, 122, 122)
+                .addComponent(cbRecursively)
+                .addGap(18, 18, 18)
+                .addComponent(cbBuildWithDeps)
+                .addContainerGap(115, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(124, 124, 124)
+                .addComponent(jScrollPane1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnRemove)
+                    .addComponent(btnAdd))
+                .addGap(6, 6, 6))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(6, 6, 6)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 665, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -431,13 +443,13 @@ public class ActionMappings extends javax.swing.JPanel {
                         .addComponent(lblProperties)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnAddProps))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbRecursively)
                     .addComponent(cbBuildWithDeps))
-                .addGap(41, 41, 41)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -545,14 +557,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }//GEN-LAST:event_lstMappingsValueChanged
 
     private void btnAddPropsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPropsActionPerformed
-        JPopupMenu menu = new JPopupMenu();
-        menu.add(new SkipTestsAction(taProperties));
-        menu.add(new DebugMavenAction(taProperties));
-        menu.add(new EnvVarAction(taProperties));
-        menu.add(createGlobalVarSubmenu(taProperties));
-        menu.add(new PluginPropertyAction(taProperties, txtGoals, project));
-        menu.show(btnAddProps, btnAddProps.getSize().width, 0);
-
+        showAddPropertyPopupMenu(btnAddProps, taProperties, txtGoals, project);
     }//GEN-LAST:event_btnAddPropsActionPerformed
     
     private void loadMappings() {
@@ -1063,7 +1068,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         }
     }
 
-    private JMenu createGlobalVarSubmenu(JTextArea area) {
+    private static JMenu createGlobalVarSubmenu(JTextArea area) {
         JMenu menu = new JMenu();
             menu.setText(NbBundle.getMessage(ActionMappings.class, "ActionMappings.globalVar"));
         Map<String, String> vars = DefaultReplaceTokenProvider.readVariables();

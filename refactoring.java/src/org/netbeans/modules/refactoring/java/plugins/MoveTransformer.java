@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
 public class MoveTransformer extends RefactoringVisitor {
 
     private FileObject originalFolder;
-    private MoveRefactoringPlugin move;
+    private MoveFileRefactoringPlugin move;
     private Set<Element> elementsToImport;
     private Set<ImportTree> importToRemove;
     private Set<String> importToAdd;
@@ -85,7 +85,7 @@ public class MoveTransformer extends RefactoringVisitor {
         return problem;
     }
 
-    public MoveTransformer(MoveRefactoringPlugin move) {
+    public MoveTransformer(MoveFileRefactoringPlugin move) {
         this.move = move;
         classes2Move = move.classes;
     }
@@ -128,10 +128,12 @@ public class MoveTransformer extends RefactoringVisitor {
                             
                             EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
                             TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
-                            Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
-                            if(enclosingTypeElement != null && enclosingClass != null
-                                    && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
-                                neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                            if(enclosingClassPath != null) {
+                                Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
+                                if(enclosingTypeElement != null && enclosingClass != null
+                                        && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
+                                    neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                                }
                             }
                             
                             if(getPackageOf(el).toString().equals(originalPackage)
@@ -147,10 +149,12 @@ public class MoveTransformer extends RefactoringVisitor {
 
                             EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
                             TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
-                            Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
-                            if(enclosingTypeElement != null && enclosingClass != null
-                                    && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
-                                neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                            if(enclosingClassPath != null) {
+                                Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
+                                if(enclosingTypeElement != null && enclosingClass != null
+                                        && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
+                                    neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                                }
                             }
 
                             if(getPackageOf(el).toString().equals(originalPackage)
@@ -193,10 +197,12 @@ public class MoveTransformer extends RefactoringVisitor {
                         
                         EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
                         TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
-                        Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
-                        if(enclosingTypeElement != null && enclosingClass != null
-                                && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
-                            neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                        if(enclosingClassPath != null) {
+                            Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
+                            if(enclosingTypeElement != null && enclosingClass != null
+                                    && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
+                                neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                            }
                         }
 
                         if (getPackageOf(el).toString().equals(originalPackage)
@@ -255,7 +261,7 @@ public class MoveTransformer extends RefactoringVisitor {
     
     private TypeElement getTypeElement(Element e) {
         TypeElement t = workingCopy.getElementUtilities().enclosingTypeElement(e);
-        if (t==null && e instanceof TypeElement) {
+        if (t==null && (e.getKind().isClass() || e.getKind().isInterface())) {
             return (TypeElement) e;
         }
         return t;

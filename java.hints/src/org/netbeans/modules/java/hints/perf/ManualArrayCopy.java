@@ -44,23 +44,24 @@ package org.netbeans.modules.java.hints.perf;
 
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.MatcherUtilities;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(category="performance", suppressWarnings={"ManualArrayToCollectionCopy", "", "ManualArrayToCollectionCopy"})
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.ManualArrayCopy", description = "#DESC_org.netbeans.modules.java.hints.perf.ManualArrayCopy", category="performance", suppressWarnings={"ManualArrayToCollectionCopy", "", "ManualArrayToCollectionCopy"})
 public class ManualArrayCopy {
 
 
@@ -118,15 +119,15 @@ public class ManualArrayCopy {
                               "    $coll.add($arr[$i]);\n"+
                               "}\n",
                         constraints={
-                            @Constraint(variable="$arr", type="java.lang.Object[]"),
-                            @Constraint(variable="$coll", type="java.util.Collection")
+                            @ConstraintVariableType(variable="$arr", type="java.lang.Object[]"),
+                            @ConstraintVariableType(variable="$coll", type="java.util.Collection")
                         }),
         @TriggerPattern(value="for ($type $var : $arr) {\n"+
                               "    $coll.add($var);\n"+
                               "}\n",
                         constraints={
-                            @Constraint(variable="$arr", type="java.lang.Object[]"),
-                            @Constraint(variable="$coll", type="java.util.Collection")
+                            @ConstraintVariableType(variable="$arr", type="java.lang.Object[]"),
+                            @ConstraintVariableType(variable="$coll", type="java.util.Collection")
                         })
     })
     public static ErrorDescription collection(HintContext ctx) {
@@ -135,7 +136,7 @@ public class ManualArrayCopy {
     
     private static ErrorDescription compute(HintContext ctx, String key, String to) {
         String fixDisplayName = NbBundle.getMessage(ManualArrayCopy.class, "FIX_" + key);
-        Fix fix = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), to);
+        Fix fix = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), to);
         String displayName = NbBundle.getMessage(ManualArrayCopy.class, "ERR_" + key);
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fix);

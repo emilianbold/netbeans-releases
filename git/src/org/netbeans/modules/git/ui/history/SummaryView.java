@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -97,6 +98,7 @@ class SummaryView extends AbstractSummaryView {
 
         private RepositoryRevision revision;
         private List<Event> events = new ArrayList<Event>(10);
+        private List<Event> dummyEvents;
         private SearchHistoryPanel master;
         private String complexRevision;
         private final PropertyChangeListener list;
@@ -105,10 +107,12 @@ class SummaryView extends AbstractSummaryView {
         public GitLogEntry (RepositoryRevision revision, SearchHistoryPanel master) {
             this.revision = revision;
             this.master = master;
+            this.dummyEvents = Collections.<Event>emptyList();
             if (revision.isEventsInitialized()) {
                 refreshEvents();
                 list = null;
             } else {
+                prepareDummyEvents();
                 revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
             }
         }
@@ -116,6 +120,11 @@ class SummaryView extends AbstractSummaryView {
         @Override
         public Collection<AbstractSummaryView.LogEntry.Event> getEvents () {
             return events;
+        }
+
+        @Override
+        public Collection<Event> getDummyEvents () {
+            return dummyEvents;
         }
 
         @Override
@@ -242,6 +251,14 @@ class SummaryView extends AbstractSummaryView {
             return revision;
         }
 
+        void prepareDummyEvents () {
+            ArrayList<Event> evts = new ArrayList<Event>(revision.getDummyEvents().length);
+            for (RepositoryRevision.Event event : revision.getDummyEvents()) {
+                evts.add(new GitLogEvent(master, event));
+            }
+            dummyEvents = evts;
+        }
+
         void refreshEvents () {
             ArrayList<Event> evts = new ArrayList<Event>(revision.getEvents().length);
             for (RepositoryRevision.Event event : revision.getEvents()) {
@@ -250,6 +267,7 @@ class SummaryView extends AbstractSummaryView {
             List<Event> oldEvents = new ArrayList<Event>(events);
             List<Event> newEvents = new ArrayList<Event>(evts);
             events = evts;
+            dummyEvents.clear();
             eventsChanged(oldEvents, newEvents);
         }
 
@@ -279,11 +297,6 @@ class SummaryView extends AbstractSummaryView {
         @Override
         public String getOriginalPath () {
             return event.getOriginalPath();
-        }
-
-        @Override
-        public File getFile () {
-            return event.getFile();
         }
 
         @Override

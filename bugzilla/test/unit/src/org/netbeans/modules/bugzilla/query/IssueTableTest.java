@@ -44,15 +44,19 @@ package org.netbeans.modules.bugzilla.query;
 
 import java.lang.reflect.Field;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 import junit.framework.Test;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.IssuetableTestFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.TestConstants;
+import org.netbeans.modules.bugzilla.TestUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -60,6 +64,8 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
  */
 public class IssueTableTest extends IssuetableTestFactory implements QueryConstants, TestConstants {
 
+    private Map<String, BugzillaQuery> queries = new HashMap<String, BugzillaQuery>();
+    
     public IssueTableTest(Test test) {
         super(test);
     }
@@ -78,6 +84,9 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", System.getProperty("java.io.tmpdir"));
         System.setProperty("netbeans.t9y.bugzilla.force.refresh.delay", "please!");
+        
+        MockLookup.setLayersAndInstances();
+        BugtrackingUtil.getBugtrackingConnectors(); // ensure conector
     }
 
     @Override
@@ -91,15 +100,25 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
         final BugzillaRepository repo = QueryTestUtil.getRepository();
 
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
-        final BugzillaQuery q = new BugzillaQuery(QUERY_NAME, repo, p, false, false, true); // false = not saved
-        assertEquals(0,q.getIssues().length);
-        return q;
+        String queryName = QUERY_NAME + System.currentTimeMillis();
+        final BugzillaQuery bugzillaQuery = new BugzillaQuery(queryName, repo, p, false, false, true); // false = not saved
+        assertEquals(0,bugzillaQuery.getIssues().size());
+        Query query = TestUtil.getQuery(bugzillaQuery);
+        queries.put(queryName, bugzillaQuery);
+        return query;
     }
-
+    
+    @Override
+    public void setSaved(Query q) {
+        BugzillaQuery bugzillaQuery = queries.get(q.getDisplayName());
+        bugzillaQuery.setSaved(true);
+    }
+    
     @Override
     public IssueTable getTable(Query q) {
         try {
-            BugtrackingController c = q.getController();
+            BugzillaQuery bugzillaQuery = queries.get(q.getDisplayName());
+            BugtrackingController c = bugzillaQuery.getController();
             Field f = c.getClass().getDeclaredField("issueTable");
             f.setAccessible(true);
             return (IssueTable) f.get(c);
@@ -117,6 +136,7 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
     public int getColumnsCountAfterSave() {
         return 9;
     }
+
 
 
 }

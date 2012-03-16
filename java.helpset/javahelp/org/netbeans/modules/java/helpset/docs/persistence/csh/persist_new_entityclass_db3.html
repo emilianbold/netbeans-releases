@@ -37,13 +37,22 @@
             Unique constraints are also added to the <tt>@Table</tt> annotation when selected. 
             This option is deselected by default.</li>
             <li><b>Use Column Names in Relationships.</b> When selected, when a table references a foreign key,
-                the field name is generated according to the name of the column in the table.
-                For example, if the table <tt>customer</tt> has a column named <tt>zip</tt> that is mapped to a column named <tt>zip_code</tt>
-                in table <tt>micromarket</tt>, the generated field name will be <tt>zip</tt>.
-                This option is selected by default.
+            the field name is generated according to the name of the column in the table.
+            For example, if the table <tt>customer</tt> has a column named <tt>zip</tt> that is mapped to a column named <tt>zip_code</tt>
+            in table <tt>micromarket</tt>, the generated field name will be <tt>zip</tt>.
+            This option is selected by default.
 
-                <p>When this option is deselected, the field name is generated according to the name of the table that contains the foreign key.
-                In the example above, the generated field name will be <tt>microMarket</tt>. </p></li>
+            <p>When this option is deselected, the field name is generated according to the name of the table that contains the foreign key.
+            In the example above, the generated field name will be <tt>microMarket</tt>. </p></li>
+            <li><b>Use Defaults if Possible</b> When selected, only annotations that modify the default behavior or attributes will be generated.
+            Selecting this option can reduce the number of unnecessary annotations that are generated.
+            This option is deselected by default.</li>
+            <li><b>Generate Fields for Unresolved Relationships.</b> 
+            When selected, basic generic fields are generated for the fields in a relationship that reference fields or entities that are missing or cannot be resolved.
+            The basic fields that are generated might not accurately represent the columns in the tables because of the missing data.
+
+            <p>When deselected, fields in a relationship are not generated if any of the fields or entities in the relationship are missing. 
+            This option is deselected by default.</p></li>
         </ul>            
             
         

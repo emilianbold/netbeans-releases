@@ -195,6 +195,8 @@ public class VersionsCache {
                                 ISVNStatus st = client.getSingleStatus(base);
                                 if (st != null && st.getRevision() != null) {
                                     pegRevision = st.getRevision().toString();
+                                } else {
+                                    pegRevision = SVNRevision.HEAD.toString();
                                 }
                             } catch (SVNClientException e) {}
                         }
@@ -270,7 +272,18 @@ public class VersionsCache {
 
     private File getContentBase (File referenceFile, File output) throws SVNClientException, IOException {
         SvnClient client = Subversion.getInstance().getClient(false); // local call, does not need to be instantiated with the file instance
-        InputStream in = client.getContent(referenceFile, SVNRevision.BASE);
+        InputStream in;
+        try {
+            in = client.getContent(referenceFile, SVNRevision.BASE);
+        } catch (SVNClientException ex) {
+            if(SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())
+                    || SvnClientExceptionHandler.hasNoBaseRevision(ex.getMessage())) {
+                // Subversion 1.7 error messages
+                in = new ByteArrayInputStream(new byte[] {});
+            } else {
+                throw ex;
+            }
+        }
         output = FileUtil.normalizeFile(output);
         FileUtils.copyStreamToFile(new BufferedInputStream(in), output);
         return output;

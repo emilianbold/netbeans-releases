@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.LookupBasedJavaSourceTaskFactory;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -79,7 +80,12 @@ public final class ClassMemberNavigatorJavaSourceFactory extends LookupBasedJava
     }
     
     public ClassMemberNavigatorJavaSourceFactory() {        
-        super(Phase.ELEMENTS_RESOLVED, Priority.NORMAL, "text/x-java", "application/x-class-file");
+        super(
+            Phase.ELEMENTS_RESOLVED,
+            Priority.NORMAL,
+            TaskIndexingMode.ALLOWED_DURING_SCAN,
+            "text/x-java",
+            "application/x-class-file");
     }
 
     public synchronized CancellableTask<CompilationInfo> createTask(FileObject file) {

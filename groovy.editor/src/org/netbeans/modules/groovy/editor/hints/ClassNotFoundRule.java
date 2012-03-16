@@ -45,23 +45,19 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper;
-import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
+import org.netbeans.modules.groovy.editor.actions.ImportCandidate;
+import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyError;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyErrorRule;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyError;
-import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -71,8 +67,8 @@ public class ClassNotFoundRule extends GroovyErrorRule {
 
     public static final Logger LOG = Logger.getLogger(ClassNotFoundRule.class.getName());
     private final String DESC = NbBundle.getMessage(ClassNotFoundRule.class, "FixImportsHintDescription"); // NOI18N
-    private final FixImportsHelper helper = new FixImportsHelper();
 
+    
     public ClassNotFoundRule() {
         super();
     }
@@ -107,8 +103,7 @@ public class ClassNotFoundRule extends GroovyErrorRule {
         // FIXME parsing API
         FileObject fo = context.parserResult.getSnapshot().getSource().getFileObject();
 
-        List<ImportCandidate> importCandidates =
-                helper.getImportCandidate(fo, missingClassName);
+        List<ImportCandidate> importCandidates = FixImportsHelper.getImportCandidate(fo, missingClassName);
 
 
         if (importCandidates.isEmpty()) {
@@ -172,7 +167,6 @@ public class ClassNotFoundRule extends GroovyErrorRule {
 
     private class AddImportFix implements HintFix {
 
-        String HINT_PREFIX = NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundRuleHintDescription"); // NOI18N
         FileObject fo;
         String fqn;
 
@@ -183,13 +177,12 @@ public class ClassNotFoundRule extends GroovyErrorRule {
 
         @Override
         public String getDescription() {
-            return HINT_PREFIX + " " + fqn;
+            return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundRuleHintDescription", fqn); // NOI18N
         }
 
         @Override
         public void implement() throws Exception {
-            helper.doImport(fo, fqn);
-            return;
+            FixImportsHelper.doImport(fo, fqn);
         }
 
         @Override

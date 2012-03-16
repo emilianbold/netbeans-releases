@@ -333,6 +333,8 @@ public class JavaMembersPanel extends javax.swing.JPanel {
             "HighlightsLayerExcludes", // NOI18N
             "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" // NOI18N
         );
+        
+        signatureEditorPane.putClientProperty("text-line-wrap", "none");    //NOI18N
 
         signatureEditorPane.registerKeyboardAction(
                 new ActionListener() {
@@ -546,13 +548,14 @@ public class JavaMembersPanel extends javax.swing.JPanel {
     }
     //</editor-fold>
 
+    @Override
     public void addNotify() {
         super.addNotify();
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 applyFilter(true);
-                filterTextField.requestFocusInWindow();
-            }           
+            }
         });
     }
 
@@ -626,6 +629,12 @@ public class JavaMembersPanel extends javax.swing.JPanel {
             }
             lastFocusedComponent = null;
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                filterTextField.requestFocusInWindow();
+            }
+        });
     }
        
     private void applyFilter() {

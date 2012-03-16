@@ -102,7 +102,7 @@ class EELevelPanelVisual extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addGap(74, 74, 74)
-                .addComponent(serverModel, 0, 0, Short.MAX_VALUE)
+                .addComponent(serverModel, 0, 1, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(addButton))
             .addGroup(layout.createSequentialGroup()

@@ -209,6 +209,9 @@ public class ChoiceView extends JComboBox implements Externalizable {
     }
 
     private void updateChoice() {
+        if (manager == null) {
+            return;
+        }
         if (showExploredContext) {
             model.setNode(manager.getExploredContext());
         } else {

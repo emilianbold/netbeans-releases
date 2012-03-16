@@ -57,6 +57,7 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.autoupdate.JiraAutoupdate;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -106,8 +107,6 @@ public class JiraExecutor {
                 if(checkVersion) {
                     checkAutoupdate();
                 }
-
-                ensureCredentials();
 
                 cmd.execute();
 
@@ -167,10 +166,6 @@ public class JiraExecutor {
                 Jira.LOG.log(Level.SEVERE, null, re);
             }
         }
-    }
-
-    private void ensureCredentials() {
-        JiraConfig.getInstance().setupCredentials(repository);
     }
 
     public boolean handleIOException(IOException io) {
@@ -368,7 +363,7 @@ public class JiraExecutor {
             }
             @Override
             protected boolean handle() {
-                boolean ret = BugtrackingUtil.editRepository(executor.repository, errroMsg);
+                boolean ret = BugtrackingUtil.editRepository(JiraUtils.getRepository(executor.repository), errroMsg);
                 if(!ret) {
                     notifyErrorMessage(NbBundle.getMessage(JiraExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                 }

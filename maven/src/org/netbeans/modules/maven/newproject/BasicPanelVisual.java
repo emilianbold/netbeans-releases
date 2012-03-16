@@ -78,10 +78,12 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.modules.maven.options.MavenSettings;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.validation.api.AbstractValidator;
 import org.netbeans.validation.api.Problems;
@@ -94,6 +96,7 @@ import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -123,8 +126,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
     private boolean changedPackage = false;
     
+    private AggregateProgressHandle handle;
+    private final Object HANDLE_LOCK = new Object();
+    
     private static final RequestProcessor RPgetver = new RequestProcessor("BasicPanelVisual-getCommandLineMavenVersion"); //NOI18N
-    private static final RequestProcessor RPprep = new RequestProcessor("BasicPanelVisual-prepareAdditionalProperties"); //NOI18N
+    private static final RequestProcessor RPprep = new RequestProcessor("BasicPanelVisual-prepareAdditionalProperties", 5); //NOI18N
+    private Archetype currentArchetype;
     
     /** Creates new form PanelProjectLocationVisual */
     @SuppressWarnings("unchecked")
@@ -138,7 +145,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         "ERR_Project_Folder_cannot_be_created=Project Folder cannot be created.",
         "ERR_Project_Folder_is_not_valid_path=Project Folder is not a valid path.",
         "ERR_Project_Folder_is_UNC=Project Folder cannot be located on UNC path.",
-        "ERR_old_maven=Maven {0} is too old, version 2.0.7 or newer is needed.",
+        "# {0} - version", "ERR_old_maven=Maven {0} is too old, version 2.0.7 or newer is needed.",
         "ERR_Project_Folder_exists=Project Folder already exists and is not empty."
     })
     BasicPanelVisual(BasicWizardPanel panel, Archetype arch) {
@@ -424,7 +431,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         String command = evt.getActionCommand();
         if ("BROWSE".equals(command)) { //NOI18N
             JFileChooser chooser = new JFileChooser();
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+            chooser.setCurrentDirectory(null);
             chooser.setDialogTitle(TIT_Select_Project_Location());
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             String path = this.projectLocationTextField.getText();
@@ -444,7 +451,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     }//GEN-LAST:event_browseButtonActionPerformed
 
     private void btnSetupNewerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupNewerActionPerformed
-        OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
+        OptionsDisplayer.getDefault().open(JavaOptions.JAVA + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
         panel.getValidationGroup().performValidation();
     }//GEN-LAST:event_btnSetupNewerActionPerformed
     
@@ -515,6 +522,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     }
     
     void store(WizardDescriptor d) {
+        synchronized (HANDLE_LOCK) {
+            if (handle != null) {
+                handle.finish();
+                handle = null;
+            }
+        }
         String name = projectNameTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
         
@@ -534,6 +547,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             d.putProperty(ArchetypeWizardUtils.ADDITIONAL_PROPS, map);
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 panel.getValidationGroup().remove(vg);
             }
@@ -541,10 +555,16 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     }
     
     @Messages({
-        "TXT_MavenProjectName=mavenproject{0}",
+        "# {0} - project count", "TXT_MavenProjectName=mavenproject{0}",
         "TXT_Checking1=Checking additional creation properties..."
     })
     void read(WizardDescriptor settings) {
+        synchronized (HANDLE_LOCK) {
+            if (handle != null) {
+                handle.finish();
+                handle = null;
+            }
+        }        
         File projectLocation = (File) settings.getProperty("projdir"); //NOI18N
         if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory()) {
             projectLocation = ProjectChooser.getProjectsFolder();
@@ -566,18 +586,21 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         this.projectNameTextField.selectAll();
         // skip additional properties if direct known archetypes without additional props used
         if (panel.areAdditional()) {
-            final Archetype arch = getArchetype(settings);
+            final Archetype archet = getArchetype(settings);
+            this.currentArchetype = archet;
             lblAdditionalProps.setText(TXT_Checking1());
             lblAdditionalProps.setVisible(true);
             tblAdditionalProps.setVisible(false);
             jScrollPane1.setVisible(false);
             RPprep.post(new Runnable() {
+                @Override
                 public void run() {
-                    prepareAdditionalProperties(arch);
+                    prepareAdditionalProperties(archet);
                 }
             });
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 panel.getValidationGroup().addItem(vg, true);
             }
@@ -610,7 +633,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             //#143026
             Logger.getLogger( BasicPanelVisual.class.getName()).log( Level.FINE, "Cannot download archetype", ex);
         }
+        if (arch != currentArchetype || !this.isVisible()) {
+            //prevent old runnables from overwriting the ui.
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if (dtm.getRowCount() > 0) {
                     Mnemonics.setLocalizedText(lblAdditionalProps, TXT_Checking2());
@@ -652,24 +680,31 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         
         //hack to get the right extension for the right packaging without the plugin.
         art.setArtifactHandler(new ArtifactHandler() {
+            @Override
             public String getExtension() {
                 return "jar"; //NOI18N
             }
+            @Override
             public String getDirectory() {
                 return null;
             }
+            @Override
             public String getClassifier() {
                 return null;
             }
+            @Override
             public String getPackaging() {
                 return "maven-archetype"; //NOI18N
             }
+            @Override
             public boolean isIncludesDependencies() {
                 return false;
             }
+            @Override
             public String getLanguage() {
                 return "java"; //NOI18N
             }
+            @Override
             public boolean isAddedToClasspath() {
                 return false;
             }
@@ -678,16 +713,26 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         if (arch.getRepository() == null) {
             repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID));
         } else {
-            
-            repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, arch.getRepository(), "custom-repo"));//NOI18N
+           repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, arch.getRepository(), "custom-repo"));//NOI18N
+           for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+                if (arch.getRepository().equals(info.getRepositoryUrl())) {
+                    repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, arch.getRepository(), info.getId()));//NOI18N
+                    break;
+                }
+            }
         }
         AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Handle_Download(),
                 new ProgressContributor[] {
                     AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
                 ProgressTransferListener.cancellable(), null);
         ProgressTransferListener.setAggregateHandle(hndl);
+
         try {
             hndl.start();
+
+            synchronized (HANDLE_LOCK) {
+               handle = hndl;
+            }            
 //TODO how to rewrite to track progress?
 //            try {
 //                WagonManager wagon = online.getPlexusContainer().lookup(WagonManager.class);
@@ -714,6 +759,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     
     // Implementation of DocumentListener --------------------------------------
     
+    @Override
     public void changedUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -721,6 +767,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         }
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -728,6 +775,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         }
     }
     
+    @Override
     public void removeUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -804,17 +852,20 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
     /*** Implementation of WindowFocusListener ***/
 
+    @Override
     public void windowGainedFocus(WindowEvent e) {
         // trigger re-check of maven version
         askedForVersion = false;
         getCommandLineMavenVersion();
     }
 
+    @Override
     public void windowLostFocus(WindowEvent e) {
     }
 
     /*** Implementation of Runnable, checks Maven version ***/
 
+    @Override
     public void run() {
         if (!EventQueue.isDispatchThread()) {
             // phase one, outside EQ thread

@@ -113,7 +113,7 @@ public class GeneratedComponentsDestionationTest extends ExtJellyTestCase {
         //add timeout
         waitNoEvent(1000);
         if (local) {
-            options.selectMiscellaneous(); // NOI18N
+            options.selectJava();
             //add timeout
             waitNoEvent(1000);
             JTabbedPaneOperator jtpo = new JTabbedPaneOperator(options);

@@ -149,18 +149,6 @@ public abstract class StoreEntry {
         siblingEntries = Collections.unmodifiableList(siblingEntries);
     }
 
-    public String getMIMEType() {
-        if(mimeType == null) {
-            FileObject fo = FileUtils.toFileObject(file);
-            if(fo != null) {
-                mimeType = fo.getMIMEType();   
-            } else {
-                mimeType = "content/unknown";
-            }                
-        }        
-        return mimeType;
-    }
-
     static OutputStream createStoreFileOutputStream(File storeFile) throws FileNotFoundException, IOException {
         int retry = 0;
         while (true) {

@@ -64,7 +64,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -95,6 +94,7 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.java.JavaCompletionItem;
@@ -105,7 +105,6 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -148,12 +147,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         JavadocContext jdctx = new JavadocContext();
         items = new  ArrayList<CompletionItem>();
         this.caretOffset = caretOffset;
-        Future<Void> f = runInJavac(JavaSource.forDocument(doc), jdctx);
-        if (f != null && !f.isDone()) {
-            setCompletionHack(false);
-            resultSet.setWaitText(NbBundle.getMessage(JavadocCompletionProvider.class, "scanning-in-progress")); 
-            f.get();
-        }
+        runInJavac(JavaSource.forDocument(doc), jdctx);
         
         if (isTaskCancelled()) {
             return;
@@ -181,13 +175,13 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
     }
     
-    private Future<Void> runInJavac(JavaSource js, final JavadocContext jdctx) {
+    private void runInJavac(JavaSource js, final JavadocContext jdctx) {
         try {
             if (js == null) {
-                return null;
+                return;
             }
 
-            return js.runWhenScanFinished(new Task<CompilationController>() {
+            js.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController javac) throws Exception {
                     if (isTaskCancelled()) {
@@ -216,7 +210,6 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             }, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            return null;
         }
     }
     
@@ -656,7 +649,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 }
                 items.add(JavaCompletionItem.createTypeItem(
                         jdctx.javac, typeElement, (DeclaredType) typeElement.asType(),
-                        substitutionOffset, typeName != qualTypeName,
+                        substitutionOffset, typeName != qualTypeName ? jdctx.getReferencesCount() : null,
                         elements.isDeprecated(typeElement), false, false, false, true, false, null));
             }
         }
@@ -795,7 +788,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 case ENUM_CONSTANT:
                 case FIELD:
                     TypeMirror tm = type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType();
-                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement) e, tm, substitutionOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), /*isOfSmartType(env, tm, smartTypes)*/false, false, -1, null));
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement) e, tm, substitutionOffset, null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), /*isOfSmartType(env, tm, smartTypes)*/false, -1, null));
                     break;
                 case CONSTRUCTOR:
                 case METHOD:
@@ -901,12 +894,12 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         for (Element e : controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
             switch (e.getKind()) {
                 case ENUM_CONSTANT:
-                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, e.asType(), substitutionOffset, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, e.asType(), smartTypes)*/, false, -1, null));
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, e.asType(), substitutionOffset, null, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, e.asType(), smartTypes)*/, -1, null));
                     break;
                 case FIELD:
                     String name = e.getSimpleName().toString();
                     TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
-                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, tm, substitutionOffset, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, tm, smartTypes)*/, false, -1, null));
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, tm, substitutionOffset, null, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, tm, smartTypes)*/, -1, null));
                     break;
                 case CONSTRUCTOR:
                 case METHOD:
@@ -945,7 +938,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 for(DeclaredType subtype : getSubtypesOf(baseType, prefix, jdctx)) {
                     TypeElement elem = (TypeElement)subtype.asElement();
                     if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem))
-                        items.add(JavaCompletionItem.createTypeItem(jdctx.javac, elem, subtype, substitutionOffset, true, elements.isDeprecated(elem), false, false, false, false, false, null));
+                        items.add(JavaCompletionItem.createTypeItem(jdctx.javac, elem, subtype, substitutionOffset, jdctx.getReferencesCount(), elements.isDeprecated(elem), false, false, false, false, false, null));
                 }
             }
         } else {
@@ -982,7 +975,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 case ENUM:
                 case INTERFACE:
                 case ANNOTATION_TYPE:
-                    items.add(JavadocCompletionItem.createTypeItem(env.javac, (TypeElement) e, substitutionOffset, false, elements.isDeprecated(e)));
+                    items.add(JavadocCompletionItem.createTypeItem(env.javac, (TypeElement) e, substitutionOffset, null, elements.isDeprecated(e)));
                     break;
             }                
         }
@@ -997,7 +990,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             }
         };
         for (TypeElement e : controller.getElementUtilities().getGlobalTypes(acceptor)) {
-            items.add(JavadocCompletionItem.createTypeItem(env.javac, e, substitutionOffset, false, elements.isDeprecated(e)));
+            items.add(JavadocCompletionItem.createTypeItem(env.javac, e, substitutionOffset, null, elements.isDeprecated(e)));
         }
     }
 
@@ -1012,7 +1005,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 //            Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
         for(ElementHandle<TypeElement> name : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
             if (!isAnnonInner(name)) {
-                items.add(LazyTypeCompletionItem.create(name, kinds, substitutionOffset, controller.getSnapshot().getSource(), false, false, false, null));
+                items.add(LazyTypeCompletionItem.create(name, kinds, substitutionOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), false, false, false, null));
             }
         }
     }
@@ -1028,7 +1021,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             if (e.getKind().isClass() || e.getKind().isInterface()) {
                 String name = e.getSimpleName().toString();
                     if (Utilities.startsWith(name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && trees.isAccessible(scope, (TypeElement)e) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types)) {
-                        items.add(JavadocCompletionItem.createTypeItem(jdctx.javac, (TypeElement) e, substitutionOffset, false, elements.isDeprecated(e)/*, isOfSmartType(env, e.asType(), smartTypes)*/));
+                        items.add(JavadocCompletionItem.createTypeItem(jdctx.javac, (TypeElement) e, substitutionOffset, null, elements.isDeprecated(e)/*, isOfSmartType(env, e.asType(), smartTypes)*/));
                 }
             }
         }
@@ -1048,7 +1041,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                         && trees.isAccessible(scope, (TypeElement)e)
                         && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types)
                         && !Utilities.isExcluded(Utilities.getElementName(e, true))) {
-                        items.add(JavadocCompletionItem.createTypeItem(jdctx.javac, (TypeElement) e, substitutionOffset, false, elements.isDeprecated(e)/*, isOfSmartType(env, e.asType(), smartTypes)*/));
+                        items.add(JavadocCompletionItem.createTypeItem(jdctx.javac, (TypeElement) e, substitutionOffset, null, elements.isDeprecated(e)/*, isOfSmartType(env, e.asType(), smartTypes)*/));
                 }
             }
         }
@@ -1241,7 +1234,11 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         TokenSequence<JavadocTokenId> jdts;
         Document doc;
         CompilationInfo javac;
-    }
-    
-    
+        private ReferencesCount count;
+        ReferencesCount getReferencesCount() {
+            if (count == null)
+                count = ReferencesCount.get(javac.getClasspathInfo());
+            return count;
+        }
+    }    
 }

@@ -44,21 +44,19 @@
 
 package org.netbeans.modules.spring.beans.hyperlink;
 
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
+import org.netbeans.modules.spring.beans.utils.ElementSeekerTask;
 import org.netbeans.modules.spring.java.JavaUtils;
 import org.netbeans.modules.spring.java.MatchType;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -97,11 +95,11 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
                 return;
             }
 
-            ClassSeeker classSeeker = new ClassSeeker(js, className, propName);
-//            runClassSeekerAsUserTask(js, classSeeker);
-//            if (!classSeeker.wasClassFound()) {
-                ScanDialog.runWhenScanFinished(classSeeker, Bundle.title_attribute_searching());
-//            }
+            ClassSeekerTask classSeekerTask = new ClassSeekerTask(js, className, propName);
+            classSeekerTask.runAsUserTask();
+            if (!classSeekerTask.wasElementFound() && SourceUtils.isScanInProgress()) {
+                ScanDialog.runWhenScanFinished(classSeekerTask, Bundle.title_attribute_searching());
+            }
         }
     }
 
@@ -118,38 +116,15 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
         return null;
     }
 
-    private void runClassSeekerAsUserTask(JavaSource javaSource, ClassSeeker classSeeker) {
-        try {
-            javaSource.runUserActionTask(classSeeker, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
+    private class ClassSeekerTask extends ElementSeekerTask {
 
-    private class ClassSeeker implements Runnable, CancellableTask<CompilationController> {
-
-        private final AtomicBoolean wasClassFound = new AtomicBoolean(false);
-        private final JavaSource javaSource;
         private final String className;
         private final String propName;
 
-        public ClassSeeker(JavaSource javaSource, String className, String propName) {
-            this.javaSource = javaSource;
+        public ClassSeekerTask(JavaSource javaSource, String className, String propName) {
+            super(javaSource);
             this.className = className;
             this.propName = propName;
-        }
-
-        public boolean wasClassFound() {
-            return wasClassFound.get();
-        }
-
-        @Override
-        public void run() {
-            runClassSeekerAsUserTask(javaSource, this);
-        }
-
-        @Override
-        public void cancel() {
         }
 
         @Override
@@ -158,7 +133,7 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
             if (type == null) {
                 return;
             }
-            wasClassFound.set(true);
+            elementFound.set(true);
             Property[] props = new PropertyFinder(
                     type.asType(), propName, cc.getElementUtilities(), MatchType.PREFIX).findProperties();
             if (props.length > 0 && props[0].getSetter() != null) {

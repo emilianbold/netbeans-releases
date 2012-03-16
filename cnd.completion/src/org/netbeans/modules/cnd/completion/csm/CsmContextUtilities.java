@@ -668,7 +668,10 @@ public class CsmContextUtilities {
         } else if (CsmKindUtilities.isType(last)) {
             type = (CsmType) last;
         }
-        // in instantianiton everything is possible
-        return (type != null) && !type.isInstantiation() && CsmOffsetUtilities.isInObject(type, offset);
+        // in instantianiton and decltype everything is possible
+        return (type != null) && 
+                !type.isInstantiation() && 
+                !type.getText().toString().startsWith("decltype") && // NOI18N
+                CsmOffsetUtilities.isInObject(type, offset);
     }
 }

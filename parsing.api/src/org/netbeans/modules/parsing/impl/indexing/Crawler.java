@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -59,7 +60,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tomas Zezula
  */
-public abstract class Crawler {
+abstract class Crawler {
 
     /**
      *
@@ -77,12 +78,14 @@ public abstract class Crawler {
             final boolean checkTimeStamps,
             final boolean detectDeletedFiles,
             final boolean supportsAllFiles,            
-            @NonNull final CancelRequest cancelRequest) throws IOException {
+            @NonNull final CancelRequest cancelRequest,
+            @NonNull final SuspendStatus suspendStatus) throws IOException {
         this.root = root;
         this.checkTimeStamps = checkTimeStamps;
         this.timeStamps = TimeStamps.forRoot(root, detectDeletedFiles);
         this.supportsAllFiles = supportsAllFiles;
         this.cancelRequest = cancelRequest;
+        this.suspendStatus = suspendStatus;
     }
 
     public static boolean listenOnVisibility() {
@@ -137,6 +140,14 @@ public abstract class Crawler {
         return cancelRequest.isRaised();
     }
 
+    protected final void parkWhileSuspended() {
+        try {
+            suspendStatus.parkWhileSuspended();
+        } catch (InterruptedException ex) {
+            //pass - cancelled
+        }
+    }
+
     /**
      * Used by subclasses and unit tests to simulate restart
      * @param value
@@ -156,6 +167,7 @@ public abstract class Crawler {
     private final boolean supportsAllFiles;
     private final TimeStamps timeStamps;
     private final CancelRequest cancelRequest;
+    private final SuspendStatus suspendStatus;
 
     private Collection<IndexableImpl> resources;
     private Collection<IndexableImpl> allResources;

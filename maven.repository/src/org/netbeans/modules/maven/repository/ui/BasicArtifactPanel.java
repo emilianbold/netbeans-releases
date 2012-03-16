@@ -75,12 +75,14 @@ import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import static org.netbeans.modules.maven.repository.ui.Bundle.*;
 import org.openide.awt.Actions;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
@@ -114,8 +116,11 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                     }
                 }
             }
+            @Override
             public void mouseWheelMoved(MouseWheelEvent e) {}
+            @Override
             public void mouseDragged(MouseEvent e) {}
+            @Override
             public void mouseMoved(MouseEvent e) {}
         });
         lstVersions.setCellRenderer(new DefaultListCellRenderer() {
@@ -140,16 +145,24 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         }
     }
 
+    @Messages({
+        "# {0} - number of bytes",
+        "TXT_Bytes={0} bytes",
+        "# {0} - number of kilo bytes",
+        "TXT_kb={0} kb",
+        "# {0} - number of mega bytes",
+        "TXT_Mb={0} Mb"
+    })
     private String computeSize(long size) {
         long kbytes = size / 1024;
         if (kbytes == 0) {
-            return NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Bytes", size);
+            return TXT_Bytes(size);
         }
         long mbytes = kbytes / 1024;
         if (mbytes == 0) {
-            return NbBundle.getMessage(BasicArtifactPanel.class, "TXT_kb", kbytes);
+            return TXT_kb(kbytes);
         }
-        return NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Mb", mbytes);
+        return TXT_Mb(mbytes);
     }
 
     public @Override int getPersistenceType() {
@@ -439,10 +452,12 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
     private javax.swing.JTextField txtVersion;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public JComponent getVisualRepresentation() {
         return this;
     }
 
+    @Override
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
             toolbar = new JToolBar();
@@ -461,9 +476,11 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         return toolbar;
     }
 
+    @Override
     public void setMultiViewCallback(MultiViewElementCallback callback) {
     }
 
+    @Override
     public CloseOperationState canCloseElement() {
         return CloseOperationState.STATE_OK;
     }
@@ -488,6 +505,12 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         super.componentHidden();
     }
 
+    @Messages({
+        "TXT_Loading=Loading...",
+        "MSG_FailedSHA1=<Failed to calculate SHA1>",
+        "MSG_NOSHA=<Cannot calculate SHA1, the artifact is not present locally>",
+        "TXT_INCOMPLETE=<Incomplete result, processing indices...>"
+    })
     @Override
     public void componentOpened() {
         final Artifact artifact = getLookup().lookup(Artifact.class);
@@ -512,13 +535,16 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
 
 
         final DefaultListModel dlm = new DefaultListModel();
-        dlm.addElement(NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Loading"));
+        dlm.addElement(TXT_Loading());
         lstVersions.setModel(dlm);
         RP.post(new Runnable() {
+            @Override
             public void run() {
-                final List<NBVersionInfo> infos = RepositoryQueries.getVersions(artifact.getGroupId(), artifact.getArtifactId(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                final Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult(artifact.getGroupId(), artifact.getArtifactId(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                final List<NBVersionInfo> infos = result.getResults();
                 final ArtifactVersion av = new DefaultArtifactVersion(artifact.getVersion());
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         dlm.removeAllElements();
                         for (NBVersionInfo ver : infos) {
@@ -526,16 +552,21 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                                 dlm.addElement(ver);
                             }
                         }
+                        if (result.isPartial()) {
+                            dlm.addElement(TXT_INCOMPLETE());
+                        }
                     }
                 });
             }
         });
         final DefaultListModel mdl = new DefaultListModel();
-        mdl.addElement(NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Loading"));
+        mdl.addElement(TXT_Loading());
         lstClassifiers.setModel(mdl);
         RP.post(new Runnable() {
+            @Override
             public void run() {
-                List<NBVersionInfo> infos = RepositoryQueries.getRecords(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                final Result<NBVersionInfo> result = RepositoryQueries.getRecordsResult(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                List<NBVersionInfo> infos = result.getResults();
                 final Set<String> classifiers = new TreeSet<String>();
                 boolean hasJavadoc = false;
                 boolean hasSource = false;
@@ -557,10 +588,14 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                     classifiers.add("javadoc");
                 }
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         mdl.removeAllElements();
                         for (String ver : classifiers) {
                             mdl.addElement(ver);
+                        }
+                        if (result.isPartial()) {
+                            dlm.addElement(TXT_INCOMPLETE());
                         }
                     }
                 });
@@ -575,10 +610,10 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                 txtSHA.setText(sha);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
-                txtSHA.setText(NbBundle.getMessage(BasicArtifactPanel.class, "MSG_FailedSHA1"));
+                txtSHA.setText(MSG_FailedSHA1());
             }
         } else {
-            txtSHA.setText(NbBundle.getMessage(BasicArtifactPanel.class, "MSG_NOSHA"));
+            txtSHA.setText(MSG_NOSHA());
         }
     }
 

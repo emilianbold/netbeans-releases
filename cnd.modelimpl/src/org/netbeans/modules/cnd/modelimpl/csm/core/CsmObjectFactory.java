@@ -44,6 +44,17 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
+import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerNamespace;
+import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
+import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentMacros;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentIncludes;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentReferences;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentDeclarations;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentInstantiations;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionInstantiation;
@@ -71,7 +82,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionInstantiationImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
@@ -82,7 +92,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.MethodImplSpecialization;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.ParameterEllipsisImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl;
@@ -244,10 +253,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 aHandler = VARIABLE_DEF_IMPL;
             } else if (object instanceof FieldImpl) {
                 aHandler = FIELD_IMPL;
-            } else if (object instanceof ParameterEllipsisImpl) {
-                aHandler = PARAMETER_ELLIPSIS_IMPL;
             } else if (object instanceof ParameterImpl) {
-                aHandler = PARAMETER_IMPL;
+                throw new IllegalArgumentException("instance of not persistable class " + object.getClass().getName() + object);  //NOI18N
             } else {
                 aHandler = VARIABLE_IMPL;
             }
@@ -258,13 +265,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
         } else if (object instanceof InheritanceImpl) {
             aHandler = INHERITANCE_IMPL;
         } else if (object instanceof ParameterListImpl<?,?>) {
-            aHandler = PARAM_LIST_IMPL;
-            if (object instanceof FunctionParameterListImpl) {
-                aHandler = FUNCTION_PARAM_LIST_IMPL;
-                if (object instanceof FunctionParameterListImpl.FunctionKnRParameterListImpl) {
-                    aHandler = FUNCTION_KR_PARAM_LIST_IMPL;
-                }
-            }
+            throw new IllegalArgumentException("instance of not persistable class " + object.getClass().getName() + object);  //NOI18N
         } else if (object instanceof MacroImpl) {
             aHandler = MACRO_IMPL;
         } else if (object instanceof FriendClassImpl) {
@@ -472,14 +473,6 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new FieldImpl(stream);
                 break;
 
-            case PARAMETER_IMPL:
-                obj = new ParameterImpl(stream);
-                break;
-
-            case PARAMETER_ELLIPSIS_IMPL:
-                obj = new ParameterEllipsisImpl(stream);
-                break;
-
             case VARIABLE_IMPL:
                 obj = new VariableImpl(stream);
                 break;
@@ -494,18 +487,6 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
 
             case INHERITANCE_IMPL:
                 obj = new InheritanceImpl(stream);
-                break;
-
-            case PARAM_LIST_IMPL:
-                obj = new ParameterListImpl(stream);
-                break;
-
-            case FUNCTION_PARAM_LIST_IMPL:
-                obj = new FunctionParameterListImpl(stream);
-                break;
-
-            case FUNCTION_KR_PARAM_LIST_IMPL:
-                obj = new FunctionParameterListImpl.FunctionKnRParameterListImpl(stream);
                 break;
 
             case MACRO_IMPL:
@@ -656,17 +637,12 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int VARIABLE_IMPL                  = FUNCTION_DEF_DECL_IMPL + 1;
     private static final int VARIABLE_DEF_IMPL              = VARIABLE_IMPL + 1;
     private static final int FIELD_IMPL                     = VARIABLE_DEF_IMPL + 1;
-    private static final int PARAMETER_IMPL                 = FIELD_IMPL + 1;
-    private static final int PARAMETER_ELLIPSIS_IMPL        = PARAMETER_IMPL + 1;
     
-    private static final int ENUMERATOR_IMPL                = PARAMETER_ELLIPSIS_IMPL + 1;
+    private static final int ENUMERATOR_IMPL                = FIELD_IMPL + 1;
 
     private static final int INCLUDE_IMPL                   = ENUMERATOR_IMPL + 1;
     private static final int INHERITANCE_IMPL               = INCLUDE_IMPL + 1;
-    private static final int PARAM_LIST_IMPL                = INHERITANCE_IMPL + 1;
-    private static final int FUNCTION_PARAM_LIST_IMPL       = PARAM_LIST_IMPL + 1;
-    private static final int FUNCTION_KR_PARAM_LIST_IMPL    = FUNCTION_PARAM_LIST_IMPL + 1;
-    private static final int MACRO_IMPL                     = FUNCTION_KR_PARAM_LIST_IMPL + 1;
+    private static final int MACRO_IMPL                     = INHERITANCE_IMPL + 1;
     private static final int TEMPLATE_PARAMETER_IMPL        = MACRO_IMPL + 1;
 
     // instantiations

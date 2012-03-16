@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -54,6 +55,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.javafx2.platform.PlatformPropertiesHandler;
 import org.netbeans.modules.javafx2.platform.Utils;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
@@ -89,8 +91,14 @@ public final class JavaFXPlatformUtils {
         (System.getenv("ProgramFiles") != null ? // NOI18N
             System.getenv("ProgramFiles") : "C:\\Program Files") + "\\Oracle", // NOI18N
         (System.getenv("ProgramFiles(x86)") != null ? // NOI18N
-            System.getenv("ProgramFiles(x86)") : "C:\\Program Files (x86)") + "\\Oracle" // NOI18N
+            System.getenv("ProgramFiles(x86)") : "C:\\Program Files (x86)") + "\\Oracle", // NOI18N
+        File.separatorChar + "Library" + File.separatorChar + "Java" + File.separatorChar + "JavaVirtualMachines" // NOI18N
     };
+    
+    /**
+     * On Mac JDK subdirs are located deeper by MAC_SUBDIR relative to JDK root
+     */
+    public static final String MAC_SUBDIR = File.separatorChar + "Contents" + File.separatorChar + "Home"; // NOI18N
 
     private JavaFXPlatformUtils() {
     }
@@ -204,31 +212,41 @@ public final class JavaFXPlatformUtils {
      * @return instance of created JavaFX Platform, or null if creation was
      * not successful: such platform already exists or IO exception has occurred
      * @throws IOException if the platform was invalid or its definition could not be stored
-     * @throws IllegalArgumentException if a default JavaFX Platform already exists
      */
     @CheckForNull
-    public static JavaPlatform createDefaultJavaFXPlatform() throws IOException, IllegalArgumentException {
+    public static JavaPlatform createDefaultJavaFXPlatform() throws IOException {
         String sdkPath = null;
         String runtimePath = null;
         String javadocPath = null;
         String srcPath = null;
 
-        for (String path : KNOWN_JFX_LOCATIONS) {
+        List<String> locations = new ArrayList<String>();
+        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        Collection<FileObject> roots = defaultPlatform.getInstallFolders();
+        for(FileObject root : roots) {
+            assert root != null && root.isFolder();
+            FileObject parent = root.getParent();
+            if(parent != null) {
+                locations.add(parent.getPath());
+            }
+        }
+        locations.addAll(Arrays.asList(KNOWN_JFX_LOCATIONS));
+        
+        for (String path : locations.toArray(new String[0])) {
             if (sdkPath == null) {
                 sdkPath = predictSDKLocation(path);
             }
             if (runtimePath == null) {
                 runtimePath = predictRuntimeLocation(path);
             }
-            if (javadocPath == null) {
-                javadocPath = predictJavadocLocation(path);
-            }
-            if (srcPath == null) {
-                srcPath = predictSourcesLocation(path);
-            }
-
             // SDK and RT location is enought for JFX platform definition
             if (sdkPath != null && runtimePath != null) {
+                if (javadocPath == null) {
+                    javadocPath = predictJavadocLocation(path);
+                }
+                if (srcPath == null) {
+                    srcPath = predictSourcesLocation(path);
+                }
                 break;
             }
         }
@@ -256,9 +274,12 @@ public final class JavaFXPlatformUtils {
                 return null;
             }
             for (File child : children) {
-                File toolsJar = new File(child.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
-                if (toolsJar.exists()) {
+                if(isSdkPathCorrect(child)) {
                     return child.getAbsolutePath();
+                }
+                File macSubDir = new File(child.getAbsolutePath() + MAC_SUBDIR); // NOI18N
+                if (isSdkPathCorrect(macSubDir)) {
+                    return macSubDir.getAbsolutePath();
                 }
             }
         }
@@ -282,7 +303,13 @@ public final class JavaFXPlatformUtils {
             if (children == null) {
                 return null;
             }
-            files.addAll(Arrays.asList(children));
+            for(File child : Arrays.asList(children)) {
+                files.add(child);
+                File macSubDir = new File(child.getAbsolutePath() + MAC_SUBDIR); // NOI18N
+                if(macSubDir.exists()) {
+                    files.add(macSubDir);
+                }
+            }
             for (File child : children) {
                 File[] f = child.listFiles();
                 if (f != null) {
@@ -290,8 +317,7 @@ public final class JavaFXPlatformUtils {
                 }
             }
             for (File file : files) {
-                File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
-                if (rtJar.exists()) {
+                if(isRuntimePathCorrect(file)) {
                     return file.getAbsolutePath();
                 }
             }
@@ -316,6 +342,10 @@ public final class JavaFXPlatformUtils {
             }
             for (File child : children) {
                 File docs = new File(child.getAbsolutePath() + File.separatorChar + "docs"); // NOI18N
+                if (docs.exists()) {
+                    return docs.getAbsolutePath();
+                }
+                docs = new File(child.getAbsolutePath() + MAC_SUBDIR + File.separatorChar + "docs"); // NOI18N
                 if (docs.exists()) {
                     return docs.getAbsolutePath();
                 }
@@ -345,10 +375,17 @@ public final class JavaFXPlatformUtils {
         if (!file.exists()) {
             return false;
         }
-        File toolsJar = new File(file.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
-        return toolsJar.exists();
+        return isSdkPathCorrect(file);
     }
     
+    private static boolean isSdkPathCorrect(@NonNull File file) {
+        File toolsJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+        if(!toolsJar.exists()) {
+            toolsJar = new File(file.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+        }
+        return toolsJar.exists();
+    }
+
     private static boolean isRuntimePathCorrect(@NonNull String runtimePath) {
         if (runtimePath.isEmpty()) {
             return false;
@@ -357,6 +394,10 @@ public final class JavaFXPlatformUtils {
         if (!file.exists()) {
             return false;
         }
+        return isRuntimePathCorrect(file);
+    }
+
+    private static boolean isRuntimePathCorrect(@NonNull File file) {
         File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
         return rtJar.exists();
     }

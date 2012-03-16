@@ -50,7 +50,14 @@ import org.openide.util.Lookup;
 import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.options.java.api.JavaOptions;
 
+@OptionsPanelController.SubRegistration(
+    location=JavaOptions.JAVA,
+    id="JavaCard",
+    displayName="#JavaCardOptionsCategory_Title",
+    keywords="#KW_JavaCardOptions",
+    keywordsCategory=JavaOptions.JAVA + "/JavaCard")
 public final class JavacardOptionsPanelController extends OptionsPanelController {
 
     private JavacardOptions panel;

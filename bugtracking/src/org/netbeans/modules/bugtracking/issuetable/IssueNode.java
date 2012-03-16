@@ -45,7 +45,6 @@
 package org.netbeans.modules.bugtracking.issuetable;
 
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
-import org.netbeans.modules.bugtracking.spi.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -53,7 +52,12 @@ import java.util.logging.Level;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
 import javax.swing.*;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.openide.util.NbBundle;
 
@@ -63,7 +67,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tomas Stupka
  */
-public abstract class IssueNode extends AbstractNode {
+public abstract class IssueNode<I> extends AbstractNode {
 
     /**
      * Seen property id
@@ -76,7 +80,8 @@ public abstract class IssueNode extends AbstractNode {
 
     public static final String LABEL_NAME_SUMMARY          = "issue.summary";     // NOI18N
 
-    private Issue issue;
+    private IssueImpl issue;
+    private I issueData;
 
     private String htmlDisplayName;
     private Action preferedAction = new AbstractAction() {
@@ -89,18 +94,19 @@ public abstract class IssueNode extends AbstractNode {
      * Creates a {@link IssueNode}
      * @param issue - the {@link Issue} to be represented by this IssueNode
      */
-    public IssueNode(Issue issue) {
-        this(Children.LEAF, issue);
+    public IssueNode(Repository repository, I issueData) {
+        this(Children.LEAF, APIAccessor.IMPL.getImpl(repository).getIssue(issueData), issueData);
     }
 
-    private IssueNode(Children children, Issue issue) {
+    private IssueNode(Children children, IssueImpl issue, I issueData) {
         super(children, Lookups.fixed(issue));
         this.issue = issue;
+        this.issueData = issueData;
         initProperties();
         refreshHtmlDisplayName();
         IssueCacheUtils.addCacheListener(issue, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if(IssueNode.this.issue != evt.getSource()) {
+                if(IssueNode.this.issue.getIssue() != evt.getSource()) {
                     return;
                 }
                 if(evt.getPropertyName().equals(IssueCache.EVENT_ISSUE_SEEN_CHANGED)) {
@@ -109,9 +115,13 @@ public abstract class IssueNode extends AbstractNode {
             }
         });
     }
-
-    protected Issue getIssue() {
+    
+    public IssueImpl getIssue() {
         return issue;
+    }
+    
+    public I getIssueData() {
+        return issueData;
     }
     
     /**
@@ -191,7 +201,7 @@ public abstract class IssueNode extends AbstractNode {
     /**
      * An IssueNode Property
      */
-    public abstract class IssueProperty<T> extends org.openide.nodes.PropertySupport.ReadOnly<T> implements Comparable<IssueProperty> {
+    public abstract class IssueProperty<T> extends org.openide.nodes.PropertySupport.ReadOnly implements Comparable<IssueNode<I>.IssueProperty<T>> {
         protected IssueProperty(String name, Class<T> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }
@@ -204,10 +214,13 @@ public abstract class IssueNode extends AbstractNode {
                 return e.getLocalizedMessage();
             }
         }
-        public Issue getIssue() {
-            return IssueNode.this.issue;
+        public I getIssueData() {
+            return IssueNode.this.issueData;
         }
-        public int compareTo(IssueProperty o) {
+        public Issue getIssue() {
+            return IssueNode.this.issue.getIssue();
+        }
+        public int compareTo(IssueNode<I>.IssueProperty<T> o) {
             return toString().compareTo(o.toString());
         }
     }
@@ -242,7 +255,7 @@ public abstract class IssueNode extends AbstractNode {
             super(LABEL_NAME_SEEN,
                   Boolean.class,
                   "", // NOI18N
-                  NbBundle.getMessage(Issue.class, "CTL_Issue_Seen_Desc")); // NOI18N
+                  NbBundle.getMessage(IssueNode.class, "CTL_Issue_Seen_Desc")); // NOI18N
         }
         public Boolean getValue() {
             return IssueCacheUtils.wasSeen(issue);
@@ -251,7 +264,7 @@ public abstract class IssueNode extends AbstractNode {
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
             if(IssueNode.this.wasSeen()) return 1;
-            if(IssueCacheUtils.wasSeen(p.getIssue())) return -1;
+            if(IssueCacheUtils.wasSeen(APIAccessor.IMPL.getImpl(p.getIssue()))) return -1;
             return 0;
         }
 
@@ -260,22 +273,24 @@ public abstract class IssueNode extends AbstractNode {
     /**
      * Represens the Seen value in a IssueNode
      */
-    public class RecentChangesProperty extends IssueProperty<String> {
+    public class RecentChangesProperty extends IssueNode<I>.IssueProperty<String> {
         public RecentChangesProperty() {
             super(LABEL_RECENT_CHANGES,
                   String.class,
-                  NbBundle.getMessage(Issue.class, "CTL_Issue_Recent"), // NOI18N
-                  NbBundle.getMessage(Issue.class, "CTL_Issue_Recent_Desc")); // NOI18N
+                  NbBundle.getMessage(IssueNode.class, "CTL_Issue_Recent"), // NOI18N
+                  NbBundle.getMessage(IssueNode.class, "CTL_Issue_Recent_Desc")); // NOI18N
         }
         public String getValue() {
-            return IssueCacheUtils.getRecentChanges(getIssue());
+            return IssueCacheUtils.getRecentChanges(APIAccessor.IMPL.getImpl(getIssue()));
         }
         @Override
-        public int compareTo(IssueProperty p) {
+        public int compareTo(IssueNode<I>.IssueProperty<String> p) {
             if(p == null) return 1;
-            if(p instanceof RecentChangesProperty) {
-                String recentChanges1 = IssueCacheUtils.getRecentChanges(getIssue());
-                String recentChanges2 = IssueCacheUtils.getRecentChanges(((RecentChangesProperty)p).getIssue());
+            if(p.getClass().isAssignableFrom(RecentChangesProperty.class)) {
+                IssueImpl issueImpl = APIAccessor.IMPL.getImpl(getIssue());
+                String recentChanges1 = IssueCacheUtils.getRecentChanges(issueImpl);
+                issueImpl = APIAccessor.IMPL.getImpl(((RecentChangesProperty)p).getIssue());
+                String recentChanges2 = IssueCacheUtils.getRecentChanges(issueImpl);
                 return recentChanges1.compareToIgnoreCase(recentChanges2);
             }
             return 1;

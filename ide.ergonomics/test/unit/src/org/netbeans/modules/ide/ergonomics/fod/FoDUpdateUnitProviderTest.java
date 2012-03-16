@@ -95,9 +95,14 @@ public class FoDUpdateUnitProviderTest extends NbTestCase {
 "AutoUpdate-Show-In-Client", "true"
         );
         ModuleManager man = org.netbeans.core.startup.Main.getModuleSystem().getManager();
-        Module m = man.create(module, this, false, false, false);
-        man.enable(m);
-        assertTrue("Module is active", m.isEnabled());
+        try {
+            man.mutexPrivileged().enterWriteAccess();
+            Module m = man.create(module, this, false, false, false);
+            man.enable(m);
+            assertTrue("Module is active", m.isEnabled());
+        } finally {
+            man.mutexPrivileged().exitWriteAccess();
+        }
 
         items = instance.getUpdateItems();
         final UpdateItem userInstalled = items.get("fod.user.installed");

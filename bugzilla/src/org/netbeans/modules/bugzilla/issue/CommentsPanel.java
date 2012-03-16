@@ -84,7 +84,8 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
@@ -131,9 +132,9 @@ public class CommentsPanel extends JPanel {
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        Issue is = issue.getRepository().getIssue(issueKey);
+                        BugzillaIssue is = issue.getRepository().getIssue(issueKey);
                         if (is != null) {
-                            is.open();
+                            BugzillaUtil.openIssue(issue);
                         }
                     }
                 });
@@ -249,7 +250,7 @@ public class CommentsPanel extends JPanel {
             int index = author.indexOf('@'); // NOI18N
             String userName = (index == -1) ? author : author.substring(0,index);
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue));
+            stateLabel = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue.getID()));
             stateLabel.setText(null);
         }
         
@@ -269,7 +270,7 @@ public class CommentsPanel extends JPanel {
                     author); 
             replyButton.setOpaque(false);
         }
-        // Issue 172653 - JTextPane too big
+        // IssueProvider 172653 - JTextPane too big
         JComponent pane = textPane;
         if (textPane.getPreferredSize().height>Short.MAX_VALUE) {
             pane = new JScrollPane(textPane);

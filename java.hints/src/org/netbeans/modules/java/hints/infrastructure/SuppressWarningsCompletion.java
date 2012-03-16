@@ -60,8 +60,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.spiimpl.RulesManager;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 
 /**
  *
@@ -82,7 +82,7 @@ public class SuppressWarningsCompletion implements Processor {
             keys.add(k);
         }
 
-        for (HintMetadata hm : RulesManager.getInstance().allHints.keySet()) {
+        for (HintMetadata hm : RulesManager.getInstance().readHints(null, null, null).keySet()) {//XXX: hack
             keys.addAll(hm.suppressWarnings);
         }
         

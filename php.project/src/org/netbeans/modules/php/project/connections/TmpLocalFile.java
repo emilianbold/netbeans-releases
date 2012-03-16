@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.project.connections;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -52,6 +54,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Used for downloaded files.
@@ -162,14 +165,13 @@ public abstract class TmpLocalFile {
 
 
         public DiskTmpLocalFile() throws IOException {
-            file = File.createTempFile("nb-remote-tmp-file-", null); // NOI18N
+            file = FileUtil.normalizeFile(File.createTempFile("nb-php-remote-tmp-file-", null)); // NOI18N
+            file.deleteOnExit();
         }
 
         @Override
         public void cleanup() {
-            if (!file.delete()) {
-                file.deleteOnExit();
-            }
+            file.delete();
         }
 
         @Override
@@ -180,7 +182,7 @@ public abstract class TmpLocalFile {
         @Override
         public OutputStream getOutputStream() {
             try {
-                return new FileOutputStream(file);
+                return new BufferedOutputStream(new FileOutputStream(file));
             } catch (FileNotFoundException ex) {
                 LOGGER.log(Level.INFO, "Cannot create output stream for local tmp file", ex);
                 return null;
@@ -190,7 +192,7 @@ public abstract class TmpLocalFile {
         @Override
         public InputStream getInputStream() {
             try {
-                return new FileInputStream(file);
+                return new BufferedInputStream(new FileInputStream(file));
             } catch (FileNotFoundException ex) {
                 LOGGER.log(Level.INFO, "Cannot create input stream for local tmp file", ex);
                 return null;

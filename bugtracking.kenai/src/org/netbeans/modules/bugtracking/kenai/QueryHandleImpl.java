@@ -48,13 +48,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 import org.openide.util.WeakListeners;
@@ -67,7 +67,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
     private final Query query;
     private final PropertyChangeSupport changeSupport;
     protected final boolean predefined;
-    private Issue[] issues = new Issue[0];
+    private Collection<Issue> issues = Collections.emptyList();
     private String stringValue;
     protected boolean needsRefresh;
 
@@ -107,7 +107,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        BugtrackingUtil.openQuery(query, null, true);
+        KenaiUtil.openQuery(query, null, true);
     }
 
     @Override
@@ -140,19 +140,14 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
     synchronized void refreshIfNeeded() {
         if(needsRefresh) {
             needsRefresh = false;
-            KenaiSupport ks = query.getRepository().getLookup().lookup(KenaiSupport.class);
-            assert ks != null;
-            if(ks != null) {
-                ks.refresh(query, true);
-            }
+            query.refresh(true);
         }
     }
 
     private void registerIssues() {
-        issues = query.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        issues = query.getIssues();
         for (Issue issue : issues) {
-            issue.addPropertyChangeListener(WeakListeners.propertyChange(this, issue));
-            IssueCacheUtils.addCacheListener(issue, this);
+            KenaiUtil.addCacheListener(issue, this);
         }
     }
 

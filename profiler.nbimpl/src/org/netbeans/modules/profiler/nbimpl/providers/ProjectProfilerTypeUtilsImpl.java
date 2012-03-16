@@ -43,23 +43,13 @@ package org.netbeans.modules.profiler.nbimpl.providers;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
-import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
 import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
-import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.modules.profiler.nbimpl.javac.JavacClassInfo;
-import org.netbeans.modules.profiler.nbimpl.javac.JavacPackageInfo;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
@@ -96,7 +86,8 @@ public class ProjectProfilerTypeUtilsImpl extends BaseProfilerTypeUtilsImpl {
         List<SourceClassInfo> classes = new ArrayList<SourceClassInfo>();
         FileObject[] srcRoots = ProjectUtilities.getSourceRoots(project, false);
         for(ElementHandle<TypeElement> handle : SourceUtils.getMainClasses(srcRoots)) {
-            classes.add(resolveClass(handle.getBinaryName()));
+            SourceClassInfo ci = resolveClass(handle);
+            classes.add(ci);
         }
         
         return classes;
@@ -113,6 +104,13 @@ public class ProjectProfilerTypeUtilsImpl extends BaseProfilerTypeUtilsImpl {
     @Override
     protected ClasspathInfo getClasspathInfo(boolean subprojects, boolean source, boolean deps) {
         return ClasspathInfoFactory.infoFor(project, subprojects, source, deps);
-    }    
+    }
+    
+    private SourceClassInfo resolveClass(ElementHandle<TypeElement> h) {
+        ClasspathInfo cpInfo = getClasspathInfo();
+        if (cpInfo != null) {
+            return new JavacClassInfo(h, cpInfo);
+        }
+        return null;
+    }
 }
- 

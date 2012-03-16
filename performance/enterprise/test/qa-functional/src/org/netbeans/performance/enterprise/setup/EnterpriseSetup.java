@@ -46,10 +46,9 @@ package org.netbeans.performance.enterprise.setup;
 
 import java.io.File;
 import java.io.IOException;
-
-import org.openide.util.Exceptions;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
+import org.openide.util.Exceptions;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
@@ -57,7 +56,7 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
  *
  * @author  mmirilovic@netbeans.org, mrkam@netbeans.org
  */
-public class EnterpriseSetup extends JellyTestCase {
+public class EnterpriseSetup extends PerformanceTestCase2 {
 
     public EnterpriseSetup(java.lang.String testName) {
         super(testName);

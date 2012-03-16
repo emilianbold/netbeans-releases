@@ -65,5 +65,8 @@ public interface APTFile extends APT {
     public CharSequence getPath();
     
     /** check the existence of tokens **/
-    public boolean isTokenized();    
+    public boolean isTokenized();
+
+    /** guard detected for this file or empty string if no guard in file */
+    public CharSequence getGuardMacro();
 }

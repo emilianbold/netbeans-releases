@@ -162,7 +162,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     }
     @Messages({
         "TXT_Problem_Broken_Config=Broken nb-configuration.xml file.",
-        "DESC_Problem_Broken_Config=The $project_basedir/nb-configuration.xml file cannot be parsed. "
+        "# {0} - parser error message", "DESC_Problem_Broken_Config=The $project_basedir/nb-configuration.xml file cannot be parsed. "
             + "The information contained in the file will be ignored until fixed. "
             + "This affects several features in the IDE that will not work properly as a result.\n\n "
             + "The parsing exception follows:\n{0}"

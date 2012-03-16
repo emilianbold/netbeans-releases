@@ -61,8 +61,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.JiraCommand;
+import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -348,4 +352,25 @@ public class JiraUtils {
         return null;
     }
 
+    public static Repository getRepository(JiraRepository jiraRepository) {
+        Repository repository = Jira.getInstance().getBugtrackingFactory().getRepository(JiraConnector.ID, jiraRepository.getID());
+        if(repository == null) {
+            repository = Jira.getInstance().getBugtrackingFactory().createRepository(
+                    jiraRepository, 
+                    Jira.getInstance().getRepositoryProvider(),
+                    Jira.getInstance().getQueryProvider(), 
+                    Jira.getInstance().getIssueProvider());
+        }
+        return repository;
+    }
+    
+    public static void openIssue(NbJiraIssue jiraIssue) {
+        Repository repository = getRepository(jiraIssue.getRepository());
+        Jira.getInstance().getBugtrackingFactory().openIssue(repository, jiraIssue);
+    }
+
+    public static void openQuery(JiraQuery jiraQuery) {
+        Repository repository = getRepository(jiraQuery.getRepository());
+        Jira.getInstance().getBugtrackingFactory().openQuery(repository, jiraQuery);
+    }    
 }

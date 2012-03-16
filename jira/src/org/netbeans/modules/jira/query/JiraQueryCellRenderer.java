@@ -12,10 +12,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -23,16 +20,19 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.Timer;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.SummaryProperty;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
-import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.JiraIssueNode.MultiValueFieldProperty;
 import org.netbeans.modules.jira.issue.JiraIssueNode.PriorityProperty;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -45,7 +45,8 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private static final MessageFormat subtasksFormat = getFormat("subtasksFormat");  // NOI18N
     private static final MessageFormat parentFormat = getFormat("parentFormat");      // NOI18N
 
-    private final JiraQuery query;
+    private final JiraQuery jiraQuery;
+    private final Query query;
     private final QueryTableCellRenderer defaultIssueRenderer;
     private TwoLabelPanel twoLabelPanel;
     private MultiLabelPanel multiLabelPanel;
@@ -57,10 +58,21 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
     private Map<Integer, Integer> tooLargeRows = new HashMap<Integer, Integer>();
 
-    public JiraQueryCellRenderer(JiraQuery query, IssueTable issueTable, QueryTableCellRenderer defaultIssueRenderer) {
-        this.query = query;
+    public JiraQueryCellRenderer(JiraQuery jiraQuery, IssueTable issueTable, QueryTableCellRenderer defaultIssueRenderer) {
         this.defaultIssueRenderer = defaultIssueRenderer;
         this.issueTable = issueTable;
+        this.jiraQuery = jiraQuery;
+        Repository repository = JiraUtils.getRepository(jiraQuery.getRepository());
+        Collection<Query> queries = repository.getQueries();
+        Query aQuery = null;
+        for (Query q : queries) {
+            if(q.getDisplayName().equals(jiraQuery.getDisplayName())) {
+                aQuery = q;
+                break;
+            }
+        }
+        this.query = aQuery;
+        assert query != null;
     }
 
     @Override
@@ -81,7 +93,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         }
 
         SummaryProperty summaryProperty = (SummaryProperty) value;
-        NbJiraIssue issue = (NbJiraIssue) summaryProperty.getIssue();
+        NbJiraIssue issue = (NbJiraIssue) summaryProperty.getIssueData();
 
         if(issue.hasSubtasks() || issue.isSubtask()) {
             return getSubtaskRenderer(issue, summaryProperty, table, isSelected, row);
@@ -152,7 +164,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
     private TableCellStyle getStyle(JTable table, IssueProperty p, boolean isSelected, int row) {
         TableCellStyle style = null;
-        if (query.isSaved()) {
+        if (jiraQuery.isSaved()) {
             style = QueryTableCellRenderer.getCellStyle(table, query, issueTable, p, isSelected, row);
         } else {
             style = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, p, isSelected, row);
@@ -241,9 +253,9 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
                 String id = issue.getParentID();
                 NbJiraIssue parent = (NbJiraIssue) issue.getRepository().getIssueCache().getIssue(id);
                 if(parent != null) {
-                    parent.open();
+                    JiraUtils.openIssue(parent);
                 } else {
-                    Issue.open(issue.getRepository(), id); // XXX show a wrong message in progress bar! opening ID instead of opening KEY
+                    Util.openIssue(JiraUtils.getRepository(issue.getRepository()), id); // XXX show a wrong message in progress bar! opening ID instead of opening KEY
                 }
             }
         });

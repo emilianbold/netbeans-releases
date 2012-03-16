@@ -43,19 +43,28 @@
 package org.netbeans.modules.bugtracking.vcs;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.TestIssue;
+import org.netbeans.modules.bugtracking.TestQuery;
+import org.netbeans.modules.bugtracking.TestRepository;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class HookRepository extends Repository {
+public class HookRepository extends TestRepository {
+    private RepositoryInfo info = new RepositoryInfo("HookRepository", "HookRepository", "http://url", "HookRepository", "HookRepository", null, null, null, null);
+
+    @Override
+    public RepositoryInfo getInfo() {
+        return info;
+    }
 
     @Override
     public Image getIcon() {
@@ -63,27 +72,7 @@ public class HookRepository extends Repository {
     }
 
     @Override
-    public String getDisplayName() {
-        return "HookRepository";
-    }
-
-    @Override
-    public String getTooltip() {
-        return "HookRepository";
-    }
-
-    @Override
-    public String getID() {
-        return "HookRepository";
-    }
-
-    @Override
-    public String getUrl() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Issue getIssue(String id) {
+    public TestIssue getIssue(String id) {
         return HookIssue.instance;
     }
 
@@ -93,37 +82,42 @@ public class HookRepository extends Repository {
     }
 
     @Override
-    public BugtrackingController getController() {
+    public RepositoryController getController() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Query createQuery() {
+    public TestQuery createQuery() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Issue createIssue() {
+    public TestIssue createIssue() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Query[] getQueries() {
+    public Collection<TestQuery> getQueries() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Collection<RepositoryUser> getUsers() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Issue[] simpleSearch(String criteria) {
-        return new Issue[] {HookIssue.instance};
+    public Collection<TestIssue> simpleSearch(String criteria) {
+        return Arrays.asList(new TestIssue[] {HookIssue.instance});
     }
 
     @Override
     public Lookup getLookup() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -52,12 +52,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -65,12 +60,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.GeneratorUtilities;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
@@ -85,16 +75,17 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.modules.j2ee.ejbcore.util._RetoucheUtil;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * Provide action for using an e-mail
@@ -156,7 +147,7 @@ public class SendEmailCodeGenerator implements CodeGenerator {
         
         EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
         
-        SendEmailPanel sendEmailPanel = new SendEmailPanel(erc.getServiceLocatorName(), ClasspathInfo.create(srcFile)); //NOI18N
+        final SendEmailPanel sendEmailPanel = new SendEmailPanel(erc.getServiceLocatorName(), ClasspathInfo.create(srcFile)); //NOI18N
         final DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 sendEmailPanel,
                 NbBundle.getMessage(SendEmailCodeGenerator.class, "LBL_SpecifyMailResource"),
@@ -166,20 +157,26 @@ public class SendEmailCodeGenerator implements CodeGenerator {
                 DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx(SendEmailPanel.class),
                 null
-
                 );
+        final NotificationLineSupport notificationSupport = dialogDescriptor.createNotificationLineSupport();
         
         sendEmailPanel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(SendEmailPanel.IS_VALID)) {
                     Object newvalue = evt.getNewValue();
                     if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                        dialogDescriptor.setValid(((Boolean)newvalue).booleanValue());
+                        boolean isValid = ((Boolean) newvalue).booleanValue();
+                        dialogDescriptor.setValid(isValid);
+                        if (isValid) {
+                            notificationSupport.clearMessages();
+                        } else {
+                            notificationSupport.setErrorMessage(sendEmailPanel.getErrorMessage());
+                        }
                     }
                 }
             }
         });
-        sendEmailPanel.checkJndiName();
         
         Object option = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (option == NotifyDescriptor.OK_OPTION) {

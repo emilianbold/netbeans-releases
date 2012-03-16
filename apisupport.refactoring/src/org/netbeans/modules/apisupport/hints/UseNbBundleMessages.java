@@ -47,22 +47,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import static org.netbeans.modules.apisupport.hints.Bundle.*;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -90,33 +84,22 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import org.netbeans.api.actions.Savable;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 
-public class UseNbBundleMessages extends AbstractHint {
+@Hint(category="apisupport", displayName="#UseNbBundleMessages.displayName", description="#UseNbBundleMessages.description", severity=Severity.HINT)
+@Messages({
+    "UseNbBundleMessages.displayName=Use @NbBundle.Messages",
+    "UseNbBundleMessages.description=Use @NbBundle.Messages in preference to Bundle.properties plus NbBundle.getMessage(...)."
+})
+public class UseNbBundleMessages {
 
-    public UseNbBundleMessages() {
-        super(true, true, AbstractHint.HintSeverity.CURRENT_LINE_WARNING);
-    }
-
-    public @Override String getId() {
-        return UseNbBundleMessages.class.getName();
-    }
-
-    @Messages("UseNbBundleMessages.displayName=Use @NbBundle.Messages")
-    public @Override String getDisplayName() {
-        return UseNbBundleMessages_displayName();
-    }
-
-    @Messages("UseNbBundleMessages.description=Use @NbBundle.Messages in preference to Bundle.properties plus NbBundle.getMessage(...).")
-    public @Override String getDescription() {
-        return UseNbBundleMessages_description();
-    }
-
-    public @Override Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.METHOD_INVOCATION, Kind.ASSIGNMENT);
-    }
-
+    // XXX rewrite METHOD_INVOCATION branch to use @TriggerPattern
+    @TriggerTreeKind({Kind.METHOD_INVOCATION, Kind.ASSIGNMENT})
     @Messages({
         "UseNbBundleMessages.error_text=Use of external bundle key",
         "UseNbBundleMessages.only_class_const=Use of NbBundle.getMessage without ThisClass.class syntax",
@@ -126,7 +109,9 @@ public class UseNbBundleMessages extends AbstractHint {
         "# {0} - bundle key", "UseNbBundleMessages.no_such_key=Bundle.properties does not contain any key ''{0}''",
         "UseNbBundleMessages.save_bundle=Save modifications to Bundle.properties before using this hint"
     })
-    public @Override List<ErrorDescription> run(final CompilationInfo compilationInfo, final TreePath treePath) {
+    public static List<ErrorDescription> run(HintContext context) {
+        final CompilationInfo compilationInfo = context.getInfo();
+        final TreePath treePath = context.getPath();
         Tree tree = treePath.getLeaf();
         int[] span;
         final String key;
@@ -194,7 +179,7 @@ public class UseNbBundleMessages extends AbstractHint {
             return null;
         }
         final boolean isAlreadyRegistered = isAlreadyRegistered(treePath, key);
-        final EditableProperties ep;
+        EditableProperties ep;
         final FileObject bundleProperties;
         if (isAlreadyRegistered) {
             if (mit == null) {
@@ -228,18 +213,12 @@ public class UseNbBundleMessages extends AbstractHint {
                 return warning(UseNbBundleMessages_no_such_key(key), span, compilationInfo);
             }
         }
-        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), UseNbBundleMessages_error_text(), Collections.<Fix>singletonList(new Fix() {
-            public @Override String getText() {
+        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, UseNbBundleMessages_error_text(), Collections.<Fix>singletonList(new JavaFix(compilationInfo, treePath) {
+            @Override protected String getText() {
                 return UseNbBundleMessages_displayName();
             }
-            public @Override ChangeInfo implement() throws Exception {
-                JavaSource js = JavaSource.forFileObject(src);
-                if (js == null) {
-                    throw new Exception("No source info for " + src);
-                }
-                js.runModificationTask(new Task<WorkingCopy>() {
-                    public @Override void run(WorkingCopy wc) throws Exception {
-                        wc.toPhase(JavaSource.Phase.RESOLVED);
+            @Override protected void performRewrite(JavaFix.TransformationContext ctx) throws Exception {
+                WorkingCopy wc = ctx.getWorkingCopy();
                         TreeMaker make = wc.getTreeMaker();
                         if (mit != null) {
                             CompilationUnitTree cut = wc.getCompilationUnit();
@@ -264,95 +243,54 @@ public class UseNbBundleMessages extends AbstractHint {
                             wc.rewrite(mit, make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(toIdentifier(key)), params));
                         } // else annotation value, nothing to change
                         if (!isAlreadyRegistered) {
-                            Tree enclosing = findEnclosingElement(wc, treePath);
-                            Tree modifiers;
-                            switch (enclosing.getKind()) {
-                            case METHOD:
-                                modifiers = ((MethodTree) enclosing).getModifiers();
-                                break;
-                            case VARIABLE:
-                                modifiers = ((VariableTree) enclosing).getModifiers();
-                                break;
-                            case COMPILATION_UNIT:
-                                modifiers = enclosing;
-                                break;
-                            default:
-                                modifiers = ((ClassTree) enclosing).getModifiers();
+                            EditableProperties ep = new EditableProperties(true);
+                            InputStream is = ctx.getResourceContent(bundleProperties);
+                            try {
+                                ep.load(is);
+                            } finally {
+                                is.close();
                             }
                             List<ExpressionTree> lines = new ArrayList<ExpressionTree>();
                             for (String comment : ep.getComment(key)) {
                                 lines.add(make.Literal(comment));
                             }
                             lines.add(make.Literal(key + '=' + ep.remove(key)));
-                            wc.rewrite(modifiers, addMessage(wc, modifiers, lines));
-                        }
-                        // XXX remove NbBundle import if now unused
-                    }
-                    // borrowed from FindBugsHint:
-                    private Tree addMessage(WorkingCopy wc, /*Modifiers|CompilationUnit*/Tree original, List<ExpressionTree> lines) throws Exception {
-                        TreeMaker make = wc.getTreeMaker();
-                        // First try to insert into a value list for an existing annotation:
-                        List<? extends AnnotationTree> anns;
-                        if (original.getKind() == Kind.COMPILATION_UNIT) {
-                            anns = ((CompilationUnitTree) original).getPackageAnnotations();
-                        } else {
-                            anns = ((ModifiersTree) original).getAnnotations();
-                        }
-                        for (int i = 0; i < anns.size(); i++) {
-                            AnnotationTree ann = anns.get(i);
-                            Tree annotationType = ann.getAnnotationType();
-                            // XXX clumsy and imprecise, but how to find the FQN of the annotation type given a Tree? Want a TypeMirror for it.
-                            if (annotationType.toString().matches("((org[.]openide[.]util[.])?NbBundle[.])?Messages")) {
-                                List<? extends ExpressionTree> args = ann.getArguments();
-                                if (args.size() != 1) {
-                                    throw new Exception("expecting just one arg for @Messages");
-                                }
-                                AssignmentTree assign = (AssignmentTree) args.get(0);
-                                if (!assign.getVariable().toString().equals("value")) {
-                                    throw new Exception("expected value=... for @Messages");
-                                }
-                                ExpressionTree arg = assign.getExpression();
-                                NewArrayTree arr;
-                                if (arg.getKind() == Tree.Kind.STRING_LITERAL) {
-                                    arr = make.NewArray(null, Collections.<ExpressionTree>emptyList(), Collections.singletonList(arg));
-                                } else if (arg.getKind() == Tree.Kind.NEW_ARRAY) {
-                                    arr = (NewArrayTree) arg;
-                                } else {
-                                    throw new Exception("unknown arg kind " + arg.getKind() + ": " + arg);
-                                }
-                                for (ExpressionTree line : lines) {
-                                    arr = make.addNewArrayInitializer(arr, line);
-                                }
-                                ann = make.Annotation(annotationType, Collections.singletonList(arr));
-                                if (original.getKind() == Kind.COMPILATION_UNIT) {
-                                    CompilationUnitTree cut = (CompilationUnitTree) original;
-                                    List<AnnotationTree> newAnns = new ArrayList<AnnotationTree>(anns);
-                                    newAnns.set(i, ann);
-                                    return make.CompilationUnit(newAnns, cut.getPackageName(), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile());
-                                } else {
-                                    return make.insertModifiersAnnotation(make.removeModifiersAnnotation((ModifiersTree) original, i), i, ann);
-                                }
+                            TypeElement nbBundleMessages = wc.getElements().getTypeElement("org.openide.util.NbBundle.Messages");
+                            if (nbBundleMessages == null) {
+                                throw new IllegalArgumentException("cannot resolve org.openide.util.NbBundle.Messages");
                             }
+                            GeneratorUtilities gu = GeneratorUtilities.get(wc);
+                            Tree enclosing = findEnclosingElement(wc, treePath);
+                            Tree modifiers;
+                            Tree nueModifiers;
+                            switch (enclosing.getKind()) {
+                            case METHOD:
+                                modifiers = ((MethodTree) enclosing).getModifiers();
+                                nueModifiers = gu.appendToAnnotationValue(((MethodTree) enclosing).getModifiers(), nbBundleMessages, "value", lines.toArray(new ExpressionTree[0]));
+                                break;
+                            case VARIABLE:
+                                modifiers = ((VariableTree) enclosing).getModifiers();
+                                nueModifiers = gu.appendToAnnotationValue(((VariableTree) enclosing).getModifiers(), nbBundleMessages, "value", lines.toArray(new ExpressionTree[0]));
+                                break;
+                            case COMPILATION_UNIT:
+                                modifiers = enclosing;
+                                nueModifiers = gu.appendToAnnotationValue((CompilationUnitTree) enclosing, nbBundleMessages, "value", lines.toArray(new ExpressionTree[0]));
+                                break;
+                            default:
+                                modifiers = ((ClassTree) enclosing).getModifiers();
+                                nueModifiers = gu.appendToAnnotationValue(((ClassTree) enclosing).getModifiers(), nbBundleMessages, "value", lines.toArray(new ExpressionTree[0]));
+                            }
+                            wc.rewrite(modifiers, nueModifiers);
+                        // XXX remove NbBundle import if now unused
+                        OutputStream os = ctx.getResourceOutput(bundleProperties);
+                        try {
+                            ep.store(os);
+                        } finally {
+                            os.close();
                         }
-                        // Not found, so create a new annotation:
-                        List<ExpressionTree> values;
-                        if (lines.size() > 1) { // @Messages({"# ...", "k=v"})
-                            values = Collections.<ExpressionTree>singletonList(make.NewArray(null, Collections.<ExpressionTree>emptyList(), lines));
-                        } else { // @Messages("k=v")
-                            values = lines;
-                        }
-                        AnnotationTree atMessages = make.Annotation(make.QualIdent("org.openide.util.NbBundle.Messages"), values);
-                        Tree result;
-                        if (original.getKind() == Kind.COMPILATION_UNIT) {
-                            CompilationUnitTree cut = (CompilationUnitTree) original;
-                            List<AnnotationTree> newAnns = new ArrayList<AnnotationTree>(anns);
-                            newAnns.add(atMessages);
-                            result = make.CompilationUnit(newAnns, cut.getPackageName(), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile());
-                        } else {
-                            result = make.insertModifiersAnnotation((ModifiersTree) original, 0, atMessages);
-                        }
-                        return GeneratorUtilities.get(wc).importFQNs(result);
                     }
+                // XXX after JavaFix rewrite, Savable.save (on DataObject.find(src)) no longer works (JG13 again)
+            }
                     private Tree findEnclosingElement(WorkingCopy wc, TreePath treePath) {
                         Tree leaf = treePath.getLeaf();
                         Kind kind = leaf.getKind();
@@ -380,36 +318,15 @@ public class UseNbBundleMessages extends AbstractHint {
                         }
                         return findEnclosingElement(wc, parentPath);
                     }
-                }).commit();
-                if (!isAlreadyRegistered) {
-                    OutputStream os = bundleProperties.getOutputStream();
-                    try {
-                        ep.store(os);
-                    } finally {
-                        os.close();
-                    }
-                }
-                Savable save = DataObject.find(src).getLookup().lookup(Savable.class);
-                if (save != null) {
-                    save.save();
-                } else {
-                    // XXX sometimes does not appear here reliably, why?
-                }
-                return null;
-            }
-        }), compilationInfo.getFileObject(), span[0], span[1]));
+        }.toEditorFix()), compilationInfo.getFileObject(), span[0], span[1]));
     }
 
-    private List<ErrorDescription> warning(String text, int[] span, CompilationInfo compilationInfo) {
-        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), text, Collections.<Fix>emptyList(), compilationInfo.getFileObject(), span[0], span[1]));
-    }
-
-    public @Override void cancel() {
-        // Probably nothing to do.
+    private static List<ErrorDescription> warning(String text, int[] span, CompilationInfo compilationInfo) {
+        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, text, Collections.<Fix>emptyList(), compilationInfo.getFileObject(), span[0], span[1]));
     }
 
     // Copied from NbBundleProcessor
-    private String toIdentifier(String key) {
+    private static String toIdentifier(String key) {
         if (Utilities.isJavaIdentifier(key)) {
             return key;
         } else {
@@ -480,5 +397,7 @@ public class UseNbBundleMessages extends AbstractHint {
     private static boolean isRegistered(String key, ExpressionTree expr) {
         return expr.getKind() == Kind.STRING_LITERAL && ((LiteralTree) expr).getValue().toString().startsWith(key + "=");
     }
+
+    private UseNbBundleMessages() {}
 
 }

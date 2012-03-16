@@ -113,10 +113,19 @@ public class GdbVersionPeculiarity {
         return (version >= 6.8) || (platform == Platform.MacOSX_x86 && version >= 6.3);
     }
     
-    private static final String THREAD_INFO_FEATURE = "thread-info"; //NOI18N
+    // gdb features
+    public static enum Feature {
+        THREAD_INFO("thread-info"), //NOI18N
+        BREAKPOINT_NOTIFICATIONS("breakpoint-notifications"); //NOI18N
+        
+        private final String command;
+        Feature(String command) {
+            this.command = command;
+        }
+    }
     
-    public boolean supportsThreadInfo() {
-        return features.contains(THREAD_INFO_FEATURE);
+    public boolean supports(Feature feature) {
+        return features.contains(feature.command);
     }
     
     void setFeatures(MIRecord result) {

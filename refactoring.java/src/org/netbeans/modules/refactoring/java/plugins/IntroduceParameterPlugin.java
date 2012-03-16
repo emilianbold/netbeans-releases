@@ -186,7 +186,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                     ElementHandle<TypeElement> enclosingType = ElementHandle.create(elmUtils.enclosingTypeElement(el));
                     allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                     allMethods.add(methodHandle);
-                    for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods(el, info)) {
+                    for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods(el, info, cancelRequested)) {
                         ElementHandle<ExecutableElement> handle = ElementHandle.create(e);
                         set.add(SourceUtils.getFile(handle, info.getClasspathInfo()));
                         ElementHandle<TypeElement> encl = ElementHandle.create(elmUtils.enclosingTypeElement(e));
@@ -217,7 +217,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
 
         initDelegate();
         Javadoc javadoc = refactoring.getContext().lookup(Javadoc.class);
-        final ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(paramTable, null, null, refactoring.isOverloadMethod(), javadoc == null? Javadoc.NONE : javadoc, allMethods);
+        final ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(paramTable, null, null, refactoring.isOverloadMethod(), javadoc == null? Javadoc.NONE : javadoc, allMethods, methodHandle);
         
         fireProgressListenerStart(ProgressEvent.START, a.size());
         Problem p = null;
@@ -476,9 +476,16 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                 ExecutableElement method = (ExecutableElement) info.getTrees().getElement(methodPath);
                 List<? extends VariableElement> parameters = method.getParameters();
                 paramTable = new ChangeParametersRefactoring.ParameterInfo[parameters.size() + 1];
-                for (int i = 0; i < parameters.size(); i++) {
-                    VariableElement param = parameters.get(i);
-                    paramTable[i] = new ChangeParametersRefactoring.ParameterInfo(i, param.getSimpleName().toString(), param.asType().toString(), null);
+                for (int originalIndex = 0; originalIndex < parameters.size(); originalIndex++) {
+                    VariableElement param = parameters.get(originalIndex);
+                    VariableTree parTree = (VariableTree) info.getTrees().getTree(param);
+                    String typeRepresentation;
+                    if (method.isVarArgs() && originalIndex == parameters.size()-1) {
+                        typeRepresentation = parTree.getType().toString().replace("[]", "..."); // NOI18N
+                    } else {
+                        typeRepresentation = parTree.getType().toString();
+                    }
+                    paramTable[originalIndex] = new ChangeParametersRefactoring.ParameterInfo(originalIndex, param.getSimpleName().toString(), typeRepresentation, null);
                 }
                 index = paramTable.length - 1;
                 if (method.isVarArgs()) {

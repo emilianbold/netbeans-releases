@@ -64,11 +64,11 @@ public final class JFXRunCategoryProvider implements ProjectCustomizer.Composite
         final Project project = context.lookup(Project.class);
         if (project != null) {
             final J2SEPropertyEvaluator j2sepe = project.getLookup().lookup(J2SEPropertyEvaluator.class);
-            fxProjectEnabled = JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.enabled")) //NOI18N
-                    && !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.preloader")); //NOI18N
+            fxProjectEnabled = JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED)) //NOI18N
+                    && !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_PRELOADER)); //NOI18N
         }
         if(fxProjectEnabled) {
-            jfxProps = JFXProjectProperties.getInstance(context);
+            jfxProps = JFXProjectProperties.getInstancePerSession(context, CAT_RUN);
             return ProjectCustomizer.Category.create(CAT_RUN,
                     NbBundle.getMessage(JFXRunCategoryProvider.class, "LBL_Category_Run"), null); //NOI18N
         }

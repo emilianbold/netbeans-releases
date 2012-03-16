@@ -64,6 +64,9 @@ Contributor(s):
             <file name="TestProjectDirectUsageReferencesAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getDirectUsageReferencesAction"/>
             </file>
+            <file name="TestProjectIndexUsageReferencesAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getIndexReferencesAction"/>
+            </file>
             <file name="TestProjectSmartCompletionAnalyzerAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getSmartCompletionAnalyzerAction"/>
             </file>
@@ -75,6 +78,9 @@ Contributor(s):
             </file>
             <file name="TestRepositoryDistributionAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestRepositoryDistributionAction.getInstance"/>
+            </file>
+            <file name="TraceAPTDiagnosticAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TraceAPTDiagnosticAction.getInstance"/>
             </file>
             <file name="TestFileContainerAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getFileContainerAction"/>
@@ -132,6 +138,10 @@ Contributor(s):
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestRepositoryDistributionAction.instance"/>
                 <attr name="position" intvalue="1800"/>
             </file>
+            <file name="TraceAPTDiagnosticAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TraceAPTDiagnosticAction.instance"/>
+                <attr name="position" intvalue="1820"/>
+            </file>
             <file name="TestFileContainerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestFileContainerAction.instance"/>
                 <attr name="position" intvalue="1900"/>
@@ -144,6 +154,10 @@ Contributor(s):
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/SwitchIndexAction.instance"/>
                 <attr name="position" intvalue="3100"/>
             </file>            
+            <file name="TestProjectIndexUsageReferencesAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestProjectIndexUsageReferencesAction.instance"/>
+                <attr name="position" intvalue="3200"/>
+            </file>
         </folder>
     </folder>
     <folder name="Shortcuts">

@@ -65,6 +65,7 @@ import org.openide.util.Lookup;
 @NbBundle.Messages({
     "TriggeredTakeSnapshotProfilingPointFactory_PpType=Triggered Take Snapshot",
     "TriggeredTakeSnapshotProfilingPointFactory_PpDescr=Takes snapshot of currently collected profiling results similarly to Take Snapshot action in Profiler UI. This Profiling Point is defined globally for the profiling session and is invoked when defined condition is met during profiling.",
+    "TriggeredTakeSnapshotProfilingPointFactory_PpHint=", // #207680 Do not remove, custom brandings may provide wizard hint here!!!
     "TriggeredTakeSnapshotProfilingPointFactory_PpDefaultName={0} in {1}"
 })
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.ppoints.ProfilingPointFactory.class)
@@ -73,6 +74,10 @@ public class TriggeredTakeSnapshotProfilingPointFactory extends CodeProfilingPoi
 
     public String getDescription() {
         return Bundle.TriggeredTakeSnapshotProfilingPointFactory_PpDescr();
+    }
+    
+    public String getHint() {
+        return Bundle.TriggeredTakeSnapshotProfilingPointFactory_PpHint();
     }
 
     public Icon getIcon() {

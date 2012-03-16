@@ -399,7 +399,9 @@ public abstract class EditorView extends View {
     }
 
     public final String getDumpId() {
-        return getDumpName() + "@" + ViewUtils.toStringId(this) + "#" + getViewCount(); // NOI18N
+        int viewCount = getViewCount();
+        return getDumpName() + "@" + ViewUtils.toStringId(this) + // NOI18N
+                ((viewCount > 0) ? "#" + getViewCount() : ""); // NOI18N
     }
 
     public void checkIntegrityIfLoggable() {
@@ -545,47 +547,6 @@ public abstract class EditorView extends View {
          */
         HighlightsSequence getPaintHighlights(EditorView view, int shift);
 
-        /**
-         * Notify the parent that the X preferred span of a child has changed
-         * during one of modelToView(), viewToModel(), paint(), getNextVisualPositionFrom(),
-         * getToolTipText(), getToolTip().
-         * The parent view will mandatorily check the new x span of the affected child view
-         * after the particular operation was finished on the child.
-         * <br/>
-         * Since the parent's operation knows to which child it delegated the particular call
-         * it should be able to reconstruct what was really changed.
-         */
-        void notifyChildWidthChange();
-
-        /**
-         * Notify the parent that the X preferred span of a child has changed
-         * during one of modelToView(), viewToModel(), paint(), getNextVisualPositionFrom(),
-         * getToolTipText(), getToolTip().
-         * The parent view will mandatorily check the new x span of the affected child view
-         * after the particular operation was finished on the child.
-         * <br/>
-         * Since the parent's operation knows to which child it delegated the particular call
-         * it should be able to reconstruct what was really changed.
-         */
-        void notifyChildHeightChange();
-        
-        /**
-         * Notify parent about repainting request
-         * during one of modelToView(), viewToModel(), paint(), getNextVisualPositionFrom(),
-         * getToolTipText(), getToolTip().
-         * Coordinates are related to underlying component start since the view
-         * gets its location due to 'alloc' parameters passed to the mentioned methods.
-         * The parent view will mandatorily check the repainting bounds
-         * after the particular operation was finished on the child
-         * and possibly trigger a repaint.
-         *
-         * @param x
-         * @param y
-         * @param width
-         * @param height 
-         */
-        void notifyRepaint(double x0, double y0, double x1, double y1);
-        
     }
 
 }

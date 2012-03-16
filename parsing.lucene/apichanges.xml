@@ -110,6 +110,91 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="IndexReaderInjection">
+    <api name="LuceneSupport"/>
+    <summary>Added <code>IndexReaderInjection</code> to allow <code>IndexReader</code> to be passed to convertors</summary>
+    <version major="2" minor="10"/>
+    <date day="13" month="3" year="2012"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added <code>IndexReaderInjection</code> which allows <code>IndexReader</code> to be passed to the convertor.
+            When implemented by the <code>Convertor</code> or <code>StoppableConvertor</code> the index queries set an
+            <code>IndexReader</code> instance to the passed convertor before calling the convert method. At the end of the query
+            the active <code>IndexReader</code> is replaced by null.
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="IndexReaderInjection"/>
+    <issue number=""/>
+  </change>
+  <change id="PriorityAccess">
+    <api name="LuceneSupport"/>
+    <summary>Added <code>IndexManager.priorityAccess</code> to suspend IO during query</summary>
+    <version major="2" minor="9"/>
+    <date day="6" month="2" year="2012"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added <code>IndexManager.priorityAccess</code> to suspend background scan
+            and checking for external changes during query. The methods <code>IndexManager.readAccess</code>
+            and <code>IndexManager.writeAccess</code> were deprecated. The <code>Index</code> is now self
+            guarded and global lock is not needed for correct synchronization.
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="IndexManager"/>
+    <issue number="207915"/>
+  </change>
+  <change id="MemoryIndex">
+    <api name="LuceneSupport"/>
+    <summary>Added RAM implementation of Index</summary>
+    <version major="2" minor="8"/>
+    <date day="11" month="1" year="2012"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added the factory method into <code>IndexManager</code> creating the
+            RAM based implementation of <code>Index</code>
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="IndexManager"/>
+  </change>
+  <change id="ScanSuspendImplementation">
+    <api name="LuceneSupport"/>
+    <summary>Added ScanSuspendImplementation</summary>
+    <version major="2" minor="7"/>
+    <date day="3" month="1" year="2012"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added the <code>ScanSuspendImplementation</code> interface. The implementation
+            of this inteface registered in global <code>Lookup</code> is called by
+            <code>IndexManager.readAccess(Action)</code> before (suspend) and after (resume) the
+            <code>Action</code> is performed.
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.spi" name="ScanSuspendImplementation"/>
+  </change>
+  <change id="TransactionalIndex">
+    <api name="LuceneSupport"/>
+    <summary>Added transaction support into the Index</summary>
+    <version major="2" minor="7"/>
+    <date day="3" month="1" year="2012"/>
+    <author login="sdedic"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added the <code>Index.Transactional</code> interface. The <code>Index.Transactional</code>
+            is a specialization of <code>Index</code> which allows transactional operations on index.
+            The commit operation makes changes visible to <code>IndexReader</code>s,
+            the rollback operation throws away the changes done to <code>IndexWriter</code>
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="Index"/>
+  </change>
   <change id="IndexManager-getOpenIndexes">
       <api name="LuceneSupport"/>
       <summary>Added method to get opened indexes</summary>

@@ -48,6 +48,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpPreferences;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -98,6 +99,9 @@ public final class PhpOptions {
 
     // global include path
     public static final String PHP_GLOBAL_INCLUDE_PATH = "phpGlobalIncludePath"; // NOI18N
+
+    // "hidden" (without any UI and not project specific)
+    private static final String DEFAULT_PHP_VERSION = "defaultPhpVersion"; // NOI18N
 
     private static final PhpOptions INSTANCE = new PhpOptions();
 
@@ -291,4 +295,21 @@ public final class PhpOptions {
             Exceptions.printStackTrace(ex);
         }
     }
+
+    public PhpLanguageProperties.PhpVersion getDefaultPhpVersion() {
+        String defaultPhpVersion = getPreferences().get(DEFAULT_PHP_VERSION, null);
+        if (defaultPhpVersion != null) {
+            try {
+                return PhpLanguageProperties.PhpVersion.valueOf(defaultPhpVersion);
+            } catch (IllegalArgumentException ex) {
+                // ignored
+            }
+        }
+        return PhpLanguageProperties.PhpVersion.getDefault();
+    }
+
+    public void setDefaultPhpVersion(PhpLanguageProperties.PhpVersion phpVersion) {
+        getPreferences().put(DEFAULT_PHP_VERSION, phpVersion.name());
+    }
+
 }

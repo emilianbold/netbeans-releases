@@ -47,11 +47,7 @@ package org.netbeans.modules.subversion;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.masterfs.filebasedfs.BaseFileObjectTestHid;
-import org.openide.filesystems.FileObjectTestHid;
-import org.openide.filesystems.FileSystemTestHid;
-import org.openide.filesystems.FileUtilTestHidden;
-import org.openide.filesystems.TestBaseHid;
-import org.openide.filesystems.URLMapperTestHidden;
+import org.openide.filesystems.*;
 import org.openide.filesystems.test.StatFiles;
 
 
@@ -82,6 +78,7 @@ public class SvnFileSystemTestStat extends SvnFileSystemTest {
         suite.addTestSuite(FileObjectTestHid.class);
         suite.addTestSuite(URLMapperTestHidden.class);
         suite.addTestSuite(FileUtilTestHidden.class);                
+        suite.addTestSuite(FileUtilJavaIOFileHidden.class);                
         suite.addTestSuite(BaseFileObjectTestHid.class); //new BaseFileObjectTestHid("testSimulatesRefactoringRename"));            
         return new SvnFileSystemTestStat(suite);
     }

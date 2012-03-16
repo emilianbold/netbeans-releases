@@ -43,12 +43,14 @@
 package org.netbeans.modules.bugtracking.dummies;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import java.util.Collections;
+import org.netbeans.modules.bugtracking.TestIssue;
+import org.netbeans.modules.bugtracking.TestKit;
+import org.netbeans.modules.bugtracking.TestQuery;
+import org.netbeans.modules.bugtracking.TestRepository;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 
@@ -56,17 +58,19 @@ import org.openide.util.Lookup;
  *
  * @author Marian Petras
  */
-public class DummyRepository extends Repository {
+public class DummyRepository extends TestRepository {
 
     private static final Image icon = ImageUtilities.loadImage(
             "org/netbeans/modules/bugtracking/dummies/DummyRepositoryIcon.png");
 
     private final DummyBugtrackingConnector connector;
     private final String id;
+    private RepositoryInfo info;
 
     public DummyRepository(DummyBugtrackingConnector connector, String id) {
         this.connector = connector;
         this.id = id;
+        info = new RepositoryInfo(id, DummyBugtrackingConnector.ID, null, "Dummy repository \"" + id + '"', "dummy repository created for testing purposes", null, null, null, null);
     }
 
     @Override
@@ -75,71 +79,49 @@ public class DummyRepository extends Repository {
     }
 
     @Override
-    public String getDisplayName() {
-        return "Dummy repository \"" + getID() + '"';
+    public RepositoryInfo getInfo() {
+        return info;
     }
 
     @Override
-    public String getTooltip() {
-        return "dummy repository created for testing purposes";
-    }
-
-    @Override
-    public String getID() {
-        return id;
-    }
-
-    @Override
-    public String getUrl() {
-        assert false : "This was assumed to be never called.";
-        return null;
-    }
-
-    @Override
-    public Issue getIssue(String id) {
+    public TestIssue getIssue(String id) {
         assert false : "This was assumed to be never called.";
         return null;
     }
 
     @Override
     public void remove() {
-        connector.removeRepository(this);
+        connector.removeRepository(TestKit.getRepository(this));
     }
 
     @Override
-    public BugtrackingController getController() {
+    public RepositoryController getController() {
         assert false : "This was assumed to be never called.";
         return null;
     }
 
     @Override
-    public Query createQuery() {
+    public TestQuery createQuery() {
         assert false : "This was assumed to be never called.";
         return null;
     }
 
     @Override
-    public Issue createIssue() {
+    public TestIssue createIssue() {
         assert false : "This was assumed to be never called.";
         return null;
     }
 
     @Override
-    public Query[] getQueries() {
+    public Collection<TestQuery> getQueries() {
         assert false : "This was assumed to be never called.";
-        return new Query[0];
+        return Collections.emptyList();
     }
-
+    
     @Override
-    public Collection<RepositoryUser> getUsers() {
+    public Collection<TestIssue> simpleSearch(String criteria) {
         assert false : "This was assumed to be never called.";
-        return null;
-    }
-
-    @Override
-    public Issue[] simpleSearch(String criteria) {
-        assert false : "This was assumed to be never called.";
-        return new Issue[0];
+        return Collections.emptyList();
     }
 
     public Lookup getLookup() {
@@ -148,7 +130,17 @@ public class DummyRepository extends Repository {
 
     @Override
     public String toString() {
-        return getDisplayName();
+        return getInfo().getDisplayName();
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

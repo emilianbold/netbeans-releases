@@ -48,7 +48,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -71,7 +70,6 @@ import org.openide.util.test.MockLookup;
  */
 public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
-    private static final boolean ALLOW_TCK = true;
     private ExecutionEnvironment execEnv = null;
     private String tmpDir;
     private FileObject root;
@@ -85,11 +83,6 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         return tmpDir;
     }
 
-    @Override
-    public void delete(String path) throws IOException {
-        CommonTasksSupport.rmFile(execEnv, getRootPath()+"/"+path, null);
-    }
-    
     @Override
     protected FileObject createFile(String path) throws IOException {
         return createFileObject(path, false);
@@ -114,25 +107,10 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         return fo;
     }
 
-    @Override
-    protected void setReadOnly(String path) throws IOException {
-        CommonTasksSupport.chmod(execEnv, getRootPath()+"/"+path, 0444, null);
-    }
-
     public static void main(String args[]) {
         junit.textui.TestRunner.run(suite());
     }
 
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        if (ALLOW_TCK) {
-            suite.addTestSuite(VCSOwnerTestCase.class);
-            suite.addTestSuite(VCSInterceptorTestCase.class);
-            suite.addTestSuite(VCSAnnotationProviderTestCase.class);
-        }
-        return new RemoteVCSTCKTest(suite);
-    }
-    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -191,16 +169,44 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
     @Override
     public void move(String from, String to) throws IOException {
-        ExitStatus status = ProcessUtils.executeInDir(getRootPath(), execEnv, "mv", from, to);
-        if (status.isOK()) {
+        ExitStatus res = ProcessUtils.executeInDir(getRootPath(), execEnv, "mv", from, to);
+        if (res.exitCode != 0) {
+            throw new IOException("mv failed: " + res.error);
         }
     }
 
     @Override
     public void copy(String from, String to) throws IOException {
-        ExitStatus status = ProcessUtils.executeInDir(getRootPath(), execEnv, "mv", from, to);
-        if (status.isOK()) {
+        ExitStatus res = ProcessUtils.executeInDir(getRootPath(), execEnv, "cp", "-r", from, to);
+        if (res.exitCode != 0) {
+            throw new IOException("cp failed: " + res.error);
         }
     }
 
+    @Override
+    public void delete(String path) throws IOException {
+        ExitStatus res = ProcessUtils.executeInDir(getRootPath(), execEnv, "rm", "-rf", getRootPath()+"/"+path);
+        if (res.exitCode != 0) {
+            throw new IOException("rm failed: " + res.error);
+        }
+    }
+
+    @Override
+    protected void setReadOnly(String path) throws IOException {
+        ExitStatus res = ProcessUtils.executeInDir(getRootPath(), execEnv, "chmod", "444", getRootPath()+"/"+path);
+        if (res.exitCode != 0) {
+            throw new IOException("chmod failed: " + res.error);
+        }
+        FileObject fo = root.getFileObject(path);
+        fo.getParent().refresh(true);
+    }
+    
+    public static Test suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTestSuite(VCSOwnerTestCase.class);
+        suite.addTestSuite(VCSInterceptorTestCase.class);
+        suite.addTestSuite(VCSAnnotationProviderTestCase.class);
+        return new RemoteVCSTCKTest(suite);
+    }
+    
 }

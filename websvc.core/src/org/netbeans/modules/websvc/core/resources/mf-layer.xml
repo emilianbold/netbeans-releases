@@ -140,7 +140,9 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-websvc-editor-completion-WSCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-websvc-editor-completion-WSCompletionProvider.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
                 </folder>
                 <folder name="Popup">
                     <!-- Place after EnterpriseRefActionGroup (position 9500) -->

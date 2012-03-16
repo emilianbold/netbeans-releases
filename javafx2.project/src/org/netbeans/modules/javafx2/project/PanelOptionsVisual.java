@@ -68,19 +68,21 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
 
     
 /**
- * @author  phrebejk, Anton Chechel
+ * @author  Petr Hrebejk
+ * @author Anton Chechel
+ * @author Petr Somol
  */
 public class PanelOptionsVisual extends SettingsPanel implements TaskListener, PropertyChangeListener, DocumentListener {
 
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
 
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
-    public static final String SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
 
     private volatile RequestProcessor.Task task;
     private DetectPlatformTask detectPlatformTask;
@@ -97,6 +99,7 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
 
     private boolean isMainClassValid;
     private boolean isPreloaderNameValid;
+    private boolean isFXMLNameValid;
     
     PanelOptionsVisual(PanelConfigureProject panel, WizardType type) {
         this.panel = panel;
@@ -133,30 +136,52 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                 createMainCheckBox.setVisible(false);
                 mainClassTextField.setVisible(false);
                 preloaderCheckBox.setVisible(false);
+                lblPreloaderProject.setVisible(false);
                 txtPreloaderProject.setVisible(false);
+                fxmlLabel.setVisible(false);
+                fxmlTextField.setVisible(false);
                 break;
             case APPLICATION:
                 createMainCheckBox.setSelected(lastMainClassCheck);
                 mainClassTextField.setEnabled(lastMainClassCheck);
+                fxmlLabel.setVisible(false);
+                fxmlTextField.setVisible(false);
                 break;
             case PRELOADER:
                 createMainCheckBox.setSelected(lastMainClassCheck);
-                org.openide.awt.Mnemonics.setLocalizedText(createMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_createPrealoaderCheckBox")); // NOI18N
+                Mnemonics.setLocalizedText(createMainCheckBox, NbBundle.getMessage(PanelOptionsVisual.class, "LBL_createPreloaderCheckBox")); // NOI18N
                 mainClassTextField.setEnabled(lastMainClassCheck);
                 preloaderCheckBox.setVisible(false);
+                lblPreloaderProject.setVisible(false);
                 txtPreloaderProject.setVisible(false);
+                fxmlLabel.setVisible(false);
+                fxmlTextField.setVisible(false);
                 break;
             case FXML:
                 createMainCheckBox.setSelected(lastMainClassCheck);
                 mainClassTextField.setEnabled(lastMainClassCheck);
                 preloaderCheckBox.setVisible(false);
+                lblPreloaderProject.setVisible(false);
                 txtPreloaderProject.setVisible(false);
+                break;
+            case SWING:
+                createMainCheckBox.setSelected(lastMainClassCheck);
+                Mnemonics.setLocalizedText(createMainCheckBox, NbBundle.getMessage(PanelOptionsVisual.class, "LBL_createMainSwingCheckBox")); // NOI18N
+                mainClassTextField.setEnabled(lastMainClassCheck);
+                preloaderCheckBox.setVisible(false);
+                txtPreloaderProject.setVisible(false);
+                lblPreloaderProject.setVisible(false);
+                fxmlLabel.setVisible(false);
+                fxmlTextField.setVisible(false);
                 break;
             case EXTISTING:
                 createMainCheckBox.setVisible(false);
                 mainClassTextField.setVisible(false);
                 preloaderCheckBox.setVisible(false);
+                lblPreloaderProject.setVisible(false);
                 txtPreloaderProject.setVisible(false);
+                fxmlLabel.setVisible(false);
+                fxmlTextField.setVisible(false);
                 break;
         }
 
@@ -164,6 +189,7 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
         mainClassTextField.getDocument().addDocumentListener(this);
         txtLibFolder.getDocument().addDocumentListener(this);
         txtPreloaderProject.getDocument().addDocumentListener(this);
+        fxmlTextField.getDocument().addDocumentListener(this);
     }
 
     @Override
@@ -200,6 +226,8 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
             mainClassChanged();
         } else if (txtPreloaderProject.getDocument().equals(doc)) {
             preloaderNameChanged();
+        } else if (fxmlTextField.getDocument().equals(doc)) {
+            fxmlNameChanged();
         }
     }
     
@@ -308,6 +336,8 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
         lblPreloaderProject = new javax.swing.JLabel();
         txtPreloaderProject = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
+        fxmlLabel = new javax.swing.JLabel();
+        fxmlTextField = new javax.swing.JTextField();
 
         cbSharable.setSelected(SharableLibrariesUtils.isLastProjectSharable());
         org.openide.awt.Mnemonics.setLocalizedText(cbSharable, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_SharableProject_Checkbox")); // NOI18N
@@ -373,47 +403,64 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
         txtPreloaderProject.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "TXT_PanelOptions_Preloader_Project_Name")); // NOI18N
         txtPreloaderProject.setEnabled(false);
 
+        fxmlLabel.setLabelFor(fxmlTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(fxmlLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_FXML_lbl")); // NOI18N
+
+        fxmlTextField.setText("Sample");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(lblPreloaderProject)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtPreloaderProject, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap()
                         .addComponent(lblPlatform)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(platformComboBox, 0, 272, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnManagePlatforms))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(preloaderCheckBox)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(cbSharable)
-                .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(platformComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnManagePlatforms, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(21, 21, 21)
                         .addComponent(lblLibFolder)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtLibFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
-                            .addComponent(lblHint, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
+                            .addComponent(txtLibFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
+                            .addComponent(lblHint, javax.swing.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnLibFolder, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addComponent(createMainCheckBox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(mainClassTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))
-                    .addComponent(setAsMainCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE))
-                .addGap(0, 0, 0))
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 561, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(21, 21, 21)
+                                .addComponent(lblPreloaderProject)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(txtPreloaderProject, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(preloaderCheckBox)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(fxmlLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(fxmlTextField))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(cbSharable)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(createMainCheckBox)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(mainClassTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(setAsMainCheckBox)
+                                .addGap(0, 0, Short.MAX_VALUE)))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -428,11 +475,15 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblPreloaderProject)
                     .addComponent(txtPreloaderProject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(fxmlLabel)
+                    .addComponent(fxmlTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(cbSharable)
-                .addGap(5, 5, 5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(txtLibFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -440,13 +491,13 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                     .addComponent(lblLibFolder))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblHint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(createMainCheckBox)
                     .addComponent(mainClassTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(setAsMainCheckBox)
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
         cbSharable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_sharableProject")); // NOI18N
@@ -543,6 +594,12 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
                         NbBundle.getMessage(PanelOptionsVisual.class, "ERROR_IllegalPreloaderProjectName")); // NOI18N
             }
             return isPreloaderNameValid;
+        } else if (fxmlTextField.isVisible()) {
+            if (!isFXMLNameValid) {
+                settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(PanelOptionsVisual.class, "ERROR_IllegalFXMLName")); // NOI18N
+            }
+            return isFXMLNameValid;
         } else {
             return true;
         }
@@ -564,14 +621,18 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
     void store(WizardDescriptor d) {
         Templates.setDefinesMainProject(d, setAsMainCheckBox.isSelected());
         WizardSettings.setSetAsMain(type, setAsMainCheckBox.isSelected());
-        d.putProperty("mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null); // NOI18N
-        d.putProperty(SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null);
+        d.putProperty(JavaFXProjectWizardIterator.MAIN_CLASS, createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null);
+        d.putProperty(JavaFXProjectWizardIterator.SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null);
         
         String platformName = getSelectedPlatform().getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         d.putProperty(JavaFXProjectUtils.PROP_JAVA_PLATFORM_NAME, platformName);
 
         if (preloaderCheckBox.isSelected()) {
             d.putProperty(JavaFXProjectWizardIterator.PROP_PRELOADER_NAME, txtPreloaderProject.getText());
+        }
+        
+        if (fxmlTextField.isVisible()) {
+            d.putProperty(JavaFXProjectWizardIterator.FXML_NAME, fxmlTextField.getText());
         }
     }
     
@@ -580,6 +641,8 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
     private javax.swing.JButton btnManagePlatforms;
     private javax.swing.JCheckBox cbSharable;
     private javax.swing.JCheckBox createMainCheckBox;
+    private javax.swing.JLabel fxmlLabel;
+    private javax.swing.JTextField fxmlTextField;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lblHint;
     private javax.swing.JLabel lblLibFolder;
@@ -605,6 +668,12 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
             }
         }
         isMainClassValid = isValid;
+        panel.fireChangeEvent();
+    }
+
+    private void fxmlNameChanged() {
+        String fxmlName = fxmlTextField.getText();
+        isFXMLNameValid = !fxmlName.isEmpty() && Utilities.isJavaIdentifier(fxmlName);
         panel.fireChangeEvent();
     }
 

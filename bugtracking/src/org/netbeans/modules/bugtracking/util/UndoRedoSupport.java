@@ -64,7 +64,7 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.IssueImpl;
 import org.openide.awt.UndoRedo;
 import org.openide.util.ChangeSupport;
 
@@ -79,24 +79,27 @@ public class UndoRedoSupport {
     private static final Pattern DELIMITER_PATTERN = Pattern.compile("[ ,:;.!?\n\t]"); //NOI18N
     
     private final DelegateManager delegateManager;
+    private final IssueImpl issue;
     private static final String ACTION_NAME_UNDO = "undo.action"; //NOI18N
     private static final String ACTION_NAME_REDO = "redo.action"; //NOI18N
 
-    private static Map<Issue, UndoRedoSupport> managers = new WeakHashMap<Issue, UndoRedoSupport>();
+    private static Map<IssueImpl, UndoRedoSupport> managers = new WeakHashMap<IssueImpl, UndoRedoSupport>();
 
-    private UndoRedoSupport () {
+    
+    private UndoRedoSupport (IssueImpl issue) {
+        this.issue = issue;
         delegateManager = new DelegateManager();
     }
     
-    public synchronized static UndoRedo getUndoRedo(Issue issue) {
+    public synchronized static UndoRedo getUndoRedo(IssueImpl issue) {
         UndoRedoSupport support = getSupport(issue);
         return support.delegateManager;
     }
     
-    public synchronized static UndoRedoSupport getSupport (Issue issue) {
+    public synchronized static UndoRedoSupport getSupport (IssueImpl issue) {
         UndoRedoSupport support = managers.get(issue);
         if(support == null) {
-            support = new UndoRedoSupport();
+            support = new UndoRedoSupport(issue);
             managers.put(issue, support);
         }
         return support;
@@ -115,7 +118,7 @@ public class UndoRedoSupport {
     /**
      * Unregisters undo/redo manager on the component, removes registered listeners, etc.
      */
-    public void unregisterAll (Issue issue) {
+    public void unregisterAll () {
         managers.remove(issue);
         delegateManager.removeAll();
     }

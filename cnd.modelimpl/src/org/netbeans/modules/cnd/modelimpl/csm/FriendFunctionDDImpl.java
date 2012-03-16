@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -76,7 +77,7 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
         friendClassUID = UIDs.get(cls);
     }
     
-    public static FriendFunctionDDImpl create(AST ast, final CsmFile file, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
+    public static FriendFunctionDDImpl create(AST ast, final CsmFile file, FileContent fileContent, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
         
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
@@ -88,7 +89,7 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
         }
         CharSequence rawName = initRawName(ast);
         
-        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
@@ -102,7 +103,7 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
         
         friendFunctionDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         friendFunctionDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, friendFunctionDDImpl, file));
-        friendFunctionDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionDDImpl, file, global), 
+        friendFunctionDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionDDImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, friendFunctionDDImpl);
         if (body == null) {
@@ -112,7 +113,7 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
         friendFunctionDDImpl.setCompoundStatement(body);
         
         postObjectCreateRegistration(global, friendFunctionDDImpl);
-        nameHolder.addReference(file, friendFunctionDDImpl);
+        nameHolder.addReference(fileContent, friendFunctionDDImpl);
         return friendFunctionDDImpl;
     }
 

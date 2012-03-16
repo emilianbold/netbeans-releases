@@ -365,15 +365,17 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 newTree = make.Identifier(refactoring.getClassName());
                 rewrite(memberSelect, newTree);
                 TreePath tp = workingCopy.getTrees().getPath(inner);
-                String innerPackageName = RefactoringUtils.getPackageName(tp.getCompilationUnit());
-                if (!innerPackageName.equals(RefactoringUtils.getPackageName(workingCopy.getCompilationUnit())) &&
-                        !containsImport(innerPackageName + ".*")) { //NOI18N
-                    String import1 = innerPackageName + "." + refactoring.getClassName(); //NOI18N
-                    try {
-                        CompilationUnitTree cut = RefactoringUtils.addImports(workingCopy.getCompilationUnit(), Collections.singletonList(import1), make);
-                        rewrite(workingCopy.getCompilationUnit(), cut);
-                    } catch (IOException ex1) {
-                        Exceptions.printStackTrace(ex1);
+                if(tp != null) {
+                    String innerPackageName = RefactoringUtils.getPackageName(tp.getCompilationUnit());
+                    if (!innerPackageName.equals(RefactoringUtils.getPackageName(workingCopy.getCompilationUnit())) &&
+                            !containsImport(innerPackageName + ".*")) { //NOI18N
+                        String import1 = innerPackageName + "." + refactoring.getClassName(); //NOI18N
+                        try {
+                            CompilationUnitTree cut = RefactoringUtils.addImports(workingCopy.getCompilationUnit(), Collections.singletonList(import1), make);
+                            rewrite(workingCopy.getCompilationUnit(), cut);
+                        } catch (IOException ex1) {
+                            Exceptions.printStackTrace(ex1);
+                        }
                     }
                 }
             } else if (ex.getKind() == Tree.Kind.MEMBER_SELECT) {

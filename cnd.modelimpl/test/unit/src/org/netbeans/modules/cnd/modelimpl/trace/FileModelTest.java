@@ -140,6 +140,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("dummy.cc"); // NOI18N
     }
     
+    public void testExpandDollar() throws Exception {
+        // IZ#208064: jQuery selector-function semulation fails
+        performTest("expand_dollar.cc"); // NOI18N
+    }
+    
     public void testDefineMacro() throws Exception {
         performTest("define_macro.cc"); // NOI18N
     }

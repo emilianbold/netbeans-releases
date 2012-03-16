@@ -52,17 +52,13 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  * @author mkhramov@netbeans.org
  */
 public class ImporterWizard  extends JellyTestCase {
-    private static final String menuPath = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/File");
-    private static final String importMenuPath = Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.resources.Bundle","Menu/File/Import");
-    private static String menuRootString = menuPath+"|"+importMenuPath+"|";    
-    private static String menuString = menuRootString+Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "CTL_MenuItem");
     public ImporterWizard(String testName) {
         super(testName);
     }
 
     @Override
     public void setUp() {
-        new ActionNoBlock(menuString, null).performMenu();
+        new ActionNoBlock(ImporterMenu.menuItemString, null).performMenu();
     }
 
     public void testImporterWizard() {

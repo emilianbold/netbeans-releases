@@ -56,6 +56,12 @@ import org.openide.util.Lookup;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.SubRegistration(
+    location="Java",
+    id="FormEditor",
+    displayName="#Form_Editor",
+    keywords="#KW_FormOptions",
+    keywordsCategory="Java/FormEditor")
 public final class FormEditorPanelController extends OptionsPanelController {
 
     private FormEditorCustomizer customizer = new FormEditorCustomizer ();

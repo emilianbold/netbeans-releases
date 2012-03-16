@@ -110,6 +110,10 @@ public final class FileInfo {
         }
         return (isDirectory == 0) ? false : true;
     }
+    
+    public boolean isDirectoryComputed() {
+        return isDirectory != -1;
+    }
 
     public boolean  exists() {
         if (exists == -1) {

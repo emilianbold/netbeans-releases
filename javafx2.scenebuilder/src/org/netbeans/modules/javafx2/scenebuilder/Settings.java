@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javafx2.scenebuilder;
 
+import org.netbeans.modules.javafx2.scenebuilder.impl.SBHomeFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,7 +79,7 @@ final public class Settings {
     
     private Settings() {
         String homeDef = getPreferences().get(SELECTED_HOME, null);
-        predefinedHome = SBHomeLocator.getLocator().locateHome();
+        predefinedHome = SBHomeFactory.getDefault().defaultHome();
         
         boolean isDefault = (homeDef != null && predefinedHome != null && homeDef.equals(predefinedHome.getPath()));
         
@@ -86,8 +87,8 @@ final public class Settings {
             selectedHome = predefinedHome;
         } else {
             StringTokenizer st = new StringTokenizer(homeDef, "#");
-            if (st.countTokens() == 2) {
-                selectedHome = new Home(st.nextToken(), st.nextToken());
+            if (st.countTokens() == 4) {
+                selectedHome = new Home(st.nextToken(), st.nextToken(), st.nextToken(), st.nextToken());
             }
         }
         
@@ -125,7 +126,11 @@ final public class Settings {
     }
     
     public void store() {
-        getPreferences().put(SELECTED_HOME, selectedHome.getPath() + "#" + selectedHome.getVersion());
+        if (selectedHome != null) {
+            getPreferences().put(SELECTED_HOME, selectedHome.getPath() + "#" + selectedHome.getVersion());
+        } else {
+            getPreferences().remove(SELECTED_HOME);
+        }
         storeUserDefinedHomes();
         getPreferences().putBoolean(SAVE_BEFORE_LAUNCH, saveBeforeLaunch);
         try {
@@ -141,8 +146,8 @@ final public class Settings {
         while (st.hasMoreTokens()) {
             String homeDef = st.nextToken();
             StringTokenizer st1 = new StringTokenizer(homeDef, "#");
-            if (st1.countTokens() == 2) {
-                userDefinedHomes.add(new Home(st1.nextToken(), st1.nextToken()));
+            if (st1.countTokens() == 4) {
+                userDefinedHomes.add(new Home(st1.nextToken(), st1.nextToken(), st1.nextToken(), st1.nextToken()));
             }
         }
     }
@@ -154,7 +159,11 @@ final public class Settings {
         }
         StringBuilder sb = new StringBuilder();
         for(Home h : userDefinedHomes) {
-            sb.append(sb.length() > 0 ? File.pathSeparator : "").append(h.getPath()).append("#").append(h.getVersion());
+            sb.append(sb.length() > 0 ? File.pathSeparator : "");
+            sb.append(h.getPath()).append("#");
+            sb.append(h.getLauncherPath(true)).append("#");
+            sb.append(h.getPropertiesPath(true)).append("#");
+            sb.append(h.getVersion());
         }
         getPreferences().put(USER_DEFINED_HOMES, sb.toString());
     }

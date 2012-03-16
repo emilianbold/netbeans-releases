@@ -44,15 +44,20 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.modules.j2ee.ejbcore.util._RetoucheUtil;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
@@ -150,28 +155,49 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
 
     public boolean supportsEjb(FileObject fileObject,final String className) {
 
-        boolean isCMP = false;
+        final AtomicBoolean isCMP = new AtomicBoolean(false);
 
         EjbJar ejbModule = getEjbModule(fileObject);
         if (ejbModule != null) {
             MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
             try {
-                isCMP = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
-                    public Boolean run(EjbJarMetadata metadata) {
-                        Ejb ejb = metadata.findByEjbClass(className);
-                        if (ejb instanceof Entity) {
-                            Entity entity = (Entity) ejb;
-                            return Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType());
+                if (metadataModel.isReady()) {
+                    isCMP.set(metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
+                        @Override
+                        public Boolean run(EjbJarMetadata metadata) {
+                            Ejb ejb = metadata.findByEjbClass(className);
+                            if (ejb instanceof Entity) {
+                                Entity entity = (Entity) ejb;
+                                return Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType());
+                            }
+                            return false;
                         }
-                        return false;
-                    }
-                });
+                    }));
+                } else {
+                    JavaSource javaSource = JavaSource.forFileObject(fileObject);
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                        @Override
+                        public void run(CompilationController cc) throws Exception {
+                            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            TypeElement te = cc.getElements().getTypeElement(className);
+                            if (te == null) {
+                                return;
+                            }
+
+                            isCMP.set(AddBusinessMethodStrategy.isEntity(cc, te)
+                                    && isAbstract(cc, te));
+                        }
+
+                        private boolean isAbstract(CompilationController cc, TypeElement te) {
+                            return te.getModifiers().contains(Modifier.ABSTRACT);
+
+                        }
+                    }, true);
+                }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
         }
-
-        return isCMP;
-
+        return isCMP.get();
     }
 }

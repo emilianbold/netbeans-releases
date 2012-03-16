@@ -42,28 +42,26 @@
 
 package org.netbeans.modules.bugzilla.query;
 
-import java.io.File;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.logging.Level;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.TestKit;
+import org.netbeans.modules.bugtracking.dummies.DummyBugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.LogHandler;
 import org.netbeans.modules.bugzilla.TestConstants;
 import org.netbeans.modules.bugzilla.TestUtil;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider;
+import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.openide.loaders.DataObject;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -88,6 +86,9 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         
         // refresh faster
         System.setProperty("netbeans.t9y.bugzilla.force.refresh.schedule", "60000");
+        
+        MockLookup.setLayersAndInstances();
+        BugtrackingUtil.getBugtrackingConnectors(); // ensure conector        
     }
 
     @Override
@@ -115,7 +116,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
             public void run() {
                 // init columndescriptors before opening query to prevent some "do not call in awt asserts"
                 BugzillaIssue.getColumnDescriptors(repo);
-                QueryAction.openQuery(q, null);
+                TestKit.openQuery(TestUtil.getQuery(q));
             }
         }).waitFinished();
         assertFalse(lh.isDone());    // but this one wasn't yet
@@ -134,11 +135,11 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         ts = System.currentTimeMillis();
         h.waitUntilDone();
         QueryTestUtil.selectTestProject(q);
-        assertEquals(0, q.getIssues().length);
+        assertEquals(0, q.getIssues().size());
         q.refresh(); // refresh the query - so it won't be refreshed via first time open
-
-        Issue[] issues = q.getIssues();
-        assertEquals(0, issues.length);
+        
+        Collection<BugzillaIssue> issues = q.getIssues();
+        assertEquals(0, issues.size());
 
         String id = TestUtil.createIssue(repo, summary);
         assertNotNull(id);
@@ -151,7 +152,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
             public void run() {
                 // init columndescriptors before opening query to prevent some "do not call in awt asserts"
                 BugzillaIssue.getColumnDescriptors(repo);
-                QueryAction.openQuery(q, null);
+                TestKit.openQuery(TestUtil.getQuery(q));
             }
         }).waitFinished();
         schedulingHandler.waitUntilDone();
@@ -161,7 +162,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         assertTrue(refreshHandler.isDone());
         
         issues = q.getIssues();
-        assertEquals(1, issues.length);
+        assertEquals(1, issues.size());
     }
 
     public static final class TestLookup extends AbstractLookup {
@@ -171,43 +172,8 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         private TestLookup(InstanceContent ic) {
             super(ic);
             ic.add(new DummyBugtrackingOwnerSupport());
-            ic.add(new BugzillaIssueProvider());
+            ic.add(new BugzillaTaskListProvider());
         }
-    }
-    
-    public static class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
-        @Override
-        protected Repository getRepository(DataObject dataObj) {
-            return null;
-        }
-        @Override
-        public Repository getRepository(Project project, boolean askIfUnknown) {
-            return null;
-        }
-        @Override
-        public Repository getRepository(File file, String issueId, boolean askIfUnknown) {
-            return null;
-        }
-        @Override
-        protected Repository getRepositoryForContext(File context, String issueId, boolean askIfUnknown) {
-            return null;
-        }
-        @Override
-        public void setFirmAssociation(File file, Repository repository) {
-            // do nothing
-        }
-        @Override
-        public void setFirmAssociations(File[] files, Repository repository) {
-            // do nothing
-        }
-        @Override
-        public void setLooseAssociation(ContextType contextType, Repository repository) {
-            // do nothing
-        }
-        @Override
-        public void setLooseAssociation(File file, Repository repository) {
-            // do nothing
-        }        
     }
 
 }

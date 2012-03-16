@@ -45,10 +45,8 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -83,8 +81,11 @@ import org.openide.util.NbBundle;
     "ERR_MoveToSameClass=Target can not be the same as the source class",
     "ERR_MoveToSuperClass=Cannot move to a superclass, maybe you need the Pull Up Refactoring?",
     "ERR_MoveToSubClass=Cannot move to a subclass, maybe you need the Push Down Refactoring?",
+    "ERR_MoveGenericField=Cannot move a generic field",
     "WRN_InitNoAccess=Field initializer uses local accessors which will not be accessible",
-    "WRN_NoAccessor=No accessor found to invoke the method from: {0}"})
+    "# {0} - File displayname : line number",
+    "WRN_NoAccessor=No accessor found to invoke the method from: {0}",
+    "TXT_DelegatingMethod=Delegating method"})
 public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
 
     private final MoveRefactoring refactoring;
@@ -98,11 +99,7 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     protected JavaSource getJavaSource(Phase p) {
         TreePathHandle source;
-        if(p == Phase.PRECHECK) {
-            source = properties.getPreSelectedMembers()[0];
-        } else {
-            source = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-        }
+        source = properties.getPreSelectedMembers()[0];
         if(source != null && source.getFileObject() != null) {
             switch(p) {
                 case CHECKPARAMETERS:
@@ -161,13 +158,14 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
     protected Problem fastCheckParameters(CompilationController javac) throws IOException {
         javac.toPhase(JavaSource.Phase.RESOLVED);
         Collection<? extends TreePathHandle> source = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
-        TreePathHandle target = refactoring.getTarget().lookup(TreePathHandle.class);
 
         if (source.isEmpty()) { // [f] nothing is selected
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_NothingSelected")); //NOI18N
         }
-        
-        if(target == null) {
+
+        Lookup targetLookup = refactoring.getTarget();
+        TreePathHandle target;
+        if(targetLookup == null || (target = targetLookup.lookup(TreePathHandle.class)) == null) {
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_NoTarget")); //NOI18N
         }
 
@@ -177,6 +175,16 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         TreePathHandle sourceTph = source.iterator().next();
         if (sourceTph.getFileObject() == null || !JavaRefactoringUtils.isOnSourceClasspath(sourceTph.getFileObject())) { // [f] source is not on source classpath
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveFromLibrary")); //NOI18N
+        }
+        
+        for (TreePathHandle treePathHandle : source) {
+            Element element = treePathHandle.resolveElement(javac);
+            if(element.getKind() == ElementKind.FIELD) {
+                VariableElement var = (VariableElement) element;
+                if(var.asType().getKind() == TypeKind.TYPEVAR) {
+                    return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveGenericField"));
+                }
+            }
         }
 
         TreePath sourceClass = JavaRefactoringUtils.findEnclosingClass(javac, sourceTph.resolve(javac), true, true, true, true, true);

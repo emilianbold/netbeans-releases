@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -41,20 +41,15 @@ package org.netbeans.installer.products.nb.base;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
-import org.netbeans.installer.utils.FileProxy;
-import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.*;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.applications.JavaUtils.JavaInfo;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
@@ -82,13 +77,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private List<WizardComponent> wizardComponents;
-
+    
     public ConfigurationLogic() throws InitializationException {
         wizardComponents = Wizard.loadWizardComponents(
                 WIZARD_COMPONENTS_URI,
                 getClass().getClassLoader());
     }
 
+    @Override
     public void install(final Progress progress) throws InstallationException {
         final Product product = getProduct();
         final File installLocation = product.getInstallationLocation();
@@ -104,6 +100,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             LogManager.log("... path    : "  + jdkHome);
             LogManager.log("... version : "  + info.getVersion().toJdkStyle());
             LogManager.log("... vendor  : "  + info.getVendor());
+            LogManager.log("... arch    : "  + info.getArch());
             LogManager.log("... final   : "  + (!info.isNonFinal()));
             NetBeansUtils.setJavaHome(installLocation, jdkHome);
         } catch (IOException e) {
@@ -636,6 +633,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     
 
+    @Override
     public void uninstall(final Progress progress) throws UninstallationException {
         final Product product = getProduct();
         final File installLocation = product.getInstallationLocation();
@@ -711,6 +709,20 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             } finally {
                 LogManager.unindent();
             }
+            try {
+                progress.setDetail(getString("CL.uninstall.remove.cachedir")); // NOI18N
+                LogManager.logIndent("Removing NetBeans cachedir... ");
+                File cacheDir = NetBeansUtils.getNetBeansCacheDirFile(installLocation);
+                LogManager.log("... NetBeans cachedir location : " + cacheDir);
+                if (FileUtils.exists(cacheDir) && FileUtils.canWrite(cacheDir)) {
+                    FileUtils.deleteFile(cacheDir, true);
+                }
+                LogManager.log("... NetBeans cachedir totally removed");
+            } catch (IOException e) {
+                LogManager.log("Can`t remove NetBeans cachedir", e);
+            } finally {
+                LogManager.unindent();
+            }
         }
 
         /////////////////////////////////////////////////////////////////////////////
@@ -733,6 +745,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         progress.setPercentage(Progress.COMPLETE);
     }
 
+    @Override
     public List<WizardComponent> getWizardComponents() {
         return wizardComponents;
     }
@@ -754,8 +767,15 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
     @Override
     public String getExecutable() {
+        File jdkHome = new File(getProduct().getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY));
+        JavaInfo javaInfo = JavaUtils.getInfo(jdkHome);
+        
         if (SystemUtils.isWindows()) {
-            return EXECUTABLE_WINDOWS;
+            if (javaInfo.getArch().endsWith("64")) {
+                return EXECUTABLE_WINDOWS_64;
+            } else {
+                return EXECUTABLE_WINDOWS;
+            }    
         } else {
             return EXECUTABLE_UNIX;
         }
@@ -817,11 +837,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             icon = new File(location, ICON_UNIX);
         }
 
-        if (SystemUtils.isWindows()) {
-            executable = new File(location, EXECUTABLE_WINDOWS);
-        } else {
-            executable = new File(location, EXECUTABLE_UNIX);
-        }
+        executable = new File(location, getExecutable());
         final String name = names.get(new Locale(StringUtils.EMPTY_STRING));
         final FileShortcut shortcut = new FileShortcut(name, executable);
         shortcut.setNames(names);
@@ -836,6 +852,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return shortcut;
     }
     
+    @Override
     public RemovalMode getRemovalMode() {
         if(Boolean.getBoolean("remove.netbeans.installdir")) {
             return RemovalMode.ALL;
@@ -889,6 +906,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public static final String EXECUTABLE_WINDOWS =
             BIN_SUBDIR + "/netbeans.exe"; // NOI18N
+    public static final String EXECUTABLE_WINDOWS_64 =
+            BIN_SUBDIR + "/netbeans64.exe"; // NOI18N
     public static final String EXECUTABLE_UNIX =
             BIN_SUBDIR + "/netbeans"; // NOI18N
     

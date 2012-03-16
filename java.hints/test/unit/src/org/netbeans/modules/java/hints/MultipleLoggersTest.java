@@ -39,72 +39,81 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author vita
  */
-public class MultipleLoggersTest extends TestBase {
+public class MultipleLoggersTest extends NbTestCase {
 
     public MultipleLoggersTest(String name) {
-        super(name, MultipleLoggers.class);
+        super(name);
     }
 
     public void testSimple1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private static final java.util.logging.Logger LOG1 = null;\n" +
-                            "    private static final java.util.logging.Logger LOG2 = null;\n" +
-                            "}",
-                            "2:50-2:54:verifier:Multiple loggers LOG1, LOG2 declared for test.Test class",
-                            "3:50-3:54:verifier:Multiple loggers LOG1, LOG2 declared for test.Test class"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static final java.util.logging.Logger LOG1 = null;\n" +
+                       "    private static final java.util.logging.Logger LOG2 = null;\n" +
+                       "}")
+                .run(MultipleLoggers.class)
+                .assertWarnings("2:50-2:54:verifier:Multiple loggers LOG1, LOG2 declared for test.Test class",
+                                "3:50-3:54:verifier:Multiple loggers LOG1, LOG2 declared for test.Test class");
     }
 
     public void testNoWarningsForAbstractClass() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public abstract class Test {\n" +
-                            "    private static final java.util.logging.Logger LOG1 = null;\n" +
-                            "    private static final java.util.logging.Logger LOG2 = null;\n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public abstract class Test {\n" +
+                       "    private static final java.util.logging.Logger LOG1 = null;\n" +
+                       "    private static final java.util.logging.Logger LOG2 = null;\n" +
+                       "}")
+                .run(MultipleLoggers.class)
+                .assertWarnings();
     }
-    
+
     public void testNoWarningsForInterface() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public interface Test {\n" +
-                            "    private static final java.util.logging.Logger LOG1 = null;\n" +
-                            "    private static final java.util.logging.Logger LOG2 = null;\n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public interface Test {\n" +
+                       "    private static final java.util.logging.Logger LOG1 = null;\n" +
+                       "    private static final java.util.logging.Logger LOG2 = null;\n" +
+                       "}", false)
+                .run(MultipleLoggers.class)
+                .assertWarnings();
     }
 
     public void testNoWarningsForEnum() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public enum Test {\n" +
-                            "    private static final java.util.logging.Logger LOG1 = null;\n" +
-                            "    private static final java.util.logging.Logger LOG2 = null;\n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public enum Test {\n" +
+                       "    private static final java.util.logging.Logger LOG1 = null;\n" +
+                       "    private static final java.util.logging.Logger LOG2 = null;\n" +
+                       "}", false)
+                .run(MultipleLoggers.class)
+                .assertWarnings();
     }
 
     public void testNoWarningsForInnerClasses() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public static class Inner {\n" +
-                            "        private static final java.util.logging.Logger LOG1 = null;\n" +
-                            "        private static final java.util.logging.Logger LOG2 = null;\n" +
-                            "    }\n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static class Inner {\n" +
+                       "        private static final java.util.logging.Logger LOG1 = null;\n" +
+                       "        private static final java.util.logging.Logger LOG2 = null;\n" +
+                       "    }\n" +
+                       "}")
+                .run(MultipleLoggers.class)
+                .assertWarnings();
     }
 }

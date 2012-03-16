@@ -65,7 +65,6 @@ public class AbstractFSTestCase extends NbTestCase {
 
     protected FileObject getVersionedFolder() throws IOException {
         if (versionedFolder == null) {
-            versionedPath = workDirPath + "/root" + TestVCS.VERSIONED_FOLDER_SUFFIX;
             versionedFolder = createFolder(versionedPath);
             FileObject md = versionedFolder.getFileObject(TestVCS.TEST_VCS_METADATA);
             if(md == null || !md.isValid()) {
@@ -85,7 +84,8 @@ public class AbstractFSTestCase extends NbTestCase {
     }
 
     protected String getRoot(String path) {
-        return path.substring(0, path.indexOf(versionedPath));
+        int idx = path.indexOf(versionedPath);
+        return idx > 0 ? path.substring(0, idx) : null;
     } 
     
     protected void setUp() throws Exception {
@@ -93,6 +93,7 @@ public class AbstractFSTestCase extends NbTestCase {
         MockLookup.setLayersAndInstances();
         File workDir = getWorkDir();
         workDirPath = workDir.getParentFile().getName() + "/" + workDir.getName();
+        versionedPath = workDirPath + "/root" + TestVCS.VERSIONED_FOLDER_SUFFIX;
         File userdir = new File(workDir, "userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());

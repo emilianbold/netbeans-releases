@@ -57,13 +57,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
 public class JiraUpdater {
 
     private static JiraUpdater instance;
-    private JiraProxyConector connector;
+    private DelegatingConnector connector;
 
     private JiraUpdater() {
     }
@@ -98,9 +98,16 @@ public class JiraUpdater {
      *
      * @return
      */
-    public BugtrackingConnector getConnector() {
+    public DelegatingConnector getConnector() {
         if(connector == null) {
-            connector = new JiraProxyConector();
+            JiraProxyConector jpc = new JiraProxyConector();
+            return new DelegatingConnector(
+                    jpc, 
+                    "fake.jira.connector",                                              // NOI18N
+                    NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraName"),         // NOI18N
+                    NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraNameTooltip"),  // NOI18N
+                    null);
+            
         }
         return connector;
     }
@@ -200,95 +207,58 @@ public class JiraUpdater {
     }
     
     private class JiraProxyConector extends BugtrackingConnector {
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraName");              // NOI18N
-        }
-        @Override
-        public String getTooltip() {
-            return NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraNameTooltip");       // NOI18N
-        }
+        private BugtrackingFactory<Object, Object, Object> f = new BugtrackingFactory<Object, Object, Object>();
         @Override
         public Repository createRepository() {
-            return new JiraProxyRepository();
+            return f.createRepository(f, new JiraProxyRepositoryProvider(), null, null);
         }
         @Override
-        public Repository[] getRepositories() {
-            return new Repository[0];
-        }
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
-
-        @Override
-        public String getID() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Image getIcon() {
+        public Repository createRepository(RepositoryInfo info) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
-
-    private class JiraProxyRepository extends Repository {
+    private class JiraProxyRepositoryProvider extends RepositoryProvider<Object,Object,Object> {
         @Override
-        public Image getIcon() {
+        public Image getIcon(Object r) {
             return null;
         }
         @Override
-        public String getDisplayName() {
+        public RepositoryInfo getInfo(Object r) {
+            return null;
+        }
+        @Override
+        public Object getIssue(Object r, String id) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
-        public String getTooltip() {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
-        }
+        public void remove(Object r) { }
         @Override
-        public String getID() {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
-        }
-        @Override
-        public String getUrl() {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
-        }
-        @Override
-        public Issue getIssue(String id) {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
-        }
-        @Override
-        public void remove() { }
-        @Override
-        public BugtrackingController getController() {
+        public RepositoryController getController(Object r) {
             return new JiraProxyController();
         }
         @Override
-        public Query createQuery() {
+        public Object createIssue(Object r) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
-        public Issue createIssue() {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
-        }
-
-        @Override
-        public Query[] getQueries() {
-            return new Query[0];
+        public Object createQuery(Object r) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
-        public Collection<RepositoryUser> getUsers() {
-            return Collections.EMPTY_LIST;
+        public Collection<Object> getQueries(Object r) {
+            return Collections.emptyList();
         }
         @Override
-        public Issue[] simpleSearch(String criteria) {
-            return new Issue[0];
+        public Collection<Object> simpleSearch(Object r, String criteria) {
+            return Collections.emptyList();
         }
-        public Lookup getLookup() {
+        @Override
+        public Lookup getLookup(Object r) {
             return Lookup.EMPTY;
         }
     }
 
-    private class JiraProxyController extends BugtrackingController {
+    private class JiraProxyController implements RepositoryController {
         private JPanel panel;
         @Override
         public JComponent getComponent() {
@@ -347,6 +317,20 @@ public class JiraUpdater {
 
             return panel;
         }
+
+        @Override
+        public void populate() {}
+
+        @Override
+        public String getErrorMessage() {
+            return null;
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener l) {}
+
+        @Override
+        public void removeChangeListener(ChangeListener l) {}
 
     }
 }

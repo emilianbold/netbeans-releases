@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import java.util.IdentityHashMap;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTPreprocessorToken;
 import org.netbeans.modules.cnd.apt.structure.APT;
@@ -55,6 +57,7 @@ import org.netbeans.modules.cnd.apt.structure.APTStream;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
+import org.netbeans.modules.cnd.utils.cache.TinyMaps;
 
 /**
  * base Tree walker for APT
@@ -87,6 +90,10 @@ public abstract class APTWalker {
     
     public TokenStream getTokenStream() {
         return new WalkerTokenStream();
+    }
+
+    protected boolean needPPTokens() {
+        return false;
     }
     
     private final class WalkerTokenStream implements TokenStream, APTTokenStream {
@@ -364,6 +371,22 @@ public abstract class APTWalker {
         }
     }
     
+    private final Map<APT, Map<Object, Object>> nodeProperties = new IdentityHashMap<APT, Map<Object, Object>>();
+    protected final void putNodeProperty(APT node, Object key, Object value) {
+        Map<Object, Object> props = nodeProperties.get(node);
+        if (props == null) {
+            nodeProperties.put(node, props = TinyMaps.createMap(2));
+        } else {
+            Map<Object, Object> expanded = TinyMaps.expandForNextKey(props, node);
+            if (expanded != props) {
+                // was replacement
+                props = expanded;
+                nodeProperties.put(node, props);
+            }
+        }
+        props.put(key, value);
+    }
+    
     private void fillTokensIfNeeded(APT node) {
         if (walkerUsedForTokenStreamGeneration == Boolean.TRUE) {
             // only token stream nodes contain tokens as TokenStream
@@ -375,12 +398,14 @@ public abstract class APTWalker {
                         tokens.addFirst(ts);
                         break;
                     }
-//                    case APT.Type.INCLUDE:
-//                    case APT.Type.INCLUDE_NEXT:
-//                    {
-//                        tokens.addFirst(new TokenBasedTokenStream(new APTPreprocessorToken(node)));
-//                        break;
-//                    }
+                    case APT.Type.INCLUDE:
+                    case APT.Type.INCLUDE_NEXT:
+                    {
+                        if (needPPTokens()) {
+                            tokens.addFirst(new TokenBasedTokenStream(new APTPreprocessorToken(node, nodeProperties.get(node))));
+                        }
+                        break;
+                    }
                 }
             }
         }

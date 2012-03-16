@@ -696,12 +696,37 @@ Yes. Component can control its persistence and way how they are displayed in con
          The default value is <code>false</code>.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
-    
+
     <api type="export" group="branding" name="WinSys.DragAndDrop.Sliding.Enabled" category="stable">
          Name of resource bundle property which enables/disables drag and drop
-         of TopComponents into sliding Modes. When set to <code>true</code> then user can 
+         of TopComponents into sliding Modes. When set to <code>true</code> then user can
          drag a TopComponent and drop it into a sliding bar to minimize it.
          The default value is <code>false</code>.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+
+    <api type="export" group="branding" name="WinSys.TabControl.SimpleTabs.Enabled" category="stable">
+         Name of resource bundle property which allows replacing the custom TabbedContainer
+         with plain Swing JTabbedPane implementation when the property value is <code>true</code>.
+         The default value is <code>false</code>.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+
+    <api type="export" group="branding" name="WinSys.TabControl.SimpleTabs.Placement" category="stable">
+         Name of resource bundle property which defines the placement of window tabs.
+         The possible values are <code>top</code> (default), <code>bottom</code>,
+         <code>left</code>, <code>right</code>. Branding of this property has no effect when
+         <code>WinSys.TabControl.SimpleTabs.Enabled</code> is set to false.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+
+    <api type="export" group="branding" name="WinSys.TabControl.SimpleTabs.MultiRow" category="stable">
+         Name of resource bundle property which defines the tab layout when JTabbedPane
+         implementation of tab control is being used. When set to <code>true</code>
+         window tabs will be organized into multiple rows, when set to <code>false</code>
+         the tab displayer will have scroll buttons.
+         Branding of this property has no effect when
+         <code>WinSys.TabControl.SimpleTabs.Enabled</code> is set to false.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
 </answer>

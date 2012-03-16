@@ -42,45 +42,67 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
- *
- * @author schmidtm
+ * 
+ * @author schmidtm, Martin Janicek
  */
-public class ConstructorsCCTest extends GroovyTestBase {
-
-    String TEST_BASE = "testfiles/completion/constructors/";
+public class ConstructorsCCTest extends GroovyCCTestBase {
 
     public ConstructorsCCTest(String testName) {
         super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
+    @Override
+    protected String getTestType() {
+        return "constructors";
     }
-
-    // testing proper creation of constructor-call proposals
-
-    //     * groovy.lang.*
-    //     * groovy.util.*
+    
 
     public void testConstructors1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors1.groovy", "StringBuffer sb = new StringBuffer^", false);
+        checkCompletion(BASE + "Constructors1.groovy", "StringBuffer sb = new StringBuffer^", false);
     }
 
     public void testConstructors2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors2.groovy", "StringBuffer sb = new stringbuffer^", false);
+        checkCompletion(BASE + "Constructors2.groovy", "StringBuffer sb = new stringbuffer^", false);
     }
 
     public void testConstructors3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors3.groovy", "FileOutputStream fos = new fileoutputstr^", false);
+        checkCompletion(BASE + "Constructors3.groovy", "FileOutputStream fos = new fileoutputstr^", false);
+    }
+
+    public void testConstructors4() throws Exception {
+        checkCompletion(BASE + "Constructors4.groovy", "    Foo f = new F^", false);
+    }
+
+    public void testConstructors5() throws Exception {
+        checkCompletion(BASE + "Constructors5.groovy", "    Foo f = new F^", false);
+    }
+
+    public void testConstructors6() throws Exception {
+        checkCompletion(BASE + "Constructors6.groovy", "    Foo f = new Foo^", false);
+    }
+
+    public void testConstructors7() throws Exception {
+        checkCompletion(BASE + "Constructors7.groovy", "        String s = new String^", false);
+    }
+
+    public void testConstructors8() throws Exception {
+        checkCompletion(BASE + "Constructors8.groovy", "        String s = new String^(\"abc\");", false);
+    }
+
+    public void testSamePackage() throws Exception {
+        checkCompletion(BASE + "SamePackage.groovy", "    Bar bar = new Bar^", false);
+    }
+
+    public void testSamePackageMoreConstructors() throws Exception {
+        checkCompletion(BASE + "SamePackageMoreConstructors.groovy", "    Bar bar = new Bar^", false);
+    }
+
+    public void testImportedType() throws Exception {
+        checkCompletion(BASE + "ImportedType.groovy", "    Bar bar = new Bar^", false);
+    }
+
+    public void testImportedTypeMoreConstructors() throws Exception {
+        checkCompletion(BASE + "ImportedTypeMoreConstructors.groovy", "    Bar bar = new Bar^", false);
     }
 }

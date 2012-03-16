@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -90,7 +91,7 @@ public final class PathRegistry implements Runnable {
 
     // -J-Dorg.netbeans.modules.parsing.impl.indexing.PathRegistry.level=FINE
     private static final Logger LOGGER = Logger.getLogger(PathRegistry.class.getName());
-    private static final Set<String> FAST_HOST_PROTOCOLS = Collections.singleton("nbfs");   //NOI18N
+    private static final Set<String> FAST_HOST_PROTOCOLS = new HashSet<String>(Arrays.asList(new String[] {"nbfs", "rfs"}));   //NOI18N
 
     private final RequestProcessor.Task firerTask;
     private final GlobalPathRegistry regs;
@@ -231,7 +232,7 @@ public final class PathRegistry implements Runnable {
             }
             LOGGER.log(Level.FINE, "registerUnknownSourceRoots: {0}", l); // NOI18N
         }
-        scheduleFirer();
+        scheduleFirer(roots);
     }
 
     public Collection<? extends URL> getSources () {
@@ -805,12 +806,19 @@ public final class PathRegistry implements Runnable {
 
         LOGGER.log(Level.FINE, "resetCacheAndFire: eventKind={0}, pathKind={1}, pathId={2}, paths={3}",
             new Object [] { eventKind, pathKind, pathId, paths }); // NOI18N
-        scheduleFirer();
+        scheduleFirer(paths);
     }
 
-    private void scheduleFirer() {
+    private void scheduleFirer(Collection<? extends ClassPath> paths) {
         if (logCtx.get() == null) {
-            logCtx.compareAndSet(null, LogContext.create(LogContext.EventType.PATH, null));
+            logCtx.compareAndSet(null, LogContext.create(LogContext.EventType.PATH, null).addPaths(paths));
+        }
+        firerTask.schedule(0);
+    }
+
+    private void scheduleFirer(Iterable<? extends URL> roots) {
+        if (logCtx.get() == null) {
+            logCtx.compareAndSet(null, LogContext.create(LogContext.EventType.PATH, null).addRoots(roots));
         }
         firerTask.schedule(0);
     }

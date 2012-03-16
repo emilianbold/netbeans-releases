@@ -71,7 +71,7 @@ abstract class NexusTestBase extends NbTestCase {
         defaultArtifactRepository = embedder.lookupComponent(ArtifactRepositoryFactory.class).createArtifactRepository("test", repo.toURI().toString(), "default", null, null);
         embedder.setUpLegacySupport(); // XXX could use org.sonatype.aether.RepositorySystem to avoid maven-compat
         artifactInstaller = embedder.lookupComponent(ArtifactInstaller.class);
-        info = new RepositoryInfo("test", RepositoryPreferences.TYPE_NEXUS, "Test", repo.getAbsolutePath(), null);
+        info = new RepositoryInfo("test", "Test", repo.getAbsolutePath(), null);
         RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(info);
         nrii = new NexusRepositoryIndexerImpl();
     }

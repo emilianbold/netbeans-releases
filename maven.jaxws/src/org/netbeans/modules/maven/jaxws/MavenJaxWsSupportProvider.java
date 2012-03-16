@@ -84,7 +84,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
     private PropertyChangeListener pcl;
     private NbMavenProject mp;
     private Project prj;
-    private MetadataModel<WebservicesMetadata> wsModel;
+    //private MetadataModel<WebservicesMetadata> wsModel;
 
     MavenJaxWsSupportProvider(final Project prj, final JAXWSLightSupport jaxWsSupport) {
         this.prj = prj;
@@ -94,10 +94,12 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
 
             public void run() {
                 registerPCL();
-                wsModel = jaxWsSupport.getWebservicesMetadataModel();
-                if (wsModel != null) {
-                    registerAnnotationListener(wsModel);
+                MetadataModel<WebservicesMetadata> model = 
+                        jaxWsSupport.getWebservicesMetadataModel();
+                if (model != null) {
+                    registerAnnotationListener(model);
                 }
+                //wsModel = model;
             }
 
         });
@@ -138,7 +140,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
         }
     }
 
-    void unregisterAnnotationListener() {
+    /*void unregisterAnnotationListener() {
         if (pcl != null) {
             if (wsModel != null) {
                 try {
@@ -155,7 +157,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
                 }
             }
         }
-    }
+    }*/
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
@@ -197,6 +199,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
         WebservicesChangeListener(JAXWSLightSupport jaxWsSupport, MetadataModel<WebservicesMetadata> wsModel) {
             this.jaxWsSupport = jaxWsSupport;
             this.wsModel = wsModel;
+            updateJaxWsTask.schedule(1000);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

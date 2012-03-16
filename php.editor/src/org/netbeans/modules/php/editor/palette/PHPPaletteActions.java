@@ -86,7 +86,7 @@ public class PHPPaletteActions extends PaletteActions {
                 return;
             }
             if (drop == null) {
-                Logger.global.log(Level.INFO, item.getClass() + " doesn't provide " + ActiveEditorDrop.class);//NOI18N
+                Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.INFO, item.getClass() + " doesn't provide " + ActiveEditorDrop.class);//NOI18N
                 return;
             }
             try {
@@ -101,7 +101,7 @@ public class PHPPaletteActions extends PaletteActions {
                 paletteController.clearSelection();
             }
             catch (IOException ioe) {
-                Logger.global.log(Level.INFO, null, ioe);
+                Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.INFO, null, ioe);
             }
 
         }

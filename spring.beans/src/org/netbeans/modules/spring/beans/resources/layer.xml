@@ -110,15 +110,6 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="SpringXMLConfigResolver.xml" url="SpringXMLConfigResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.beans.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/spring/beans/resources/spring.png"/>
-                <attr name="position" intvalue="440"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Templates">
         <folder name="Other">
             <file name="SpringXMLConfig.shadow">

@@ -69,6 +69,7 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.shelve.ShelveChangesAction;
 import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.RootsToFile;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
@@ -128,6 +129,8 @@ public class Mercurial {
 
     private MercurialAnnotator   mercurialAnnotator;
     private MercurialInterceptor mercurialInterceptor;
+    private HgHistoryProvider historyProvider;
+    
     private FileStatusCache     fileStatusCache;
     private HashMap<HgURL, RequestProcessor>   processorsToUrl;
     /**
@@ -599,5 +602,12 @@ public class Mercurial {
     public void clearAncestorCaches() {
         unversionedParents.clear();
         rootsToFile.clear();
+    }
+
+    public HgHistoryProvider getMercurialHistoryProvider() {
+        if(historyProvider == null) {
+            historyProvider = new HgHistoryProvider();
+        }
+        return historyProvider;
     }
 }

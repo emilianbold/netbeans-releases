@@ -104,7 +104,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
         RefactoringVisitor visitor;
         switch (refactoring.getType()) {
             case METHOD:
-                visitor = new InlineMethodTransformer();
+                visitor = new InlineMethodTransformer(treePathHandle);
                 break;
             case CONSTANT:
             case TEMP:
@@ -162,13 +162,13 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                             //add all references of overriding methods
                             allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                             allMethods.add(ElementHandle.create((ExecutableElement) el));
-                            for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods((ExecutableElement) el, info)) {
+                            for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods((ExecutableElement) el, info, cancelRequested)) {
                                 addMethods(e, set, info, idx);
                             }
                             //add all references of overriden methods
                             for (ExecutableElement ov : JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) el, info)) {
                                 addMethods(ov, set, info, idx);
-                                for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods(ov, info)) {
+                                for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods(ov, info, cancelRequested)) {
                                     addMethods(e, set, info, idx);
                                 }
                             }
@@ -232,11 +232,11 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                     return preCheckProblem;
                 }
                 // Assigned to exactly once
-                InlineUsageVisitor visitor = new InlineUsageVisitor(javac);
+                InlineUsageVisitor visitor = new InlineUsageVisitor(javac, element);
                 TreePath elementPath = javac.getTrees().getPath(element);
                 TreePath blockPath = elementPath.getParentPath();
 
-                visitor.scan(blockPath.getLeaf(), element);
+                visitor.scan(blockPath.getLeaf(), blockPath);
                 if (visitor.assignmentCount > 0) {
                     preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineAssignedOnce")); //NOI18N
                     return preCheckProblem;
@@ -270,9 +270,14 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                 }
                 break;
             case METHOD:
+                // Method can not be in annotation
+                if(element.getEnclosingElement().getKind() == ElementKind.ANNOTATION_TYPE) {
+                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodInAnnotation")); //NOI18N
+                    return preCheckProblem;
+                }
                 // Method can not be polymorphic
                 Collection<ExecutableElement> overridenMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) element, javac);
-                Collection<ExecutableElement> overridingMethods = JavaRefactoringUtils.getOverridingMethods((ExecutableElement) element, javac);
+                Collection<ExecutableElement> overridingMethods = JavaRefactoringUtils.getOverridingMethods((ExecutableElement) element, javac,cancelRequested);
                 if (overridenMethods.size() > 0 || overridingMethods.size() > 0) {
                     preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodPolymorphic")); //NOI18N
                     return preCheckProblem;
@@ -287,8 +292,8 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                         hasReturn = false;
                     }
                 }
-                InlineMethodVisitor methodVisitor = new InlineMethodVisitor(javac, element.getModifiers());
-                methodVisitor.scan(methodPath.getLeaf(), element);
+                InlineMethodVisitor methodVisitor = new InlineMethodVisitor(javac, element);
+                methodVisitor.scan(methodPath.getLeaf(), methodPath);
                 if (hasReturn) {
                     // Method with returntype must have a return statement at the end
                     if (methodVisitor.nrOfReturnStatements > 1) {
@@ -313,15 +318,15 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                     return preCheckProblem;
                 }
                 // Used accessors must not be local in public method
-                if (methodVisitor.qualIdentProblem) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodLocalAccessors")); //NOI18N
-                    return preCheckProblem;
-                }
+//                if (methodVisitor.qualIdentProblem) {
+//                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodLocalAccessors")); //NOI18N
+//                    return preCheckProblem;
+//                }
                 // Used accessors in the method must have the right access specification
-                if (methodVisitor.accessorRightProblem) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodNoAccessors")); //NOI18N
-                    return preCheckProblem;
-                }
+//                if (methodVisitor.accessorRightProblem) {
+//                    preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodNoAccessors")); //NOI18N
+//                    return preCheckProblem;
+//                }
 
                 break;
             default:
@@ -330,46 +335,47 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
         return preCheckProblem;
     }
 
-    private class InlineMethodVisitor extends CancellableTreeScanner<Tree, Element> {
+    private class InlineMethodVisitor extends CancellableTreeScanner<Tree, TreePath> {
 
         public int nrOfReturnStatements = 0;
         public boolean isRecursive = false;
-        private boolean accessorRightProblem = false;
+//        private boolean accessorRightProblem = false;
         private boolean qualIdentProblem = false;
         private final CompilationController workingCopy;
         private final Modifier access;
+        private final Element element;
 
-        public InlineMethodVisitor(CompilationController workingCopy, Set<Modifier> modifiers) {
+        public InlineMethodVisitor(CompilationController workingCopy, Element element) {
             this.workingCopy = workingCopy;
-            this.access = getAccessSpecifier(modifiers);
+            this.access = getAccessSpecifier(element.getModifiers());
+            this.element = element;
         }
 
         @Override
-        public Tree visitReturn(ReturnTree node, Element p) {
+        public Tree visitReturn(ReturnTree node, TreePath p) {
             nrOfReturnStatements++;
             return super.visitReturn(node, p);
         }
 
         @Override
-        public Tree visitMethodInvocation(MethodInvocationTree node, Element p) {
-            if (p.equals(asElement(node))) {
+        public Tree visitMethodInvocation(MethodInvocationTree node, TreePath p) {
+            Element asElement = asElement(new TreePath(p, node));
+            if (element.equals(asElement)) {
                 isRecursive = true;
             } else {
-                Element asElement = asElement(node);
                 if (asElement.getKind().equals(ElementKind.FIELD)
                         || asElement.getKind().equals(ElementKind.METHOD)
                         || asElement.getKind().equals(ElementKind.CLASS)) {
-                    Modifier mod = getAccessSpecifier(asElement(node).getModifiers());
-                    accessorRightProblem = hasAccessorRightProblem(mod);
-                    qualIdentProblem = hasQualIdentProblem(p, node);
+                    Modifier mod = getAccessSpecifier(asElement.getModifiers());
+//                    accessorRightProblem = hasAccessorRightProblem(mod);
+                    qualIdentProblem = hasQualIdentProblem(element, asElement);
                 }
             }
             return super.visitMethodInvocation(node, p);
         }
 
-        private boolean hasQualIdentProblem(Element p, Tree node) throws IllegalArgumentException {
+        private boolean hasQualIdentProblem(Element p, Element asElement) throws IllegalArgumentException {
             boolean result = qualIdentProblem;
-            Element asElement = asElement(node);
             ElementUtilities elementUtilities = workingCopy.getElementUtilities();
             TypeElement bodyEnclosingTypeElement = elementUtilities.enclosingTypeElement(p);
             TypeElement invocationEnclosingTypeElement = elementUtilities.enclosingTypeElement(asElement);
@@ -380,31 +386,31 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
             return result;
         }
 
-        private boolean hasAccessorRightProblem(Modifier mod) {
-            boolean hasProblem = accessorRightProblem;
-            if (access != null) {
-                switch (access) {
-                    case PUBLIC:
-                        if (mod == null || Modifier.PROTECTED.equals(mod) || Modifier.PRIVATE.equals(mod)) {
-                            hasProblem = true;
-                        }
-                        break;
-                    case PROTECTED:
-                        if (mod == null || Modifier.PRIVATE.equals(mod)) {
-                            hasProblem = true;
-                        }
-                        break;
-                    case PRIVATE:
-                    default:
-                        break;
-                }
-            } else {
-                if (Modifier.PRIVATE.equals(mod)) {
-                    hasProblem = true;
-                }
-            }
-            return hasProblem;
-        }
+//        private boolean hasAccessorRightProblem(Modifier mod) {
+//            boolean hasProblem = accessorRightProblem;
+//            if (access != null) {
+//                switch (access) {
+//                    case PUBLIC:
+//                        if (mod == null || Modifier.PROTECTED.equals(mod) || Modifier.PRIVATE.equals(mod)) {
+//                            hasProblem = true;
+//                        }
+//                        break;
+//                    case PROTECTED:
+//                        if (mod == null || Modifier.PRIVATE.equals(mod)) {
+//                            hasProblem = true;
+//                        }
+//                        break;
+//                    case PRIVATE:
+//                    default:
+//                        break;
+//                }
+//            } else {
+//                if (Modifier.PRIVATE.equals(mod)) {
+//                    hasProblem = true;
+//                }
+//            }
+//            return hasProblem;
+//        }
 
         private Modifier getAccessSpecifier(Set<Modifier> modifiers) {
             Modifier mod = null;
@@ -420,131 +426,131 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
         }
 
         @Override
-        public Tree visitIdentifier(IdentifierTree node, Element p) {
-            Element asElement = asElement(node);
-            if (asElement.getKind().equals(ElementKind.FIELD)
+        public Tree visitIdentifier(IdentifierTree node, TreePath p) {
+            Element asElement = asElement(new TreePath(p, node));
+            if (!node.getName().contentEquals("this") &&
+                    (asElement.getKind().equals(ElementKind.FIELD)
                     || asElement.getKind().equals(ElementKind.METHOD)
-                    || asElement.getKind().equals(ElementKind.CLASS)) {
-                Modifier mod = getAccessSpecifier(asElement(node).getModifiers());
-                accessorRightProblem = hasAccessorRightProblem(mod);
-                qualIdentProblem = hasQualIdentProblem(p, node);
+                    || asElement.getKind().equals(ElementKind.CLASS))) {
+                Modifier mod = getAccessSpecifier(asElement.getModifiers());
+//                accessorRightProblem = hasAccessorRightProblem(mod);
+                qualIdentProblem = hasQualIdentProblem(element, asElement);
             }
             return super.visitIdentifier(node, p);
         }
 
         @Override
-        public Tree visitNewClass(NewClassTree node, Element p) {
-            Element asElement = asElement(node);
+        public Tree visitNewClass(NewClassTree node, TreePath p) {
+            Element asElement = asElement(new TreePath(p, node));
             if (asElement.getKind().equals(ElementKind.FIELD)
                     || asElement.getKind().equals(ElementKind.METHOD)
                     || asElement.getKind().equals(ElementKind.CLASS)) {
-                Modifier mod = getAccessSpecifier(asElement(node).getModifiers());
-                accessorRightProblem = hasAccessorRightProblem(mod);
-                qualIdentProblem = hasQualIdentProblem(p, node);
+                Modifier mod = getAccessSpecifier(asElement.getModifiers());
+//                accessorRightProblem = hasAccessorRightProblem(mod);
+                qualIdentProblem = hasQualIdentProblem(element, asElement);
             }
             return super.visitNewClass(node, p);
         }
 
         @Override
-        public Tree visitMemberSelect(MemberSelectTree node, Element p) {
-            Element asElement = asElement(node);
+        public Tree visitMemberSelect(MemberSelectTree node, TreePath p) {
+            Element asElement = asElement(new TreePath(p, node));
             if (asElement.getKind().equals(ElementKind.FIELD)
                     || asElement.getKind().equals(ElementKind.METHOD)
                     || asElement.getKind().equals(ElementKind.CLASS)) {
-                Modifier mod = getAccessSpecifier(asElement(node).getModifiers());
-                accessorRightProblem = hasAccessorRightProblem(mod);
-                qualIdentProblem = hasQualIdentProblem(p, node);
+                Modifier mod = getAccessSpecifier(asElement.getModifiers());
+//                accessorRightProblem = hasAccessorRightProblem(mod);
+                qualIdentProblem = hasQualIdentProblem(element, asElement);
             }
             return super.visitMemberSelect(node, p);
         }
 
-        private Element asElement(Tree tree) {
+        private Element asElement(TreePath treePath) {
             Trees treeUtil = workingCopy.getTrees();
-            TreePath treePath = treeUtil.getPath(workingCopy.getCompilationUnit(), tree);
             Element element = treeUtil.getElement(treePath);
             return element;
         }
     }
 
-    private class InlineUsageVisitor extends CancellableTreeScanner<Tree, Element> {
+    private class InlineUsageVisitor extends CancellableTreeScanner<Tree, TreePath> {
 
         public int assignmentCount = 0;
         public int usageCount = 0;
         private final CompilationController workingCopy;
+        private final Element element;
 
-        public InlineUsageVisitor(CompilationController workingCopy) {
+        public InlineUsageVisitor(CompilationController workingCopy, Element element) {
             this.workingCopy = workingCopy;
+            this.element = element;
         }
 
         @Override
-        public Tree visitVariable(VariableTree node, Element p) {
-            if (p.equals(asElement(node))) {
+        public Tree visitVariable(VariableTree node, TreePath p) {
+            if (element.equals(asElement(new TreePath(p, node)))) {
                 usageCount++;
             }
             return super.visitVariable(node, p);
         }
 
         @Override
-        public Tree visitMemberSelect(MemberSelectTree node, Element p) {
-            if (p.equals(asElement(node))) {
+        public Tree visitMemberSelect(MemberSelectTree node, TreePath p) {
+            if (element.equals(asElement(new TreePath(p, node)))) {
                 usageCount++;
             }
             return super.visitMemberSelect(node, p);
         }
 
         @Override
-        public Tree visitIdentifier(IdentifierTree node, Element p) {
-            if (p.equals(asElement(node))) {
+        public Tree visitIdentifier(IdentifierTree node, TreePath p) {
+            if (element.equals(asElement(new TreePath(p, node)))) {
                 usageCount++;
             }
             return super.visitIdentifier(node, p);
         }
 
         @Override
-        public Tree visitMethod(MethodTree node, Element p) {
-            if (p.equals(asElement(node))) {
+        public Tree visitMethod(MethodTree node, TreePath p) {
+            if (element.equals(asElement(new TreePath(p, node)))) {
                 usageCount++;
             }
             return super.visitMethod(node, p);
         }
 
         @Override
-        public Tree visitMethodInvocation(MethodInvocationTree node, Element p) {
-            if (p.equals(asElement(node))) {
+        public Tree visitMethodInvocation(MethodInvocationTree node, TreePath p) {
+            if (element.equals(asElement(new TreePath(p, node)))) {
                 usageCount++;
             }
             return super.visitMethodInvocation(node, p);
         }
 
         @Override
-        public Tree visitAssignment(AssignmentTree node, Element p) {
-            if (p.equals(asElement(node.getVariable()))) {
+        public Tree visitAssignment(AssignmentTree node, TreePath p) {
+            if (element.equals(asElement(new TreePath(p, node.getVariable())))) {
                 assignmentCount++;
             }
             return super.visitAssignment(node, p);
         }
 
         @Override
-        public Tree visitCompoundAssignment(CompoundAssignmentTree node, Element p) {
-            if (p.equals(asElement(node.getVariable()))) {
+        public Tree visitCompoundAssignment(CompoundAssignmentTree node, TreePath p) {
+            if (element.equals(asElement(new TreePath(p, node.getVariable())))) {
                 assignmentCount++;
             }
             return super.visitCompoundAssignment(node, p);
         }
 
         @Override
-        public Tree visitUnary(UnaryTree node, Element p) {
-            if (p.equals(asElement(node.getExpression()))) {
+        public Tree visitUnary(UnaryTree node, TreePath p) {
+            if (element.equals(asElement(new TreePath(p, node.getExpression())))) {
                 assignmentCount++;
             }
             return super.visitUnary(node, p);
         }
 
-        private Element asElement(Tree tree) {
+        private Element asElement(TreePath treePath) {
             Trees treeUtil = workingCopy.getTrees();
-            TreePath treePath = treeUtil.getPath(workingCopy.getCompilationUnit(), tree);
-            Element element = treeUtil.getElement(treePath);
-            return element;
+            return treeUtil.getElement(treePath);
         }
     }
 

@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -65,10 +66,10 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
         this.visibility = visibility;
     }
 
-    public static FieldImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean register) {
+    public static FieldImpl create(AST ast, CsmFile file, FileContent fileContent, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean register) {
         FieldImpl fieldImpl = new FieldImpl(ast, file, type, name, cls, visibility);
         postObjectCreateRegistration(register, fieldImpl);
-        name.addReference(file, fieldImpl);
+        name.addReference(fileContent, fieldImpl);
         return fieldImpl;
     }
 
@@ -77,10 +78,10 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
         this.visibility = visibility;
     }
 
-    public static FieldImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean _static, boolean _extern, boolean register) {
+    public static FieldImpl create(AST ast, CsmFile file, FileContent fileContent, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean _static, boolean _extern, boolean register) {
         FieldImpl fieldImpl = new FieldImpl(ast, file, type, name, cls, visibility, _static, _extern);
         postObjectCreateRegistration(register, fieldImpl);
-        name.addReference(file, fieldImpl);
+        name.addReference(fileContent, fieldImpl);
         return fieldImpl;
     }
 

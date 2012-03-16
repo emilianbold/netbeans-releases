@@ -228,15 +228,22 @@
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <friend>org.netbeans.modules.bugtracking.kenai</friend>
                 <friend>org.netbeans.modules.bugtracking.util</friend>
-                <friend>org.netbeans.modules.versioning.kenai</friend>
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.jira</friend>
+                <friend>org.netbeans.modules.tasks.ui</friend>
+                <friend>org.netbeans.modules.versioning.kenai</friend>
+                <package>org.netbeans.modules.bugtracking.api</package>
                 <package>org.netbeans.modules.bugtracking.issuetable</package>
                 <package>org.netbeans.modules.bugtracking.jira</package>
                 <package>org.netbeans.modules.bugtracking.kenai.spi</package>

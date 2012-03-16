@@ -230,6 +230,10 @@ public class SvnClientExceptionHandler {
             }
             return support.showLogin() && handleKenaiAuthorization(support, sUrl);
         } else {
+            if (Thread.interrupted()) {
+                Subversion.LOG.log(Level.FINE, "SvnClientExceptionHandler.handleRepositoryConnectError(): canceled"); //NOI18N
+                return false;
+            }
             Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);
 
@@ -697,7 +701,7 @@ public class SvnClientExceptionHandler {
 //      svn: URL 'file:///data/subversion/dilino' non-existent in revision 88
         msg = msg.toLowerCase();
         return msg.indexOf("(not a valid url)") > - 1 ||                                      // NOI18N
-               (msg.indexOf("svn: url") > -1 && msg.indexOf("non-existent in") > - 1 ) ||
+               (msg.contains("svn:") && msg.contains("url") && msg.contains("non-existent in")) || //NOI18N
                (msg.indexOf("bad url passed to ra layer") > - 1 );
     }
 
@@ -712,7 +716,13 @@ public class SvnClientExceptionHandler {
     public static boolean isUnversionedResource(String msg) {
         msg = msg.toLowerCase();
         return msg.indexOf("(not a versioned resource)") > -1 ||                            // NOI18N
-               msg.indexOf("is not a working copy") > -1;                                   // NOI18N
+               msg.indexOf("is not a working copy") > -1 ||                                 //NOI18N
+               msg.contains("some targets are not versioned");                              //NOI18N
+    }
+    
+    public static boolean hasNoBaseRevision (String msg) {
+        msg = msg.toLowerCase();
+        return msg.contains("has no base revision until it is committed"); //NOI18N
     }
 
     public static boolean isTooOldClientForWC(String msg) {
@@ -730,7 +740,8 @@ public class SvnClientExceptionHandler {
             return true;
         }
         idx = msg.indexOf("url");                                                           // NOI18N
-        return idx > -1 && msg.indexOf("non-existent in that revision", idx + 3) > -1;      // NOI18N        
+        return idx > -1 && (msg.indexOf("non-existent in that revision", idx + 3) > -1      //NOI18N
+                || msg.indexOf("non-existent in revision", idx + 3) > -1);                  //NOI18N
     }    
 
     private static boolean isHTTP405(String msg) {
@@ -997,8 +1008,10 @@ public class SvnClientExceptionHandler {
                     WARNING_WC17_DISPLAYED = true;
                     JButton okButton = new JButton();
                     Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_WC17SwitchToCmd")); //NOI18N
+                    SwitchToCliPanel p = new SwitchToCliPanel();
+                    p.setText(format17WCMessage(exMessage));
                     NotifyDescriptor descriptor = new NotifyDescriptor(
-                            format17WCMessage(exMessage), 
+                            p, 
                             NbBundle.getMessage(SvnClientExceptionHandler.class, "LBL_Error_WCUnsupportedFormat"), //NOI18N
                             NotifyDescriptor.OK_CANCEL_OPTION,
                             NotifyDescriptor.QUESTION_MESSAGE,

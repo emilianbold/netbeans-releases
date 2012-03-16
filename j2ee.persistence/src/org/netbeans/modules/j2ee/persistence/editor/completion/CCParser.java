@@ -368,4 +368,54 @@ public class CCParser {
             return text;
         }
     }
+    
+    public class MD{
+        private final String methodName;
+        private final boolean withQ;
+        private final boolean insideParam;
+        private int valueOffset;
+        private final String value;
+        public MD(String methodName, String value, int valueOffset, boolean withQ, boolean insideParam){
+            this.methodName = methodName;
+            this.withQ = withQ;
+            this.insideParam = insideParam;
+            this.valueOffset = valueOffset;
+            this.value = value;
+        }
+
+        /**
+         * @return the methodName
+         */
+        public String getMethodName() {
+            return methodName;
+        }
+
+        /**
+         * @return the withQ
+         */
+        public boolean isWithQ() {
+            return withQ;
+        }
+
+        /**
+         * @return the insideParam
+         */
+        public boolean isInsideParam() {
+            return insideParam;
+        }
+
+        /**
+         * @return the valueOffset
+         */
+        public int getValueOffset() {
+            return valueOffset;
+        }
+        
+        public String getValue() {
+            return value;
+        }
+    }
+    public static  final String  CREATE_QUERY="createQuery";//NOI18N
+    public static  final String  CREATE_NAMEDQUERY="createNamedQuery";//NOI18N
+
 }

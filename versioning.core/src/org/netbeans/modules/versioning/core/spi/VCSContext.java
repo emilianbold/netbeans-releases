@@ -156,6 +156,11 @@ public final class VCSContext {
                 rootFiles.add(VCSFileProxy.createFileProxy(aFile));
                 continue;
             }
+            VCSFileProxy aFileProxy = node.getLookup().lookup(VCSFileProxy.class);
+            if (aFileProxy != null) {
+                rootFiles.add(aFileProxy);
+                continue;
+            }
             Project project =  node.getLookup().lookup(Project.class);
             if (project != null) {
                 addProjectFiles(rootFiles, rootFileExclusions, project);
@@ -320,16 +325,19 @@ public final class VCSContext {
                     }
                     if (rootChildFo != null && 
                         rootChildFo.isValid() && 
-                        !sourceGroup.contains(rootChildFo) && 
-                        SharabilityQuery.getSharability(rootChildFo) != Sharability.NOT_SHARABLE) 
+                        !sourceGroup.contains(rootChildFo)) 
                     {
-                        rootFilesExclusions.add(child);
+                        child = child.normalizeFile();
+                        rootChildFo = child.toFileObject();
+                        if(SharabilityQuery.getSharability(rootChildFo) != Sharability.NOT_SHARABLE) {
+                            rootFilesExclusions.add(child);
+                        }
                     }
                 } catch (IllegalArgumentException ex) {
                     // #161904
                     Logger logger = LOG;
                     logger.log(Level.WARNING, "addProjectFiles: IAE");
-                    logger.log(Level.WARNING, "rootFO: " + srcRootFo);
+                    logger.log(Level.WARNING, "rootFO: {0}", srcRootFo);
                     if (srcRootFo != sourceGroup.getRootFolder()) {
                         logger.log(Level.WARNING, "root FO has changed");
                     }
@@ -338,12 +346,12 @@ public final class VCSContext {
                         children += "\"" + fo.getPath() + "\", ";
                     }
                     children += "]";
-                    logger.log(Level.WARNING, "srcRootFo.getChildren(): " + children);
+                    logger.log(Level.WARNING, "srcRootFo.getChildren(): {0}", children);
                     if (!rootChildFo.isValid()) {
-                        logger.log(Level.WARNING, rootChildFo + " does not exist ");
+                        logger.log(Level.WARNING, "{0} does not exist ", rootChildFo);
                     }
                     if (!FileUtil.isParentOf(srcRootFo, rootChildFo)) {
-                        logger.log(Level.WARNING, rootChildFo + " is not under " + srcRootFo);
+                        logger.log(Level.WARNING, "{0} is not under {1}", new Object[]{rootChildFo, srcRootFo});
                     }
                     logger.log(Level.WARNING, null, ex);
                 }

@@ -377,8 +377,8 @@ public final class VCSFilesystemInterceptor {
      *
      * @param fo a VCSFileProxy
      */
-    public static void fileLocked(VCSFileProxy fo) {
-        LOG.log(Level.FINE, "fileLocked {0}", fo.toString());
+    public static void fileLocked(final VCSFileProxy fo) throws IOException {
+        LOG.log(Level.FINE, "fileLocked {0}", fo);
         getInterceptor(fo, "beforeEdit").beforeEdit();           // NOI18N
     }
 
@@ -466,10 +466,10 @@ public final class VCSFilesystemInterceptor {
         isDirectory = isDirectory != null ? isDirectory : false;
         
         VersioningSystem vs = master.getOwner(file, isFile);
-        VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
+        VCSInterceptor vsInterceptor = vs != null ? vs.getVCSInterceptor() : nullInterceptor;
 
         VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(file, isFile) : null;
-        VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getInterceptor() : nullInterceptor;
+        VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getVCSInterceptor() : nullInterceptor;
 
         return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, file, null, isDirectory);
     }
@@ -478,10 +478,10 @@ public final class VCSFilesystemInterceptor {
         if (from == null || to == null) return nullDelegatingInterceptor;
 
         VersioningSystem vs = master.getOwner(from);
-        VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
+        VCSInterceptor vsInterceptor = vs != null ? vs.getVCSInterceptor() : nullInterceptor;
 
         VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(from) : null;
-        VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getInterceptor() : nullInterceptor;
+        VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getVCSInterceptor() : nullInterceptor;
 
         return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, from, to, false);
     }
@@ -489,7 +489,7 @@ public final class VCSFilesystemInterceptor {
     private static DelegatingInterceptor getRefreshInterceptor (VCSFileProxy dir) {
         if (dir == null) return nullDelegatingInterceptor;
         VersioningSystem vs = master.getOwner(dir);
-        VCSInterceptor Interceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
+        VCSInterceptor Interceptor = vs != null ? vs.getVCSInterceptor() : nullInterceptor;
         return new DelegatingInterceptor(Interceptor, nullInterceptor, dir, null, true);
     }
 
@@ -690,7 +690,7 @@ public final class VCSFilesystemInterceptor {
             interceptor.beforeChange(file);
         }
 
-        public void beforeEdit() {
+        public void beforeEdit() throws IOException {
             lhInterceptor.beforeEdit(file);
             interceptor.beforeEdit(file);
         }

@@ -61,9 +61,8 @@ public final class ParameterEllipsisImpl extends ParameterImpl {
         super(ast, file, type, NameHolder.createName("..."), scope); //NOI18N
     }
 
-    public static ParameterEllipsisImpl create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) {
+    public static ParameterEllipsisImpl create(AST ast, CsmFile file, CsmType type, CsmScope scope) {
         ParameterEllipsisImpl parameterEllipsisImpl = new ParameterEllipsisImpl(ast, file, type, scope);
-        postObjectCreateRegistration(global, parameterEllipsisImpl);
         return parameterEllipsisImpl;
     }
 
@@ -71,7 +70,12 @@ public final class ParameterEllipsisImpl extends ParameterImpl {
     protected boolean registerInProject() {
         return false;
     }
-    
+
+    @Override
+    protected boolean unregisterInProject() {
+        return false;
+    }
+
     @Override
     public boolean isVarArgs() {
         return true;

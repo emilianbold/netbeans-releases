@@ -44,6 +44,8 @@ package org.netbeans;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,10 +58,13 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
@@ -69,6 +74,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -84,6 +91,9 @@ public final class Stamps {
     private static final Logger LOG = Logger.getLogger(Stamps.class.getName());
     private static AtomicLong moduleJARs;
     private static File moduleNewestFile;
+    private static String[] dirs;
+    private static File[] fallbackCache;
+    private static boolean populated;
 
     private Worker worker = new Worker();
 
@@ -97,16 +107,22 @@ public final class Stamps {
     static void main(String... args) {
         if (args.length == 1 && "reset".equals(args[0])) { // NOI18N
             moduleJARs = null;
+            dirs = null;
+            fallbackCache = null;
             stamp(false);
             return;
         }
         if (args.length == 1 && "init".equals(args[0])) { // NOI18N
             moduleJARs = null;
+            dirs = null;
+            fallbackCache = null;
             stamp(true);
             return;
         }
         if (args.length == 1 && "clear".equals(args[0])) { // NOI18N
             moduleJARs = null;
+            dirs = null;
+            fallbackCache = null;
             return;
         }
     }
@@ -167,6 +183,8 @@ public final class Stamps {
         return asByteBuffer(cache, true, false);
     }
     final File file(String cache, int[] len) {
+        checkPopulateCache();
+        
         synchronized (this) {
             if (worker.isProcessing(cache)) {
                 LOG.log(Level.FINE, "Worker processing when asking for {0}", cache); // NOI18N
@@ -178,7 +196,11 @@ public final class Stamps {
         long last = cacheFile.lastModified();
         if (last <= 0) {
             LOG.log(Level.FINE, "Cache does not exist when asking for {0}", cache); // NOI18N
-            return null;
+            cacheFile = findFallbackCache(cache);
+            if (cacheFile == null || (last = cacheFile.lastModified()) <= 0) {
+                return null;
+            }
+            LOG.log(Level.FINE, "Found fallback cache at {0}", cacheFile);
         }
 
         if (moduleJARs() > last) {
@@ -320,6 +342,21 @@ public final class Stamps {
         stamp(checkStampFile, result, newestFile);
         return result;
     }
+    
+    private static synchronized String[] dirs() {
+        if (dirs == null) {
+            List<String> tmp = new ArrayList<String>();
+            String nbdirs = System.getProperty("netbeans.dirs"); // NOI18N
+            if (nbdirs != null) {
+                StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
+                while (tok.hasMoreTokens()) {
+                    tmp.add(tok.nextToken());
+                }
+            }
+            dirs = tmp.toArray(new String[0]);
+        }
+        return dirs;
+    }
 
     private static void stamp(boolean checkStampFile, AtomicLong result, AtomicReference<File> newestFile) {
         StringBuilder sb = new StringBuilder();
@@ -328,24 +365,20 @@ public final class Stamps {
         String home = System.getProperty ("netbeans.home"); // NOI18N
         if (home != null) {
             long stamp = stampForCluster (new File (home), result, newestFile, processedDirs, checkStampFile, true, null);
-            sb.append(home).append('=').append(stamp).append('\n');
+            sb.append("home=").append(stamp).append('\n');
         }
-        String nbdirs = System.getProperty("netbeans.dirs"); // NOI18N
-        if (nbdirs != null) {
-            StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
-            while (tok.hasMoreTokens()) {
-                String t = tok.nextToken();
-                long stamp = stampForCluster(new File(t), result, newestFile, processedDirs, checkStampFile, true, null);
-                if (stamp != -1) {
-                    sb.append(t).append('=').append(stamp).append('\n');
-                }
+        for (String t : dirs()) {
+            final File clusterDir = new File(t);
+            long stamp = stampForCluster(clusterDir, result, newestFile, processedDirs, checkStampFile, true, null);
+            if (stamp != -1) {
+                sb.append(clusterDir.getName()).append('=').append(stamp).append('\n');
             }
         }
         File user = Places.getUserDirectory();
         if (user != null) {
             AtomicInteger crc = new AtomicInteger();
             stampForCluster(user, result, newestFile, new HashSet<File>(), false, false, crc);
-            sb.append(user).append('=').append(result.longValue()).append('\n');
+            sb.append("user=").append(result.longValue()).append('\n');
             sb.append("crc=").append(crc.intValue()).append('\n');
             sb.append("locale=").append(Locale.getDefault()).append('\n');
             sb.append("branding=").append(NbBundle.getBranding()).append('\n');
@@ -519,6 +552,69 @@ public final class Stamps {
             if (!tmpFile.delete()) {
                 tmpFile.deleteOnExit();
             } // delete now or later
+        }
+    }
+
+    private static File findFallbackCache(String cache) {
+        if (fallbackCache == null) {
+            fallbackCache = new File[0];
+            if (dirs().length >= 1) {
+                File fallback = new File(new File(new File(dirs()[0]), "var"), "cache"); // NOI18N
+                if (fallback.isDirectory()) {
+                    fallbackCache = new File[]{ fallback };
+                }
+            }
+        }
+        if (fallbackCache.length == 0) {
+            return null;
+        }
+        return new File(fallbackCache[0], cache);
+    }
+    
+    static void checkPopulateCache() {
+        if (populated) {
+            return;
+        }
+        populated = true;
+        
+        File cache = Places.getCacheDirectory();
+        String[] children = cache.list();
+        if (children != null && children.length > 0) {
+            return;
+        }
+        InputStream is = Stamps.getModulesJARs().asStream("populate.zip"); // NOI18N
+        if (is == null) {
+            return;
+        }
+        ZipInputStream zip = null;
+        FileOutputStream os = null;
+        try {
+            byte[] arr = new byte[4096];
+            LOG.log(Level.FINE, "Found populate.zip about to extract it into {0}", cache);
+            zip = new ZipInputStream(is);
+            for (;;) {
+                ZipEntry en = zip.getNextEntry();
+                if (en == null) {
+                    break;
+                }
+                if (en.isDirectory()) {
+                    continue;
+                }
+                File f = new File(cache, en.getName().replace('/', File.separatorChar));
+                f.getParentFile().mkdirs();
+                os = new FileOutputStream(f);
+                for (;;) {
+                    int len = zip.read(arr);
+                    if (len == -1) {
+                        break;
+                    }
+                    os.write(arr, 0, len);
+                }
+                os.close();
+            }
+            zip.close();
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "Failed to populate {0}", cache);
         }
     }
 
@@ -789,4 +885,79 @@ public final class Stamps {
     static String clusterLocalStamp(File cluster) {
         return cluster.getName().replaceAll("\\.\\.", "__");
     }
+    
+    static String readRelativePath(DataInputStream dis) throws IOException {
+        String index = dis.readUTF();
+        if (index.isEmpty()) {
+            return index;
+        }
+        String relative = dis.readUTF();
+        if ("user".equals(index)) { // NOI18N
+            return System.getProperty("netbeans.user").concat(relative); // NOI18N
+        }
+        if ("home".equals(index)) { // NOI18N
+            return System.getProperty("netbeans.home").concat(relative); // NOI18N
+        }
+        int indx = Integer.parseInt(index);
+        return dirs()[indx].concat(relative); // NOI18N
+    }
+
+    static void writeRelativePath(String path, DataOutput dos) throws IOException {
+        produceRelativePath(path, dos);
+    }
+
+    private static void produceRelativePath(String path, Object out) throws IOException {
+        if (path.isEmpty()) {
+            if (out instanceof DataOutput) {
+                DataOutput dos = (DataOutput)out;
+                dos.writeUTF(path);
+            }
+            return;
+        }
+        if (testWritePath(path, System.getProperty("netbeans.user"), "user", out)) {
+            return;
+        }
+        int cnt = 0;
+        for (String p : dirs()) {
+            if (testWritePath(path, p, "" + cnt, out)) {
+                return;
+            }
+            cnt++;
+        }
+        if (testWritePath(path, System.getProperty("netbeans.home"), "home", out)) {
+            return;
+        }
+        throw new IOException("Can't find relative path for '" + path + "'");
+    }
+
+    private static boolean testWritePath(String path, String prefix, String codeName, Object out) throws IOException {
+        if (prefix == null || prefix.isEmpty()) {
+            return false;
+        }
+        if (path.startsWith(prefix)) {
+            final String relPath = path.substring(prefix.length());
+            if (out instanceof DataOutput) {
+                DataOutput dos = (DataOutput)out;
+                dos.writeUTF(codeName);
+                dos.writeUTF(relPath);
+            } else {
+                Collection coll = (Collection)out;
+                coll.add(codeName);
+                coll.add(relPath);
+            }
+            return true;
+        }
+        return false;
+    }
+    static String findRelativePath(String file) {
+        List<String> arrayList = new ArrayList<String>();
+        try {
+            produceRelativePath(file, arrayList);
+        } catch (IOException ex) {
+            return file;
+        }
+        return arrayList.get(1);
+    }
+
+
 }

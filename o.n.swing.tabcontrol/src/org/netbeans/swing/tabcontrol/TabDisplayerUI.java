@@ -49,16 +49,19 @@
 
 package org.netbeans.swing.tabcontrol;
 
-import org.netbeans.swing.tabcontrol.event.TabActionEvent;
-
-import javax.swing.*;
-import javax.swing.plaf.ComponentUI;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.SingleSelectionModel;
+import javax.swing.UIManager;
+import javax.swing.plaf.ComponentUI;
+import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.netbeans.swing.tabcontrol.plaf.TabControlButton;
 import org.netbeans.swing.tabcontrol.plaf.TabControlButtonFactory;
+import org.openide.windows.TopComponent;
 
 /**
  * The basic UI of a tab displayer component.  Defines the API of the UI for
@@ -225,6 +228,26 @@ public abstract class TabDisplayerUI extends ComponentUI {
     }
 
     /**
+     * Check if the given tab is busy and should be painted in a special way.
+     * @param tabIndex
+     * @return True if given tab is 'busy', false otherwise.
+     * @since 1.34
+     */
+    public final boolean isTabBusy( int tabIndex ) {
+        WinsysInfoForTabbedContainer winsysInfo = displayer.getContainerWinsysInfo();
+        if( null == winsysInfo )
+            return false;
+        TabDataModel model = displayer.getModel();
+        if( tabIndex < 0 || tabIndex >= model.size() )
+            return false;
+        TabData td = model.getTab( tabIndex );
+        if( td.getComponent() instanceof TopComponent ) {
+            return winsysInfo.isTopComponentBusy( (TopComponent)td.getComponent() );
+        }
+        return false;
+    }
+
+    /**
      * Installs the selection model into the tab control via a package private
      * method.
      */
@@ -247,8 +270,8 @@ public abstract class TabDisplayerUI extends ComponentUI {
     
     protected abstract void requestAttention (int tab);
     
-    protected abstract void cancelRequestAttention (int tab);   
-    
+    protected abstract void cancelRequestAttention (int tab);
+
     /**
      * @since 1.9
      * @return An icon for various buttons displayed in tab control (close/pin/scroll left/right etc), see TabControlButton class.

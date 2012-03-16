@@ -54,6 +54,8 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
 import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.awt.Font;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -91,7 +93,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
@@ -104,6 +106,7 @@ import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -111,7 +114,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
+public class NbJiraIssue {
     private TaskData taskData;
     private JiraRepository repository;
     private Controller controller;
@@ -140,7 +143,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     private static final String FIXED = "Fixed";                        //NOI18N
 
     /**
-     * Issue wasn't seen yet
+     * IssueProvider wasn't seen yet
      */
     static final int FIELD_STATUS_IRELEVANT = -1;
 
@@ -159,6 +162,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      */
     static final int FIELD_STATUS_MODIFIED = 4;
     private Map<String, String> seenAtributes;
+    private final PropertyChangeSupport support;
 
     public enum IssueField {
         KEY(JiraAttribute.ISSUE_KEY.id(), "LBL_KEY"),
@@ -226,13 +230,29 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      */
     public static ColumnDescriptor[] DESCRIPTORS;
     private IssueNode node;
+    private Node[] context;
     
     public NbJiraIssue(TaskData data, JiraRepository repo) {
-        super(repo);
         this.taskData = data;
         this.repository = repo;
+        this.support = new PropertyChangeSupport(this);
     }
 
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+    
+    /**
+     * Notify listeners on this issue that its data were changed
+     */
+    protected void fireDataChanged() {
+        support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
+    }
+    
     void opened() {
         if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
         if(!taskData.isNew()) {
@@ -256,7 +276,6 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
     }
 
-    @Override
     public boolean isNew() {
         return taskData == null || taskData.isNew();
     }
@@ -276,12 +295,10 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         });
     }
 
-    @Override
     public JiraRepository getRepository() {
         return repository;
     }
 
-    @Override
     public String getID() {
 //        return taskData.getTaskId(); // XXX id or key ???
         return getID(taskData);
@@ -291,9 +308,12 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         return getID(taskData);
     }
 
-    @Override
     public String getSummary() {
         return getSummary(taskData);
+    }
+
+    public void setContext(Node[] nodes) {
+        this.context = nodes;
     }
 
     private static String getSummary(TaskData taskData) {
@@ -498,7 +518,6 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      * Reloads the task data
      * @return true if successfully refreshed
      */
-    @Override
     public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         return refresh(getID(), false);
@@ -732,7 +751,6 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         ta.setValue(operation.getOperationId());
     }
 
-    @Override
     public String getDisplayName() {
         return getDisplayName(taskData);
     }
@@ -743,7 +761,6 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue", new Object[] {getID(taskData), getSummary(taskData)}); // NOI18N
     }
 
-    @Override
     public String getShortenedDisplayName() {
         if (taskData.isNew()) {
             return getDisplayName();
@@ -757,14 +774,12 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                                    new Object[] {getID(), shortSummary});
     }
 
-    @Override
     public String getTooltip() {
         return "Issue: " + getKey(); // + " " + getType() + " " + getPriority() + " " + getStatus();
     }
 
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("hh24:mmm:ss dd.mm.yyyy");
 
-    @Override
     public IssueNode getNode() {
         if(node == null) {
             node = new JiraIssueNode(this);
@@ -773,7 +788,6 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     }
 
     // XXX carefull - implicit double refresh
-    @Override
     public void addComment(String comment, boolean close) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         if (Jira.LOG.isLoggable(Level.FINE)) {
@@ -864,12 +878,10 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         repository.getExecutor().execute(cmd);
     }
 
-    @Override
     public void attachPatch(File file, String comment) {
         addAttachment(file, comment, null);
     }
 
-    @Override
     public BugtrackingController getController() {
         if(controller == null) {
             controller = new Controller();
@@ -877,8 +889,16 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         return controller;
     }
     
+    public void setSeen(boolean seen) throws IOException {
+        repository.getIssueCache().setSeen(getID(), seen);
+    }
+    
+    private boolean wasSeen() {
+        return repository.getIssueCache().wasSeen(getID());
+    }
+    
     public String getRecentChanges() {
-        if(IssueCacheUtils.wasSeen(this)) {
+        if(wasSeen()) {
             return "";                                                          // NOI18N
         }
         int status = repository.getIssueCache().getStatus(getID());
@@ -1338,8 +1358,12 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             repository.refreshAllQueries();
         }
 
-        seenAtributes = null;
-        IssueCacheUtils.setSeen(this, true);
+        try {
+            seenAtributes = null;
+            setSeen(true);
+        } catch (IOException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        }
 
         return true;
     }

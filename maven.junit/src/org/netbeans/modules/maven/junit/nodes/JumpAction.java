@@ -48,8 +48,9 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import static org.netbeans.modules.maven.junit.nodes.Bundle.*;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * mkleint: copied from junit module
@@ -72,6 +73,7 @@ final class JumpAction extends AbstractAction {
      * If the <code>callstackFrameInfo</code> is not <code>null</code>,
      * tries to jump to the callstack frame source code. Otherwise does nothing.
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (node instanceof TestsuiteNode){
             OutputUtils.openTestsuite((TestsuiteNode)node);
@@ -84,10 +86,11 @@ final class JumpAction extends AbstractAction {
 
 
 
+    @Messages("LBL_GotoSource=Go to Source")
     @Override
     public Object getValue(String key) {
         if (key.equals(Action.NAME)) {
-            return NbBundle.getMessage(JumpAction.class, "LBL_GotoSource"); //NOI18N
+            return LBL_GotoSource(); //NOI18N
         }else{
             return super.getValue(key);
         }

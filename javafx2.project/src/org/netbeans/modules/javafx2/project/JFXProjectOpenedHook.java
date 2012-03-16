@@ -84,74 +84,81 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
 
     @Override
     protected synchronized void projectOpened() {
-        logUsage(JFXProjectGenerator.PROJECT_OPEN);
-        
-        // create Default JavaFX platform if necessary
-        // #205341
-        final Runnable runCreateJFXPlatform = missingJFXPlatform() ? new Runnable() {
-            @Override
-            public void run() {
-                createJFXPlatform();
-            }
-        } : null;
-        
-        // and update FX build script file jfx-impl.xml if it is not in expected state
-        // #204765
-        final Runnable runUpdateJFXImpl = isEnabledJFXUpdate() ? new Runnable() {
-            @Override
-            public void run() {
-                FileObject readmeFO = updateJfxImpl();
-                if(readmeFO != null && isEnabledJFXUpdateNotification()) {
-                    DataObject dobj;
-                    try {
-                        dobj = DataObject.find (readmeFO);
-                        EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
-                        OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
-                        if (ec != null) {
-                            ec.edit();
-                        } else if (oc != null) {
-                            oc.open();
-                        } else {
-                            LOGGER.log(Level.INFO, "No EditCookie nor OpenCookie for {0}", dobj);
+        if(JFXProjectProperties.isTrue(this.eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))) {
+            logUsage(JFXProjectGenerator.PROJECT_OPEN);
+
+            // create Default JavaFX platform if necessary
+            // #205341
+            final Runnable runCreateJFXPlatform = missingJFXPlatform() ? new Runnable() {
+                @Override
+                public void run() {
+                    createJFXPlatform();
+                }
+            } : null;
+
+            // and update FX build script file jfx-impl.xml if it is not in expected state
+            // #204765
+            // and create Default RunAs Configurations
+            // #204760
+            final Runnable runUpdateJFXImpl = isEnabledJFXUpdate() ? new Runnable() {
+                @Override
+                public void run() {
+                    updateDefaultConfigs();
+                    FileObject readmeFO = updateJfxImpl();
+                    if(readmeFO != null && isEnabledJFXUpdateNotification()) {
+                        DataObject dobj;
+                        try {
+                            dobj = DataObject.find (readmeFO);
+                            EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
+                            OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
+                            if (ec != null) {
+                                ec.edit();
+                            } else if (oc != null) {
+                                oc.open();
+                            } else {
+                                LOGGER.log(Level.INFO, "No EditCookie nor OpenCookie for {0}", dobj);
+                            }
+                        } catch (DataObjectNotFoundException donf) {
+                            assert false : "DataObject must exist for " + readmeFO;
                         }
-                    } catch (DataObjectNotFoundException donf) {
-                        assert false : "DataObject must exist for " + readmeFO;
                     }
                 }
-            }
-        } : null;
-        
-        if(runCreateJFXPlatform != null && runUpdateJFXImpl != null) {
-            switchBusy();
-            final ProjectInformation info = ProjectUtils.getInformation(prj);
-            final String projName = info != null ? info.getName() : null;
-            final RequestProcessor RP = new RequestProcessor(JFXProjectOpenedHook.class.getName() + projName, 2);
-            final RequestProcessor.Task taskPlatforms = RP.post(runCreateJFXPlatform);
-            final RequestProcessor.Task taskJfxImpl = RP.post(runUpdateJFXImpl);
-            if(taskPlatforms != null) {
-                taskPlatforms.waitFinished();
-            }
-            if(taskJfxImpl != null) {
-                taskJfxImpl.waitFinished();
-            }
-            switchDefault();
-        } else {
-            if(runCreateJFXPlatform != null) {
+            } : null;
+
+            if(runCreateJFXPlatform != null && runUpdateJFXImpl != null) {
                 switchBusy();
-                runCreateJFXPlatform.run();
+                final ProjectInformation info = ProjectUtils.getInformation(prj);
+                final String projName = info != null ? info.getName() : null;
+                final RequestProcessor RP = new RequestProcessor(JFXProjectOpenedHook.class.getName() + projName, 2);
+                final RequestProcessor.Task taskPlatforms = RP.post(runCreateJFXPlatform);
+                final RequestProcessor.Task taskJfxImpl = RP.post(runUpdateJFXImpl);
+                if(taskPlatforms != null) {
+                    taskPlatforms.waitFinished();
+                }
+                if(taskJfxImpl != null) {
+                    taskJfxImpl.waitFinished();
+                }
                 switchDefault();
-            }
-            if(runUpdateJFXImpl != null) {
-                switchBusy();
-                runUpdateJFXImpl.run();
-                switchDefault();
+            } else {
+                if(runCreateJFXPlatform != null) {
+                    switchBusy();
+                    runCreateJFXPlatform.run();
+                    switchDefault();
+                }
+                if(runUpdateJFXImpl != null) {
+                    switchBusy();
+                    runUpdateJFXImpl.run();
+                    switchDefault();
+                }
             }
         }
     }
 
     @Override
     protected void projectClosed() {
-        logUsage(JFXProjectGenerator.PROJECT_CLOSE);
+        if(JFXProjectProperties.isTrue(this.eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))) {
+            logUsage(JFXProjectGenerator.PROJECT_CLOSE);
+        }
     }
 
     private static void logUsage(@NonNull final String msg) {
@@ -206,6 +213,26 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
         return readmeFO;
     }
     
+    private boolean updateDefaultConfigs() {
+        // this operation must be finished before any user
+        // action on this project involving Run, Build, Debug, etc.
+        boolean updated = false;
+        final PropertyEvaluator evaluator = eval.evaluator();
+        if(evaluator != null) {
+            try {
+                updated |= JFXProjectUtils.updateDefaultRunAsConfigFile(prj.getProjectDirectory(), JFXProjectProperties.RunAsType.ASWEBSTART, false);
+                updated |= JFXProjectUtils.updateDefaultRunAsConfigFile(prj.getProjectDirectory(), JFXProjectProperties.RunAsType.INBROWSER, 
+                        !JFXProjectProperties.isNonEmpty(evaluator.getProperty(JFXProjectProperties.RUN_IN_BROWSER)) ||
+                        !JFXProjectProperties.isNonEmpty(evaluator.getProperty(JFXProjectProperties.RUN_IN_BROWSER_PATH)));
+            } catch (Exception ex) {
+                LOGGER.log(Level.WARNING, "Can't update JavaFX specific RunAs configuration files: {0}", ex); // NOI18N
+            }
+        } else {
+            LOGGER.log(Level.WARNING, "PropertyEvaluator instantiation failed, disabling jfx-impl.xml auto-update."); // NOI18N
+        }
+        return updated;
+    }
+
     private void switchBusy() {
         SwingUtilities.invokeLater(new Runnable() {
 

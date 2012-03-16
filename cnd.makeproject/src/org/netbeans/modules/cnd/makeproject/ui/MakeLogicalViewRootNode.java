@@ -53,10 +53,11 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -67,9 +68,12 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.project.BrokenIncludes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
@@ -81,9 +85,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
-import org.netbeans.modules.cnd.api.project.BrokenIncludes;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
+import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ActionProvider;
@@ -119,6 +121,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     private boolean brokenLinks;
     private boolean brokenIncludes;
     private boolean brokenProject;
+    private boolean incorrectVersion;
+    private boolean checkVersion = true;
     private Folder folder;
     private final Lookup.Result<BrokenIncludes> brokenIncludesResult;
     private final MakeLogicalViewProvider provider;
@@ -144,6 +148,18 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
         brokenLinks = provider.hasBrokenLinks();
         brokenIncludes = hasBrokenIncludes(provider.getProject());
+        if (gotMakeConfigurationDescriptor()) {
+            incorrectVersion = !isCorectVersion(provider.getMakeConfigurationDescriptor().getVersion());
+            if (incorrectVersion) {
+                EventQueue.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        (new ResolveIncorrectVersionAction(MakeLogicalViewRootNode.this, new VisualUpdater())).actionPerformed(null);                
+                    }
+                });
+            }
+        }
         // Handle annotations
         setForceAnnotation(true);
         if (folder != null) {
@@ -178,12 +194,12 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     
     private String getHtmlDisplayName2() {
         String ret;
-        if (brokenLinks) {
+        if (brokenLinks || incorrectVersion) {
             ret = getName();
         } else {
             ret = super.getHtmlDisplayName();
         }
-        if (brokenLinks) {
+        if (brokenLinks || incorrectVersion) {
             try {
                 ret = XMLUtil.toElementContent(ret);
             } catch (CharConversionException ex) {
@@ -215,6 +231,11 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
         }
         stateChanged(null);
+    }
+    
+    void reInitWithUnsupportedVersion() {
+        checkVersion = false;
+        reInit(provider.getMakeConfigurationDescriptor());
     }
 
     private void setRealProjectFolder(Folder folder) {
@@ -265,14 +286,12 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     }
 
     private void updateAnnotationFiles() {
-        HashSet<FileObject> set = new HashSet<FileObject>();
         // Add project directory
         FileObject fo = getProject().getProjectDirectory();
         if (fo == null || !fo.isValid()) {
             // See IZ 125880
             Logger.getLogger("cnd.makeproject").log(Level.WARNING, "project.getProjectDirectory() == null - {0}", getProject());
         }
-        set.add(getProject().getProjectDirectory());
         if (!gotMakeConfigurationDescriptor()) {
             return;
         }
@@ -285,6 +304,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         if (confs == null) {
             return;
         }
+        Set<FileObject> set = new LinkedHashSet<FileObject>();
         for (Configuration conf : confs.toArray()) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
             if (makeConfiguration.isMakefileConfiguration()) {
@@ -302,6 +322,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
                 }
             }
         }
+        set.add(getProject().getProjectDirectory());
         setFiles(set);
         Folder aFolder = folder;
         if (aFolder != null) {
@@ -339,7 +360,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
         @Override
         public void run() {
-            if (brokenProject) {
+            if (brokenProject || incorrectVersion) {
                 MakeLogicalViewRootNode.this.setChildren(Children.LEAF);
             }
             fireIconChange();
@@ -358,6 +379,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         MakeConfigurationDescriptor makeConfigurationDescriptor = provider.getMakeConfigurationDescriptor();
         if (makeConfigurationDescriptor != null) {
             brokenProject =  makeConfigurationDescriptor.getState() == State.BROKEN;
+            incorrectVersion = !isCorectVersion(makeConfigurationDescriptor.getVersion());
             if (gotMakeConfigurationDescriptor() && provider.getMakeConfigurationDescriptor().getConfs().size() == 0 ) {
                 brokenProject = true;
             }
@@ -369,6 +391,13 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 //            fireDisplayNameChange(null, null);
     }
 
+    private boolean isCorectVersion(int version) {
+        if (checkVersion) {
+            return version <= CommonConfigurationXMLCodec.CURRENT_VERSION;
+        }
+        return true;
+    }    
+    
     @Override
     public Object getValue(String valstring) {
         if (valstring == null) {
@@ -403,7 +432,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenLinkBadge, 8, 0);
         } else if (brokenIncludes) {
             return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenIncludeBadge, 8, 0);
-        } else if (brokenProject) {
+        } else if (brokenProject || incorrectVersion) {
             return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenProjectBadge, 8, 0);
         }
         return original;
@@ -451,6 +480,9 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             //actions.add(SystemAction.get(ToolsAction.class));
             if (brokenLinks) {
                 actions.add(new ResolveReferenceAction(provider.getProject()));
+            }
+            if (incorrectVersion) {
+                actions.add(new ResolveIncorrectVersionAction(this, new VisualUpdater()));
             }
             //actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());

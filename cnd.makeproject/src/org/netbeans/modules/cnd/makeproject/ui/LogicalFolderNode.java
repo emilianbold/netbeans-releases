@@ -47,25 +47,28 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
+import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction;
-import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
 import org.netbeans.modules.cnd.makeproject.actions.DebugTestAction;
-import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
 import org.netbeans.modules.cnd.makeproject.actions.NewTestActionFactory;
 import org.netbeans.modules.cnd.makeproject.actions.RunTestAction;
 import org.netbeans.modules.cnd.makeproject.actions.StepIntoTestAction;
+import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
+import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.NodeActionFactory.RenameNodeAction;
@@ -79,8 +82,10 @@ import org.openide.NotifyDescriptor;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
+import org.openide.actions.FileSystemAction;
 import org.openide.actions.PasteAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.*;
@@ -135,6 +140,10 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
                     if (dataFolder != null) {
                         elems.add(dataFolder);
                     }
+                    File file = FileUtil.toFile(fo);
+                    if (file != null) {
+                        elems.add(file);
+                    }
                 }
             }
         }
@@ -155,7 +164,18 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
         @Override
         public void run() {
-            setFiles(new HashSet<FileObject>() /*Collections.EMPTY_SET*/ /*folder.getAllItemsAsFileObjectSet(true)*/); // See IZ 100394 for details
+            Set<FileObject> newSet = Collections.<FileObject>emptySet(); /*Collections.EMPTY_SET*/ /*folder.getAllItemsAsFileObjectSet(true)*/ // See IZ 100394 for details
+            if (folder.isDiskFolder()) {
+                MakeConfigurationDescriptor conf = folder.getConfigurationDescriptor();
+                if (conf != null) {
+                    String rootPath = folder.getRootPath();
+                    FileObject fo = RemoteFileUtil.getFileObject(conf.getBaseDirFileObject(), rootPath);
+                    if (fo != null /*paranoia*/ && fo.isValid() && fo.isFolder()) {
+                        newSet = Collections.<FileObject>singleton(fo);
+                    }
+                }
+            }
+            setFiles(newSet);
             List<Folder> allFolders = new ArrayList<Folder>();
             allFolders.add(folder);
             allFolders.addAll(folder.getAllFolders(true));
@@ -464,6 +484,8 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
                         //                        null,
                         SystemAction.get(DeleteAction.class),
                         NodeActionFactory.createRenameAction(),
+                        null,
+                        SystemAction.get(FileSystemAction.class),
                         null,
                         SystemAction.get(PropertiesFolderAction.class),};
         } else {

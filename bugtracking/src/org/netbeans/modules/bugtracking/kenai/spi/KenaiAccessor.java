@@ -50,10 +50,11 @@ import java.net.PasswordAuthentication;
 import java.util.Collection;
 import java.util.logging.Level;
 import javax.swing.JLabel;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
@@ -195,23 +196,26 @@ public abstract class KenaiAccessor {
                 BugtrackingManager.LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
                 if(tc instanceof QueryTopComponent) {
                     QueryTopComponent qtc = (QueryTopComponent) tc;
-                    Query query = qtc.getQuery();
+                    QueryImpl query = qtc.getQuery();
                     if(query == null) {
                         return;
                     }
-                    Repository repository = query.getRepository();
-                    if(repository == null) {
+                    RepositoryImpl repositoryImpl = query.getRepositoryImpl();
+                    if(repositoryImpl == null) {
                         return;
                     }
-                    KenaiSupport support = repository.getLookup().lookup(KenaiSupport.class);
-                    if(support == null || query != support.getAllIssuesQuery(repository)) {
+                    if(!KenaiUtil.isKenai(repositoryImpl.getRepository())) {
                         return;
                     }
-                    KenaiProject kenaiProject = repository.getLookup().lookup(KenaiProject.class);
+                    Query allIssuesQuery = KenaiUtil.getAllIssuesQuery(repositoryImpl.getRepository());
+                    if(allIssuesQuery == null || query != APIAccessor.IMPL.getImpl(allIssuesQuery)) {
+                        return; 
+                    } 
+                    KenaiProject kenaiProject = KenaiUtil.getKenaiProject(repositoryImpl.getRepository());
                     if(kenaiProject == null) {
                         return;
                     }
-                    kenaiProject.fireQueryActivated(query);
+                    kenaiProject.fireQueryActivated(query.getQuery());
                 }
             }
         }

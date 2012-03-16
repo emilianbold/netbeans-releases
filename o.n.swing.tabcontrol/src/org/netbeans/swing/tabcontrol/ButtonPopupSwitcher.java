@@ -51,16 +51,19 @@ import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.MouseInputListener;
-import org.netbeans.swing.popupswitcher.SwitcherTable;
+import javax.swing.event.*;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
+import org.netbeans.swing.tabcontrol.DocumentSwitcherTable.Item;
+import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
+import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
+import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.openide.awt.StatusDisplayer;
+import org.openide.windows.TopComponent;
 
 /**
  * Represents Popup for "Document switching" which is shown after an user clicks
@@ -68,15 +71,15 @@ import org.openide.awt.StatusDisplayer;
  *
  * @author mkrauskopf
  */
-final class ButtonPopupSwitcher
-        implements MouseInputListener, AWTEventListener, ListSelectionListener {
+final class ButtonPopupSwitcher implements MouseInputListener, AWTEventListener,
+        ListSelectionListener, ComplexListDataListener, PopupMenuListener {
     
     /**
      * Reference to the popup object currently showing the default instance, if
      * it is visible
      */
-    private static Popup popup;
-    
+    private static JPopupMenu popup;
+
     /**
      * Reference to the focus owner when addNotify was called. This is the
      * component that received the mouse event, so it's what we need to listen
@@ -97,12 +100,14 @@ final class ButtonPopupSwitcher
     /** Current switcher instance. */
     private static ButtonPopupSwitcher currentSwitcher;
     
-    private SwitcherTable pTable;
+    private final DocumentSwitcherTable pTable;
     
     private int x;
     private int y;
 
     private boolean isDragging = true;
+
+    private final TabDisplayer displayer;
     
     /**
      * Creates and shows the popup with given <code>items</code>. When user
@@ -111,21 +116,22 @@ final class ButtonPopupSwitcher
      * <code>SwitcherTableItem.Activatable</code> implementation. A popup appears
      * on <code>x</code>, <code>y</code> coordinates.
      */
-    public static void selectItem(JComponent owner, SwitcherTableItem[] items,
-            int x, int y) {
-        ButtonPopupSwitcher switcher
-                = new ButtonPopupSwitcher(items, x, y);
+    public static void showPopup(JComponent owner, TabDisplayer displayer, int x, int y) {
+        ButtonPopupSwitcher switcher = new ButtonPopupSwitcher(displayer, x, y);
         switcher.doSelect(owner);
         currentSwitcher = switcher;
     }
     
     /** Creates a new instance of TabListPanel */
-    private ButtonPopupSwitcher(SwitcherTableItem items[],
-            int x,
-            int y) {
-        this.pTable = new SwitcherTable(items, y);
-        this.x = x - (int) pTable.getPreferredSize().getWidth();
-        this.y = y + 1;
+    private ButtonPopupSwitcher(TabDisplayer displayer, int x, int y ) {
+
+        this.displayer = displayer;
+        Item[] items = createSwitcherItems(displayer);
+        Arrays.sort(items);
+
+        this.pTable = new DocumentSwitcherTable(displayer, items, y);
+        this.x = x;
+        this.y = y;
     }
     
     private void doSelect(JComponent owner) {
@@ -135,13 +141,22 @@ final class ButtonPopupSwitcher
         pTable.addMouseListener(this);
         pTable.addMouseMotionListener(this);
         pTable.getSelectionModel().addListSelectionListener( this );
-        
-        Toolkit.getDefaultToolkit().addAWTEventListener(this,
-                AWTEvent.MOUSE_EVENT_MASK
-                | AWTEvent.KEY_EVENT_MASK);
-        popup = PopupFactory.getSharedInstance().getPopup(
-                invokingComponent, pTable, x, y);
-        popup.show();
+
+        displayer.getModel().addComplexListDataListener( this );
+
+        Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.KEY_EVENT_MASK);
+
+        popup = new JPopupMenu();
+        popup.setBorderPainted( false );
+        popup.setBorder( BorderFactory.createEmptyBorder() );
+        popup.add( pTable );
+        popup.pack();
+        int locationX = x - (int) pTable.getPreferredSize().getWidth();
+        int locationY = y + 1;
+        popup.setLocation( locationX, locationY );
+        popup.setInvoker( invokingComponent );
+        popup.addPopupMenuListener( this );
+        popup.setVisible( true );
         shown = true;
         invocationTime = System.currentTimeMillis();
     }
@@ -169,6 +184,7 @@ final class ButtonPopupSwitcher
         pTable.removeMouseListener(this);
         pTable.removeMouseMotionListener(this);
         pTable.getSelectionModel().removeListSelectionListener( this );
+        displayer.getModel().removeComplexListDataListener( this );
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
         if (invokingComponent != null) {
             invokingComponent.removeMouseListener(this);
@@ -176,10 +192,16 @@ final class ButtonPopupSwitcher
             invokingComponent = null;
         }
         if (popup != null) {
-            // Issue 41121 - use invokeLater to allow any pending event
-            // processing against the popup contents to run before the popup is
-            // hidden
-            SwingUtilities.invokeLater(new PopupHider(popup));
+            popup.removePopupMenuListener( this );
+            final JPopupMenu popupToHide = popup;
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    if( popupToHide.isVisible() )
+                        popupToHide.setVisible( false );
+                }
+            });
+            popup.setVisible( false );
             popup = null;
             shown = false;
             currentSwitcher = null;
@@ -192,35 +214,24 @@ final class ButtonPopupSwitcher
         StatusDisplayer.getDefault().setStatusText( null == item ? null : item.getDescription() );
     }
     
-    /**
-     * Runnable which hides the popup in a subsequent event queue loop.  This
-     * is to avoid problems with BasicToolbarUI, which will try to process
-     * events on the component after it has been hidden and throw exceptions.
-     *
-     * @see http://www.netbeans.org/issues/show_bug.cgi?id=41121
-     */
-    private class PopupHider implements Runnable {
-        private Popup toHide;
-        public PopupHider(Popup popup) {
-            toHide = popup;
-        }
-        
-        public void run() {
-            toHide.hide();
-            toHide = null;
-        }
-    }
-    
+    @Override
     public void mouseMoved(MouseEvent e) {
         e.consume();
         changeSelection(e);
+        pTable.onMouseEvent(e);
         isDragging = false;
     }
     
+    @Override
     public void mousePressed(MouseEvent e) {
+        int tabCount = displayer.getModel().size();
+        if( pTable.onMouseEvent(e) && tabCount == 1 ) {
+            hideCurrentPopup();
+        }
         e.consume();
     }
     
+    @Override
     public void mouseReleased(MouseEvent e) {
         if (e.getSource() == invokingComponent) {
             long time = System.currentTimeMillis();
@@ -232,33 +243,40 @@ final class ButtonPopupSwitcher
         e.consume();
     }
     
+    @Override
     public void mouseClicked(MouseEvent e) {
         Point p = e.getPoint();
         p = SwingUtilities.convertPoint((Component) e.getSource(), p, pTable);
         if (pTable.contains(p)) {
-            final SwitcherTableItem item = pTable.getSelectedItem();
-            if (item != null) {
-                item.activate();
-                hideCurrentPopup();
+            if( !pTable.onMouseEvent(e) ) {
+                final SwitcherTableItem item = pTable.getSelectedItem();
+                if (item != null) {
+                    hideCurrentPopup();
+                    item.activate();
+                }
             }
         }
         isDragging = false;
         e.consume();
     }
     
+    @Override
     public void mouseEntered(MouseEvent e) {
         mouseDragged(e);
         e.consume();
     }
     
+    @Override
     public void mouseExited(MouseEvent e) {
         pTable.clearSelection();
         e.consume();
     }
     
     //MouseMotionListener
+    @Override
     public void mouseDragged(MouseEvent e) {
         changeSelection( e );
+        pTable.onMouseEvent( e );
         e.consume();
     }
 
@@ -291,38 +309,12 @@ final class ButtonPopupSwitcher
         return pTable.contains(p);
     }
     
-    /**
-     * Popup should be closed under some circumstances. Namely when mouse is
-     * pressed or released outside of popup or when key is pressed during the
-     * time popup is visible.
-     */
+    @Override
     public void eventDispatched(AWTEvent event) {
         if (event.getSource() == this) {
             return;
         }
-        if (event instanceof MouseEvent) {
-            if (event.getID() == MouseEvent.MOUSE_RELEASED) {
-                long time = System.currentTimeMillis();
-                // check if button was just slowly clicked
-                if (time - invocationTime > 500) {
-                    if (!onSwitcherTable((MouseEvent) event) && event.getSource() != invokingComponent) {
-                        // Don't take any chances
-                        hideCurrentPopup();
-                    }
-                }
-            } else if (event.getID() == MouseEvent.MOUSE_PRESSED) {
-                if (!onSwitcherTable((MouseEvent) event)) {
-                    // Don't take any chances
-                    if (event.getSource() != invokingComponent) {
-                        // If it's the invoker, don't do anything - it will
-                        // generate another call to invoke(), which will do the
-                        // hiding - if we do it here, it will get shown again
-                        // when the button processes the event
-                        hideCurrentPopup();
-                    }
-                }
-            }
-        } else if (event instanceof KeyEvent) {
+        if (event instanceof KeyEvent) {
             if (event.getID() == KeyEvent.KEY_PRESSED) {
                 if( !changeSelection( (KeyEvent)event ) ) {
                     Toolkit.getDefaultToolkit().removeAWTEventListener(this);
@@ -396,5 +388,145 @@ final class ButtonPopupSwitcher
             pTable.changeSelection( selRow, selCol, false, false );
         }
         return switched;
+    }
+
+    private void changed() {
+        if( !isShown() )
+            return;
+
+        Item[] items = createSwitcherItems(displayer);
+        if( items.length == 0 ) {
+            hideCurrentPopup();
+            return;
+        }
+        Arrays.sort(items);
+
+        pTable.setSwitcherItems( items, y );
+        popup.pack();
+        int locationX = x - (int) pTable.getPreferredSize().getWidth();
+        int locationY = y + 1;
+        popup.setLocation( locationX, locationY );
+    }
+
+    @Override
+    public void indicesAdded(ComplexListDataEvent e) {
+        changed();
+    }
+
+    @Override
+    public void indicesRemoved(ComplexListDataEvent e) {
+        changed();
+    }
+
+    @Override
+    public void indicesChanged(ComplexListDataEvent e) {
+        changed();
+    }
+
+    @Override
+    public void intervalAdded(ListDataEvent e) {
+        changed();
+    }
+
+    @Override
+    public void intervalRemoved(ListDataEvent e) {
+        changed();
+    }
+
+    @Override
+    public void contentsChanged(ListDataEvent e) {
+        changed();
+    }
+
+    @Override
+    public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
+    }
+
+    @Override
+    public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) {
+        if( null != popup )
+            popup.removePopupMenuListener( this );
+        hideCurrentPopup();
+    }
+
+    @Override
+    public void popupMenuCanceled( PopupMenuEvent e ) {
+        if( null != popup )
+            popup.removePopupMenuListener( this );
+        hideCurrentPopup();
+    }
+
+    private Item[] createSwitcherItems(final TabDisplayer displayer) {
+        java.util.List<TabData> tabs = displayer.getModel().getTabs();
+        Item[] items = new Item[tabs.size()];
+        int i = 0;
+        int selIdx = displayer.getSelectionModel().getSelectedIndex();
+        TabData selectedTab = selIdx >= 0 ? displayer.getModel().getTab(selIdx) : null;
+        for (TabData tab : tabs) {
+            String name;
+            String htmlName;
+            if (tab.getComponent() instanceof TopComponent) {
+                TopComponent tabTC = (TopComponent) tab.getComponent();
+                name = tabTC.getDisplayName();
+                // #68291 fix - some hostile top components have null display name
+                if (name == null) {
+                    name = tabTC.getName();
+                }
+                htmlName = tabTC.getHtmlDisplayName();
+                if (htmlName == null) {
+                    htmlName = name;
+                }
+            } else {
+                name = htmlName = tab.getText();
+            }
+            items[i++] = new Item(
+                    new ActivatableTab(tab),
+                    name,
+                    htmlName,
+                    tab,
+                    tab == selectedTab);
+        }
+        return items;
+    }
+
+    private class ActivatableTab implements SwitcherTableItem.Activatable {
+        private TabData tab;
+
+        private ActivatableTab(TabData tab) {
+            this.tab = tab;
+        }
+
+        @Override
+        public void activate() {
+            if (tab != null) {
+                selectTab(tab);
+            }
+        }
+
+        /**
+         * Maps tab selected in quicklist to tab index in displayer to select
+         * correct tab
+         */
+        private void selectTab(TabData tab) {
+            //Find corresponding index in displayer
+            java.util.List<TabData> tabs = displayer.getModel().getTabs();
+            int ind = -1;
+            for (int i = 0; i < tabs.size(); i++) {
+                if (tab.equals(tabs.get(i))) {
+                    ind = i;
+                    break;
+                }
+            }
+            if (ind != -1) {
+                int old = displayer.getSelectionModel().getSelectedIndex();
+                displayer.getSelectionModel().setSelectedIndex(ind);
+                //#40665 fix start
+                if (displayer.getType() == TabbedContainer.TYPE_EDITOR
+                        && ind >= 0 && ind == old) {
+                    displayer.getUI().makeTabVisible(ind);
+                }
+                //#40665 fix end
+            }
+        }
     }
 }

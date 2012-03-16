@@ -49,6 +49,25 @@ made subject to such option by the copyright holder.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="fileLocked.io.exception">
+            <api name="masterfs"/>
+            <summary>fileLocked method can throw <code>IOException</code></summary>
+            <version major="2" minor="37"/>
+            <date day="2" month="3" year="2012"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" source="incompatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+               Changing the <code>fileLocked</code> method to 
+                throw <a href="@JDK@/java/io/IOException.html">IOException</a> is 
+                source incompatible, but
+                binary compatible. As masterfs friends are always compiled at the same time as
+                masterfs, and even if they will not, they will link (as the change is binary
+                compatible), we modified the method signature to throw 
+                <a href="@JDK@/java/io/IOException.html">IOException</a>
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="ProvidedExtensions"/>
+            <issue number="208657"/>
+        </change>
         <change id="notifier">
             <api name="masterfs"/>
             <summary>External change notifiers in separate modules</summary>

@@ -48,6 +48,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import org.netbeans.api.sendopts.CommandLine;
 
 /** Represents the environment an {@link OptionProcessor} operates in. Streams can be
  * used to read and write data provided by the user. It is also possible
@@ -58,17 +60,19 @@ import java.io.PrintStream;
  * @author Jaroslav Tulach
  */
 public final class Env {
-    private InputStream is;
-    private PrintStream os;
-    private PrintStream err;
-    private File currentDir;
+    private final InputStream is;
+    private final PrintStream os;
+    private final PrintStream err;
+    private final File currentDir;
+    private final CommandLine cmd;
 
     /** Creates a new instance of Env */
-    Env(InputStream is, OutputStream os, OutputStream err, File currentDir) {
+    Env(CommandLine cmd, InputStream is, OutputStream os, OutputStream err, File currentDir) {
         this.is = is;
         this.os = os instanceof PrintStream ? (PrintStream)os : new PrintStream(os);
         this.err = err instanceof PrintStream ? (PrintStream)err : new PrintStream(err);
         this.currentDir = currentDir;
+        this.cmd = cmd;
     }
     
     /**
@@ -102,5 +106,29 @@ public final class Env {
      */
     public InputStream getInputStream() {
         return is;
+    }
+    
+    /** Prints the help usage for current set of options. This is a handy method if
+     * one wants to define a <em>help</em> option. In such case: <pre>
+     * public class MyOptions implements {@link ArgsProcessor} {
+     *   {@code @}{@link Arg}(longName="help")
+     *   public boolean help;
+     * 
+     *   {@code @}{@link Override}
+     *   public void process({@link Env} env) {
+     *     if (help) env.usage();
+     *   }
+     * }
+     * </pre>
+     * This method finds associated {@link CommandLine} and calls its
+     * {@link CommandLine#usage(java.io.PrintWriter) usage} method to print
+     * the help text to {@link #getOutputStream()}.
+     * 
+     * @since 2.21
+     */
+    public void usage() {
+        PrintWriter pw = new PrintWriter(getOutputStream());
+        cmd.usage(pw);
+        pw.flush();
     }
 } 

@@ -90,7 +90,7 @@ public class QCreatePatchAction extends CreateRefreshAction {
 
             @Override
             public QCommitPanel run () {
-                return QCommitPanel.createNewPanel(roots, root, HgModuleConfig.getDefault().getLastCanceledCommitMessage(KEY_CANCELED_MESSAGE));
+                return QCommitPanel.createNewPanel(roots, root, HgModuleConfig.getDefault().getLastCanceledCommitMessage(KEY_CANCELED_MESSAGE), QCreatePatchAction.class.getName());
             }
             
         });

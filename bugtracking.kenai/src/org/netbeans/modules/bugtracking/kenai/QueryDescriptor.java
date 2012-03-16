@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.kenai;
 
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.api.Query;
 
 /**
  *

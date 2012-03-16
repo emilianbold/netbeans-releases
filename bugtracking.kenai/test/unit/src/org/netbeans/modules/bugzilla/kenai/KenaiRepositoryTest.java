@@ -47,15 +47,16 @@ import org.netbeans.modules.bugzilla.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.lang.reflect.Field;
 import java.util.logging.Level;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.commons.net.WebUtil;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -130,8 +131,8 @@ public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
         KenaiProject prj = KenaiUtil.getKenaiProjectForRepository("https://testjava.net/svn/nb-jnet-test~subversion");
         assertNotNull(prj);
 
-        KenaiSupportImpl support = new KenaiSupportImpl();
-        BugzillaRepository repo = (BugzillaRepository) support.createRepository(prj);
+        BugzillaConnector support = new BugzillaConnector();
+        Repository repo = support.createRepository(prj);
         assertNotNull(repo);
         assertTrue(KenaiUtil.isKenai(repo));
     }
@@ -140,17 +141,26 @@ public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
         KenaiProject prj = KenaiUtil.getKenaiProjectForRepository("https://testjava.net/svn/nb-jnet-test~subversion");
         assertNotNull(prj);
 
-        KenaiSupportImpl support = new KenaiSupportImpl();
-        BugzillaRepository repo = (BugzillaRepository) support.createRepository(prj);
+        BugzillaConnector support = new BugzillaConnector();
+        Repository repo = support.createRepository(prj);
+        BugzillaRepository bugzillaRepository = getData(repo);
         assertNotNull(repo);
-        List<String> products = repo.getConfiguration().getProducts();
+        List<String> products = bugzillaRepository.getConfiguration().getProducts();
         assertEquals(1, products.size());
         assertTrue(KenaiUtil.isKenai(repo));
         
-        repo.refreshConfiguration();
-        products = repo.getConfiguration().getProducts();
+        bugzillaRepository.refreshConfiguration();
+        products = bugzillaRepository.getConfiguration().getProducts();
         assertEquals(1, products.size());
         
     }
 
+    private KenaiRepository getData(Repository repo) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        Field f = repo.getClass().getDeclaredField("bind");
+        f.setAccessible(true);
+        Object bind = f.get(repo);
+        f = bind.getClass().getDeclaredField("r");
+        f.setAccessible(true);
+        return (KenaiRepository) f.get(bind);
+    }    
 }

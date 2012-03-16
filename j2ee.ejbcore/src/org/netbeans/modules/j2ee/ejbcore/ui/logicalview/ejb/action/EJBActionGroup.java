@@ -60,7 +60,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.openide.nodes.Node;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.modules.j2ee.ejbcore.util._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;

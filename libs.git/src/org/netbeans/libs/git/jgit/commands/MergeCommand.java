@@ -94,15 +94,14 @@ public class MergeCommand extends GitCommand {
         command.setStrategy(MergeStrategy.RESOLVE);
         try {
             result = getClassFactory().createMergeResult(command.call(), repository.getWorkTree());
-        } catch (GitAPIException ex) {
-            throw new GitException(ex);
+        } catch (org.eclipse.jgit.api.errors.CheckoutConflictException ex) {
+            parseConflicts(ex);
         } catch (JGitInternalException ex) {
             if (ex.getCause() instanceof CheckoutConflictException) {
-                String[] lines = ex.getCause().getMessage().split("\n"); //NOI18N
-                if (lines.length > 1) {
-                    throw new GitException.CheckoutConflictException(Arrays.copyOfRange(lines, 1, lines.length), ex.getCause());
-                }
+                parseConflicts(ex.getCause());
             }
+            throw new GitException(ex);
+        } catch (GitAPIException ex) {
             throw new GitException(ex);
         }
     }
@@ -121,5 +120,13 @@ public class MergeCommand extends GitCommand {
             message = message.replace("\n", "").replace("\r", ""); //NOI18N
         }
         this.commitMessage = message;
+    }
+
+    private void parseConflicts (Throwable original) throws GitException.CheckoutConflictException, GitException {
+        String[] lines = original.getMessage().split("\n"); //NOI18N
+        if (lines.length > 1) {
+            throw new GitException.CheckoutConflictException(Arrays.copyOfRange(lines, 1, lines.length), original);
+        }
+        throw new GitException(original);
     }
 }

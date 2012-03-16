@@ -50,6 +50,7 @@ import com.sun.source.util.TreeScanner;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
@@ -131,7 +132,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         if(!isConstructor) {
             p = check.returnType(p, refactoring.getReturnType(), method, enclosingTypeElement);
             p = check.duplicateSignature(p, paramTable, method, enclosingTypeElement, allMembers);
-            p = check.accessModifiers(p, refactoring.getModifiers() != null ? refactoring.getModifiers() : method.getModifiers(), method, enclosingTypeElement, paramTable);
+            p = check.accessModifiers(p, refactoring.getModifiers() != null ? refactoring.getModifiers() : method.getModifiers(), method, enclosingTypeElement, paramTable, cancelRequested);
         } else {
             p = check.duplicateConstructor(p, paramTable, method, enclosingTypeElement, allMembers);
         }
@@ -163,8 +164,10 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     
     private Set<FileObject> getRelevantFiles() {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        final Set<FileObject> set = new HashSet<FileObject>();
-        JavaSource source = JavaSource.create(cpInfo, refactoring.getRefactoringSource().lookup(TreePathHandle.class).getFileObject());
+        final Set<FileObject> set = new LinkedHashSet<FileObject>();
+        TreePathHandle tph = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        set.add(tph.getFileObject());
+        JavaSource source = JavaSource.create(cpInfo, tph.getFileObject());
         
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
@@ -186,7 +189,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                     ElementHandle<TypeElement>  enclosingType = ElementHandle.create(elmUtils.enclosingTypeElement(el));
                     allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                     allMethods.add(methodHandle);
-                    for (ExecutableElement e:JavaRefactoringUtils.getOverridingMethods(el, info)) {
+                    for (ExecutableElement e:JavaRefactoringUtils.getOverridingMethods(el, info,cancelRequested)) {
                         ElementHandle<ExecutableElement> handle = ElementHandle.create(e);
                         set.add(SourceUtils.getFile(handle, info.getClasspathInfo()));
                         ElementHandle<TypeElement> encl = ElementHandle.create(elmUtils.enclosingTypeElement(e));
@@ -224,7 +227,8 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                                                                                       refactoring.getReturnType(),
                                                                                       refactoring.isOverloadMethod(),
                                                                                       refactoring.getContext().lookup(Javadoc.class),
-                                                                                      allMethods);
+                                                                                      allMethods,
+                                                                                      treePathHandle);
         if (!a.isEmpty()) {
             for (RenameRefactoring renameRefactoring : renameDelegates) {
                 problem = JavaPluginUtils.chainProblems(problem, renameRefactoring.prepare(elements.getSession()));
@@ -579,10 +583,10 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         }
         
         
-        private Problem accessModifiers(Problem p, Set<Modifier> modifiers, ExecutableElement method, TypeElement enclosingTypeElement, ParameterInfo[] paramTable) {
-            List<ExecutableElement> allMethods = findDuplicateSubMethods(enclosingTypeElement, method, paramTable);
+        private Problem accessModifiers(Problem p, Set<Modifier> modifiers, ExecutableElement method, TypeElement enclosingTypeElement, ParameterInfo[] paramTable, AtomicBoolean cancel) {
+            List<ExecutableElement> allMethods = findDuplicateSubMethods(enclosingTypeElement, method, paramTable, cancel);
             if(!allMethods.isEmpty()) {
-                Collection<ExecutableElement> overridingMethods = JavaRefactoringUtils.getOverridingMethods(method, javac);
+                Collection<ExecutableElement> overridingMethods = JavaRefactoringUtils.getOverridingMethods(method, javac,cancel);
                 boolean willBeOverriden = false;
                 for (ExecutableElement executableElement : allMethods) {
                     if(!overridingMethods.contains(executableElement)) {
@@ -609,9 +613,9 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
             return p;
         }
 
-        private List<ExecutableElement> findDuplicateSubMethods(TypeElement enclosingTypeElement, ExecutableElement method, ParameterInfo[] paramTable) {
+        private List<ExecutableElement> findDuplicateSubMethods(TypeElement enclosingTypeElement, ExecutableElement method, ParameterInfo[] paramTable, AtomicBoolean cancel) {
             List<ExecutableElement> returnmethods = new LinkedList<ExecutableElement>();
-            Set<ElementHandle<TypeElement>> subTypes = RefactoringUtils.getImplementorsAsHandles(javac.getClasspathInfo().getClassIndex(), javac.getClasspathInfo(), enclosingTypeElement);
+            Set<ElementHandle<TypeElement>> subTypes = RefactoringUtils.getImplementorsAsHandles(javac.getClasspathInfo().getClassIndex(), javac.getClasspathInfo(), enclosingTypeElement, cancel);
             for (ElementHandle<TypeElement> elementHandle : subTypes) {
                 TypeElement subtype = elementHandle.resolve(javac);
                 List<ExecutableElement> methods = ElementFilter.methodsIn(javac.getElements().getAllMembers(subtype));

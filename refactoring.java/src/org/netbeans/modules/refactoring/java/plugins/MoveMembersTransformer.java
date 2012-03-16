@@ -52,6 +52,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -165,7 +166,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitVariable(VariableTree node, Element target) {
-        if (removeIfMatch(getCurrentPath(), target)) {;
+        if (removeIfMatch(getCurrentPath(), target)) {
             return node;
         } else {
             return super.visitVariable(node, target);
@@ -195,13 +196,14 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             }
         } else {
             TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, currentPath, true, true, true, true, false);
+            Scope scope = workingCopy.getTrees().getScope(currentPath);
             Element enclosingElement = workingCopy.getTrees().getElement(enclosingClassPath);
             if (enclosingElement.equals(target)
-                    && node.getKind() == Tree.Kind.MEMBER_SELECT) {
+                    && node.getKind() == Tree.Kind.MEMBER_SELECT
+                    && !scope.getEnclosingMethod().getModifiers().contains(Modifier.STATIC)) {
                 IdentifierTree newIdt = make.Identifier(((MemberSelectTree) node).getIdentifier());
                 rewrite(node, newIdt);
             } else {
-                Scope scope = workingCopy.getTrees().getScope(currentPath);
                 Iterable<? extends Element> vars = workingCopy.getElementUtilities().getLocalMembersAndVars(scope, new ElementUtilities.ElementAcceptor() {
 
                     @Override
@@ -214,7 +216,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
                     long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
                     String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
-                    problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor", source))); //NOI18N
+                    problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "WRN_NoAccessor", source))); //NOI18N
                 } else {
                     Element localVar = vars.iterator().next();
                     MemberSelectTree selectTree = (MemberSelectTree) node;
@@ -289,16 +291,15 @@ public class MoveMembersTransformer extends RefactoringVisitor {
      * @param target
      */
     private void changeMethodInvocation(final ExecutableElement el, final MethodInvocationTree node, final TreePath currentPath, final Element target) {
-        rewrite(node, createMethodInvocationTree(el, node, currentPath, target));
+        rewrite(node, createMethodInvocationTree(el, node, currentPath, target, false));
     }
 
-    private MethodInvocationTree createMethodInvocationTree(final ExecutableElement el, final MethodInvocationTree node, final TreePath currentPath, final Element target) {
+    private MethodInvocationTree createMethodInvocationTree(final ExecutableElement el, final MethodInvocationTree node, final TreePath currentPath, final Element target, boolean delegate) {
         TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, currentPath, true, true, true, true, true);
         Element enclosingElement = workingCopy.getTrees().getElement(enclosingClassPath);
 
-        final List<? extends ExpressionTree> typeArguments = (List<? extends ExpressionTree>) node.getTypeArguments();
         final LinkedList<ExpressionTree> arguments = new LinkedList(node.getArguments());
-        final ExpressionTree newMethodSelect;
+        ExpressionTree newMethodSelect;
 
         if (el.getModifiers().contains(Modifier.STATIC)) {
             if (node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
@@ -337,11 +338,15 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     }
                 });
                 if (!vars.iterator().hasNext()) {
-                    SourcePositions positions = workingCopy.getTrees().getSourcePositions();
-                    long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
-                    long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
-                    String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
-                    problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor", source))); //NOI18N
+                    if(delegate) {
+                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor", NbBundle.getMessage(MoveMembersTransformer.class, "TXT_DelegatingMethod"))));
+                    } else {
+                        SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                        long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                        long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                        String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor", source))); //NOI18N
+                    }
                     selectExpression = null;
                 } else {
                     Element localVar = vars.iterator().next();
@@ -354,8 +359,33 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             } else {
                 if (node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
                     MemberSelectTree selectTree = (MemberSelectTree) node.getMethodSelect();
+                    boolean inStatic = false;
+                    TreePath blockPath = currentPath;
+                    while(blockPath != null) {
+                        if(blockPath.getLeaf().getKind() == Tree.Kind.BLOCK) {
+                            TreePath parentPath = blockPath.getParentPath();
+                            if(parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.METHOD) {
+                                MethodTree enclosingMethod = (MethodTree) parentPath.getLeaf();
+                                if(enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC)) {
+                                    inStatic = true;
+                                }
+                            } else if(parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.CLASS) {
+                                inStatic = true;
+                            }
+                        }
+                        blockPath = blockPath.getParentPath();
+                    }
                     if (enclosingElement.equals(target)) {
-                        newMethodSelect = make.Identifier(((MemberSelectTree) node.getMethodSelect()).getIdentifier());
+                        if(inStatic) {
+                            SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                            long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                            long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                            String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                            problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor", source))); //NOI18N
+                            newMethodSelect = node.getMethodSelect();
+                        } else {
+                            newMethodSelect = make.Identifier(((MemberSelectTree) node.getMethodSelect()).getIdentifier());
+                        }
                     } else {
                         newMethodSelect = make.MemberSelect(selectExpression, selectTree.getIdentifier());
                     }
@@ -390,6 +420,10 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     TreePath thisPath = new TreePath(currentPath, node);
                     Element el = workingCopy.getTrees().getElement(thisPath);
 
+                    if(el.getKind() == ElementKind.TYPE_PARAMETER) {
+                        
+                    }
+                    
                     if (isElementBeingMoved(el) == null) {
                         String isThis = node.toString();
                         // TODO: Check for super keyword. if super is used, but it is not overloaded, there is no problem. else warning.
@@ -431,11 +465,40 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 }
             }
         }
-
         List<ExpressionTree> newArguments = new ArrayList<ExpressionTree>(arguments.size());
         for (ExpressionTree expressionTree : arguments) {
             ExpressionTree expression = fixReferences(expressionTree, target, currentPath);
             newArguments.add(expression);
+        }
+        
+        List<ExpressionTree> typeArguments = new LinkedList<ExpressionTree>((List<? extends ExpressionTree>)node.getTypeArguments());
+        Element returnType = workingCopy.getTypes().asElement(el.getReturnType());
+        if(returnType != null && returnType.getKind() == ElementKind.TYPE_PARAMETER) {
+            TypeParameterElement typeParameterElement = (TypeParameterElement) returnType;
+            if(typeParameterElement.getGenericElement().getKind() != ElementKind.METHOD) {
+                ExpressionTree methodSelect = node.getMethodSelect();
+                if(methodSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
+                    VariableElement element = (VariableElement) workingCopy.getTrees().getElement(new TreePath(currentPath, ((MemberSelectTree)methodSelect).getExpression()));
+                    TypeMirror asType = element.asType();
+                    if(asType.getKind() == TypeKind.DECLARED) {
+                        List<? extends TypeMirror> typeArguments1 = ((DeclaredType)asType).getTypeArguments();
+                        for (TypeMirror typeMirror : typeArguments1) {
+                            typeArguments.add((ExpressionTree)make.Type(typeMirror));
+                        }
+                    }
+                } else {
+                    ClassTree classTree = workingCopy.getTrees().getTree((TypeElement)enclosingElement);
+                    for (TypeParameterTree typeParameterTree : classTree.getTypeParameters()) {
+                        if(typeParameterTree.getName().contentEquals(el.getReturnType().toString())) {
+                            typeArguments.add((ExpressionTree)make.Type(typeParameterTree.getName().toString()));
+                        }
+                    }
+                }
+            }
+        }
+        if(!typeArguments.isEmpty() &&
+                newMethodSelect.getKind() == Tree.Kind.IDENTIFIER) {
+            newMethodSelect = make.MemberSelect(make.Identifier("this"), ((IdentifierTree)newMethodSelect).getName());
         }
         return make.MethodInvocation(typeArguments, newMethodSelect, newArguments);
     }
@@ -531,10 +594,10 @@ public class MoveMembersTransformer extends RefactoringVisitor {
 
                             boolean result = false;
 
-                            if (isElementBeingMoved(el) == null) {
-                                String isThis = node.toString();
+                            if (isElementBeingMoved(el) == null && el.getKind() != ElementKind.PACKAGE) {
                                 TypeElement elType = workingCopy.getElementUtilities().enclosingTypeElement(el);
                                 // TODO: Check for super keyword. if super is used, but it is not overloaded, there is no problem. else warning.
+                                String isThis = node.toString();
                                 if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
                                     // Check for static
                                     if (!el.getModifiers().contains(Modifier.STATIC)) {
@@ -603,7 +666,23 @@ public class MoveMembersTransformer extends RefactoringVisitor {
 
                     // Addimports
                     body = GeneratorUtilities.get(workingCopy).importFQNs(body);
-                    newMember = make.Method(modifiers, methodTree.getName(), methodTree.getReturnType(), methodTree.getTypeParameters(), newParameters, methodTree.getThrows(), body, (ExpressionTree) methodTree.getDefaultValue());
+                    List<TypeParameterTree> typeParameters = new LinkedList<TypeParameterTree>(methodTree.getTypeParameters());
+                    if(method.getReturnType().getKind() == TypeKind.TYPEVAR) {
+                        Element element = workingCopy.getTypes().asElement(method.getReturnType());
+                        if(element.getKind() == ElementKind.TYPE_PARAMETER) {
+                            TypeParameterElement typeParameterElement = (TypeParameterElement) element;
+                            if(typeParameterElement.getGenericElement().getKind() != ElementKind.METHOD) {
+                                List<ExpressionTree> bounds = new LinkedList<ExpressionTree>();
+                                for (TypeMirror typeMirror : typeParameterElement.getBounds()) {
+                                    if(!typeMirror.toString().equals("java.lang.Object")) { //NOI18N
+                                        bounds.add((ExpressionTree)make.Type(typeMirror));
+                                    }
+                                }
+                                typeParameters.add(make.TypeParameter(typeParameterElement.getSimpleName(), bounds));
+                            }
+                        }
+                    }
+                    newMember = make.Method(modifiers, methodTree.getName(), methodTree.getReturnType(), typeParameters, newParameters, methodTree.getThrows(), body, (ExpressionTree) methodTree.getDefaultValue());
 
                     // Make a new Variable (Field) tree
                 } else if (member.getKind() == Tree.Kind.VARIABLE) {
@@ -678,7 +757,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     MethodInvocationTree methodInvocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(),
                             make.Identifier(element),
                             paramList);
-                    methodInvocation = createMethodInvocationTree(element, methodInvocation, currentPath, target);
+                    methodInvocation = createMethodInvocationTree(element, methodInvocation, currentPath, target, true);
 
                     TypeMirror methodReturnType = element.getReturnType();
 

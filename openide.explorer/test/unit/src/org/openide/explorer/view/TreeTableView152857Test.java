@@ -158,6 +158,7 @@ public class TreeTableView152857Test extends NbTestCase {
         d.setVisible (false);
     }
 
+    @RandomlyFails // NB-Core-Build #7921: expected:<[3]> but was:<[1]> @ view.getTableValueAt(1)
     public void testSorting() throws PropertyVetoException, InterruptedException, InvocationTargetException {
         StringKeys children = new StringKeys(true);
         children.doSetKeys(new String[]{"1", "3", "2", "2", "1"});

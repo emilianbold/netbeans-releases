@@ -64,7 +64,6 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
 import org.netbeans.modules.php.project.classpath.BasePathSupport.Item;
@@ -78,6 +77,7 @@ import org.netbeans.modules.php.project.ui.actions.RemoteCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectGenerator;
 import org.netbeans.modules.php.project.util.PhpProjectGenerator.ProjectProperties;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
@@ -164,12 +164,18 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         final Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders = getFrameworkExtenders();
 
+        // #207493
+        final PhpVersion phpVersion = (PhpVersion) descriptor.getProperty(ConfigureProjectPanel.PHP_VERSION);
+        if (wizardType == WizardType.NEW) {
+            PhpOptions.getInstance().setDefaultPhpVersion(phpVersion);
+        }
+
         final PhpProjectGenerator.ProjectProperties createProperties = new PhpProjectGenerator.ProjectProperties()
                 .setProjectDirectory(getProjectDirectory())
                 .setSourcesDirectory(getSources(descriptor))
                 .setName((String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME))
                 .setRunAsType(wizardType == WizardType.REMOTE ? RunAsType.REMOTE : getRunAsType())
-                .setPhpVersion((PhpVersion) descriptor.getProperty(ConfigureProjectPanel.PHP_VERSION))
+                .setPhpVersion(phpVersion)
                 .setCharset((Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING))
                 .setUrl(getUrl())
                 .setIndexFile(wizardType == WizardType.REMOTE ? null : getIndexFile(frameworkExtenders))
@@ -179,6 +185,9 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 .setRemoteConfiguration((RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION))
                 .setRemoteDirectory((String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY))
                 .setUploadFiles(wizardType == WizardType.REMOTE ? UploadFiles.ON_SAVE : (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD))
+                .setHostname((String) descriptor.getProperty(RunConfigurationPanel.HOSTNAME))
+                .setPort(getPort())
+                .setRouter((String) descriptor.getProperty(RunConfigurationPanel.ROUTER))
                 .setFrameworkExtenders(frameworkExtenders);
 
         PhpProjectGenerator.Monitor monitor = null;
@@ -210,7 +219,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 extendPhpModule(phpModule, frameworkExtenders, monitor, resultSet);
                 break;
             case REMOTE:
-                downloadRemoteFiles((PhpProject) project, getRemoteFiles(), createProperties, monitor);
+                downloadRemoteFiles(createProperties, monitor);
                 break;
         }
 
@@ -388,9 +397,13 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         settings.putProperty(RunConfigurationPanel.REMOTE_CONNECTION, null);
         settings.putProperty(RunConfigurationPanel.REMOTE_DIRECTORY, null);
         settings.putProperty(RunConfigurationPanel.REMOTE_UPLOAD, null);
+        settings.putProperty(RunConfigurationPanel.HOSTNAME, null);
+        settings.putProperty(RunConfigurationPanel.PORT, null);
+        settings.putProperty(RunConfigurationPanel.ROUTER, null);
         settings.putProperty(PhpFrameworksPanel.VALID, null);
         settings.putProperty(PhpFrameworksPanel.EXTENDERS, null);
         settings.putProperty(RemoteConfirmationPanel.REMOTE_FILES, null);
+        settings.putProperty(RemoteConfirmationPanel.REMOTE_CLIENT, null);
     }
 
     private File getProjectDirectory() {
@@ -466,6 +479,14 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return null;
     }
 
+    private Integer getPort() {
+        String port = (String) descriptor.getProperty(RunConfigurationPanel.PORT);
+        if (port == null) {
+            return null;
+        }
+        return Integer.valueOf(port);
+    }
+
     private void extendPhpModule(PhpModule phpModule, Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders,
             PhpProjectGenerator.Monitor monitor, Set<FileObject> filesToOpen) {
         assert wizardType == WizardType.NEW : "Extending not allowed for: " + wizardType;
@@ -505,23 +526,28 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return (Set<TransferFile>) descriptor.getProperty(RemoteConfirmationPanel.REMOTE_FILES);
     }
 
-    private void downloadRemoteFiles(PhpProject project, Set<TransferFile> forDownload, ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
+    private RemoteClient getRemoteClient() {
+        return (RemoteClient) descriptor.getProperty(RemoteConfirmationPanel.REMOTE_CLIENT);
+    }
+
+    private void downloadRemoteFiles(ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
         assert wizardType == WizardType.REMOTE : "Download not allowed for: " + wizardType;
-        assert monitor instanceof RemoteProgressMonitor;
+        assert monitor instanceof RemoteProgressMonitor : "RemoteProgressMonitor expected but is: " + monitor;
+
+        Set<TransferFile> forDownload = getRemoteFiles();
         assert forDownload != null;
         assert !forDownload.isEmpty();
+
+        RemoteClient remoteClient = getRemoteClient();
+        assert remoteClient != null;
+        // be sure that it is not cancelled
+        remoteClient.reset();
 
         RemoteProgressMonitor remoteMonitor = (RemoteProgressMonitor) monitor;
         remoteMonitor.startingDownload();
 
         FileObject sources = FileUtil.toFileObject(projectProperties.getSourcesDirectory());
-        RemoteConfiguration remoteConfiguration = projectProperties.getRemoteConfiguration();
-        InputOutput remoteLog = RemoteCommand.getRemoteLog(remoteConfiguration.getDisplayName());
-        RemoteClient remoteClient = new RemoteClient(remoteConfiguration, new RemoteClient.AdvancedProperties()
-                    .setInputOutput(remoteLog)
-                    .setAdditionalInitialSubdirectory(projectProperties.getRemoteDirectory())
-                    .setPreservePermissions(false)
-                    .setPhpVisibilityQuery(PhpVisibilityQuery.forProject(project)));
+        InputOutput remoteLog = RemoteCommand.getRemoteLog(projectProperties.getRemoteConfiguration().getDisplayName());
         DownloadCommand.download(remoteClient, remoteLog, projectProperties.getName(), sources, forDownload);
 
         remoteMonitor.finishingDownload();
@@ -573,7 +599,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             return null;
         }
 
-        privateProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
+        if (!RunAsType.INTERNAL.equals(getRunAsType())) {
+            // XXX do not store index file for internal web otherwise run/debug project will not work
+            privateProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
+        }
         return FileUtil.toFileObject(createProperties.getSourcesDirectory()).getFileObject(indexFile);
     }
 

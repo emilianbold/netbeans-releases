@@ -68,15 +68,20 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.lang.Integer;
 import org.netbeans.modules.cnd.antlr.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.Hashtable;
-import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.modelimpl.syntaxerr.BaseParserErrorFilter;
+import org.openide.util.NbBundle;
 
 /**
  * Extends CPPParser to implement logic, ported from Support.cpp.
@@ -90,9 +95,11 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 public class CPPParserEx extends CPPParser {
 
     private boolean lazyCompound = TraceFlags.EXCLUDE_COMPOUND;
-
+    private final CppParserActionEx action;
+    
     private static class AstFactoryEx extends org.netbeans.modules.cnd.antlr.ASTFactory {
 
+        @SuppressWarnings("UseOfObsoleteCollectionType") 
         public AstFactoryEx(Hashtable tokenTypeToClassMap) {
             super(tokenTypeToClassMap);
         }
@@ -111,8 +118,10 @@ public class CPPParserEx extends CPPParser {
     //Change statementTrace from cppparser.g directly 
     //private final boolean trace = Boolean.getBoolean("cnd.parser.trace");
     //private TokenStreamSelector selector = new TokenStreamSelector();
-    protected CPPParserEx(TokenStream stream) {
-        super(stream);
+    protected CPPParserEx(TokenStream stream, CppParserActionEx callback) {
+        super(stream, callback);
+        assert callback != null;
+        this.action = callback;
     }
 
     @Override
@@ -125,17 +134,15 @@ public class CPPParserEx extends CPPParser {
     }
 
     public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags) {
-        return getInstance(file, ts, flags, null);
+        return getInstance(file, ts, flags, new CppParserEmptyActionImpl(file));
     }
     
-    public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags, Map<Integer, CsmObject> objects) {
+    public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags, CppParserActionEx callback) {
         assert (ts != null);
         assert (file != null);
-        CPPParserEx parser = new CPPParserEx(ts);
+        CPPParserEx parser = new CPPParserEx(ts, callback);
         parser.init(file.getName().toString(), flags);
-        parser.init2(file, objects);
         return parser;
-
     }
 
     @Override
@@ -148,14 +155,100 @@ public class CPPParserEx extends CPPParser {
         super.init(filename, flags);
     }
 
-    protected final void init2(CsmFile file, Map<Integer, CsmObject> objects) {
-        if(objects == null || file == null) {
-            action = new CppParserEmptyActionImpl();
-        } else {
-            action = new CppParserActionImpl(file, objects);        
+    private void onIncludeToken(Token t) {
+        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+            if (t instanceof APTToken) {
+                APTToken aptToken = (APTToken) t;
+                APTPreprocHandler.State stateBefore = (APTPreprocHandler.State) aptToken.getProperty(APTPreprocHandler.State.class);
+                CsmFile inclFile = (CsmFile) aptToken.getProperty(CsmFile.class);
+                if (stateBefore != null && inclFile != null) {
+                    try {
+                        action.pushFile(inclFile);
+                        assert inclFile instanceof FileImpl;
+                        ((FileImpl) inclFile).parseOnInclude(stateBefore, action);
+                    } finally {
+                        CsmFile popFile = action.popFile();
+                        assert popFile == inclFile;
+                    }
+                }
+            }
         }
     }
 
+    // Number of active markers
+    private int nMarkers = 0;    
+    @Override
+    public int mark() {
+        nMarkers++;
+        return super.mark();
+    }
+
+    @Override
+    public void rewind(int pos) {
+        nMarkers--;
+        super.rewind(pos);
+    }
+        
+    @Override
+    public int LA(int i) {
+        final int newIndex = skipIncludeTokensIfNeeded(i);
+        int LA = super.LA(newIndex);
+        assert !isIncludeToken(LA) : super.LT(newIndex) + " not expected";
+        return LA;
+    }
+
+    @Override
+    public Token LT(int i) {
+        Token LT = super.LT(skipIncludeTokensIfNeeded(i));
+        assert !isIncludeToken(LT.getType()) : LT + " not expected ";
+        return LT;
+    }
+    
+    @Override
+    public void consume() {
+        assert !isIncludeToken(super.LA(1)) : super.LT(1) + " not expected ";
+        super.consume();
+        // consume following includes as well
+        while (isIncludeToken(super.LA(1))) {
+            Token t = super.LT(1);
+            onIncludeToken(t);
+            super.consume();
+        }        
+    }
+
+    private int skipIncludeTokensIfNeeded(int i) {
+        if (i == 0) {
+            assert !isIncludeToken(super.LA(0)) : super.LT(0) + " not expected ";
+            return 0;
+        }
+        int superIndex = 0;
+        int nonIncludeTokens = 0;
+        do {
+            superIndex++;
+            int LA = super.LA(superIndex);
+            assert LA == super.LA(superIndex) : "how can LA be different?";
+            if (isIncludeToken(LA)) {
+                if (nMarkers == 0 && superIndex == 1 && guessing == 0) {
+                    // consume if the first an no markers
+                    Token t = super.LT(1);
+                    assert isIncludeToken(t.getType()) : t + " not expected ";
+                    onIncludeToken(t);
+                    assert super.LT(1) == t : t + " have to be the same as " + super.LT(1);
+                    super.consume();
+                    superIndex = 0;
+                }
+            } else {
+                nonIncludeTokens++;
+            }
+        } while (nonIncludeTokens < i);
+        assert (superIndex >= i) && nonIncludeTokens == i : "LA(" + i + ") => LA(" + superIndex + ") " + nonIncludeTokens + ")" + super.LT(superIndex);
+        return superIndex;
+    }
+    
+    private static boolean isIncludeToken(int LA) {
+        return LA == APTTokenTypes.INCLUDE || LA == APTTokenTypes.INCLUDE_NEXT;
+    }
+    
     private static int strcmp(String s1, String s2) {
         return (s1 == null) ? (s2 == null ? 0 : -1) : s1.compareTo(s2);
     }
@@ -221,7 +314,7 @@ public class CPPParserEx extends CPPParser {
         //	"isClassName: %d, guessing %d\n", LT(tmp_k).getLine(),
         //	tmp_k,LT(tmp_k).getType(),isTypeName((LT(tmp_k).getText()).data()),
         //	isClassName((LT(tmp_k).getText()).data()),inputState.guessing);
-        while (LT(tmp_k).getType() == ID && isTypeName((LT(tmp_k).getText()))) {
+        while (LT(tmp_k).getType() == IDENT && isTypeName((LT(tmp_k).getText()))) {
             // If this type is the same as the last type, then ctor
             if (final_type_idx != 0 && strcmp((LT(final_type_idx).getText()),
                     (LT(tmp_k).getText())) == 0) {// Like T::T
@@ -259,7 +352,7 @@ public class CPPParserEx extends CPPParser {
                 tmp_k++;
                 scope_found = true;
             } else {
-                // Series terminated -- last ID in the sequence was a type
+                // Series terminated -- last IDENT in the sequence was a type
                 // Return ctor if last type is in containing class
                 // We already checked for T::T inside loop
 
@@ -282,11 +375,11 @@ public class CPPParserEx extends CPPParser {
             }
         }
 
-        // LT(tmp_k) is not an ID, or it is an ID but not a typename.
+        // LT(tmp_k) is not an IDENT, or it is an IDENT but not a typename.
         //printf("support.cpp qualifiedItemIs second switch reached\n");
         switch (LT(tmp_k).getType()) {
-            case ID:
-                // ID but not a typename
+            case IDENT:
+                // IDENT but not a typename
                 // Do not allow id::
                 if (LT(tmp_k + 1).getType() == SCOPE) {
                     //printf("support.cpp qualifiedItemIs qiInvalid(3) returned\n");
@@ -309,7 +402,7 @@ public class CPPParserEx extends CPPParser {
 
             case TILDE:
                 // check for dtor
-                if (LT(tmp_k + 1).getType() == ID &&
+                if (LT(tmp_k + 1).getType() == IDENT &&
                         isTypeName((LT(tmp_k + 1).getText())) &&
                         LT(tmp_k + 2).getType() != SCOPE) {
                     // Like ~B or A::B::~B
@@ -342,8 +435,8 @@ public class CPPParserEx extends CPPParser {
                 return qiOperator;
 
             default:
-                // Something that neither starts with :: or ID, or
-                // a :: not followed by ID, operator, ~, or *
+                // Something that neither starts with :: or IDENT, or
+                // a :: not followed by IDENT, operator, ~, or *
                 //printf("support.cpp qualifiedItemIs qiInvalid(6) returned\n");
                 return qiInvalid;
         }
@@ -453,19 +546,19 @@ public class CPPParserEx extends CPPParser {
         try {
             //printf("support.cpp scopedItem tmp_k %d\n",tmp_k);
             return (LT(tmp_k).getType() == SCOPE ||
-                    (LT(tmp_k).getType() == ID && !finalQualifier(tmp_k)));
+                    (LT(tmp_k).getType() == IDENT && !finalQualifier(tmp_k)));
         } catch (TokenStreamException e) {
             reportError(e.getMessage());
             return false;
         }
     }
 
-    // Return true if ID<...> or ID is last item in qualified item list.
-    // Return false if LT(tmp_k) is not an ID.
-    // ID must be a type to check for ID<...>,
+    // Return true if IDENT<...> or IDENT is last item in qualified item list.
+    // Return false if LT(tmp_k) is not an IDENT.
+    // IDENT must be a type to check for IDENT<...>,
     // or else we would get confused by "i<3"
     private boolean finalQualifier(int tmp_k) throws TokenStreamException {
-        if (LT(tmp_k).getType() == ID) {
+        if (LT(tmp_k).getType() == IDENT) {
             if (isTypeName((LT(tmp_k).getText())) &&
                     LT(tmp_k + 1).getType() == LESSTHAN) {
                 // Starts with "T<".  Skip <...>
@@ -474,12 +567,12 @@ public class CPPParserEx extends CPPParser {
                 if (tmp_k == -1) {
                     return true;
                 }
-            } else {// skip ID;
+            } else {// skip IDENT;
                 tmp_k++;
             }
             //return (LT(tmp_k).getType() != SCOPE);
             return safeGetType(LT(tmp_k)) != SCOPE;
-        } else {// not an ID
+        } else {// not an IDENT
             return false;
         }
     }
@@ -508,7 +601,7 @@ public class CPPParserEx extends CPPParser {
      */
     }
 
-    private final boolean isValidIdentifier(String id) {
+    private boolean isValidIdentifier(String id) {
         if (id != null && id.length() > 0) {
             if (Character.isJavaIdentifierStart(id.charAt(0))) {
                 for (int i = 1; i < id.length(); i++) {
@@ -967,7 +1060,7 @@ public class CPPParserEx extends CPPParser {
 //	    if (LT(i).getType() == SCOPE) {
 //		i++;
 //	    }
-//	    while ((ref = LT(i)).getType() == ID && LT(i + 1).getType() == SCOPE) {
+//	    while ((ref = LT(i)).getType() == IDENT && LT(i + 1).getType() == SCOPE) {
 //		i += 2;
 //		last = ref;
 //	    }
@@ -1094,21 +1187,17 @@ public class CPPParserEx extends CPPParser {
         }
     }
 
-    public interface ErrorDelegate {
-
-        void onError(RecognitionException e);
-    }
-    private ErrorDelegate errorDelegate;
-
-    public void setErrorDelegate(ErrorDelegate errorDelegate) {
-        this.errorDelegate = errorDelegate;
+    private CsmParserProvider.ParserErrorDelegate errorDelegate;
+    
+    public void setErrorDelegate(CsmParserProvider.ParserErrorDelegate delegate) {
+        errorDelegate = delegate;
     }
 
     @Override
     protected void onError(RecognitionException e) {
-        ErrorDelegate delegate = errorDelegate;
+        CsmParserProvider.ParserErrorDelegate delegate = errorDelegate;
         if (delegate != null) {
-            delegate.onError(e);
+            delegate.onError(new CsmParserProvider.ParserError(e.getMessage(), e.getLine(), e.getColumn(), e.getTokenText(), e instanceof NoViableAltException && APTUtils.isEOF(((NoViableAltException)e).token)));
         }
     }
 }

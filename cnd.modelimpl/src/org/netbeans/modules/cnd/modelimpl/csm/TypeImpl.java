@@ -677,7 +677,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 List<CharSequence> l = new ArrayList<CharSequence>();
                 int templateDepth = 0;
                 for (AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling()) {
-                    if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID) {
+                    if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.IDENT) {
                         l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
                     } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
                         // the beginning of template parameters
@@ -766,7 +766,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         return classifier;
     }
 
-    private void initClassifier(CsmClassifier classifier) {
+    public void initClassifier(CsmClassifier classifier) {
         this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
         assert (classifierUID != null || classifier == null);
     }

@@ -206,4 +206,12 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-api-progress-transactional}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-progress-transactional"/>
 <link href="${javadoc.docs.org-netbeans-core}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-core"/>
 <link href="${javadoc.docs.org-netbeans-modules-versioning}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-versioning"/>
+<link href="${javadoc.docs.org-netbeans-spi-java-hints}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-spi-java-hints"/>
 <link href="${javadoc.docs.org-netbeans-modules-versioning-core}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-versioning-core"/>
+<link href="${javadoc.docs.org-netbeans-modules-java-hints-declarative-test}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-hints-declarative-test"/>
+<link href="${javadoc.docs.org-netbeans-modules-java-hints-legacy-spi}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-hints-legacy-spi"/>
+<link href="${javadoc.docs.org-netbeans-modules-java-hints-providers-spi}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-hints-providers-spi"/>
+<link href="${javadoc.docs.org-netbeans-modules-java-hints-test}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-hints-test"/>
+<link href="${javadoc.docs.org-netbeans-libs-git}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-libs-git"/>
+<link href="${javadoc.docs.org-netbeans-modules-sampler}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-sampler"/>
+<link href="${javadoc.docs.org-netbeans-api-search}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-search"/>

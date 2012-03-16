@@ -31,16 +31,6 @@
         </folder>
     </folder>
 
-
-    
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="GroovyMimeResolver.xml" url="GroovyMimeResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.editor.Bundle"/>
-                <attr name="position" intvalue="281"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-groovy">

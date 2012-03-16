@@ -39,100 +39,105 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.perf;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class NoBooleanConstructorTest extends TestBase {
+public class NoBooleanConstructorTest extends NbTestCase {
 
     public NoBooleanConstructorTest(String name) {
-        super(name, NoBooleanConstructor.class);
+        super(name);
     }
 
     public void testBoolean15() throws Exception {
-        setSourceLevel("1.5");
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "     private Boolean test(boolean b) {\n" +
                        "         return new Boolean(b);\n" +
                        "     }\n" +
-                       "}\n",
-                       "3:16-3:30:verifier:ERR_NoBooleanConstructor",
-                       "FIX_NoBooleanConstructorBoolean",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                       "     private Boolean test(boolean b) {\n" +
-                       "         return b;\n" +
-                        "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                       "}\n")
+                .sourceLevel("1.5")
+                .run(NoBooleanConstructor.class)
+                .findWarning("3:16-3:30:verifier:ERR_NoBooleanConstructor")
+                .applyFix("FIX_NoBooleanConstructorBoolean")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "     private Boolean test(boolean b) {\n" +
+                              "         return b;\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testBoolean14() throws Exception {
-        setSourceLevel("1.4");
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "     private Boolean test(boolean b) {\n" +
                        "         return new Boolean(b);\n" +
                        "     }\n" +
-                       "}\n",
-                       "3:16-3:30:verifier:ERR_NoBooleanConstructor",
-                       "FIX_NoBooleanConstructorBoolean",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                       "     private Boolean test(boolean b) {\n" +
-                       "         return Boolean.valueOf(b);\n" +
-                        "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                       "}\n")
+                .sourceLevel("1.4")
+                .run(NoBooleanConstructor.class)
+                .findWarning("3:16-3:30:verifier:ERR_NoBooleanConstructor")
+                .applyFix("FIX_NoBooleanConstructorBoolean")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "     private Boolean test(boolean b) {\n" +
+                              "         return Boolean.valueOf(b);\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testBoolean13() throws Exception {
-        setSourceLevel("1.3");
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "     private Boolean test(boolean b) {\n" +
                        "         return new Boolean(b);\n" +
                        "     }\n" +
-                       "}\n",
-                       "3:16-3:30:verifier:ERR_NoBooleanConstructor",
-                       "FIX_NoBooleanConstructorBoolean",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                       "     private Boolean test(boolean b) {\n" +
-                       "         return (b ? Boolean.TRUE : Boolean.FALSE);\n" +
-                        "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                       "}\n")
+                .sourceLevel("1.3")
+                .run(NoBooleanConstructor.class)
+                .findWarning("3:16-3:30:verifier:ERR_NoBooleanConstructor")
+                .applyFix("FIX_NoBooleanConstructorBoolean")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "     private Boolean test(boolean b) {\n" +
+                              "         return (b ? Boolean.TRUE : Boolean.FALSE);\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testString() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "     private Boolean test(String s) {\n" +
                        "         return new Boolean(s);\n" +
                        "     }\n" +
-                       "}\n",
-                       "3:16-3:30:verifier:ERR_NoBooleanConstructor",
-                       "FIX_NoBooleanConstructorString",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                       "     private Boolean test(String s) {\n" +
-                       "         return Boolean.valueOf(s);\n" +
-                        "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
+                       "}\n")
+                .run(NoBooleanConstructor.class)
+                .findWarning("3:16-3:30:verifier:ERR_NoBooleanConstructor")
+                .applyFix("FIX_NoBooleanConstructorString")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "     private Boolean test(String s) {\n" +
+                              "         return Boolean.valueOf(s);\n" +
+                              "     }\n" +
+                              "}\n");
     }
 }

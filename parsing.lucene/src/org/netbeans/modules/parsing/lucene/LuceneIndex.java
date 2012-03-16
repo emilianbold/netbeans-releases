@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.lucene;
 
+import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.NoLockFactory;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import java.io.File;
@@ -62,28 +63,25 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.LucenePackage;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.index.*;
-import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.DefaultSimilarity;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Searcher;
-import org.apache.lucene.search.Query;
+import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.lucene.support.IndexReaderInjection;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
@@ -91,20 +89,30 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
+ * Note - there can be only a single IndexWriter at a time for the dir index. For consistency, the Writer is
+ * kept in a thread-local variable until it is committed. Lucene will throw an exception if another Writer creation
+ * attempt is done (by another thread, presumably). 
+ * <p/>
+ * It should be thread-safe (according to Lucene docs) to use an IndexWriter while Readers are opened.
+ * <p/>
+ * As Reader and Writers can be used in parallel, all query+store operations use readLock so they can run in parallel.
+ * Operations which affect the whole index (close, clear) use write lock. RefreshReader called internally from writer's commit (close)
+ * is incompatible with parallel reads, as it closes the old reader - uses writeLock.
+ * <p/>
+ * Locks must be acquired in the order [rwLock, LuceneIndex]. The do* method synchronize on the DirCache instance and must be called 
+ * if the code already holds rwLock.
  *
  * @author Tomas Zezula
  */
 //@NotTreadSafe
-public class LuceneIndex implements Index {
+public class LuceneIndex implements Index.Transactional {
 
     private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N
     private static final String PROP_CACHE_SIZE = "java.index.size";    //NOI18N
-    private static final boolean debugIndexMerging = Boolean.getBoolean("java.index.debugMerge");     // NOI18N
     private static final CachePolicy DEFAULT_CACHE_POLICY = CachePolicy.DYNAMIC;
     private static final float DEFAULT_CACHE_SIZE = 0.05f;
     private static final CachePolicy cachePolicy = getCachePolicy();
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
-    private static final FieldSelector ALL_FIELDS = new AllFieldsSelector();
     
     private static LockFactory lockFactory;
     
@@ -137,37 +145,52 @@ public class LuceneIndex implements Index {
             ) throws IOException, InterruptedException {
         Parameters.notNull("queries", queries);   //NOI18N
         Parameters.notNull("convertor", convertor); //NOI18N
-        Parameters.notNull("result", result);       //NOI18N        
-        final IndexReader in = dirCache.getReader();
-        if (in == null) {
-            LOGGER.log(Level.FINE, "{0} is invalid!", this);
-            return;
-        }
+        Parameters.notNull("result", result);       //NOI18N   
+        
         if (selector == null) {
-            selector = ALL_FIELDS;
+            selector = AllFieldsSelector.INSTANCE;
         }
-        final BitSet bs = new BitSet(in.maxDoc());
-        final Collector c = new BitSetCollector(bs);
-        final Searcher searcher = new IndexSearcher(in);
+        IndexReader in = null;
         try {
-            for (Query q : queries) {
-                if (cancel != null && cancel.get()) {
-                    throw new InterruptedException ();
+            in = dirCache.acquireReader();
+            if (in == null) {
+                LOGGER.log(Level.FINE, "{0} is invalid!", this);
+                return;
+            }
+            final BitSet bs = new BitSet(in.maxDoc());
+            final Collector c = new BitSetCollector(bs);
+            final IndexSearcher searcher = new IndexSearcher(in);
+            try {
+                for (Query q : queries) {
+                    if (cancel != null && cancel.get()) {
+                        throw new InterruptedException ();
+                    }
+                    searcher.search(q, c);
                 }
-                searcher.search(q, c);
+            } finally {
+                searcher.close();
+            }
+            if (convertor instanceof IndexReaderInjection) {
+                ((IndexReaderInjection)convertor).setIndexReader(in);
+            }
+            try {
+                for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
+                    if (cancel != null && cancel.get()) {
+                        throw new InterruptedException ();
+                    }
+                    final Document doc = in.document(docNum, selector);
+                    final T value = convertor.convert(doc);
+                    if (value != null) {
+                        result.add (value);
+                    }
+                }
+            } finally {
+                if (convertor instanceof IndexReaderInjection) {
+                    ((IndexReaderInjection)convertor).setIndexReader(null);
+                }
             }
         } finally {
-            searcher.close();
-        }        
-        for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
-            if (cancel != null && cancel.get()) {
-                throw new InterruptedException ();
-            }
-            final Document doc = in.document(docNum, selector);
-            final T value = convertor.convert(doc);
-            if (value != null) {
-                result.add (value);
-            }
+            dirCache.releaseReader(in);
         }
     }
     
@@ -178,29 +201,43 @@ public class LuceneIndex implements Index {
             final @NonNull StoppableConvertor<Term,T> filter,
             final @NullAllowed AtomicBoolean cancel) throws IOException, InterruptedException {
         
-        final IndexReader in = dirCache.getReader();
-        if (in == null) {
-            return;
-        }
-
-        final TermEnum terms = seekTo == null ? in.terms () : in.terms (seekTo);        
+        IndexReader in = null;
         try {
-            do {
-                if (cancel != null && cancel.get()) {
-                    throw new InterruptedException ();
+            in = dirCache.acquireReader();
+            if (in == null) {
+                return;
+            }
+
+            final TermEnum terms = seekTo == null ? in.terms () : in.terms (seekTo);        
+            try {
+                if (filter instanceof IndexReaderInjection) {
+                    ((IndexReaderInjection)filter).setIndexReader(in);
                 }
-                final Term currentTerm = terms.term();
-                if (currentTerm != null) {                    
-                    final T vote = filter.convert(currentTerm);
-                    if (vote != null) {
-                        result.add(vote);
+                try {
+                    do {
+                        if (cancel != null && cancel.get()) {
+                            throw new InterruptedException ();
+                        }
+                        final Term currentTerm = terms.term();
+                        if (currentTerm != null) {                    
+                            final T vote = filter.convert(currentTerm);
+                            if (vote != null) {
+                                result.add(vote);
+                            }
+                        }
+                    } while (terms.next());
+                } catch (StoppableConvertor.Stop stop) {
+                    //Stop iteration of TermEnum finally {
+                } finally {
+                    if (filter instanceof IndexReaderInjection) {
+                        ((IndexReaderInjection)filter).setIndexReader(null);
                     }
                 }
-            } while (terms.next());
-        } catch (StoppableConvertor.Stop stop) {
-            //Stop iteration of TermEnum
+            } finally {
+                terms.close();
+            }
         } finally {
-            terms.close();
+            dirCache.releaseReader(in);
         }
     }
     
@@ -217,60 +254,83 @@ public class LuceneIndex implements Index {
         Parameters.notNull("convertor", convertor);         //NOI18N
         Parameters.notNull("termConvertor", termConvertor); //NOI18N
         Parameters.notNull("result", result);               //NOI18N
-        final IndexReader in = dirCache.getReader();
-        if (in == null) {
-            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));   //NOI18N
-            return;
-        }
         if (selector == null) {
-            selector = ALL_FIELDS;
+            selector = AllFieldsSelector.INSTANCE;
         }
-        final BitSet bs = new BitSet(in.maxDoc());
-        final Collector c = new BitSetCollector(bs);
-        final Searcher searcher = new IndexSearcher(in);
-        final TermCollector termCollector = new TermCollector();
+        IndexReader in = null;
         try {
-            for (Query q : queries) {
-                if (cancel != null && cancel.get()) {
-                    throw new InterruptedException ();
+            in = dirCache.acquireReader();
+            if (in == null) {
+                LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));   //NOI18N
+                return;
+            }
+            final BitSet bs = new BitSet(in.maxDoc());
+            final Collector c = new BitSetCollector(bs);
+            final IndexSearcher searcher = new IndexSearcher(in);
+            final TermCollector termCollector = new TermCollector(c);
+            try {
+                for (Query q : queries) {
+                    if (cancel != null && cancel.get()) {
+                        throw new InterruptedException ();
+                    }
+                    if (q instanceof TermCollector.TermCollecting) {
+                        ((TermCollector.TermCollecting)q).attach(termCollector);
+                    } else {
+                        throw new IllegalArgumentException (
+                                String.format("Query: %s does not implement TermCollecting",    //NOI18N
+                                q.getClass().getName()));
+                    }
+                    searcher.search(q, termCollector);
                 }
-                if (q instanceof TermCollector.TermCollecting) {
-                    ((TermCollector.TermCollecting)q).attach(termCollector);
-                } else {
-                    throw new IllegalArgumentException (
-                            String.format("Query: %s does not implement TermCollecting",    //NOI18N
-                            q.getClass().getName()));
+            } finally {
+                searcher.close();
+            }
+        
+            boolean logged = false;
+            if (convertor instanceof IndexReaderInjection) {
+                ((IndexReaderInjection)convertor).setIndexReader(in);
+            }
+            try {
+                if (termConvertor instanceof IndexReaderInjection) {
+                    ((IndexReaderInjection)termConvertor).setIndexReader(in);
                 }
-                searcher.search(q, c);
+                try {
+                    for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
+                        if (cancel != null && cancel.get()) {
+                            throw new InterruptedException ();
+                        }
+                        final Document doc = in.document(docNum, selector);
+                        final T value = convertor.convert(doc);
+                        if (value != null) {
+                            final Set<Term> terms = termCollector.get(docNum);
+                            if (terms != null) {
+                                result.put (value, convertTerms(termConvertor, terms));
+                            } else {
+                                if (!logged) {
+                                    LOGGER.log(Level.WARNING, "Index info [maxDoc: {0} numDoc: {1} docs: {2}]",
+                                            new Object[] {
+                                                in.maxDoc(),
+                                                in.numDocs(),
+                                                termCollector.docs()
+                                            });
+                                    logged = true;
+                                }
+                                LOGGER.log(Level.WARNING, "No terms found for doc: {0}", docNum);
+                            }
+                        }
+                    }
+                } finally {
+                    if (termConvertor instanceof IndexReaderInjection) {
+                        ((IndexReaderInjection)termConvertor).setIndexReader(null);
+                    }
+                }
+            } finally {
+                if (convertor instanceof IndexReaderInjection) {
+                    ((IndexReaderInjection)convertor).setIndexReader(null);
+                }
             }
         } finally {
-            searcher.close();
-        }
-        
-        boolean logged = false;
-        for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
-            if (cancel != null && cancel.get()) {
-                throw new InterruptedException ();
-            }
-            final Document doc = in.document(docNum, selector);
-            final T value = convertor.convert(doc);
-            if (value != null) {
-                final Set<Term> terms = termCollector.get(docNum);
-                if (terms != null) {
-                    result.put (value, convertTerms(termConvertor, terms));
-                } else {
-                    if (!logged) {
-                        LOGGER.log(Level.WARNING, "Index info [maxDoc: {0} numDoc: {1} docs: {2}]",
-                                new Object[] {
-                                    in.maxDoc(),
-                                    in.numDocs(),
-                                    termCollector.docs()
-                                });
-                        logged = true;
-                    }
-                    LOGGER.log(Level.WARNING, "No terms found for doc: {0}", docNum);
-                }
-            }
+            dirCache.releaseReader(in);
         }
     }
     
@@ -283,52 +343,71 @@ public class LuceneIndex implements Index {
     }
 
     @Override
-    public <S, T> void store (
-            final @NonNull Collection<T> toAdd,
-            final @NonNull Collection<S> toDelete,
-            final @NonNull Convertor<? super T, ? extends Document> docConvertor,
-            final @NonNull Convertor<? super S, ? extends Query> queryConvertor,
-            final boolean optimize) throws IOException{
-        try {
-            IndexManager.writeAccess(new IndexManager.Action<Void>() {
-                @Override
-                public Void run() throws IOException, InterruptedException {
-                    _store(toAdd, toDelete, docConvertor, queryConvertor, optimize);
-                    return null;
-                }
-            });
-        } catch (InterruptedException ie) {
-            throw new IOException("Interrupted");   //NOI18N
-        }
+    public void commit() throws IOException {
+        dirCache.closeTxWriter();
     }
 
-    private <S, T> void _store (
-            final @NonNull Collection<T> data,
-            final @NonNull Collection<S> toDelete,
-            final @NonNull Convertor<? super T, ? extends Document> docConvertor,
-            final @NonNull Convertor<? super S, ? extends Query> queryConvertor,
-            final boolean optimize) throws IOException {
-        assert IndexManager.holdsWriteLock();
-        final boolean create = !dirCache.exists();
-        final IndexWriter out = dirCache.getWriter(create);
+    @Override
+    public void rollback() throws IOException {
+        dirCache.rollbackTxWriter();
+    }
+
+    @Override
+    public <S, T> void txStore(
+            final Collection<T> toAdd, 
+            final Collection<S> toDelete, final Convertor<? super T, ? extends Document> docConvertor, 
+            final Convertor<? super S, ? extends Query> queryConvertor) throws IOException {
+        
+        final IndexWriter[] wr = new IndexWriter[1];
         try {
-            if (!create) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Storing in TX {0}: {1} added, {2} deleted", 
+                        new Object[] { this, toAdd.size(), toDelete.size() }
+                        );
+            }
+            _doStore(toAdd, toDelete, docConvertor, queryConvertor, wr, false);
+        } finally {
+            // nothing committed upon failure - readers not affected
+            boolean ok = false;
+            try {
+                if (wr[0] != null) {
+                    ((FlushIndexWriter)wr[0]).callFlush(false, true);
+                }
+                ok = true;
+            } finally {
+                if (!ok) {
+                    dirCache.rollbackTxWriter();
+                }
+            }
+        }
+    }
+    
+    private <S, T> void _doStore(Collection<T> data, 
+            Collection<S> toDelete, Convertor<? super T, ? extends Document> docConvertor, 
+            Convertor<? super S, ? extends Query> queryConvertor, IndexWriter[] ret, boolean optimize) throws IOException {
+        final IndexWriter out = dirCache.acquireWriter();
+        try {
+            ret[0] = out;
+            if (dirCache.exists()) {
                 for (S td : toDelete) {
                     out.deleteDocuments(queryConvertor.convert(td));
                 }
             }            
-            if (debugIndexMerging) {
-                out.setInfoStream (System.err);
-            }                
+            if (data.isEmpty()) {
+                return;
+            }
             final LowMemoryWatcher lmListener = LowMemoryWatcher.getInstance();
             Directory memDir = null;
             IndexWriter activeOut = null;
             if (lmListener.isLowMemory()) {
                 activeOut = out;
-            }
-            else {
+            } else {
                 memDir = new RAMDirectory ();
-                activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
+                activeOut = new IndexWriter (
+                    memDir,
+                    new IndexWriterConfig(
+                        Version.LUCENE_35,
+                        dirCache.getAnalyzer()));
             }
             for (Iterator<T> it = data.iterator(); it.hasNext();) {
                 T entry = it.next();
@@ -337,30 +416,44 @@ public class LuceneIndex implements Index {
                 activeOut.addDocument(doc);
                 if (memDir != null && lmListener.isLowMemory()) {
                     activeOut.close();
-                    out.addIndexesNoOptimize(new Directory[] {memDir});
+                    out.addIndexes(memDir);
                     memDir = new RAMDirectory ();
-                    activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
+                    activeOut = new IndexWriter (
+                        memDir,
+                        new IndexWriterConfig(
+                            Version.LUCENE_35,
+                            dirCache.getAnalyzer()));
                 }
             }
             if (memDir != null) {
                 activeOut.close();
-                out.addIndexesNoOptimize(new Directory[] {memDir});
+                out.addIndexes(memDir);
                 activeOut = null;
                 memDir = null;
-            }
-            if (optimize) {
-                out.optimize();
             }
         } catch (RuntimeException e) {
             throw Exceptions.attachMessage(e, "Lucene Index Folder: " + dirCache.folder.getAbsolutePath());
         } catch (IOException e) {
             throw Exceptions.attachMessage(e, "Lucene Index Folder: " + dirCache.folder.getAbsolutePath());
         } finally {
-            try {
-                out.close();
-            } finally {
-                dirCache.refreshReader();
-            }
+            dirCache.releaseWriter(out);
+        }
+    }
+
+    @Override
+    public <S, T> void store (
+            final @NonNull Collection<T> data,
+            final @NonNull Collection<S> toDelete,
+            final @NonNull Convertor<? super T, ? extends Document> docConvertor,
+            final @NonNull Convertor<? super S, ? extends Query> queryConvertor,
+            final boolean optimize) throws IOException {
+        
+        IndexWriter[] wr = new IndexWriter[1];
+        try {
+            _doStore(data, toDelete, docConvertor, queryConvertor, wr, optimize);
+        } finally {
+            LOGGER.log(Level.FINE, "Committing {0}", this);
+            dirCache.close(wr[0]);
         }
     }
         
@@ -371,17 +464,7 @@ public class LuceneIndex implements Index {
 
     @Override
     public void clear () throws IOException {
-        try {
-            IndexManager.writeAccess(new IndexManager.Action<Void>() {
-                @Override
-                public Void run() throws IOException, InterruptedException {
-                    dirCache.clear();
-                    return null;
-                }
-            });
-        } catch (InterruptedException ex) {
-            throw new IOException(ex);
-        }
+        dirCache.clear();
     }
     
     @Override
@@ -419,73 +502,6 @@ public class LuceneIndex implements Index {
     
 
     //<editor-fold defaultstate="collapsed" desc="Private classes (NoNormsReader, TermComparator, CachePolicy)">
-    
-    private static class AllFieldsSelector implements FieldSelector {
-        @Override
-        public FieldSelectorResult accept(final String fieldName) {
-            return FieldSelectorResult.LOAD;
-        }
-    }
-    
-    private static class NoNormsReader extends FilterIndexReader {
-
-        //@GuardedBy (this)
-        private byte[] norms;
-
-        public NoNormsReader (final IndexReader reader) {
-            super (reader);
-        }
-
-        @Override
-        public byte[] norms(String field) throws IOException {
-            byte[] _norms = fakeNorms ();
-            return _norms;
-        }
-
-        @Override
-        public void norms(String field, byte[] norm, int offset) throws IOException {
-            byte[] _norms = fakeNorms ();
-            System.arraycopy(_norms, 0, norm, offset, _norms.length);
-        }
-
-        @Override
-        public boolean hasNorms(String field) throws IOException {
-            return false;
-        }
-
-        @Override
-        protected void doSetNorm(int doc, String field, byte norm) throws CorruptIndexException, IOException {
-            //Ignore
-        }
-
-        @Override
-        protected void doClose() throws IOException {
-            synchronized (this)  {
-                this.norms = null;
-            }
-            super.doClose();
-        }
-
-        @Override
-        public IndexReader reopen() throws IOException {
-            final IndexReader newIn = in.reopen();
-            if (newIn == in) {
-                return this;
-            }
-            return new NoNormsReader(newIn);
-        }
-
-        /**
-         * Expert: Fakes norms, norms are not needed for Netbeans index.
-         */
-        private synchronized byte[] fakeNorms() {
-            if (this.norms == null) {
-                this.norms = new byte[maxDoc()];
-                Arrays.fill(this.norms, DefaultSimilarity.encodeNorm(1.0f));
-            }
-            return this.norms;
-        }
-    }
         
     private enum CachePolicy {
         
@@ -521,12 +537,19 @@ public class LuceneIndex implements Index {
         private final File folder;
         private final CachePolicy cachePolicy;
         private final Analyzer analyzer;
-        private FSDirectory fsDir;
+        private volatile FSDirectory fsDir;
         private RAMDirectory memDir;
         private CleanReference ref;
         private IndexReader reader;
         private volatile boolean closed;
         private volatile Status validCache;
+        private long lastUsedWriter;
+        private final ReadWriteLock rwLock = new java.util.concurrent.locks.ReentrantReadWriteLock();
+        
+        /**
+         * IndexWriter with potentially uncommitted data; local to a thread.
+         */
+        private ThreadLocal<IndexWriter>   txWriter = new ThreadLocal<IndexWriter>();
         
         private DirCache(
                 final @NonNull File folder,
@@ -544,10 +567,20 @@ public class LuceneIndex implements Index {
         Analyzer getAnalyzer() {
             return this.analyzer;
         }
+        
+        void clear() throws IOException {
+            rwLock.writeLock().lock();
+            try {
+                doClear();
+            } finally {
+                rwLock.writeLock().unlock();
+            }
+        }
                                 
-        synchronized void clear() throws IOException {
+        private synchronized void doClear() throws IOException {
             checkPreconditions();
-            close (false);
+            // already write locked
+            doClose(false);
             try {
                 final String[] content = fsDir.listAll();
                 boolean dirty = false;
@@ -565,7 +598,7 @@ public class LuceneIndex implements Index {
                 }
                 if (dirty) {
                     //Try to delete dirty files and log what's wrong
-                    final File cacheDir = fsDir.getFile();
+                    final File cacheDir = fsDir.getDirectory();
                     final File[] children = cacheDir.listFiles();
                     if (children != null) {
                         for (final File child : children) {                                                
@@ -593,31 +626,53 @@ public class LuceneIndex implements Index {
                 }
             } finally {
                 //Need to recreate directory, see issue: #148374
-                this.close(true);
+                this.doClose(true);
                 this.fsDir = createFSDirectory(this.folder);
                 closed = false;
             }
         }
         
-        synchronized void close (final boolean closeFSDir) throws IOException {
+        void close(IndexWriter writer) throws IOException {
+            if (writer == null) {
+                return;
+            }
             try {
-                try {
-                    if (this.reader != null) {
-                        this.reader.close();
-                        this.reader = null;
-                    }
-                } finally {                        
-                    if (memDir != null) {
-                        assert cachePolicy.hasMemCache();
-                        if (this.ref != null) {
-                            this.ref.clear();
-                        }
-                        final Directory tmpDir = this.memDir;
-                        memDir = null;
-                        tmpDir.close();
-                    }
-                }
+                writer.close();
             } finally {
+                if (txWriter.get() == writer) {
+                    LOGGER.log(Level.FINE, "TX writer cleared for {0}", this);
+                    txWriter.remove();
+                    refreshReader();
+                }
+            }
+        }
+        
+        void close (final boolean closeFSDir) throws IOException {
+            try {
+                rwLock.writeLock().lock();
+                doClose(closeFSDir);
+            } finally {
+                rwLock.writeLock().unlock();
+            }                
+        }
+        
+        synchronized void doClose (final boolean closeFSDir) throws IOException {
+            try {
+                rollbackTxWriter();
+                if (this.reader != null) {
+                    this.reader.close();
+                    this.reader = null;
+                }
+            } finally {                        
+                if (memDir != null) {
+                    assert cachePolicy.hasMemCache();
+                    if (this.ref != null) {
+                        this.ref.clear();
+                    }
+                    final Directory tmpDir = this.memDir;
+                    memDir = null;
+                    tmpDir.close();
+                }
                 if (closeFSDir) {
                     this.closed = true;
                     this.fsDir.close();
@@ -640,56 +695,163 @@ public class LuceneIndex implements Index {
             checkPreconditions();
             Status valid = validCache;
             if (force ||  valid == null) {
-                final Collection<? extends String> locks = getOrphanLock();
-                Status res = Status.INVALID;
-                if (!locks.isEmpty()) {
-                    LOGGER.log(Level.WARNING, "Broken (locked) index folder: {0}", folder.getAbsolutePath());   //NOI18N
-                    for (String lockName : locks) {
-                        fsDir.deleteFile(lockName);
-                    }
-                    if (force) {
-                        clear();
-                    }
-                } else {
-                    if (!exists()) {
-                        res = Status.EMPTY;
-                    } else if (force) {
-                        try {
-                            getReader();
-                            res = Status.VALID;
-                        } catch (java.io.IOException e) {
-                            clear();
-                        } catch (RuntimeException e) {
-                            clear();
+                rwLock.writeLock().lock();
+                try {
+                    final Collection<? extends String> locks = getOrphanLock();
+                    Status res = Status.INVALID;
+                    if (!locks.isEmpty()) {
+                        if (txWriter.get() != null) {
+                            res = Status.WRITING;
+                        } else {
+                            LOGGER.log(Level.WARNING, "Broken (locked) index folder: {0}", folder.getAbsolutePath());   //NOI18N
+                            synchronized (this) {
+                                for (String lockName : locks) {
+                                    fsDir.deleteFile(lockName);
+                                }
+                            }
+                            if (force) {
+                                clear();
+                            }
                         }
                     } else {
-                        res = Status.VALID;
+                        if (!exists()) {
+                            res = Status.EMPTY;
+                        } else if (force) {
+                            try {
+                                getReader();
+                                res = Status.VALID;
+                            } catch (java.io.IOException e) {
+                                clear();
+                            } catch (RuntimeException e) {
+                                clear();
+                            }
+                        } else {
+                            res = Status.VALID;
+                        }
                     }
+                    valid = res;
+                    validCache = valid;
+                } finally {
+                    rwLock.writeLock().unlock();
                 }
-                valid = res;
-                validCache = valid;
             }
             return valid;
         }
         
-        IndexWriter getWriter (final boolean create) throws IOException {
-            checkPreconditions();
-            hit();
-            //Issue #149757 - logging
-            try {
-                final IndexWriter iw = new IndexWriter (this.fsDir, analyzer, create, IndexWriter.MaxFieldLength.LIMITED);
-                iw.setMergeScheduler(new SerialMergeScheduler());
-                return iw;
-            } catch (IOException ioe) {
-                throw annotateException (ioe);
+        boolean closeTxWriter() throws IOException {
+            IndexWriter writer = txWriter.get();
+            if (writer != null) {
+                LOGGER.log(Level.FINE, "Committing {0}", this);
+                close(writer);
+                return true;
+            } else {
+                return false;
             }
         }
         
-        synchronized IndexReader getReader () throws IOException {
+        boolean rollbackTxWriter() throws IOException {
+            IndexWriter writer = txWriter.get();
+            if (writer != null) {
+                try {
+                    writer.rollback();
+                    return true;
+                } finally {
+                    txWriter.remove();
+                }
+            } else {
+                return false;
+            }
+        }
+        
+        private static final long STALE_WRITER_THRESHOLD = 120 /* sec */ * 1000;
+        
+        /**
+         * The writer operates under readLock(!) since we do not want to lock out readers,
+         * but just close, clear and commit operations. 
+         * 
+         * @return
+         * @throws IOException 
+         */
+        IndexWriter acquireWriter () throws IOException {
+            checkPreconditions();
+            hit();
+
+            boolean ok = false;
+            
+            rwLock.readLock().lock();
+            IndexWriter writer = txWriter.get();
+            try {
+                if (writer != null) {
+                    long current = System.currentTimeMillis();
+                    if (current - lastUsedWriter > STALE_WRITER_THRESHOLD) {
+                        LOGGER.log(Level.WARNING, "Using stale writer, possibly forgotten call to store ?", new Throwable());
+                    }
+                    lastUsedWriter = current;
+                    ok = true;
+                    return writer;
+                }
+                try {
+                    final IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_35, analyzer);
+                    //The posix::fsync(int) is very slow on Linux ext3,
+                    //minimize number of files sync is done on.
+                    //http://netbeans.org/bugzilla/show_bug.cgi?id=208224
+                    final boolean alwaysCFS = Utilities.getOperatingSystem() == Utilities.OS_LINUX;
+                    if (alwaysCFS) {
+                        //TieredMergePolicy has better performance:
+                        //http://blog.mikemccandless.com/2011/02/visualizing-lucenes-segment-merges.html
+                        final TieredMergePolicy mergePolicy = new TieredMergePolicy();
+                        mergePolicy.setNoCFSRatio(1.0);
+                        iwc.setMergePolicy(mergePolicy);
+                    }
+                    final IndexWriter iw = new FlushIndexWriter (this.fsDir, iwc);
+                    lastUsedWriter = System.currentTimeMillis();
+                    txWriter.set(iw);
+                    ok = true;
+                    return iw;
+                } catch (IOException ioe) {
+                    //Issue #149757 - logging
+                    throw annotateException (ioe);
+                }
+            } finally {
+                if (!ok) {
+                    rwLock.readLock().unlock();
+                }
+            }
+        }
+        
+        void releaseWriter(IndexWriter w) {
+            assert w == txWriter.get();
+            rwLock.readLock().unlock();
+        }
+        
+        IndexReader acquireReader() throws IOException {
+            rwLock.readLock().lock();
+            IndexReader r = null;
+            try {
+                r = getReader();
+                return r;
+            } finally {
+                if (r == null) {
+                  rwLock.readLock().unlock();
+                }
+            }
+        }
+        
+        void releaseReader(IndexReader r) {
+            if (r == null) {
+                return;
+            }
+            assert r == this.reader;
+            rwLock.readLock().unlock();
+        }
+        
+        private synchronized IndexReader getReader () throws IOException {
             checkPreconditions();
             hit();
             if (this.reader == null) {
-                if (validCache != Status.VALID) {
+                if (validCache != Status.VALID &&
+                    validCache != Status.WRITING &&
+                    validCache != null) {
                     return null;
                 }
                 //Issue #149757 - logging
@@ -705,18 +867,22 @@ public class LuceneIndex implements Index {
                         source = fsDir;
                     }
                     assert source != null;
-                    this.reader = new NoNormsReader(IndexReader.open(source,true));
+                    this.reader = IndexReader.open(source,true);
                 } catch (final FileNotFoundException fnf) {
                     //pass - returns null
                 } catch (IOException ioe) {
-                    throw annotateException (ioe);
+                    if (validCache == null) {
+                        return null;
+                    } else {
+                        throw annotateException (ioe);
+                    }
                 }
             }
             return this.reader;
         }
 
 
-        synchronized void refreshReader() throws IOException {
+        void refreshReader() throws IOException {
             if (IndexWriter.isLocked(fsDir)) {
                 IndexWriter.unlock(fsDir);
             }
@@ -724,12 +890,19 @@ public class LuceneIndex implements Index {
                 if (cachePolicy.hasMemCache()) {
                     close(false);
                 } else {
-                    if (reader != null) {
-                        final IndexReader newReader = reader.reopen();
-                        if (newReader != reader) {
-                            reader.close();
-                            reader = newReader;
+                    rwLock.writeLock().lock();
+                    try {
+                        synchronized (this) {
+                            if (reader != null) {
+                                final IndexReader newReader = IndexReader.openIfChanged(reader);
+                                if (newReader != null) {
+                                    reader.close();
+                                    reader = newReader;
+                                }
+                            }
                         }
+                    } finally {
+                        rwLock.writeLock().unlock();
                     }
                 }
             } finally {
@@ -751,18 +924,10 @@ public class LuceneIndex implements Index {
                     @Override
                     public void run () {
                         try {
-                            IndexManager.writeAccess(new IndexManager.Action<Void>() {
-                                @Override
-                                public Void run() throws IOException, InterruptedException {
-                                    close(false);
-                                    LOGGER.log(Level.FINE, "Evicted index: {0}", folder.getAbsolutePath()); //NOI18N
-                                    return null;
-                                }
-                            });
+                            close(false);
+                            LOGGER.log(Level.FINE, "Evicted index: {0}", folder.getAbsolutePath()); //NOI18N
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
-                        } catch (InterruptedException ie) {
-                            Exceptions.printStackTrace(ie);
                         }
                     }
                 });
@@ -898,4 +1063,23 @@ public class LuceneIndex implements Index {
     }
     //</editor-fold>
 
+    private static class FlushIndexWriter extends IndexWriter {
+
+        public FlushIndexWriter(
+                @NonNull final Directory d,
+                @NonNull final IndexWriterConfig conf) throws CorruptIndexException, LockObtainFailedException, IOException {
+            super(d, conf);
+        }
+        
+        /**
+         * Accessor to index flush for this package
+         * @param triggerMerges
+         * @param flushDeletes
+         * @throws IOException 
+         */
+        void callFlush(boolean triggerMerges, boolean flushDeletes) throws IOException {
+            // flushStores ignored in Lucene 3.5
+            super.flush(triggerMerges, true, flushDeletes);
+        }
+    }
 }

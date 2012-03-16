@@ -74,13 +74,14 @@ import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -113,9 +114,9 @@ public class CommentsPanel extends JPanel {
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        Issue is = issue.getRepository().getIssue(issueKey);
+                        NbJiraIssue is = issue.getRepository().getIssue(issueKey);
                         if (is != null) {
-                            is.open();
+                            JiraUtils.openIssue(is);
                         }
                     }
                 });
@@ -225,7 +226,7 @@ public class CommentsPanel extends JPanel {
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = KenaiUtil.createUserWidget(author, host, KenaiUtil.getChatLink(issue));
+            stateLabel = KenaiUtil.createUserWidget(author, host, KenaiUtil.getChatLink(issue.getID()));
             stateLabel.setText(null);
         }
         

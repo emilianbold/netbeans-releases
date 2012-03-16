@@ -206,7 +206,7 @@ public final class DefaultProcessor extends OptionProcessor {
         }
     }
 
-    private static ClassLoader findClassLoader() {
+    public static ClassLoader findClassLoader() {
         ClassLoader l = null;
         try {
             l = findClassLoaderFromLookup();

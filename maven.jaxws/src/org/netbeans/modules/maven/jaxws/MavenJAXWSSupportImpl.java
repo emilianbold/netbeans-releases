@@ -230,15 +230,12 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
     }
 
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
-        if (webservicesMetadataModel == null) {
-            J2eeModuleProvider j2eeModuleProvider = prj.getLookup().lookup(J2eeModuleProvider.class);
-            if (j2eeModuleProvider != null) {
-                webservicesMetadataModel =
-                        j2eeModuleProvider.getJ2eeModule().getMetadataModel(WebservicesMetadata.class);
-            }
+        J2eeModuleProvider j2eeModuleProvider = prj.getLookup().
+                lookup(J2eeModuleProvider.class);
+       if (j2eeModuleProvider != null) {
+            return j2eeModuleProvider.getJ2eeModule().getMetadataModel(
+                    WebservicesMetadata.class);
         }
-        return webservicesMetadataModel;
+        return null;
     }
-
-    private MetadataModel < WebservicesMetadata > webservicesMetadataModel;
 }

@@ -69,8 +69,10 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.project.PackageDisplayUtils;
+import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
+import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FileSystemAction;
@@ -96,7 +98,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.ExTransferable;
@@ -104,8 +106,6 @@ import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.openidex.search.FileObjectFilter;
-import org.openidex.search.SearchInfoFactory;
 
 /**
  * Display of Java sources in a package structure rather than folder structure.
@@ -668,11 +668,8 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                    new ProxyLookup(
                         Lookups.singleton(new NoFoldersContainer (dataFolder)),
                         dataFolder.getNodeDelegate().getLookup(),
-                        Lookups.singleton(PackageRootNode.alwaysSearchableSearchInfo(SearchInfoFactory.createSearchInfo(
-                                                  dataFolder.getPrimaryFile(),
-                                                  false,      //not recursive
-                                                  new FileObjectFilter[] {
-                                                          SearchInfoFactory.VISIBILITY_FILTER})))));
+                        Lookups.singleton(SearchInfoDefinitionFactory.createFlatSearchInfo(
+                                                  dataFolder.getPrimaryFile()))));
             this.root = root;
             this.dataFolder = dataFolder;
             this.isDefaultPackage = root.equals( dataFolder.getPrimaryFile() );
@@ -689,6 +686,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             return relativePath == null ?  null : relativePath.replace('/', '.'); // NOI18N
         }
         
+        @Messages("LBL_CompilePackage_Action=Compile Package")
         @Override
         public Action[] getActions( boolean context ) {
             
@@ -709,9 +707,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                         }
                         else if ( superActions[i] instanceof FileSystemAction ) {
                             actionList.add (null); // insert separator and new action
-                            actionList.add (FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, 
-                                NbBundle.getMessage( PackageViewChildren.class, "LBL_CompilePackage_Action" ), // NOI18N
-                                null ));                            
+                            actionList.add (FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, LBL_CompilePackage_Action(), null));                           
                         }
                         
                         actionList.add( superActions[i] );                                                  
@@ -856,6 +852,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             return handlers.iterator().next(); 
         }
         
+        @Messages("MSG_InvalidPackageName=Name is not a valid Java package.")
         @Override
         public void setName(String name) {
             PackageRenameHandler handler = getRenameHandler();
@@ -872,8 +869,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                 return;
             }
             if (!isValidPackageName (name)) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (
-                        NbBundle.getMessage(PackageViewChildren.class,"MSG_InvalidPackageName"), NotifyDescriptor.INFORMATION_MESSAGE));
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_InvalidPackageName(), NotifyDescriptor.INFORMATION_MESSAGE));
                 return;
             }
             name = name.replace('.','/')+'/';           //NOI18N
@@ -1054,7 +1050,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                 // must be annotated; general package icon is returned instead
                 return ImageUtilities.loadImage(PackageDisplayUtils.PACKAGE);
             }
-            return PackageDisplayUtils.getIcon(folder, path.replace('/', '.'), isLeaf() );
+            return PackageDisplayUtils.getIcon(folder, isLeaf());
         }
         
         private Image getMyOpenedIcon(int type) {
@@ -1094,8 +1090,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                     //Replace the Sheet.PROPERTIES by the new one
                     //having only the name property which does refactoring
                     set = Sheet.createPropertiesSet();
-                    ((Sheet.Set)set).put(new PropertySupport.ReadWrite<String>(DataObject.PROP_NAME, String.class,
-                            NbBundle.getMessage(PackageViewChildren.class,"PROP_name"), NbBundle.getMessage(PackageViewChildren.class,"HINT_name")) {
+                    ((Sheet.Set)set).put(new PropertySupport.ReadWrite<String>(DataObject.PROP_NAME, String.class, PROP_name(), HINT_name()) {
                         @Override
                         public String getValue() {
                             return PackageViewChildren.PackageNode.this.getName();
@@ -1122,7 +1117,9 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             return getCookie(DataFolder.class);
         }
         
-        private boolean isValidPackageName(String name) {
+    }
+    
+    static boolean isValidPackageName(String name) {
             if (name.length() == 0) {
                 //Fast check of default pkg
                 return true;
@@ -1157,7 +1154,6 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                 delimExpected = !delimExpected;
             }
             return delimExpected;
-        }
     }
     
     private static final class NoFoldersContainer 
@@ -1286,9 +1282,10 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             return ExTransferable.EMPTY;
         }
 
+        @Messages("TXT_PastePackage=Paste Package")
         @Override
         public String getName() {
-            return NbBundle.getMessage(PackageViewChildren.class,"TXT_PastePackage");
+            return TXT_PastePackage();
         }
         
         private void doPaste() throws IOException {

@@ -54,14 +54,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.providers.CheckProviders;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileObjectTestHid;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileSystemFactoryHid;
-import org.openide.filesystems.FileSystemTestHid;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileUtilTestHidden;
-import org.openide.filesystems.URLMapperTestHidden;
+import org.openide.filesystems.*;
 
 /**
  * @author rmatous
@@ -88,7 +81,9 @@ public class FileBasedFileSystemTest extends FileSystemFactoryHid {
         suite.addTestSuite(FileObjectTestHid.class);
         suite.addTestSuite(URLMapperTestHidden.class);
         suite.addTestSuite(FileUtilTestHidden.class);
+        suite.addTestSuite(FileUtilJavaIOFileHidden.class);
         suite.addTestSuite(BaseFileObjectTestHid.class);
+        suite.addTestSuite(TempFileObjectTestHid.class);
         suite.addTest(new CheckProviders(created));
         return suite;
     }

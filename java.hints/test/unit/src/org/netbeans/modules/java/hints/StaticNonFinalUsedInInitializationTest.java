@@ -39,64 +39,73 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author David Strupl
  */
-public class StaticNonFinalUsedInInitializationTest extends TestBase {
+public class StaticNonFinalUsedInInitializationTest extends NbTestCase {
 
     public StaticNonFinalUsedInInitializationTest(String name) {
-        super(name, StaticNonFinalUsedInInitialization.class);
+        super(name);
     }
 
     public void testDoNotReport() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private static final int A = 5;\n" +
-                            "    public static final int B = A + 10;\n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static final int A = 5;\n" +
+                       "    public static final int B = A + 10;\n" +
+                       "}")
+                .run(StaticNonFinalUsedInInitialization.class)
+                .assertWarnings();
     }
+
     public void testDoNotReport2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private static int A = 5;\n" +
-                            "    public int B = A + 10;\n" +
-                            "    public int C;\n" +
-                            "    {\n" +
-                            "        C = A + 10;" +
-                            "    }\n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static int A = 5;\n" +
+                       "    public int B = A + 10;\n" +
+                       "    public int C;\n" +
+                       "    {\n" +
+                       "        C = A + 10;" +
+                       "    }\n" +
+                       "}")
+                .run(StaticNonFinalUsedInInitialization.class)
+                .assertWarnings();
     }
+
     public void testReportIt() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    static int A = 5;\n" +
-                            "    static int B = A + 10;\n" +
-                            "}",
-                            "3:19-3:20:verifier:StaticNonFinalUsedInInitialization"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    static int A = 5;\n" +
+                       "    static int B = A + 10;\n" +
+                       "}")
+                .run(StaticNonFinalUsedInInitialization.class)
+                .assertWarnings("3:19-3:20:verifier:StaticNonFinalUsedInInitialization");
     }
+
     public void testReportIt2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    static int A = 5;\n" +
-                            "    static int B;\n" +
-                            "    static {\n" +
-                            "        B = A + 10;\n" +
-                            "    }\n" +
-                            "}",
-                            "5:12-5:13:verifier:StaticNonFinalUsedInInitialization"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    static int A = 5;\n" +
+                       "    static int B;\n" +
+                       "    static {\n" +
+                       "        B = A + 10;\n" +
+                       "    }\n" +
+                       "}")
+                .run(StaticNonFinalUsedInInitialization.class)
+                .assertWarnings("5:12-5:13:verifier:StaticNonFinalUsedInInitialization");
     }
 }
