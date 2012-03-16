@@ -108,19 +108,6 @@ public final class RepositoryQueries {
     /**
      * 
      * @param repos
-     * @return
-     * @deprecated use getGroupsResult() method
-     */
-    @Deprecated
-    public static Set<String> getGroups(@NullAllowed List<RepositoryInfo> repos) {
-        final Set<String> toRet = new TreeSet<String>();
-        toRet.addAll(getGroupsResult(repos).getResults());
-        return toRet;
-    }    
-
-    /**
-     * 
-     * @param repos
      * @return 
      * @since 2.9
      */
@@ -148,20 +135,6 @@ public final class RepositoryQueries {
      * 
      * @param prefix
      * @param repos
-     * @return
-     * @deprecated use filterGroupIdsResult() method
-     */
-    @Deprecated
-    public static Set<String> filterGroupIds(String prefix, @NullAllowed List<RepositoryInfo> repos) {
-        final Set<String> toRet = new TreeSet<String>();
-        toRet.addAll(filterGroupIdsResult(prefix, repos).getResults());
-        return toRet;
-    }
-    
-    /**
-     * 
-     * @param prefix
-     * @param repos
      * @return 
      * @since 2.9
      */
@@ -178,26 +151,13 @@ public final class RepositoryQueries {
                 toRet.addAll(res.getResults());
                 if (res.isPartial()) {
                     result.markAsPartial();
+                }
             }
         }
-    }
         result.getResults().addAll(toRet);
         return result;
     }
 
-    /**
-     * 
-     * @param groupId
-     * @param artifactId
-     * @param version
-     * @param repos
-     * @return
-     * @deprecated use the getRecordsResult() method
-     */
-    @Deprecated
-    public static List<NBVersionInfo> getRecords(String groupId, String artifactId, String version, @NullAllowed List<RepositoryInfo> repos) {
-        return getRecordsResult(groupId, artifactId, version, repos).getResults();
-    }
     
     /**
      * 
@@ -229,19 +189,6 @@ public final class RepositoryQueries {
         return result;        
     }
 
-    /**
-     * 
-     * @param groupId
-     * @param repos
-     * @return
-     * @deprecated use the getArtifactsResult() variant
-     */
-    @Deprecated
-    public static Set<String> getArtifacts(String groupId, @NullAllowed List<RepositoryInfo> repos) {
-        final Set<String> toRet = new TreeSet<String>();
-        toRet.addAll(getArtifactsResult(groupId, repos).getResults());
-        return toRet;
-    }
     
     /**
      * 
@@ -270,18 +217,6 @@ public final class RepositoryQueries {
         return result;
     }
 
-    /**
-     * 
-     * @param groupId
-     * @param artifactId
-     * @param repos
-     * @return
-     * @deprecated use the getVersionsResult() variant
-     */
-    @Deprecated
-    public static List<NBVersionInfo> getVersions(String groupId, String artifactId, @NullAllowed List<RepositoryInfo> repos) {
-        return getVersionsResult(groupId, artifactId, repos).getResults();
-    }
     
     /**
      * 
@@ -312,19 +247,6 @@ public final class RepositoryQueries {
         return result;
     }
 
-    /**
-     * 
-     * @param groupId
-     * @param artifactId
-     * @param version
-     * @param repos
-     * @return
-     * @deprecated use the findDependencyUsageResult() variant
-     */
-    @Deprecated
-    public static List<NBGroupInfo> findDependencyUsage(String groupId, String artifactId, String version, @NullAllowed List<RepositoryInfo> repos) {
-        return findDependencyUsageResult(groupId, artifactId, version, repos).getResults();
-    }
     /**
      * 
      * @param groupId
@@ -388,18 +310,6 @@ public final class RepositoryQueries {
      * @param file
      * @param repos
      * @return 
-     * @deprecated use the findBySHA1Result() variant
-     */
-    @Deprecated
-    public static List<NBVersionInfo> findBySHA1(File file, @NullAllowed List<RepositoryInfo> repos) {
-        return findBySHA1Result(file, repos).getResults();
-    }
-    
-    /**
-     * 
-     * @param file
-     * @param repos
-     * @return 
      * @since 2.9
      */
     public static Result<NBVersionInfo> findBySHA1Result(File file, @NullAllowed List<RepositoryInfo> repos) {
@@ -433,20 +343,6 @@ public final class RepositoryQueries {
         Collections.sort(toRet);
         result.getResults().addAll(toRet);
         return result;
-    }
-    
-    /**
-     * @throws BooleanQuery.TooManyClauses This runtime exception can be thrown if given class name is too
-     * general and such search can't be executed as it would probably end with
-     * OutOfMemoryException. Callers should either assure that no such dangerous
-     * queries are constructed or catch BooleanQuery.TooManyClauses and act
-     * accordingly, for example by telling user that entered text for
-     * search is too general.
-     * @deprecated use the findVersionsByClassResult() variant
-     */
-    @Deprecated
-    public static List<NBVersionInfo> findVersionsByClass(final String className, @NullAllowed List<RepositoryInfo> repos) {
-        return findVersionsByClassResult(className, repos).getResults();
     }
     
     /**
@@ -531,18 +427,6 @@ public final class RepositoryQueries {
     }
 
     /**
-     * 
-     * @param className
-     * @param repos
-     * @return
-     * @deprecated use the findClassUsagesResult() variant
-     * @since 1.17
-     */
-    @Deprecated
-    public static List<ClassUsageQuery.ClassUsageResult> findClassUsages(String className, @NullAllowed List<RepositoryInfo> repos) {    
-        return findClassUsagesResult(className, repos).getResults();
-    }
-    /**
      * Finds all usages of a given class.
      * The implementation may not provide results within the same artifact, or on classes in the JRE.
      * @param className the FQN of a class that might be used as an API
@@ -566,16 +450,6 @@ public final class RepositoryQueries {
         return result;
     }
 
-    /**
-     * 
-     * @param repos
-     * @return 
-     * @deprecated  use the findArchetypesResult() variant
-     */
-    @Deprecated
-    public static List<NBVersionInfo> findArchetypes(@NullAllowed List<RepositoryInfo> repos) {
-        return findArchetypesResult(repos).getResults();
-    }
     
     /**
      * 
@@ -596,28 +470,16 @@ public final class RepositoryQueries {
                     toRet.addAll(res.getResults());
                     if (res.isPartial()) {
                         result.markAsPartial();
+                    }
                 }
             }
         }
-        }
         Collections.sort(toRet);
         result.getResults().addAll(toRet);
-        return result;    }
-    
-    /**
-     * 
-     * @param groupId
-     * @param prefix
-     * @param repos
-     * @return
-     * @deprecated use the filterPluginArtifactIdsResult() variant
-     */
-    @Deprecated
-    public static Set<String> filterPluginArtifactIds(String groupId, String prefix, @NullAllowed List<RepositoryInfo> repos) {
-        Set<String> toRet = new TreeSet<String>();
-        toRet.addAll(filterPluginArtifactIdsResult(groupId, prefix, repos).getResults());
-        return toRet;
+        return result;
     }
+    
+
     
     /**
      * 
@@ -641,26 +503,13 @@ public final class RepositoryQueries {
                 toRet.addAll(r.getResults());
                 if (r.isPartial()) {
                     result.markAsPartial();
+                }
             }
         }
-    }
         result.getResults().addAll(toRet);
         return result;
     }
 
-    /**
-     * 
-     * @param prefix
-     * @param repos
-     * @return
-     * @deprecated use the filterPluginGroupIdsResult() variant
-     */
-    @Deprecated
-    public static Set<String> filterPluginGroupIds(String prefix, @NullAllowed List<RepositoryInfo> repos) {
-        Set<String> toRet = new TreeSet<String>();
-        toRet.addAll(filterPluginGroupIdsResult(prefix, repos).getResults());
-        return toRet;
-    }
     
     /**
      * 
@@ -682,26 +531,13 @@ public final class RepositoryQueries {
                 toRet.addAll(r.getResults());
                 if (r.isPartial()) {
                     result.markAsPartial();
+                }
             }
         }
-    }
         result.getResults().addAll(toRet);
         return result;
     }
-    
-    /**
-     * @throws BooleanQuery.TooManyClauses This runtime exception can be thrown if given query is too
-     * general and such search can't be executed as it would probably end with
-     * OutOfMemoryException. Callers should either assure that no such dangerous
-     * queries are constructed or catch BooleanQuery.TooManyClauses and act
-     * accordingly, for example by telling user that entered text for
-     * search is too general.
-     * @deprecated use the findResult() variant
-     */
-    @Deprecated
-    public static List<NBVersionInfo> find(List<QueryField> fields, @NullAllowed List<RepositoryInfo> repos) {
-        return findResult(fields, repos).getResults();
-    }
+
 
     /**
      * @throws BooleanQuery.TooManyClauses This runtime exception can be thrown if given query is too
@@ -799,20 +635,6 @@ public final class RepositoryQueries {
         return toRet;
     }
 
-    /**
-     * 
-     * @param groupId
-     * @param prefix
-     * @param repos
-     * @return
-     * @deprecated use the filterArtifactIdForGroupIdResult() variant
-     */
-    @Deprecated
-    public static Set<String> filterArtifactIdForGroupId(String groupId, String prefix, @NullAllowed List<RepositoryInfo> repos) {
-        Set<String> toRet = new TreeSet<String>();
-        toRet.addAll(filterArtifactIdForGroupIdResult(groupId, prefix, repos).getResults());
-        return toRet;
-    }
     
     public static Result<String> filterArtifactIdForGroupIdResult(String groupId, String prefix, @NullAllowed List<RepositoryInfo> repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
