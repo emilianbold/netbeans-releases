@@ -46,13 +46,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
@@ -65,7 +62,6 @@ import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
 import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
 import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
-import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
 
 /**
  * Searches Maven repositories in various ways.
@@ -104,6 +100,10 @@ public final class RepositoryQueries {
             return results;
         }
     }    
+    
+    private static @NonNull BaseQueries findBaseQueries() {
+        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(BaseQueries.class);
+    }
 
     /**
      * 
@@ -112,23 +112,7 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<String> getGroupsResult(@NullAllowed List<RepositoryInfo> repos) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        final Result<String> result = new Result<String>();
-        Set<String> toRet = new TreeSet<String>();
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                BaseQueries bq = impl.getCapabilityLookup().lookup(BaseQueries.class);
-                assert bq != null : "All RepositoryIndexerImplementation need to define BaseQueries:" + impl.getType() + " : " + impl.getClass();
-                Result<String> res = bq.getGroups(rps);
-                toRet.addAll(res.getResults());
-                if (res.isPartial()) {
-                    result.markAsPartial();
-            }
-        }
-    }
-        result.getResults().addAll(toRet);
-        return result;
+        return findBaseQueries().getGroups(repos);
     }
     
     /**
@@ -139,23 +123,7 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<String> filterGroupIdsResult(String prefix, @NullAllowed List<RepositoryInfo> repos) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        final Result<String> result = new Result<String>();
-        Set<String> toRet = new TreeSet<String>();
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                BaseQueries bq = impl.getCapabilityLookup().lookup(BaseQueries.class);
-                assert bq != null : "All RepositoryIndexerImplementation need to define BaseQueries:" + impl.getType() + " : " + impl.getClass();
-                Result<String> res = bq.filterGroupIds(prefix, rps);
-                toRet.addAll(res.getResults());
-                if (res.isPartial()) {
-                    result.markAsPartial();
-                }
-            }
-        }
-        result.getResults().addAll(toRet);
-        return result;
+        return findBaseQueries().filterGroupIds(prefix, repos);
     }
 
     
@@ -169,24 +137,7 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<NBVersionInfo> getRecordsResult(String groupId, String artifactId, String version, @NullAllowed List<RepositoryInfo> repos) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
-        final Result<NBVersionInfo> result = new Result<NBVersionInfo>();
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                BaseQueries bq = impl.getCapabilityLookup().lookup(BaseQueries.class);
-                assert bq != null : "All RepositoryIndexerImplementation need to define BaseQueries:" + impl.getType() + " : " + impl.getClass();
-                Result<NBVersionInfo> res = bq.getRecords(groupId, artifactId, version, rps);
-                toRet.addAll(res.getResults());
-                if (res.isPartial()) {
-                    result.markAsPartial();
-            }
-        }
-        }
-        Collections.sort(toRet);
-        result.getResults().addAll(toRet);
-        return result;        
+        return findBaseQueries().getRecords(groupId, artifactId, version, repos);
     }
 
     
@@ -198,23 +149,7 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<String> getArtifactsResult(String groupId, @NullAllowed List<RepositoryInfo> repos) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        final Result<String> result = new Result<String>();
-        Set<String> toRet = new TreeSet<String>();
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                BaseQueries bq = impl.getCapabilityLookup().lookup(BaseQueries.class);
-                assert bq != null : "All RepositoryIndexerImplementation need to define BaseQueries:" + impl.getType() + " : " + impl.getClass();
-                Result<String> res = bq.getArtifacts(groupId, rps);
-                toRet.addAll(res.getResults());
-                if (res.isPartial()) {
-                    result.markAsPartial();
-            }
-        }
-    }
-        result.getResults().addAll(toRet);
-        return result;
+        return findBaseQueries().getArtifacts(groupId, repos);
     }
 
     
@@ -227,26 +162,14 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<NBVersionInfo> getVersionsResult(String groupId, String artifactId, @NullAllowed List<RepositoryInfo> repos) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
-        final Result<NBVersionInfo> result = new Result<NBVersionInfo>();
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                BaseQueries bq = impl.getCapabilityLookup().lookup(BaseQueries.class);
-                assert bq != null : "All RepositoryIndexerImplementation need to define BaseQueries:" + impl.getType() + " : " + impl.getClass();
-                Result<NBVersionInfo> res = bq.getVersions(groupId, artifactId, rps);
-                toRet.addAll(res.getResults());
-                if (res.isPartial()) {
-                    result.markAsPartial();
-            }
-        }
-        }
-        Collections.sort(toRet);
-        result.getResults().addAll(toRet);
-        return result;
+        return findBaseQueries().getVersions(groupId, artifactId, repos);
     }
 
+    
+    private static @NonNull DependencyInfoQueries findDIQ() {
+        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(DependencyInfoQueries.class);
+    }
+    
     /**
      * 
      * @param groupId
@@ -262,21 +185,12 @@ public final class RepositoryQueries {
         Map<String, NBArtifactInfo> artifactMap = new HashMap<String, NBArtifactInfo>();
         List<NBGroupInfo> groupInfos = new ArrayList<NBGroupInfo>();
         final Result<NBGroupInfo> result = new Result<NBGroupInfo>();
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                DependencyInfoQueries dq = impl.getCapabilityLookup().lookup(DependencyInfoQueries.class);
-                if (dq != null) {
-                    Result<NBVersionInfo> res = dq.findDependencyUsage(groupId, artifactId, version, rps);
-                    convertToNBGroupInfo(res.getResults(),
-                            groupMap, artifactMap, groupInfos);
-                    if (res.isPartial()) {
-                        result.markAsPartial();
-                }
-            }
+        Result<NBVersionInfo> res = findDIQ().findDependencyUsage(groupId, artifactId, version, repos);
+        convertToNBGroupInfo(res.getResults(),
+                groupMap, artifactMap, groupInfos);
+        if (res.isPartial()) {
+            result.markAsPartial();
         }
-    }
         result.getResults().addAll(groupInfos);
         return result;
     }
@@ -322,29 +236,24 @@ public final class RepositoryQueries {
         return new Result<NBVersionInfo>();
         
     }
+    
+    private static ChecksumQueries findChecksumQueries() {
+        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ChecksumQueries.class);
+    }    
 
     private static Result<NBVersionInfo> findBySHA1(String sha1, @NullAllowed List<RepositoryInfo> repos) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
-        final Result<NBVersionInfo> result = new Result<NBVersionInfo>();
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                ChecksumQueries chq = impl.getCapabilityLookup().lookup(ChecksumQueries.class);
-                if (chq != null) {
-                    Result<NBVersionInfo> res = chq.findBySHA1(sha1, rps);
-                    toRet.addAll(res.getResults());
-                    if (res.isPartial()) {
-                        result.markAsPartial();
-                }
-            }
+        ChecksumQueries cq = findChecksumQueries();
+        if (cq != null) {
+            return findChecksumQueries().findBySHA1(sha1, repos);
+        } else {
+            //this is here only because of ClassPathProviderImplTest
+            return new Result<NBVersionInfo>();
         }
-        }
-        Collections.sort(toRet);
-        result.getResults().addAll(toRet);
-        return result;
     }
     
+    private static @NonNull ClassesQuery findClassesQueries() {
+        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ClassesQuery.class);
+    }    
     /**
      * 
      * @param className
@@ -359,25 +268,7 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<NBVersionInfo> findVersionsByClassResult(final String className, @NullAllowed List<RepositoryInfo> repos) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
-        final Result<NBVersionInfo> result = new Result<NBVersionInfo>();
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                ClassesQuery chq = impl.getCapabilityLookup().lookup(ClassesQuery.class);
-                if (chq != null) {
-                    Result<NBVersionInfo> res = chq.findVersionsByClass(className, rps);
-                    toRet.addAll(res.getResults());
-                    if (res.isPartial()) {
-                        result.markAsPartial();
-                }
-            }
-        }
-        }
-        Collections.sort(toRet);
-        result.getResults().addAll(toRet);
-        return result;
+        return findClassesQueries().findVersionsByClass(className, repos);
     }
 
     /**
@@ -401,29 +292,22 @@ public final class RepositoryQueries {
      * search is too general.
      */
     public static void findVersionsByClass(QueryRequest query) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(query.getRepositories());
-        for (Iterator<List<RepositoryInfo>> it = all.iterator(); it.hasNext();) {
-            List<RepositoryInfo> rps = it.next();
-            for (Iterator<RepositoryInfo> it1 = rps.iterator(); it1.hasNext();) {
-                RepositoryInfo repositoryInfo = it1.next();
-                RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(repositoryInfo);
-                if (impl != null) {
-                    ClassesQuery chq = impl.getCapabilityLookup().lookup(ClassesQuery.class);
-                    if (chq != null) {
-                        List<RepositoryInfo> repositoryInfoL = new ArrayList<RepositoryInfo>(1);
-                        repositoryInfoL.add(repositoryInfo);
-                        query.addResults(chq.findVersionsByClass(query.getClassName(), repositoryInfoL).getResults(), !it1.hasNext() && !it.hasNext());
-                    } else {
-                        query.addResults(null, !it1.hasNext() && !it.hasNext());
-                    }
-                }
-                // still someone waiting for results?
-                if (query.countObservers() == 0)
-                    return;
-            }
+        //TODO first process the loaded ones, index and wait for finish of indexing of the unloaded ones..
+        for (Iterator<RepositoryInfo> it1 = query.getRepositories().iterator(); it1.hasNext();) {
+            RepositoryInfo repositoryInfo = it1.next();
+            List<RepositoryInfo> repositoryInfoL = new ArrayList<RepositoryInfo>(1);
+            repositoryInfoL.add(repositoryInfo);
+            query.addResults(findClassesQueries().findVersionsByClass(query.getClassName(), repositoryInfoL).getResults(), !it1.hasNext());
+            // still someone waiting for results?
+            if (query.countObservers() == 0)
+                return;
         }
         if (!query.isFinished())
             query.addResults(null, true);
+    }
+    
+    private static @NonNull ClassUsageQuery findClassUsageQuery() {
+        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ClassUsageQuery.class);        
     }
 
     /**
@@ -435,21 +319,13 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<ClassUsageQuery.ClassUsageResult> findClassUsagesResult(String className, @NullAllowed List<RepositoryInfo> repos) {
-        final Result<ClassUsageQuery.ClassUsageResult> result = new Result<ClassUsageQuery.ClassUsageResult>();
-        for (List<RepositoryInfo> rps : splitReposByType(repos)) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            ClassUsageQuery q = impl.getCapabilityLookup().lookup(ClassUsageQuery.class);
-            if (q != null) {
-                Result<ClassUsageQuery.ClassUsageResult> r = q.findClassUsages(className, rps);
-                result.getResults().addAll(r.getResults());
-                if (r.isPartial()) {
-                    result.markAsPartial();
-            }
-        }
-        }
-        return result;
+        return findClassUsageQuery().findClassUsages(className, repos);
     }
 
+    
+    private static @NonNull ArchetypeQueries findArchetypeQueries() {
+        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ArchetypeQueries.class);
+    }
     
     /**
      * 
@@ -458,25 +334,7 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<NBVersionInfo> findArchetypesResult(@NullAllowed List<RepositoryInfo> repos) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
-        final Result<NBVersionInfo> result = new Result<NBVersionInfo>();
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                ArchetypeQueries aq = impl.getCapabilityLookup().lookup(ArchetypeQueries.class);
-                if (aq != null) {
-                    Result<NBVersionInfo> res = aq.findArchetypes(rps);
-                    toRet.addAll(res.getResults());
-                    if (res.isPartial()) {
-                        result.markAsPartial();
-                    }
-                }
-            }
-        }
-        Collections.sort(toRet);
-        result.getResults().addAll(toRet);
-        return result;
+        return findArchetypeQueries().findArchetypes(repos);
     }
     
 
@@ -490,24 +348,7 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<String> filterPluginArtifactIdsResult(String groupId, String prefix, @NullAllowed List<RepositoryInfo> repos) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        Set<String> toRet = new TreeSet<String>();
-        final Result<String> result = new Result<String>();
-        
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                BaseQueries bq = impl.getCapabilityLookup().lookup(BaseQueries.class);
-                assert bq != null : "All RepositoryIndexerImplementation need to define BaseQueries:" + impl.getType() + " : " + impl.getClass();
-                Result<String> r = bq.filterPluginArtifactIds(groupId, prefix, rps);
-                toRet.addAll(r.getResults());
-                if (r.isPartial()) {
-                    result.markAsPartial();
-                }
-            }
-        }
-        result.getResults().addAll(toRet);
-        return result;
+        return findBaseQueries().filterPluginArtifactIds(groupId, prefix, repos);
     }
 
     
@@ -519,26 +360,14 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<String> filterPluginGroupIdsResult(String prefix, @NullAllowed List<RepositoryInfo> repos) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        Set<String> toRet = new TreeSet<String>();
-        final Result<String> result = new Result<String>();
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                BaseQueries bq = impl.getCapabilityLookup().lookup(BaseQueries.class);
-                assert bq != null : "All RepositoryIndexerImplementation need to define BaseQueries:" + impl.getType() + " : " + impl.getClass();
-                Result<String> r = bq.filterPluginGroupIds(prefix, rps);
-                toRet.addAll(r.getResults());
-                if (r.isPartial()) {
-                    result.markAsPartial();
-                }
-            }
-        }
-        result.getResults().addAll(toRet);
-        return result;
+        return findBaseQueries().filterPluginGroupIds(prefix, repos);
     }
 
 
+    private static @NonNull GenericFindQuery findFindQuery() {
+        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(GenericFindQuery.class);
+    }
+    
     /**
      * @throws BooleanQuery.TooManyClauses This runtime exception can be thrown if given query is too
      * general and such search can't be executed as it would probably end with
@@ -553,25 +382,7 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<NBVersionInfo> findResult(List<QueryField> fields, @NullAllowed List<RepositoryInfo> repos) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
-        final Result<NBVersionInfo> result = new Result<NBVersionInfo>();
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                GenericFindQuery gfq = impl.getCapabilityLookup().lookup(GenericFindQuery.class);
-                if (gfq != null) {
-                    Result<NBVersionInfo> res = gfq.find(fields, rps);
-                    toRet.addAll(res.getResults());
-                    if (res.isPartial()) {
-                        result.markAsPartial();
-                }
-            }
-        }
-        }
-        Collections.sort(toRet);
-        result.getResults().addAll(toRet);
-        return result;
+        return findFindQuery().find(fields, repos);
     }
 
     /**
@@ -595,82 +406,29 @@ public final class RepositoryQueries {
      * search is too general.
      */
     public static void find(QueryRequest query) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(query.getRepositories());
-        for (Iterator<List<RepositoryInfo>> it = all.iterator(); it.hasNext();) {
-            List<RepositoryInfo> rps = it.next();
-            for (Iterator<RepositoryInfo> it1 = rps.iterator(); it1.hasNext();) {
-                RepositoryInfo repositoryInfo = it1.next();
-                RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(repositoryInfo);
-                if (impl != null) {
-                    GenericFindQuery gfq = impl.getCapabilityLookup().lookup(GenericFindQuery.class);
-                    if (gfq != null) {
-                        List<RepositoryInfo> repositoryInfoL = new ArrayList<RepositoryInfo>(1);
-                        repositoryInfoL.add(repositoryInfo);
-                        query.addResults(gfq.find(query.getQueryFields(), repositoryInfoL).getResults(), !it1.hasNext() && !it.hasNext());
-                    } else {
-                        query.addResults(null, !it1.hasNext() && !it.hasNext());
-                    }
-                }
-                // still someone waiting for results?
-                if (query.countObservers() == 0)
-                    return;
-            }
+        for (Iterator<RepositoryInfo> it1 = query.getRepositories().iterator(); it1.hasNext();) {
+            RepositoryInfo repositoryInfo = it1.next();
+            List<RepositoryInfo> repositoryInfoL = new ArrayList<RepositoryInfo>(1);
+            repositoryInfoL.add(repositoryInfo);
+            query.addResults(findFindQuery().find(query.getQueryFields(), repositoryInfoL).getResults(), !it1.hasNext());
+            // still someone waiting for results?
+            if (query.countObservers() == 0)
+                return;
         }
         if (!query.isFinished())
             query.addResults(null, true);
     }
     
     public static @NonNull List<RepositoryInfo> getLoadedContexts() {
-        Collection<List<RepositoryInfo>> all = splitReposByType(RepositoryPreferences.getInstance().getRepositoryInfos());
         List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                ContextLoadedQuery clq = impl.getCapabilityLookup().lookup(ContextLoadedQuery.class);
-                if (clq != null) {
-                    toRet.addAll(clq.getLoaded(rps));
-                }
-            }
-        }
+        ContextLoadedQuery clq = RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ContextLoadedQuery.class);
+        toRet.addAll(clq.getLoaded(RepositoryPreferences.getInstance().getRepositoryInfos()));
         return toRet;
     }
 
     
     public static Result<String> filterArtifactIdForGroupIdResult(String groupId, String prefix, @NullAllowed List<RepositoryInfo> repos) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        Set<String> toRet = new TreeSet<String>();
-        final Result<String> result = new Result<String>();
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                BaseQueries bq = impl.getCapabilityLookup().lookup(BaseQueries.class);
-                assert bq != null : "All RepositoryIndexerImplementation need to define BaseQueries:" + impl.getType() + " : " + impl.getClass();
-                Result<String> r = bq.filterArtifactIdForGroupId(groupId, prefix, rps);
-                toRet.addAll(r.getResults());
-                if (r.isPartial()) {
-                    result.markAsPartial();
-            }
-        }
-    }
-        result.getResults().addAll(toRet);
-        return result;
-    }
-
-    private static @NonNull Collection<List<RepositoryInfo>> splitReposByType(@NullAllowed List<RepositoryInfo> repos) {
-        if (repos == null) {
-            repos = getLoadedContexts();
-        }
-        Map<String, List<RepositoryInfo>> toRet = new HashMap<String, List<RepositoryInfo>>();
-        for (RepositoryInfo info : repos) {
-            String type = info.getType();
-            List<RepositoryInfo> list = toRet.get(type);
-            if (list == null) {
-                list = new ArrayList<RepositoryInfo>();
-                toRet.put(type, list);
-            }
-            list.add(info);
-        }
-        return toRet.values();
+        return findBaseQueries().filterArtifactIdForGroupId(groupId, prefix, repos);
     }
 
 }

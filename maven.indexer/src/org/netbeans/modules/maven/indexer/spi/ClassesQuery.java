@@ -48,7 +48,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 
 /**
- * Query to find artifacts information from class names.Non mandatory for repository managers.
+ * Query to find artifacts information from class names.
  * 
  * @author Anuradha G
  */

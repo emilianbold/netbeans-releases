@@ -181,11 +181,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     @Override
-    public String getType() {
-        return RepositoryPreferences.TYPE_NEXUS;
-    }
-
-    @Override
     public Lookup getCapabilityLookup() {
         return lookup;
     }

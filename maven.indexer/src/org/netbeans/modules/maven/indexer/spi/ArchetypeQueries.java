@@ -48,7 +48,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 
 /**
- * Query to find archetypes. Non mandatory for repository managers.
+ * Query to find archetypes.
  * @author Milos Kleint
  */
 public interface ArchetypeQueries {
