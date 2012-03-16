@@ -51,6 +51,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
@@ -58,7 +59,6 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
-
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -66,8 +66,6 @@ import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
 import org.openide.awt.UndoRedo;
-import org.openide.loaders.DataObject;
-
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -76,11 +74,13 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
+import org.openide.util.Task;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableOpenSupport;
 
@@ -237,6 +237,15 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
         }
     }
 
+    private static final String EXTRA_DOCUMENT_PROPERTIES = "EXTRA_DOCUMENT_PROPERTIES"; // NOI18N
+    private StyledDocument setupSlowDocumentProperties(StyledDocument doc) {
+        if (doc != null || !Boolean.TRUE.equals(doc.getProperty(EXTRA_DOCUMENT_PROPERTIES))) {
+            // try to setup document's extra properties during non-EDT load if needed
+            doc.putProperty(EXTRA_DOCUMENT_PROPERTIES, Boolean.TRUE);
+        }
+        return doc;
+    }
+
     private static class GuardedEditorSupportImpl implements GuardedEditorSupport {
         private final StyledDocument doc;
         public GuardedEditorSupportImpl(StyledDocument doc) {
@@ -291,8 +300,25 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
         }
         return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(getDataObject().getPrimaryFile().getMIMEType(), getDataObject());
     }
-    
-    
+
+    @Override
+    protected StyledDocument createStyledDocument(EditorKit kit) {
+        StyledDocument doc = super.createStyledDocument(kit);
+        if (!SwingUtilities.isEventDispatchThread()) {
+            setupSlowDocumentProperties(doc);
+        }
+        return doc;
+    }
+
+    @Override
+    public Task prepareDocument() {
+        Task task = super.prepareDocument();
+        if (!SwingUtilities.isEventDispatchThread()) {
+            setupSlowDocumentProperties(super.getDocument());
+        }
+        return task;
+    }
+
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
     private static class Environment extends DataEditorSupport.Env {
 
