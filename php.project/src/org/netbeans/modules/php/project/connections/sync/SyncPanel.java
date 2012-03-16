@@ -538,6 +538,7 @@ public final class SyncPanel extends JPanel {
         itemScrollPane = new JScrollPane();
         itemTable = new JTable();
         syncInfoLabel = new JLabel();
+        operationLabel = new JLabel();
         diffButton = new JButton();
         noopButton = new JButton();
         downloadButton = new JButton();
@@ -563,8 +564,9 @@ public final class SyncPanel extends JPanel {
         itemScrollPane.setViewportView(itemTable);
 
         Mnemonics.setLocalizedText(syncInfoLabel, "SYNC INFO LABEL"); // NOI18N
-        Mnemonics.setLocalizedText(diffButton, " "); // NOI18N
-        diffButton.setEnabled(false);
+        Mnemonics.setLocalizedText(operationLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationLabel.text")); // NOI18N
+
+        diffButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png")));         diffButton.setEnabled(false);
 
         Mnemonics.setLocalizedText(noopButton, " "); // NOI18N
         noopButton.setEnabled(false);
@@ -590,11 +592,9 @@ public final class SyncPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(itemScrollPane).addGroup(layout.createSequentialGroup()
 
                         .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
-                                .addComponent(diffButton)
-                                .addGap(18, 18, 18)
-                                .addComponent(noopButton)
+                                .addComponent(operationLabel)
 
-                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton)).addComponent(firstRunInfoLabel).addComponent(syncInfoLabel).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(diffButton).addGap(18, 18, 18).addComponent(noopButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton)).addComponent(firstRunInfoLabel).addComponent(syncInfoLabel).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup()
                                 .addComponent(viewLabel)
 
                                 .addPreferredGap(ComponentPlacement.RELATED).addComponent(noopToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(symlinkToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(fileDirCollisionToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(fileConflictToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(warningToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(errorToggleButton))).addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
@@ -609,7 +609,7 @@ public final class SyncPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(firstRunInfoLabel)
 
-                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewLabel).addComponent(noopToggleButton).addComponent(downloadToggleButton).addComponent(uploadToggleButton).addComponent(deleteToggleButton).addComponent(symlinkToggleButton).addComponent(fileDirCollisionToggleButton).addComponent(fileConflictToggleButton).addComponent(warningToggleButton).addComponent(errorToggleButton)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane).addPreferredGap(ComponentPlacement.RELATED).addComponent(syncInfoLabel).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteButton).addComponent(resetButton)))
+                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewLabel).addComponent(noopToggleButton).addComponent(downloadToggleButton).addComponent(uploadToggleButton).addComponent(deleteToggleButton).addComponent(symlinkToggleButton).addComponent(fileDirCollisionToggleButton).addComponent(fileConflictToggleButton).addComponent(warningToggleButton).addComponent(errorToggleButton)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane).addPreferredGap(ComponentPlacement.RELATED).addComponent(syncInfoLabel).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteButton).addComponent(resetButton).addComponent(operationLabel)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -627,6 +627,7 @@ public final class SyncPanel extends JPanel {
     private JTable itemTable;
     private JButton noopButton;
     private JToggleButton noopToggleButton;
+    private JLabel operationLabel;
     private JButton resetButton;
     private JToggleButton symlinkToggleButton;
     private JLabel syncInfoLabel;
