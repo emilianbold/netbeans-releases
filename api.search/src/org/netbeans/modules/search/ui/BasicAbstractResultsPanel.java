@@ -171,7 +171,7 @@ public abstract class BasicAbstractResultsPanel
                 }
                 try {
                     getExplorerManager().setSelectedNodes(new Node[]{
-                                getExplorerManager().getRootContext()});
+                                resultsOutlineSupport.getResultsNode()});
                 } catch (PropertyVetoException ex) {
                 }
             }
@@ -255,7 +255,7 @@ public abstract class BasicAbstractResultsPanel
         Node[] selected = getExplorerManager().getSelectedNodes();
         Node n = null;
         if (selected == null || selected.length == 0) {
-            n = getExplorerManager().getRootContext();
+            n = resultsOutlineSupport.getResultsNode();
         } else if (selected.length == 1) {
             n = selected[0];
         }
@@ -359,9 +359,9 @@ public abstract class BasicAbstractResultsPanel
     }
 
     private void toggleExpand(boolean expand) {
-        Node rootNode = getExplorerManager().getRootContext();
-        getOutlineView().expandNode(rootNode);
-        toggleExpand(rootNode, expand);
+        Node resultsNode = resultsOutlineSupport.getResultsNode();
+        getOutlineView().expandNode(resultsNode);
+        toggleExpand(resultsNode, expand);
     }
 
     public void toggleExpand(Node root, boolean expand) {
@@ -405,7 +405,7 @@ public abstract class BasicAbstractResultsPanel
         updateRootNodeText();
     }
 
-    public OutlineView getOutlineView() {
+    public final OutlineView getOutlineView() {
         return resultsOutlineSupport.getOutlineView();
     }
 
