@@ -64,7 +64,7 @@ public class CategoryNode extends AbstractCategoryNode {
     private static ImageIcon iconClose = null;
     private static ImageIcon iconCloseOver = null;
     private JPanel panel;
-    private TreeLabel name;
+    private TreeLabel lblName;
     private LinkButton btnClose;
     private final Object LOCK = new Object();
     private LinkButton btnRefresh;
@@ -82,6 +82,9 @@ public class CategoryNode extends AbstractCategoryNode {
     @Override
     protected List<TreeListNode> createChildren() {
         List<TaskNode> children = getFilteredTaskNodes();
+        for (TaskNode taskNode : children) {
+            taskNode.setCategory(getCategory());
+        }
         Collections.sort(children);
         return new ArrayList<TreeListNode>(children);
     }
@@ -100,8 +103,8 @@ public class CategoryNode extends AbstractCategoryNode {
                 final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/category.png", true)); //NOI18N
                 panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
-                name = new TreeLabel(getCategory().getName());
-                panel.add(name, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+                lblName = new TreeLabel(getCategory().getName());
+                panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
                 counts = new TreeLabel(getCountText());
                 panel.add(counts, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
@@ -118,12 +121,12 @@ public class CategoryNode extends AbstractCategoryNode {
                 btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
                 panel.add(btnRefresh, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
             }
-            name.setText(getCategory().getName());
-            name.setForeground(foreground);
+            lblName.setText(getCategory().getName());
+            lblName.setForeground(foreground);
             if (DashboardViewer.getInstance().containsActiveTask(this)) {
-                name.setFont(name.getFont().deriveFont(Font.BOLD));
+                lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
             } else {
-                name.setFont(name.getFont().deriveFont(Font.PLAIN));
+                lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
             }
             counts.setText(getCountText());
             counts.setForeground(foreground);
