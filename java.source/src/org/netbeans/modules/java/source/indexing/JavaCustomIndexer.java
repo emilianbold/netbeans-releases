@@ -251,9 +251,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                 }
             }
-            javaContext.getCheckSums().store();
-            javaContext.getFQNs().store();
-            javaContext.getSourceAnalyzer().store();
+            javaContext.store();
             ciTx.addedTypes(context.getRootURI(), _at);
             ciTx.removedTypes(context.getRootURI(), _rt);
             ciTx.changedTypes(context.getRootURI(), compileResult.addedTypes);
@@ -344,9 +342,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
                     context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                 }
-                javaContext.getCheckSums().store();
-                javaContext.getFQNs().store();
-                javaContext.getSourceAnalyzer().store();
+                javaContext.store();
                 ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
                 ciTx.removedTypes(context.getRootURI(), removedTypes);
             } finally {
