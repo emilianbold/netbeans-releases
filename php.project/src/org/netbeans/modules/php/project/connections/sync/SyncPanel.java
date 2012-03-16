@@ -486,6 +486,11 @@ public final class SyncPanel extends JPanel {
                 syncItem.setOperation(SyncItem.Operation.UPLOAD);
                 // need to redraw table
                 updateDisplayedItems();
+                // reselect the row?
+                int index = displayedItems.indexOf(syncItem); // XXX performance?
+                if (index != -1) {
+                    itemTable.getSelectionModel().setSelectionInterval(index, index);
+                }
             }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Error while saving document", ex);
@@ -803,8 +808,10 @@ public final class SyncPanel extends JPanel {
             assert SwingUtilities.isEventDispatchThread();
             int[] selectedRows = itemTable.getSelectedRows();
             assert selectedRows.length > 0;
+            List<SyncItem> selectedItems = new ArrayList<SyncItem>(selectedRows.length);
             for (int index : selectedRows) {
                 SyncItem syncItem = displayedItems.get(index);
+                selectedItems.add(syncItem);
                 if (operation == null) {
                     syncItem.resetOperation();
                 } else {
@@ -813,9 +820,12 @@ public final class SyncPanel extends JPanel {
             }
             // need to redraw table
             updateDisplayedItems();
-            // reselect the rows
-            for (int index : selectedRows) {
-                itemTable.getSelectionModel().addSelectionInterval(index, index);
+            // reselect the rows?
+            for (SyncItem item : selectedItems) {
+                int index = displayedItems.indexOf(item); // XXX performance?
+                if (index != -1) {
+                    itemTable.getSelectionModel().addSelectionInterval(index, index);
+                }
             }
         }
 
@@ -826,10 +836,7 @@ public final class SyncPanel extends JPanel {
         @NbBundle.Messages("SyncPanel.error.documentSave=Cannot save file content.")
         @Override
         public void actionPerformed(ActionEvent e) {
-            int selectedRow = itemTable.getSelectedRow();
             openDiffPanel();
-            // reselect the row
-            itemTable.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
         }
 
     }
