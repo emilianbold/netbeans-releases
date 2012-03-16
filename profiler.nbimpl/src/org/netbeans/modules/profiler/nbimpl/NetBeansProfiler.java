@@ -44,21 +44,17 @@ package org.netbeans.modules.profiler.nbimpl;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
-import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.lib.profiler.common.AttachSettings;
-import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.modules.profiler.HeapDumpWatch;
 import org.netbeans.modules.profiler.ProfilerModule;
-import org.netbeans.modules.profiler.actions.RerunAction;
 import org.netbeans.modules.profiler.spi.LoadGenPlugin;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -73,13 +69,6 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
 
     public void runTarget(FileObject buildScriptFO, String target, Properties props) {
         getActionSupport().setAll(buildScriptFO, target, props);
-
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-                public void run() {
-                    ((RerunAction) RerunAction.get(RerunAction.class)).updateAction();
-                }
-            });
 
         doRunTarget(buildScriptFO, target, props);
     }
@@ -145,12 +134,6 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
     public boolean attachToApp(ProfilingSettings profilingSettings, AttachSettings attachSettings) {
         // clear rerun
         getActionSupport().nullAll();
-        CommonUtils.runInEventDispatchThread(new Runnable() {
-            @Override
-            public void run() {
-                CallableSystemAction.get(RerunAction.class).updateAction();
-            }
-        });
         return super.attachToApp(profilingSettings, attachSettings);
     }
 
