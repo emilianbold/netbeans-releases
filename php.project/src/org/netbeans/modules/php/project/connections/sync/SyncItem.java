@@ -223,8 +223,8 @@ public final class SyncItem {
         "SyncItem.error.childNotDeleted=Not all children marked for deleting.",
         "SyncItem.error.cannotDownload=Non-existing file cannot be downloaded.",
         "SyncItem.error.cannotUpload=Non-existing file cannot be uploaded.",
-        "SyncItem.warn.downloadReview=File should be reviewed before download.",
-        "SyncItem.warn.uploadReview=File should be reviewed before upload.",
+        "SyncItem.warn.downloadReview=File should be reviewed before first download.",
+        "SyncItem.warn.uploadReview=File should be reviewed before first upload.",
         "SyncItem.warn.symlink=Symbolic links are not transfered (to avoid future overriding)."
     })
     public void validate() {
