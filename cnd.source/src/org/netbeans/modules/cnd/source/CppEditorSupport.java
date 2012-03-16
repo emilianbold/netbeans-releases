@@ -239,7 +239,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
 
     private static final String EXTRA_DOCUMENT_PROPERTIES = "EXTRA_DOCUMENT_PROPERTIES"; // NOI18N
     private StyledDocument setupSlowDocumentProperties(StyledDocument doc) {
-        if (doc != null || !Boolean.TRUE.equals(doc.getProperty(EXTRA_DOCUMENT_PROPERTIES))) {
+        if (doc != null && !Boolean.TRUE.equals(doc.getProperty(EXTRA_DOCUMENT_PROPERTIES))) {
             // try to setup document's extra properties during non-EDT load if needed
             doc.putProperty(EXTRA_DOCUMENT_PROPERTIES, Boolean.TRUE);
         }
