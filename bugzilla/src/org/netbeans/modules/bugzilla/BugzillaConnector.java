@@ -80,6 +80,9 @@ public class BugzillaConnector extends KenaiBugtrackingConnector {
     @Override
     public Repository createRepository(RepositoryInfo info) {
         BugzillaRepository bugzillaRepository = new BugzillaRepository(info);
+        if(BugzillaUtil.isNbRepository(bugzillaRepository)) {
+            NBRepositorySupport.getInstance().setNBBugzillaRepository(bugzillaRepository);
+        }
         return Bugzilla.getInstance().getBugtrackingFactory().
                 createRepository(
                     bugzillaRepository, 
