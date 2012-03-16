@@ -43,11 +43,13 @@ package org.netbeans.modules.search;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.search.provider.SearchListener;
@@ -116,6 +118,14 @@ class GraphicalSearchListener<R> extends SearchListener {
         });
         progressHandle.start();
         searchComposition.getSearchResultsDisplayer().searchStarted();
+        Collection<? extends Savable> unsaved =
+                Savable.REGISTRY.lookupAll(Savable.class);
+        if (unsaved.size() > 0) {
+            String msg = NbBundle.getMessage(ResultView.class,
+                    "TEXT_INFO_WARNING_UNSAVED",
+                    unsaved.iterator().next().toString(), unsaved.size());
+            eventChildren.addEvent(new EventNode(EventType.WARNING, msg));
+        }
     }
 
     public void searchFinished() {
@@ -179,7 +189,7 @@ class GraphicalSearchListener<R> extends SearchListener {
                 "TEXT_INFO_ERROR_MATCHING", fileName(path), //NOI18N
                 t.getMessage());
         eventChildren.addEvent(new PathEventNode(EventType.ERROR, msg, path));
-        LOG.log(Level.INFO, t.getMessage(), t);
+        LOG.log(Level.INFO, path + ": " + t.getMessage(), t);           //NOI18N
     }
 
     /**
@@ -214,10 +224,20 @@ class GraphicalSearchListener<R> extends SearchListener {
                 filter)) {
             String infoMsg = NbBundle.getMessage(ResultView.class,
                     "TEXT_INFO_SKIPPED_FILTER", //NOI18N
-                    fileName, filter.getClass().getName());
+                    fileName, getFilterName(filter));
             eventChildren.addEvent(new FileObjectEventNode(EventType.INFO,
                     infoMsg, fileObject));
         }
+        LOG.log(Level.INFO, "{0} skipped {1} {2}", new Object[]{ //NOI18N
+                    fileObject.getPath(),
+                    filter != null ? filter.getClass().getName() : "", //NOI18N
+                    message != null ? message : ""});                   //NOI18N
+    }
+
+    private String getFilterName(SearchFilterDefinition filter) {
+        return filter.getClass().getSimpleName().isEmpty()
+                ? filter.getClass().getName()
+                : filter.getClass().getSimpleName();
     }
 
     public Node getInfoNode() {

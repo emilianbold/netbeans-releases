@@ -94,6 +94,9 @@ public class TextValueCompleter implements DocumentListener {
     
     private boolean loading;
     private static final String LOADING = Bundle.LBL_Loading();
+    private static final String PARTIAL_RESULT = "<Result is incomplete, some indices are processed>";
+    private boolean partial;
+    
     public TextValueCompleter(Collection<String> completions, JTextField fld) {
         this.completions = completions;
         this.field = fld;
@@ -232,6 +235,11 @@ public class TextValueCompleter implements DocumentListener {
                 completionListModel.removeElement(completion);
             }
         }
+        if (partial) {
+            completionListModel.addElement(PARTIAL_RESULT);
+        } else {
+            completionListModel.removeElement(PARTIAL_RESULT);
+        }
     }
     
     private void applyCompletion(String completed) {
@@ -352,10 +360,11 @@ public class TextValueCompleter implements DocumentListener {
         }
     }
     
-    public void setValueList(Collection<String> values) {
+    public void setValueList(Collection<String> values, boolean partial) {
         assert SwingUtilities.isEventDispatchThread();
         completionListModel.removeAllElements();
         completions = values;
+        this.partial = partial;
         if (field.isFocusOwner() && completionList.isDisplayable() && completionList.isVisible()) {
             buildAndShowPopup(); 
         }
