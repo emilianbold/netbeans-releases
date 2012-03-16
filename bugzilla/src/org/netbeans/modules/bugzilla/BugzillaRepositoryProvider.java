@@ -38,10 +38,7 @@
 package org.netbeans.modules.bugzilla;
 
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
@@ -49,7 +46,6 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -113,16 +109,14 @@ public class BugzillaRepositoryProvider extends KenaiRepositoryProvider<Bugzilla
      ********************************************************************************/
     
     @Override
-    public Query getAllIssuesQuery(BugzillaRepository repository) {
+    public BugzillaQuery getAllIssuesQuery(BugzillaRepository repository) {
         assert repository instanceof KenaiRepository;
-        BugzillaQuery query = ((KenaiRepository)repository).getAllIssuesQuery();
-        return query != null ? BugzillaUtil.getQuery(query) : null;
+        return ((KenaiRepository)repository).getAllIssuesQuery();
     }
 
     @Override
-    public Query getMyIssuesQuery(BugzillaRepository repository) {
+    public BugzillaQuery getMyIssuesQuery(BugzillaRepository repository) {
         assert repository instanceof KenaiRepository;
-        BugzillaQuery query = ((KenaiRepository)repository).getMyIssuesQuery();
-        return query != null ? BugzillaUtil.getQuery(query) : null;
+        return ((KenaiRepository)repository).getMyIssuesQuery();
     }
 }

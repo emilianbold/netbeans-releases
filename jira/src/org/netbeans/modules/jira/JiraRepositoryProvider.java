@@ -38,9 +38,7 @@
 package org.netbeans.modules.jira;
 
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
@@ -48,7 +46,6 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.Lookup;
 
 /**
@@ -112,14 +109,14 @@ public class JiraRepositoryProvider extends KenaiRepositoryProvider<JiraReposito
      ********************************************************************************/
     
     @Override
-    public Query getAllIssuesQuery(JiraRepository repository) {
+    public JiraQuery getAllIssuesQuery(JiraRepository repository) {
         assert repository instanceof KenaiRepository;
-        return JiraUtils.getQuery(((KenaiRepository)repository).getAllIssuesQuery());
+        return ((KenaiRepository)repository).getAllIssuesQuery();
     }
 
     @Override
-    public Query getMyIssuesQuery(JiraRepository repository) {
+    public JiraQuery getMyIssuesQuery(JiraRepository repository) {
         assert repository instanceof KenaiRepository;
-        return JiraUtils.getQuery(((KenaiRepository)repository).getMyIssuesQuery());
+        return ((KenaiRepository)repository).getMyIssuesQuery();
     }
 }

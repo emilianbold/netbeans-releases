@@ -49,11 +49,13 @@ import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.util.logging.Logger;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 import org.netbeans.modules.jira.issue.JiraTaskListProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.repository.JiraStorageManager;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -160,5 +162,9 @@ public class Jira {
             brp = new JiraRepositoryProvider();
         }
         return brp; 
-    }    
+    }
+
+    public UndoRedoSupport getUndoRedoSupport(NbJiraIssue issue) {
+        return getBugtrackingFactory().getUndoRedoSupport(JiraUtils.getRepository(issue.getRepository()), issue);
+    }
 }

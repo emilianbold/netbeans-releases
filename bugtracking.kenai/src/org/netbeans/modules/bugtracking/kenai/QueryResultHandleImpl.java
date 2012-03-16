@@ -46,10 +46,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.LinkedList;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -114,7 +114,7 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
 
             case IssueCache.ISSUE_STATUS_ALL:
 
-                issues = query.getIssues(status);
+                issues = query.getIssues();
                 int issueCount = issues != null ? issues.size() : 0;
                 return new QueryResultHandleImpl(
                         query,
@@ -126,9 +126,17 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
             case IssueCache.ISSUE_STATUS_NOT_SEEN:
 
                 int unseenIssues = 0;
-                issues = query.getIssues(IssueCache.ISSUE_STATUS_NOT_SEEN);
-                if(issues == null || issues.isEmpty()) {
+                Collection<Issue> c = query.getIssues();
+                if(c == null || c.isEmpty()) {
                     return null;
+                }
+                issues = new LinkedList<Issue>();
+                for (Issue issue : c) {
+                    if(issue.getStatus() == Issue.Status.MODIFIED ||
+                       issue.getStatus() == Issue.Status.NEW) 
+                    {
+                        issues.add(issue);
+                    }
                 }
                 unseenIssues = issues.size();
 
@@ -145,9 +153,16 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
             case IssueCache.ISSUE_STATUS_NEW:
 
                 int newIssues = 0;
-                issues = query.getIssues(IssueCache.ISSUE_STATUS_NEW);
-                if(issues == null || issues.isEmpty()) {
+                c = query.getIssues();
+                if(c == null || c.isEmpty()) {
                     return null;
+                }
+                issues = new LinkedList<Issue>();
+                for (Issue issue : c) {
+                    if(issue.getStatus() == Issue.Status.NEW) 
+                    {
+                        issues.add(issue);
+                    }
                 }
                 newIssues = issues.size();
 
@@ -169,7 +184,18 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
 
     static QueryResultHandle getAllChangedResult(Query query) {
         int notIssues = 0;
-        Collection<Issue> issues = query.getIssues(IssueCache.ISSUE_STATUS_NOT_SEEN);
+        Collection<Issue> c = query.getIssues();
+        Collection<Issue> issues = null;
+        if(c != null || !c.isEmpty()) {
+            issues = new LinkedList<Issue>();
+            for (Issue issue : c) {
+                if(issue.getStatus() == Issue.Status.MODIFIED ||
+                    issue.getStatus() == Issue.Status.NEW) 
+                {
+                    issues.add(issue);
+                }
+            }
+        }
         notIssues = issues != null ? issues.size() : 0;
         
         return new QueryResultHandleImpl(

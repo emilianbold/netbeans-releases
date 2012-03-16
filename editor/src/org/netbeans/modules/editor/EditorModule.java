@@ -69,6 +69,8 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.rtf.RTFEditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.search.SearchHistory;
+import org.netbeans.api.search.SearchPattern;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.editor.BaseDocument;
@@ -98,8 +100,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openidex.search.SearchHistory;
-import org.openidex.search.SearchPattern;
 
 /**
  * Module installation class for editor.

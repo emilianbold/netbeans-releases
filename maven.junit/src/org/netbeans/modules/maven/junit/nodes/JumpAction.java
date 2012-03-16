@@ -73,6 +73,7 @@ final class JumpAction extends AbstractAction {
      * If the <code>callstackFrameInfo</code> is not <code>null</code>,
      * tries to jump to the callstack frame source code. Otherwise does nothing.
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (node instanceof TestsuiteNode){
             OutputUtils.openTestsuite((TestsuiteNode)node);

@@ -336,9 +336,6 @@
                         <code-name-base>org.openide.util.lookup</code-name-base>
                         <recursive/>
                     </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openidex.util</code-name-base>
-                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <public-packages/>

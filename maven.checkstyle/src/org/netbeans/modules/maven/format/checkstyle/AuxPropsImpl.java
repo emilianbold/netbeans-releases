@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.format.checkstyle;
 
-import org.codehaus.plexus.util.IOUtil;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
@@ -64,6 +63,7 @@ import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.codehaus.plexus.util.IOUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.Constants;
@@ -106,16 +106,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
     private FileObject cacheDir() throws IOException {
         return ProjectUtils.getCacheDirectory(project, AuxPropsImpl.class);
     }
-
-    private FileObject copyToCacheDir(FileObject fo) throws IOException {
-        FileObject cacheDir = cacheDir();
-        FileObject file = cacheDir.getFileObject("checkstyle-checker.xml");
-        if (file != null) {
-            file.delete();
-        }
-        return FileUtil.copyFile(fo, cacheDir, "checkstyle-checker", "xml");
-    }
-
+    
     private FileObject copyToCacheDir(InputStream in) throws IOException {
         FileObject cacheDir = cacheDir();
         FileObject file = cacheDir.getFileObject("checkstyle-checker.xml");
@@ -146,7 +137,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                     return cache;
                 } else {
                     // no cached file or the current one is different..
-                    fo = copyToCacheDir(fo);
+                    fo = copyToCacheDir(fo.getInputStream());
                 }
             } else {
                 FileObject pom = project.getProjectDirectory().getFileObject("pom.xml");
@@ -165,7 +156,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                         //find in local fs
                         File file = FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), loc);
                         if (file != null && file.exists()) {
-                            fo = copyToCacheDir(FileUtil.toFileObject(file));
+                            fo = copyToCacheDir(FileUtil.toFileObject(file).getInputStream());
                         } else {
                             List<File> deps = findDependencyArtifacts();
                             if (deps.size() > 0) {

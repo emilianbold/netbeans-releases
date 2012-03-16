@@ -53,9 +53,10 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.spi.sendopts.Option;
-import org.netbeans.spi.sendopts.Description;
 import org.netbeans.spi.sendopts.Arg;
+import org.netbeans.spi.sendopts.Description;
+import org.netbeans.spi.sendopts.Option;
+import org.netbeans.spi.sendopts.OptionProcessor;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -109,6 +110,7 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
             final String typeName = processingEnv.getElementUtils().getBinaryName(te).toString().replace('.', '-');
             File f = layer(te).file("Services/OptionProcessors/" + typeName + ".instance");
             f.methodvalue("instanceCreate", DefaultProcessor.class.getName(), "create");
+            f.stringvalue("instanceOf", OptionProcessor.class.getName());
             f.stringvalue("class", processingEnv.getElementUtils().getBinaryName(te).toString());
             for (Element e : te.getEnclosedElements()) {
                 Arg o = e.getAnnotation(Arg.class);

@@ -129,19 +129,23 @@ public class SearchForJavaAction extends WizardAction {
             return StringUtils.format(JAVA_ENTRY_LABEL_NON_FINAL,
                     javaHome,
                     javaInfo.getVersion().toJdkStyle(),
+                    javaInfo.getArch(),
                     javaInfo.getVendor());
         } else {
             return StringUtils.format(JAVA_ENTRY_LABEL,
                     javaHome,
                     javaInfo.getVersion().toJdkStyle(),
+                    javaInfo.getArch(),
                     javaInfo.getVendor());
         }
     }
     
     private static String getLabel(File javaHome, Version version, String vendor) {
+        JavaInfo javaInfo = JavaUtils.getInfo(javaHome);
         return StringUtils.format(JAVA_ENTRY_LABEL,
                 javaHome,
                 version.toJdkStyle(),
+                javaInfo.getArch(),
                 vendor);
     }
     

@@ -41,14 +41,28 @@
  */
 package org.netbeans.modules.web.jsf.api;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 /**
  * Contains utilities methods for JSF components plugins.
@@ -56,6 +70,9 @@ import org.netbeans.api.project.libraries.LibraryManager;
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class JsfComponentUtils {
+
+    private JsfComponentUtils() {
+    }
 
     /**
      * Recreates library with maven-pom content. If the library already contains
@@ -89,6 +106,72 @@ public class JsfComponentUtils {
                     content);
         }
         return library;
+    }
+
+    /**
+     * Reformats given {@code DataObject}.
+     * @param dob {@code DataObject} to reformat.
+     * @since 1.35
+     */
+    public static void reformat(DataObject dob) {
+        try {
+            EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
+            if (ec == null) {
+                return;
+            }
+
+            final StyledDocument doc = ec.openDocument();
+            final Reformat reformat = Reformat.get(doc);
+
+            reformat.lock();
+            try {
+                NbDocument.runAtomicAsUser(doc, new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            reformat.reformat(0, doc.getLength());
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                reformat.unlock();
+                ec.saveDocument();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    /**
+     * Enhances existing index.xhtml page for content.
+     * @param webModule web module with index to be enhanced
+     * @param enhancing enhancing content
+     * @since 1.35
+     */
+    public static void enhanceIndexBody(WebModule webModule, String enhancing) {
+        Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+        FileObject index = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
+
+        String projectEncoding = JpaControllerUtil.getProjectEncodingAsString(project, index);
+
+        try {
+            String content = JSFFrameworkProvider.readResource(index.getInputStream(), projectEncoding); //NO18N
+            String toFind = "</h:body>"; //NOI18N
+            if (content.indexOf(toFind) > -1) {
+                StringBuilder replace = new StringBuilder(enhancing);
+                replace.append("\n").append(toFind); //NOI18N
+                content = content.replace(toFind, replace.toString());
+            }
+            JSFFrameworkProvider.createFile(index, content, projectEncoding);
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
 }

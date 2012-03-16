@@ -65,6 +65,9 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.datatransfer.PasteType;
@@ -86,15 +89,20 @@ public class ResultsOutlineSupport {
     private ResultModel resultModel;
     private FolderTreeItem rootPathItem = new FolderTreeItem();
     private List<FileObject> rootFiles;
+    private Node infoNode;
+    private Node invisibleRoot;
 
     public ResultsOutlineSupport(boolean replacing, boolean details,
-            ResultModel resultModel, List<FileObject> rootFiles) {
+            ResultModel resultModel, List<FileObject> rootFiles,
+            Node infoNode) {
 
         this.replacing = replacing;
         this.details = details;
         this.resultModel = resultModel;
         this.rootFiles = rootFiles;
         this.resultsNode = new ResultsNode();
+        this.infoNode = infoNode;
+        this.invisibleRoot = new RootNode();
         createOutlineView();
     }
 
@@ -104,6 +112,7 @@ public class ResultsOutlineSupport {
         setOutlineColumns();
         outlineView.addTreeExpansionListener(
                 new ExpandingTreeExpansionListener());
+        outlineView.getOutline().setRootVisible(false);
     }
 
     private void setOutlineColumns() {
@@ -165,6 +174,72 @@ public class ResultsOutlineSupport {
         }
     }
 
+    private class RootNode extends AbstractNode {
+
+        public RootNode() {
+            this(new RootNodeChildren());
+        }
+
+        private RootNode(final RootNodeChildren rootNodeChildren) {
+            super(rootNodeChildren);
+            if (infoNode != null) {
+                setInfoNodeListener(rootNodeChildren);
+            }
+        }
+    }
+
+    private void setInfoNodeListener(final RootNodeChildren rootNodeChildren) {
+
+        assert infoNode != null;
+
+        infoNode.getChildren().getNodes(true);
+        infoNode.addNodeListener(new NodeAdapter() {
+            private boolean added = false;
+
+            @Override
+            public synchronized void childrenAdded(NodeMemberEvent ev) {
+                if (!added) {
+                    rootNodeChildren.showInfoNode();
+                    infoNode.removeNodeListener(this);
+                    added = true;
+                }
+            }
+
+            @Override
+            public void propertyChange(PropertyChangeEvent ev) {
+                super.propertyChange(ev);
+            }
+
+            @Override
+            public void childrenReordered(NodeReorderEvent ev) {
+                super.childrenReordered(ev);
+            }
+        });
+    }
+
+    private class RootNodeChildren extends Children.Keys<Node> {
+
+        private Node[] standard = new Node[]{resultsNode};
+        private Node[] withInfo = new Node[]{resultsNode, infoNode};
+        private boolean infoNodeShown = false;
+
+        public RootNodeChildren() {
+            setKeys(standard);
+        }
+
+        private synchronized void showInfoNode() {
+            if (!infoNodeShown) {
+                setKeys(withInfo);
+                infoNodeShown = true;
+            }
+        }
+
+        @Override
+        protected Node[] createNodes(Node key) {
+            return new Node[]{key};
+        }
+    }
+
     /**
      * Class for representation of the root node.
      */
@@ -180,7 +255,6 @@ public class ResultsOutlineSupport {
         }
 
         void update() {
-            setDisplayName(resultModel.size() + " matching objects found."); //TODO
             flatChildren.update();
         }
 
@@ -506,6 +580,10 @@ public class ResultsOutlineSupport {
     }
 
     public Node getRootNode() {
-        return resultsNode;
+        return invisibleRoot;
+    }
+
+    public void setResultsNodeText(String text) {
+        resultsNode.setDisplayName(text);
     }
 }

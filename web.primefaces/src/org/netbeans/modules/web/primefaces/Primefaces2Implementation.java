@@ -43,11 +43,7 @@ package org.netbeans.modules.web.primefaces;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -56,10 +52,14 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.JsfComponentUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -94,15 +94,53 @@ public class Primefaces2Implementation implements JsfComponentImplementation {
     public Set<FileObject> extend(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
         try {
             ProjectClassPathModifier.addLibraries(
-                    new Library[]{ LibraryManager.getDefault().getLibrary(PRIMEFACES_LIBRARY_NAME) },
+                    new Library[]{LibraryManager.getDefault().getLibrary(PRIMEFACES_LIBRARY_NAME)},
                     webModule.getJavaSources()[0],
                     ClassPath.COMPILE);
+
+            // generate PrimeFaces welcome page
+            FileObject welcomePage = generateWelcomePage(webModule);
+            return Collections.singleton(welcomePage);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
         } catch (UnsupportedOperationException ex) {
             LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
         }
         return Collections.<FileObject>emptySet();
+    }
+
+    private static FileObject generateWelcomePage(WebModule webModule) throws IOException {
+        FileObject templateFO = FileUtil.getConfigFile("Templates/JSP_Servlet/JSP.xhtml"); //NOI18N
+        DataObject templateDO = DataObject.find(templateFO);
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("isJSF20", true); //NOI18N
+        params.put("welcomeInclude", "xmlns:p=\"http://primefaces.prime.com.tr/ui\""); //NOI18N
+        params.put("welcomeBody", getWelcomeBody()); //NOI18N
+
+        JsfComponentUtils.enhanceIndexBody(webModule, "<br />\n<h:link outcome=\"welcomePrimefaces\" value=\"Primefaces welcome page\" />"); //NOI18N
+        DataObject generated = templateDO.createFromTemplate(
+                DataFolder.findFolder(webModule.getDocumentBase()),
+                "welcomePrimefaces", //NOI18N
+                params);
+
+        // reformat welcome page
+        JsfComponentUtils.reformat(generated);
+        // reformat index page
+        FileObject index = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
+        if (index.isValid() && index.canWrite()) {
+            JsfComponentUtils.reformat(DataObject.find(index));
+        }
+        return generated.getPrimaryFile();
+    }
+
+    private static String getWelcomeBody() {
+        return "<p:commandButton id=\"wlcButton\" value=\"Welcome to PrimeFaces\" onclick=\"wlcDialog.show();\" type=\"button\" />\n\n"
+                + "<p:dialog header=\"Welcome to PrimeFaces\" widgetVar=\"wlcDialog\" showEffect=\"clip\" hideEffect=\"explode\">\n"
+                + "<h:outputText value=\"Welcome to development in PrimeFaces.\" />\n"
+                + "<br /><br />\n"
+                + "<h:outputLink value=\"http://www.primefaces.org/documentation.html\" >PrimeFaces documentation...</h:outputLink>\n"
+                + "</p:dialog>";
     }
 
     @Override

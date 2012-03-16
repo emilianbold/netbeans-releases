@@ -59,7 +59,16 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
+import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 
 /**
@@ -183,4 +192,29 @@ public class TestUtil implements TestConstants {
         }
     }
     
+    public static Query getQuery(BugzillaQuery bugzillaQuery) {
+        Repository repository = BugzillaUtil.getRepository(bugzillaQuery.getRepository());
+        return getQuery(repository, bugzillaQuery);
+    }    
+    
+    public static Issue getIssue(BugzillaIssue bugzillaIssue) {
+        Repository repository = BugzillaUtil.getRepository(bugzillaIssue.getRepository());
+        return getIssue(repository, bugzillaIssue);
+    }    
+    
+    private static Query getQuery(Repository repository, BugzillaQuery q) {
+        RepositoryImpl repositoryImpl = APIAccessor.IMPL.getImpl(repository);
+        QueryImpl impl = repositoryImpl.getQuery(q);
+        if(impl == null) {
+            return null;
+        }
+        return impl.getQuery();
+    }    
+    
+    private static Issue getIssue(Repository repository, BugzillaIssue i) {
+        RepositoryImpl repositoryImpl = APIAccessor.IMPL.getImpl(repository);
+        IssueImpl impl = repositoryImpl.getIssue(i);
+        return impl != null ? impl.getIssue() : null;
+    } 
+        
 }
