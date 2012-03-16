@@ -61,20 +61,18 @@ public final class RepositoryInfo {
     static final String DEFAULT_INDEX_SUFFIX = ".index/"; // NOI18N
 
     private final String id;
-    private final String type;
     private final @NonNull String name;
     private final String repositoryPath;
     private final String repositoryUrl;
     private final String indexUpdateUrl;
 
-    public RepositoryInfo(String id, String type, @NullAllowed String name, String repositoryPath, String repositoryUrl) throws URISyntaxException {
-        this(id, type, name, repositoryPath, repositoryUrl, null);
+    public RepositoryInfo(String id, @NullAllowed String name, String repositoryPath, String repositoryUrl) throws URISyntaxException {
+        this(id, name, repositoryPath, repositoryUrl, null);
     }
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    RepositoryInfo(String id, String type, @NullAllowed String name, String repositoryPath,
+    RepositoryInfo(String id, @NullAllowed String name, String repositoryPath,
             String repositoryUrl, String indexUpdateUrl) throws URISyntaxException {
         this.id = id;
-        this.type = type;
         this.name = name != null ? name : id;
         this.repositoryPath = repositoryPath;
         if (repositoryUrl != null && !repositoryUrl.endsWith("/")) {
@@ -92,10 +90,6 @@ public final class RepositoryInfo {
 
     public @NonNull String getId() {
         return id;
-    }
-
-    public @NonNull String getType() {
-        return type;
     }
 
     public @NonNull String getName() {
@@ -145,7 +139,6 @@ public final class RepositoryInfo {
                 changeListener.stateChanged(new ChangeEvent(this));
             }
         }
-
     }
 
     public @Override String toString() {

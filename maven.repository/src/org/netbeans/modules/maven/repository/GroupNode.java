@@ -76,11 +76,18 @@ public class GroupNode extends AbstractNode {
         }
 
         protected @Override Node createNodeForKey(String key) {
+            if (GroupListChildren.KEY_PARTIAL.equals(key)) {
+                return GroupListChildren.createPartialNode();
+            }
             return new ArtifactNode(info, id, key);
         }
 
         protected @Override boolean createKeys(List<String> toPopulate) {
-            toPopulate.addAll(RepositoryQueries.getArtifacts(id, Collections.singletonList(info)));
+            RepositoryQueries.Result<String> result = RepositoryQueries.getArtifactsResult(id, Collections.singletonList(info));
+            toPopulate.addAll(result.getResults());
+            if (result.isPartial()) {
+                toPopulate.add(GroupListChildren.KEY_PARTIAL);
+            }
             return true;
         }
     }

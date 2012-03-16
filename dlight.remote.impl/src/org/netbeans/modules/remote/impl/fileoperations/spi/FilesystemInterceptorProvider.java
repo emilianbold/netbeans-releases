@@ -109,7 +109,7 @@ abstract public class FilesystemInterceptorProvider {
     }
 
     public interface MiscOperations {
-        void fileLocked(FileProxyI fo);
+        void fileLocked(FileProxyI fo) throws IOException;
         long listFiles(FileProxyI dir, long lastTimeStamp, List<? super FileProxyI> children);
     }
 

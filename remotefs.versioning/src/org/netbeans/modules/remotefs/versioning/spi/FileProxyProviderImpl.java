@@ -79,7 +79,8 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
         
         protected FileOperationsImpl(FileSystem fs) {
             super(fs);
-            assert (assertIt = true);
+            // comment assert because IDE team is not going to fix calling IO operations in EDT
+            //assert (assertIt = true);
         }
 
         @Override

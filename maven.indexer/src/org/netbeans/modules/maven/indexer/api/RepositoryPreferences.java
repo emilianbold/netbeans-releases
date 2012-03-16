@@ -75,10 +75,6 @@ public final class RepositoryPreferences {
 
     private static RepositoryPreferences instance;
 
-    //TODO - move elsewhere, implementation detail??
-    public static final String TYPE_NEXUS = "nexus"; //NOI18N
-    
-
     private static final String KEY_TYPE = "provider";//NOI18N
     private static final String KEY_DISPLAY_NAME = "name";//NOI18N
     private static final String KEY_PATH = "path";//NOI18N
@@ -100,8 +96,8 @@ public final class RepositoryPreferences {
     @Messages("local=Local")
     private RepositoryPreferences() {
         try {
-            local = new RepositoryInfo(RepositorySystem.DEFAULT_LOCAL_REPO_ID, TYPE_NEXUS, local(), EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(), null);
-            central = new RepositoryInfo(RepositorySystem.DEFAULT_REMOTE_REPO_ID, TYPE_NEXUS, /* XXX pull display name from superpom? */RepositorySystem.DEFAULT_REMOTE_REPO_ID, null, RepositorySystem.DEFAULT_REMOTE_REPO_URL);
+            local = new RepositoryInfo(RepositorySystem.DEFAULT_LOCAL_REPO_ID, local(), EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(), null);
+            central = new RepositoryInfo(RepositorySystem.DEFAULT_REMOTE_REPO_ID, /* XXX pull display name from superpom? */RepositorySystem.DEFAULT_REMOTE_REPO_ID, null, RepositorySystem.DEFAULT_REMOTE_REPO_URL);
         } catch (URISyntaxException x) {
             throw new AssertionError(x);
         }
@@ -123,7 +119,6 @@ public final class RepositoryPreferences {
     }
 
     private static @CheckForNull RepositoryInfo createRepositoryInfo(Preferences p) throws URISyntaxException {
-        String type = p.get(KEY_TYPE, TYPE_NEXUS);
         String id = p.name();
         String name = p.get(KEY_DISPLAY_NAME, null);
         if (name == null) {
@@ -132,7 +127,7 @@ public final class RepositoryPreferences {
         String path = p.get(KEY_PATH, null);
         String repourl = p.get(KEY_REPO_URL, null);
         String indexurl = p.get(KEY_INDEX_URL, null);
-        return new RepositoryInfo(id, type, name, path, repourl, indexurl);
+        return new RepositoryInfo(id, name, path, repourl, indexurl);
     }
 
     /** @since 2.2 */
@@ -212,7 +207,6 @@ public final class RepositoryPreferences {
         synchronized (infoCache) {
             infoCache.put(id, info);
             Preferences p = storage().node(id);
-            put(p, KEY_TYPE, info.getType().equals(TYPE_NEXUS) ? null : info.getType());
             p.put(KEY_DISPLAY_NAME, info.getName());
             put(p, KEY_PATH, info.getRepositoryPath());
             put(p, KEY_REPO_URL, info.getRepositoryUrl());
@@ -296,7 +290,7 @@ public final class RepositoryPreferences {
                 infos = new ArrayList<RepositoryInfo>();
                 transients.put(key, infos);
             }
-            infos.add(new RepositoryInfo(id, RepositoryPreferences.TYPE_NEXUS, displayName, null, url));
+            infos.add(new RepositoryInfo(id, displayName, null, url));
         }
         cs.fireChange();
     }
