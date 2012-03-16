@@ -442,6 +442,9 @@ public final class SyncPanel extends JPanel {
         assert SwingUtilities.isEventDispatchThread();
         SyncInfo syncInfo = new SyncInfo();
         for (SyncItem syncItem : allItems) {
+            if (syncItem.hasError()) {
+                syncInfo.errors++;
+            }
             switch (syncItem.getOperation()) {
                 case SYMLINK:
                     // noop
@@ -462,7 +465,7 @@ public final class SyncPanel extends JPanel {
                     break;
                 case FILE_CONFLICT:
                 case FILE_DIR_COLLISION:
-                    syncInfo.errors++;
+                    // noop, already counted
                     break;
                 default:
                     assert false : "Unknown operation: " + syncItem.getOperation();
