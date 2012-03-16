@@ -917,15 +917,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     @Override 
-    public RepositoryQueries.Result<ClassUsageResult> findClassUsages(final String className, final List<RepositoryInfo> repos) {
+    public RepositoryQueries.Result<RepositoryQueries.ClassUsage> findClassUsages(final String className, final List<RepositoryInfo> repos) {
         List<RepositoryInfo> localRepos = new ArrayList<RepositoryInfo>();
         for (RepositoryInfo repo : repos) {
             if (repo.isLocal()) {
                 localRepos.add(repo);
             }
         }
-        final List<ClassUsageResult> results = new ArrayList<ClassUsageResult>();
-        RepositoryQueries.Result<ClassUsageResult> result = new RepositoryQueries.Result<ClassUsageResult>();
+        final List<RepositoryQueries.ClassUsage> results = new ArrayList<RepositoryQueries.ClassUsage>();
+        RepositoryQueries.Result<RepositoryQueries.ClassUsage> result = new RepositoryQueries.Result<RepositoryQueries.ClassUsage>();
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(localRepos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
@@ -938,8 +938,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 ClassDependencyIndexCreator.search(className, indexer, getContexts(new RepositoryInfo[] {repo}), results);
             }
         }, skipAction);
-        Collections.sort(results, new Comparator<ClassUsageResult>() {
-            @Override public int compare(ClassUsageResult r1, ClassUsageResult r2) {
+        Collections.sort(results, new Comparator<RepositoryQueries.ClassUsage>() {
+            @Override public int compare(RepositoryQueries.ClassUsage r1, RepositoryQueries.ClassUsage r2) {
                 return r1.getArtifact().compareTo(r2.getArtifact());
             }
         });

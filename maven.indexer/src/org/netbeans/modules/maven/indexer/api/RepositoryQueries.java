@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
@@ -99,7 +100,35 @@ public final class RepositoryQueries {
         public List<T> getResults() {
             return results;
         }
-    }    
+    } 
+    
+   /**
+     * One usage result.
+     */
+    public final static class ClassUsage {
+        private final NBVersionInfo artifact;
+        private final Set<String> classes;
+        public ClassUsage(NBVersionInfo artifact, Set<String> classes) {
+            this.artifact = artifact;
+            this.classes = classes;
+        }
+        /**
+         * @return artifact which refers to the named class
+         */
+        public NBVersionInfo getArtifact() {
+            return artifact;
+        }
+        /**
+         * @return a list of class FQNs within that artifact which do the referring (top-level classes only)
+         */
+        public Set<String> getClasses() {
+            return classes;
+        }
+        @Override public String toString() {
+            return "" + artifact + classes;
+        }
+    }
+    
     
     private static @NonNull BaseQueries findBaseQueries() {
         return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(BaseQueries.class);
@@ -318,7 +347,7 @@ public final class RepositoryQueries {
      * @return a list of usages
      * @since 2.9
      */
-    public static Result<ClassUsageQuery.ClassUsageResult> findClassUsagesResult(String className, @NullAllowed List<RepositoryInfo> repos) {
+    public static Result<ClassUsage> findClassUsagesResult(String className, @NullAllowed List<RepositoryInfo> repos) {
         return findClassUsageQuery().findClassUsages(className, repos);
     }
 

@@ -43,8 +43,6 @@
 package org.netbeans.modules.maven.indexer.spi;
 
 import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 
@@ -54,39 +52,13 @@ import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
  */
 public interface ClassUsageQuery {
 
-    /**
-     * One usage result.
-     */
-    final class ClassUsageResult {
-        private final NBVersionInfo artifact;
-        private final Set<String> classes;
-        public ClassUsageResult(NBVersionInfo artifact, Set<String> classes) {
-            this.artifact = artifact;
-            this.classes = classes;
-        }
-        /**
-         * @return artifact which refers to the named class
-         */
-        public NBVersionInfo getArtifact() {
-            return artifact;
-        }
-        /**
-         * @return a list of class FQNs within that artifact which do the referring (top-level classes only)
-         */
-        public Set<String> getClasses() {
-            return classes;
-        }
-        @Override public String toString() {
-            return "" + artifact + classes;
-        }
-    }
-
+    
     /**
      * Finds all usages of a given class.
      * @param className the (binary) FQN of a class that might be used as an API
      * @param repos repositories of this type to search in
      * @return result object with a list of usages
      */
-    RepositoryQueries.Result<ClassUsageResult> findClassUsages(String className, List<RepositoryInfo> repos);
+    RepositoryQueries.Result<RepositoryQueries.ClassUsage> findClassUsages(String className, List<RepositoryInfo> repos);
 
 }

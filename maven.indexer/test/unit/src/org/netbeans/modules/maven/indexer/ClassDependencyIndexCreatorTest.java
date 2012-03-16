@@ -43,7 +43,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery.ClassUsageResult;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.ClassUsage;
 import org.openide.util.test.JarBuilder;
 import org.openide.util.test.TestFileUtils;
 
@@ -95,7 +95,7 @@ public class ClassDependencyIndexCreatorTest extends NexusTestBase {
         nrii.indexRepo(info);
         // repo set up, now index and query:
         assertEquals("[test:mod2:0:test[mod2.Client, mod2.OtherClient], test:mod3:0:test[mod3.Client]]", nrii.findClassUsages("mod1.API", Collections.singletonList(info)).getResults().toString());
-        List<ClassUsageResult> r = nrii.findClassUsages("mod1.Util", Collections.singletonList(info)).getResults();
+        List<ClassUsage> r = nrii.findClassUsages("mod1.Util", Collections.singletonList(info)).getResults();
         assertEquals("[test:mod4:0:test[mod4.Install]]", r.toString());
         assertEquals("jar", r.get(0).getArtifact().getType());
         r = nrii.findClassUsages("mod1.Stuff", Collections.singletonList(info)).getResults();
