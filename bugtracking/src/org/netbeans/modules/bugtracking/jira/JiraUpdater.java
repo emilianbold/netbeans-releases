@@ -224,7 +224,7 @@ public class JiraUpdater {
         }
         @Override
         public RepositoryInfo getInfo(Object r) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return null;
         }
         @Override
         public Object getIssue(Object r, String id) {
@@ -252,6 +252,7 @@ public class JiraUpdater {
         public Collection<Object> simpleSearch(Object r, String criteria) {
             return Collections.emptyList();
         }
+        @Override
         public Lookup getLookup(Object r) {
             return Lookup.EMPTY;
         }

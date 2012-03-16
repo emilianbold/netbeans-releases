@@ -145,7 +145,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
     }
 
     private void registerIssues() {
-        issues = query.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        issues = query.getIssues();
         for (Issue issue : issues) {
             KenaiUtil.addCacheListener(issue, this);
         }

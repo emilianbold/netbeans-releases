@@ -116,14 +116,10 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.*;
@@ -2570,33 +2566,33 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_keywordsButtonActionPerformed
 
     private void blocksButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blocksButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(
+        String newIssueID = BugtrackingUtil.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.message"), // NOI18N
                 BugzillaUtil.getRepository(issue.getRepository()),
                 this,
                 new HelpCtx("org.netbeans.modules.bugzilla.blocksChooser")); // NOI18N
-        if (newIssue != null) {
+        if (newIssueID != null) {
             StringBuilder sb = new StringBuilder();
             if (!blocksField.getText().trim().equals("")) { // NOI18N
                 sb.append(blocksField.getText()).append(',').append(' ');
             }
-            sb.append(newIssue.getID());
+            sb.append(newIssueID);
             blocksField.setText(sb.toString());
         }
     }//GEN-LAST:event_blocksButtonActionPerformed
 
     private void dependsOnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependsOnButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(
+        String newIssueID = BugtrackingUtil.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.message"), // NOI18N
                 BugzillaUtil.getRepository(issue.getRepository()),
                 this,
                 new HelpCtx("org.netbeans.modules.bugzilla.dependsOnChooser")); // NOI18N
-        if (newIssue != null) {
+        if (newIssueID != null) {
             StringBuilder sb = new StringBuilder();
             if (!dependsField.getText().trim().equals("")) { // NOI18N
                 sb.append(dependsField.getText()).append(',').append(' ');
             }
-            sb.append(newIssue.getID());
+            sb.append(newIssueID);
             dependsField.setText(sb.toString());
         }
     }//GEN-LAST:event_dependsOnButtonActionPerformed
@@ -2681,13 +2677,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_reloadButtonActionPerformed
 
     private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(
+        String newIssueID = BugtrackingUtil.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), //NOI18N
                 BugzillaUtil.getRepository(issue.getRepository()),
                 this,
                 new HelpCtx("org.netbeans.modules.bugzilla.duplicateChooser")); // NOI18N
-        if (newIssue != null) {
-            duplicateField.setText(newIssue.getID());
+        if (newIssueID != null) {
+            duplicateField.setText(newIssueID);
         }
     }//GEN-LAST:event_duplicateButtonActionPerformed
 
@@ -3041,7 +3037,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     }
 
     void opened() {
-        undoRedoSupport = UndoRedoSupport.getSupport(BugzillaUtil.getIssue(issue));
+        undoRedoSupport = Bugzilla.getInstance().getUndoRedoSupport(issue);
         undoRedoSupport.register(addCommentArea);
        
         // Hack - reset any previous modifications when the issue window is reopened
@@ -3052,7 +3048,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         if(issue != null) {
             commentsPanel.storeSettings();
             if (undoRedoSupport != null) {
-                undoRedoSupport.unregisterAll(BugzillaUtil.getIssue(issue));
+                undoRedoSupport.unregisterAll();
                 undoRedoSupport = null;
             }
         }

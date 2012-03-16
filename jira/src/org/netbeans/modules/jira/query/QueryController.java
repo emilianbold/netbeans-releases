@@ -94,13 +94,11 @@ import javax.swing.text.Document;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
@@ -1243,7 +1241,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onFindIssues() {
-        Query.openNew(JiraUtils.getRepository(repository));
+        Util.createNewQuery(JiraUtils.getRepository(repository));
     }
 
     private void onCloneQuery() {

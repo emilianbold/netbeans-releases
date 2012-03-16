@@ -48,8 +48,6 @@ import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -194,22 +192,13 @@ public class BugzillaUtil {
         }
         return repository;
     }
-    
-    public static Issue getIssue(BugzillaIssue bugzillaIssue) {
-        return Bugzilla.getInstance().getBugtrackingFactory().getIssue(getRepository(bugzillaIssue.getRepository()), bugzillaIssue);
-    }
 
     public static void openIssue(BugzillaIssue bugzillaIssue) {
-        Issue issue = Bugzilla.getInstance().getBugtrackingFactory().getIssue(getRepository(bugzillaIssue.getRepository()), bugzillaIssue);
-        issue.open();
+        Bugzilla.getInstance().getBugtrackingFactory().openIssue(getRepository(bugzillaIssue.getRepository()), bugzillaIssue);
     }
     
-    public static Query getQuery(BugzillaQuery bugzillaQuery) {
-        return Bugzilla.getInstance().getBugtrackingFactory().getQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
-    }
-
     public static void openQuery(BugzillaQuery bugzillaQuery) {
-        getQuery(bugzillaQuery).open(false);
+        Bugzilla.getInstance().getBugtrackingFactory().openQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
     }
     
 }

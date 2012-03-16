@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
@@ -58,7 +60,9 @@ import org.netbeans.modules.search.PrintDetailsTask;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.ResultView;
 import org.netbeans.modules.search.TextDetail;
+import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.view.OutlineView;
+import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -128,14 +132,21 @@ public abstract class BasicAbstractResultsPanel
         if (details && expandButton != null && !expandButton.isEnabled()) {
             expandButton.setEnabled(resultModel.size() > 0);
         }
-        updateShiftButtons();
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                updateShiftButtons();
+            }
+        });
         resultsOutlineSupport.update();
     }
 
     private void updateShiftButtons() {
         if (details && prevButton != null && nextButton != null) {
-            prevButton.setEnabled(findShifNode(-1) != null);
-            nextButton.setEnabled(findShifNode(1) != null);
+            prevButton.setEnabled(
+                    findShiftNode(-1, getOutlineView(), false) != null);
+            nextButton.setEnabled(
+                    findShiftNode(1, getOutlineView(), false) != null);
         }
     }
 
@@ -157,6 +168,11 @@ public abstract class BasicAbstractResultsPanel
                     resultsOutlineSupport.setFolderTreeMode();
                 } else {
                     resultsOutlineSupport.setFlatMode();
+                }
+                try {
+                    getExplorerManager().setSelectedNodes(new Node[]{
+                                getExplorerManager().getRootContext()});
+                } catch (PropertyVetoException ex) {
                 }
             }
         });
@@ -218,7 +234,7 @@ public abstract class BasicAbstractResultsPanel
 
     private void shift(int direction) {
 
-        Node next = findShifNode(direction);
+        Node next = findShiftNode(direction, getOutlineView(), true);
         if (next == null) {
             return;
         }
@@ -234,7 +250,8 @@ public abstract class BasicAbstractResultsPanel
         }
     }
 
-    private Node findShifNode(int direction) {
+    private Node findShiftNode(int direction, OutlineView outlineView,
+            boolean canExpand) {
         Node[] selected = getExplorerManager().getSelectedNodes();
         Node n = null;
         if (selected == null || selected.length == 0) {
@@ -242,12 +259,15 @@ public abstract class BasicAbstractResultsPanel
         } else if (selected.length == 1) {
             n = selected[0];
         }
-        return n == null ? null : findTextDetailNode(n, direction);
+        return n == null ? null : findTextDetailNode(n, direction, outlineView,
+                canExpand);
     }
 
-    static Node findTextDetailNode(Node fromNode, int direction) {
+    static Node findTextDetailNode(Node fromNode, int direction,
+            OutlineView outlineView, boolean canExpand) {
         return findUp(fromNode, direction,
-                isTextDetailNode(fromNode) || direction < 0 ? direction : 0);
+                isTextDetailNode(fromNode) || direction < 0 ? direction : 0,
+                outlineView, canExpand);
     }
 
     /**
@@ -259,7 +279,8 @@ public abstract class BasicAbstractResultsPanel
      * sibling, -1 to start from its previous sibling.
      * @param dir Direction: 1 for next, -1 for previous.
      */
-    static Node findUp(Node node, int dir, int offset) {
+    static Node findUp(Node node, int dir, int offset, OutlineView outlineView,
+            boolean canExpand) {
         if (node == null) {
             return null;
         }
@@ -268,30 +289,32 @@ public abstract class BasicAbstractResultsPanel
         if (parent == null) {
             siblings = new Node[]{node};
         } else {
-            siblings = parent.getChildren().getNodes(true);
+            siblings = getChildren(parent, outlineView, canExpand);
         }
         int nodeIndex = findChildIndex(node, siblings);
         if (nodeIndex + offset < 0 || nodeIndex + offset >= siblings.length) {
-            return findUp(parent, dir, dir);
+            return findUp(parent, dir, dir, outlineView, canExpand);
         }
         for (int i = nodeIndex + offset;
                 i >= 0 && i < siblings.length; i += dir) {
-            Node found = findDown(siblings[i], siblings, i, dir);
+            Node found = findDown(siblings[i], siblings, i, dir, outlineView,
+                    canExpand);
             return found;
         }
-        return findUp(parent, dir, offset);
+        return findUp(parent, dir, offset, outlineView, canExpand);
     }
 
     /**
      * Find Depth-first search to find TextDetail node in the subtree.
      */
     private static Node findDown(Node node, Node[] siblings, int nodeIndex,
-            int dir) {
+            int dir, OutlineView outlineView, boolean canExpand) {
 
-        Node[] children = node.getChildren().getNodes(true);
+        Node[] children = getChildren(node, outlineView, canExpand);
         for (int i = dir > 0 ? 0 : children.length - 1;
                 i >= 0 && i < children.length; i += dir) {
-            Node found = findDown(children[i], children, i, dir);
+            Node found = findDown(children[i], children, i, dir, outlineView,
+                    canExpand);
             if (found != null) {
                 return found;
             }
@@ -317,6 +340,22 @@ public abstract class BasicAbstractResultsPanel
             }
         }
         return pos;
+    }
+
+    private static Node[] getChildren(Node n, OutlineView outlineView,
+            boolean canExpand) {
+        if (outlineView != null) {
+            if (!outlineView.isExpanded(n)) {
+                if (canExpand) {
+                    outlineView.expandNode(n);
+                } else {
+                    return n.getChildren().getNodes(true);
+                }
+            }
+            return getChildrenInDisplayedOrder(n, outlineView);
+        } else {
+            return n.getChildren().getNodes(true);
+        }
     }
 
     private void toggleExpand(boolean expand) {
@@ -420,8 +459,7 @@ public abstract class BasicAbstractResultsPanel
     }
 
     private void setRootDisplayName(String displayName) {
-        Node root = getExplorerManager().getRootContext();
-        root.setDisplayName(displayName);
+        resultsOutlineSupport.setResultsNodeText(displayName);
     }
 
     protected void updateRootNodeText() {
@@ -435,5 +473,65 @@ public abstract class BasicAbstractResultsPanel
             setRootDisplayName(NbBundle.getMessage(ResultView.class,
                     "TXT_RootSearchedNodesFulltext", objectsCount));    //NOI18N
         }
+    }
+
+    private static Node[] getChildrenInDisplayedOrder(Node parent,
+            OutlineView outlineView) {
+
+        Outline outline = outlineView.getOutline();
+        Node[] unsortedChildren = parent.getChildren().getNodes(true);
+        int rows = outlineView.getOutline().getRowCount();
+        int start = findRowIndexInOutline(parent, outline, rows);
+        if (start == -1) {
+            return unsortedChildren;
+        }
+        List<Node> children = new LinkedList<Node>();
+        for (int j = start + 1; j < rows; j++) {
+            int childModelIndex = outline.convertRowIndexToModel(j);
+            if (childModelIndex == -1) {
+                continue;
+            }
+            Object childObject = outline.getModel().getValueAt(
+                    childModelIndex, 0);
+            Node childNode = Visualizer.findNode(childObject);
+            if (childNode.getParentNode() == parent) {
+                children.add(childNode);
+            } else if (children.size() == unsortedChildren.length) {
+                break;
+            }
+        }
+        return children.toArray(new Node[children.size()]);
+    }
+
+    private static int findRowIndexInOutline(Node node, Outline outline,
+            int rows) {
+
+        int startRow = Math.max(outline.getSelectedRow(), 0);
+        int offset = 0;
+        while (startRow + offset < rows || startRow - offset >= 0) {
+            int up = startRow + offset + 1;
+            int down = startRow - offset;
+
+            if (up < rows && testNodeInRow(outline, node, up)) {
+                return up;
+            } else if (down >= 0 && testNodeInRow(outline, node, down)) {
+                return down;
+            } else {
+                offset++;
+            }
+        }
+        return -1;
+    }
+
+    private static boolean testNodeInRow(Outline outline, Node node, int i) {
+        int modelIndex = outline.convertRowIndexToModel(i);
+        if (modelIndex != -1) {
+            Object o = outline.getModel().getValueAt(modelIndex, 0);
+            Node n = Visualizer.findNode(o);
+            if (n == node) {
+                return true;
+            }
+        }
+        return false;
     }
 }
