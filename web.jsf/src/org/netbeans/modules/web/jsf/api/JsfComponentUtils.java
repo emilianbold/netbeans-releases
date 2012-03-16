@@ -155,9 +155,6 @@ public class JsfComponentUtils {
     public static void enhanceIndexBody(WebModule webModule, String enhancing) {
         Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
         FileObject index = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
-        if (!index.isValid()) {
-            return;
-        }
 
         String projectEncoding = JpaControllerUtil.getProjectEncodingAsString(project, index);
 
