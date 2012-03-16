@@ -768,7 +768,7 @@ public class InstallSupportImpl {
                             real.close();
                             if (check.getValue() != crc.get()) {
                                 external.delete();
-                                throw new IOException("Wrong CRC for " + jarEntry.getName() + " (" + check.getValue() + ")");
+                                throw new IOException("Wrong CRC for " + jarEntry.getName());
                             }
                         } finally {
                             is.close();
