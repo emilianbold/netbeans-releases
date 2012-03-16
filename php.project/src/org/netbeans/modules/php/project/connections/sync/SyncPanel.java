@@ -489,6 +489,10 @@ public final class SyncPanel extends JPanel {
         }
     }
 
+    /**
+     * To preserve correct order and to show items that belong to more
+     * view groups (e.g. symlink - warning & symlink).
+     */
     void updateDisplayedItems() {
         assert SwingUtilities.isEventDispatchThread();
         displayedItems.clear();
