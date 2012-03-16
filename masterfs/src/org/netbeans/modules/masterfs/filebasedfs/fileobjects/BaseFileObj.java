@@ -600,7 +600,9 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     public final FileObjectFactory getFactory() {
-        return FileObjectFactory.getInstance(getFileName().getFile());
+        FileObjectFactory factory = FileObjectFactory.getInstance(getFileName().getFile());
+        assert factory != null : "No factory for " + getFileName();
+        return factory;
     }
 
     final void fireFileDataCreatedEvent(final boolean expected) {
