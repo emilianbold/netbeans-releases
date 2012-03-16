@@ -265,32 +265,65 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
         return null;
     }
     
-    private String hintId(Element hint) {
+    private boolean verifyHintAnnotationAcceptable(Element hint) {
         AnnotationMirror hintMirror = findAnnotation(hint.getAnnotationMirrors(), "org.netbeans.spi.java.hints.Hint");
 
-        if (hintMirror != null) {
-            String id = getAttributeValue(hintMirror, "id", String.class);
+        if (hintMirror == null) return false;
 
-            if (id != null && !id.isEmpty()) return id;
+        String id = getAttributeValue(hintMirror, "id", String.class);
+
+        if (id == null || id.isEmpty()) {
+            switch (hint.getKind()) {
+                case CLASS:
+                case METHOD:
+                    break; //OK
+                default:
+                    //compiler should have already warned about this
+                    return false;
+            }
         }
 
-        switch (hint.getKind()) {
-            case CLASS:
-                return ((TypeElement) hint).getQualifiedName().toString();
-            case METHOD:
-                TypeElement hintClass = (TypeElement) hint.getEnclosingElement();
-                return hintClass.getQualifiedName() + "." + hint.getSimpleName();
-            default:
-                //compiler should have already warned about this
-                return null;
-        }
-    }
+        TypeMirror customizerProviderType = getAttributeValue(hintMirror, "customizerProvider", TypeMirror.class);
 
-    private boolean verifyHintAnnotationAcceptable(Element hint) {
-        String id = hintId(hint);
+        if (customizerProviderType != null) {
+            Element customizerProvider = processingEnv.getTypeUtils().asElement(customizerProviderType);
 
-        if (id == null) {
-            return false;
+            if (customizerProvider != null) {
+                if (customizerProvider.getKind() != ElementKind.CLASS) {
+                    TypeElement customizerProviderInterface = processingEnv.getElementUtils().getTypeElement("org.netbeans.spi.java.hints.CustomizerProvider");
+
+                    if (customizerProviderInterface != null && !customizerProviderInterface.equals(customizerProvider)) {
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Customizer provider must be a concrete class", hint, hintMirror, getAttributeValueDescription(hintMirror, "customizerProvider"));
+                    }
+                } else {
+                    TypeElement customizerProviderClazz = (TypeElement) customizerProvider;
+
+                    if (!customizerProviderClazz.getModifiers().contains(Modifier.PUBLIC)) {
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Customizer provider must be public", hint, hintMirror, getAttributeValueDescription(hintMirror, "customizerProvider"));
+                    }
+
+                    if (   customizerProviderClazz.getEnclosingElement().getKind() != ElementKind.PACKAGE
+                        && !customizerProviderClazz.getModifiers().contains(Modifier.STATIC)) {
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Customizer provider must be non-static innerclass", hint, hintMirror, getAttributeValueDescription(hintMirror, "customizerProvider"));
+                    }
+
+                    boolean foundDefaultConstructor = false;
+
+                    for (ExecutableElement ee : ElementFilter.constructorsIn(customizerProviderClazz.getEnclosedElements())) {
+                        if (ee.getParameters().isEmpty()) {
+                            foundDefaultConstructor = true;
+                            if (!ee.getModifiers().contains(Modifier.PUBLIC)) {
+                                processingEnv.getMessager().printMessage(Kind.ERROR, "Customizer provider must provide a public default constructor", hint, hintMirror, getAttributeValueDescription(hintMirror, "customizerProvider"));
+                            }
+                            break;
+                        }
+                    }
+
+                    if (!foundDefaultConstructor) {
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Customizer provider must provide a public default constructor", hint, hintMirror, getAttributeValueDescription(hintMirror, "customizerProvider"));
+                    }
+                }
+            }
         }
 
         return true;
