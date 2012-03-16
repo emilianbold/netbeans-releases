@@ -44,13 +44,13 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Editors">
         <folder name="text">
-            <folder name="x-java">
+<!--            <folder name="x-java">
                 <folder name="Popup">
                     <folder name="TestNG">
                         <attr name="position" intvalue="1630"/>
                     </folder>
                 </folder>
-            </folder>
+            </folder>-->
             <folder name="x-testng+xml">
                 <folder name="HyperlinkProviders">
                     <file name="TestNGSuiteHyperlingProvider.instance">
@@ -155,9 +155,9 @@ made subject to such option by the copyright holder.
         <folder name="TestNG">
             <attr name="displayName" bundlevalue="org.netbeans.modules.testng.Bundle#Templates/TestNG"/>
             <attr name="position" intvalue="1250"/>
-            
+
             <!-- TestNG templates -->
-            
+
             <file name="TestNGTestClass.java" url="TestNGTestClass.java.template">
                 <attr name="position" intvalue="700"/>
                 <attr name="template" boolvalue="true"/>
@@ -172,7 +172,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/testng/resources/testng.gif"/>
                 <attr name="templateCategory" stringvalue="invisible"/>
             </file>
-            
+
         </folder>
     </folder>
 </filesystem>

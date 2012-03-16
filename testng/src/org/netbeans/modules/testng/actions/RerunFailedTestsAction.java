@@ -58,11 +58,11 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
-@ActionID(id = "org.netbeans.modules.testng.actions.RerunFailedTestsAction", category = "TestNG")
-@ActionRegistration(displayName = "#CTL_RerunFailedTestsAction")
-@ActionReferences(value = {
-    @ActionReference(path = "Loaders/text/x-java/Actions", position = 2195),
-    @ActionReference(path = "Editors/text/x-java/Popup/TestNG", position = 400)})
+//@ActionID(id = "org.netbeans.modules.testng.actions.RerunFailedTestsAction", category = "TestNG")
+//@ActionRegistration(displayName = "#CTL_RerunFailedTestsAction")
+//@ActionReferences(value = {
+//    @ActionReference(path = "Loaders/text/x-java/Actions", position = 2195),
+//    @ActionReference(path = "Editors/text/x-java/Popup/TestNG", position = 400)})
 public final class RerunFailedTestsAction extends NodeAction {
 
     private static final Logger LOGGER = Logger.getLogger(RerunFailedTestsAction.class.getName());

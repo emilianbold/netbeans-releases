@@ -65,9 +65,9 @@ import org.openide.util.actions.NodeAction;
  *
  * @author lukas
  */
-@ActionID(id = "org.netbeans.modules.testng.actions.DebugTestClassAction", category = "TestNG")
-@ActionRegistration(displayName = "#CTL_DebugTestClassAction")
-@ActionReference(path = "Editors/text/x-java/Popup/TestNG", position = 600)
+//@ActionID(id = "org.netbeans.modules.testng.actions.DebugTestClassAction", category = "TestNG")
+//@ActionRegistration(displayName = "#CTL_DebugTestClassAction")
+//@ActionReference(path = "Editors/text/x-java/Popup/TestNG", position = 600)
 public class DebugTestClassAction extends NodeAction {
 
     private static final Logger LOGGER = Logger.getLogger(DebugTestClassAction.class.getName());

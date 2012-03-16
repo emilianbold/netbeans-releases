@@ -63,11 +63,11 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
-@ActionID(id = "org.netbeans.modules.testng.actions.RunTestMethodAction", category = "TestNG")
-@ActionRegistration(displayName = "#CTL_RunTestMethodAction")
-@ActionReferences(value = {
-    @ActionReference(path = "Loaders/text/x-java/Actions", position = 2194),
-    @ActionReference(path = "Editors/text/x-java/Popup/TestNG", position = 200)})
+//@ActionID(id = "org.netbeans.modules.testng.actions.RunTestMethodAction", category = "TestNG")
+//@ActionRegistration(displayName = "#CTL_RunTestMethodAction")
+//@ActionReferences(value = {
+//    @ActionReference(path = "Loaders/text/x-java/Actions", position = 2194),
+//    @ActionReference(path = "Editors/text/x-java/Popup/TestNG", position = 200)})
 public final class RunTestMethodAction extends NodeAction {
 
     private static final Logger LOGGER = Logger.getLogger(RunTestMethodAction.class.getName());
