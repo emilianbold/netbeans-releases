@@ -46,7 +46,7 @@
         <condition property="have-jdk-pre7u6">
             <or>
                 <contains string="${version-output}" substring="java version &quot;1.6"/>
-                <contains string="${version-output}" substring="java version &quot;1.7.0"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0&quot;"/>
                 <contains string="${version-output}" substring="java version &quot;1.7.0_01"/>
                 <contains string="${version-output}" substring="java version &quot;1.7.0_02"/>
                 <contains string="${version-output}" substring="java version &quot;1.7.0_03"/>

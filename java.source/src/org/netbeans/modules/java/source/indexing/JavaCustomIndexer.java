@@ -173,10 +173,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                 if (context.isAllFilesIndexing()) {
                     cleanUpResources(context.getRootURI());
                 }
-                if (javaContext.uq == null)
+                if (javaContext.getClassIndexImpl() == null)
                     return; //IDE is exiting, indeces are already closed.
 
-                javaContext.uq.setDirty(null);
+                javaContext.getClassIndexImpl().setDirty(null);
                 for (Indexable i : javaSources) {
                     final CompileTuple tuple = createTuple(context, javaContext, i);
                     if (tuple != null) {
@@ -251,9 +251,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                     context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                 }
             }
-            javaContext.checkSums.store();
-            javaContext.fqn2Files.store();
-            javaContext.sa.store();
+            javaContext.getCheckSums().store();
+            javaContext.getFQNs().store();
+            javaContext.getSourceAnalyzer().store();
             ciTx.addedTypes(context.getRootURI(), _at);
             ciTx.removedTypes(context.getRootURI(), _rt);
             ciTx.changedTypes(context.getRootURI(), compileResult.addedTypes);
@@ -306,7 +306,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
             try {
                 File file = new File(indexable.getURL().toURI().getPath());
-                return new CompileTuple(FileObjects.fileFileObject(file, root, javaContext.filter, javaContext.encoding), indexable);
+                return new CompileTuple(FileObjects.fileFileObject(file, root, javaContext.getJavaFileFilter(), javaContext.getEncoding()), indexable);
             } catch (Exception ex) {
             } catch (AssertionError ae) {
                 //Add more debug messages
@@ -329,9 +329,9 @@ public class JavaCustomIndexer extends CustomIndexer {
         try {
             final JavaParsingContext javaContext = new JavaParsingContext(context, true);
             try {
-                if (javaContext.uq == null)
+                if (javaContext.getClassIndexImpl() == null)
                     return; //IDE is exiting, indeces are already closed.
-                if (javaContext.uq.getType() == ClassIndexImpl.Type.EMPTY)
+                if (javaContext.getClassIndexImpl().getType() == ClassIndexImpl.Type.EMPTY)
                     return; //No java no need to continue
                 final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                 final Set<File> removedFiles = new HashSet<File> ();
@@ -339,14 +339,14 @@ public class JavaCustomIndexer extends CustomIndexer {
                     clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
                     ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
                     ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
-                    javaContext.checkSums.remove(i.getURL());
+                    javaContext.getCheckSums().remove(i.getURL());
                 }
                 for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
                     context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                 }
-                javaContext.checkSums.store();
-                javaContext.fqn2Files.store();
-                javaContext.sa.store();
+                javaContext.getCheckSums().store();
+                javaContext.getFQNs().store();
+                javaContext.getSourceAnalyzer().store();
                 ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
                 ciTx.removedTypes(context.getRootURI(), removedTypes);
             } finally {
@@ -403,7 +403,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     for (String className : readRSFile(file)) {
                         File f = new File(classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.SIG);
                         if (!binaryName.equals(className)) {
-                            if (javaContext.fqn2Files.remove(className, relURLPair.second)) {
+                            if (javaContext.getFQNs().remove(className, relURLPair.second)) {
                                 toDelete.add(Pair.<String, String>of(className, relURLPair.first));
                                 removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                                 removedFiles.add(f);
@@ -420,7 +420,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 fmTx.delete(file);
             }
             if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.SIG)).exists()) {
-                if (javaContext.fqn2Files.remove(FileObjects.getBinaryName(file, classFolder), relURLPair.second)) {
+                if (javaContext.getFQNs().remove(FileObjects.getBinaryName(file, classFolder), relURLPair.second)) {
                     String fileName = file.getName();
                     fileName = fileName.substring(0, fileName.lastIndexOf('.'));
                     final String[] patterns = new String[]{fileName + '.', fileName + '$'}; //NOI18N
@@ -536,7 +536,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         File f = new File (aptFolder, fileName);
                         if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
                             Indexable i = accessor.create(new FileObjectIndexable(root, fileName));
-                            PrefetchableJavaFileObject ffo = FileObjects.fileFileObject(f, aptFolder, null, javaContext.encoding);
+                            PrefetchableJavaFileObject ffo = FileObjects.fileFileObject(f, aptFolder, null, javaContext.getEncoding());
                             ret |= aptGenerated.add(new CompileTuple(ffo, i, false, true, true));
                         }
                     }

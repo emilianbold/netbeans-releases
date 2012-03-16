@@ -91,7 +91,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             final Context context,
             final JavaParsingContext javaContext,
             final Collection<? extends CompileTuple> files) {
-        final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.cpInfo);
+        final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.getClasspathInfo());
         final Map<JavaFileObject, List<String>> file2FQNs = previous != null ? previous.file2FQNs : new HashMap<JavaFileObject, List<String>>();
         final Set<ElementHandle<TypeElement>> addedTypes = previous != null ? previous.addedTypes : new HashSet<ElementHandle<TypeElement>>();
         final Set<File> createdFiles = previous != null ? previous.createdFiles : new HashSet<File>();
@@ -124,7 +124,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                         System.gc();
                     }
                     if (jt == null) {
-                        jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, cnffOraculum, javaContext.fqn2Files, new CancelService() {
+                        jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), dc, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
                             public @Override boolean isCanceled() {
                                 return context.isCancelled();
                             }
@@ -146,9 +146,9 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                     }
                 } catch (Throwable t) {
                     if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
-                        final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                        final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                        final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                        final ClassPath bootPath   = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
+                        final ClassPath classPath  = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+                        final ClassPath sourcePath = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
                         final String message = String.format("SuperOnePassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
                                     tuple.indexable.getURL().toString(),
                                     FileUtil.getFileDisplayName(context.getRoot()),
@@ -218,9 +218,9 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                             activeTypes.add(sym);
                     }
                 }
-                javaContext.fqn2Files.set(activeTypes, active.indexable.getURL());
+                javaContext.getFQNs().set(activeTypes, active.indexable.getURL());
                 boolean[] main = new boolean[1];
-                if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), activeTypes, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
+                if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), activeTypes, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
                     javaContext.analyze(Collections.singleton(unit.first), jt, fileManager, unit.second, addedTypes, main);
                 } else {
                     final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
@@ -257,9 +257,9 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         } catch (OutputFileManager.InvalidSourcePath isp) {
             //Deleted project - log & ignore
             if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
-                final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                final ClassPath bootPath   = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
+                final ClassPath classPath  = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+                final ClassPath sourcePath = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
                 final String message = String.format("SuperOnePassCompileWorker caused an exception\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
                             FileUtil.getFileDisplayName(context.getRoot()),
                             bootPath == null   ? null : bootPath.toString(),
@@ -271,9 +271,9 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         } catch (MissingPlatformError mpe) {
             //No platform - log & ignore
             if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
-                final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                final ClassPath bootPath   = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
+                final ClassPath classPath  = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+                final ClassPath sourcePath = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
                 final String message = String.format("SuperOnePassCompileWorker caused an exception\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
                             FileUtil.getFileDisplayName(context.getRoot()),
                             bootPath == null   ? null : bootPath.toString(),
@@ -292,9 +292,9 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             } else {
                 Level level = t instanceof FatalError ? Level.FINEST : Level.WARNING;
                 if (JavaIndex.LOG.isLoggable(level)) {
-                    final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                    final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                    final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                    final ClassPath bootPath   = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
+                    final ClassPath classPath  = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+                    final ClassPath sourcePath = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
                     final String message = String.format("SuperOnePassCompileWorker caused an exception\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
                                 FileUtil.getFileDisplayName(context.getRoot()),
                                 bootPath == null   ? null : bootPath.toString(),
