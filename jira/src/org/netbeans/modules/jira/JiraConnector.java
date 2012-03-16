@@ -120,10 +120,7 @@ public class JiraConnector extends KenaiBugtrackingConnector {
 
     @Override
     public IssueFinder getIssueFinder() {
-        if (issueFinder == null) {
-            issueFinder = Lookup.getDefault().lookup(JiraIssueFinder.class);
-        }
-        return issueFinder;
+        return JiraIssueFinder.getInstance();
     }
 
     @Override

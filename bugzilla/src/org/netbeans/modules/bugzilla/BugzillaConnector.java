@@ -60,9 +60,7 @@ import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -76,8 +74,6 @@ import org.openide.util.lookup.Lookups;
 public class BugzillaConnector extends KenaiBugtrackingConnector {
 
     public static final String ID = "org.netbeans.modules.bugzilla";
-
-    private BugzillaIssueFinder issueFinder;
 
     public BugzillaConnector() {}
     
@@ -110,10 +106,7 @@ public class BugzillaConnector extends KenaiBugtrackingConnector {
 
     @Override
     public IssueFinder getIssueFinder() {
-        if (issueFinder == null) {
-            issueFinder = Lookup.getDefault().lookup(BugzillaIssueFinder.class);
-        }
-        return issueFinder;
+        return BugzillaIssueFinder.getInstance();
     }
 
     @Override
