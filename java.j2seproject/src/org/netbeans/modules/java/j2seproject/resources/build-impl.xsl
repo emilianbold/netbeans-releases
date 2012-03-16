@@ -363,34 +363,15 @@ is divided into following sections:
                 </condition>
                 <condition property="junit+testng.available">
                     <and>
-                        <isset property="junit.available"/>
-                        <isset property="testng.available"/>
+                        <istrue value="${{junit.available}}"/>
+                        <istrue value="${{testng.available}}"/>
                     </and>
                 </condition>
                 <condition property="testng.mode" value="mixed" else="testng">
-                    <and>
-                        <isset property="junit+testng.available"/>
-                        <isset property="use.testng"/>
-                        <istrue value="${{use.testng}}"/>
-                    </and>
+                    <istrue value="${{junit+testng.available}}"/>
                 </condition>
                 <condition property="testng.debug.mode" value="-mixed" else="">
-                    <and>
-                        <isset property="junit+testng.available"/>
-                        <isset property="use.testng"/>
-                        <istrue value="${{use.testng}}"/>
-                    </and>
-                </condition>
-                <condition property="native.testing">
-                    <and>
-                        <isset property="junit+testng.available"/>
-                        <or>
-                            <not>
-                                <isset property="use.testng"/>
-                            </not>
-                            <isfalse value="${{use.testng}}"/>
-                        </or>
-                    </and>
+                    <istrue value="${{junit+testng.available}}"/>
                 </condition>
             </target>
 
@@ -703,7 +684,7 @@ is divided into following sections:
                 </macrodef>
             </target>
             
-            <target name="-init-macrodef-junit" if="junit.available">
+            <target name="-init-macrodef-junit" if="${{junit.available}}">
                 <macrodef>
                     <xsl:attribute name="name">junit</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -761,7 +742,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-testng" if="testng.available">
+            <target name="-init-macrodef-testng" if="${{testng.available}}">
                 <macrodef>
                     <xsl:attribute name="name">testng</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -831,6 +812,7 @@ is divided into following sections:
                             <classfileset dir="${{build.test.classes.dir}}" excludes="${{testng.excludes}}" includes="${{testng.includes}}">
                                 <filename name="${{testng.testincludes}}"/>
                             </classfileset>
+                            <xmlfileset dir="${{build.test.classes.dir}}" includes="@{{testincludes}}"/>
                             <propertyset>
                                 <propertyref prefix="test-sys-prop."/>
                                 <mapper from="test-sys-prop.*" to="*" type="glob"/>
@@ -841,7 +823,38 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-junit-impl" depends="-init-macrodef-junit" unless="native.testing">
+            <target name="-init-macrodef-test-impl">
+                <macrodef>
+                    <xsl:attribute name="name">test-impl</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testincludes</xsl:attribute>
+                        <xsl:attribute name="default">**</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testmethods</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                        <xsl:attribute name="implicit">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <echo>No tests executed.</echo>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="-init-macrodef-junit-impl" depends="-init-macrodef-junit" if="${{junit.available}}">
                 <macrodef>
                     <xsl:attribute name="name">test-impl</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -874,7 +887,7 @@ is divided into following sections:
                 </macrodef>
             </target>
             
-            <target name="-init-macrodef-testng-impl" depends="-init-macrodef-testng" if="testng.available" unless="native.testing">
+            <target name="-init-macrodef-testng-impl" depends="-init-macrodef-testng" if="${{testng.available}}">
                 <macrodef>
                     <xsl:attribute name="name">test-impl</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -907,146 +920,7 @@ is divided into following sections:
                 </macrodef>
             </target>
                         
-            <target name="-init-macrodef-test-nativeimpl" depends="-init-macrodef-junit,-init-macrodef-testng" if="native.testing">
-                <macrodef>
-                    <xsl:attribute name="name">test-impl</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">includes</xsl:attribute>
-                        <xsl:attribute name="default">${includes}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">excludes</xsl:attribute>
-                        <xsl:attribute name="default">${excludes}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">testincludes</xsl:attribute>
-                        <xsl:attribute name="default">**</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">testmethods</xsl:attribute>
-                        <xsl:attribute name="default"></xsl:attribute>
-                    </attribute>
-                    <element>
-                        <xsl:attribute name="name">customize</xsl:attribute>
-                        <xsl:attribute name="optional">true</xsl:attribute>
-                        <xsl:attribute name="implicit">true</xsl:attribute>
-                    </element>
-                    <sequential>
-                        <union id="testng.testset">
-                            <xsl:call-template name="createFilesets">
-                                <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
-                                <xsl:with-param name="includes">@{includes}</xsl:with-param>
-                                <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
-                                <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
-                                <xsl:with-param name="condition">
-                                    <xsl:element name="contains">
-                                        <xsl:attribute name="text">
-                                            <xsl:text>org.testng.annotations.</xsl:text>
-                                        </xsl:attribute>
-                                    </xsl:element>
-                                </xsl:with-param>
-                            </xsl:call-template>
-                        </union>
-
-                        <union id="junit.testset">
-                            <xsl:call-template name="createFilesets">
-                                <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
-                                <xsl:with-param name="includes">@{includes}</xsl:with-param>
-                                <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
-                                <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
-                                <xsl:with-param name="condition">
-                                    <xsl:element name="not">
-                                        <xsl:element name="contains">
-                                            <xsl:attribute name="text">
-                                                <xsl:text>org.testng.annotations.</xsl:text>
-                                            </xsl:attribute>
-                                        </xsl:element>
-                                    </xsl:element>
-                                </xsl:with-param>
-                            </xsl:call-template>
-                        </union>
-
-                        <pathconvert pathsep="," property="testng.tests" refid="testng.testset">
-                            <xsl:for-each select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots">
-                                <xsl:choose>
-                                    <xsl:when test="count(j2seproject3:root) > 1">
-                                        <compositemapper>
-                                            <xsl:for-each select="j2seproject3:root">
-                                                <xsl:element name="globmapper">
-                                                    <xsl:attribute name="from">
-                                                        <xsl:text>${basedir}/${</xsl:text>
-                                                        <xsl:value-of select="@id"/>
-                                                        <xsl:text>}/*</xsl:text>
-                                                    </xsl:attribute>
-                                                    <xsl:attribute name="to">
-                                                        <xsl:text>*</xsl:text>
-                                                    </xsl:attribute>
-                                                </xsl:element>
-                                            </xsl:for-each>
-                                        </compositemapper>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:element name="globmapper">
-                                            <xsl:attribute name="from">
-                                                <xsl:text>${basedir}/${</xsl:text>
-                                                <xsl:value-of select="j2seproject3:root/@id"/>
-                                                <xsl:text>}/*</xsl:text>
-                                            </xsl:attribute>
-                                            <xsl:attribute name="to">
-                                                <xsl:text>*</xsl:text>
-                                            </xsl:attribute>
-                                        </xsl:element>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:for-each>
-                        </pathconvert>
-                        <pathconvert pathsep="," property="junit.tests" refid="junit.testset">
-                            <xsl:for-each select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots">
-                                <xsl:choose>
-                                    <xsl:when test="count(j2seproject3:root) > 1">
-                                        <compositemapper>
-                                            <xsl:for-each select="j2seproject3:root">
-                                                <xsl:element name="globmapper">
-                                                    <xsl:attribute name="from">
-                                                        <xsl:text>${basedir}/${</xsl:text>
-                                                        <xsl:value-of select="@id"/>
-                                                        <xsl:text>}/*</xsl:text>
-                                                    </xsl:attribute>
-                                                    <xsl:attribute name="to">
-                                                        <xsl:text>*</xsl:text>
-                                                    </xsl:attribute>
-                                                </xsl:element>
-                                            </xsl:for-each>
-                                        </compositemapper>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:element name="globmapper">
-                                            <xsl:attribute name="from">
-                                                <xsl:text>${basedir}/${</xsl:text>
-                                                <xsl:value-of select="j2seproject3:root/@id"/>
-                                                <xsl:text>}/*</xsl:text>
-                                            </xsl:attribute>
-                                            <xsl:attribute name="to">
-                                                <xsl:text>*</xsl:text>
-                                            </xsl:attribute>
-                                        </xsl:element>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:for-each>
-                        </pathconvert>
-
-                        <j2seproject3:junit includes="@{{includes}}" excludes="@{{excludes}},${{testng.tests}}" testincludes="@{{testincludes}}" testmethods="@{{testmethods}}">
-                            <customize/>
-                        </j2seproject3:junit>
-                        <j2seproject3:testng includes="@{{includes}}" excludes="@{{excludes}},${{junit.tests}}" testincludes="@{{testincludes}}" testmethods="@{{testmethods}}">
-                            <customize/>
-                        </j2seproject3:testng>
-                    </sequential>
-                </macrodef>
-            </target>
-                        
-            <target name="-init-macrodef-test" depends="-init-macrodef-junit-impl,-init-macrodef-testng-impl,-init-macrodef-test-nativeimpl">
+            <target name="-init-macrodef-test" depends="-init-macrodef-test-impl,-init-macrodef-junit-impl,-init-macrodef-testng-impl">
                 <macrodef>
                     <xsl:attribute name="name">test</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -1080,7 +954,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-junit-debug" if="junit.available">
+            <target name="-init-macrodef-junit-debug" if="${{junit.available}}">
                 <macrodef>
                     <xsl:attribute name="name">junit-debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -1114,7 +988,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-junit-debug-impl" depends="-init-macrodef-junit-debug" if="junit.available">
+            <target name="-init-macrodef-junit-debug-impl" depends="-init-macrodef-junit-debug" if="${{junit.available}}">
                 <macrodef>
                     <xsl:attribute name="name">test-debug-impl</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -1139,7 +1013,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-testng-debug" if="testng.available">
+            <target name="-init-macrodef-testng-debug" if="${{testng.available}}">
                 <macrodef>
                     <xsl:attribute name="name">testng-debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -1159,6 +1033,9 @@ is divided into following sections:
                         <condition property="test.class.or.method" value="-methods @{{testClass}}.@{{testMethod}}" else="-testclass @{{testClass}}">
                             <isset property="@{{testMethod}}"/>
                         </condition>
+                        <condition property="testng.cmd.args" value="@{{testClass}}" else="-suitename {$codename} -testname @{{testClass}} ${{test.class.or.method}}">
+                            <matches string="@{{testClass}}" pattern=".*\.xml"/>
+                        </condition>
                         <delete dir="${{build.test.results.dir}}" quiet="true"/>
                         <mkdir dir="${{build.test.results.dir}}"/>
                         <j2seproject3:debug classname="org.testng.TestNG" classpath="${{debug.test.classpath}}">
@@ -1168,16 +1045,14 @@ is divided into following sections:
                                 <arg line="${{testng.debug.mode}}"/>
                                 <arg line="-d ${{build.test.results.dir}}"/>
                                 <arg line="-listener org.testng.reporters.VerboseReporter"/>
-                                <arg line="-suitename {$codename}"/>
-                                <arg line="-testname @{{testClass}}"/>
-                                <arg line="${{test.class.or.method}}"/>
+                                <arg line="${{testng.cmd.args}}"/>
                             </customize>
                         </j2seproject3:debug>
                     </sequential>
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-testng-debug-impl" depends="-init-macrodef-testng-debug" if="testng.available">
+            <target name="-init-macrodef-testng-debug-impl" depends="-init-macrodef-testng-debug" if="${{testng.available}}">
                 <macrodef>
                     <xsl:attribute name="name">test-debug-impl</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
