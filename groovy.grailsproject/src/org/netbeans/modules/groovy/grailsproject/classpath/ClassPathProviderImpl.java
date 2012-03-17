@@ -62,7 +62,6 @@ import org.openide.filesystems.FileUtil;
 public final class ClassPathProviderImpl implements ClassPathProvider {
 
     private final GrailsProject project;
-    private final File projectDirectory;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
 
@@ -84,10 +83,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
 
     private final Map<String, FileObject> dirCache = new HashMap<String, FileObject>();
 
-    public ClassPathProviderImpl(SourceRoots sourceRoots, SourceRoots testSourceRoots, File projectDirectory, GrailsProject project) {
+    public ClassPathProviderImpl(SourceRoots sourceRoots, SourceRoots testSourceRoots, GrailsProject project) {
         this.project = project;
-        this.projectDirectory = projectDirectory;
-        assert this.projectDirectory != null;
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
     }

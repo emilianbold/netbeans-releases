@@ -116,7 +116,7 @@ public final class GrailsProject implements Project {
         this.projectDir = projectDir;
         this.projectState = projectState;
         this.logicalView = new GrailsLogicalViewProvider(this);
-        this.cpProvider = new ClassPathProviderImpl(getSourceRoots(), getTestSourceRoots(), FileUtil.toFile(projectDir), this);
+        this.cpProvider = new ClassPathProviderImpl(getSourceRoots(), getTestSourceRoots(), this);
         this.commandSupport = new GrailsCommandSupport(this);
         this.buildConfig = new BuildConfig(this);
     }
