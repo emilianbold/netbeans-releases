@@ -99,10 +99,7 @@ public class JAXBNodeFactory implements NodeFactory {
         
         private synchronized void updateKeys(){
             Schemas scs = ProjectHelper.getXMLBindingSchemas(project);        
-            rootKeys.clear();
-            if (scs != null && scs.sizeSchema() > 0){
-                rootKeys.add(JAXB_NODE_NAME);
-            }            
+            updateKeys(scs);
         }
 
         private synchronized void updateKeys(Schemas scs){

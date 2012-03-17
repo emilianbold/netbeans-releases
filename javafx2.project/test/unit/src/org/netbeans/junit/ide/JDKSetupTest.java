@@ -50,10 +50,20 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- *
+ * Tests in this file check JDK compliance with FX support.
+ * 
  * @author Petr Somol
  */
 public class JDKSetupTest extends NbTestCase {
+    
+    /**
+     * Tests in this file are meant to test end-user JDK configuration.
+     * Note that the required configuration may not be available
+     * during NetBeans Hudson build process. To prevent unintended
+     * failures of the build process all of the following tests
+     * can be disabled here.
+     */
+    private static final boolean DISABLE_ALL_TESTS = true;
     
     private static String BUILD_SCRIPT_FILE = "JDKAntJSTest.xml";
     private static String JS_MESSAGE = "JavaScript has been successfully called.";
@@ -81,9 +91,11 @@ public class JDKSetupTest extends NbTestCase {
      * Tests JDK minimum version necessary for JavaFX 2.0+
      */
     public void testJDKVersion() {
-        checkJDKVersion();
-        assertTrue("JDK version could not be determined.", versionChecked);
-        assertFalse("Detected JDK version lower than 1.6. JavaFX 2.0+ requires JDK version grater or equal to 1.6.", JDKpre16);
+        if(!DISABLE_ALL_TESTS) {
+            checkJDKVersion();
+            assertTrue("JDK version could not be determined.", versionChecked);
+            assertFalse("Detected JDK version lower than 1.6. JavaFX 2.0+ requires JDK version grater or equal to 1.6.", JDKpre16);
+        }
     }    
     
     /**
@@ -91,33 +103,35 @@ public class JDKSetupTest extends NbTestCase {
      * inside Mac JDK 7u4 or all-system JDK 7u6+.
      */
     public void testFXSDKinJDK() {
-        checkJDKVersion();
-        assertTrue("JDK version could not be determined.", versionChecked);
-        JavaPlatform platform = JavaPlatform.getDefault();
-        Collection<FileObject> roots = platform.getInstallFolders();
-        if(!JDKpre16 && JDKOSType == OSType.MAC && JDK7u4to5) {
-            // Mac JDK 7u4 has new FX SDK directory structure but misses webstart and browser plugins
-            assertTrue(fileExists(roots, "lib/ant-javafx.jar"));
-            assertTrue(fileExists(roots, "jre/lib/jfxrt.jar"));
-            System.out.println(TEST_RESULT + "JDK directory structure OK (WebStart and browser plugins assumed missing).");
-        } else {
-            if(!JDKpre16 && !JDKpre7u6) {
-                // JDK 7u6 and above has new FX SDK directory structure
-                FileObject javawsFO = platform.findTool("javaws");
-                assertNotNull(javawsFO);
-                assertTrue(fileExists(roots, "bin/javaws") || fileExists(roots, "bin/javaws.exe"));
+        if(!DISABLE_ALL_TESTS) {
+            checkJDKVersion();
+            assertTrue("JDK version could not be determined.", versionChecked);
+            JavaPlatform platform = JavaPlatform.getDefault();
+            Collection<FileObject> roots = platform.getInstallFolders();
+            if(!JDKpre16 && JDKOSType == OSType.MAC && JDK7u4to5) {
+                // Mac JDK 7u4 has new FX SDK directory structure but misses webstart and browser plugins
                 assertTrue(fileExists(roots, "lib/ant-javafx.jar"));
                 assertTrue(fileExists(roots, "jre/lib/jfxrt.jar"));
-                assertTrue(fileExists(roots, "jre/lib/deploy.jar"));
-                assertTrue(fileExists(roots, "jre/lib/javaws.jar"));
-                assertTrue(fileExists(roots, "jre/lib/plugin.jar"));
-                System.out.println(TEST_RESULT + "JDK directory structure OK.");
+                System.out.println(TEST_RESULT + "JDK directory structure OK (WebStart and browser plugins assumed missing).");
             } else {
-                // FX SDK not inside JDK, but JDK should contain WebStart
-                //FileObject javawsFO = platform.findTool("javaws");
-                //assertNotNull(javawsFO);
-                //assertTrue(fileExists(roots, "bin/javaws") || fileExists(roots, "bin/javaws.exe"));
-                System.out.println(TEST_RESULT + "JDK directory structure OK.");
+                if(!JDKpre16 && !JDKpre7u6) {
+                    // JDK 7u6 and above has new FX SDK directory structure
+                    FileObject javawsFO = platform.findTool("javaws");
+                    assertNotNull(javawsFO);
+                    assertTrue(fileExists(roots, "bin/javaws") || fileExists(roots, "bin/javaws.exe"));
+                    assertTrue(fileExists(roots, "lib/ant-javafx.jar"));
+                    assertTrue(fileExists(roots, "jre/lib/jfxrt.jar"));
+                    assertTrue(fileExists(roots, "jre/lib/deploy.jar"));
+                    assertTrue(fileExists(roots, "jre/lib/javaws.jar"));
+                    assertTrue(fileExists(roots, "jre/lib/plugin.jar"));
+                    System.out.println(TEST_RESULT + "JDK directory structure OK.");
+                } else {
+                    // FX SDK not inside JDK, but JDK should contain WebStart
+                    //FileObject javawsFO = platform.findTool("javaws");
+                    //assertNotNull(javawsFO);
+                    //assertTrue(fileExists(roots, "bin/javaws") || fileExists(roots, "bin/javaws.exe"));
+                    System.out.println(TEST_RESULT + "JDK directory structure OK.");
+                }
             }
         }
     }
@@ -128,39 +142,41 @@ public class JDKSetupTest extends NbTestCase {
      * <fx:jar> and <fx:deploy> tasks in FX SDK.
      */
     public void testAntJavaScriptSupport() {
-        checkJDKVersion();
-        assertTrue("JDK version could not be determined.", versionChecked);
-        try {
-            FileObject buildScript = createAntTestScript();
-            assertTrue(buildScript.isData());
-            String commandLine = (JDKOSType == OSType.WINDOWS ? "cmd /c " : "")
-                    + "ant -buildfile " + buildScript.getPath();
-            System.out.println("Executing " + commandLine);
-            Process proc = Runtime.getRuntime().exec(commandLine);
-            BufferedReader bri = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-            BufferedReader bre = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-            boolean scriptExecuted = false;
-            String line;
-            while ((line = bri.readLine()) != null) {
-                System.out.println("Log: " + line);
-                if(line.contains(JS_MESSAGE)) {
-                    scriptExecuted = true;
+        if(!DISABLE_ALL_TESTS) {
+            checkJDKVersion();
+            assertTrue("JDK version could not be determined.", versionChecked);
+            try {
+                FileObject buildScript = createAntTestScript();
+                assertTrue(buildScript.isData());
+                String commandLine = (JDKOSType == OSType.WINDOWS ? "cmd /c " : "")
+                        + "ant -buildfile " + buildScript.getPath();
+                System.out.println("Executing " + commandLine);
+                Process proc = Runtime.getRuntime().exec(commandLine);
+                BufferedReader bri = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+                BufferedReader bre = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+                boolean scriptExecuted = false;
+                String line;
+                while ((line = bri.readLine()) != null) {
+                    System.out.println("Log: " + line);
+                    if(line.contains(JS_MESSAGE)) {
+                        scriptExecuted = true;
+                    }
                 }
-            }
-            bri.close();
-            while ((line = bre.readLine()) != null) {
-                System.out.println("Log: " + line);
-                if(line.contains(JS_MESSAGE)) {
-                    scriptExecuted = true;
+                bri.close();
+                while ((line = bre.readLine()) != null) {
+                    System.out.println("Log: " + line);
+                    if(line.contains(JS_MESSAGE)) {
+                        scriptExecuted = true;
+                    }
                 }
+                bre.close();
+                proc.waitFor();
+                assertTrue("JavaScript execution from Ant failed.", scriptExecuted);
+                System.out.println(TEST_RESULT + "JavaScript is callable from Ant script.");
             }
-            bre.close();
-            proc.waitFor();
-            assertTrue("JavaScript execution from Ant failed.", scriptExecuted);
-            System.out.println(TEST_RESULT + "JavaScript is callable from Ant script.");
-        }
-        catch (Exception err) {
-            fail("Exception thrown while creating or executing Ant build script; " + err.getMessage());
+            catch (Exception err) {
+                fail("Exception thrown while creating or executing Ant build script; " + err.getMessage());
+            }
         }
     }
 
