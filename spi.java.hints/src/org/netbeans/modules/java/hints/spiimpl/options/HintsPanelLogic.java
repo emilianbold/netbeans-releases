@@ -86,6 +86,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.java.hints.spiimpl.options.DepScanningSettings.DependencyTracking;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsPanel.State;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.Hint.Kind;
 import org.netbeans.spi.java.hints.Hint.Options;
@@ -246,18 +247,22 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         return node.getUserObject();
     }
     
-    boolean isSelected( DefaultMutableTreeNode node ) {
+    State isSelected( DefaultMutableTreeNode node ) {
+        boolean hasEnabled = false;
+        boolean hasDisabled = false;
         for( int i = 0; i < node.getChildCount(); i++ ) {
             DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);
             Object o = ch.getUserObject();
             if ( o instanceof HintMetadata ) {
                 HintMetadata hint = (HintMetadata)o;
                 if ( HintsSettings.isEnabled(hint, getCurrentPrefernces(hint.id)) ) {
-                    return true;
+                    hasEnabled = true;
+                } else {
+                    hasDisabled = true;
                 }
             }
         }
-        return false;
+        return hasEnabled ? hasDisabled ? State.OTHER : State.SELECTED : State.NOT_SELECTED;
     }
     
     // MouseListener implementation --------------------------------------------
@@ -467,7 +472,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             model.nodeChanged(node.getParent());
         }
         else if ( o instanceof HintCategory ) {
-            boolean value = !isSelected(node);
+            boolean value = isSelected(node) == State.NOT_SELECTED;
                                    
             for( int i = 0; i < node.getChildCount(); i++ ) {
                 DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);                
