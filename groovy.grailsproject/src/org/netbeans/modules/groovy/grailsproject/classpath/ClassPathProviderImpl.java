@@ -44,9 +44,8 @@
 
 package org.netbeans.modules.groovy.grailsproject.classpath;
 
-import java.io.File;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -222,6 +221,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return cp;
     }
 
+    @Override
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(ClassPath.COMPILE)) {
             return getCompileTimeClasspath(file);
@@ -277,6 +277,5 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         assert false;
         return null;
     }
-
 }
 
