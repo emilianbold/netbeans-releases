@@ -73,6 +73,7 @@ public class SourceNodeFactory implements NodeFactory {
     public SourceNodeFactory() {
     }
 
+    @Override
     public NodeList<?> createNodes(Project p) {
 
         GrailsProject project = p.getLookup().lookup(GrailsProject.class);
@@ -91,6 +92,7 @@ public class SourceNodeFactory implements NodeFactory {
             this.project = proj;
         }
 
+        @Override
         public List<SourceGroupKey> keys() {
             FileObject projectDir = project.getProjectDirectory();
             if (projectDir == null || !projectDir.isValid()) {
@@ -110,30 +112,37 @@ public class SourceNodeFactory implements NodeFactory {
             return result;
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
         }
 
+        @Override
         public Node node(SourceGroupKey key) {
             return new TreeRootNode(key.group, project);
         }
 
+        @Override
         public void addNotify() {
             getSources().addChangeListener(this);
         }
 
+        @Override
         public void removeNotify() {
             getSources().removeChangeListener(this);
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             // setKeys(getKeys());
             // The caller holds ProjectManager.mutex() read lock
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     changeSupport.fireChange();
                 }
@@ -158,17 +167,20 @@ public class SourceNodeFactory implements NodeFactory {
             this.projectDir = projectDir;
         }
 
+        @Override
         public int hashCode() {
             return fileObject.hashCode();
         }
 
 
+        @Override
         public int compareTo(SourceGroupKey o) {
             String relativePath1 = FileUtil.getRelativePath(projectDir, fileObject);
             String relativePath2 = FileUtil.getRelativePath(projectDir, o.fileObject);
             return relativePath1.compareTo(relativePath2);
         }
 
+        @Override
         public boolean equals(Object obj) {
 
             if (!(obj instanceof SourceGroupKey)) {
