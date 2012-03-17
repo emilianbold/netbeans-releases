@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.security.PrivilegedAction;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -127,13 +128,19 @@ public final class Models {
     public static JComponent createView (
         CompoundModel compoundModel
     ) {
+        /*if (compoundModel.isTree()) {
+            OutlineTree ot = new OutlineTree();
+            ot.setModel (compoundModel);
+            return ot;
+        } else {*/
         OutlineTable ot = new OutlineTable ();
         if (compoundModel != null && compoundModel.isHyperModel()) {
-            ot.setModel(compoundModel.createHyperModel());
+            ot.setModel(compoundModel.createHyperModel(), compoundModel.getTreeNodeDisplayFormat());
         } else {
-            ot.setModel (compoundModel);
+            ot.setModel (compoundModel, compoundModel.getTreeNodeDisplayFormat());
         }
         return ot;
+        //}
     }
     
     /**
@@ -175,9 +182,13 @@ public final class Models {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 if (compoundModel != null && compoundModel.isHyperModel()) {
-                    ((OutlineTable) view).setModel (compoundModel.createHyperModel());
+                    ((OutlineTable) view).setModel (compoundModel.createHyperModel(), compoundModel.getTreeNodeDisplayFormat());
                 } else {
-                    ((OutlineTable) view).setModel (compoundModel);
+                    if (compoundModel != null) {
+                        ((OutlineTable) view).setModel (compoundModel, compoundModel.getTreeNodeDisplayFormat());
+                    } else {
+                        ((OutlineTable) view).setModel (compoundModel);
+                    }
                 }
             }
         });
@@ -235,6 +246,10 @@ public final class Models {
             return new CompoundModel(mainModel, subModels.toArray(new CompoundModel[]{}), treeFilter, propertiesHelpID);
         }
 
+        MessageFormat treeNodeDisplayFormat = null;
+        if (models.size() > 0 && models.get(models.size() - 1) instanceof MessageFormat) {
+            treeNodeDisplayFormat = (MessageFormat) models.remove(models.size() - 1);
+        }
         ModelLists ml = new ModelLists();
         List<? extends Model>           otherModels;
         
@@ -320,7 +335,9 @@ public final class Models {
         System.out.println("Node Action Provider Filters = "+ml.nodeActionsProviderFilters);
         System.out.println("Column Models = "+ml.columnModels);
          */
-        return createCompoundModel(ml, propertiesHelpID);
+        CompoundModel cm = createCompoundModel(ml, propertiesHelpID);
+        cm.setTreeNodeDisplayFormat(treeNodeDisplayFormat);
+        return cm;
     }
 
     private  static CompoundModel createCompoundModel (ModelLists ml, String propertiesHelpID) {
@@ -349,7 +366,37 @@ public final class Models {
             ml.asynchModels = Collections.singletonList((AsynchronousModel) new DefaultAsynchronousModel());
         }*/
         
-        CompoundModel cm = new CompoundModel (
+        CompoundModel cm;
+        if (ml.columnModels == null && ml.tableModels == null && ml.tableModelFilters == null &&
+            ml.tableRendererModels == null && ml.tableRendererModelFilters == null) {
+            
+            cm = new CompoundModel (
+            createCompoundTreeModel (
+                new DelegatingTreeModel (ml.treeModels),
+                ml.treeModelFilters
+            ),
+            createCompoundTreeExpansionModel(
+                new DelegatingTreeExpansionModel (ml.treeExpansionModels),
+                ml.treeExpansionModelFilters
+            ),
+            createCompoundNodeModel (
+                new DelegatingNodeModel (ml.nodeModels),
+                ml.nodeModelFilters
+            ),
+            createCompoundNodeActionsProvider (
+                new DelegatingNodeActionsProvider (ml.nodeActionsProviders),
+                ml.nodeActionsProviderFilters
+            ),
+            null, null,
+            createCompoundAsynchronousModel (
+                new DefaultAsynchronousModel(),//new DelegatingAsynchronousModel (ml.asynchModels),
+                ml.asynchModelFilters
+            ),
+            null,
+            propertiesHelpID
+        );
+        } else {
+            cm = new CompoundModel (
             createCompoundTreeModel (
                 new DelegatingTreeModel (ml.treeModels),
                 ml.treeModelFilters
@@ -381,6 +428,7 @@ public final class Models {
             ),
             propertiesHelpID
         );
+        }
         if (defaultExpansionModel != null) {
             defaultExpansionModel.setCompoundModel(cm);
         }
@@ -3684,6 +3732,7 @@ public final class Models {
         private CompoundModel   mainSubModel;
         private CompoundModel[] subModels;
         private TreeModelFilter subModelsFilter;
+        private MessageFormat treeNodeDisplayFormat;
         
         // <RAVE>
         // New field, setter/getter for propertiesHelpID, which is used
@@ -3717,6 +3766,11 @@ public final class Models {
             if (nodeModel == null) throw new NullPointerException ();
             if (tableModel == null) throw new NullPointerException ();
             if (nodeActionsProvider == null) throw new NullPointerException ();
+            /*if (columnModels == null && tableModel == null && tableRendererModel == null) {
+                isTree = true;
+            } else {
+                if (tableModel == null) throw new NullPointerException ();
+            }*/
 
             this.treeModel = treeModel;
             this.treeExpansionModel = treeExpansionModel;
@@ -3746,6 +3800,22 @@ public final class Models {
             this.subModelsFilter = treeFilter;
             this.propertiesHelpID = propertiesHelpID;
         }
+        
+        void setTreeNodeDisplayFormat(MessageFormat treeNodeDisplayFormat) {
+            this.treeNodeDisplayFormat = treeNodeDisplayFormat;
+        }
+        
+        MessageFormat getTreeNodeDisplayFormat() {
+            if (isHyperModel()) {
+                return mainSubModel.getTreeNodeDisplayFormat();
+            } else {
+                return treeNodeDisplayFormat;
+            }
+        }
+        
+        /*boolean isTree() {
+            return columnModels == null;
+        }*/
 
         /*CompoundModel[] getSubModels() {
             return subModels;
