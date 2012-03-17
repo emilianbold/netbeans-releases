@@ -60,6 +60,7 @@ import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 
@@ -79,15 +80,14 @@ public class SourceNodeFactory implements NodeFactory {
         GrailsProject project = p.getLookup().lookup(GrailsProject.class);
         assert project != null;
         return new SourcesNodeList(project);
-
     }
 
     private static class SourcesNodeList implements NodeList<SourceGroupKey>, ChangeListener {
 
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         private GrailsProject project;
 
-        private final ChangeSupport changeSupport = new ChangeSupport(this);
-
+        
         public SourcesNodeList(GrailsProject proj) {
             this.project = proj;
         }
@@ -124,7 +124,12 @@ public class SourceNodeFactory implements NodeFactory {
 
         @Override
         public Node node(SourceGroupKey key) {
-            return new TreeRootNode(key.group, project);
+            try {
+                DataFolder folder = DataFolder.findFolder(key.fileObject);
+                return new TreeRootNode(folder, key.group, project);
+            } catch (IllegalArgumentException ex) {
+                return null; // It might happened sometimes - see issue 208426
+            }
         }
 
         @Override
@@ -152,19 +157,19 @@ public class SourceNodeFactory implements NodeFactory {
         private Sources getSources() {
             return ProjectUtils.getSources(project);
         }
-
     }
 
     private static class SourceGroupKey implements Comparable<SourceGroupKey> {
 
-        public final SourceGroup group;
-        public final FileObject fileObject;
-        public final FileObject projectDir;
+        private final SourceGroup group;
+        private final FileObject projectDir;
+        private final FileObject fileObject;
+        
 
         SourceGroupKey(SourceGroup group, FileObject projectDir) {
             this.group = group;
-            this.fileObject = group.getRootFolder();
             this.projectDir = projectDir;
+            this.fileObject = group.getRootFolder();
         }
 
         @Override
@@ -193,14 +198,11 @@ public class SourceNodeFactory implements NodeFactory {
                 return fileObject.equals(otherKey.fileObject) &&
                         thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName);
             }
-
         }
 
         @Override
         public String toString() {
             return group.toString();
         }
-
     }
-
 }
