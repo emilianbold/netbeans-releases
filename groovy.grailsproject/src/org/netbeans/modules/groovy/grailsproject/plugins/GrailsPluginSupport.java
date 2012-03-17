@@ -45,9 +45,7 @@ package org.netbeans.modules.groovy.grailsproject.plugins;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dialog;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -240,8 +238,10 @@ public class GrailsPluginSupport {
                     is.close();
                 }
             }
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (FileNotFoundException ex) {
+            return Collections.emptyList();
+        } catch (IOException ex) {
+            return Collections.emptyList();
         }
         Collections.sort(plugins);
         return plugins;
