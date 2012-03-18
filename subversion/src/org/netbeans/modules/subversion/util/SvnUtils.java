@@ -111,6 +111,7 @@ public class SvnUtils {
         autoEscapedCharacters.add('%');
         autoEscapedCharacters.add('[');
         autoEscapedCharacters.add(']');
+        autoEscapedCharacters.add(' ');
     }
 
     static {
@@ -178,7 +179,7 @@ public class SvnUtils {
      * @throws java.net.MalformedURLException encoded URL is of a bad format anyway
      */
     public static SVNUrl encodeUrl(final SVNUrl url) throws MalformedURLException {
-        String sUrl = url.toString();
+        String sUrl = url.toString().replace("%20", " "); //NOI18N
         StringBuilder sb = new StringBuilder(sUrl.length());
         for (int i = 0; i < sUrl.length(); ++i) {
             Character c = sUrl.charAt(i);
