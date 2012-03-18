@@ -210,7 +210,9 @@ public class SvnConfigFiles {
                     // ssh port is read only from ssh tunnel info and considered valid only when usernam and password are not empty
                     // see implementation in SvnKit: org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager.getDefaultSSHAuthentication()
                     // weird and ugly
-                    setExternalCommand("ssh", rc.getSshPortNumber() > 0 ? "ssh -p " + rc.getSshPortNumber() + " -l user -pw password" : "");
+                    setExternalCommand("ssh", rc.getSshPortNumber() > 0 ? "ssh -p " + rc.getSshPortNumber() + " -P " + rc.getSshPortNumber() + " -l user -pw password" : "");
+                    nbGlobalSection.put("store-auth-creds", "yes");                                // NOI18N
+                    nbGlobalSection.put("store-passwords", "no");                                  // NOI18N
                 } else {
                     setExternalCommand(SvnUtils.getTunnelName(url.getProtocol()), rc.getExternalCommand());
                 }
