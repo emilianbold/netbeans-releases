@@ -697,7 +697,7 @@ class FilesystemHandler extends VCSInterceptor {
             return true;
         }
         try {
-            SVNStatusKind statusKind = Subversion.getInstance().getClient(false).getSingleStatus(file).getTextStatus();
+            SVNStatusKind statusKind = SvnUtils.getSingleStatus(Subversion.getInstance().getClient(false), file).getTextStatus();
             return statusKind != SVNStatusKind.UNVERSIONED && statusKind != SVNStatusKind.IGNORED;
         } catch (SVNClientException ex) {
             return false;
@@ -940,7 +940,7 @@ class FilesystemHandler extends VCSInterceptor {
     private static ISVNStatus getStatus(SvnClient client, File file) throws SVNClientException {
         // a direct cache call could, because of the synchrone beforeCreate handling,
         // trigger an reentrant call on FS => we have to check manually
-        return client.getSingleStatus(file);
+        return SvnUtils.getSingleStatus(client, file);
     }
 
     private boolean equals(ISVNStatus status, SVNStatusKind kind) {
@@ -975,7 +975,7 @@ class FilesystemHandler extends VCSInterceptor {
                             }
                         }
                         if (hasPropSet) {
-                            ISVNStatus status = client.getSingleStatus(file);
+                            ISVNStatus status = SvnUtils.getSingleStatus(client, file);
                             // ... are not just added - lock does not make sense since the file is not in repo yet
                             if (status != null && status.getTextStatus() != SVNStatusKind.ADDED) {
                                 SVNUrl url = SvnUtils.getRepositoryRootUrl(file);
@@ -1014,7 +1014,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     private SVNUrl getCopiedUrl (SvnClient client, File f) {
         try {
-            ISVNInfo info = Subversion.getInstance().getClient(false).getInfoFromWorkingCopy(f);
+            ISVNInfo info = SvnUtils.getInfoFromWorkingCopy(client, f);
             if (info != null) {
                 return info.getCopyUrl();
             }

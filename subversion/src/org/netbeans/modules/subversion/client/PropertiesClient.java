@@ -120,7 +120,7 @@ public final class PropertiesClient {
                 if (contactServer) {
                     SvnClient client = Subversion.getInstance().getClient(file);
                     if (client != null) {
-                        ISVNInfo info = client.getInfoFromWorkingCopy(file);
+                        ISVNInfo info = SvnUtils.getInfoFromWorkingCopy(client, file);
                         if (info != null && (info.getUrl() != null || info.getCopyUrl() != null) && info.getRevision() != null
                                 && info.getRevision().getNumber() > -1) {
                             ISVNProperty[] props = client.getProperties(info.getCopyUrl() == null ? info.getUrl() : info.getCopyUrl(),
@@ -187,7 +187,7 @@ public final class PropertiesClient {
         SvnClient client = Subversion.getInstance().getClient(false);
         ISVNInfo info = null;
         try {
-            info = client.getInfoFromWorkingCopy(file);
+            info = SvnUtils.getInfoFromWorkingCopy(client, file);
         } catch (SVNClientException ex) {
             throw ex;
         }

@@ -306,7 +306,7 @@ public final class SvnProperties implements ActionListener {
                         SvnClient client = Subversion.getInstance().getClient(false);
                         properties = new HashMap<String, String>();
                         for (File f : roots) {
-                            ISVNStatus status = client.getSingleStatus(f);
+                            ISVNStatus status = SvnUtils.getSingleStatus(client, f);
                             if (!status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
                                 addProperties(f, client.getProperties(f));
                             }
@@ -450,7 +450,7 @@ public final class SvnProperties implements ActionListener {
 
     private void addFile(SvnClient client, File file, boolean recursively) throws SVNClientException {
         if(SvnUtils.isPartOfSubversionMetadata(file)) return;
-        ISVNStatus status = client.getSingleStatus(file);
+        ISVNStatus status = SvnUtils.getSingleStatus(client, file);
         if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
             boolean isDir = file.isDirectory();
             if (isDir) {

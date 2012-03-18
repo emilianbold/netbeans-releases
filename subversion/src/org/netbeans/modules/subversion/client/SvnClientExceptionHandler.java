@@ -720,7 +720,8 @@ public class SvnClientExceptionHandler {
         msg = msg.toLowerCase();
         return msg.indexOf("(not a versioned resource)") > -1 ||                            // NOI18N
                msg.indexOf("is not a working copy") > -1 ||                                 //NOI18N
-               msg.contains("some targets are not versioned");                              //NOI18N
+               msg.contains("some targets are not versioned") ||                            //NOI18N
+               isNodeNotFound(msg);
     }
     
     public static boolean hasNoBaseRevision (String msg) {

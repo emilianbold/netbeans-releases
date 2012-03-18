@@ -490,7 +490,7 @@ public class SvnUtils {
             ISVNInfo info = null;
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
-                info = getInfoFromWorkingCopy(client, file);
+                info = getInfoFromWorkingCopy(client, file, true);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     if (WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
@@ -583,7 +583,7 @@ public class SvnUtils {
             fileIsManaged = true;
             ISVNInfo info = null;
             try {
-                info = getInfoFromWorkingCopy(client, file);
+                info = getInfoFromWorkingCopy(client, file, true);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     if (WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
@@ -685,7 +685,7 @@ public class SvnUtils {
 
             ISVNInfo info = null;
             try {
-                info = getInfoFromWorkingCopy(client, file);
+                info = getInfoFromWorkingCopy(client, file, true);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     SvnClientExceptionHandler.notifyException(ex, false, false);
@@ -770,8 +770,16 @@ public class SvnUtils {
         return ret;
     }
 
-    private static ISVNStatus getSingleStatus(SvnClient client, File file) throws SVNClientException{
-        return client.getSingleStatus(file);
+    public static ISVNStatus getSingleStatus(SvnClient client, File file) throws SVNClientException {
+        try {
+            return client.getSingleStatus(file);
+        } catch (SVNClientException ex) {
+            if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+                return new SVNStatusUnversioned(file);
+            } else {
+                throw ex;
+            }
+        }
     }
 
     /**
@@ -887,12 +895,20 @@ public class SvnUtils {
         return new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead() || new File(file, SvnUtils.SVN_WC_DB).canRead();
     }
 
-    private static ISVNInfo getInfoFromWorkingCopy (SvnClient client, File file) throws SVNClientException {
+    public static ISVNInfo getInfoFromWorkingCopy (SvnClient client, File file) throws SVNClientException {
+        return getInfoFromWorkingCopy(client, file, false);
+    }
+
+    private static ISVNInfo getInfoFromWorkingCopy (SvnClient client, File file, boolean cannonicalize) throws SVNClientException {
         ISVNInfo info = null;
         try {
             info = client.getInfoFromWorkingCopy(file);
         } catch (SVNClientException ex) {
-            if (!SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+            if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+                if (!cannonicalize) {
+                    info = new SVNInfoUnversioned(file);
+                }
+            } else {
                 throw ex;
             }
         }
@@ -903,6 +919,12 @@ public class SvnUtils {
             } catch (IOException ex) {
                 Subversion.LOG.log(Level.INFO, "getInfoFromWorkingCopy", ex); //NOI18N
                 // pfff, don't know what now
+            } catch (SVNClientException ex) {
+                if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+                    info = new SVNInfoUnversioned(file);
+                } else {
+                    throw ex;
+                }
             }
         }
         return info;
