@@ -1003,7 +1003,7 @@ public class CommitAction extends ContextAction {
         }
         if(dirsToAdd.size() > 0) {
             for (File file : dirsToAdd) {
-                client.addFile(file);
+                client.addDirectory(file, false);
             }
         }
         if(support.isCanceled()) {

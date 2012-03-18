@@ -452,8 +452,13 @@ public final class SvnProperties implements ActionListener {
         if(SvnUtils.isPartOfSubversionMetadata(file)) return;
         ISVNStatus status = client.getSingleStatus(file);
         if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
-            client.addFile(file);
-            if(recursively && file.isDirectory()) {
+            boolean isDir = file.isDirectory();
+            if (isDir) {
+                client.addDirectory(file, false);
+            } else {
+                client.addFile(file);
+            }
+            if(recursively && isDir) {
                 File[] files = file.listFiles();
                 if(files == null) return;
                 for (File f : files) {
