@@ -159,14 +159,6 @@ made subject to such option by the copyright holder.
         <test/>
     </target>
 
-    <target name="-do-junit">
-
-    </target>
-
-    <target name="-do-testng">
-
-    </target>
-
     <target name="fail-test" unless="test.disable.fails">
         <fail if="tests.failed">Some tests failed;Look at results:
             ${test.results.dir} .
