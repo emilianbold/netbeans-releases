@@ -47,7 +47,6 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
-import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -176,27 +175,18 @@ public class UpgradeAction extends ContextAction {
     }
 
     private boolean confirmPossibleUpgrade (String path) {
-        if (path.length() > 40) {
-            path = "..." + path.substring(path.length() - 40);
-        }
         return JOptionPane.showConfirmDialog(null, NbBundle.getMessage(UpgradeAction.class, "MSG_Upgrade_possibleUpgrade", path), //NOI18N
                 NbBundle.getMessage(UpgradeAction.class, "LBL_Upgrade_title", path), //NOI18N
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
     }
 
     private boolean confirmUpgrade (String path) {
-        if (path.length() > 40) {
-            path = "..." + path.substring(path.length() - 40);
-        }
         return JOptionPane.showConfirmDialog(null, NbBundle.getMessage(UpgradeAction.class, "MSG_Upgrade_upgrade", path), //NOI18N
                 NbBundle.getMessage(UpgradeAction.class, "LBL_Upgrade_title", path), //NOI18N
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
     }
 
     private boolean forceUpgrade (String path) {
-        if (path.length() > 40) {
-            path = "..." + path.substring(path.length() - 40);
-        }
         return JOptionPane.showConfirmDialog(null, NbBundle.getMessage(UpgradeAction.class, "MSG_Upgrade_forceUpgrade", path), //NOI18N
                 NbBundle.getMessage(UpgradeAction.class, "LBL_Upgrade_title", path), //NOI18N
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
