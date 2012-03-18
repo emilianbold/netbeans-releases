@@ -859,6 +859,21 @@ public class SvnUtils {
         return false;
     }
 
+    public static SVNUrl getCopiedUrl (File f) {
+        try {
+            ISVNInfo info = Subversion.getInstance().getClient(false).getInfoFromWorkingCopy(f);
+            if (info != null) {
+                return info.getCopyUrl();
+            }
+        } catch (SVNClientException e) {
+            // at least log the exception
+            if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
+                Subversion.LOG.log(Level.INFO, null, e);
+            }
+        }
+        return null;
+    }
+
     /**
      * Removes all occurances of '\r' and replaces them with '\n'
      * @param text

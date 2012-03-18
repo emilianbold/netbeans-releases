@@ -210,6 +210,8 @@ public final class PropertiesClient {
     public static boolean hasOldMetadata (File file) {
         File parent;
         return new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead()
-                || (parent = file.getParentFile()) != null && new File(parent, SvnUtils.SVN_ENTRIES_DIR).canRead();
+                || (parent = file.getParentFile()) != null 
+                && new File(parent, SvnUtils.SVN_ENTRIES_DIR).canRead()
+                && !new File(parent, SvnUtils.SVN_WC_DB).exists();
     }
 }

@@ -1182,10 +1182,6 @@ public class FileStatusCache {
             return value.getUrlString();
         }
         @Override
-        public SVNUrl getUrlCopiedFrom() {
-            return value.getUrlCopiedFrom();
-        }
-        @Override
         public SVNUrl getUrl() {
             return value.getUrl();
         }

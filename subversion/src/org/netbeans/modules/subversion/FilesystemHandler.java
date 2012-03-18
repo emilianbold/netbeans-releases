@@ -802,7 +802,7 @@ class FilesystemHandler extends VCSInterceptor {
 
                     // store all from-s children -> they also have to be refreshed in after move
                     List<File> srcChildren = null;
-                    SVNUrl url = status != null ? status.getUrlCopiedFrom() : null;
+                    SVNUrl url = status != null && status.isCopied() ? getCopiedUrl(client, from) : null;
                     SVNUrl toUrl = toStatus != null ? toStatus.getUrl() : null;
                     try {
                         srcChildren = SvnUtils.listRecursively(from);
@@ -1010,6 +1010,21 @@ class FilesystemHandler extends VCSInterceptor {
                 outsideAWT.run();
             }
         }
+    }
+
+    private SVNUrl getCopiedUrl (SvnClient client, File f) {
+        try {
+            ISVNInfo info = Subversion.getInstance().getClient(false).getInfoFromWorkingCopy(f);
+            if (info != null) {
+                return info.getCopyUrl();
+            }
+        } catch (SVNClientException e) {
+            // at least log the exception
+            if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
+                Subversion.LOG.log(Level.INFO, null, e);
+            }
+        }
+        return null;
     }
 
 }
