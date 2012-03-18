@@ -953,7 +953,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         try {
             getInfo(url);
         } catch (SVNClientException e) {
-            if(e.getMessage().indexOf("Not a valid URL") > -1) {
+            if(e.getMessage().indexOf("Not a valid URL") > -1 || e.getMessage().contains("non-existent in revision")) {
                 ret.addAll(getAllNotExistingParents(url.getParent()));
                 ret.add(url);
             } else {

@@ -853,16 +853,21 @@ class FilesystemHandler extends VCSInterceptor {
                                     }
                                 }
                             } else {
+                                boolean remove = false;
                                 if (from.isDirectory()) {
                                     // tree should be moved separately, otherwise the metadata from the source WC will be copied too
                                     moveFolderToDifferentRepository(from, to);
+                                    remove = true;
                                 } else if (from.renameTo(to)) {
-                                    client.remove(new File[] {from}, force);
-                                    Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
-                                            + ": moving between different repositories {0} to {1}", new Object[] {from, to});
+                                    remove = true;
                                 } else {
                                     Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName()
                                             + ": cannot rename {0} to {1}", new Object[] {from, to});
+                                }
+                                if (remove) {
+                                    client.remove(new File[] {from}, force);
+                                    Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
+                                            + ": moving between different repositories {0} to {1}", new Object[] {from, to});
                                 }
                             }
                         }

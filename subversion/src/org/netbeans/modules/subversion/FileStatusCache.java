@@ -838,7 +838,7 @@ public class FileStatusCache {
     }
 
     private boolean isNotManagedByDefault(File dir) {
-        return !dir.exists();
+        return !(dir.exists() || SvnUtils.isManaged(dir)); // cannot just test dir for existence, deleted folders now no longer exist on disk
     }
 
     /**
