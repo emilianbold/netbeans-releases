@@ -47,12 +47,14 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
 
 /**
  *
  * @author lukas
  */
+@Test
 public class XmlOutputParserTest extends NbTestCase {
 
     public XmlOutputParserTest(String name) {

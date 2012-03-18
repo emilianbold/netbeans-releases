@@ -53,11 +53,13 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.Lookups;
+import org.testng.annotations.Test;
 //14226
 /**
  *
  * @author lukas
  */
+@Test
 public class TestNGOutputReaderTest extends NbTestCase {
 
     public TestNGOutputReaderTest(String name) {

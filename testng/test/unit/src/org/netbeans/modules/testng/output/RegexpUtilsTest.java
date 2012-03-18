@@ -47,11 +47,14 @@ import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import junit.framework.TestCase;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
  *
  * @author Marian Petras
  */
+@Test
 public class RegexpUtilsTest extends TestCase {
 
     private final Field instRefField;
@@ -72,6 +75,7 @@ public class RegexpUtilsTest extends TestCase {
     }
 
     @Override
+    @BeforeMethod
     public void setUp() throws IllegalAccessException {
         instRefField.set(null, null);
 

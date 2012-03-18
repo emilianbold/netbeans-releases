@@ -38,15 +38,16 @@
  */
 package org.netbeans.modules.testng.actions;
 
-import org.netbeans.modules.testng.actions.TestClassInfoTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TestUtilities;
-import org.openide.filesystems.FileObject;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Test;
 
 /**
  *
  * @author lukas
  */
+@Test
 public class TestClassInfoTaskTest extends RetoucheTestBase {
 
     static {
@@ -55,6 +56,11 @@ public class TestClassInfoTaskTest extends RetoucheTestBase {
 
     public TestClassInfoTaskTest(String testName) {
         super(testName);
+    }
+
+    @BeforeSuite
+    public void setupClass() throws Exception {
+        super.setUp();
     }
 
     public void testCursorInMethod() throws Exception {

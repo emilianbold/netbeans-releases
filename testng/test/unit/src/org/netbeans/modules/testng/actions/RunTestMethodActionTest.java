@@ -45,11 +45,13 @@ import org.netbeans.spi.project.SingleMethod;
 import org.openide.nodes.Node;
 import org.openide.util.actions.NodeActionsInfraHid;
 import org.openide.util.actions.SystemAction;
+import org.testng.annotations.Test;
 
 /**
  *
  * @author lukas
  */
+@Test(enabled=false)
 public class RunTestMethodActionTest extends TestActionT {
 
     static {

@@ -65,7 +65,7 @@ public abstract class TestActionT extends NbTestCase {
     protected Project p;
 
     static {
-        NodeActionsInfraHid.install();
+        //NodeActionsInfraHid.install();
     }
 
     public TestActionT(String name) {
