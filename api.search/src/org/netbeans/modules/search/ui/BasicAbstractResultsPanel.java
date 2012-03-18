@@ -65,6 +65,9 @@ import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -99,6 +102,7 @@ public abstract class BasicAbstractResultsPanel
     protected boolean details;
     private BasicComposition composition;
     protected final ResultsOutlineSupport resultsOutlineSupport;
+    private NodeListener resultsNodeAdditionListener;
 
     public BasicAbstractResultsPanel(ResultModel resultModel,
             BasicComposition composition, boolean details,
@@ -113,6 +117,7 @@ public abstract class BasicAbstractResultsPanel
         getExplorerManager().setRootContext(
                 resultsOutlineSupport.getRootNode());
         initSelectionListeners();
+        initResultNodeAdditionListener();
     }
 
     private void initSelectionListeners() {
@@ -212,7 +217,7 @@ public abstract class BasicAbstractResultsPanel
         expandButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                toggleExpand(expandButton.isSelected());
+                toggleExpandNodeChildren(expandButton.isSelected());
             }
         });
         showDetailsButton = new JButton();
@@ -358,20 +363,22 @@ public abstract class BasicAbstractResultsPanel
         }
     }
 
-    private void toggleExpand(boolean expand) {
+    private void toggleExpandNodeChildren(boolean expand) {
         Node resultsNode = resultsOutlineSupport.getResultsNode();
-        getOutlineView().expandNode(resultsNode);
-        toggleExpand(resultsNode, expand);
+        for (Node n : resultsNode.getChildren().getNodes()) {
+            toggleExpand(n, expand);
+        }
     }
 
     public void toggleExpand(Node root, boolean expand) {
+        if (expand) {
+            getOutlineView().expandNode(root);
+        }
         for (Node n : root.getChildren().getNodes()) {
-            if (expand) {
-                getOutlineView().expandNode(n);
-            } else {
-                getOutlineView().collapseNode(n);
-            }
             toggleExpand(n, expand);
+        }
+        if (!expand) {
+            getOutlineView().collapseNode(root);
         }
     }
 
@@ -533,5 +540,53 @@ public abstract class BasicAbstractResultsPanel
             }
         }
         return false;
+    }
+
+    private void initResultNodeAdditionListener() {
+        resultsNodeAdditionListener = new NodeAdapter() {
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                if (expandButton != null) {
+                    for (final Node n : ev.getDelta()) {
+                        if (expandButton.isSelected()) {
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    toggleExpand(n, true);
+                                }
+                            });
+                        }
+                        addChildAdditionListener(n);
+                    }
+                }
+            }
+
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+                if (expandButton != null) {
+                    for (Node removedChild : ev.getDelta()) {
+                        removeChildAdditionListener(removedChild);
+                    }
+                }
+            }
+        };
+        resultsOutlineSupport.getResultsNode().getChildren().getNodes(true);
+        resultsOutlineSupport.getResultsNode().addNodeListener(
+                resultsNodeAdditionListener);
+    }
+
+    private void addChildAdditionListener(Node addedNode) {
+        for (Node n : addedNode.getChildren().getNodes(true)) {
+            addChildAdditionListener(n);
+        }
+        addedNode.addNodeListener(resultsNodeAdditionListener);
+
+    }
+
+    private void removeChildAdditionListener(Node removedNode) {
+        for (Node n : removedNode.getChildren().getNodes(true)) {
+            removeChildAdditionListener(n);
+        }
+        removedNode.removeNodeListener(resultsNodeAdditionListener);
     }
 }
