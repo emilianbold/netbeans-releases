@@ -147,7 +147,7 @@ class LineReader {
      * It contains its number in the file, file offsets of its first and last
      * characters, length and value.
      */
-    class LineInfo {
+    static class LineInfo {
 
         private int start;
         private int length = 0;

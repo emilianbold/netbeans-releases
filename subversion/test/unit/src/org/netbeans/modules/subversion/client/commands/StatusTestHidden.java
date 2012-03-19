@@ -321,7 +321,6 @@ public class StatusTestHidden extends AbstractCommandTestCase {
             assertEquals(refs[i].getRevision(),             nbs[i].getRevision());
             assertEquals(refs[i].getTextStatus(),           nbs[i].getTextStatus());
             assertEquals(refs[i].getUrl(),                  nbs[i].getUrl());
-            assertEquals(refs[i].getUrlCopiedFrom(),        nbs[i].getUrlCopiedFrom());
             assertEquals(refs[i].getUrlString(),            nbs[i].getUrlString());                       
         }
     } 

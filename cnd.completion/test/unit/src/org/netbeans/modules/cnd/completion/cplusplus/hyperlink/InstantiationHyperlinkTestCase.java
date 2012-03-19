@@ -196,5 +196,10 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 199079 - Unresolved id in case of nested type specialization
         performTest("bug199079.cpp", 24, 7, "bug199079.cpp", 2, 5);
     }
+ 
+    public void testBug209746() throws Exception {
+        // Bug 209746 - Unresolved template parameter    
+        performTest("bug209746.cpp", 2, 15, "bug209746.cpp", 2, 10);
+    }
     
 }
