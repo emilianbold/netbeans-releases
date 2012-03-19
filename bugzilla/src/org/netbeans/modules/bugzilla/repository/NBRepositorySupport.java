@@ -110,6 +110,7 @@ public class NBRepositorySupport extends BugzillaRepository {
         repos = Util.getRepositories(BugzillaConnector.ID);
         for (Repository repo : repos) {
             if(BugtrackingUtil.isNbRepository(repo.getUrl())) {
+                nbRepository = repo;
                 return repo;
             }
         }

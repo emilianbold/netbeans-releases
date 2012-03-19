@@ -42,13 +42,11 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -57,10 +55,18 @@ import org.openide.util.Lookup;
 public class IssueFinderUtils {
 
     private IssueFinderUtils() {}
+        
+    public static Collection<IssueFinder> getIssueFinders() {
+        List<IssueFinder> ret = new LinkedList<IssueFinder>();
+        DelegatingConnector[] dcs = BugtrackingManager.getInstance().getConnectors();
+        for (DelegatingConnector dc : dcs) {
+            ret.add(dc.getIssueFinder());
+        }
+        return ret;
+    }
 
     public static int[] getIssueSpans(String text) {
-        Collection<? extends IssueFinder> issueFinders
-                = Lookup.getDefault().lookupAll(IssueFinder.class);
+        Collection<IssueFinder> issueFinders = getIssueFinders();
 
         if (issueFinders.isEmpty()) {
             return new int[0];
@@ -90,8 +96,7 @@ public class IssueFinderUtils {
     }
 
     public static List<HyperlinkSpanInfo> getIssueSpansExt(String text) {
-        Collection<? extends IssueFinder> issueFinders
-                = Lookup.getDefault().lookupAll(IssueFinder.class);
+        Collection<IssueFinder> issueFinders = getIssueFinders();
 
         if (issueFinders.isEmpty()) {
             return Collections.emptyList();
@@ -133,8 +138,7 @@ public class IssueFinderUtils {
 
     public static IssueFinder determineIssueFinder(String text, int startOffset,
                                                                 int endOffset) {
-        Collection<? extends IssueFinder> issueFinders
-                = Lookup.getDefault().lookupAll(IssueFinder.class);
+        Collection<IssueFinder> issueFinders = getIssueFinders();
 
         for (IssueFinder issueFinder : issueFinders) {
             int[] spans = issueFinder.getIssueSpans(text);

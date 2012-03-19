@@ -48,6 +48,7 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -127,6 +128,11 @@ public class DelegatingConnector extends BugtrackingConnector {
     @Override
     public Repository createRepository() {
         return getDelegate().createRepository();
+    }
+
+    @Override
+    public TaskListIssueProvider getTasklistProvder() {
+        return getDelegate().getTasklistProvder();
     }
 
 }
