@@ -434,9 +434,9 @@ public final class CodeStyle {
 //        return preferences.getBoolean(spaceWithinAnnotationParens, getDefaultAsBoolean(spaceWithinAnnotationParens));
 //    }
 //
-//    public boolean spaceWithinBraces() {
-//        return preferences.getBoolean(spaceWithinBraces, getDefaultAsBoolean(spaceWithinBraces));
-//    }
+    public boolean spaceWithinBraces() {
+        return preferences.getBoolean(spaceWithinBraces, getDefaultAsBoolean(spaceWithinBraces));
+    }
 
     public boolean spaceWithinArrayBrackets() {
         return preferences.getBoolean(spaceWithinArrayBrackets, getDefaultAsBoolean(spaceWithinArrayBrackets));
