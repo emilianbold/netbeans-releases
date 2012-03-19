@@ -802,4 +802,9 @@ class DbxVariable extends Variable {
     public String getFormat() {
 	return DebuggerOption.OUTPUT_BASE.getCurrValue(debugger.optionLayers());
     }
+    
+    @Override
+    public void createWatch() {
+        throw new UnsupportedOperationException("Not implemented yet."); //NOI18N
+    }
 }

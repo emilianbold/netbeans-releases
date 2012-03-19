@@ -30,5 +30,5 @@ public class DebuggerVariable extends Variable {
     public void postFormat(String format) {};
     public String getFormat(){return null;}
 
-
+    public void createWatch() {}
 }

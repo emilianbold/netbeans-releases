@@ -159,4 +159,9 @@ class DbxWatch extends DbxVariable implements WatchVariable {
 	    null,
 	};
     }
+    
+    @Override
+    public void createWatch() {
+        throw new UnsupportedOperationException("Not supported for watches."); //NOI18N
+    }
 }
