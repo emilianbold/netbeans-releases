@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,18 +40,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.design.javamodel;
 
-package org.netbeans.modules.web.examples;
+import java.util.Collection;
 
-public class WizardProperties {
-    public static final String PROJECT_DIR = "projdir"; //NOI18N
-    public static final String NAME = "name"; //NOI18N
-    public static final String SOURCE_ROOT = "sourceRoot"; //NOI18N
+import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
 
-    public static final String J2EE_LEVEL = "j2eeLevel"; //NOI18N
-    public static final String CONTEXT_PATH = "contextPath"; //NOI18N
 
-    public static final String DOC_BASE = "docBase"; //NOI18N
-    public static final String JAVA_ROOT = "javaRoot"; //NOI18N
-    public static final String LIB_FOLDER = "libFolder"; //NOI18N
+/**
+ * It is wrapper around of WS file and its project info
+ * @author ads
+ *
+ */
+public interface ProjectService {
+
+    
+    /**
+     * Called on WS class deletion.
+     */
+    void cleanup() throws java.io.IOException;
+
+    String getWsdlUrl();
+    
+    Collection<WSConfiguration> getConfigurations();
+
+    String getImplementationClass();
+
+    String getLocalWsdlFile();
 }

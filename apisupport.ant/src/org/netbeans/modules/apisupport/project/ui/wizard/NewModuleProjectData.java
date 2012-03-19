@@ -65,7 +65,6 @@ final class NewModuleProjectData {
     private String projectLocation;
     private String projectFolder;
     private String suiteRoot;
-    private boolean mainProject;
     private String codeNameBase;
     private String platformID;
     private String bundle;
@@ -147,14 +146,6 @@ final class NewModuleProjectData {
     
     void setSuiteRoot(String suiteRoot) {
         this.suiteRoot = suiteRoot;
-    }
-    
-    protected boolean isMainProject() {
-        return mainProject;
-    }
-    
-    protected void setMainProject(boolean mainProject) {
-        this.mainProject = mainProject;
     }
     
     String getCodeNameBase() {

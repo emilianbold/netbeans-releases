@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,18 +40,74 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.design.javamodel;
 
-package org.netbeans.modules.web.examples;
+import java.util.Collection;
+import java.util.Collections;
 
-public class WizardProperties {
-    public static final String PROJECT_DIR = "projdir"; //NOI18N
-    public static final String NAME = "name"; //NOI18N
-    public static final String SOURCE_ROOT = "sourceRoot"; //NOI18N
+import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
+import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
+import org.openide.loaders.DataObject;
 
-    public static final String J2EE_LEVEL = "j2eeLevel"; //NOI18N
-    public static final String CONTEXT_PATH = "contextPath"; //NOI18N
 
-    public static final String DOC_BASE = "docBase"; //NOI18N
-    public static final String JAVA_ROOT = "javaRoot"; //NOI18N
-    public static final String LIB_FOLDER = "libFolder"; //NOI18N
+/**
+ * @author ads
+ *
+ */
+class LightProjectService implements ProjectService {
+
+    LightProjectService( JAXWSLightSupport support, JaxWsService service, 
+            DataObject dataObject )
+    {
+        this.support = support;
+        this.service = service;
+        this.dataObject = dataObject;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.design.javamodel.ProjectService#cleanup()
+     */
+    @Override
+    public void cleanup() {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.design.javamodel.ProjectService#getConfigurations()
+     */
+    @Override
+    public Collection<WSConfiguration> getConfigurations() {
+        return Collections.emptyList();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.design.javamodel.ProjectService#getWsdlUrl()
+     */
+    @Override
+    public String getWsdlUrl() {
+        return service.getWsdlUrl();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.design.javamodel.ProjectService#getImplementationClass()
+     */
+    @Override
+    public String getImplementationClass() {
+        return service.getImplementationClass();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.design.javamodel.ProjectService#getLocalWsdlFile()
+     */
+    @Override
+    public String getLocalWsdlFile() {
+        return service.getLocalWsdl();
+    }
+    
+    private final JAXWSLightSupport support;
+    private final JaxWsService service;
+    private final DataObject dataObject;
+    
 }

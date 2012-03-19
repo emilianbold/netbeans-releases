@@ -59,6 +59,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -77,7 +78,6 @@ import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 
 /**
  *
@@ -88,11 +88,6 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     private static Image PACKAGE_BADGE = ImageUtilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/packageBadge.gif"); // NOI18N
     private final SourceGroup g;
 
-    public TreeRootNode(SourceGroup g, GrailsProject project) {
-        this(DataFolder.findFolder(g.getRootFolder()), g, project);
-        String pathName = g.getName();
-        setShortDescription(pathName.substring(project.getProjectDirectory().getPath().length() + 1));
-    }
 
     static String getDirName(SourceGroup g){
         // Source Groups always use a slash as file-separator, no matter
@@ -105,7 +100,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     }
 
 
-    private TreeRootNode(DataFolder folder, SourceGroup g, GrailsProject project) {
+    public TreeRootNode(DataFolder folder, SourceGroup g, GrailsProject project) {
         this(new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter(g))), g, project);
     }
 
@@ -120,6 +115,8 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                                 new TemplatesImpl(project, g)
                                 )
                 ));
+        String pathName = g.getName();
+        setShortDescription(pathName.substring(project.getProjectDirectory().getPath().length() + 1));
         this.g = g;
         g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
     }
@@ -140,34 +137,42 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         }
     }
 
+    @Override
     public Image getIcon(int type) {
         return computeIcon(false, type);
     }
 
+    @Override
     public Image getOpenedIcon(int type) {
         return computeIcon(true, type);
     }
 
+    @Override
     public String getName() {
         return g.getName();
     }
 
+    @Override
     public String getDisplayName() {
         return g.getDisplayName();
     }
 
+    @Override
     public boolean canRename() {
         return false;
     }
 
+    @Override
     public boolean canDestroy() {
         return false;
     }
 
+    @Override
     public boolean canCut() {
         return false;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent ev) {
         // XXX handle SourceGroup.rootFolder change too
         fireNameChange(null, null);
@@ -255,15 +260,18 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
             g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
         }
 
+        @Override
         public boolean acceptDataObject(DataObject obj) {
             FileObject fo = obj.getPrimaryFile();
             return g.contains(fo) && VisibilityQuery.getDefault().isVisible(fo);
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             fireChange();
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent e) {
             if (SourceGroup.PROP_CONTAINERSHIP.equals(e.getPropertyName())) {
                 fireChange();
@@ -283,10 +291,12 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
             }
         }
 
+        @Override
         public void addChangeListener(ChangeListener listener) {
             ell.add(ChangeListener.class, listener);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
             ell.remove(ChangeListener.class, listener);
         }

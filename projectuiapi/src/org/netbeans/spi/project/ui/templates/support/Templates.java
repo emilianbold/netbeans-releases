@@ -216,13 +216,13 @@ public class Templates {
 
     /**
      * Checks whether a project wizard will set the main project.
-     * (The default is true.)
+     * (The default is false.)
      * @param wizardDescriptor a project wizard
      * @return true if it will set a main project
      * @since org.netbeans.modules.projectuiapi/1 1.47
      */
     public static boolean getDefinesMainProject(WizardDescriptor wizardDescriptor) {
-        return !Boolean.FALSE.equals(wizardDescriptor.getProperty(SET_AS_MAIN));
+        return Boolean.TRUE.equals(wizardDescriptor.getProperty(SET_AS_MAIN));
     }
 
     /**
@@ -234,7 +234,9 @@ public class Templates {
      * @param wizardDescriptor a project wizard
      * @param definesMainProject true if it will set a main project
      * @since org.netbeans.modules.projectuiapi/1 1.47
+     * @deprecated Projects should not be set as main by default.
      */
+    @Deprecated
     public static void setDefinesMainProject(WizardDescriptor wizardDescriptor, boolean definesMainProject) {
         wizardDescriptor.putProperty(SET_AS_MAIN, definesMainProject);
     }
