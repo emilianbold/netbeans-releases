@@ -124,7 +124,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                     CompareMode mode = tc.getMode();
                     switch(mode) {
                         case TOCURRENT:
-                            refreshDiffPanel(entry1, file1);
+                            refreshCurrentDiffPanel(entry1, file1);
                             return;
 
                         case TOPARENT:    
@@ -137,7 +137,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                                 return;
                             }
                             
-                            refreshDiffPanel(entry2, entry1, file2, file1);
+                            refreshRevisionDiffPanel(entry2, entry1, file2, file1);
                             return;
                             
                         default:
@@ -161,9 +161,9 @@ public class HistoryDiffView implements PropertyChangeListener {
                 
                 if(entry1 != null && entry2 != null && file1 != null && file2 != null) {
                     if(entry1.getDateTime().getTime() > entry1.getDateTime().getTime()) {
-                        refreshDiffPanel(entry1, entry2, file1, file2);
+                        refreshRevisionDiffPanel(entry1, entry2, file1, file2);
                     } else {
-                        refreshDiffPanel(entry2, entry1, file2, file1);
+                        refreshRevisionDiffPanel(entry2, entry1, file2, file1);
                     }
                     return;
                 }
@@ -176,11 +176,11 @@ public class HistoryDiffView implements PropertyChangeListener {
         showNoContent(NbBundle.getMessage(HistoryDiffView.class, msgKey));
     }           
     
-    private void refreshDiffPanel(HistoryEntry entry1, HistoryEntry entry2, VCSFileProxy file1, VCSFileProxy file2) { 
+    private void refreshRevisionDiffPanel(HistoryEntry entry1, HistoryEntry entry2, VCSFileProxy file1, VCSFileProxy file2) { 
         prepareDiff = new RevisionDiffPrepareTask(entry1, entry2, file1, file2);
         scheduleTask(prepareDiff);
     } 
-    private void refreshDiffPanel(HistoryEntry entry, VCSFileProxy file) {  
+    private void refreshCurrentDiffPanel(HistoryEntry entry, VCSFileProxy file) {  
         prepareDiff = new CurrentDiffPrepareTask(entry, file);
         scheduleTask(prepareDiff);
     }        
@@ -229,7 +229,7 @@ public class HistoryDiffView implements PropertyChangeListener {
             } else {
                 title2 = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_FileDeleted"); // NOI18N
             }            
-            prepareDiffView(VCSFileProxy.createFileProxy(tmpFile), file, title1, title2); // NOI18N
+            prepareDiffView(VCSFileProxy.createFileProxy(tmpFile), file, title1, title2, true); 
         }
 
     }        
@@ -261,7 +261,7 @@ public class HistoryDiffView implements PropertyChangeListener {
             }
             String title1 = getTitle(entry1, file1);
             String title2 = getTitle(entry2, file2);
-            prepareDiffView(revisionFile1, revisionFile2, title1, title2);
+            prepareDiffView(revisionFile1, revisionFile2, title1, title2, false);
         }
 
         private VCSFileProxy getRevisionFile(HistoryEntry entry, VCSFileProxy file) {
@@ -286,18 +286,18 @@ public class HistoryDiffView implements PropertyChangeListener {
         }
         return title1;
     }
-        
-    private void prepareDiffView(final VCSFileProxy file1, final VCSFileProxy file2, final String title1, final String title2) {
+
+    private void prepareDiffView(final VCSFileProxy file1, final VCSFileProxy file2, final String title1, final String title2, final boolean editable) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {            
                 try {   
 
-                    StreamSource ss1 = new LHStreamSource(file1, title1, getMimeType(file2));
+                    StreamSource ss1 = new LHStreamSource(file1, title1, getMimeType(file2), editable);
 
                     StreamSource ss2;                        
                     if(file2.exists()) {
-                        ss2 = new LHStreamSource(file2, title2, getMimeType(file2));
+                        ss2 = new LHStreamSource(file2, title2, getMimeType(file2), editable);
                     } else {
                         ss2 = StreamSource.createSource("currentfile", title2, getMimeType(file2), new StringReader("")); // NOI18N
                     }
@@ -407,16 +407,17 @@ public class HistoryDiffView implements PropertyChangeListener {
         private final VCSFileProxy file;
         private final String title;
         private final String mimeType;
+        private final boolean editable;
 
-        public LHStreamSource(VCSFileProxy file, String title, String mimeType) {
+        public LHStreamSource(VCSFileProxy file, String title, String mimeType, boolean editable) {
             this.file = file;
             this.title = title;
             this.mimeType = mimeType;
+            this.editable = editable;
         }
-
         @Override
         public boolean isEditable() {
-            return isPrimary(file.toFileObject());
+            return editable && isPrimary(file.toFileObject());
         }
         
         private boolean isPrimary(FileObject fo) {            
