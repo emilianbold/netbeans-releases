@@ -83,8 +83,10 @@ import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.javamodel.ProjectService;
 import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
+import org.netbeans.modules.websvc.design.javamodel.Utils;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -99,7 +101,7 @@ public class DesignView extends JPanel  implements Flushable {
     public static final Object messageLayerKey = new Object();
     
     private FileObject implementationClass;
-    private Service service;
+    private ProjectService service;
     private ServiceModel serviceModel;
     /** Manages the state of the widgets and corresponding objects. */
     private ObjectScene scene;
@@ -120,7 +122,7 @@ public class DesignView extends JPanel  implements Flushable {
      * @param service
      * @param implementationClass
      */
-    public DesignView(Service service, FileObject implementationClass) {
+    public DesignView(ProjectService service, FileObject implementationClass) {
         super(new BorderLayout());
         
         this.service = service;
@@ -251,14 +253,7 @@ public class DesignView extends JPanel  implements Flushable {
             @Override
             protected ServiceModel doInBackground() throws Exception {
                 ServiceModel model = ServiceModel.getServiceModel(implementationClass);
-                configurations = new LinkedList<WSConfiguration>();
-                for(WSConfigurationProvider provider : getConfigProviders()){
-                    WSConfiguration config = provider.getWSConfiguration(
-                            service, implementationClass);
-                    if ( config != null ){
-                        configurations.add( config );
-                    }
-                }
+                configurations = service.getConfigurations();
                 return model;
             }
             
@@ -280,10 +275,6 @@ public class DesignView extends JPanel  implements Flushable {
                             Level.WARNING, null, e );
                             
                 }
-            }
-            
-            private Set<WSConfigurationProvider> getConfigProviders(){
-                return WSConfigurationProviderRegistry.getDefault().getWSConfigurationProviders();
             }
             
             private Collection<WSConfiguration> configurations;
@@ -316,9 +307,11 @@ public class DesignView extends JPanel  implements Flushable {
         operationsWidget = new OperationsWidget(scene, service, serviceModel);
         contentWidget.addChild(operationsWidget);
         //add wsit widget
-        WsitWidget wsitWidget = new WsitWidget(scene, service, 
-                implementationClass, wsConfigurations );
-        contentWidget.addChild(wsitWidget);
+        if ( !wsConfigurations.isEmpty() && Utils.getService(service)!= null ) {
+            WsitWidget wsitWidget = new WsitWidget(scene, Utils.getService(service), 
+                    implementationClass, wsConfigurations );
+            contentWidget.addChild(wsitWidget);
+        }
         
         headerWidget.setLabel( getServiceName());
         
