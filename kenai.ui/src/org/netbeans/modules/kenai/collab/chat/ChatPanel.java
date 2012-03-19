@@ -109,6 +109,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import static org.netbeans.modules.kenai.collab.chat.ChatTopComponent.*;
 import org.openide.text.DataEditorSupport;
+import org.openide.text.NbDocument;
 
 /**
  * Panel representing single ChatRoom
@@ -367,7 +368,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private static boolean doOpen(FileObject fo, int line) {
         try {
             DataObject od = DataObject.find(fo);
-            return DataEditorSupport.openDocument(od, line, -1, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            return NbDocument.openDocument(od, line, -1, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }

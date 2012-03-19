@@ -82,6 +82,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
 
@@ -247,7 +248,7 @@ public final class UiUtils {
     private static boolean doOpen(FileObject fo, int offset) {
         try {
             DataObject od = DataObject.find(fo);
-            return DataEditorSupport.openDocument(od, offset, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            return NbDocument.openDocument(od, offset, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         } catch (DataObjectNotFoundException e) {
             LOG.log(Level.WARNING, null, e);
         }

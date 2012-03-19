@@ -78,6 +78,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
+import org.openide.text.NbDocument;
 import org.openide.text.PositionBounds;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -398,7 +399,7 @@ final class Call implements CallDescriptor {
             final int end = bounds.getEnd().getOffset();
             DataObject od = DataObject.find(fo);
             final EditorCookie ec = od.getLookup().lookup(org.openide.cookies.EditorCookie.class);
-            boolean opened = DataEditorSupport.openDocument(od, begin, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            boolean opened = NbDocument.openDocument(od, begin, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
             if (opened) {
                 EventQueue.invokeLater(new Runnable() {
 

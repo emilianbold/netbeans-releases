@@ -171,9 +171,9 @@ public class GotoOppositeAction extends CallableSystemAction {
             try {
                 dobj = DataObject.find(fileObject);
             } catch (DataObjectNotFoundException ex) {
-                Logger.getLogger(DataEditorSupport.class.getName()).log(Level.WARNING, null, ex);
+                Logger.getLogger(GotoOppositeAction.class.getName()).log(Level.WARNING, null, ex);
             }
-            DataEditorSupport.openDocument(dobj, opposite.getOffset(), Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            NbDocument.openDocument(dobj, opposite.getOffset(), Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         } else if (opposite.getErrorMessage() != null) {
             String msg = opposite.getErrorMessage();
             NotifyDescriptor descr = new NotifyDescriptor.Message(msg, 

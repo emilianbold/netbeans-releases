@@ -63,7 +63,7 @@ import org.openide.util.Lookup;
 public abstract class TestCreatorProvider {
     
     @Target(ElementType.TYPE)
-    @Retention(RetentionPolicy.RUNTIME)
+    @Retention(RetentionPolicy.SOURCE)
     public @interface Registration {
 
         /**
@@ -71,8 +71,6 @@ public abstract class TestCreatorProvider {
          */
         String displayName();
     }
-    
-    public abstract boolean canHandleMultipleClasses(Node[] activatedNodes);
     
     public abstract boolean enable(Node[] activatedNodes);
     

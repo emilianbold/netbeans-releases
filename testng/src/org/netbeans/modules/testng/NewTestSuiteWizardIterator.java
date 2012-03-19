@@ -115,16 +115,17 @@ public final class NewTestSuiteWizardIterator implements WizardDescriptor.Instan
     }
 
     public Set<DataObject> instantiate() throws IOException {
-        FileObject dir = Templates.getTargetFolder(wiz);
+        FileObject targetFolder = Templates.getTargetFolder(wiz);
+        TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(targetFolder)).configureProject(targetFolder);
         String targetName = Templates.getTargetName(wiz);
 
-        DataFolder df = DataFolder.findFolder(dir);
+        DataFolder df = DataFolder.findFolder(targetFolder);
         FileObject template = Templates.getTemplate(wiz);
 
         DataObject dTemplate = DataObject.find(template);
-        String pkgName = getSelectedPackageName(dir);
+        String pkgName = getSelectedPackageName(targetFolder);
         String suiteName = pkgName + " suite";
-        String projectName = ProjectUtils.getInformation(FileOwnerQuery.getOwner(dir)).getName();
+        String projectName = ProjectUtils.getInformation(FileOwnerQuery.getOwner(targetFolder)).getName();
         if (pkgName == null || pkgName.trim().length() < 1) {
             pkgName = ".*"; //NOI18N
             suiteName = "All tests for " + projectName;
@@ -137,8 +138,6 @@ public final class NewTestSuiteWizardIterator implements WizardDescriptor.Instan
 
         DataObject dobj = dTemplate.createFromTemplate(df, targetName, props);
 
-        FileObject createdFile = DataObject.find(dobj.getPrimaryFile()).getPrimaryFile();
-        TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(createdFile)).configureProject(createdFile);
         return Collections.singleton(dobj);
     }   
     

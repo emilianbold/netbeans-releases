@@ -84,6 +84,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.UserQuestionException;
 
@@ -284,7 +285,7 @@ public final class GsfUtilities {
 
             // Simple text search if no known offset (e.g. broken/unparseable source)
             if ((ec != null) && (search != null) && (offset == -1)) {
-                StyledDocument doc = DataEditorSupport.getStyledDocument(od);
+                StyledDocument doc = NbDocument.getDocument(od);
 
                 try {
                     String text = doc.getText(0, doc.getLength());
@@ -303,7 +304,7 @@ public final class GsfUtilities {
                 }
             }
             
-            return DataEditorSupport.openDocument(od, offset, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            return NbDocument.openDocument(od, offset, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }

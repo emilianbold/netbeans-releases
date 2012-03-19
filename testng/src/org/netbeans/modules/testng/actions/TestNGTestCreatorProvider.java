@@ -78,19 +78,6 @@ import org.openide.util.RequestProcessor;
 public class TestNGTestCreatorProvider extends TestCreatorProvider {
 
     private static final Logger LOGGER = Logger.getLogger(TestNGTestCreatorProvider.class.getName());
-    
-    @Override
-    public boolean canHandleMultipleClasses(Node[] activatedNodes) {
-        return true;
-//        if (activatedNodes.length != 1) {
-//            return false;
-//        }
-//        DataObject dataObj = activatedNodes[0].getLookup().lookup(DataObject.class);
-//        if (dataObj == null) {
-//            return false;
-//        }
-//        return dataObj.getPrimaryFile().isData();
-    }
 
     @Override
     public boolean enable(Node[] activatedNodes) {

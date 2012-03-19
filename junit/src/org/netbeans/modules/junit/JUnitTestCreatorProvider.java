@@ -75,11 +75,6 @@ import org.openide.util.RequestProcessor;
 public class JUnitTestCreatorProvider extends TestCreatorProvider {
     
     @Override
-    public boolean canHandleMultipleClasses(Node[] activatedNodes) {
-        return true;
-    }
-    
-    @Override
     public boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length == 0) {
             return false;
