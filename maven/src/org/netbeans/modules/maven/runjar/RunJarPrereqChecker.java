@@ -56,7 +56,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -184,9 +184,9 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
     static void writeMapping(String actionName, Project project, String clazz) {
         try {
             M2ConfigProvider usr = project.getLookup().lookup(M2ConfigProvider.class);
-            NetbeansActionMapping mapp = ModelHandle.getMapping(actionName, project, usr.getDefaultConfig());
+            NetbeansActionMapping mapp = ModelHandle2.getMapping(actionName, project, usr.getDefaultConfig());
             if (mapp == null) {
-                mapp = ModelHandle.getDefaultMapping(actionName, project);
+                mapp = ModelHandle2.getDefaultMapping(actionName, project);
             }
             // XXX should this rather run on _all_ actions that reference ${packageClassName}?
             for (Map.Entry<String,String> e : mapp.getProperties().entrySet()) {
@@ -197,7 +197,7 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
                 }
             }
             //TODO we should definitely write to the mappings of active configuration here..
-            ModelHandle.putMapping(mapp, project, usr.getDefaultConfig());
+            ModelHandle2.putMapping(mapp, project, usr.getDefaultConfig());
         } catch (Exception e) {
             Exceptions.attachMessage(e, "Cannot persist action configuration.");
             Exceptions.printStackTrace(e);

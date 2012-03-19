@@ -43,15 +43,16 @@
 package org.netbeans.modules.maven.customizer;
 
 import java.io.CharConversionException;
-import javax.swing.event.DocumentEvent;
-import org.netbeans.modules.maven.api.customizer.support.TextComponentUpdater;
-import org.netbeans.modules.maven.api.customizer.support.ReflectionTextComponentUpdater;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.modules.maven.api.customizer.support.ReflectionTextComponentUpdater;
+import org.netbeans.modules.maven.api.customizer.support.TextComponentUpdater;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.NbBundle;
@@ -62,12 +63,12 @@ import org.openide.xml.XMLUtil;
  * @author  mkleint
  */
 public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListener {
-    private final ModelHandle handle;
+    private final ModelHandle2 handle;
     private List<TextComponentUpdater> listeners;
     private final Category category;
     
     /** Creates new form BasicInfoPanel */
-    public BasicInfoPanel(ModelHandle handle, Category category) {
+    public BasicInfoPanel(ModelHandle2 handle, Category category) {
         initComponents();
         this.handle = handle;
         this.category = category;
@@ -79,12 +80,42 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
         MavenProject project = handle.getProject().getParent();
         listeners = new ArrayList<TextComponentUpdater>();
         try {
-            listeners.add(new ReflectionTextComponentUpdater("getGroupId", "setGroupId", mdl, project, txtGroupId, lblGroupId, handle)); //NOI18N
-            listeners.add(new ReflectionTextComponentUpdater("getArtifactId", "setArtifactId", mdl, project, txtArtifactId, lblArtifactId, handle)); //NOI18N
-            listeners.add(new ReflectionTextComponentUpdater("getVersion", "setVersion", mdl, project, txtVersion, lblVersion, handle)); //NOI18N
-            listeners.add(new ReflectionTextComponentUpdater("getName", "setName", mdl, project, txtName, lblName, handle)); //NOI18N
-            listeners.add(new ReflectionTextComponentUpdater("getPackaging", "setPackaging", mdl, project, txtPackaging, lblPackaging, handle)); //NOI18N
-            listeners.add(new ReflectionTextComponentUpdater("getDescription", "setDescription", mdl, project, taDescription, lblDescription, handle)); //NOI18N
+            listeners.add(new ReflectionTextComponentUpdater("getGroupId", mdl, project, txtGroupId, lblGroupId, handle, new ReflectionTextComponentUpdater.Operation() {
+                @Override
+                public void performOperation(POMModel model) {
+                    model.getProject().setGroupId(getNewValue());
+                }
+            })); //NOI18N
+            listeners.add(new ReflectionTextComponentUpdater("getArtifactId",  mdl, project, txtArtifactId, lblArtifactId, handle, new ReflectionTextComponentUpdater.Operation() {
+                @Override
+                public void performOperation(POMModel model) {
+                    model.getProject().setArtifactId(getNewValue());
+                }
+            })); //NOI18N
+            listeners.add(new ReflectionTextComponentUpdater("getVersion",  mdl, project, txtVersion, lblVersion, handle, new ReflectionTextComponentUpdater.Operation() {
+                @Override
+                public void performOperation(POMModel model) {
+                    model.getProject().setVersion(getNewValue());
+                }
+            })); //NOI18N
+            listeners.add(new ReflectionTextComponentUpdater("getName",  mdl, project, txtName, lblName, handle, new ReflectionTextComponentUpdater.Operation() {
+                @Override
+                public void performOperation(POMModel model) {
+                    model.getProject().setName(getNewValue());
+                }
+            })); //NOI18N
+            listeners.add(new ReflectionTextComponentUpdater("getPackaging",  mdl, project, txtPackaging, lblPackaging, handle, new ReflectionTextComponentUpdater.Operation() {
+                @Override
+                public void performOperation(POMModel model) {
+                    model.getProject().setPackaging(getNewValue());
+                }
+            })); //NOI18N
+            listeners.add(new ReflectionTextComponentUpdater("getDescription",  mdl, project, taDescription, lblDescription, handle, new ReflectionTextComponentUpdater.Operation() {
+                @Override
+                public void performOperation(POMModel model) {
+                    model.getProject().setDescription(getNewValue());
+                }
+            })); //NOI18N
         } catch (NoSuchMethodException ex) {
             ex.printStackTrace();
         }
@@ -206,14 +237,17 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
     private javax.swing.JTextField txtVersion;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void insertUpdate(DocumentEvent arg0) {
         checkCoords();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent arg0) {
         checkCoords();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent arg0) {
         checkCoords();
     }

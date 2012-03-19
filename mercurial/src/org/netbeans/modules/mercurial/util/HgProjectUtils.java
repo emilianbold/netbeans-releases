@@ -79,16 +79,11 @@ public class HgProjectUtils {
         ctxAction.actionPerformed(new ActionEvent(caller, 0, "")); // NOI18N
     }
 
-    public static void openProject(Project p, Object caller, boolean setMain) {
+    public static void openProject(Project p, Object caller) {
         if( p == null) return;
         
         Project[] projects = new Project[] {p};
         OpenProjects.getDefault().open(projects, false);
-        if (setMain) {
-            OpenProjects.getDefault().setMainProject(p);
-        }
-        
-        // set as main project and expand
         selectAndExpandProject(p);
     }
     

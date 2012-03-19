@@ -60,7 +60,6 @@ public final class ProjectLocationWizardPanel implements WizardDescriptor.Panel,
     
     public static final String PROJECT_DIR = "projdir"; //NOI18N
     public static final String NAME = "name"; //NOI18N
-    public static final String SET_AS_MAIN = "setAsMain"; //NOI18N
     public static final String SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
     
     private WizardDescriptor wizardDescriptor;

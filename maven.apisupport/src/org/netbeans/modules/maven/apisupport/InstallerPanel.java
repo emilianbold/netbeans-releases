@@ -56,10 +56,11 @@ import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.support.TextComponentUpdater;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
+import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
@@ -80,12 +81,14 @@ public class InstallerPanel extends JPanel {
     private static final String PROP_SOLARIS = "installerOsSolaris";
     private static final String PROP_WINDOWS = "installerOsWindows";
 
+    private static final String GOAL = "build-installers";
+
     private final ProjectCustomizer.Category category;
     private final Project project;
-    private final ModelHandle handle;
+    private final ModelHandle2 handle;
 
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    private InstallerPanel(ProjectCustomizer.Category category, Project project, ModelHandle handle) {
+    private InstallerPanel(ProjectCustomizer.Category category, Project project, ModelHandle2 handle) {
         this.category = category;
         this.project = project;
         this.handle = handle;
@@ -247,8 +250,7 @@ public class InstallerPanel extends JPanel {
     private javax.swing.JCheckBox windowsCheckBox;
     // End of variables declaration//GEN-END:variables
 
-    private Configuration config() {
-        POMModel pomModel = handle.getPOMModel();
+    private static Configuration config(POMModel pomModel) {
         Build build = pomModel.getProject().getBuild();
         if (build == null) {
             build = pomModel.getFactory().createBuild();
@@ -270,32 +272,28 @@ public class InstallerPanel extends JPanel {
         return config;
     }
 
-    private class BooleanPropUpdater extends CheckBoxUpdater {
+    private class BooleanPropUpdater extends CheckBoxUpdater implements ModelOperation<POMModel> {
 
         private final String property;
         private final boolean dflt;
+        private Boolean modifiedValue;
+        private final String pomValue;
 
         BooleanPropUpdater(String property, boolean dflt, JCheckBox comp) {
             super(comp);
             this.property = property;
             this.dflt = dflt;
+            pomValue = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, property, GOAL);
         }
 
         @org.netbeans.api.annotations.common.SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
         @Override public Boolean getValue() {
-            Configuration config = config();
-            if (config != null) {
-                String val = config.getSimpleParameter(property);
-                if (val != null) {
-                    return Boolean.valueOf(val);
+            if (modifiedValue != null) {
+                return modifiedValue;
                 }
+            
+            return pomValue != null ? Boolean.valueOf(pomValue) : null;
             }
-            /* XXX suppress for consistency with StringPropUpdater:
-            String v = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, property, GOAL);
-            return v != null ? Boolean.valueOf(v) : null;
-            */
-            return null;
-        }
 
         @Override public boolean getDefaultValue() {
             return dflt;
@@ -305,41 +303,50 @@ public class InstallerPanel extends JPanel {
             if (Utilities.compareObjects(value, getValue())) {
                 return;
             }
-            Configuration config = config();
-            POMExtensibilityElement e = ModelUtils.getOrCreateChild(config, property, config.getModel());
-            if (value != null) {
-                e.setElementText(Boolean.toString(value));
+
+            modifiedValue = value;
+            handle.removePOMModification(this);
+            if (pomValue != null && pomValue.equals(modifiedValue)) {
+                //ignore now, we already have what we want in the project.
             } else {
+                handle.addPOMModification(this);
+            }
+        }
+
+        @Override
+        public void performOperation(POMModel model) {
+            Configuration config = config(model);
+            if (modifiedValue != null) {
+                config.setSimpleParameter(property, modifiedValue != null ? Boolean.toString(modifiedValue) : Boolean.toString(getDefaultValue()));
+            } else {
+                //TODO for this case config(model) method which creates the configuration element is wrong..
+                POMExtensibilityElement e = ModelUtils.getOrCreateChild(config, property, config.getModel());
                 config.removeExtensibilityElement(e);
             }
-            handle.markAsModified(handle.getPOMModel());
         }
 
     }
 
-    private class StringPropUpdater extends TextComponentUpdater {
+    private class StringPropUpdater extends TextComponentUpdater implements ModelOperation<POMModel>{
 
         private final String property;
+        private String modifiedValue;
+        private String pomValue;
+
 
         StringPropUpdater(String property, JTextComponent comp, JLabel label) {
             super(comp, label);
             this.property = property;
+            pomValue = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, property, GOAL);
         }
 
         @Override public String getValue() {
-            Configuration config = config();
-            if (config != null) {
-                String val = config.getSimpleParameter(property);
-                if (val != null) {
-                    return val;
+            if (modifiedValue != null) {
+                return modifiedValue;
                 }
+            
+            return pomValue != null ? pomValue : "";
             }
-            /* Cannot do this or we would fall back to last-saved value, which would be wrong; how to load inherited config?
-            String v = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, property, GOAL);
-            return v != null ? v : "";
-            */
-            return null;
-        }
 
         @Override public String getDefaultValue() {
             return "";
@@ -349,14 +356,28 @@ public class InstallerPanel extends JPanel {
             if (Utilities.compareObjects(value, getValue())) {
                 return;
             }
-            Configuration config = config();
+            if (value == null) {
+                value = getDefaultValue();
+            }
+            modifiedValue = value;
+            handle.removePOMModification(this);
+            if (pomValue != null && pomValue.equals(modifiedValue)) {
+                //we already have what we want in the pom.. skip
+            } else {
+                handle.addPOMModification(this);
+            }
+        }
+
+        @Override
+        public void performOperation(POMModel model) {
+            Configuration config = config(model);
             POMExtensibilityElement e = ModelUtils.getOrCreateChild(config, property, config.getModel());
-            if (value == null || value.isEmpty()) {
+            if (modifiedValue == null || modifiedValue.isEmpty()) {
+                //TODO for this case config(model) method which creates the configuration element is wrong..
                 config.removeExtensibilityElement(e);
             } else {
-                e.setElementText(value);
+                e.setElementText(modifiedValue);
             }
-            handle.markAsModified(handle.getPOMModel());
         }
 
     }
@@ -378,7 +399,7 @@ public class InstallerPanel extends JPanel {
         }
 
         @Override public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-            return new InstallerPanel(category, context.lookup(Project.class), context.lookup(ModelHandle.class));
+            return new InstallerPanel(category, context.lookup(Project.class), context.lookup(ModelHandle2.class));
         }
 
     }
