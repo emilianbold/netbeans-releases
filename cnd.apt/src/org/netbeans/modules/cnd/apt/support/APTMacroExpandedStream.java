@@ -56,9 +56,11 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author Vladimir Voskresensky
  */
 public class APTMacroExpandedStream extends APTExpandedStream {
+    private final boolean emptyExpansionAsComment;
     
-    public APTMacroExpandedStream(TokenStream stream, APTMacroCallback callback) {
+    public APTMacroExpandedStream(TokenStream stream, APTMacroCallback callback, boolean emptyExpansionAsComment) {
         super(stream, callback);
+        this.emptyExpansionAsComment = emptyExpansionAsComment;
     }
 
     @Override
@@ -68,7 +70,7 @@ public class APTMacroExpandedStream extends APTExpandedStream {
         if (last == null) {
             last = token;
         }
-        APTTokenStream expandedMacros = new MacroExpandWrapper(token, origExpansion, last);
+        APTTokenStream expandedMacros = new MacroExpandWrapper(token, origExpansion, last, emptyExpansionAsComment);
         return expandedMacros;
     }   
     
@@ -77,18 +79,20 @@ public class APTMacroExpandedStream extends APTExpandedStream {
         private final APTTokenStream expandedMacros;
         private final APTToken endOffsetToken;
         private boolean firstToken = true;
+        private final boolean emptyExpansionAsComment;
         
-        public MacroExpandWrapper(APTToken expandedFrom, APTTokenStream expandedMacros, APTToken endOffsetToken) {
+        public MacroExpandWrapper(APTToken expandedFrom, APTTokenStream expandedMacros, APTToken endOffsetToken, boolean emptyExpansionAsComment) {
             this.expandedFrom = expandedFrom;
             this.expandedMacros = expandedMacros;
             assert endOffsetToken != null : "end offset token must be valid";
             this.endOffsetToken = endOffsetToken;
+            this.emptyExpansionAsComment = emptyExpansionAsComment;
         }
         
         @Override
         public APTToken nextToken() {
             APTToken expandedTo = expandedMacros.nextToken();
-            if (firstToken && APTUtils.isEOF(expandedTo)) {
+            if (emptyExpansionAsComment && firstToken && APTUtils.isEOF(expandedTo)) {
                 // adding empty comment as expansion of empty macro
                 expandedTo = new APTCommentToken();
                 expandedTo.setType(APTTokenTypes.COMMENT);
