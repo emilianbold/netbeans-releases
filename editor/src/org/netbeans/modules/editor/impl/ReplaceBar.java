@@ -66,10 +66,8 @@ public final class ReplaceBar extends JPanel {
     private static final int DEFAULT_INCREMANTAL_SEARCH_COMBO_WIDTH = 200;
     private static final int MAX_INCREMANTAL_SEARCH_COMBO_WIDTH = 350;
     private SearchBar searchBar;
-    private final FocusAdapter focusAdapterForComponent;
     private final JComboBox replaceComboBox;
     private final JTextField replaceTextField;
-    private boolean hadFocusOnReplaceTextField = false;
     private final JButton replaceButton;
     private final JButton replaceAllButton;
     private final JLabel replaceLabel;
@@ -93,7 +91,6 @@ public final class ReplaceBar extends JPanel {
 
     private ReplaceBar(SearchBar searchBar) {
         setSearchBar(searchBar);
-        focusAdapterForComponent = createFocusAdapterForComponent();
         addEscapeKeystrokeFocusBackTo(this);
         searchBar.addKeystrokeFindActionTo(this);
         searchBar.addKeystrokeReplaceActionTo(this);
@@ -129,7 +126,6 @@ public final class ReplaceBar extends JPanel {
 
             @Override
             public void focusGained(FocusEvent e) {
-                hadFocusOnReplaceTextField = true;
                 getSearchBar().lostFocusOnTextField();
                 replaceTextField.selectAll();
             }
@@ -202,15 +198,9 @@ public final class ReplaceBar extends JPanel {
         return searchBar;
     }
 
+    
     private void setSearchBar(SearchBar searchBar) {
         this.searchBar = searchBar;
-        searchBar.addActualComponentListener(new PropertyChangeListener() {
-
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                getSearchBar().getActualTextComponent().addFocusListener(focusAdapterForComponent);
-            }
-        });
         createFocusList();
 
     }
@@ -342,16 +332,6 @@ public final class ReplaceBar extends JPanel {
         };
     }
 
-    private FocusAdapter createFocusAdapterForComponent() {
-        return new FocusAdapter() {
-
-            @Override
-            public void focusGained(FocusEvent e) {
-                hadFocusOnReplaceTextField = false;
-            }
-        };
-    }
-
     private JComboBox createReplaceComboBox() {
         JComboBox repComboBox = new JComboBox() {
 
@@ -438,7 +418,6 @@ public final class ReplaceBar extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     preserveCaseCheckBox.setEnabled(!searchBar.getRegexpCheckBox().isSelected() && !searchBar.getMatchCaseCheckBox().isSelected());
-
                 }
             };
         } else {
@@ -467,9 +446,6 @@ public final class ReplaceBar extends JPanel {
         searchBar.getFindLabel().setMinimumSize(oldDimensionForFindLabel);
         searchBar.getFindLabel().setPreferredSize(oldDimensionForFindLabel);
         searchBar.addEscapeKeystrokeFocusBackTo(searchBar);
-        if (searchBar.getActualTextComponent() != null) {
-            searchBar.getActualTextComponent().removeFocusListener(focusAdapterForComponent);
-        }
         searchBar.getRegexpCheckBox().removeActionListener(getActionListenerForPreserveCase());
         searchBar.getMatchCaseCheckBox().removeActionListener(getActionListenerForPreserveCase());
         searchBar.setFocusTraversalPolicy(null);
@@ -483,9 +459,6 @@ public final class ReplaceBar extends JPanel {
         searchBar.getFindLabel().setMinimumSize(newDimensionForFindLabel);
         searchBar.getFindLabel().setPreferredSize(newDimensionForFindLabel);
         this.addEscapeKeystrokeFocusBackTo(searchBar);
-        if (searchBar.getActualTextComponent() != null) {
-            searchBar.getActualTextComponent().addFocusListener(focusAdapterForComponent);
-        }
         searchBar.getRegexpCheckBox().addActionListener(getActionListenerForPreserveCase());
         searchBar.getMatchCaseCheckBox().addActionListener(getActionListenerForPreserveCase());
         searchBar.setFocusTraversalPolicy(searchBarFocusTraversalPolicy);
@@ -494,7 +467,6 @@ public final class ReplaceBar extends JPanel {
     }
 
     void looseFocus() {
-        hadFocusOnReplaceTextField = false;
         if (!isVisible()) {
             return;
         }
@@ -510,14 +482,6 @@ public final class ReplaceBar extends JPanel {
         }
         searchBar.gainFocus();
         searchBar.getIncSearchTextField().requestFocusInWindow();
-    }
-
-    boolean hadFocusOnTextField() {
-        return hadFocusOnReplaceTextField;
-    }
-
-    void lostFocusOnTextField() {
-        hadFocusOnReplaceTextField = false;
     }
 
     private void replace() {
