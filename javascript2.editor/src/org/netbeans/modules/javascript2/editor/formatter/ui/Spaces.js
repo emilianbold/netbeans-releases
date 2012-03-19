@@ -10,6 +10,9 @@ var engine = {
                 log();
             }
         }
+    },
+    get parameter () {
+        return power;
     }
 }
 
