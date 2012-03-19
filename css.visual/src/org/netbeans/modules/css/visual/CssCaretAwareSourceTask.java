@@ -88,10 +88,8 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
             initializeWindowController();
 
             String mimeType = snapshot.getMimeType();
-            String sourceMimeType = snapshot.getSource().getMimeType();
 
-            //allow to run only on .css files
-            if (sourceMimeType.equals(CSS_MIMETYPE) && mimeType.equals(CSS_MIMETYPE)) { //NOI18N
+            if (mimeType.equals(CSS_MIMETYPE)) { //NOI18N
                 return Collections.singletonList(new CssCaretAwareSourceTask());
             } else {
                 return Collections.emptyList();
@@ -138,7 +136,15 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
             
         });
         //v2 <<<
+
+        //the old infrastructure ... to be removed...
         
+        //allow to run only on .css files
+        Snapshot snapshot = result.getSnapshot();
+        String sourceMimeType = snapshot.getSource().getMimeType();
+        if (!sourceMimeType.equals(CSS_MIMETYPE)) {
+            return ;
+        } 
         
         Node root = result.getParseTree();
         if (root != null) {
@@ -183,7 +189,12 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
 
     }
 
-    private void updateCssPropertiesWindow(final CssCslParserResult result, final int offset) {
+    private void updateCssPropertiesWindow(final CssCslParserResult result, int documentOffset) {
+        final int astOffset = result.getSnapshot().getEmbeddedOffset(documentOffset);
+        if(astOffset == -1) {
+            return ;
+        }
+        
         Model model = result.getModelV2();
         
         model.runReadTask(new Model.ModelTask() {
@@ -193,7 +204,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
                 Rule match = null;
                 List<Rule> rules = styleSheet.getBody().getRules();
                 for (Rule rule : rules) {
-                    if (offset > rule.getStartOffset() && offset < rule.getEndOffset()) {
+                    if (astOffset > rule.getStartOffset() && astOffset < rule.getEndOffset()) {
                         match = rule;
                         break;
                     }
@@ -204,7 +215,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
                     return;
                 }
 
-                RuleContext context = new RuleContext(match, result.getModelV2(), result.getSnapshot());
+                RuleContext context = new RuleContext(match, result.getModelV2());
                 cssPropertiesTC.setContext(context);
             }
         });

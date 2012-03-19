@@ -57,10 +57,9 @@ public class RuleContext {
     
     private Snapshot snapshot;
 
-    public RuleContext(Rule rule, Model model, Snapshot snapshot) {
+    public RuleContext(Rule rule, Model model) {
         this.rule = rule;
         this.model = model;
-        this.snapshot = snapshot;
     }
 
     public Rule getRule() {
@@ -72,13 +71,7 @@ public class RuleContext {
     }
 
     public RuleNode getNode() {
-        return rule == null ? null : new RuleNode(snapshot, model, rule);
+        return rule == null ? null : new RuleNode(model, rule);
     }
-
-    public Snapshot getSnapshot() {
-        return snapshot;
-    }
-    
-    
     
 }

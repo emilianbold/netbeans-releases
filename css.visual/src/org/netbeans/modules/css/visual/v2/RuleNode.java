@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.editor.NbEditorDocument;
@@ -68,13 +69,11 @@ import org.openide.util.lookup.Lookups;
 public class RuleNode extends AbstractNode {
 
     private PropertySet[] propertySets;
-    private Snapshot snapshot;
     private Model model;
     private Rule rule;
 
-    public RuleNode(Snapshot snapshot, Model model, Rule rule) {
+    public RuleNode(Model model, Rule rule) {
         super(new RuleChildren(), Lookups.fixed(rule));
-        this.snapshot = snapshot;
         this.model = model;
         this.rule = rule;
     }
@@ -123,7 +122,7 @@ public class RuleNode extends AbstractNode {
     }
 
     public void applyModelChanges() {
-            final NbEditorDocument doc = (NbEditorDocument) snapshot.getSource().getDocument(false);
+            final NbEditorDocument doc = (NbEditorDocument)model.getLookup().lookup(Document.class);
             if (doc == null) {
                 return;
             }
@@ -136,7 +135,7 @@ public class RuleNode extends AbstractNode {
                         @Override
                         public void run() {
                             try {
-                                model.applyChanges(doc);
+                                model.applyChanges();
                             } catch (IOException ex) {
                                 Exceptions.printStackTrace(ex);
                             } catch (BadLocationException ex) {

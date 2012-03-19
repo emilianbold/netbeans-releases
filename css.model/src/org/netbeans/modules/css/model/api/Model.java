@@ -56,6 +56,7 @@ import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.model.ModelAccess;
 import org.netbeans.modules.css.model.impl.ElementFactoryImpl;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.Lookup;
@@ -218,6 +219,31 @@ public final class Model {
 
     /**
      * Applies the changes done to the model to the original code source.
+     * 
+     * This method will throw an exception if the model instance is not created
+     * from a CssParserResult based on a document.
+     *
+     * Basically it applies all the changes obtained from {@link #getModelSourceDiff()}
+     * to to given document.
+     *
+     * <b> It is up to the client to ensure: 1) it is the document upon which
+     * source the model was build 2) the document has not changed since the
+     * model creation. 3) the method is called under document atomic lock </b>
+     *
+     */
+    public void applyChanges() throws IOException, BadLocationException {
+        Document doc = getLookup().lookup(Document.class);
+        if(doc == null) {
+            throw new IOException("Not document based model instance!"); //NOI18N
+        }
+        
+        Snapshot snapshot = getLookup().lookup(Snapshot.class);
+        applyChanges(doc, new SnapshotOffsetConvertor(snapshot));
+    }
+    
+    
+    /**
+     * Applies the changes done to the model to a document instance.
      *
      * Basically it applies all the changes obtained from {@link #getModelSourceDiff()}
      * to to given document.
@@ -228,9 +254,14 @@ public final class Model {
      *
      */
     public void applyChanges(Document document) throws IOException, BadLocationException {
+        applyChanges(document, DIRECT_OFFSET_CONVERTOR);
+    }
+    
+    private void applyChanges(Document document, OffsetConvertor convertor) throws IOException, BadLocationException {
         int sourceDelta = 0;
         for (Difference d : getModelSourceDiff()) {
-            int from = LexerUtils.getLineBeginningOffset(getOriginalSource(), (d.getFirstStart() == 0 ? 0 : d.getFirstStart() - 1));
+            int firstStart = d.getFirstStart();
+            int from = convertor.getOriginalOffset(LexerUtils.getLineBeginningOffset(getOriginalSource(), (firstStart == 0 ? 0 : firstStart - 1)));
             switch (d.getType()) {
 
                 case Difference.CHANGE:
@@ -244,7 +275,7 @@ public final class Model {
                     break;
 
                 case Difference.ADD:
-                    from = LexerUtils.getLineBeginningOffset(getOriginalSource(), d.getFirstStart());
+                    from = convertor.getOriginalOffset(LexerUtils.getLineBeginningOffset(getOriginalSource(), d.getFirstStart()));
                     len = d.getSecondText().length();
                     document.insertString(sourceDelta + from, d.getSecondText(), null);
                     sourceDelta += len;
@@ -278,6 +309,36 @@ public final class Model {
     public static interface ModelTask {
 
         public void run(StyleSheet styleSheet);
+        
+    }
+    
+    private static interface OffsetConvertor {
+        
+        public int getOriginalOffset(int documentOffset);
+        
+    }
+    
+    private static final OffsetConvertor DIRECT_OFFSET_CONVERTOR = new OffsetConvertor() {
+
+        @Override
+        public int getOriginalOffset(int documentOffset) {
+            return documentOffset;
+        }
+        
+    };
+    
+    private static class SnapshotOffsetConvertor implements OffsetConvertor {
+
+        private Snapshot snapshot;
+
+        public SnapshotOffsetConvertor(Snapshot snapshot) {
+            this.snapshot = snapshot;
+        }
+        
+        @Override
+        public int getOriginalOffset(int embeddedOffset) {
+            return snapshot.getOriginalOffset(embeddedOffset);
+        }
         
     }
     
