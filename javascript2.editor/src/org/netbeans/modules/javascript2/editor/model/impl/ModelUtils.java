@@ -260,7 +260,10 @@ public class ModelUtils {
                 String pName = type.getType().substring(type.getType().indexOf('.') + 1);
                 JsObject property = object.getParent().getProperty(pName);
                 if (property != null && property.getJSKind().isFunction()) {
-                    object.getParent().addProperty(object.getName(), new JsFunctionReference(object.getParent(), object.getDeclarationName(), (JsFunctionImpl)property, true));
+                    JsFunctionImpl function = property instanceof JsFunctionImpl
+                            ? (JsFunctionImpl) property
+                            : ((JsFunctionReference)property).getOriginal();
+                    object.getParent().addProperty(object.getName(), new JsFunctionReference(object.getParent(), object.getDeclarationName(), function, true));
                 }
             }
         } else if (type.getType().startsWith("@new:")) {

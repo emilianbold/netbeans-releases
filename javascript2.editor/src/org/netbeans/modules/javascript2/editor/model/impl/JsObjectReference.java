@@ -104,5 +104,9 @@ public class JsObjectReference extends JsObjectImpl {
     public Set<Modifier> getModifiers() {
         return original.getModifiers();
     }
+    
+    public JsObject getOriginal() {
+        return original;
+    }
 
 }

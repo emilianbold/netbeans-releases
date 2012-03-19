@@ -42,10 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collection;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.*;
 
 /**
  *
@@ -60,6 +57,11 @@ public class JsFunctionReference extends JsObjectReference implements JsFunction
         this.original = original;
     }
 
+    @Override
+    public JsFunctionImpl getOriginal() {
+        return this.original;
+    }
+    
     @Override
     public Collection<? extends JsObject> getParameters() {
         return original.getParameters();
