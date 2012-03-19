@@ -42,27 +42,20 @@
 package org.netbeans.modules.junit.actions;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.gsf.testrunner.api.TestMethodRunnerProvider;
 import org.netbeans.modules.java.testrunner.CommonTestUtil;
-import org.netbeans.modules.junit.output.OutputUtils;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -73,55 +66,11 @@ import org.openide.util.lookup.ServiceProvider;
 public class JUnitMethodRunnerProvider extends TestMethodRunnerProvider {
 
     private static final Logger LOGGER = Logger.getLogger(JUnitMethodRunnerProvider.class.getName());
-    private final String command = SingleMethod.COMMAND_RUN_SINGLE_METHOD;
-
-    @Override
-    public String getProviderName() {
-        return NbBundle.getMessage(TestMethodRunnerProvider.class, "NAME_JUnitMethodProvider");
-    }
-
-    @Override
-    public void runTestMethod(Node activatedNode) {
-        final Node activeNode = activatedNode;
-        final Document doc;
-        final int caret;
-
-        EditorCookie ec = activeNode.getLookup().lookup(EditorCookie.class);
-        if (ec != null) {
-            JEditorPane pane = NbDocument.findRecentEditorPane(ec);
-            if (pane != null) {
-                doc = pane.getDocument();
-                caret = pane.getCaret().getDot();
-            } else {
-                doc = null;
-                caret = -1;
-            }
-        } else {
-            doc = null;
-            caret = -1;
-        }
-
-        ProgressUtils.runOffEventDispatchThread(new Runnable() {
-
-            @Override
-            public void run() {
-                SingleMethod sm = getTestMethod(activeNode.getLookup(), doc, caret);
-                if (sm != null) {
-                    ActionProvider ap = OutputUtils.getActionProvider(sm.getFile());
-                    if (ap != null) {
-                        if(Arrays.asList(ap.getSupportedActions()).contains(command) && ap.isActionEnabled(command, Lookups.singleton(sm))) {
-                            ap.invokeAction(command, Lookups.singleton(sm));
-                        }
-                    }
-                }
-            }
-        },
-        NbBundle.getMessage(JUnitMethodRunnerProvider.class, "LBL_Action_RunTestMethod"), new AtomicBoolean(), false);
-    }
     
-    private SingleMethod getTestMethod(Lookup lkp, Document doc, int cursor){
-        SingleMethod sm = lkp.lookup(SingleMethod.class);
-        if (sm == null && doc != null){
+    @Override
+    public SingleMethod getTestMethod(Document doc, int cursor){
+        SingleMethod sm = null;
+        if (doc != null){
             JavaSource js = JavaSource.forDocument(doc);
             TestClassInfoTask task = new TestClassInfoTask(cursor);
             try {

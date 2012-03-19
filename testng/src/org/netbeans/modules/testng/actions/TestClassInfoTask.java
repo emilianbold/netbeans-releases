@@ -50,6 +50,7 @@ import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -61,6 +62,7 @@ final class TestClassInfoTask implements CancellableTask<CompilationController> 
     private String packageName;
     private String className;
     private String methodName;
+    private FileObject fo;
     
     /**
      * <b>DO NOT USE!</b> Package private due to use in tests
@@ -76,6 +78,7 @@ final class TestClassInfoTask implements CancellableTask<CompilationController> 
 
     public void run(CompilationController controller) throws Exception {
         controller.toPhase(Phase.RESOLVED);
+        fo = controller.getFileObject();
         TypeElement typeElement = null;
         List<? extends TypeElement> topLevelElements = controller.getTopLevelElements();
         for (Iterator<? extends TypeElement> it = topLevelElements.iterator(); it.hasNext();) {
@@ -117,5 +120,9 @@ final class TestClassInfoTask implements CancellableTask<CompilationController> 
 
     String getPackageName() {
         return packageName;
+    }
+    
+    FileObject getFileObject() {
+        return fo;
     }
 }
