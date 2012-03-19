@@ -83,6 +83,10 @@ public abstract class BugtrackingConnector {
         return null;
     }
 
+    public TaskListIssueProvider getTasklistProvder() {
+        return null;
+    }
+    
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {    

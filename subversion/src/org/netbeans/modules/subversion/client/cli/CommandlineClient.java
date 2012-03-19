@@ -81,6 +81,7 @@ import org.netbeans.modules.subversion.client.cli.commands.StatusCommand;
 import org.netbeans.modules.subversion.client.cli.commands.StatusCommand.Status;
 import org.netbeans.modules.subversion.client.cli.commands.SwitchToCommand;
 import org.netbeans.modules.subversion.client.cli.commands.UpdateCommand;
+import org.netbeans.modules.subversion.client.cli.commands.UpgradeCommand;
 import org.netbeans.modules.subversion.client.cli.commands.VersionCommand;
 import org.netbeans.modules.subversion.client.parser.EntriesCache;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
@@ -104,6 +105,7 @@ import org.tigris.subversion.svnclientadapter.ISVNProgressListener;
 import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.ISVNStatusCallback;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNDiffSummary;
 import org.tigris.subversion.svnclientadapter.SVNKeywords;
@@ -951,7 +953,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         try {
             getInfo(url);
         } catch (SVNClientException e) {
-            if(e.getMessage().indexOf("Not a valid URL") > -1) {
+            if(e.getMessage().indexOf("Not a valid URL") > -1 || e.getMessage().contains("non-existent in revision")) {
                 ret.addAll(getAllNotExistingParents(url.getParent()));
                 ret.add(url);
             } else {
@@ -1204,6 +1206,31 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public ISVNStatus[] getStatus (File file, boolean bln, boolean bln1, boolean bln2, boolean bln3, ISVNStatusCallback isvnsc) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void propertySet (SVNUrl svnurl, Number number, String string, String string1, String string2) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ISVNProperty[] getProperties (File file, boolean bln) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void upgrade (File wcRoot) throws SVNClientException {
+        UpgradeCommand cmd = new UpgradeCommand(wcRoot);
+        exec(cmd);
+    }
+
+    @Override
+    public void switchToUrl (File file, SVNUrl svnurl, SVNRevision svnr, SVNRevision svnr1, int i, boolean bln, boolean bln1, boolean bln2, boolean bln3) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
     class NotificationHandler extends SVNNotificationHandler {   }
 

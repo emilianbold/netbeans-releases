@@ -80,7 +80,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     static final String PROJECT_NAME = "projectName"; // NOI18N
     static final String PROJECT_DIR = "projectDir"; // NOI18N
     static final String IS_PROJECT_DIR_USED = "isProjectDirUsed"; // NOI18N
-    static final String SET_AS_MAIN = "setAsMain"; // NOI18N
     static final String SOURCES_FOLDER = "sourcesFolder"; // NOI18N
     static final String LOCAL_SERVERS = "localServers"; // NOI18N
     static final String PHP_VERSION = "phpVersion"; // NOI18N
@@ -208,9 +207,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
         // encoding
         settings.putProperty(ENCODING, configureProjectPanelVisual.getEncoding());
-
-        // set as main project - never set as main
-        settings.putProperty(SET_AS_MAIN, false);
     }
 
     /**

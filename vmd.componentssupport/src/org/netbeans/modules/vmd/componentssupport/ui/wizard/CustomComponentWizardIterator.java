@@ -100,7 +100,6 @@ public class CustomComponentWizardIterator implements
     // properties
     public static final String PROJECT_DIR  = "projDir";                         // NOI18N
     public static final String PROJECT_NAME = "projName";                        // NOI18N
-    public static final String SET_AS_MAIN  = "setAsMain";                       // NOI18N
     public static final String LAYER_PATH   = "layer";                           // NOI18N
     public static final String BUNDLE_PATH  = "bundle";                          // NOI18N
     public static final String CODE_BASE_NAME

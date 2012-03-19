@@ -45,7 +45,6 @@
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
 import java.util.prefs.Preferences;
-import org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator.WizardType;
 import org.openide.util.NbPreferences;
 
 /**
@@ -61,8 +60,6 @@ public class WizardSettings {
 
     private static final String NEW_LIB_COUNT = "newLibraryCount"; //NOI18N
 
-    private static final String SET_AS_MAIN = "setAsMain."; // NOI18N
-    
     private static Preferences getPreferences() {
         return NbPreferences.forModule(WizardSettings.class);
     }
@@ -89,14 +86,6 @@ public class WizardSettings {
     
     public static void setNewLibraryCount(int count) {
         getPreferences().putInt(NEW_LIB_COUNT, count);
-    }
-
-    public static boolean getSetAsMain(WizardType wizardType) {
-        return getPreferences().getBoolean(SET_AS_MAIN + wizardType, wizardType != WizardType.LIB);
-    }
-
-    public static void setSetAsMain(WizardType wizardType, boolean setAsMain) {
-        getPreferences().putBoolean(SET_AS_MAIN + wizardType, setAsMain);
     }
 
 }

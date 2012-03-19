@@ -118,7 +118,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }
 
     void store( WizardDescriptor d ) {
-        // d.putProperty( "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty( "projectFolder", new File(projectFolderTextField.getText().trim()) ); // NOI18N
         d.putProperty( "projectName", projectNameTextField.getText().trim() ); // NOI18N
     }

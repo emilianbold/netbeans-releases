@@ -108,6 +108,7 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
@@ -722,6 +723,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         void run(RepositoryInfo repo) throws IOException;
     }
     private void iterate(List<RepositoryInfo> repos, final RepoAction action, final RepoAction actionSkip) {
+        if (repos == null) {
+            repos = RepositoryPreferences.getInstance().getRepositoryInfos();
+        }
         for (final RepositoryInfo repo : repos) {
             Mutex mutex = getRepoMutex(repo);
             if (isIndexing(repo, mutex)) {
@@ -917,8 +921,11 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     @Override 
-    public RepositoryQueries.Result<RepositoryQueries.ClassUsage> findClassUsages(final String className, final List<RepositoryInfo> repos) {
+    public RepositoryQueries.Result<RepositoryQueries.ClassUsage> findClassUsages(final String className, @NullAllowed List<RepositoryInfo> repos) {
         List<RepositoryInfo> localRepos = new ArrayList<RepositoryInfo>();
+        if (repos == null) {
+            repos = RepositoryPreferences.getInstance().getRepositoryInfos();
+        }
         for (RepositoryInfo repo : repos) {
             if (repo.isLocal()) {
                 localRepos.add(repo);
@@ -948,7 +955,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
     
     @Override
-    public RepositoryQueries.Result<NBVersionInfo> findDependencyUsage(String groupId, String artifactId, String version, List<RepositoryInfo> repos) {
+    public RepositoryQueries.Result<NBVersionInfo> findDependencyUsage(String groupId, String artifactId, String version, @NullAllowed List<RepositoryInfo> repos) {
         final Query q = ArtifactDependencyIndexCreator.query(groupId, artifactId, version);
         final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
         RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>();

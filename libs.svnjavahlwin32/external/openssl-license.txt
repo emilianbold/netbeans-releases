@@ -1,5 +1,5 @@
 Name: OpenSSL
-Version: 0.9.8
+Version: 1.0.0
 Description: Open source SSL libraries
 License: Open ssl license
 OSR: 9187

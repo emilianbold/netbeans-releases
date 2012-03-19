@@ -80,8 +80,6 @@ public class ProjectSupport {
                 public void run() {
                     OpenProjectList.getDefault().addPropertyChangeListener(listener);
                     OpenProjectList.getDefault().open(project);
-                    // Set main? Probably user should do this if he wants.
-                    // OpenProjectList.getDefault().setMainProject(project);
                 }
             });
             // WAIT PROJECT OPEN - start
