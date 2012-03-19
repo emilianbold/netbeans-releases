@@ -2749,15 +2749,15 @@ parameter_list [boolean symTabCheck]
 
 parameter_declaration_list [boolean symTabCheck]
 	:	
-	({!symTabCheck || action.isType(LT(1).getText())}?	parameter_declaration 
+	({!symTabCheck || action.isType(LT(1).getText())}?	parameter_declaration[false]
 		(// Have not been able to find way of stopping warning of
 		 // non-determinism between alt 1 and exit branch of block
-		 COMMA! parameter_declaration
+		 COMMA! parameter_declaration[false]
 		)*
 	)
 	;
 
-parameter_declaration
+parameter_declaration[boolean inTemplateParams]
 	:	{beginParameterDeclaration();}
 		(
 			{!((LA(1)==SCOPE) && (LA(2)==STAR||LA(2)==LITERAL_OPERATOR)) &&
@@ -2774,8 +2774,12 @@ parameter_declaration
 		|
 			ELLIPSIS
 		)
-		(ASSIGNEQUAL 
-		 assignment_expression
+		(ASSIGNEQUAL
+                    (   
+                        {inTemplateParams}? template_param_expression
+                    |
+                        assignment_expression
+                    )
 		)?
 		{ #parameter_declaration = #(#[CSM_PARAMETER_DECLARATION, "CSM_PARAMETER_DECLARATION"], #parameter_declaration); }
 	;
@@ -2848,7 +2852,7 @@ exception_type_id
 	{ /*TypeSpecifier*/int ts; String so; }
 	:
 	//( (so = scope_override IDENT) | built_in_type ) (STAR | AMPERSAND)*
-        parameter_declaration
+        parameter_declaration[false]
 	;
 
 protected
@@ -2994,7 +2998,7 @@ template_parameter
 	|
 		template_template_parameter
 	|	
-		parameter_declaration	// DW 30/06/03 This doesn't seem to match the
+		parameter_declaration[true]	// DW 30/06/03 This doesn't seem to match the
 					// current standard
 	)
 	;
