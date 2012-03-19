@@ -4,7 +4,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html">
     <h:head>
-        <title>Facelet Title</title>
+        <title>PrimeFaces Welcome Page</title>
     </h:head>
     <h:body>
         <p:commandButton id="wlcButton" value="Welcome to PrimeFaces" onclick="wlcDialog.show();" type="button" />
