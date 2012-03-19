@@ -42,94 +42,29 @@
 package org.netbeans.modules.testng.actions;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.TestMethodDebuggerProvider;
 import org.netbeans.modules.java.testrunner.CommonTestUtil;
-import org.netbeans.modules.testng.api.TestNGSupport;
-import org.netbeans.modules.testng.spi.TestConfig;
-import org.netbeans.modules.testng.spi.TestNGSupportImplementation.TestExecutor;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author theofanis
  */
-@ServiceProvider(service=TestMethodDebuggerProvider.class, position=20)
+@ServiceProvider(service = TestMethodDebuggerProvider.class, position = 20)
 public class TestNGMethodDebuggerProvider extends TestMethodDebuggerProvider {
-    
+
     private static final Logger LOGGER = Logger.getLogger(TestNGMethodDebuggerProvider.class.getName());
-
-    @Override
-    public String getProviderName() {
-        return NbBundle.getMessage(TestMethodDebuggerProvider.class, "NAME_TestNGMethodProvider");
-    }
-
-    @Override
-    public void debugTestMethod(Node activatedNode) {
-        Lookup l = activatedNode.getLookup();
-        EditorCookie ec = l.lookup(EditorCookie.class);
-        SingleMethod sm = l.lookup(SingleMethod.class);
-        if (ec == null && sm == null) {
-            //should not happen
-            throw new UnsupportedOperationException();
-        }
-        FileObject fo = null;
-        String testMethod = null;
-        TestClassInfoTask task = new TestClassInfoTask(0);
-        if (ec != null) {
-            JEditorPane[] panes = ec.getOpenedPanes();
-            if (panes.length > 0) {
-                final int cursor = panes[0].getCaret().getDot();
-                JavaSource js = JavaSource.forDocument(panes[0].getDocument());
-                task = new TestClassInfoTask(cursor);
-                try {
-                    js.runUserActionTask(task, true);
-                } catch (IOException ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
-                }
-                if (task.getMethodName() == null) {
-                    //TODO - cursor is outside of a method or a given method is not a test
-                    //so let allow user to choose any available method within given class
-                    //using some UI
-                }
-                DataObject dobj = l.lookup(DataObject.class);
-                fo = dobj.getPrimaryFile();
-                testMethod = task.getMethodName();
-            }
-        }
-        if (sm != null) {
-            fo = sm.getFile();
-            testMethod = sm.getMethodName();
-            JavaSource js = JavaSource.forFileObject(fo);
-            try {
-                js.runUserActionTask(task, true);
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-            }
-        }
-        assert fo != null;
-        Project p = FileOwnerQuery.getOwner(fo);
-        TestExecutor exec = TestNGSupport.findTestNGSupport(p).createExecutor(p);
-        TestConfig conf = TestConfigAccessor.getDefault().createTestConfig(fo, false, task.getPackageName(), task.getClassName(), testMethod);
-        try {
-            exec.execute(TestNGSupport.Action.DEBUG_TESTMETHOD, conf);
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
-        }
-    }
 
     @Override
     public boolean canHandle(Node activatedNode) {
@@ -151,5 +86,22 @@ public class TestNGMethodDebuggerProvider extends TestMethodDebuggerProvider {
         }
         return false;
     }
-    
+
+    @Override
+    public SingleMethod getTestMethod(Document doc, int cursor) {
+        SingleMethod sm = null;
+        if (doc != null) {
+            JavaSource js = JavaSource.forDocument(doc);
+            TestClassInfoTask task = new TestClassInfoTask(cursor);
+            try {
+                Future<Void> f = js.runWhenScanFinished(task, true);
+                if (f.isDone() && task.getFileObject() != null && task.getMethodName() != null) {
+                    sm = new SingleMethod(task.getFileObject(), task.getMethodName());
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+        }
+        return sm;
+    }
 }

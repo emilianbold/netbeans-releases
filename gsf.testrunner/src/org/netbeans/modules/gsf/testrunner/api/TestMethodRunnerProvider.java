@@ -41,29 +41,79 @@
  */
 package org.netbeans.modules.gsf.testrunner.api;
 
-import java.io.File;
-import java.io.IOException;
-import org.netbeans.api.java.classpath.ClassPath;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.JEditorPane;
+import javax.swing.text.Document;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.SingleMethod;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author theofanis
  */
 public abstract class TestMethodRunnerProvider {
-    
-    public abstract String getProviderName();
-    
+
+    private final String command = SingleMethod.COMMAND_RUN_SINGLE_METHOD;
+
     public abstract boolean canHandle(Node activatedNode);
-    
-    public abstract void runTestMethod(Node activatedNode);
-    
+
+    public abstract SingleMethod getTestMethod(Document doc, int caret);
+
+    public final void runTestMethod(Node activatedNode) {
+        final Node activeNode = activatedNode;
+        final Document doc;
+        final int caret;
+
+        EditorCookie ec = activeNode.getLookup().lookup(EditorCookie.class);
+        if (ec != null) {
+            JEditorPane pane = NbDocument.findRecentEditorPane(ec);
+            if (pane != null) {
+                doc = pane.getDocument();
+                caret = pane.getCaret().getDot();
+            } else {
+                doc = null;
+                caret = -1;
+            }
+        } else {
+            doc = null;
+            caret = -1;
+        }
+
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            @Override
+            public void run() {
+                SingleMethod sm = activeNode.getLookup().lookup(SingleMethod.class);
+                if (sm == null) {
+                    sm = getTestMethod(doc, caret);
+                }
+                if (sm != null) {
+                    ActionProvider ap = getActionProvider(sm.getFile());
+                    if (ap != null) {
+                        if (Arrays.asList(ap.getSupportedActions()).contains(command) && ap.isActionEnabled(command, Lookups.singleton(sm))) {
+                            ap.invokeAction(command, Lookups.singleton(sm));
+                        }
+                    }
+                }
+            }
+        },
+        NbBundle.getMessage(TestMethodRunnerProvider.class, "LBL_Action_RunTestMethod"), new AtomicBoolean(), false);
+    }
+
+    static ActionProvider getActionProvider(FileObject fileObject) {
+        Project owner = FileOwnerQuery.getOwner(fileObject);
+        if (owner == null) { // #183586
+            return null;
+        }
+        return owner.getLookup().lookup(ActionProvider.class);
+    }
 }
