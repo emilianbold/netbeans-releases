@@ -84,11 +84,11 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
     /**
      * Name of the node in NetBeans preferences.
      */
-    public static final String PREFERENCES_NODE = "icefaces2";
+    public static final String PREFERENCES_NODE = "icefaces";
     /**
      * Framework name used also for statistics.
      */
-    public static final String ICEFACES_NAME = "ICEfaces 2.0"; //NOI18N
+    public static final String ICEFACES_NAME = "ICEfaces"; //NOI18N
     /**
      * Base class for which is searched by detecting ICEfaces2 on the classpath of the project.
      */
@@ -101,9 +101,9 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
     private Icefaces2Customizer customizer;
 
     // Constants for web.xml
-    private static final String FACES_SAVING_METHOD = "javax.faces.STATE_SAVING_METHOD";
-    private static final String FACES_SKIP_COMMENTS = "javax.faces.FACELETS_SKIP_COMMENTS";
-    private static final String icefacesPom ="http://anonsvn.icefaces.org/repo/maven2/releases/org/icefaces/icefaces/2.0.2/icefaces-2.0.2.pom";
+    private static final String FACES_SAVING_METHOD = "javax.faces.STATE_SAVING_METHOD"; //NOI18N
+    private static final String FACES_SKIP_COMMENTS = "javax.faces.FACELETS_SKIP_COMMENTS"; //NOI18N
+    private static final String icefacesPom ="http://anonsvn.icesoft.org//repo/maven2/releases/org/icefaces/icefaces/3.0.0/icefaces-3.0.0.pom"; //NOI18N
 
     @Override
     public String getName() {
@@ -112,7 +112,7 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(Icefaces2Implementation.class, "DESC_Icefaces2Implementation"); //NOI18N
+        return NbBundle.getMessage(Icefaces2Implementation.class, "DESC_IcefacesImplementation"); //NOI18N
     }
 
     @Override
