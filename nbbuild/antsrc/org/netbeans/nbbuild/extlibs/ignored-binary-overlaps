@@ -28,3 +28,7 @@ javacard/JCDK3.0.2_ConnectedEdition/lib/commons-codec-1.3.jar ide/modules/ext/ap
 javacard/JCDK3.0.2_ConnectedEdition/lib/commons-logging-1.1.jar ide/modules/ext/commons-logging-1.1.jar
 javacard/JCDK3.0.2_ConnectedEdition/lib/ant-contrib-1.0b3.jar mobility/modules/ext/ant-contrib-1.0b3.jar
 javacard/JCDK3.0.2_ConnectedEdition/lib/commons-httpclient-3.0.jar mobility/modules/ext/commons-httpclient-3.0.jar
+
+# Amazon Beanstalk SDK distributed as is:
+enterprise/modules/ext/commons-logging-1.1.1.jar ide/modules/ext/commons-logging-1.1.1.jar
+enterprise/modules/ext/commons-codec-1.3.jar ide/modules/org-apache-commons-codec.jar
