@@ -42,15 +42,18 @@
 package org.netbeans.modules.php.project.connections.sync;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
@@ -70,9 +73,11 @@ public class ProgressPanel extends JPanel {
     final ProgressHandle progressHandle;
 
     // @GuardedBy(AWT)
-    NotifyDescriptor descriptor = null;
+    DialogDescriptor descriptor = null;
     // @GuardedBy(AWT)
     NotificationLineSupport notificationLineSupport = null;
+    // @GuardedBy(AWT)
+    Dialog dialog = null;
 
     volatile boolean error = false;
 
@@ -97,18 +102,20 @@ public class ProgressPanel extends JPanel {
     }
 
     @NbBundle.Messages("ProgressPanel.title=Synchronization")
-    public void showPanel() {
+    public void createPanel() {
         assert SwingUtilities.isEventDispatchThread();
-        descriptor = new NotifyDescriptor(
+        descriptor = new DialogDescriptor(
                 this,
                 Bundle.ProgressPanel_title(),
-                NotifyDescriptor.DEFAULT_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE,
+                true,
                 new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION);
+                NotifyDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
         descriptor.setValid(false);
         notificationLineSupport = descriptor.createNotificationLineSupport();
-        DialogDisplayer.getDefault().notifyLater(descriptor);
+        dialog = DialogDisplayer.getDefault().createDialog(descriptor);
     }
 
     public void start(List<SyncItem> items) {
@@ -119,6 +126,12 @@ public class ProgressPanel extends JPanel {
             }
         }
         progressHandle.start(units == 0 ? NO_SYNC_UNITS : units);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                dialog.setVisible(true);
+            }
+        });
     }
 
     @NbBundle.Messages("ProgressPanel.success=Synchronization successfully finished.")
@@ -129,7 +142,11 @@ public class ProgressPanel extends JPanel {
             public void run() {
                 descriptor.setValid(true);
                 if (!error) {
-                    notificationLineSupport.setInformationMessage(Bundle.ProgressPanel_success());
+                    if (autoCloseCheckBox.isSelected()) {
+                        dialog.dispose();
+                    } else {
+                        notificationLineSupport.setInformationMessage(Bundle.ProgressPanel_success());
+                    }
                 }
             }
         });
@@ -223,6 +240,7 @@ public class ProgressPanel extends JPanel {
         summaryPanelHolder = new JPanel();
         progressPanelHolder = new JPanel();
         progressMessagePanelHolder = new JPanel();
+        autoCloseCheckBox = new JCheckBox();
         Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(ProgressPanel.class, "ProgressPanel.infoLabel.text")); // NOI18N
 
         summaryPanelHolder.setLayout(new BorderLayout());
@@ -230,6 +248,7 @@ public class ProgressPanel extends JPanel {
         progressPanelHolder.setLayout(new BorderLayout());
 
         progressMessagePanelHolder.setLayout(new BorderLayout());
+        Mnemonics.setLocalizedText(autoCloseCheckBox, NbBundle.getMessage(ProgressPanel.class, "ProgressPanel.autoCloseCheckBox.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -237,10 +256,9 @@ public class ProgressPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING).addComponent(summaryPanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(progressPanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addGroup(layout.createSequentialGroup()
-                        .addComponent(infoLabel)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(progressPanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(progressMessagePanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addGroup(layout.createSequentialGroup()
 
-                        .addGap(0, 0, Short.MAX_VALUE)).addComponent(progressMessagePanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addContainerGap())
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(infoLabel).addComponent(autoCloseCheckBox)).addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
@@ -248,11 +266,12 @@ public class ProgressPanel extends JPanel {
                 .addComponent(infoLabel)
                 .addGap(8, 8, 8)
 
-                .addComponent(summaryPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(progressPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(progressMessagePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(0, 20, Short.MAX_VALUE))
+                .addComponent(summaryPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(progressPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(progressMessagePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED, 20, Short.MAX_VALUE).addComponent(autoCloseCheckBox).addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JCheckBox autoCloseCheckBox;
     private JLabel infoLabel;
     private JPanel progressMessagePanelHolder;
     private JPanel progressPanelHolder;

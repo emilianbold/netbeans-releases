@@ -352,7 +352,7 @@ public final class SyncController implements Cancellable {
 
         public void sync(final boolean rememberTimestamp) {
             assert SwingUtilities.isEventDispatchThread();
-            progressPanel.showPanel();
+            progressPanel.createPanel();
             SYNC_RP.post(new Runnable() {
                 @Override
                 public void run() {
