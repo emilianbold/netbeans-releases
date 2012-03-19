@@ -78,6 +78,7 @@ public class SvnKitClientTest extends NbTestCase {
         suite.addTestSuite(ImportTestHidden.class);
         suite.addTestSuite(InfoTestHidden.class);
         suite.addTestSuite(ListTestHidden.class);
+        // unchecked yet
         suite.addTestSuite(LogTestHidden.class);
         suite.addTestSuite(MergeTestHidden.class);
         suite.addTestSuite(MkdirTestHidden.class);
