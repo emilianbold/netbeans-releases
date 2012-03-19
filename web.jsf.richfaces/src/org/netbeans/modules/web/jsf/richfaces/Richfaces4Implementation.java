@@ -88,8 +88,8 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
     private Richfaces4Customizer customizer;
 
     private static final String RICHFACES_NAME = "RichFaces"; //NOI18N
-    private static final String richfacesUiPom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/ui/richfaces-components-ui/4.0.0.Final/richfaces-components-ui-4.0.0.Final.pom";
-    private static final String richfacesCorePom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/core/richfaces-core-impl/4.0.0.Final/richfaces-core-impl-4.0.0.Final.pom";
+    private static final String richfacesUiPom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/ui/richfaces-components-ui/4.2.0.Final/richfaces-components-ui-4.2.0.Final.pom";
+    private static final String richfacesCorePom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/core/richfaces-core-impl/4.2.0.Final/richfaces-core-impl-4.2.0.Final.pom";
 
     public static final Map<String, String> RF_LIBRARIES = new HashMap<String, String>();
     public static final Map<String, String> RF_DEPENDENCIES = new HashMap<String, String>();
