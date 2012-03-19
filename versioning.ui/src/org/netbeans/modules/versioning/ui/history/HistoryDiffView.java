@@ -86,7 +86,6 @@ public class HistoryDiffView implements PropertyChangeListener {
     private DiffController diffView;                
     private Runnable prepareDiff = null;
     private Task prepareDiffTask = null;
-    private boolean selected;
     private PreparingDiffHandler preparingDiffPanel;
         
     /** Creates a new instance of LocalHistoryView */
@@ -125,18 +124,15 @@ public class HistoryDiffView implements PropertyChangeListener {
                     CompareMode mode = tc.getMode();
                     switch(mode) {
                         case TOCURRENT:
-                            selected = true;
                             refreshDiffPanel(entry1, file1);
                             return;
 
                         case TOPARENT:    
-                            selected = true;
                             HistoryEntry entry2 = tc.getParentEntry(entry1);
                             VCSFileProxy file2 = null;
                             if (entry2 != null) {
                                 file2 = entry2.getFiles()[0];
                             } else {
-                                selected = false;
                                 showNoContent(NbBundle.getMessage(HistoryDiffView.class, "MSG_DiffPanel_NoVersionToCompare")); // NOI18N                                
                                 return;
                             }
@@ -169,13 +165,11 @@ public class HistoryDiffView implements PropertyChangeListener {
                     } else {
                         refreshDiffPanel(entry2, entry1, file2, file1);
                     }
-                    selected = true;
                     return;
                 }
             }
         } 
         
-        selected = false;
         String msgKey = (newSelection == null) || (newSelection.length == 0)
                         ? "MSG_DiffPanel_NoVersion"                     //NOI18N
                         : "MSG_DiffPanel_IllegalSelection";             //NOI18N
