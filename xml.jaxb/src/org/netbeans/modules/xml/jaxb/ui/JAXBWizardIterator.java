@@ -180,6 +180,7 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
         }
 
         ProjectHelper.addJaxbApiEndorsed(project);
+        ProjectHelper.disableCoS(project, true);
         return Collections.singleton(dTemplate);
     }
 

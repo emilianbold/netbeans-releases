@@ -60,6 +60,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /**
@@ -110,37 +111,26 @@ public class Primefaces2Implementation implements JsfComponentImplementation {
     }
 
     private static FileObject generateWelcomePage(WebModule webModule) throws IOException {
-        FileObject templateFO = FileUtil.getConfigFile("Templates/JSP_Servlet/JSP.xhtml"); //NOI18N
+        FileObject templateFO = FileUtil.getConfigFile("Templates/Other/welcomePrimefaces.xhtml"); //NOI18N
         DataObject templateDO = DataObject.find(templateFO);
-
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("isJSF20", true); //NOI18N
-        params.put("welcomeInclude", "xmlns:p=\"http://primefaces.prime.com.tr/ui\""); //NOI18N
-        params.put("welcomeBody", getWelcomeBody()); //NOI18N
-
-        JsfComponentUtils.enhanceIndexBody(webModule, "<br />\n<h:link outcome=\"welcomePrimefaces\" value=\"Primefaces welcome page\" />"); //NOI18N
         DataObject generated = templateDO.createFromTemplate(
                 DataFolder.findFolder(webModule.getDocumentBase()),
-                "welcomePrimefaces", //NOI18N
-                params);
-
-        // reformat welcome page
+                "welcomePrimefaces"); //NOI18N
         JsfComponentUtils.reformat(generated);
-        // reformat index page
-        FileObject index = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
-        if (index.isValid() && index.canWrite()) {
-            JsfComponentUtils.reformat(DataObject.find(index));
-        }
+        
+        // update and reformat index page
+        updateIndexPage(webModule);
+        
         return generated.getPrimaryFile();
     }
 
-    private static String getWelcomeBody() {
-        return "<p:commandButton id=\"wlcButton\" value=\"Welcome to PrimeFaces\" onclick=\"wlcDialog.show();\" type=\"button\" />\n\n"
-                + "<p:dialog header=\"Welcome to PrimeFaces\" widgetVar=\"wlcDialog\" showEffect=\"clip\" hideEffect=\"explode\">\n"
-                + "<h:outputText value=\"Welcome to development in PrimeFaces.\" />\n"
-                + "<br /><br />\n"
-                + "<h:outputLink value=\"http://www.primefaces.org/documentation.html\" >PrimeFaces documentation...</h:outputLink>\n"
-                + "</p:dialog>";
+    private static void updateIndexPage(WebModule webModule) throws DataObjectNotFoundException {
+        FileObject indexFO = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
+        DataObject indexDO = DataObject.find(indexFO);
+        JsfComponentUtils.enhanceFileBody(indexDO, "</h:body>", "<br />\n<h:link outcome=\"welcomePrimefaces\" value=\"Primefaces welcome page\" />"); //NOI18N
+        if (indexFO.isValid() && indexFO.canWrite()) {
+            JsfComponentUtils.reformat(indexDO);
+        }
     }
 
     @Override

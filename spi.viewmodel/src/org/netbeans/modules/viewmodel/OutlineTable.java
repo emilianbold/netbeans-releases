@@ -53,6 +53,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -324,10 +325,21 @@ ExplorerManager.Provider, PropertyChangeListener {
      * @param models
      */
     public void setModel (Models.CompoundModel model) {
+        setModel(model, null);
+    }
+    
+    /**
+     * Set list of models.
+     * Columns are taken from the first model. Children are listed
+     * @param models
+     */
+    public void setModel (Models.CompoundModel model, MessageFormat treeNodeDisplayFormat) {
         // 2) save current settings (like columns, expanded paths)
         //List ep = treeTable.getExpandedPaths ();
-        saveWidths ();
-        saveSortedState();
+        if (currentTreeModelRoot == null || currentTreeModelRoot.getTreeNodeDisplayFormat() == null) {
+            saveWidths ();
+            saveSortedState();
+        }
         
         //this.model = model;
         
@@ -358,14 +370,19 @@ ExplorerManager.Provider, PropertyChangeListener {
             logger.fine("setModel(): setNodesColumnName("+Arrays.toString(nodesColumnName)+") done");
         }
         currentTreeModelRoot = new TreeModelRoot (model, treeTable);
+        currentTreeModelRoot.setTreeNodeDisplayFormat(treeNodeDisplayFormat);
         TreeModelNode rootNode = currentTreeModelRoot.getRootNode ();
         getExplorerManager ().setRootContext (rootNode);
         // The root node must be ready when setting the columns
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("setModel(): setProperties("+Arrays.toString(columnsToSet)+")");
         }
-        treeTable.setProperties (columnsToSet);
-        updateTableColumns(columnsToSet);
+        if (treeNodeDisplayFormat == null) {
+            treeTable.setProperties (columnsToSet);
+            updateTableColumns(columnsToSet);
+        } else {
+            treeTable.setProperties (new Property[]{});
+        }
         treeTable.setAllowedDragActions(model.getAllowedDragActions());
         treeTable.setAllowedDropActions(model.getAllowedDropActions(null));
         treeTable.setDynamicDropActions(model);
@@ -377,7 +394,9 @@ ExplorerManager.Provider, PropertyChangeListener {
         // Moved to 4), because the new root node must be ready when setting columns
 
         // 6) update column widths & expanded nodes
-        updateColumnWidthsAndSorting();
+        if (treeNodeDisplayFormat == null) {
+            updateColumnWidthsAndSorting();
+        }
         //treeTable.expandNodes (expandedPaths);
         // TODO: this is a workaround, we should find a better way later
         /* We must not call children here - it can take a long time...
@@ -416,11 +435,13 @@ ExplorerManager.Provider, PropertyChangeListener {
      * Columns are taken from the first model. Children are listed
      * @param models
      */
-    public void setModel (HyperCompoundModel model) {
+    public void setModel (HyperCompoundModel model, MessageFormat treeNodeDisplayFormat) {
         // 2) save current settings (like columns, expanded paths)
         //List ep = treeTable.getExpandedPaths ();
-        saveWidths ();
-        saveSortedState();
+        if (currentTreeModelRoot == null || currentTreeModelRoot.getTreeNodeDisplayFormat() == null) {
+            saveWidths ();
+            saveSortedState();
+        }
 
         //this.model = model;
 
@@ -442,11 +463,16 @@ ExplorerManager.Provider, PropertyChangeListener {
         Node.Property[] columnsToSet = createColumns (cs, nodesColumnName);
         treeTable.setNodesColumnName(nodesColumnName[0], nodesColumnName[1]);
         currentTreeModelRoot = new TreeModelRoot (model, treeTable);
+        currentTreeModelRoot.setTreeNodeDisplayFormat(treeNodeDisplayFormat);
         TreeModelNode rootNode = currentTreeModelRoot.getRootNode ();
         getExplorerManager ().setRootContext (rootNode);
         // The root node must be ready when setting the columns
-        treeTable.setProperties (columnsToSet);
-        updateTableColumns(columnsToSet);
+        if (treeNodeDisplayFormat == null) {
+            treeTable.setProperties (columnsToSet);
+            updateTableColumns(columnsToSet);
+        } else {
+            treeTable.setProperties (new Property[]{});
+        }
         treeTable.setAllowedDragActions(model.getAllowedDragActions());
         treeTable.setAllowedDropActions(model.getAllowedDropActions(null));
 
@@ -454,7 +480,9 @@ ExplorerManager.Provider, PropertyChangeListener {
         // Moved to 4), because the new root node must be ready when setting columns
 
         // 6) update column widths & expanded nodes
-        updateColumnWidthsAndSorting();
+        if (treeNodeDisplayFormat == null) {
+            updateColumnWidthsAndSorting();
+        }
         /* We must not call children here - it can take a long time...
          * the expansion is performed in TreeModelNode.TreeModelChildren.applyChildren()
          */

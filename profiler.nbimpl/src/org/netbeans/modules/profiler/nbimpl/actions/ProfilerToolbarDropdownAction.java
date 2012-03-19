@@ -90,7 +90,7 @@ public class ProfilerToolbarDropdownAction implements Action, Presenter.Toolbar 
         if (toolbarPresenter == null) {
             // gets the real action registered in the menu from layer
             Action a = Actions.forID("Profile", "org.netbeans.modules.profiler.actions.AttachAction");
-            final Action attachAction = a != null ? a : /* XXX should be impossible */AttachAction.getDefault();
+            final Action attachAction = a != null ? a : /* XXX should be impossible */AttachAction.getInstance();
 
             final JMenuItem dropdownItem1 = createDropdownItem(defaultAction);
             final JMenuItem dropdownItem2 = createDropdownItem(attachAction);

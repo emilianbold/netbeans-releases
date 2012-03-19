@@ -61,6 +61,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -94,16 +95,6 @@ import org.openide.util.RequestProcessor;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-//    # ------------------------------------------------------------------------------
-//    # Following are formats for time/date in a form that is tuned for user wrt to space needed and clarity/usefulness.
-//    # ------------------------------------------------------------------------------
-//    # Formatting patterns are described in Java API - java.text.SimpleDateFormat
-//    # ------------------------------------------------------------------------------
-    "Utils_FullDateFormat=HH:mm:ss, d MMM yyyy",
-    "Utils_FullDateFormatHiRes=HH:mm:ss.SSS, d MMM yyyy",
-    "Utils_TodayDateFormat=HH:mm:ss",
-    "Utils_TodayDateFormatHiRes=HH:mm:ss.SSS",
-    "Utils_DayDateFormat=d MMM yyyy",
     "Utils_CannotOpenSourceMsg=Cannot show profiling point in source.\nCheck profiling point location.",
     "Utils_InvalidPPLocationMsg=<html><b>Invalid location of {0}.</b><br><br>Location of the profiling point does not seem to be valid.<br>Make sure it points inside method definition, otherwise<br>the profiling point will not be hit during profiling.</html>"
 })
@@ -346,11 +337,10 @@ public class Utils {
     private static final EnhancedTableCellRenderer scopeRenderer = new ProfilingPointScopeRenderer();
     private static final ProfilingPointPresenterRenderer presenterRenderer = new ProfilingPointPresenterRenderer();
     private static final ProfilingPointPresenterListRenderer presenterListRenderer = new ProfilingPointPresenterListRenderer();
-    private static final SimpleDateFormat fullDateFormat = new SimpleDateFormat(Bundle.Utils_FullDateFormat());
-    private static final SimpleDateFormat fullDateFormatHiRes = new SimpleDateFormat(Bundle.Utils_FullDateFormatHiRes());
-    private static final SimpleDateFormat todayDateFormat = new SimpleDateFormat(Bundle.Utils_TodayDateFormat());
-    private static final SimpleDateFormat todayDateFormatHiRes = new SimpleDateFormat(Bundle.Utils_TodayDateFormatHiRes());
-    private static final SimpleDateFormat dayDateFormat = new SimpleDateFormat(Bundle.Utils_DayDateFormat());
+    private static final DateFormat fullDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
+    private static final DateFormat todayDateFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
+    private static final DateFormat todayDateFormatHiRes = new SimpleDateFormat("HH:mm:ss.SSS"); // NOI118N
+    private static final DateFormat dayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
@@ -852,7 +842,7 @@ public class Utils {
         if (dayDateFormat.format(now).equals(dayDateFormat.format(date))) {
             return todayDateFormatHiRes.format(date);
         } else {
-            return fullDateFormatHiRes.format(date);
+            return todayDateFormatHiRes.format(date)+" "+dayDateFormat.format(date);  // NOI18N
         }
     }
     
