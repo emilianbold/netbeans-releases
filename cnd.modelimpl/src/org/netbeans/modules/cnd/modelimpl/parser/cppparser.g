@@ -708,7 +708,8 @@ template_explicit_specialization
     (LITERAL___extension__!)? LITERAL_template LESSTHAN GREATERTHAN
     (
         // Template explicit specialisation function definition (VK 30/05/06)
-        (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
+        ((LITERAL_template LESSTHAN GREATERTHAN)? declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
+        (LITERAL_template LESSTHAN GREATERTHAN)?
         {if(statementTrace >= 1) printf("external_declaration_0a[%d]: template " + "explicit-specialisation function definition\n", LT(1).getLine());}
         function_definition
         { #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
