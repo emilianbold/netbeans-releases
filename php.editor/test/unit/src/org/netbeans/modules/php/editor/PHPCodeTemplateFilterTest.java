@@ -42,7 +42,9 @@
 package org.netbeans.modules.php.editor;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
