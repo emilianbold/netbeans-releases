@@ -564,6 +564,11 @@ final class UndoRedoManager extends UndoRedo.Manager {
         undoGroup = null;
     }
 
+    UndoableEdit editToBeUndoneRedone(boolean redone) { // Access for NbDocument
+        WrapUndoEdit wrapEdit = (WrapUndoEdit) (redone ? editToBeRedone() : editToBeUndone());
+        return wrapEdit.delegate();
+    }
+
     static String editToString(UndoableEdit edit) {
         if (edit instanceof WrapUndoEdit) {
             return toStringTerse(edit) + "->" + toStringTerse(((WrapUndoEdit)edit).delegate()); // NOI18N
