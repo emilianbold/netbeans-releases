@@ -46,6 +46,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -59,10 +61,12 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2.CustomizerOperation;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.classpath.BootClassPathImpl;
+import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -102,17 +106,14 @@ public class CompilePanel extends javax.swing.JPanel {
     private static final int COS_TESTS = 2;
     private static final int COS_NONE = 3;
 
-    private ComboBoxUpdater<String> listener;
-    private final ModelHandle handle;
+    private final ModelHandle2 handle;
     private final Project project;
-    private CheckBoxUpdater debugUpdater;
-    private CheckBoxUpdater deprecateUpdater;
     private static boolean warningShown = false;
 
     private Color origComPlatformFore;
 
     /** Creates new form CompilePanel */
-    public CompilePanel(ModelHandle handle, Project prj) {
+    public CompilePanel(ModelHandle2 handle, Project prj) {
         initComponents();
         this.handle = handle;
         project = prj;
@@ -145,18 +146,36 @@ public class CompilePanel extends javax.swing.JPanel {
     }
 
     private void initValues() {
-        listener = new ComboBoxUpdater<String>(comCompileOnSave, lblCompileOnSave) {
+        new ComboBoxUpdater<String>(comCompileOnSave, lblCompileOnSave) {
+            private String modifiedValue;
 
+            private ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+
+                @Override
+                public void performOperation(POMModel model) {
+                    Properties modprops = model.getProject().getProperties();
+                    if (modprops == null) {
+                        modprops = model.getFactory().createProperties();
+                        model.getProject().setProperties(modprops);
+                    }
+                    modprops.setProperty(Constants.HINT_COMPILE_ON_SAVE, modifiedValue); //NOI18N
+                }
+            };
+
+            @Override
             public String getDefaultValue() {
                 return LABELS[COS_TESTS];
             }
 
+            @Override
             public String getValue() {
-                String val = null;
+                String val = modifiedValue;
+                if (val == null) {
                     Properties props = handle.getPOMModel().getProject().getProperties();
                     if (props != null) {
                         val = props.getProperty(Constants.HINT_COMPILE_ON_SAVE);
                     }
+                }
                 if (val == null) {
                     val = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
                 }
@@ -166,7 +185,10 @@ public class CompilePanel extends javax.swing.JPanel {
                 return LABELS[COS_TESTS];
             }
 
+            @Override
             public void setValue(String label) {
+                handle.removePOMModification(operation);
+                modifiedValue = null;
                 String value = labelToValue(label);
                 if (value != null && value.equals(VALUES[COS_TESTS])) {
                     //just reset the value, no need to persist default.
@@ -187,23 +209,19 @@ public class CompilePanel extends javax.swing.JPanel {
                 boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true) != null;
 
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_COMPILE_ON_SAVE)) {
-                    Properties modprops = handle.getPOMModel().getProject().getProperties();
-                    if (modprops == null) {
-                        modprops = handle.getPOMModel().getFactory().createProperties();
-                        handle.getPOMModel().getProject().setProperties(modprops);
-                    }
-                    modprops.setProperty(Constants.HINT_COMPILE_ON_SAVE, value == null ? null : value); //NOI18N
-                    handle.markAsModified(handle.getPOMModel());
+                    modifiedValue = value;
+                    handle.addPOMModification(operation);
                     if (hasConfig) {
                         // in this case clean up the auxiliary config
                         handle.setRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, null, true);
                     }
-                    return;
+                } else {
+                    handle.setRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, value, true);
                 }
-                handle.setRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, value == null ? null : value, true);
             }
         };
-        debugUpdater = new CheckBoxUpdater(cbDebug) {
+        new CheckBoxUpdater(cbDebug) {
+            @Override
             public Boolean getValue() {
                 String val = getCompilerParam(handle,PARAM_DEBUG);
                 if (val != null) {
@@ -212,24 +230,27 @@ public class CompilePanel extends javax.swing.JPanel {
                 return null;
             }
 
+            @Override
             public void setValue(Boolean value) {
                 String text;
                 if (value == null) {
                     //TODO we should attempt to remove the configuration
                     // from pom if this parameter is the only one defined.
-                    text = "true";//NOI18N
+                    text = "" + getDefaultValue();
                 } else {
                     text = value.toString();
                 }
-                checkCompilerParam(handle, PARAM_DEBUG, text);
+                modifyCompilerParamOperation(handle, PARAM_DEBUG, text);
             }
 
+            @Override
             public boolean getDefaultValue() {
                 return true;
             }
         };
 
-        deprecateUpdater = new CheckBoxUpdater(cbDeprecate) {
+        new CheckBoxUpdater(cbDeprecate) {
+            @Override
             public Boolean getValue() {
                 String val = getCompilerParam(handle,PARAM_DEPRECATION);
                 if (val != null) {
@@ -238,18 +259,20 @@ public class CompilePanel extends javax.swing.JPanel {
                 return null;
             }
 
+            @Override
             public void setValue(Boolean value) {
                 String text;
                 if (value == null) {
                     //TODO we should attempt to remove the configuration
                     // from pom if this parameter is the only one defined.
-                    text = "false";//NOI18N
+                    text = "" + getDefaultValue();
                 } else {
                     text = value.toString();
                 }
-                checkCompilerParam(handle, PARAM_DEPRECATION, text);
+                modifyCompilerParamOperation(handle, PARAM_DEPRECATION, text);
             }
 
+            @Override
             public boolean getDefaultValue() {
                 return false;
             }
@@ -257,14 +280,30 @@ public class CompilePanel extends javax.swing.JPanel {
 
         // java platform updater
         new ComboBoxUpdater<JavaPlatform>(comJavaPlatform, lblJavaPlatform) {
+            private String modifiedValue;
+
+            private ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
 
             @Override
+                public void performOperation(POMModel model) {
+                    Properties modprops = model.getProject().getProperties();
+                    if (modprops == null) {
+                        modprops = model.getFactory().createProperties();
+                        model.getProject().setProperties(modprops);
+                    }
+                    modprops.setProperty(Constants.HINT_JDK_PLATFORM, modifiedValue); //NOI18N
+                }
+            };
+            
+            @Override
             public JavaPlatform getValue() {
-                String val = null;
+                String val = modifiedValue;
+                if (val == null) {
                     Properties props = handle.getPOMModel().getProject().getProperties();
                     if (props != null) {
                         val = props.getProperty(Constants.HINT_JDK_PLATFORM);
                     }
+                }
                 if (val == null) {
                     val = handle.getRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, true);
                 }
@@ -282,6 +321,8 @@ public class CompilePanel extends javax.swing.JPanel {
 
             @Override
             public void setValue(JavaPlatform value) {
+                handle.removePOMModification(operation);
+                modifiedValue = null;
                 JavaPlatform platf = value == null ? JavaPlatformManager.getDefault().getDefaultPlatform() : value;
                 String platformId = platf.getProperties().get("platform.ant.name"); //NOI18N
                 if (JavaPlatformManager.getDefault().getDefaultPlatform().equals(platf)) {
@@ -292,20 +333,15 @@ public class CompilePanel extends javax.swing.JPanel {
                 //TODO also try to take the value in pom vs inherited pom value into account.
 
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_JDK_PLATFORM)) {
-                    Properties modprops = handle.getPOMModel().getProject().getProperties();
-                    if (modprops == null) {
-                        modprops = handle.getPOMModel().getFactory().createProperties();
-                        handle.getPOMModel().getProject().setProperties(modprops);
-                    }
-                    modprops.setProperty(Constants.HINT_JDK_PLATFORM, platformId); //NOI18N
-                    handle.markAsModified(handle.getPOMModel());
+                    modifiedValue = platformId;
+                    handle.addPOMModification(operation);
                     if (hasConfig) {
                         // in this case clean up the auxiliary config
                         handle.setRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, null, true);
                     }
-                    return;
-                }
+                } else {
                 handle.setRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, platformId, true);
+            }
             }
         };
     }
@@ -425,20 +461,49 @@ public class CompilePanel extends javax.swing.JPanel {
 
     private static final String CONFIGURATION_EL = "configuration";//NOI18N
 
+    private final Map<String, CompilerParamOperation> operations = new HashMap<String, CompilerParamOperation>();
+
     /**
      * update the debug param of project to given value.
      *
      * @param handle handle which models are to be updated
      * @param sourceLevel the sourcelevel to set
      */
-    public static void checkCompilerParam(ModelHandle handle, String param, String value) {
+    private void modifyCompilerParamOperation(ModelHandle2 handle, String param, String value) {
         String debug = PluginPropertyUtils.getPluginProperty(handle.getProject(),
                 Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, param,
                 "compile"); //NOI18N
         if (debug != null && debug.contains(value)) {
+            ModelOperation<POMModel> removed = operations.remove(param);
+            if (removed != null) {
+                handle.removePOMModification(removed);
+            }
             return;
         }
-        POMModel model = handle.getPOMModel();
+        ModelOperation<POMModel> removed = operations.remove(param);
+        if (removed != null) {
+            handle.removePOMModification(removed);
+        }
+        CompilerParamOperation added = new CompilerParamOperation(param, value);
+        operations.put(param, added);
+        handle.addPOMModification(added);
+    }
+    
+    private class CompilerParamOperation implements ModelOperation<POMModel> {
+        private final String value;
+        private final String param;
+
+        public CompilerParamOperation(String param, String value) {
+            this.param = param;
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public void performOperation(POMModel model) {
         Plugin old = null;
         Plugin plugin;
         Build bld = model.getProject().getBuild();
@@ -463,23 +528,15 @@ public class CompilePanel extends javax.swing.JPanel {
             plugin.setConfiguration(config);
         }
         config.setSimpleParameter(param, value);
-        handle.markAsModified(handle.getPOMModel());
     }
 
-    public static String getCompilerParam(ModelHandle handle, String param) {
-        Build bld = handle.getPOMModel().getProject().getBuild();
-        if (bld != null) {
-            Plugin plugin = bld.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
-            if (plugin != null) {
-                Configuration config = plugin.getConfiguration();
-                if (config != null) {
-                    String val = config.getSimpleParameter(param);
-                    if (val != null) {
-                        return val;
                     }
+
+    String getCompilerParam(ModelHandle2 handle, String param) {
+        CompilerParamOperation oper = operations.get(param);
+        if (oper != null) {
+            return oper.getValue();
                 }
-            }
-        }
 
         String value = PluginPropertyUtils.getPluginProperty(handle.getProject(),
                 Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, param,
@@ -502,23 +559,28 @@ public class CompilePanel extends javax.swing.JPanel {
             sel = jpm.getDefaultPlatform();
         }
 
+        @Override
         public int getSize() {
             return data.length;
         }
 
+        @Override
         public Object getElementAt(int index) {
             return data[index];
         }
 
+        @Override
         public void setSelectedItem(Object anItem) {
             sel = anItem;
             fireContentsChanged(this, 0, data.length);
         }
 
+        @Override
         public Object getSelectedItem() {
             return sel;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             JavaPlatformManager jpm = JavaPlatformManager.getDefault();
             data = jpm.getInstalledPlatforms();
@@ -533,6 +595,7 @@ public class CompilePanel extends javax.swing.JPanel {
             setOpaque(true);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected,
                 boolean cellHasFocus) {

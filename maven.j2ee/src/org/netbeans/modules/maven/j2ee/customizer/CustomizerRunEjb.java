@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.maven.j2ee.customizer;
 
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 
 
@@ -54,7 +54,7 @@ public class CustomizerRunEjb extends BaseRunCustomizer {
     private EjbJar module;
 
 
-    public CustomizerRunEjb(ModelHandle handle, Project project) {
+    public CustomizerRunEjb(ModelHandle2 handle, Project project) {
         super(handle, project);
         initComponents();
         

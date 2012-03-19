@@ -49,7 +49,7 @@
 package org.netbeans.modules.maven.osgi.customizer;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.customizer.support.SelectedItemsTable;
 import org.netbeans.modules.maven.api.customizer.support.SelectedItemsTable.SelectedItemsTableModel;
 
@@ -62,7 +62,7 @@ public class PackagesPanel extends javax.swing.JPanel {
     private final SelectedItemsTableModel tableModel;
 
     /** Creates new form PackagesPanel */
-    public PackagesPanel(ModelHandle handle, Project prj) {
+    public PackagesPanel(ModelHandle2 handle, Project prj) {
         FelixExportPersister exportPersist = new FelixExportPersister(prj, handle);
         tableModel = new SelectedItemsTableModel(exportPersist);
 
