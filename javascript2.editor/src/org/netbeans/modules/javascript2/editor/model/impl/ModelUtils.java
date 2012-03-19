@@ -220,6 +220,9 @@ public class ModelUtils {
     public static Collection<TypeUsage> resolveSemiTypeOfExpression(Node expression) {
         SemiTypeResolverVisitor visitor = new SemiTypeResolverVisitor();
         if (expression != null) {
+            if (expression instanceof BinaryNode) {
+                expression = ((BinaryNode)expression).lhs();
+            }
             expression.accept(visitor);
             return visitor.getSemiTypes();
         }
@@ -250,6 +253,19 @@ public class ModelUtils {
             } else {
                 result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
             }
+        } else if (type.getType().startsWith("@this.")) {
+            Identifier objectName = object.getDeclarationName();
+            if (objectName != null && type.getOffset() == objectName.getOffsetRange().getEnd()) {
+                // the assignment is during declaration
+                String pName = type.getType().substring(type.getType().indexOf('.') + 1);
+                JsObject property = object.getParent().getProperty(pName);
+                if (property != null && property.getJSKind().isFunction()) {
+                    JsFunctionImpl function = property instanceof JsFunctionImpl
+                            ? (JsFunctionImpl) property
+                            : ((JsFunctionReference)property).getOriginal();
+                    object.getParent().addProperty(object.getName(), new JsFunctionReference(object.getParent(), object.getDeclarationName(), function, true));
+                }
+            }
         } else if (type.getType().startsWith("@new:")) {
             String function = type.getType().substring(5);
             JsObject possible = null;
@@ -259,11 +275,11 @@ public class ModelUtils {
                 parent = parent.getParent();
             }
             if (possible != null) {
-                if (possible instanceof JsFunction) {
-                    result.addAll(((JsFunction)possible).getReturnTypes());
-                } else {
+//                if (possible instanceof JsFunction) {
+//                    result.addAll(((JsFunction)possible).getReturnTypes());
+//                } else {
                     result.add(new TypeUsageImpl(ModelUtils.createFQN(possible), possible.getOffset(), true));
-                }
+//                }
             } else {
                 result.add(type);
             }
@@ -282,6 +298,22 @@ public class ModelUtils {
             return result;
         }
 
+        @Override
+        public Node visit(AccessNode aNode, boolean onset) {
+            if (onset) {
+                if (aNode.getBase() instanceof IdentNode) {
+                    IdentNode iNode = (IdentNode)aNode.getBase();
+                    if (iNode.getName().equals("this")) {
+                        result.add(new TypeUsageImpl("@this." + aNode.getProperty().getName(), iNode.getStart(), false));                //NOI18N
+                        return null;
+                    }
+                }
+            }
+            return super.visit(aNode, onset);
+        }
+
+        
+        
         @Override
         public Node visit(IdentNode iNode, boolean onset) {
             if (onset) {

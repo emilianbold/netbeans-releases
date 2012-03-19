@@ -117,7 +117,9 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             return JsElement.Kind.PROPERTY_SETTER;
         }
         for (JsObject property : getProperties().values()) {
-            if (property.isDeclared() && property.getModifiers().contains(Modifier.PUBLIC)
+            if (property.isDeclared() 
+                    && (property.getModifiers().contains(Modifier.PROTECTED)
+                    || (property.getModifiers().contains(Modifier.PUBLIC) &&  !property.getModifiers().contains(Modifier.STATIC)))
                     && !isAnonymous()) {
                 return JsElement.Kind.CONSTRUCTOR;
             }

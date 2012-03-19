@@ -172,22 +172,34 @@ public class ModelVisitor extends PathNodeVisitor {
                     List<Identifier> name = getName(binaryNode);
 //                    System.out.println("in binarynode: " + binaryNode.lhs());
                     AccessNode aNode = (AccessNode)binaryNode.lhs();
+                    JsObjectImpl property = null;
                     if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
                         // a usage of field
                         String fieldName = aNode.getProperty().getName();
-                        if(!ModelUtils.isGlobal(parent.getParent()) &&
+                        if(!ModelUtils.isGlobal(parent) && !ModelUtils.isGlobal(parent.getParent()) &&
                             (parent.getParent() instanceof JsFunctionImpl
                                 || isInPropertyNode())) {
                             parent = (JsObjectImpl)parent.getParent();
                         }
-                        if(parent.getProperty(fieldName) == null) {
+                        property = (JsObjectImpl)parent.getProperty(fieldName);
+                        if(property == null) {
                             Identifier identifier = ModelElementFactory.create(parserResult, (IdentNode)aNode.getProperty());
-                            parent.addProperty(fieldName, new JsObjectImpl(parent, identifier, identifier.getOffsetRange(), true));
+                            property = new JsObjectImpl(parent, identifier, identifier.getOffsetRange(), true);
+                            parent.addProperty(fieldName, property);
                         }
                     } else {
                         // probably a property of an object
                         List<Identifier> fqName = getName(aNode);
-                        ModelUtils.getJsObject(modelBuilder, fqName);
+                        property = ModelUtils.getJsObject(modelBuilder, fqName);
+                        if (property.getParent().getJSKind().isFunction() && !property.getModifiers().contains(Modifier.STATIC)) {
+                            property.getModifiers().add(Modifier.STATIC);
+                        }
+                    }
+                    if (property != null) {
+                        Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(binaryNode.rhs());
+                        for (TypeUsage type : types) {
+                            property.addAssignment(type, property.getDeclarationName().getOffsetRange().getEnd());
+                        }
                     }
 
                 } else {
@@ -329,6 +341,7 @@ public class ModelVisitor extends PathNodeVisitor {
             List<Identifier> name = null;
             boolean isPrivate = false;
             boolean isStatic = false; 
+            boolean isPrivilage = false;
             int pathSize = getPath().size();
             if (pathSize > 1 && getPath().get(pathSize - 2) instanceof ReferenceNode) {
                 List<FunctionNode> siblings = functionStack.get(functionStack.size() - 1);
@@ -339,6 +352,16 @@ public class ModelVisitor extends PathNodeVisitor {
                     if (node instanceof PropertyNode) {
                         name = getName((PropertyNode)node);
                     } else if (node instanceof BinaryNode) {
+                        BinaryNode bNode = (BinaryNode)node;
+                        if (bNode.lhs() instanceof AccessNode ) {
+                            AccessNode aNode = (AccessNode)bNode.lhs();
+                            if (aNode.getBase() instanceof IdentNode) {
+                                IdentNode iNode = (IdentNode)aNode.getBase();
+                                if ("this".equals(iNode.getName())) {
+                                    isPrivilage = true;
+                                }
+                            }
+                        }
                         name = getName((BinaryNode)node);
                     } else if (node instanceof VarNode) {
                        name = getName((VarNode)node);
@@ -389,9 +412,13 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
                 fncScope.setAnonymous(isAnonymous);
                 Set<Modifier> modifiers = fncScope.getModifiers();
-                if (isPrivate) {
+                if (isPrivate || isPrivilage) {
                     modifiers.remove(Modifier.PUBLIC);
-                    modifiers.add(Modifier.PRIVATE);
+                    if (isPrivate) {
+                        modifiers.add(Modifier.PRIVATE);
+                    } else {
+                        modifiers.add(Modifier.PROTECTED);
+                    }
                 }
                 if (isStatic) {
                     modifiers.add(Modifier.STATIC);
