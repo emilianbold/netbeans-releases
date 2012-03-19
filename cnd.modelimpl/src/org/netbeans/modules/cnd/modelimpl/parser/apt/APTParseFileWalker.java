@@ -140,7 +140,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         // get original
         TokenStream ts = super.getTokenStream();
         // expand macros
-        ts = new APTMacroExpandedStream(ts, getMacroMap());
+        ts = new APTMacroExpandedStream(ts, getMacroMap(), !filtered);
         if (filtered) {
             // remove comments
             ts = new APTCommentsFilter(ts);
