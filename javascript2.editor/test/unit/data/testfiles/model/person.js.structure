@@ -1,0 +1,20 @@
+RunGavinsLife:METHOD:[PUBLIC]:ESCAPED{RunGavinsLife}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+Person:CONSTRUCTOR:[PUBLIC]:ESCAPED{Person}ESCAPED{(}PARAMETERS{ESCAPED{n}ESCAPED{, }ESCAPED{race}}ESCAPED{)}<font color="#999999">ESCAPED{ : }Person</font>:
+  age:VARIABLE:[PRIVATE]:ESCAPED{age}<font color="#999999">ESCAPED{ : }Number</font>:
+  alive:VARIABLE:[PRIVATE]:ESCAPED{alive}<font color="#999999">ESCAPED{ : }Boolean</font>:
+  arguments:VARIABLE:[PRIVATE]:ESCAPED{arguments}<font color="#999999">ESCAPED{ : }Arguments</font>:
+  clothing:FIELD:[PUBLIC]:ESCAPED{clothing}<font color="#999999">ESCAPED{ : }String</font>:
+  dirtFactor:FIELD:[PUBLIC]:ESCAPED{dirtFactor}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}Number</font>:
+  eat:METHOD:[PROTECTED]:ESCAPED{eat}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
+  exercise:METHOD:[PROTECTED]:ESCAPED{exercise}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
+  getAge:METHOD:[PROTECTED]:ESCAPED{getAge}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
+  getName:METHOD:[PROTECTED]:ESCAPED{getName}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
+  getRace:METHOD:[PROTECTED]:ESCAPED{getRace}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
+  makeOlder:METHOD:[PRIVATE]:ESCAPED{makeOlder}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
+  maxAge:VARIABLE:[PRIVATE]:ESCAPED{maxAge}:
+  muchTimePasses:METHOD:[PROTECTED]:ESCAPED{muchTimePasses}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+  myName:VARIABLE:[PRIVATE]:ESCAPED{myName}:
+  population:FIELD:[PUBLIC, STATIC]:ESCAPED{population}<font color="#999999">ESCAPED{ : }Number</font>:
+  toString:METHOD:[PROTECTED]:ESCAPED{toString}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
+  weigh:METHOD:[PROTECTED]:ESCAPED{weigh}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
+  weight:VARIABLE:[PRIVATE]:ESCAPED{weight}<font color="#999999">ESCAPED{ : }Number</font>:
