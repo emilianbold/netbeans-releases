@@ -96,8 +96,8 @@ class Table extends JTable {
 
     public Table( Model model ) {
         super( model );
-        init();
         showIcons = model.hasIcons();
+        init();
     }
 
     private void init() {
