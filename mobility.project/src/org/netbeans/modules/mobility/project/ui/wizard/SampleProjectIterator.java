@@ -121,7 +121,7 @@ public class SampleProjectIterator implements TemplateWizard.Iterator {
             platformPanel = new PlatformInstallPanel.WizardPanel(J2MEPlatform.SPECIFICATION_NAME);
             ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(NewProjectIterator.class, "TXT_SampleProject"));
         }
-        projectPanel = new ProjectPanel.WizardPanel(false, true);
+        projectPanel = new ProjectPanel.WizardPanel(false);
         ((JComponent)projectPanel.getComponent()).putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(NewProjectIterator.class, "TXT_SampleProject"));
         psPanel = new PlatformSelectionPanel();
         String configuration = null;
