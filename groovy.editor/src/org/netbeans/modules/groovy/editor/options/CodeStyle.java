@@ -44,11 +44,12 @@
 
 package org.netbeans.modules.groovy.editor.options;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
-
 import javax.swing.text.Document;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
-import static org.netbeans.modules.groovy.editor.options.FmtOptions.*;
 
 /** 
  *  XXX make sure the getters get the defaults from somewhere
@@ -56,11 +57,34 @@ import static org.netbeans.modules.groovy.editor.options.FmtOptions.*;
  *  XXX get the preferences node from somewhere else in odrer to be able not to
  *      use the getters and to be able to write to it.
  * 
- * @author Dusan Balek
+ * @author Dusan Balek, Martin Janicek
  */
 public final class CodeStyle {
 
+    private static final String expandTabToSpaces = SimpleValueNames.EXPAND_TABS;
+    private static final String tabSize = SimpleValueNames.TAB_SIZE;
+    private static final String spacesPerTab = SimpleValueNames.SPACES_PER_TAB;
+    private static final String indentSize = SimpleValueNames.INDENT_SHIFT_WIDTH;
+    private static final String continuationIndentSize = "continuationIndentSize"; //NOI18N
+    private static final String reformatComments = "reformatComments"; //NOI18N
+    private static final String indentHtml = "indentHtml"; //NOI18N
+    private static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
+    private static final String TRUE = "true";      // NOI18N
+    private static final String FALSE = "false";    // NOI18N
+
+    private final static Map<String,String> defaults;
     private final Preferences preferences;
+    static {
+        defaults = new HashMap<String,String>();
+        defaults.put(expandTabToSpaces, TRUE);
+        defaults.put(tabSize, "4"); //NOI18N
+        defaults.put(indentSize, "4"); //NOI18N
+        defaults.put(continuationIndentSize, "4"); //NOI18N
+        defaults.put(reformatComments, FALSE);
+        defaults.put(indentHtml, TRUE);
+        defaults.put(rightMargin, "80"); //NOI18N
+    }
+
 
     private CodeStyle(Preferences preferences) {
         this.preferences = preferences;
@@ -75,8 +99,6 @@ public final class CodeStyle {
         return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
     }
 
-    // General tabs and indents ------------------------------------------------
-    
     public int getIndentSize() {
         int indentLevel = preferences.getInt(indentSize, getDefaultAsInt(indentSize));
 
@@ -108,4 +130,11 @@ public final class CodeStyle {
         return preferences.getInt(rightMargin, getDefaultAsInt(rightMargin));
     }
 
+    private static int getDefaultAsInt(String key) {
+        return Integer.parseInt(defaults.get(key));
+    }
+
+    private static boolean getDefaultAsBoolean(String key) {
+        return Boolean.parseBoolean(defaults.get(key));
+    }
 }
