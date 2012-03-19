@@ -61,6 +61,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -83,6 +84,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.sync.diff.DiffPanel;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
@@ -133,9 +135,11 @@ public final class SyncPanel extends JPanel {
     private DialogDescriptor descriptor = null;
     // @GuardedBy(AWT)
     private NotificationLineSupport notificationLineSupport = null;
+    // @GuardedBy(AWT)
+    private Boolean rememberShowSummary = null;
 
 
-    SyncPanel(PhpProject project, String remoteConfigurationName, List<SyncItem> items, RemoteClient remoteClient) {
+    SyncPanel(PhpProject project, String remoteConfigurationName, List<SyncItem> items, RemoteClient remoteClient, boolean showSummary) {
         assert SwingUtilities.isEventDispatchThread();
         assert items != null;
 
@@ -153,6 +157,7 @@ public final class SyncPanel extends JPanel {
         initOperationButtons();
         initDiffButton();
         initInfos();
+        initShowSummaryCheckBox(showSummary);
     }
 
     private JToggleButton createViewButton() {
@@ -349,6 +354,20 @@ public final class SyncPanel extends JPanel {
         firstRunInfoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
         warningLabel.setIcon(ImageUtilities.loadImageIcon(WARNING_ICON_PATH, false));
         syncInfoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
+    }
+
+    private void initShowSummaryCheckBox(boolean showSummary) {
+        if (!showSummary) {
+            showSummaryCheckBox.setVisible(false);
+            return;
+        }
+        showSummaryCheckBox.setSelected(PhpOptions.getInstance().getRemoteSyncShowSummary());
+        showSummaryCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                rememberShowSummary = e.getStateChange() == ItemEvent.SELECTED;
+            }
+        });
     }
 
     void setEnabledOperationButtons(int[] selectedRows) {
@@ -562,28 +581,30 @@ public final class SyncPanel extends JPanel {
         uploadButton = new JButton();
         deleteButton = new JButton();
         resetButton = new JButton();
+        showSummaryCheckBox = new JCheckBox();
 
-        Mnemonics.setLocalizedText(firstRunInfoLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.firstRunInfoLabel.text")); // NOI18N
-        itemTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        Mnemonics.setLocalizedText(warningLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.warningLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(viewLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.viewLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(firstRunInfoLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.firstRunInfoLabel.text"));
+        Mnemonics.setLocalizedText(warningLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.warningLabel.text"));
+        Mnemonics.setLocalizedText(viewLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.viewLabel.text"));
 
-        noopToggleButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png"))); Mnemonics.setLocalizedText(downloadToggleButton, " "); // NOI18N
-        Mnemonics.setLocalizedText(uploadToggleButton, " "); // NOI18N
-        Mnemonics.setLocalizedText(deleteToggleButton, " "); // NOI18N
-        Mnemonics.setLocalizedText(symlinkToggleButton, " "); // NOI18N
-        Mnemonics.setLocalizedText(fileDirCollisionToggleButton, " "); // NOI18N
-        Mnemonics.setLocalizedText(fileConflictToggleButton, " "); // NOI18N
-        Mnemonics.setLocalizedText(warningToggleButton, " "); // NOI18N
-        Mnemonics.setLocalizedText(errorToggleButton, " "); // NOI18N
+        noopToggleButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png"))); // NOI18N
+        Mnemonics.setLocalizedText(downloadToggleButton, " ");
+        Mnemonics.setLocalizedText(uploadToggleButton, " ");
+        Mnemonics.setLocalizedText(deleteToggleButton, " ");
+        Mnemonics.setLocalizedText(symlinkToggleButton, " ");
+        Mnemonics.setLocalizedText(fileDirCollisionToggleButton, " ");
+        Mnemonics.setLocalizedText(fileConflictToggleButton, " ");
+        Mnemonics.setLocalizedText(warningToggleButton, " ");
+        Mnemonics.setLocalizedText(errorToggleButton, " ");
 
         itemTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         itemScrollPane.setViewportView(itemTable);
 
         Mnemonics.setLocalizedText(syncInfoLabel, "SYNC INFO LABEL"); // NOI18N
-        Mnemonics.setLocalizedText(operationLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(operationLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationLabel.text"));
 
-        diffButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png")));         diffButton.setEnabled(false);
+        diffButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png"))); // NOI18N
+        diffButton.setEnabled(false);
 
         Mnemonics.setLocalizedText(noopButton, " "); // NOI18N
         noopButton.setEnabled(false);
@@ -599,14 +620,17 @@ public final class SyncPanel extends JPanel {
 
         Mnemonics.setLocalizedText(resetButton, " "); // NOI18N
         resetButton.setEnabled(false);
+        Mnemonics.setLocalizedText(showSummaryCheckBox, NbBundle.getMessage(SyncPanel.class, "SyncPanel.showSummaryCheckBox.text"));
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(itemScrollPane).addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING).addGroup(layout.createSequentialGroup()
+
+                        .addGap(0, 0, Short.MAX_VALUE).addComponent(showSummaryCheckBox)).addComponent(itemScrollPane, Alignment.LEADING).addGroup(Alignment.LEADING, layout.createSequentialGroup()
 
                         .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                                 .addComponent(operationLabel)
@@ -626,7 +650,12 @@ public final class SyncPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(firstRunInfoLabel)
 
-                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewLabel).addComponent(noopToggleButton).addComponent(downloadToggleButton).addComponent(uploadToggleButton).addComponent(deleteToggleButton).addComponent(symlinkToggleButton).addComponent(fileDirCollisionToggleButton).addComponent(fileConflictToggleButton).addComponent(warningToggleButton).addComponent(errorToggleButton)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane).addPreferredGap(ComponentPlacement.RELATED).addComponent(syncInfoLabel).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteButton).addComponent(resetButton).addComponent(operationLabel)))
+                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewLabel).addComponent(noopToggleButton).addComponent(downloadToggleButton).addComponent(uploadToggleButton).addComponent(deleteToggleButton).addComponent(symlinkToggleButton).addComponent(fileDirCollisionToggleButton).addComponent(fileConflictToggleButton).addComponent(warningToggleButton).addComponent(errorToggleButton)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                        .addComponent(syncInfoLabel)
+
+                        .addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteButton).addComponent(resetButton).addComponent(operationLabel))).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(showSummaryCheckBox)
+                        .addContainerGap())))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -646,6 +675,7 @@ public final class SyncPanel extends JPanel {
     private JToggleButton noopToggleButton;
     private JLabel operationLabel;
     private JButton resetButton;
+    private JCheckBox showSummaryCheckBox;
     private JToggleButton symlinkToggleButton;
     private JLabel syncInfoLabel;
     private JButton uploadButton;
@@ -862,6 +892,14 @@ public final class SyncPanel extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == NotifyDescriptor.OK_OPTION) {
+                if (rememberShowSummary != null) {
+                    PhpOptions.getInstance().setRemoteSyncShowSummary(rememberShowSummary);
+                }
+                if (!showSummaryCheckBox.isVisible()
+                        || !showSummaryCheckBox.isSelected()) {
+                    closeDialog();
+                    return;
+                }
                 SyncInfo syncInfo = getSyncInfo();
                 SummaryPanel panel = new SummaryPanel(
                         syncInfo.upload,
@@ -869,9 +907,13 @@ public final class SyncPanel extends JPanel {
                         syncInfo.delete,
                         syncInfo.noop);
                 if (panel.open()) {
-                    dialog.setVisible(false);
+                    closeDialog();
                 }
             }
+        }
+
+        private void closeDialog() {
+            dialog.setVisible(false);
         }
 
     }
