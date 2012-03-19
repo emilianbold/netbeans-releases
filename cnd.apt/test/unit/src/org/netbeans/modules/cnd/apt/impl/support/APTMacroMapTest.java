@@ -77,6 +77,7 @@ public class APTMacroMapTest {
         APTBaseMacroMap.StateImpl state1 = (APTBaseMacroMap.StateImpl) mmap1.getState();
         mmap1.undef(null, tokGuard);
         assertNull(mmap1.getMacro(tokGuard));
+        assertNull(mmap1.active.getMacro(CharSequences.create("NO_SUCH_KEY")));
         assertEquals(0, APTMacroMapSnapshot.addAllMacros(mmap1.active, null).size());
         Map<CharSequence, APTMacro> allMacros = APTMacroMapSnapshot.addAllMacros(mmap1.active, null);
         assertTrue(allMacros.isEmpty());
