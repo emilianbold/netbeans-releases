@@ -261,6 +261,13 @@ public class CssCompletion implements CodeCompletionHandler {
 
             String origin = element.origin();
             String visibleOrigin = element.getVisibleOrigin();
+            
+            //some hardcoded items filtering
+            
+            //1. do not show NAMED operators in the code completion
+            if(origin.endsWith("_operator")) { //NOI18N
+                continue;
+            }
             if ("@colors-list".equals(origin)) { //NOI18N
                 if (!colorChooserAdded) {
                     //add color chooser item

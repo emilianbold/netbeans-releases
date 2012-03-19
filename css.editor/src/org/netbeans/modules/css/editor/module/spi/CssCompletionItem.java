@@ -85,13 +85,13 @@ public abstract class CssCompletionItem implements CompletionProposal {
     protected boolean addSemicolon;
 
     public static CssCompletionItem createValueCompletionItem(CssValueElement element,
-            GrammarElement value,
+            ValueGrammarElement value,
             String origin,
             int anchorOffset,
             boolean addSemicolon,
             boolean addSpaceBeforeItem) {
 
-        return new ValueCompletionItem(element, value.toString(), origin, anchorOffset, addSemicolon, addSpaceBeforeItem);
+        return new ValueCompletionItem(element, value.value(), origin, anchorOffset, addSemicolon, addSpaceBeforeItem);
     }
     
     public static CssCompletionItem createValueCompletionItem(CssValueElement element,
