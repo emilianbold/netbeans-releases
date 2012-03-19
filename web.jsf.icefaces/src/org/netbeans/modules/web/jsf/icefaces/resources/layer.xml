@@ -8,4 +8,14 @@
             </folder>
         </folder>
     </folder>
+
+    <folder name="Templates">
+        <folder name="Other">
+            <file name="welcomeIcefaces.xhtml" url="welcomeIcefaces.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="173"/>
+                <attr name="template" boolvalue="false"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
