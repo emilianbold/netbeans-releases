@@ -146,6 +146,16 @@ public class PHPCodeTemplateFilterTest extends PHPTestBase {
         checkTemplate(source, true, "fcom");
     }
 
+    public void testIfncInIface() throws Exception {
+        String source = "<?php\ninterface IFace { \n ^ \n} \n?>";
+        checkTemplate(source, true, "ifnc");
+    }
+
+    public void testIfncInCls() throws Exception {
+        String source = "<?php\nclass MyCls { \n ^ \n} \n?>";
+        checkTemplate(source, false, "ifnc");
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
