@@ -50,8 +50,9 @@ import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
+import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
@@ -73,24 +74,42 @@ http://checkstyle.sourceforge.net/config_whitespace.html#ParenPad
  * @author mkleint
  */
 public class CheckstylePanel extends javax.swing.JPanel {
-    private final ModelHandle handle;
+    private final ModelHandle2 handle;
     private final ProjectCustomizer.Category category;
     private boolean generated = false;
     private final CheckBoxUpdater checkboxUpdater;
 
 
-    CheckstylePanel(ModelHandle hndl, ProjectCustomizer.Category cat) {
+    CheckstylePanel(ModelHandle2 hndl, ProjectCustomizer.Category cat) {
         initComponents();
         this.handle = hndl;
         category = cat;
         checkboxUpdater = new CheckBoxUpdater(cbEnable) {
+            
+            private String modifiedValue;
+            
+            private ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            @Override
+                public void performOperation(POMModel model) {
+                    Properties modprops = model.getProject().getProperties();
+                    if (modprops == null) {
+                        modprops = model.getFactory().createProperties();
+                        model.getProject().setProperties(modprops);
+                    }
+                    modprops.setProperty(Constants.HINT_COMPILE_ON_SAVE, modifiedValue); //NOI18N
+                }
+                
+            };
+            
             @Override
             public Boolean getValue() {
-                String val = null;
+                String val = modifiedValue;
+                if (val == null) {
                     Properties props = handle.getPOMModel().getProject().getProperties();
                     if (props != null) {
                         val = props.getProperty(Constants.HINT_CHECKSTYLE_FORMATTING);
                     }
+                }
                 if (val == null) {
                     val = handle.getRawAuxiliaryProperty(Constants.HINT_CHECKSTYLE_FORMATTING, true);
                 }
@@ -108,18 +127,16 @@ public class CheckstylePanel extends javax.swing.JPanel {
 
             @Override
             public void setValue(Boolean value) {
+                handle.removePOMModification(operation);
+                modifiedValue = null;
+                
                 String val = value != null ? value.toString() : null;
                 boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_CHECKSTYLE_FORMATTING, true) != null;
                 //TODO also try to take the value in pom vs inherited pom value into account.
 
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_CHECKSTYLE_FORMATTING)) {
-                    Properties modprops = handle.getPOMModel().getProject().getProperties();
-                    if (modprops == null) {
-                        modprops = handle.getPOMModel().getFactory().createProperties();
-                        handle.getPOMModel().getProject().setProperties(modprops);
-                    }
-                    modprops.setProperty(Constants.HINT_CHECKSTYLE_FORMATTING, val); //NOI18N
-                    handle.markAsModified(handle.getPOMModel());
+                    modifiedValue = val;
+                    handle.addPOMModification(operation);
                     if (hasConfig) {
                         // in this case clean up the auxiliary config
                         handle.setRawAuxiliaryProperty(Constants.HINT_CHECKSTYLE_FORMATTING, null, true);
@@ -228,7 +245,10 @@ public class CheckstylePanel extends javax.swing.JPanel {
     private void btnMissingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMissingActionPerformed
         generated = true;
         //generate now
-        POMModel mdl = handle.getPOMModel();
+        handle.addPOMModification(new ModelOperation<POMModel>() {
+
+            @Override
+            public void performOperation(POMModel mdl) {
         Reporting rep = mdl.getProject().getReporting();
         if (rep == null) {
             rep = mdl.getFactory().createReporting();
@@ -244,7 +264,8 @@ public class CheckstylePanel extends javax.swing.JPanel {
             plg.setConfiguration(conf);
             rep.addReportPlugin(plg);
         }
-        handle.markAsModified(handle.getPOMModel());
+            }
+        });
         
         //hide the button, we're done
         lblMissing.setVisible(false);

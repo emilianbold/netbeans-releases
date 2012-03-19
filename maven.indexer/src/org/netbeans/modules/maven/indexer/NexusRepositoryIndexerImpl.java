@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.MultiTermQuery;
@@ -1149,17 +1150,19 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     BooleanClause.Occur occur = field.getOccur() == QueryField.OCCUR_SHOULD ? BooleanClause.Occur.SHOULD : BooleanClause.Occur.MUST;
                     String fieldName = toNexusField(field.getField());
                     if (fieldName != null) {
+                        String value = QueryParser.escape(field.getValue());
+                        
                         Query q;
                         if (ArtifactInfo.NAMES.equals(fieldName)) {
-                            String clsname = field.getValue().replace(".", "/"); //NOI18N
+                            String clsname = QueryParser.escape(field.getValue().replace(".", "/")); //NOI18N
                             q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase()));
                         } else if (ArtifactInfo.ARTIFACT_ID.equals(fieldName)) {
-                            q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(field.getValue()));
+                            q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(value));
                         } else {
                             if (field.getMatch() == QueryField.MATCH_EXACT) {
-                                q = new TermQuery(new Term(fieldName, field.getValue()));
+                                q = new TermQuery(new Term(fieldName, value));
                             } else {
-                                q = new PrefixQuery(new Term(fieldName, field.getValue()));
+                                q = new PrefixQuery(new Term(fieldName, value));
                             }
                         }
                         bq.add(new BooleanClause(setBooleanRewrite(q), occur));

@@ -46,28 +46,30 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import javax.swing.JList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
-import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.Wrapper;
+import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
+import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -98,7 +100,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
     private String oldContextPath;
     
 
-    public CustomizerRunWeb(final ModelHandle handle, Project project) {
+    public CustomizerRunWeb(final ModelHandle2 handle, Project project) {
         super(handle, project);
         initComponents();
         module = WebModule.getWebModule(project.getProjectDirectory());
@@ -135,18 +137,20 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                 comProfile.setSelectedItem(Profile.JAVA_EE_6_WEB);
             }
             comProfile.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    Profile p = (Profile) comProfile.getSelectedItem();
-                    org.netbeans.modules.maven.model.pom.Project root = handle.getPOMModel().getProject();
-                    if (p.equals(Profile.JAVA_EE_6_FULL)) {
+                private Profile modified;
+                private ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+
+                    @Override
+                    public void performOperation(POMModel model) {
+                    org.netbeans.modules.maven.model.pom.Project root = model.getProject();
+                        if (Profile.JAVA_EE_6_FULL.equals(modified)) {
                         Properties props = root.getProperties();
                         if (props == null) {
-                            props = handle.getPOMModel().getFactory().createProperties();
+                                props = model.getFactory().createProperties();
                             root.setProperties(props);
                         }
-                        replaceDependency("javaee-web-api", "javaee-api");
-                        props.setProperty(MavenJavaEEConstants.HINT_J2EE_VERSION, p.toPropertiesString());
-                        handle.markAsModified(handle.getPOMModel());
+                            props.setProperty(MavenJavaEEConstants.HINT_J2EE_VERSION, modified.toPropertiesString());
+                            replaceDependency(model, "javaee-web-api", "javaee-api");
                     } else {
                         Properties props = root.getProperties();
                         if (props != null && props.getProperty(MavenJavaEEConstants.HINT_J2EE_VERSION) != null) {
@@ -154,10 +158,18 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                             if (props.getProperties().size() == 0) {
                                 ((AbstractDocumentComponent)root).removeChild("properties", props);
                             }
-                            replaceDependency("javaee-api", "javaee-web-api");
-                            handle.markAsModified(handle.getPOMModel());
+                                replaceDependency(model, "javaee-api", "javaee-web-api");
                         }
                     }
+                }
+                };
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Profile p = (Profile) comProfile.getSelectedItem();
+                    modified = p;
+                    handle.removePOMModification(operation);
+                    handle.addPOMModification(operation);
+
                 }
 
             });
@@ -190,9 +202,9 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         }
         
         if (actionMappings == null || actionMappings.isEmpty()) {
-            run = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
-            debug = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
-            profile = ModelHandle.getDefaultMapping("profile", project); // NOI18N
+            run = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
+            debug = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
+            profile = ModelHandle2.getDefaultMapping("profile", project); // NOI18N
         }
 
         isRunCompatible = checkMapping(run);
@@ -213,14 +225,17 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
             oldUrl = ""; //NOI18N
         }
         txtRelativeUrl.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent arg0) {
                 applyRelUrl();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent arg0) {
                 applyRelUrl();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent arg0) {
                 applyRelUrl();
             }
@@ -420,17 +435,17 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         if (!newUrl.equals(oldUrl)) {
             if (isRunCompatible) {
                 run.addProperty(CLIENTURLPART, newUrl);
-                ModelHandle.setUserActionMapping(run, handle.getActionMappings());
+                ModelHandle2.setUserActionMapping(run, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }
             if (isDebugCompatible) {
                 debug.addProperty(CLIENTURLPART, newUrl);
-                ModelHandle.setUserActionMapping(debug, handle.getActionMappings());
+                ModelHandle2.setUserActionMapping(debug, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }
             if (isProfileCompatible) {
                 profile.addProperty(CLIENTURLPART, newUrl);
-                ModelHandle.setUserActionMapping(profile, handle.getActionMappings());
+                ModelHandle2.setUserActionMapping(profile, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }
         }
@@ -487,13 +502,17 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
 
 
 
-    private void replaceDependency(String oldArt, String newArt) {
-        Dependency d = ModelUtils.checkModelDependency(handle.getPOMModel(), "javax", oldArt, false);
+    private void replaceDependency(POMModel model, String oldArt, String newArt) {
+        Dependency d = ModelUtils.checkModelDependency(model, "javax", oldArt, false);
         if (d != null) {
             d.setArtifactId(newArt);
         }
     }
 
+    /*
+     * 
+     * TODO - mkleint: this method has little relevant with the customizers, candidate for moving.
+     */
     public static boolean isDeployOnSave(Project project) {
         //try to apply the hint if it exists.
         AuxiliaryProperties prop = project.getLookup().lookup(AuxiliaryProperties.class);

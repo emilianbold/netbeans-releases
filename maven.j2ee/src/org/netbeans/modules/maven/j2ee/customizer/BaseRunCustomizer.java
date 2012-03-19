@@ -56,7 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
@@ -72,16 +72,17 @@ import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCustomizer {
     
     protected Project project;
-    protected ModelHandle handle;
+    protected ModelHandle2 handle;
     protected CheckBoxUpdater deployOnSaveUpdater;
     protected ComboBoxUpdater<Wrapper> serverModelUpdater;
     
 
-    public BaseRunCustomizer(ModelHandle handle, Project project) {
+    public BaseRunCustomizer(ModelHandle2 handle, Project project) {
         this.handle = handle;
         this.project = project;
     }
     
+    //mkleint: this method should only be run from within the ApplyChangesCustomizer.applyChanges() method
     protected void changeServer(JComboBox selectedServerComboBox) {
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
         if (serverModelUpdater.getValue() != null) {
