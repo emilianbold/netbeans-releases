@@ -387,12 +387,15 @@ class Table extends JTable {
         int selRow = Math.max( getSelectedRow(), 0 );
         selRow += step;
         if( selRow < 0 ) {
-            changeColumn( 2*step, true );
+            if( !changeColumn( step, true ) )
+                changeColumn( 2*step, true );
             return;
         }
         if( selRow > getRowCount() || null == getValueAt( selRow, selCol ) ) {
             if( getSwitcherModel().isTopItemColumn( selCol ) ) {
-                changeColumn( 2*step, true );
+                if( !getSwitcherModel().isTopItemColumn( selCol+step ) )
+                    step *= 2;
+                changeColumn( step, true );
             } else {
                 if( !select( selRow, selCol-1 ) )
                     changeColumn( step, true );
