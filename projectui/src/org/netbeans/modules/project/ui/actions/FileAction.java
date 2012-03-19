@@ -139,7 +139,7 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
                         FileObject f = dobjs.iterator().next().getPrimaryFile();
 
                         enable[0] = performer.enable(f);
-                        presenterName[0] = ActionsUtil.formatName(namePattern, 1, f);
+                        presenterName[0] = ActionsUtil.formatName(namePattern, 1, f.getNameExt());
                     } else {
                         enable[0] = false;
                         presenterName[0] = ActionsUtil.formatName(namePattern, 0, ""); // NOI18N

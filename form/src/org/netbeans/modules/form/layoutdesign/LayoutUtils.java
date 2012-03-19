@@ -239,17 +239,22 @@ public class LayoutUtils implements LayoutConstants {
         return outermostPos;
     }
 
-    /**
-     * Returns size of the empty space represented by the given layout interval.
-     *
-     * @param interval layout interval that represents padding.
-     * @return size of the padding.
-     */
-    static int getSizeOfDefaultGap(LayoutInterval interval, VisualMapper visualMapper) {
+    static int getSizeOfDefaultGap(LayoutInterval gap, VisualMapper visualMapper) {
+        PaddingType gapType = gap.getPaddingType() != null ? gap.getPaddingType() : PaddingType.RELATED;
+        int[] pads = getSizesOfDefaultGap(gap, gapType, visualMapper);
+        return (pads != null && pads.length > 0) ? pads[0] : 0;
+    }
+
+    static int[] getSizesOfDefaultGap(LayoutInterval gap, VisualMapper visualMapper) {
+        return getSizesOfDefaultGap(gap, null, visualMapper);
+    }
+
+    private static int[] getSizesOfDefaultGap(LayoutInterval interval, PaddingType gapType, VisualMapper visualMapper) {
         assert interval.isEmptySpace();
         LayoutInterval parent = interval.getParent();
-        if (parent.isParallel())
-            return interval.getPreferredSize();
+        if (parent.isParallel()) {
+            return new int[] { interval.getPreferredSize() };
+        }
         
         // Find intervals that contain sources and targets
         LayoutInterval candidate = interval;
@@ -276,8 +281,8 @@ public class LayoutUtils implements LayoutConstants {
         List targets = getSideComponents(targetInt, LEADING, true, false);
 
         // Calculate size of gap from sources and targets and their positions
-        return getSizesOfDefaultGap(sources, targets, interval.getPaddingType(),
-                                    visualMapper, null, Collections.EMPTY_MAP)[0];
+        return getSizesOfDefaultGap(sources, targets, gapType,
+                                    visualMapper, null, Collections.EMPTY_MAP);
     }
 
     /**
@@ -293,7 +298,7 @@ public class LayoutUtils implements LayoutConstants {
                 VisualMapper visualMapper, String contId, Map<String,LayoutRegion> boundsMap) {
         if (((sources != null) && (sources.isEmpty()))
             || ((targets != null) && (targets.isEmpty()))) {
-            return new int[] { 0 }; // Preferred gap not between components
+            return null; // Preferred gap not between components
         }
         sources = (sources == null) ? Collections.EMPTY_LIST : sources;
         targets = (targets == null) ? Collections.EMPTY_LIST : targets;

@@ -732,6 +732,15 @@ public final class Source {
             return new Snapshot(text, lineStartOffsets, source, mimePath, currentToOriginal, originalToCurrent);
         }
 
+        @Override
+        public SourceCache getAndSetCache(Source source, SourceCache sourceCache) {
+            SourceCache origCache = source.cache;
+
+            source.cache = sourceCache;
+
+            return origCache;
+        }
+
     } // End of MySourceAccessor class
         
     static class ASourceModificationEvent extends SourceModificationEvent {

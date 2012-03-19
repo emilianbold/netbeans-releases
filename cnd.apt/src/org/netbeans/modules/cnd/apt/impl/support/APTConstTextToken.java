@@ -68,6 +68,7 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
     static {
         //setup const text values
         constText[EOF]                  =""; // NOI18N
+        constText[END_PREPROC_DIRECTIVE]=""; // NOI18N
         
         // 1 symbol:
         constText[GRAVE_ACCENT]          ="`"; // NOI18N

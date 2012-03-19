@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+
     <folder name="j2ee">
         <folder name="jsf">
             <folder name="components">
@@ -8,6 +9,7 @@
         </folder>
         </folder>
     </folder>
+
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="primefaces.xml" url="primefaces.xml">
@@ -15,4 +17,15 @@
             </file>
         </folder>
     </folder>
+
+    <folder name="Templates">
+        <folder name="Other">
+            <file name="welcomePrimefaces.xhtml" url="welcomePrimefaces.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="171"/>
+                <attr name="template" boolvalue="false"/>
+            </file>
+        </folder>
+    </folder>
+
 </filesystem>

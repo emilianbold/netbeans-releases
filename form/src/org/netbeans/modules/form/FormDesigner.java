@@ -259,14 +259,16 @@ public class FormDesigner {
         resetTopDesignComponent(false);
         handleLayer.setViewOnly(formModel.isReadOnly());
 
-        // Beans without layout model doesn't require layout designer
+        // Beans without layout model don't need layout designer
         if (formModel.getLayoutModel() != null) {
-            layoutDesigner = new LayoutDesigner(formModel.getLayoutModel(),
-                                            new LayoutMapper());
+            layoutDesigner = new LayoutDesigner(formModel.getLayoutModel(), new LayoutMapper());
+            int paintLayout = FormLoaderSettings.getInstance().getPaintAdvancedLayoutInfo();
+            layoutDesigner.setPaintAlignment((paintLayout&1) != 0);
+            layoutDesigner.setPaintGaps((paintLayout&2) != 0);
         }
-        
+
         updateWholeDesigner();
-        
+
         // not very nice hack - it's better FormEditorSupport has its
         // listener registered after FormDesigner
         formEditor.reinstallListener();
@@ -1190,7 +1192,7 @@ public class FormDesigner {
             // initialized again
             return;
         }
-        updateDesignerActions();
+        updateLayoutDesigner();
         updateResizabilityActions();
         updateAssistantContext();
     }
@@ -1201,12 +1203,16 @@ public class FormDesigner {
         }
     }
 
-    private void updateDesignerActions() {
-        Collection selectedIds = selectedLayoutComponentIds();
-        boolean enabled = (layoutDesigner == null) ? false : layoutDesigner.canAlign(selectedIds);
-        Iterator iter = getDesignerActions(true).iterator();
-        while (iter.hasNext()) {
-            Action action = (Action)iter.next();
+    private void updateLayoutDesigner() {
+        Collection<String> selectedIds = selectedLayoutComponentIds();
+        boolean enabled;
+        if (layoutDesigner != null) {
+            layoutDesigner.setSelectedComponents(selectedIds.toArray(new String[selectedIds.size()]));
+            enabled = layoutDesigner.canAlign(selectedIds);
+        } else {
+            enabled = false;
+        }
+        for (Action action : getDesignerActions(true)) {
             action.setEnabled(enabled);
         }
     }
@@ -2048,8 +2054,11 @@ public class FormDesigner {
             }
 
             if (baseLinePos == -1) {
-                if (comp != null) {
-                     baseLinePos = comp.getBaseline(width, height);
+                if (comp != null && height >= 0) {
+                    if (width < 0) {
+                        width = 0;
+                    }
+                    baseLinePos = comp.getBaseline(width, height);
                 } else {
                     baseLinePos = 0;
                 }
@@ -2217,6 +2226,39 @@ public class FormDesigner {
                 component.setVisible(visible);
                 RADComponent metacomp = getMetaComponent(componentId);
                 handleLayer.updateHiddentComponent(metacomp, bounds, visibleBounds);
+            }
+        }
+
+        @Override
+        public void repaintComponent(String componentId, Graphics g) {
+            Object comp = getComponent(componentId);
+            if (comp instanceof Component) {
+                Component component = ((Component)comp);
+                int cx = component.getX();
+                int cy = component.getY();
+                Component parent = component.getParent();
+                Component topComp = getTopDesignComponentView();
+                while (parent != null) {
+                    if (parent == topComp) {
+                        g.translate(cx, cy);
+                        component.paint(g);
+                        g.translate(-cx, -cy);
+                        break;
+                    } else {
+                        cx += parent.getX();
+                        cy += parent.getY();
+                        parent = parent.getParent();
+                    }
+                }
+            }            
+        }
+
+        @Override
+        public void repaintDesigner(String forComponentId) {
+            RADComponent metacomp = formModel != null ? formModel.getMetaComponent(forComponentId) : null;
+            if (metacomp instanceof RADVisualComponent
+                    && isInDesigner((RADVisualComponent)metacomp)) {
+                getHandleLayer().repaint();
             }
         }
 

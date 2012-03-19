@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,36 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.heapwalk.ui.icons;
+package org.netbeans.modules.debugger.jpda.ui.models;
 
-import java.util.Map;
-import org.netbeans.modules.profiler.spi.IconsProvider;
+import javax.swing.Action;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.ui.Constants;
+import org.netbeans.spi.viewmodel.NodeActionsProvider;
+import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
  *
- * @author Jiri Sedlacek
+ * @author Martin Entlicher
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.IconsProvider.class)
-public final class HeapWalkerIconsProviderImpl extends IconsProvider.Basic {
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                             types={NodeActionsProviderFilter.class},
+                             position=20000)
+public class ResultsSwitchViewAction implements NodeActionsProviderFilter {
     
+    private static final String treeNodeFormat =
+            "{DefaultLocalsColumn} = ({"+Constants.LOCALS_TYPE_COLUMN_ID+"}) "+"{"+Constants.LOCALS_VALUE_COLUMN_ID+"}"; // NOI18N
+    
+    private Action switchViewAction;
+
     @Override
-    protected final void initStaticImages(Map<String, String> cache) {
-        cache.put(HeapWalkerIcons.CLASSES, "classes.png"); // NOI18N
-        cache.put(HeapWalkerIcons.DATA, "data.png"); // NOI18N
-        cache.put(HeapWalkerIcons.GC_ROOT, "gcRoot.png"); // NOI18N
-        cache.put(HeapWalkerIcons.GC_ROOTS, "gcRoots.png"); // NOI18N
-        cache.put(HeapWalkerIcons.INCOMING_REFERENCES, "incomingRef.png"); // NOI18N
-        cache.put(HeapWalkerIcons.INSTANCES, "instances.png"); // NOI18N
-        cache.put(HeapWalkerIcons.LOOP, "loop.png"); // NOI18N
-        cache.put(HeapWalkerIcons.MEMORY_LINT, "memoryLint.png"); // NOI18N
-        cache.put(HeapWalkerIcons.PROGRESS, "progress.png"); // NOI18N
-        cache.put(HeapWalkerIcons.PROPERTIES, "properties.png"); // NOI18N
-        cache.put(HeapWalkerIcons.RULES, "rules.png"); // NOI18N
-        cache.put(HeapWalkerIcons.SAVED_OQL_QUERIES, "savedOQL.png"); // NOI18N
-        cache.put(HeapWalkerIcons.STATIC, "static.png"); // NOI18N
-        cache.put(HeapWalkerIcons.SYSTEM_INFO, "sysinfo.png"); // NOI18N
+    public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
+        original.performDefaultAction(node);
     }
-    
+
+    @Override
+    public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
+        Action[] actions = original.getActions(node);
+        int n = actions.length;
+        Action[] newActions = new Action[n+1];
+        System.arraycopy(actions, 0, newActions, 0, n);
+        if (switchViewAction == null) {
+            switchViewAction = VariablesSwitchViewAction.createSwitchViewAction("ResultsView", treeNodeFormat);
+        }
+        newActions[n] = switchViewAction;
+        return newActions;
+    }
+
 }

@@ -43,10 +43,7 @@ package org.netbeans.modules.javafx2.platform.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -62,6 +59,7 @@ import org.openide.util.Parameters;
  * API Utility class for JavaFX platform.
  *
  * @author Anton Chechel
+ * @author Petr Somol
  */
 public final class JavaFXPlatformUtils {
 
@@ -96,9 +94,9 @@ public final class JavaFXPlatformUtils {
     };
     
     /**
-     * On Mac JDK subdirs are located deeper by MAC_SUBDIR relative to JDK root
+     * On Mac JDK subdirs are located deeper by MAC_JDK_SUBDIR relative to JDK root
      */
-    public static final String MAC_SUBDIR = File.separatorChar + "Contents" + File.separatorChar + "Home"; // NOI18N
+    private static final String MAC_JDK_SUBDIR = File.separatorChar + "Contents" + File.separatorChar + "Home"; // NOI18N
 
     private JavaFXPlatformUtils() {
     }
@@ -220,7 +218,7 @@ public final class JavaFXPlatformUtils {
         String javadocPath = null;
         String srcPath = null;
 
-        List<String> locations = new ArrayList<String>();
+        Set<String> locations = new LinkedHashSet<String>();
         JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
         Collection<FileObject> roots = defaultPlatform.getInstallFolders();
         for(FileObject root : roots) {
@@ -228,6 +226,14 @@ public final class JavaFXPlatformUtils {
             FileObject parent = root.getParent();
             if(parent != null) {
                 locations.add(parent.getPath());
+                // on Mac compensate for the two additional subdirs (cf. MAC_JDK_SUBDIR)
+                parent = parent.getParent();
+                if(parent != null) {
+                    parent = parent.getParent();
+                    if(parent != null) {
+                        locations.add(parent.getPath());
+                    }
+                }
             }
         }
         locations.addAll(Arrays.asList(KNOWN_JFX_LOCATIONS));
@@ -277,7 +283,7 @@ public final class JavaFXPlatformUtils {
                 if(isSdkPathCorrect(child)) {
                     return child.getAbsolutePath();
                 }
-                File macSubDir = new File(child.getAbsolutePath() + MAC_SUBDIR); // NOI18N
+                File macSubDir = new File(child.getAbsolutePath() + MAC_JDK_SUBDIR); // NOI18N
                 if (isSdkPathCorrect(macSubDir)) {
                     return macSubDir.getAbsolutePath();
                 }
@@ -305,15 +311,17 @@ public final class JavaFXPlatformUtils {
             }
             for(File child : Arrays.asList(children)) {
                 files.add(child);
-                File macSubDir = new File(child.getAbsolutePath() + MAC_SUBDIR); // NOI18N
-                if(macSubDir.exists()) {
-                    files.add(macSubDir);
-                }
-            }
-            for (File child : children) {
-                File[] f = child.listFiles();
+                File[] f = child.listFiles(); // jre subdir
                 if (f != null) {
                     files.addAll(Arrays.asList(f));
+                }
+                File macSubDir = new File(child.getAbsolutePath() + MAC_JDK_SUBDIR); // NOI18N
+                if(macSubDir.exists()) {
+                    files.add(macSubDir);
+                    f = macSubDir.listFiles();
+                    if (f != null) {
+                        files.addAll(Arrays.asList(f));
+                    }
                 }
             }
             for (File file : files) {
@@ -345,7 +353,7 @@ public final class JavaFXPlatformUtils {
                 if (docs.exists()) {
                     return docs.getAbsolutePath();
                 }
-                docs = new File(child.getAbsolutePath() + MAC_SUBDIR + File.separatorChar + "docs"); // NOI18N
+                docs = new File(child.getAbsolutePath() + MAC_JDK_SUBDIR + File.separatorChar + "docs"); // NOI18N
                 if (docs.exists()) {
                     return docs.getAbsolutePath();
                 }

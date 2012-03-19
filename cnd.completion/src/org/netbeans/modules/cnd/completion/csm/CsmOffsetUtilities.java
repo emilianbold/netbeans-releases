@@ -189,11 +189,11 @@ public class CsmOffsetUtilities {
             // in function, but check that not in return type
             // check if offset in return value
             CsmType retType = fun.getReturnType();
+            CsmFunctionParameterList paramList = fun.getParameterList();
             if (CsmOffsetUtilities.isInObject(retType, offset)) {
-                return false;
+                return paramList.getEndOffset() <= retType.getStartOffset();
             }
             // check if offset is before parameters
-            CsmFunctionParameterList paramList = fun.getParameterList();
             if (paramList != null) {
                 if (CsmOffsetUtilities.isInObject(paramList, offset)) {
                     return true;

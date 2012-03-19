@@ -108,6 +108,21 @@ is the proper place.
 
     <changes>
 
+        <change id="id-and-details">
+             <api name="EditorHintsSPI"/>
+             <summary>Added id and details to ErrorDescriptionFactory.createErrorDescription</summary>
+             <version major="1" minor="22"/>
+             <date day="19" month="3" year="2012"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added several new variants of ErrorDescriptionFactory.createErrorDescription.
+                 These new variants allow to specify an optional error/warning id and
+                 more details.
+             </description>
+             <class name="ErrorDescriptionFactory" package="org.netbeans.spi.editor.hints"/>
+             <issue number="209448"/>
+        </change>
         <change id="attachSubfixes">
              <api name="EditorHintsSPI"/>
              <summary>Added ErrorDescriptionFactory.attachSubfixes</summary>

@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.prime.com.tr/ui"
+      xmlns:h="http://java.sun.com/jsf/html">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <p:commandButton id="wlcButton" value="Welcome to PrimeFaces" onclick="wlcDialog.show();" type="button" />
+
+        <p:dialog header="Welcome to PrimeFaces" widgetVar="wlcDialog" showEffect="clip" hideEffect="explode">
+            <h:outputText value="Welcome to development in PrimeFaces." />
+            <br /><br />
+            <h:outputLink value="http://www.primefaces.org/documentation.html" >PrimeFaces documentation...</h:outputLink>
+        </p:dialog>
+    </h:body>
+</html>

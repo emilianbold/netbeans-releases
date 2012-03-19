@@ -401,14 +401,18 @@ public class RulesManager implements FileChangeListener {
             if (result == null) return result;
 
             Collection<ErrorDescription> wrapped = new LinkedList<ErrorDescription>();
+            String id = tr instanceof AbstractHint ? ((AbstractHint) tr).getId() : "no-id";
+            String description = tr instanceof AbstractHint ? ((AbstractHint) tr).getDescription() : null;
 
             for (ErrorDescription ed : result) {
                 if (ed == null || ed.getRange() == null) continue;
                 List<Fix> fixesForED = JavaFixImpl.Accessor.INSTANCE.resolveDefaultFixes(ctx, ed.getFixes().getFixes().toArray(new Fix[0]));
 
-                ErrorDescription nue = createErrorDescription(ed.getSeverity(),
+                ErrorDescription nue = createErrorDescription("text/x-java:" + id,
+                                                              ed.getSeverity(),
                                                               ed.getDescription(),
-                                                              fixesForED,
+                                                              description,
+                                                              org.netbeans.spi.editor.hints.ErrorDescriptionFactory.lazyListForFixes(fixesForED),
                                                               ed.getFile(),
                                                               ed.getRange().getBegin().getOffset(),
                                                               ed.getRange().getEnd().getOffset());

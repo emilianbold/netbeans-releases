@@ -109,6 +109,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     private final LibraryImplementation[] libraries = { lib };
     private Hk2JavaEEPlatformFactory pf;
     private FileChangeListener fcl;
+    /** Keep local Lookup instance to be returned by getLookup method. */
+    private volatile Lookup lkp;
 
     /**
      * 
@@ -463,17 +465,33 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             }
         });
     }
-    
+
+    /**
+     * Return Java EE platform lookup instance or create a new one if no such instance exists.
+     *
+     * @return Platform lookup instance.
+     */
     @Override
     public Lookup getLookup() {
-        String gfRootStr = dm.getProperties().getGlassfishRoot();
-        WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class ,
-                new Hk2JaxWsStack(gfRootStr, this ), WSStack.Source.SERVER);
-        WSStack<JaxRpc> rpcStack = WSStackFactory.createWSStack(JaxRpc.class ,
-                new Hk2JaxRpcStack(gfRootStr), WSStack.Source.SERVER);
-        Lookup baseLookup = Lookups.fixed(gfRootStr, new JaxRsStackSupportImpl() , 
-                wsStack , rpcStack );
-        return LookupProviderSupport.createCompositeLookup(baseLookup, pf.getLookupKey()); 
+        // Avoid locking when instance already exists.
+        if (lkp != null)
+            return lkp;
+        // Create only one for the first time.
+        else {
+            synchronized (this) {
+                if (lkp == null) {
+                    String gfRootStr = dm.getProperties().getGlassfishRoot();
+                    WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class,
+                            new Hk2JaxWsStack(gfRootStr, this), WSStack.Source.SERVER);
+                    WSStack<JaxRpc> rpcStack = WSStackFactory.createWSStack(JaxRpc.class,
+                            new Hk2JaxRpcStack(gfRootStr), WSStack.Source.SERVER);
+                    Lookup baseLookup = Lookups.fixed(gfRootStr, new JaxRsStackSupportImpl(),
+                            wsStack, rpcStack);
+                    lkp = LookupProviderSupport.createCompositeLookup(baseLookup, pf.getLookupKey());
+                }
+            }
+        }
+        return lkp;
     }
 
     private File getExistingFolder(String path) {
