@@ -176,7 +176,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
                         // a usage of field
                         String fieldName = aNode.getProperty().getName();
-                        if(!ModelUtils.isGlobal(parent.getParent()) &&
+                        if(!ModelUtils.isGlobal(parent) && !ModelUtils.isGlobal(parent.getParent()) &&
                             (parent.getParent() instanceof JsFunctionImpl
                                 || isInPropertyNode())) {
                             parent = (JsObjectImpl)parent.getParent();
