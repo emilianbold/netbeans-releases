@@ -65,8 +65,8 @@ import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.PHPCompletionItem.FieldItem;
 import org.netbeans.modules.php.editor.PHPCompletionItem.MethodElementItem;
 import org.netbeans.modules.php.editor.PHPCompletionItem.TypeConstantItem;
-import org.netbeans.modules.php.editor.api.NameKind.Prefix;
 import org.netbeans.modules.php.editor.api.*;
+import org.netbeans.modules.php.editor.api.NameKind.CaseInsensitivePrefix;
 import org.netbeans.modules.php.editor.api.elements.AliasedElement.Trait;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
@@ -265,7 +265,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             request.currentlyEditedFileURL = fileObject.toURL().toString();
             switch (context) {
                 case DEFAULT_PARAMETER_VALUE:
-                    final Prefix nameKindPrefix = NameKind.prefix(prefix);
+                    final CaseInsensitivePrefix nameKindPrefix = NameKind.caseInsensitivePrefix(prefix);
                     autoCompleteKeywords(completionResult, request, Arrays.asList("array"));//NOI18N
                     autoCompleteNamespaces(completionResult, request);
                     autoCompleteTypeNames(completionResult, request, null, true);
@@ -288,7 +288,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     break;
                 case NAMESPACE_KEYWORD:
                     Set<NamespaceElement> namespaces = request.index.getNamespaces(
-                            NameKind.prefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
+                            NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
                     for (NamespaceElement namespace : namespaces) {
                         completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, QualifiedNameKind.QUALIFIED));
                     }
@@ -439,7 +439,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 for (ClassElement classElement : classes) {
                     ElementFilter methodFilter = ElementFilter.allOf(
                             ElementFilter.forExcludedNames(toNames(request.index.getDeclaredMethods(classElement)), PhpElementKind.METHOD),
-                            ElementFilter.forName(NameKind.prefix(QualifiedName.create(request.prefix))));
+                            ElementFilter.forName(NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix))));
                     Set<MethodElement> accessibleMethods = methodFilter.filter(request.index.getAccessibleMethods(classElement, classElement));
                     for (MethodElement method : accessibleMethods) {
                         if (!method.isFinal()) {
@@ -469,7 +469,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final QualifiedName prefix = QualifiedName.create(request.prefix).toNotFullyQualified();
         final NameKind nameQuery = NameKind.create(request.prefix,
-                isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
+                isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
         Model model = request.result.getModel();
         Set<ClassElement> classes = request.index.getClasses(nameQuery, ModelUtils.getAliasedNames(model, request.anchor), Trait.ALIAS);
 
@@ -482,7 +482,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             ClassElement clazz = (ClassElement) classes.toArray()[0];
             if (!clazz.isAbstract()) {
                 // if there is only once class find constructors for it
-                query = isCamelCase ? NameKind.create(prefix.toString(), QuerySupport.Kind.CAMEL_CASE) : NameKind.prefix(prefix);
+                query = isCamelCase ? NameKind.create(prefix.toString(), QuerySupport.Kind.CAMEL_CASE) : NameKind.caseInsensitivePrefix(prefix);
                 autoCompleteConstructors(completionResult, request, model, query);
             }
         } else {
@@ -517,7 +517,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteExceptions(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
-        final NameKind nameQuery = NameKind.create(request.prefix, isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
+        final NameKind nameQuery = NameKind.create(request.prefix, isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
         final Set<ClassElement> classes = request.index.getClasses(nameQuery);
         for (ClassElement classElement : classes) {
             if (isExceptionClass(classElement)) {
@@ -549,7 +549,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             PHPCompletionItem.CompletionRequest request,boolean endWithDoubleColon, QualifiedNameKind kind) {
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind nameQuery = NameKind.create(request.prefix,
-                isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
+                isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
         Model model = request.result.getModel();
         Set<ClassElement> classes = request.index.getClasses(nameQuery, ModelUtils.getAliasedNames(model, request.anchor), Trait.ALIAS);
 
@@ -566,7 +566,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private void autoCompleteInterfaceNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind) {
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind nameQuery = NameKind.create(request.prefix,
-                isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
+                isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
 
         Model model = request.result.getModel();
         Set<InterfaceElement> interfaces = request.index.getInterfaces(nameQuery, ModelUtils.getAliasedNames(model, request.anchor), Trait.ALIAS);
@@ -585,11 +585,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteAfterUses(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind, boolean endWithDoubleColon) {
         Set<NamespaceElement> namespaces = request.index.getNamespaces(
-                NameKind.prefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
+                NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
         for (NamespaceElement namespace : namespaces) {
             completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
         }
-        final NameKind nameQuery = NameKind.prefix(request.prefix);
+        final NameKind nameQuery = NameKind.caseInsensitivePrefix(request.prefix);
         for (ClassElement clazz : request.index.getClasses(nameQuery)) {
             completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
         }
@@ -649,7 +649,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind) {
         final QualifiedName prefix = QualifiedName.create(request.prefix).toNotFullyQualified();
         Model model = request.result.getModel();
-        Set<NamespaceElement> namespaces = request.index.getNamespaces(NameKind.prefix(prefix),
+        Set<NamespaceElement> namespaces = request.index.getNamespaces(NameKind.caseInsensitivePrefix(prefix),
                 ModelUtils.getAliasedNames(model, request.anchor), Trait.ALIAS);
         for (NamespaceElement namespace : namespaces) {
             completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
@@ -698,7 +698,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     for (ClassElement classElement : classes) {
                         ElementFilter methodFilter = ElementFilter.allOf(
                                 ElementFilter.forExcludedNames(toNames(request.index.getDeclaredMethods(classElement)), PhpElementKind.METHOD),
-                                ElementFilter.forName(NameKind.prefix(QualifiedName.create(request.prefix))));
+                                ElementFilter.forName(NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix))));
                         Set<MethodElement> accessibleMethods = methodFilter.filter(request.index.getAccessibleMethods(classElement, classElement));
                         for (MethodElement method : accessibleMethods) {
                             if (!method.isFinal()) {
@@ -787,20 +787,20 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                     final ElementFilter methodsFilter = ElementFilter.allOf(
                             ElementFilter.forKind(PhpElementKind.METHOD),
-                            ElementFilter.forName(NameKind.prefix(request.prefix)),
+                            ElementFilter.forName(NameKind.caseInsensitivePrefix(request.prefix)),
                             staticFlagFilter,
                             ElementFilter.forExcludedNames(invalidProposalsForClsMembers, PhpElementKind.METHOD),
                             ElementFilter.forInstanceOf(MethodElement.class)
                             );
                     final ElementFilter fieldsFilter = ElementFilter.allOf(
                             ElementFilter.forKind(PhpElementKind.FIELD),
-                            ElementFilter.forName(NameKind.prefix(request.prefix)),
+                            ElementFilter.forName(NameKind.caseInsensitivePrefix(request.prefix)),
                             staticFlagFilter,
                             ElementFilter.forInstanceOf(FieldElement.class)
                             );
                     final ElementFilter constantsFilter = ElementFilter.allOf(
                             ElementFilter.forKind(PhpElementKind.TYPE_CONSTANT),
-                            ElementFilter.forName(NameKind.prefix(request.prefix)),
+                            ElementFilter.forName(NameKind.caseInsensitivePrefix(request.prefix)),
                             ElementFilter.forInstanceOf(TypeConstantElement.class)
                             );
                     for (final PhpElement phpElement : request.index.getAccessibleTypeMembers(typeScope, enclosingType)) {
@@ -832,7 +832,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         Collection<? extends TypeScope> types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
         final ElementFilter fieldsFilter = ElementFilter.allOf(
             ElementFilter.forKind(PhpElementKind.FIELD),
-            ElementFilter.forName(NameKind.prefix(request.prefix)),
+            ElementFilter.forName(NameKind.caseInsensitivePrefix(request.prefix)),
             ElementFilter.forInstanceOf(FieldElement.class)
         );
         if (types != null) {
@@ -921,7 +921,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         final boolean offerGlobalVariables = OptionsUtils.codeCompletionVariablesScope().equals(VariablesScope.ALL);
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind prefix = NameKind.create(request.prefix,
-                isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
+                isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
 
         final Set<VariableElement> globalVariables = new HashSet<VariableElement>();
 
@@ -964,7 +964,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteGlobals(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
         if (OptionsUtils.codeCompletionVariablesScope().equals(VariablesScope.ALL)) {
-            final Prefix prefix = NameKind.prefix(QualifiedName.create(request.prefix));
+            final CaseInsensitivePrefix prefix = NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix));
             for (VariableElement variableElement : request.index.getTopLevelVariables(prefix)) {
                 completionResult.add(new PHPCompletionItem.VariableItem(variableElement, request));
             }
@@ -983,7 +983,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 if (globalVariables == null) {
                     FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
                     final ElementFilter forCurrentFile = ElementFilter.forFiles(fileObject);
-                    globalVariables = forCurrentFile.reverseFilter(request.index.getTopLevelVariables(NameKind.prefix(QualifiedName.create(request.prefix))));
+                    globalVariables = forCurrentFile.reverseFilter(request.index.getTopLevelVariables(NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix))));
                 }
 
                 for (final VariableElement globalVariable : globalVariables) {
