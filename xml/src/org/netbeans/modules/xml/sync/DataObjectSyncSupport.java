@@ -44,8 +44,9 @@
 package org.netbeans.modules.xml.sync;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 import javax.swing.text.Document;
 
@@ -71,7 +72,7 @@ import org.openide.loaders.DataObject;
  */
 public class DataObjectSyncSupport extends SyncSupport implements Synchronizator {
     
-    private final Vector reps;
+    private final List<Representation> reps;
         
     private final CookieManagerCookie cookieMgr;
 
@@ -79,7 +80,7 @@ public class DataObjectSyncSupport extends SyncSupport implements Synchronizator
     /** Creates new DataObjectSyncSupport */
     public DataObjectSyncSupport(XMLDataObjectLook dobj) {
         super((DataObject)dobj);
-        reps = new Vector(3);
+        reps = new ArrayList<Representation>(3);
         cookieMgr = dobj.getCookieManager();
 
         Representation basic = new FileRepresentation (getDO(), this);
@@ -96,7 +97,9 @@ public class DataObjectSyncSupport extends SyncSupport implements Synchronizator
      *
      */
     protected Representation[] getRepresentations() {
-        return (Representation[]) reps.toArray(new Representation[0]);
+        synchronized (reps) {
+            return (Representation[]) reps.toArray(new Representation[reps.size()]);
+        }
     }
 
     /**
@@ -136,11 +139,13 @@ public class DataObjectSyncSupport extends SyncSupport implements Synchronizator
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Sync addRepresentation " + rep); // NOI18N
 
         if (rep.represents(Document.class)) {
-            for (Iterator it = reps.iterator(); it.hasNext();) {
-                Representation next = (Representation) it.next();
-                if (next.represents(FileObject.class)) {
-                    it.remove();
-                }                               
+            synchronized (reps) {
+                for (Iterator it = reps.iterator(); it.hasNext();) {
+                    Representation next = (Representation) it.next();
+                    if (next.represents(FileObject.class)) {
+                        it.remove();
+                    }                               
+                }
             }
         } else if (rep.level() > 1) {
             
@@ -148,7 +153,9 @@ public class DataObjectSyncSupport extends SyncSupport implements Synchronizator
             
             loadTextRepresentation();
         }
-        reps.add(rep);
+        synchronized (reps) {
+            reps.add(rep);
+        }
     }
 
     
@@ -166,27 +173,28 @@ public class DataObjectSyncSupport extends SyncSupport implements Synchronizator
             
             // check whether tree representation is loaded
             
+            synchronized (reps) {
+                for (Iterator it = reps.iterator(); it.hasNext();) {
+                    Representation next = (Representation) it.next();
+                    if (next.level() > 1) {
+                        modelLoaded = true;
+                    }                               
+                }
 
-            for (Iterator it = reps.iterator(); it.hasNext();) {
-                Representation next = (Representation) it.next();
-                if (next.level() > 1) {
-                    modelLoaded = true;
-                }                               
+                if (modelLoaded == false) {
+
+                    Representation basic = new FileRepresentation (getDO(), this);
+                    reps.add(basic);
+                }
             }
-
-            if (modelLoaded == false) {
-            
-                Representation basic = new FileRepresentation (getDO(), this);
-                reps.add(basic);
-            
-            } else {     
-                
+            if (modelLoaded) {
                 // reload text representation, tree cannot live without it
-
                 loadTextRepresentation();
             }
         }                        
-        reps.remove(rep);
+        synchronized (reps) {
+            reps.remove(rep);
+        }
 
         if ( modelLoaded ) {//&& ( getDO().isValid() ) ) {
             representationChanged (Document.class);
