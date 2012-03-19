@@ -142,12 +142,19 @@ public final class GsfUtilities {
         String newIndentString = IndentUtils.createIndentString(doc, newIndent);
         // Attempt to match the begining characters
         int offset = lineStartOffset;
-        for (int i = 0; i < newIndentString.length() && lineStartOffset + i < oldIndentEndOffset; i++) {
+        boolean different = false;
+        int i = 0;
+        for (; i < newIndentString.length() && lineStartOffset + i < oldIndentEndOffset; i++) {
             if (newIndentString.charAt(i) != docText.charAt(lineStartOffset + i)) {
                 offset = lineStartOffset + i;
                 newIndentString = newIndentString.substring(i);
+                different = true;
                 break;
             }
+        }
+        if (!different) {
+            offset = lineStartOffset + i;
+            newIndentString = newIndentString.substring(i);
         }
 
         // Replace the old indent
