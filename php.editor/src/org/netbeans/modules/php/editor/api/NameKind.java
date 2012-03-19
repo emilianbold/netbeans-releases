@@ -78,6 +78,10 @@ public class NameKind {
         return new Prefix(query);
     }
 
+    public static CaseInsensitivePrefix caseInsensitivePrefix(String query) {
+        return new CaseInsensitivePrefix(query);
+    }
+
     public static Exact exact(QualifiedName query) {
         return new Exact(query);
     }
@@ -86,12 +90,18 @@ public class NameKind {
         return new Prefix(query);
     }
 
+    public static CaseInsensitivePrefix caseInsensitivePrefix(QualifiedName query) {
+        return new CaseInsensitivePrefix(query);
+    }
+
     public static NameKind create(String query, Kind queryKind) {
         switch(queryKind) {
             case PREFIX:
                 return new Prefix(query);
             case EXACT:
                 return new Exact(query);
+            case CASE_INSENSITIVE_PREFIX:
+                return new CaseInsensitivePrefix(query);
         }
         if (query == null || query.isEmpty()) {
             assert queryKind.equals(Kind.PREFIX) || queryKind.equals(Kind.CASE_INSENSITIVE_PREFIX) : queryKind.toString();
@@ -106,6 +116,8 @@ public class NameKind {
                 return new Prefix(query);
             case EXACT:
                 return new Exact(query);
+            case CASE_INSENSITIVE_PREFIX:
+                return new CaseInsensitivePrefix(query);
         }
         return new NameKind(query, queryKind);
     }
@@ -115,6 +127,9 @@ public class NameKind {
     }
     public boolean isExact() {
         return getQueryKind().equals(QuerySupport.Kind.EXACT);
+    }
+    public boolean isCaseInsensitivePrefix() {
+        return getQueryKind().equals(QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
     }
     public boolean isEmpty() {
         return getQueryName().isEmpty();
@@ -284,6 +299,18 @@ public class NameKind {
             super(name, Kind.PREFIX);
         }
     }
+
+    public final static class CaseInsensitivePrefix extends NameKind {
+
+        private CaseInsensitivePrefix(String name) {
+            super(name, Kind.CASE_INSENSITIVE_PREFIX);
+        }
+
+        private CaseInsensitivePrefix(QualifiedName name) {
+            super(name, Kind.CASE_INSENSITIVE_PREFIX);
+        }
+    }
+
     public final static class Empty extends NameKind {
         private Empty() {
             super("", Kind.PREFIX);
