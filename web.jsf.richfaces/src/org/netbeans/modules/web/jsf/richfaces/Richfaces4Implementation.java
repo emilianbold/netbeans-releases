@@ -87,14 +87,14 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
 
     private Richfaces4Customizer customizer;
 
-    private static final String RICHFACES_NAME = "RichFaces 4.0"; //NOI18N
+    private static final String RICHFACES_NAME = "RichFaces"; //NOI18N
     private static final String richfacesUiPom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/ui/richfaces-components-ui/4.0.0.Final/richfaces-components-ui-4.0.0.Final.pom";
     private static final String richfacesCorePom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/core/richfaces-core-impl/4.0.0.Final/richfaces-core-impl-4.0.0.Final.pom";
 
     public static final Map<String, String> RF_LIBRARIES = new HashMap<String, String>();
     public static final Map<String, String> RF_DEPENDENCIES = new HashMap<String, String>();
 
-    public static final String PREF_RICHFACES_NODE = "richfaces4"; //NOI18N
+    public static final String PREF_RICHFACES_NODE = "richfaces"; //NOI18N
     public static final String PREF_RICHFACES_LIBRARY = "base-library"; //NOI18N
 
 
@@ -119,7 +119,7 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(Richfaces4Implementation.class, "LBL_RichFaces4_Description");  //NOI18N
+        return NbBundle.getMessage(Richfaces4Implementation.class, "LBL_RichFaces_Description");  //NOI18N
     }
 
     @Override
