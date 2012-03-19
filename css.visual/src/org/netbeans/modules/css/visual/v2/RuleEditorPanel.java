@@ -69,9 +69,13 @@ public class RuleEditorPanel extends javax.swing.JPanel {
 
         updateContent();
     }
+    
+    RuleContext getContext() {
+        return ruleContext;
+    }
 
     private void updateContent() {
-        Node node = ruleContext.getNode();
+        Node node = ruleContext == null ? null : ruleContext.getNode();
         sheet.setNodes(node == null ? null : new Node[]{node});
     }
 

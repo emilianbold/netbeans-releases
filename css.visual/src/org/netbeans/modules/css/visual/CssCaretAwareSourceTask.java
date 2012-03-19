@@ -190,8 +190,16 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
     }
 
     private void updateCssPropertiesWindow(final CssCslParserResult result, int documentOffset) {
+        final RuleEditorTC cssPropertiesTC = (RuleEditorTC) WindowManager.getDefault().findTopComponent(RuleEditorTC.ID);
+        if (cssPropertiesTC == null) {
+            return;
+        }
+        
+        
         final int astOffset = result.getSnapshot().getEmbeddedOffset(documentOffset);
         if(astOffset == -1) {
+            //disable the rule editor
+            cssPropertiesTC.setContext(null);
             return ;
         }
         
@@ -210,12 +218,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
                     }
                 }
 
-                RuleEditorTC cssPropertiesTC = (RuleEditorTC) WindowManager.getDefault().findTopComponent(RuleEditorTC.ID);
-                if (cssPropertiesTC == null) {
-                    return;
-                }
-
-                RuleContext context = new RuleContext(match, result.getModelV2());
+                RuleContext context = match == null ? null : new RuleContext(match, result.getModelV2());
                 cssPropertiesTC.setContext(context);
             }
         });
