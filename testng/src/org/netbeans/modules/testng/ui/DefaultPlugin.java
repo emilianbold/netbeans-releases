@@ -204,7 +204,7 @@ public final class DefaultPlugin extends TestNGPlugin {
         
         return getOppositeLocation(sourceLocation,
                                    srcCp,
-                                   testResName,
+                                   "testng/".concat(testResName),
                                    true);
     }
     
@@ -225,10 +225,13 @@ public final class DefaultPlugin extends TestNGPlugin {
         if (srcResName == null) {
             return null;     //if the selectedFO is not a test class (by name)
         }
+        if (!srcResName.startsWith("testng/")) {
+            return null;     //if the selectedFO is not a TestNG test class
+        }
 
         return getOppositeLocation(testLocation,
                                    srcCp,
-                                   srcResName,
+                                   srcResName.substring(srcResName.indexOf("testng/") + 7),
                                    false);
     }
     
