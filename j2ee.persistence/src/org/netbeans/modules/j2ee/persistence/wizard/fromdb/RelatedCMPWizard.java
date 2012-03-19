@@ -272,7 +272,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
     public Set<DataObject> instantiate(final TemplateWizard wiz) throws IOException {
         // create the pu first if needed
         if(helper.isCreatePU()) {
-            Util.addPersistenceUnitToProject(project, Util.buildPersistenceUnitUsingData(project, null, helper.getTableSource().getName(), null, null));
+            Util.addPersistenceUnitToProject(project, Util.buildPersistenceUnitUsingData(project, null, helper.getDatabaseConnection()!=null ? helper.getTableSource().getName():null, null, null));
        }
         
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "TXT_EjbGeneration" : "TXT_EntityClassesGeneration");
