@@ -79,6 +79,7 @@ import org.openide.loaders.DataObject;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
+import org.openide.text.NbDocument;
 
 /**
  * copy paste from javadoc module
@@ -583,7 +584,7 @@ public class JavadocUtilities {
     private static boolean doOpenImpl(FileObject fo, int offset) {
         try {
             DataObject od = DataObject.find(fo);
-            return DataEditorSupport.openDocument(od, offset, ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+            return NbDocument.openDocument(od, offset, ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
         } catch (IOException ex) {
             Logger.getLogger(JavadocUtilities.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }

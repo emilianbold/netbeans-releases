@@ -109,55 +109,6 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
-      <change id="DataEditorSupport.getStyledDocument">
-          <api name="loaders"/>
-          <summary>Added method <code>DataEditorSupport.getStyledDocument</code></summary>
-          <version major="7" minor="34"/>
-          <date day="12" month="3" year="2012"/>
-          <author login="theofanis"/>
-          <compatibility addition="yes"/>
-          <description>
-              <p>
-                  Get the StyledDocument associated with a file.
-              </p>
-          </description>
-          <class package="org.openide.text" name="DataEditorSupport"/>
-          <issue number="209058"/>
-      </change>
-      <change id="DataEditorSupport.openDocument">
-          <api name="loaders"/>
-          <summary>Added method <code>DataEditorSupport.openDocument</code> with offset parameter</summary>
-          <version major="7" minor="34"/>
-          <date day="12" month="3" year="2012"/>
-          <author login="theofanis"/>
-          <compatibility addition="yes"/>
-          <description>
-              <p>
-                  Open the document associated with a file in the Editor window
-                  in a position specified by the offset while controlling 
-                  open and visibility behavior.
-              </p>
-          </description>
-          <class package="org.openide.text" name="DataEditorSupport"/>
-          <issue number="209058"/>
-      </change>
-      <change id="DataEditorSupport.openDocument2">
-          <api name="loaders"/>
-          <summary>Added method <code>DataEditorSupport.openDocument</code> with line and column parameter</summary>
-          <version major="7" minor="34"/>
-          <date day="12" month="3" year="2012"/>
-          <author login="theofanis"/>
-          <compatibility addition="yes"/>
-          <description>
-              <p>
-                  Open the document associated with a file in the Editor window
-                  in a position specified by the line and column while
-                  controlling open and visibility behavior.
-              </p>
-          </description>
-          <class package="org.openide.text" name="DataEditorSupport"/>
-          <issue number="209058"/>
-      </change>
       <change id="ToolbarPool.isFinished">
           <api name="awt"/>
           <summary><code>ToolbarPool.isFinished</code></summary>

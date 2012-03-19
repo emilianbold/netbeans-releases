@@ -45,13 +45,23 @@ package org.openide.text;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 import javax.swing.JEditorPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
+import org.netbeans.api.actions.Openable;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 
 
 /** Dummy class holding utility methods for working with NetBeans document conventions.
@@ -517,6 +527,170 @@ public final class NbDocument extends Object {
             return;
         }
         ((Annotatable) doc).removeAnnotation(annotation);
+    }
+    
+    /**
+     * Get the document associated with a file.
+     *
+     * <p>Method will throw {@link org.openide.util.UserQuestionException}
+     * exception if file size is too big. This exception is caught and its
+     * method {@link org.openide.util.UserQuestionException#confirmed} is used
+     * for confirmation.
+     *
+     *
+     * @param provider for example a {@link DataObject}
+     * @return {@link javax.swing.text.StyledDocument} or null
+     * @since org.openide.text 6.45
+     */
+    @NbBundle.Messages("TXT_Question=Question")
+    public static StyledDocument getDocument(Lookup.Provider provider) {
+        try {
+            EditorCookie ec = provider.getLookup().lookup(EditorCookie.class);
+            if (ec != null) {
+                StyledDocument doc = null;
+                try {
+                    doc = ec.openDocument();
+                } catch (UserQuestionException uqe) {
+                    final Object value = DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Confirmation(uqe.getLocalizedMessage(),
+                            Bundle.TXT_Question(),
+                            NotifyDescriptor.YES_NO_OPTION));
+                    if (value != NotifyDescriptor.YES_OPTION) {
+                        return null;
+                    }
+                    uqe.confirmed();
+                    doc = ec.openDocument();
+                }
+                return doc;
+            }
+        } catch (IOException ioe) {
+            Logger.getLogger(NbDocument.class.getName()).log(Level.WARNING, null, ioe);
+        }
+        return null;
+    }
+    
+    /**
+     * Open the document associated with a file in the Editor window in a
+     * position specified by the offset while controlling open and visibility behavior.
+     * This method can be called from any thread but blocks until the document is opened.
+     *
+     * @param provider for example a {@link DataObject}
+     * @param offset the position the document should be opened (starting at 0)
+     * @param openType control open behavior, {@link org.openide.text.Line.ShowOpenType#OPEN}
+     * would typically be used
+     * @param visibilityType control visibility behavior, {@link org.openide.text.Line.ShowVisibilityType#FOCUS}
+     * would typically be used
+     * @return true if the Document is opened - false otherwise
+     * @see #getDocument
+     * <code>UserQuestionException handling</code>
+     * @since org.openide.text 6.45
+     */
+    public static boolean openDocument(Lookup.Provider provider, int offset, Line.ShowOpenType openType, Line.ShowVisibilityType visibilityType) {
+        assert provider != null;
+        LineCookie lc = provider.getLookup().lookup(LineCookie.class);
+        if ((lc != null) && (offset != -1)) {
+            StyledDocument doc = getDocument(provider);
+
+            if (doc != null) {
+                int line = NbDocument.findLineNumber(doc, offset);
+                int column = NbDocument.findLineColumn(doc, offset);
+                
+                Line l = null;
+                try {
+                    l = lc.getLineSet().getCurrent(line);
+                } catch (IndexOutOfBoundsException e) { // try to open at least the file (line no. is too high?)
+                    l = lc.getLineSet().getCurrent(0);
+                }
+
+                if (l != null) {
+                    doShow(l, column, openType, visibilityType);
+                    return true;
+                }
+            }
+        }
+
+        Openable oc = provider.getLookup().lookup(Openable.class);
+
+        if (oc != null) {
+            doOpen(oc);
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Open the document associated with a file in the Editor window in a
+     * position specified by the line and column while controlling open and visibility behavior.
+     * This method can be called from any thread but blocks until the document is opened.
+     *
+     * @param provider for example a {@link DataObject}
+     * @param line the line the document should be opened (starting at 0)
+     * @param column the column which should be selected (starting at 0), value
+     * -1 does not change previously selected column
+     * @param openType control open behavior, {@link org.openide.text.Line.ShowOpenType#OPEN}
+     * would typically be used
+     * @param visibilityType control visibility behavior, {@link org.openide.text.Line.ShowVisibilityType#FOCUS}
+     * would typically be used
+     * @return true if the Document is opened - false otherwise
+     * @see #getDocument
+     * <code>UserQuestionException handling</code>
+     * @since org.openide.text 6.45
+     */
+    public static boolean openDocument(Lookup.Provider provider, int line, int column, Line.ShowOpenType openType, Line.ShowVisibilityType visibilityType) {
+        assert provider != null;
+        LineCookie lc = provider.getLookup().lookup(LineCookie.class);
+        if ((lc != null) && (line >= 0) && (column >= -1)) {
+            StyledDocument doc = getDocument(provider);
+
+            if (doc != null) {
+                Line l = null;
+                try {
+                    l = lc.getLineSet().getCurrent(line);
+                } catch (IndexOutOfBoundsException e) { // try to open at least the file (line no. is too high?)
+                    l = lc.getLineSet().getCurrent(0);
+                }
+
+                if (l != null) {
+                    doShow(l, column, openType, visibilityType);
+                    return true;
+                }
+            }
+        }
+
+        final Openable oc = provider.getLookup().lookup(Openable.class);
+
+        if (oc != null) {
+            doOpen(oc);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private static void doShow(final Line l, final int column, final Line.ShowOpenType openType, final Line.ShowVisibilityType visibilityType) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            l.show(openType, visibilityType, column);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    l.show(openType, visibilityType, column);
+                }
+            });
+        }
+    }
+
+    private static void doOpen(final Openable oc) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            oc.open();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    oc.open();
+                }
+            });
+        }
     }
 
     /** Specialized version of document that knows how to lock the document

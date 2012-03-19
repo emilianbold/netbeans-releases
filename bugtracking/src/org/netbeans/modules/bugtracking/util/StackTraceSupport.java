@@ -76,6 +76,7 @@ import org.openide.loaders.DataObject;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
+import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -339,7 +340,7 @@ class StackTraceSupport {
     private static boolean doOpen(FileObject fo, int line) {
         try {
             DataObject od = DataObject.find(fo);
-            return DataEditorSupport.openDocument(od, line, -1, ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+            return NbDocument.openDocument(od, line, -1, ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
         } catch (IOException e) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, e);
         }
