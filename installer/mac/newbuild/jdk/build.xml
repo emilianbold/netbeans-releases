@@ -53,6 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         </exec>        
         <echo message="sizeof.jdk=${size}${line.separator}" file="${basedir}/../build/sizes.pro" append="true"/>
         <echo message="Getting size of JDK - ${size}"/>
+
 <!--        <echo message="Executing pack200 in ${appdir}"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>

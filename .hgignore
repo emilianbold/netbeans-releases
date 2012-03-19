@@ -183,3 +183,4 @@ derby\.log
 \.conflict\~$
 ^nbbuild/jna\.keystore$
 ^nbi/engine/testData$
+^installer/mac/newbuild/dist_dmg$

@@ -159,7 +159,7 @@ Microsystems, Inc. All Rights Reserved.
                                          ide(baseide), nb-etc(baseide), platform(baseide)
                                          "/>
         
-        <property name="co-bundle.clusters" value="java(javase), 
+        <property name="jdk-bundle.clusters" value="java(javase), 
                                                    ide(baseide), nb-etc(baseide), platform(baseide)
                                          "/>
 
@@ -169,16 +169,16 @@ Microsystems, Inc. All Rights Reserved.
             <equals arg1="${javafx.build}" arg2="0"/>
         </condition>
         
-        <condition property="clusters" value="${all.clusters}" else="${co-bundle.clusters}"> 
-            <equals arg1="${co-bundle.build}" arg2="0"/>
+        <condition property="clusters" value="${all.clusters}" else="${jdk-bundle.clusters}"> 
+            <equals arg1="${jdk-bundle.build}" arg2="0"/>
         </condition>
         
         <echo message="XXX: CLUSTERS: ${clusters}"/>
-        <echo message="XXX: CO-BUNDLE CLUSTERS: ${co-bundle.clusters}"/>
+        <echo message="XXX: JDK-BUNDLE CLUSTERS: ${jdk-bundle.clusters}"/>
         
     </target>
 
-    <!-- XXX:  small co-bundle <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters,prepare-javame-sdk-zip">-->
+    <!-- XXX:  small jdk-bundle <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters,prepare-javame-sdk-zip">-->
     <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters">    
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
@@ -250,7 +250,7 @@ Microsystems, Inc. All Rights Reserved.
                                         ergonomics(${ergonomics-title}),
                                         php(${php-title})
                                         "/>
-        <property name="co-bundle.modules" value="
+        <property name="jdk-bundle.modules" value="
                                         javase(${javase-title})
                                         "/>
         <property name="fx.module" value="javafx(${javafx-title})"/>
@@ -258,8 +258,8 @@ Microsystems, Inc. All Rights Reserved.
         <condition property="all.modules" value="${main.modules}" else="${main.modules},${fx.module}"> 
             <equals arg1="${javafx.build}" arg2="0"/>
         </condition>
-        <condition property="modules" value="${all.modules}" else="${co-bundle.modules}"> 
-            <equals arg1="${co-bundle.build}" arg2="0"/>
+        <condition property="modules" value="${all.modules}" else="${jdk-bundle.modules}"> 
+            <equals arg1="${jdk-bundle.build}" arg2="0"/>
         </condition>
         <echo message="XXX: MODULES: ${modules}"/>
     </target>    
@@ -320,18 +320,25 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <target name="init-bundles">
-        <property name="main.bundles" value="-javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg  ./build/JDK\ 7\ Update\ 04.pkg)"/>
+        <property name="main.bundles" value="-javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg)"/>
 
         <property name="fx.bundles" value="    
                                                -javafx-full(./build/*pkg),
                                                -javafx(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javafx-${nb.id}.pkg)
                                           "/>
 
-        <condition property="bundles" value="${main.bundles}" else="${main.bundles},${fx.bundles}"> 
+        <property name="jdk-bundle.bundles" value="-jdk(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/JDK\ 7\ Update\ 04.pkg)"/>
+
+        <condition property="all.bundles" value="${main.bundles}" else="${main.bundles},${fx.bundles}"> 
             <equals arg1="${javafx.build}" arg2="0"/>
         </condition>
+        <condition property="bundles" value="${all.bundles}" else="${jdk-bundle.bundles}"> 
+            <equals arg1="${jdk-bundle.build}" arg2="0"/>
+        </condition>
+        <echo message="XXX: bundles: ${bundles}"/>
+        
     </target>
-    <!-- XXX: small co-bundle <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,init-bundles">-->
+    <!-- XXX: small jdk-bundle <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,init-bundles">-->
     <target name="build-all-dmg" depends="clean,init,build-pkg,build-jdk-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
@@ -547,8 +554,9 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${license.file}" 
               tofile="${mpkg.file}/Contents/Resources/License.txt" />                         
                          
-        <ant target="prepare-lproj-dirs"/>                                             
+        <ant target="prepare-lproj-dirs"/>
         
+        <echo message="XXX: in build-dmg bundle.type? ${bundle.type}"/>                                             
         <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
             <filterset>
                 <filter token="NB_ID" value="${nb.id}"/>
@@ -589,6 +597,6 @@ Microsystems, Inc. All Rights Reserved.
           <arg value="-c"/>
           <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}'"/>
         </exec>  
-        <delete dir="dist_dmg"/>
+        <!-- XXX <delete dir="dist_dmg"/>-->
     </target>             
 </project>          
