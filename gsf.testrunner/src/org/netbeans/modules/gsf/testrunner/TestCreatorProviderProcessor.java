@@ -42,6 +42,8 @@
 package org.netbeans.modules.gsf.testrunner;
 
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -49,6 +51,7 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider.Registration;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
@@ -68,13 +71,13 @@ public class TestCreatorProviderProcessor extends LayerGeneratingProcessor {
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
 
         for (Element e : roundEnv.getElementsAnnotatedWith(Registration.class)) {
-            Registration w = e.getAnnotation(Registration.class);            
-            String teName = e.asType().toString();            
-            
-            File f = layer(e).file(
-                "Services/" + teName.replace('.', '-') + ".instance"
-            );
-            f.bundlevalue("displayName", w.displayName(), w, "displayName");
+            Registration registration = e.getAnnotation(Registration.class);            
+            if(registration == null) {
+                continue;
+            }
+            File f = layer(e).instanceFile("Services", null);
+            f.stringvalue("instanceOf", TestCreatorProvider.class.getName());
+            f.bundlevalue("displayName", registration.displayName());
             f.write();
         }
 

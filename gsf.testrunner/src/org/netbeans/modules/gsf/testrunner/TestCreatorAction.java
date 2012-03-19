@@ -99,9 +99,9 @@ public class TestCreatorAction extends NodeAction {
         if (activatedNodes.length == 0) {
             return false;
         }
-        Collection<? extends TestCreatorProvider> providers = Lookup.getDefault().lookupAll(TestCreatorProvider.class);
-        for (TestCreatorProvider provider : providers) {
-            return provider.enable(activatedNodes);
+        Collection<? extends Lookup.Item<TestCreatorProvider>> providers = Lookup.getDefault().lookupResult(TestCreatorProvider.class).allItems();
+        for (Lookup.Item<TestCreatorProvider> provider : providers) {
+            return provider.getInstance().enable(activatedNodes);
         }
         return false;
     }
@@ -113,14 +113,9 @@ public class TestCreatorAction extends NodeAction {
         cfg.createCfgPanel(modified.length == 0 ? false : true);
         
         testingFrameworksToAdd.clear();
-        Collection<? extends TestCreatorProvider> providers = Lookup.getDefault().lookupAll(TestCreatorProvider.class);
-        for (TestCreatorProvider provider : providers) {
-            if(provider.canHandleMultipleClasses(activatedNodes)) {
-                Registration regAnnotation = provider.getClass().getAnnotation(Registration.class);
-                if(regAnnotation != null) {
-                    testingFrameworksToAdd.add(regAnnotation.displayName());
-                }
-            }
+        Collection<? extends Lookup.Item<TestCreatorProvider>> providers = Lookup.getDefault().lookupResult(TestCreatorProvider.class).allItems();
+        for (Lookup.Item<TestCreatorProvider> provider : providers) {
+            testingFrameworksToAdd.add(provider.getDisplayName());
         }
         cfg.addTestingFrameworks(testingFrameworksToAdd);
         if (!cfg.configure()) {
@@ -129,19 +124,15 @@ public class TestCreatorAction extends NodeAction {
         saveAll(modified); // #149048
         String selected = cfg.getSelectedTestingFramework();
         
-        for (TestCreatorProvider provider : providers) {
-            Registration regAnnotation = provider.getClass().getAnnotation(Registration.class);
-            if (regAnnotation != null) {
-                String displayName = regAnnotation.displayName();
-                if (displayName.equals(selected)) {
-                    TestCreatorProvider.Context context = new TestCreatorProvider.Context(activatedNodes);
-                    context.setSingleClass(cfg.isSingleClass());
-                    context.setTargetFolder(cfg.getTargetFolder());
-                    context.setTestClassName(cfg.getTestClassName());
-                    provider.createTests(context);
-                    cfg = null;
-                    break;
-                }
+        for (Lookup.Item<TestCreatorProvider> provider : providers) {
+            if (provider.getDisplayName().equals(selected)) {
+                TestCreatorProvider.Context context = new TestCreatorProvider.Context(activatedNodes);
+                context.setSingleClass(cfg.isSingleClass());
+                context.setTargetFolder(cfg.getTargetFolder());
+                context.setTestClassName(cfg.getTestClassName());
+                provider.getInstance().createTests(context);
+                cfg = null;
+                break;
             }
         }
     }
