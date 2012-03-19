@@ -44,12 +44,7 @@ package org.netbeans.modules.web.jsf.icefaces;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -70,6 +65,10 @@ import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -195,7 +194,37 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
             LOGGER.log(Level.WARNING, "Exception during updating web.xml DD", ex); //NOI18N
         }
 
+        // generate ICEfaces welcome page
+        try {
+            FileObject welcomePage = generateWelcomePage(webModule);
+            Collections.singleton(welcomePage);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Exception during welcome page creation", ex); //NOI18N
+        }
         return Collections.<FileObject>emptySet();
+    }
+
+    private static FileObject generateWelcomePage(WebModule webModule) throws IOException {
+        FileObject templateFO = FileUtil.getConfigFile("Templates/Other/welcomeIcefaces.xhtml"); //NOI18N
+        DataObject templateDO = DataObject.find(templateFO);
+        DataObject generated = templateDO.createFromTemplate(
+                DataFolder.findFolder(webModule.getDocumentBase()),
+                "welcomeIcefaces"); //NOI18N
+        JsfComponentUtils.reformat(generated);
+
+        // update and reformat index page
+        updateIndexPage(webModule);
+
+        return generated.getPrimaryFile();
+    }
+
+    private static void updateIndexPage(WebModule webModule) throws DataObjectNotFoundException {
+        FileObject indexFO = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
+        DataObject indexDO = DataObject.find(indexFO);
+        JsfComponentUtils.enhanceFileBody(indexDO, "</h:body>", "<br />\n<h:link outcome=\"welcomeIcefaces\" value=\"ICEfaces welcome page\" />"); //NOI18N
+        if (indexFO.isValid() && indexFO.canWrite()) {
+            JsfComponentUtils.reformat(indexDO);
+        }
     }
 
     @Override
