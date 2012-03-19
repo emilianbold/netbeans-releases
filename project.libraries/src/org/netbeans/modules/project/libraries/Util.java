@@ -146,33 +146,6 @@ public class Util {
         return false;
     }
     
-    public static boolean supportsProperties(final @NonNull LibraryImplementation impl) {
-        assert impl != null;
-        if (impl instanceof ProxyLibraryImplementation) {
-            return supportsDisplayName(((ProxyLibraryImplementation)impl).getOriginal());
-        }
-        return impl instanceof LibraryImplementation3;
-    }
-    
-    @NonNull
-    public static Map<String,String> getProperties (final @NonNull LibraryImplementation impl) {
-        return supportsProperties(impl) ?
-                ((LibraryImplementation3)impl).getProperties() :
-                Collections.<String,String>emptyMap();
-    }
-    
-    public static boolean setProperties(
-        final @NonNull LibraryImplementation impl,
-        final @NonNull Map<String,String>  props) {
-        if (supportsProperties(impl)) {
-            ((LibraryImplementation3)impl).setProperties(props);
-            return true;
-
-        } else {
-            return false;
-        }
-    }
-
     public static void registerSource(
         final @NonNull LibraryImplementation impl,
         final @NonNull FileObject descriptorFile) {
