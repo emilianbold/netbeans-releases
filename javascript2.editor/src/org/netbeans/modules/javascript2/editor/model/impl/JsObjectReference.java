@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,76 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsStructureScannerTest extends JsTestBase {
+public class JsObjectReference extends JsObjectImpl {
+ 
+    private final JsObjectImpl original;
     
-    public JsStructureScannerTest(String testName) {
-        super(testName);
+    public JsObjectReference(JsObject parent, Identifier declarationName, JsObjectImpl original, boolean isDeclared) {
+        super(parent, declarationName, declarationName.getOffsetRange(), isDeclared);
+        this.original = original;
     }
-    
+
     @Override
-    protected void assertDescriptionMatches(FileObject fileObject,
-            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
-        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
+    public Map<String, ? extends JsObject> getProperties() {
+        return original.getProperties();
+    }
+
+    @Override
+    public void addProperty(String name, JsObject property) {
+        original.addProperty(name, property);
+    }
+
+    @Override
+    public JsObject getProperty(String name) {
+        return original.getProperty(name);
+    }
+
+    @Override
+    public boolean isAnonymous() {
+        return original.isAnonymous();
+    }
+
+    @Override
+    public Kind getJSKind() {
+        return original.getJSKind();
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return original.getKind();
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return original.getModifiers();
     }
     
-    public void testFolds1() throws Exception {
-        checkFolds("testfiles/simple.js");
+    public JsObject getOriginal() {
+        return original;
     }
-    
-    public void testSimpleMethodChain() throws Exception {
-        checkStructure("testfiles/completion/simpleMethodChain/methodChainSimple.js");
-    }
-    
-    public void testTypeInferenceNew() throws Exception {
-        checkStructure("testfiles/completion/typeInferenceNew.js");
-    }
-    
-    public void testGetterSettterInObjectLiteral() throws Exception {
-        checkStructure("testfiles/model/getterSettterInObjectLiteral.js");
-    }
-    
-    public void testPerson() throws Exception {
-        checkStructure("testfiles/model/person.js");
-    }
+
 }
