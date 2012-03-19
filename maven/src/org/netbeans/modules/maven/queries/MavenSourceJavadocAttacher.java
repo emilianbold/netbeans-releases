@@ -86,10 +86,12 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
         String[] coordinates = MavenFileOwnerQueryImpl.findCoordinates(file);
         final boolean byHash = coordinates == null;
         List<NBVersionInfo> candidates;
+        //XXX: the big question here is accurate or fast?
+        // without the indexes present locally, we return fast but nothing, only the next invokation after indexing finish is accurate..
         if (!byHash) {
-            candidates = RepositoryQueries.getRecords(coordinates[0], coordinates[1], coordinates[2], null);
+            candidates = RepositoryQueries.getRecordsResult(coordinates[0], coordinates[1], coordinates[2], null).getResults();
         } else if (file.isFile()) {
-            candidates = RepositoryQueries.findBySHA1(file, null);
+            candidates = RepositoryQueries.findBySHA1Result(file, null).getResults();
         } else {
             return false;
         }

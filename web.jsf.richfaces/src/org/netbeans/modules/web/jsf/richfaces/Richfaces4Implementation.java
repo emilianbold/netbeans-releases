@@ -44,15 +44,7 @@ package org.netbeans.modules.web.jsf.richfaces;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -70,6 +62,10 @@ import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -83,29 +79,27 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
 
     private Richfaces4Customizer customizer;
 
-    private static final String RICHFACES_NAME = "RichFaces 4.0"; //NOI18N
-    private static final String richfacesUiPom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/ui/richfaces-components-ui/4.0.0.Final/richfaces-components-ui-4.0.0.Final.pom";
-    private static final String richfacesCorePom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/core/richfaces-core-impl/4.0.0.Final/richfaces-core-impl-4.0.0.Final.pom";
+    private static final String RICHFACES_NAME = "RichFaces"; //NOI18N
+    private static final String richfacesUiPom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/ui/richfaces-components-ui/4.2.0.Final/richfaces-components-ui-4.2.0.Final.pom";
+    private static final String richfacesCorePom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/core/richfaces-core-impl/4.2.0.Final/richfaces-core-impl-4.2.0.Final.pom";
 
-    public static final Map<String, String> RF_LIBRARIES = new HashMap<String, String>();
+    public static final Set<String> RF_LIBRARIES = new HashSet<String>();
     public static final Map<String, String> RF_DEPENDENCIES = new HashMap<String, String>();
 
-    public static final String PREF_RICHFACES_NODE = "richfaces4"; //NOI18N
+    public static final String PREF_RICHFACES_NODE = "richfaces"; //NOI18N
     public static final String PREF_RICHFACES_LIBRARY = "base-library"; //NOI18N
 
+    static {
+        RF_LIBRARIES.add("org.richfaces.application.Module"); //NOI18N
+        RF_LIBRARIES.add("org.richfaces.application.ServiceLoader"); //NOI18N
+        RF_LIBRARIES.add("org.richfaces.el.ValueDescriptor"); //NOI18N
+        RF_LIBRARIES.add("org.richfaces.el.ValueReference"); //NOI18N
+        RF_DEPENDENCIES.put("com.google.common.base.Functions", "guava.jar"); //NOI18N
+        RF_DEPENDENCIES.put("org.w3c.css.sac.Parser", "sac.jar"); //NOI18N
+        RF_DEPENDENCIES.put("com.steadystate.css.parser.ParseException", "cssparser.jar"); //NOI18N
+    }
 
     public Richfaces4Implementation() {
-        if (RF_LIBRARIES.isEmpty()) {
-            RF_LIBRARIES.put("org.richfaces.application.Module", "richfaces-core-api-4.0.0.Final.jar"); //NOI18N
-            RF_LIBRARIES.put("org.richfaces.application.ServiceLoader", "richfaces-core-impl-4.0.0.Final.jar"); //NOI18N
-            RF_LIBRARIES.put("org.richfaces.el.ValueDescriptor", "richfaces-components-api-4.0.0.Final.jar"); //NOI18N
-            RF_LIBRARIES.put("org.richfaces.el.ValueReference", "richfaces-components-ui-4.0.0.Final.jar"); //NOI18N
-        }
-        if (RF_DEPENDENCIES.isEmpty()) {
-            RF_DEPENDENCIES.put("com.google.common.base.Functions", "guava.jar"); //NOI18N
-            RF_DEPENDENCIES.put("org.w3c.css.sac.Parser", "sac.jar"); //NOI18N
-            RF_DEPENDENCIES.put("com.steadystate.css.parser.ParseException", "cssparser.jar"); //NOI18N
-        }
     }
 
     @Override
@@ -115,7 +109,7 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(Richfaces4Implementation.class, "LBL_RichFaces4_Description");  //NOI18N
+        return NbBundle.getMessage(Richfaces4Implementation.class, "LBL_RichFaces_Description");  //NOI18N
     }
 
     @Override
@@ -182,6 +176,10 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
                         libraries.toArray(new Library[1]),
                         javaSources[0],
                         ClassPath.COMPILE);
+
+                // generate Richfaces welcome page
+                FileObject welcomePage = generateWelcomePage(webModule);
+                return Collections.singleton(welcomePage);
             } else {
                 LOGGER.log(Level.SEVERE, "No RichFaces library was found.");
             }
@@ -194,6 +192,29 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
         return Collections.<FileObject>emptySet();
     }
 
+    private static FileObject generateWelcomePage(WebModule webModule) throws IOException {
+        FileObject templateFO = FileUtil.getConfigFile("Templates/Other/welcomeRichfaces.xhtml"); //NOI18N
+        DataObject templateDO = DataObject.find(templateFO);
+        DataObject generated = templateDO.createFromTemplate(
+                DataFolder.findFolder(webModule.getDocumentBase()),
+                "welcomeRichfaces"); //NOI18N
+        JsfComponentUtils.reformat(generated);
+
+        // update and reformat index page
+        updateIndexPage(webModule);
+
+        return generated.getPrimaryFile();
+    }
+
+    private static void updateIndexPage(WebModule webModule) throws DataObjectNotFoundException {
+        FileObject indexFO = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
+        DataObject indexDO = DataObject.find(indexFO);
+        JsfComponentUtils.enhanceFileBody(indexDO, "</h:body>", "<br />\n<h:link outcome=\"welcomeRichfaces\" value=\"Richfaces welcome page\" />"); //NOI18N
+        if (indexFO.isValid() && indexFO.canWrite()) {
+            JsfComponentUtils.reformat(indexDO);
+        }
+    }
+
     @Override
     public Set<JSFVersion> getJsfVersion() {
         return EnumSet.of(JSFVersion.JSF_2_0, JSFVersion.JSF_2_1);
@@ -202,9 +223,10 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
     @Override
     public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule webModule) {
         ClassPath classpath = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
-        Set<Entry<String, String>> entrySet = RF_LIBRARIES.entrySet();
-        for (Entry<String, String> entry : entrySet) {
-            if (classpath.findResource(entry.getKey().replace('.', '/') + ".class") == null) { //NOI18N
+        Iterator<String> iterator = RF_LIBRARIES.iterator();
+        while (iterator.hasNext()) {
+            String libraryName = iterator.next();
+            if (classpath.findResource(libraryName.replace('.', '/') + ".class") == null) { //NOI18N
                 return false;
             }
         }

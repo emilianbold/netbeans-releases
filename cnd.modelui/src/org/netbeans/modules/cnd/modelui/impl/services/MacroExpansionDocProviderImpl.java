@@ -447,7 +447,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         // fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
         TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code, fileImpl.getFileLanguage());
         if (ts != null) {
-            ts = new APTMacroExpandedStream(ts, handler.getMacroMap());
+            ts = new APTMacroExpandedStream(ts, handler.getMacroMap(), true);
             StringBuilder sb = new StringBuilder(""); // NOI18N
             try {
                 APTToken t = (APTToken) ts.nextToken();

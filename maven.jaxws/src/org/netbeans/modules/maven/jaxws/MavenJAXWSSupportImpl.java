@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -63,6 +64,10 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.Lookup.Result;
 import org.openide.util.NbBundle;
 
 /**
@@ -230,15 +235,33 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
     }
 
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
-        if (webservicesMetadataModel == null) {
-            J2eeModuleProvider j2eeModuleProvider = prj.getLookup().lookup(J2eeModuleProvider.class);
-            if (j2eeModuleProvider != null) {
-                webservicesMetadataModel =
-                        j2eeModuleProvider.getJ2eeModule().getMetadataModel(WebservicesMetadata.class);
+        Lookup lookup = prj.getLookup();
+        final Result<J2eeModuleProvider> result = lookup.lookupResult(J2eeModuleProvider.class);
+        LookupListener listener = new LookupListener(){
+
+            @Override
+            public void resultChanged( LookupEvent event ) {
+                synchronized (result) {
+                    result.notifyAll();
+                }
+            }
+            
+        };
+        result.addLookupListener( listener );
+        synchronized (result) {
+            while (lookup.lookup(J2eeModuleProvider.class) == null) {
+                try {
+                    result.wait();
+                }
+                catch( InterruptedException e ){
+                    Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.INFO,
+                            "Lookup change wait is interrupted", e); //NOI18N
+                }
             }
         }
-        return webservicesMetadataModel;
+        result.removeLookupListener( listener );
+        return lookup.lookup(J2eeModuleProvider.class).getJ2eeModule().getMetadataModel(
+                WebservicesMetadata.class);
     }
-
-    private MetadataModel < WebservicesMetadata > webservicesMetadataModel;
+    
 }

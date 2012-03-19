@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileManager;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -81,40 +82,38 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
-class JavaParsingContext {
+//@NotThreadSafe
+final class JavaParsingContext {
 
-    final ClasspathInfo cpInfo;
-    final String sourceLevel;
-    final JavaFileFilterImplementation filter;
-    final Charset encoding;
-    final ClassIndexImpl uq;
-    final CheckSums checkSums;
-    final FQN2Files fqn2Files;
-    final SourceAnalyzerFactory.StorableAnalyzer sa;
-    private final Iterable<? extends JavaIndexerPlugin> pluginsCache;
+    private final Context ctx;
+    private final boolean rootNotNeeded;    
+    private final ClasspathInfo cpInfo;
+    private final ClassIndexImpl uq;
+    private String sourceLevel;
+    private boolean sourceLevelInitialized;
+    private JavaFileFilterImplementation filter;
+    private boolean filterInitialized;
+    private Charset encoding;
+    private boolean encodingInitialized;    
+    private SourceAnalyzerFactory.StorableAnalyzer sa;
+    private CheckSums checkSums;
+    private FQN2Files fqn2Files;    
+    private Iterable<? extends JavaIndexerPlugin> pluginsCache;
 
     JavaParsingContext(final Context context, final boolean allowNonExistentRoot) throws IOException, NoSuchAlgorithmException {
-        final FileObject root = context.getRoot();
-        final URL rootURL = context.getRootURI();
-        final boolean rootNotNeeded = allowNonExistentRoot && root == null;
-        sourceLevel = rootNotNeeded ? null : SourceLevelQuery.getSourceLevel(root);
-        filter = rootNotNeeded ? null : JavaFileFilterQuery.getFilter(root);
-        encoding = rootNotNeeded ? null : FileEncodingQuery.getEncoding(root);
-        uq = ClassIndexManager.getDefault().createUsagesQuery(rootURL, true);
-        sa = uq != null ? uq.getSourceAnalyser() : null;
-        checkSums = CheckSums.forContext(context);
-        fqn2Files = FQN2Files.forRoot(rootURL);
-        pluginsCache = createPlugins(rootURL, context.getIndexFolder());
+        ctx = context;
+        rootNotNeeded = allowNonExistentRoot && context.getRoot() == null;
+        uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
         if (!rootNotNeeded) {
-            ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
+            ClassPath bootPath = ClassPath.getClassPath(ctx.getRoot(), ClassPath.BOOT);
             if (bootPath == null) {
                 bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
             }
-            ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
+            ClassPath compilePath = ClassPath.getClassPath(ctx.getRoot(), ClassPath.COMPILE);
             if (compilePath == null) {
                 compilePath = ClassPath.EMPTY;
             }
-            ClassPath srcPath = ClassPath.getClassPath(root, ClassPath.SOURCE);
+            ClassPath srcPath = ClassPath.getClassPath(ctx.getRoot(), ClassPath.SOURCE);
             if (srcPath == null) {
                 srcPath = ClassPath.EMPTY;
             }
@@ -134,20 +133,78 @@ class JavaParsingContext {
 
     public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath,
             final Collection<? extends CompileTuple> virtualSources) throws IOException, NoSuchAlgorithmException {
-        final FileObject root = context.getRoot();
-        final URL rootURL = context.getRootURI();
-        filter = JavaFileFilterQuery.getFilter(root);
+        ctx = context;
+        rootNotNeeded = false;
+        uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
         cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath, sourcePath,
                 filter, true, context.isSourceForBinaryRootIndexing(),
                 !virtualSources.isEmpty(), context.checkForEditorModifications());
         registerVirtualSources(cpInfo, virtualSources);
-        sourceLevel = SourceLevelQuery.getSourceLevel(root);
-        encoding = FileEncodingQuery.getEncoding(root);
-        uq = ClassIndexManager.getDefault().createUsagesQuery(rootURL, true);
-        sa = uq != null ? uq.getSourceAnalyser() : null;
-        checkSums = CheckSums.forContext(context);
-        fqn2Files = FQN2Files.forRoot(rootURL);
-        pluginsCache = createPlugins(rootURL, context.getIndexFolder());
+    }
+    
+    @CheckForNull
+    ClasspathInfo getClasspathInfo() {
+        return cpInfo;
+    }
+    
+    @CheckForNull
+    ClassIndexImpl getClassIndexImpl() throws IOException {
+        return uq;
+    }
+    
+    @CheckForNull
+    String getSourceLevel() {
+        if (!sourceLevelInitialized) {
+            sourceLevel = rootNotNeeded ? null : SourceLevelQuery.getSourceLevel(ctx.getRoot());
+            sourceLevelInitialized = true;
+        }
+        return sourceLevel;
+    }
+    
+    @CheckForNull
+    JavaFileFilterImplementation getJavaFileFilter() {
+        if (!filterInitialized) {
+            filter = rootNotNeeded ? null : JavaFileFilterQuery.getFilter(ctx.getRoot());
+            filterInitialized = true;
+        }
+        return filter;
+    }
+    
+    @CheckForNull
+    Charset getEncoding() {
+        if (!encodingInitialized) {
+            encoding = rootNotNeeded ? null : FileEncodingQuery.getEncoding(ctx.getRoot());
+            encodingInitialized = true;
+        }
+        return encoding;
+    }
+    
+    @CheckForNull
+    SourceAnalyzerFactory.StorableAnalyzer getSourceAnalyzer() throws IOException {
+        if (sa == null) {
+            sa = uq == null ? null : uq.getSourceAnalyser();
+        }
+        return sa;
+    }
+    
+    @NonNull
+    CheckSums getCheckSums() throws IOException {
+        if (checkSums == null) {
+            try {
+                checkSums = CheckSums.forContext(ctx);
+            } catch (NoSuchAlgorithmException e) {
+                throw new IOException(e);
+            }
+        }
+        return checkSums;
+    }
+    
+    @NonNull
+    FQN2Files getFQNs() throws IOException {
+        if (fqn2Files == null) {
+            fqn2Files = FQN2Files.forRoot(ctx.getRootURI());
+        }
+        return fqn2Files;
     }
 
     void analyze(
@@ -157,7 +214,9 @@ class JavaParsingContext {
             @NonNull final CompileTuple active,
             @NonNull final Set<? super ElementHandle<TypeElement>> newTypes,
             @NonNull /*@Out*/ final boolean[] mainMethod) throws IOException {
-        sa.analyse(trees, jt, fileManager, active, newTypes, mainMethod);
+        final SourceAnalyzerFactory.StorableAnalyzer analyzer = getSourceAnalyzer();
+        assert analyzer != null;
+        analyzer.analyse(trees, jt, fileManager, active, newTypes, mainMethod);
         final Lookup pluginServices = getPluginServices(jt);
         for (CompilationUnitTree cu : trees) {
             for (JavaIndexerPlugin plugin : getPlugins()) {
@@ -170,10 +229,24 @@ class JavaParsingContext {
             @NonNull final Indexable indexable,
             @NonNull final List<Pair<String,String>> toDelete) throws IOException {
         for (Pair<String,String> pair : toDelete) {
-            sa.delete(pair);
+            final SourceAnalyzerFactory.StorableAnalyzer analyzer = getSourceAnalyzer();
+            assert analyzer != null;
+            analyzer.delete(pair);
         }
         for (JavaIndexerPlugin plugin : getPlugins()) {
             plugin.delete(indexable);
+        }
+    }
+    
+    void store() throws IOException {
+        if (checkSums != null) {
+            checkSums.store();
+        }
+        if (fqn2Files != null) {
+            fqn2Files.store();
+        }
+        if (sa != null) {
+            sa.store();
         }
     }
 
@@ -185,6 +258,9 @@ class JavaParsingContext {
 
     @NonNull
     private Iterable<? extends JavaIndexerPlugin> getPlugins() {
+        if (pluginsCache == null) {
+            pluginsCache = createPlugins(ctx.getRootURI(), ctx.getIndexFolder());
+        }
         return pluginsCache;
     }
 

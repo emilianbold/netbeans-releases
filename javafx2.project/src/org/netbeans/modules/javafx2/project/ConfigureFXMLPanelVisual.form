@@ -21,24 +21,23 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
-              <Component id="fxmlNameLabel" min="-2" pref="73" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="fxmlNameTextField" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="projectLabel" max="32767" attributes="0"/>
-                  <Component id="locationLabel" alignment="0" max="32767" attributes="0"/>
-                  <Component id="packageLabel" alignment="0" max="32767" attributes="0"/>
-                  <Component id="resultLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="projectLabel" max="32767" attributes="0"/>
+                      <Component id="locationLabel" alignment="0" max="32767" attributes="0"/>
+                      <Component id="packageLabel" alignment="0" max="32767" attributes="0"/>
+                      <Component id="resultLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="fxmlNameLabel" alignment="0" min="-2" pref="73" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="fxmlNameTextField" max="32767" attributes="0"/>
                   <Component id="projectTextField" max="32767" attributes="0"/>
                   <Component id="locationComboBox" max="32767" attributes="0"/>
                   <Component id="resultTextField" alignment="0" max="32767" attributes="0"/>
-                  <Component id="packageComboBox" alignment="0" pref="420" max="32767" attributes="0"/>
+                  <Component id="packageComboBox" alignment="0" pref="409" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>

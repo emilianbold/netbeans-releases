@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -124,7 +125,7 @@ import org.openide.util.Exceptions;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
     implements BreakpointProvider, Gdb.Factory.Listener {
-
+    
     private GdbEngineProvider engineProvider;
     private Gdb gdb;				// gdb proxy
     private GdbVersionPeculiarity peculiarity;  // gdb version differences
@@ -148,6 +149,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public static final String MI_WPT = "wpt";       //NOI18N
     public static final String MI_EXP = "exp";       //NOI18N
     public static final String MI_NUMBER = "number"; //NOI18N
+    public static final String MI_WATCHPOINT_TRIGGER = "watchpoint-trigger"; //NOI18N
+    public static final String MI_WATCHPOINT_SCOPE = "watchpoint-scope"; //NOI18N
+    public static final String MI_SYSCALL_ENTRY = "syscall-entry"; //NOI18N
+    public static final String MI_SYSCALL_RETURN = "syscall-return"; //NOI18N
 
     /**
      * Utility class to help us deal with 'frame' or 'source file'
@@ -2908,8 +2913,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             reason.equals("end-stepping-range") || // NOI18N
             reason.equals("location-reached") || // NOI18N
             reason.equals("signal-received") || // NOI18N
-            reason.equals("watchpoint-trigger") || //NOI18N
-            reason.equals("watchpoint-scope") || //NOI18N
+            reason.equals(MI_WATCHPOINT_TRIGGER) || //NOI18N
+            reason.equals(MI_WATCHPOINT_SCOPE) || //NOI18N
+            reason.equals(MI_SYSCALL_ENTRY) || //NOI18N
+            reason.equals(MI_SYSCALL_RETURN) || //NOI18N
             reason.equals("function-finished")) { // NOI18N
 
 	    // update our views
@@ -3301,14 +3308,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else if (reason.equals("breakpoint-hit")) {		// NOI18N
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
-        } else if (reason.equals("watchpoint-trigger")) { //NOI18N
+        } else if (reason.equals(MI_WATCHPOINT_TRIGGER)) {
             String expValue = "";
             MIValue wptVal = results.valueOf(MI_WPT);
             if (wptVal != null) {
                 expValue = wptVal.asList().getConstValue(MI_EXP);
             }
             stateMsg = Catalog.format("MSG_Watchpoint_Trigger", expValue); // NOI18N
-        } else if (reason.equals("watchpoint-scope")) { //NOI18N
+        } else if (reason.equals(MI_WATCHPOINT_SCOPE)) {
             // LATER: show watchpoint name/expression
 //            String expValue = "";
 //            MIValue wptVal = results.valueOf(MI_WPT);
@@ -3316,6 +3323,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 //                expValue = wptVal.asList().getConstValue(MI_EXP);
 //            }
             stateMsg = Catalog.format("MSG_Watchpoint_Scope"); // NOI18N
+        } else if (reason.equals(MI_SYSCALL_ENTRY)) {
+            stateMsg = Catalog.format("MSG_Syscall_Entry", //NOI18N
+                    results.getConstValue("syscall-name", "?"), results.getConstValue("syscall-number", "?")); // NOI18N
+        } else if (reason.equals(MI_SYSCALL_RETURN)) {
+            stateMsg = Catalog.format("MSG_Syscall_Return", //NOI18N
+                    results.getConstValue("syscall-name", "?"), results.getConstValue("syscall-number", "?")); // NOI18N    
         } else {
             stateMsg = "Stopped for unrecognized reason: " + reason; // NOI18N
         }
@@ -3468,7 +3481,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public HandlerExpert handlerExpert() {
         return handlerExpert;
     }
-
+    
     // interface BreakpointProvider
     @Override
     public void postRestoreHandler(final int rt, HandlerCommand hc) {
@@ -3492,7 +3505,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// Chaining a bunch of bpt commands in a loop is easy. It's the
 	// trickiness of ensuring that the following commands are also
 	// chained that makes me favor the pre-injection solution ... for now.
-
+        
         sendCommandInt(cmd);
         
         // modern gdb does not ask user when in MI mode
@@ -3834,6 +3847,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 //    public void registerArrayBrowserWindow(ArrayBrowserWindow w) {
 //        notImplemented("registerArrayBrowserWindow()");	// NOI18N
 //    }
+    void newAsyncBreakpoint(MIRecord record) {
+        Integer rt = cliBreakpointsRTs.poll();
+        if (rt == null) {
+            rt = 0;
+        }
+        newHandlers(rt, null, record);
+    }
 
     private void newHandlers(int rt, MIBreakCommand cmd, MIRecord record) {
 	MITList results = record.results();
@@ -3866,14 +3886,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		case NEW:
 		    handler = handlerExpert.newHandler(template, result, null);
                     // fix for #193505
-                    if (!template.isEnabled()) {
+                    if (template != null && !template.isEnabled()) {
                         postEnableHandler(rt, handler.getId(), false);
                     }
 		    break;
 		case RESTORE:
 		    handler = handlerExpert.newHandler(template, result, bp.restored());
                     // fix for #193505
-                    if (!template.isEnabled()) {
+                    if (template != null && !template.isEnabled()) {
                         postEnableHandler(rt, handler.getId(), false);
                     }
 		    assert handler.breakpoint() == bp.restored();
@@ -4018,6 +4038,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     };
 
+    private final ConcurrentLinkedQueue<Integer> cliBreakpointsRTs = new ConcurrentLinkedQueue<Integer>();
+    
     /**
      * Common behaviour for -break command.
      */
@@ -4027,6 +4049,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         protected MIBreakCommand(int rt, String cmdString) {
             super(rt, cmdString);
             this.wasRunning = state().isRunning;
+            //remember catchpoints routing tokens
+            if (isConsoleCommand()) {
+                cliBreakpointsRTs.add(rt);
+            }
         }
 
         @Override
@@ -4121,10 +4147,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             super(rt, cmdString);
         }
 
+        @Override
         protected void onDone(MIRecord record) {
 	    if (record.isEmpty()) {
-		// See comment for isEmpty
-		onError(record);
+		if (!isConsoleCommand()) {
+                    // See comment for isEmpty
+                    onError(record);
+                }
 	    } else {
 		newHandlers(routingToken(), this, record);
 	    }
@@ -4171,10 +4200,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             super(rt, cmdString);
         }
 
+        @Override
         protected void onDone(MIRecord record) {
 	    if (record.isEmpty()) {
-		// See comment for isEmpty
-		onError(record);
+                if (!isConsoleCommand()) {
+                    // See comment for isEmpty
+                    onError(record);
+                }
 	    } else {
 		newHandlers(newRT == 0? routingToken(): newRT, this, record);
 		manager().bringDownDialog();
@@ -4614,5 +4646,21 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (w != null) {
             requestRegisters();
         }
+    }
+    
+    void createWatchFromVariable(GdbVariable var) {
+        MiCommandImpl cmd = new MiCommandImpl("-var-info-path-expression " + var.getMIName()) { //NOI18N
+            @Override
+            protected void onDone(MIRecord record) {
+                if (!record.isEmpty()) {
+                    String expr = record.results().getConstValue("path_expr", null); //NOI18N
+                    if (expr != null) {
+                        manager().createWatch(expr);
+                    }
+                }
+                finish();
+            }
+        };
+        gdb.sendCommand(cmd);
     }
 }

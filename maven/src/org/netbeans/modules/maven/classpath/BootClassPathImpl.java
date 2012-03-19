@@ -94,7 +94,8 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
             if (this.resourcesCache == null) {
                 ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
                 result.addAll(ecpImpl.getResources());
-                //TODO May also listen on CP, but from Platform it should be fixed.
+                lastHintValue = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
+               
                 for (ClassPath.Entry entry : findActivePlatform().getBootstrapLibraries().entries()) {
                     result.add(ClassPathSupport.createResource(entry.getURL()));
                 }
@@ -126,7 +127,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
 
             //only use the default auximpl otherwise we get recursive calls problems.
             String val = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
-            lastHintValue = val;
+
             JavaPlatform plat = getActivePlatform(val);
             if (plat == null) {
                 //TODO report how?

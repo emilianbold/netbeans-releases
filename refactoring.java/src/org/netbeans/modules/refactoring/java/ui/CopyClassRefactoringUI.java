@@ -186,11 +186,10 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
                 try {
                     //Transferable t = paste.paste();
                     FileObject source = refactoring.getRefactoringSource().lookup(FileObject.class);
-                    FileObject target = RefactoringUtils.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
                     if (source != null) {
                         DataObject sourceDo = DataObject.find(source);
-                        DataFolder targetFolder = DataFolder.findFolder(target);
-                        sourceDo.copy(targetFolder).rename(panel.getNewName());
+                        DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);
+                        sourceDo.copy(targetDataFolder).rename(panel.getNewName());
                     }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);

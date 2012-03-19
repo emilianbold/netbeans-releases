@@ -54,6 +54,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -63,11 +64,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.io.NbObjectInputStream;
-import org.openide.util.NbBundle;
 
 /**
  *Holds in Map attributes: Map(String attrName,XMLMapAttr.Attr attribute). This map holds all atributes for one FileObject.
@@ -185,7 +187,7 @@ final class XMLMapAttr implements Map {
             obj = getAttribute(p1);
         } catch (Exception e) {
             obj = null;
-            ExternalUtil.exception(e);
+            ExternalUtil.LOG.log(Level.INFO, p1.toString(), e);
         }
 
         return obj;
@@ -202,7 +204,7 @@ final class XMLMapAttr implements Map {
             obj = getAttribute(p1, params);
         } catch (Exception e) {
             obj = null;
-            ExternalUtil.exception(e);
+            ExternalUtil.LOG.log(Level.INFO, p1 + Arrays.toString(params), e);
         }
 
         return obj;

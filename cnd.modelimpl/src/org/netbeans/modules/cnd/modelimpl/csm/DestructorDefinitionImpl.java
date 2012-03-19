@@ -94,7 +94,7 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
         
         res.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         res.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, res, file));
-        res.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, res, file, fileContent, global), 
+        res.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, res, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));        
         
         CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?

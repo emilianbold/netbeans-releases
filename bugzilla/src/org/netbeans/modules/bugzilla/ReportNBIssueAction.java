@@ -51,7 +51,6 @@ import java.awt.event.ActionEvent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
@@ -95,7 +94,7 @@ public class ReportNBIssueAction extends SystemAction {
         });
     }
 
-    static boolean checkLogin(final BugzillaRepository repo) {
+    private static boolean checkLogin(final BugzillaRepository repo) {
         if(repo.getUsername() != null && !repo.getUsername().equals("")) {
             return true;
         }

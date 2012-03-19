@@ -290,16 +290,21 @@ public class RepositoryImpl<R, Q, I> {
 
     public Query getAllIssuesQuery() {
         assert KenaiRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        return ((KenaiRepositoryProvider<R, Q, I>)repositoryProvider).getAllIssuesQuery(r);
+        Q q = ((KenaiRepositoryProvider<R, Q, I>) repositoryProvider).getAllIssuesQuery(r);
+        QueryImpl queryImpl = getQuery(q);
+        return queryImpl != null ? queryImpl.getQuery() : null;
     }
 
     public Query getMyIssuesQuery() {
         assert KenaiRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        return ((KenaiRepositoryProvider<R, Q, I>)repositoryProvider).getMyIssuesQuery(r);
+        Q q = ((KenaiRepositoryProvider<R, Q, I>) repositoryProvider).getMyIssuesQuery(r);
+        QueryImpl queryImpl = getQuery(q);
+        return queryImpl != null ? queryImpl.getQuery() : null;
     }
 
     public void remove() {
         repositoryProvider.remove(r);
+        RepositoryRegistry.getInstance().removeRepository(this);
     }
 
     public RepositoryController getController() {

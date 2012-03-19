@@ -258,7 +258,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         if (nbrepo != null) {
             File platformFile = lookForModuleInPlatform(artifactId);
             if (platformFile != null) {
-                List<NBVersionInfo> lst = RepositoryQueries.findBySHA1(platformFile, Collections.singletonList(nbrepo));
+                List<NBVersionInfo> lst = RepositoryQueries.findBySHA1Result(platformFile, Collections.singletonList(nbrepo)).getResults();
                 for (NBVersionInfo elem : lst) {
                     dep = new Dependency();
                     dep.setArtifactId(elem.getArtifactId());
@@ -286,7 +286,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         }
         if (dep.getVersion() == null) {
             if (nbrepo != null) {
-                List<NBVersionInfo> versions = RepositoryQueries.getVersions("org.netbeans.cluster", "platform", Collections.singletonList(nbrepo)); // NOI18N
+                List<NBVersionInfo> versions = RepositoryQueries.getVersionsResult("org.netbeans.cluster", "platform", Collections.singletonList(nbrepo)).getResults();
                 if (!versions.isEmpty()) {
                     dep.setVersion(versions.get(0).getVersion());
                 }

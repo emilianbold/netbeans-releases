@@ -81,6 +81,19 @@ public final class Library {
     public static final String PROP_NAME = "name";                  //NOI18N
     public static final String PROP_DESCRIPTION = "description";    //NOI18N
     public static final String PROP_CONTENT = "content";            //NOI18N
+    
+    
+    /**
+     * Name of the display name property.
+     * @since 1.35
+     */
+    public static final String PROP_DISPLAY_NAME = "displayName";   //NOI18N
+    
+    /**
+     * Name of the properties property.
+     * @since 1.35
+     */
+    public static final String PROP_PROPERTIES = "properties";      //NOI18N
 
     private static final Logger LOG = Logger.getLogger(Library.class.getName());
 

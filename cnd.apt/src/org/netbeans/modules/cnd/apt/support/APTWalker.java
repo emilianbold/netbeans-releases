@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
@@ -58,7 +57,7 @@ import org.netbeans.modules.cnd.apt.structure.APTStream;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
-import org.netbeans.modules.cnd.utils.cache.TinySingletonMap;
+import org.netbeans.modules.cnd.utils.cache.TinyMaps;
 
 /**
  * base Tree walker for APT
@@ -376,10 +375,14 @@ public abstract class APTWalker {
     protected final void putNodeProperty(APT node, Object key, Object value) {
         Map<Object, Object> props = nodeProperties.get(node);
         if (props == null) {
-            nodeProperties.put(node, new TinySingletonMap<Object, Object>(key, value));
-            return;
-        } else if (props instanceof TinySingletonMap) {
-            nodeProperties.put(node, props = new HashMap<Object, Object>(props));
+            nodeProperties.put(node, props = TinyMaps.createMap(2));
+        } else {
+            Map<Object, Object> expanded = TinyMaps.expandForNextKey(props, node);
+            if (expanded != props) {
+                // was replacement
+                props = expanded;
+                nodeProperties.put(node, props);
+            }
         }
         props.put(key, value);
     }

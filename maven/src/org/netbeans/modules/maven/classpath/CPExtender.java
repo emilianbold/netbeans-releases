@@ -56,19 +56,20 @@ import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.SuppressWarnings;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -140,7 +141,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
             throw new UnsupportedOperationException("removing JARs not yet supported");
         }
         NBVersionInfo dep = null;
-        for (NBVersionInfo _dep : RepositoryQueries.findBySHA1(jar, RepositoryPreferences.getInstance().getRepositoryInfos())) {
+        for (NBVersionInfo _dep : RepositoryQueries.findBySHA1Result(jar, RepositoryPreferences.getInstance().getRepositoryInfos()).getResults()) {
             if (!"unknown.binary".equals(_dep.getGroupId())) {
                 dep = _dep;
                 break;
@@ -229,8 +230,9 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
         return modified;
     }
         
+    @Override
     public SourceGroup[] getExtensibleSourceGroups() {
-        Sources s = this.project.getLookup().lookup(Sources.class);
+        Sources s = ProjectUtils.getSources(this.project);
         assert s != null;
         List<SourceGroup> grps = new ArrayList<SourceGroup>();
         SourceGroup[] java = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -366,16 +368,19 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
 
     }
 
+    @Override
     public boolean removeRoots(URL[] arg0, SourceGroup arg1, String arg2) throws IOException,
                                                                                     UnsupportedOperationException {
         throw new UnsupportedOperationException("Removing binary dependencies is not supported by Maven projects.");
     }
     
+    @Override
     public boolean addAntArtifacts(AntArtifact[] arg0, URI[] arg1,
                                       SourceGroup arg2, String arg3) throws IOException, UnsupportedOperationException {
         throw new UnsupportedOperationException("Cannot add Ant based projects as subprojects to Maven projects.");//NOI18N
     }
     
+    @Override
     public boolean removeAntArtifacts(AntArtifact[] arg0, URI[] arg1,
                                          SourceGroup arg2, String arg3) throws IOException, UnsupportedOperationException {
         throw new UnsupportedOperationException("Cannot remove Ant based projects as subprojects from Maven projects.");//NOI18N

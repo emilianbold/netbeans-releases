@@ -51,6 +51,7 @@ import org.netbeans.modules.maven.grammar.spi.AbstractSchemaBasedGrammar;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
@@ -81,6 +82,7 @@ public class MavenSettingsGrammar extends AbstractSchemaBasedGrammar {
         super(env);
     }
 
+    @Override
     protected InputStream getSchemaStream() {
         return getClass().getResourceAsStream("/org/netbeans/modules/maven/grammar/settings-1.0.0.xsd"); //NOI18N
     }
@@ -123,8 +125,12 @@ public class MavenSettingsGrammar extends AbstractSchemaBasedGrammar {
         if (path.endsWith("pluginGroups/pluginGroup")) { //NOI18N
 
             ArrayList<GrammarResult> texts = new ArrayList<GrammarResult>();
-            for (String elem : RepositoryQueries.filterPluginGroupIds(virtualTextCtx.getCurrentPrefix(), RepositoryPreferences.getInstance().getRepositoryInfos())) {
+            Result<String> result = RepositoryQueries.filterPluginGroupIdsResult(virtualTextCtx.getCurrentPrefix(), RepositoryPreferences.getInstance().getRepositoryInfos());
+            for (String elem : result.getResults()) {
                 texts.add(new MyTextElement(elem, virtualTextCtx.getCurrentPrefix()));
+            }
+            if (result.isPartial()) {
+                texts.add(new PartialTextElement());
             }
             return Collections.enumeration(texts);
 

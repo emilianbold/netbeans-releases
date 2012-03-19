@@ -200,7 +200,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         final Collection<? extends IndexResult> result = results(ClassElementImpl.IDX_FIELD, query);
         for (final IndexResult indexResult : result) {
             Set<ClassElement> allClasses = ClassElementImpl.fromSignature(query, this, indexResult);
-            if (query.isPrefix()) {
+            if (query.isPrefix() || query.isCaseInsensitivePrefix()) {
                 classes.addAll(allClasses);
             } else {
                 for (ClassElement classElement : allClasses) {

@@ -293,7 +293,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         }
 
     }
-
+    
     public static TableCellStyle getCellStyle(JTable table, Query query, IssueTable issueTable, IssueProperty p, boolean isSelected, int row) {
         QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
         TableCellStyle style = getDefaultCellStyle(table, issueTable, p, isSelected, row);
@@ -320,7 +320,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                     }
                 }
             }
-
+            
             Object o = p.getValue();
             if(o instanceof String) {
                 String s = (String) o;
@@ -345,7 +345,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                             sb.append("<br>").append(issueModifiedFormat.format(new Object[] { labelModified }, new StringBuffer(), null)); // NOI18N
                             sb.append(msgModified);
                             sb.append(IssueCacheUtils.getRecentChanges(issue));
-                            break;                        
+                            break;
                     }
                 }
                 sb.append("</html>"); // NOI18N
@@ -356,7 +356,6 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         }
         return style;
     }
-
     public static TableCellStyle getDefaultCellStyle(JTable table, IssueTable issueTable, IssueProperty p, boolean isSelected, int row) {
         // set default values
         return new TableCellStyle(

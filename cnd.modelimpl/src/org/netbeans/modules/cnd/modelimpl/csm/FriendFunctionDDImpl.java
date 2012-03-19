@@ -103,7 +103,7 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
         
         friendFunctionDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         friendFunctionDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, friendFunctionDDImpl, file));
-        friendFunctionDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionDDImpl, file, fileContent, global), 
+        friendFunctionDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionDDImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, friendFunctionDDImpl);
         if (body == null) {

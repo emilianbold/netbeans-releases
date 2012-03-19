@@ -167,6 +167,7 @@ class ResultViewPanel extends JPanel{
     private JButton btnNext;
     private JToggleButton btnDisplayContext = new JToggleButton();
     private Separator sepDisplayContext;
+    private GraphicalSearchListener searchListener = null;
 
     /** is the context view visible? */
     private boolean contextViewVisible = false;
@@ -198,11 +199,16 @@ class ResultViewPanel extends JPanel{
                 searchComposition.getSearchResultsDisplayer();
         setName(displayer.getTitle());
         add(resultsPanel, getMainPanelConstraints());
+        displayer.setInfoNode(this.createListener().getInfoNode());
         resultsPanel.add(displayer.getVisualComponent(), "outline");
     }
 
-    public GraphicalSearchListener createListener() {
-        return new GraphicalSearchListener(searchComposition, this);
+    public synchronized final GraphicalSearchListener createListener() {
+        if (searchListener == null) {
+            searchListener = new GraphicalSearchListener(
+                    searchComposition, this);
+        }
+        return searchListener;
     }
 
     public ResultViewPanel(final SearchComposition composition, boolean b) {

@@ -46,6 +46,7 @@ package org.netbeans.modules.viewmodel;
 
 import java.beans.PropertyVetoException;
 import java.lang.ref.WeakReference;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -93,6 +94,7 @@ public class TreeModelRoot {
     private DefaultTreeFeatures treeFeatures;
     private ExplorerManager manager;
     private OutlineView outlineView;
+    private MessageFormat treeNodeDisplayFormat;
     
     /** The children evaluator for view of this root. *
     private final Map<RequestProcessor, TreeModelNode.LazyEvaluator> childrenEvaluators
@@ -296,6 +298,14 @@ public class TreeModelRoot {
 
     public synchronized Models.CompoundModel getModel() {
         return model;
+    }
+
+    void setTreeNodeDisplayFormat(MessageFormat treeNodeDisplayFormat) {
+        this.treeNodeDisplayFormat = treeNodeDisplayFormat;
+    }
+    
+    MessageFormat getTreeNodeDisplayFormat() {
+        return treeNodeDisplayFormat;
     }
 
     private final class ModelChangeListener implements ModelListener {

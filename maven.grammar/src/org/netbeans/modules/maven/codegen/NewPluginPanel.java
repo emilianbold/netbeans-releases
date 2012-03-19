@@ -80,7 +80,9 @@ import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.modules.maven.spi.nodes.MavenNodeFactory;
+import org.openide.NotificationLineSupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -110,6 +112,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
     private DefaultListModel listModel;
 
     private NBVersionInfo selVi;
+    private NotificationLineSupport support;
 
     /** Creates new form NewPluginPanel */
     public NewPluginPanel() {
@@ -213,8 +216,9 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
                 f.setValue("maven-plugin"); //NOI118N
                 f.setOccur(QueryField.OCCUR_MUST);
                 fields.add(f);
-
-                final List<NBVersionInfo> infos = RepositoryQueries.find(fields, RepositoryPreferences.getInstance().getRepositoryInfos());
+                
+                final Result<NBVersionInfo> result = RepositoryQueries.findResult(fields, RepositoryPreferences.getInstance().getRepositoryInfos());
+                final List<NBVersionInfo> infos = result.getResults();
 
                 Node node = null;
                 final Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
@@ -237,6 +241,12 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
                     @Override
                     public void run() {
                         queryPanel.getExplorerManager().setRootContext(createResultsNode(keyList, map));
+                        if (result.isPartial()) {
+                            support.setWarningMessage("Incomplete result, still processing indices...");
+                        } else {
+                            support.clearMessages();
+                        }
+                        
                     }
                 });
             }
@@ -340,6 +350,10 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
             b = new LineBorder(c != null ? c : Color.GRAY);
         }
         return b;
+    }
+
+    void setNotificationLineSupport(NotificationLineSupport createNotificationLineSupport) {
+        this.support = createNotificationLineSupport;
     }
 
     private static class GoalRenderer extends JCheckBox

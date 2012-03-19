@@ -84,11 +84,13 @@ public class PluginIndexManager {
         Set<String> result = new TreeSet<String>();
         // XXX rather use ArtifactInfo.PLUGIN_GOALS
         for (String groupId : groups) {
-            for (String artifactId : RepositoryQueries.filterPluginArtifactIds(groupId, "", null)) {
-                for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, null)) {
+            for (String artifactId : RepositoryQueries.filterPluginArtifactIdsResult(groupId, "", null).getResults()) {
+                for (NBVersionInfo v : RepositoryQueries.getVersionsResult(groupId, artifactId, null).getResults()) {
                     if (v.getVersion().endsWith("-SNAPSHOT") && !v.getRepoId().equals(RepositorySystem.DEFAULT_LOCAL_REPO_ID)) {
                         continue;
                     }
+                    //XXX mkleint: oh man this takes forever.. it's inpractical for any usecase unless one has already downloaded the internet.
+                    // now that I think of it, the only scalable solution is make the info part of the index.
                     File jar = RepositoryUtil.downloadArtifact(v);
                     Document pluginXml = loadPluginXml(jar);
                     if (pluginXml == null) {
@@ -133,7 +135,7 @@ public class PluginIndexManager {
      */
     public static Set<String> getPluginGoals(String groupId, String artifactId, String version) throws Exception {
         assert groupId != null && artifactId != null && version != null;
-        for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, null)) {
+        for (NBVersionInfo v : RepositoryQueries.getVersionsResult(groupId, artifactId, null).getResults()) {
             if (!v.getVersion().equals(version)) {
                 continue;
             }
@@ -176,7 +178,7 @@ public class PluginIndexManager {
      */
     public static @CheckForNull Set<ParameterDetail> getPluginParameters(String groupId, String artifactId, String version, @NullAllowed String mojo) throws Exception {
         assert groupId != null && artifactId != null && version != null;
-        for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, null)) {
+        for (NBVersionInfo v : RepositoryQueries.getVersionsResult(groupId, artifactId, null).getResults()) {
             if (!v.getVersion().equals(version)) {
                 continue;
             }
@@ -271,7 +273,7 @@ public class PluginIndexManager {
         qf.setValue(prefix);
         qf.setOccur(QueryField.OCCUR_MUST);
         qf.setMatch(QueryField.MATCH_EXACT);
-        for (NBVersionInfo v : RepositoryQueries.find(Collections.singletonList(qf), null)) {
+        for (NBVersionInfo v : RepositoryQueries.findResult(Collections.singletonList(qf), null).getResults()) {
             result.add(v.getGroupId() + '|' + v.getArtifactId() + '|' + v.getVersion());
         }
         // This is more complete but much too slow:

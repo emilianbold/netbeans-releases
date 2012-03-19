@@ -41,14 +41,14 @@ import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.openide.util.Exceptions;
 
 /**
  * This walker gathers information about code blocks being hidden by preprocessor
  * commands
- * 
+ * @deprecated not used anymore, because unused blocks are available from states
  * @author Sergey Grinev
  */
+@Deprecated
 public class APTFindUnusedBlocksWalker extends APTSelfWalker {
 
     private final List<CsmOffsetable> blocks = new ArrayList<CsmOffsetable>();

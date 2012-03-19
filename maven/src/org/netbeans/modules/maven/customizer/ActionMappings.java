@@ -275,10 +275,10 @@ public class ActionMappings extends javax.swing.JPanel {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override public void run() {
                         if (provider != null) {
-                            goalcompleter.setValueList(strs);
+                            goalcompleter.setValueList(strs, false); //do not bother about partial results, too many intermediate apis..
                         }
                         if (profiles != null) {
-                            profilecompleter.setValueList(profiles);
+                            profilecompleter.setValueList(profiles, false);
                         }
                     }
                 });

@@ -172,9 +172,8 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         if (!update || !Utilities.compareObjects(this.library.getDescription(), libraryDescription)) {
             this.library.setDescription (this.libraryDescription);
         }
-        if (!update || !Utilities.compareObjects(this.library.getLocalizingBundle(), displayName)) {
-            Util.setDisplayName(this.library,displayName);
-        }
+        Util.setDisplayName(this.library,displayName);
+        Util.setProperties(this.library, properties);
         if (!update || !Utilities.compareObjects(this.library.getLocalizingBundle(), displayName)) {
             Util.setProperties(this.library, properties);
         }

@@ -71,10 +71,12 @@ final class TestMethodNodeAction implements Action {
         this.name = name;
     }
 
+    @Override
     public void actionPerformed(ActionEvent ev) {
         actionProvider.invokeAction(command, context);
     }
 
+    @Override
     public Object getValue(String key) {
         if (key == null) {
             return null;
@@ -89,24 +91,29 @@ final class TestMethodNodeAction implements Action {
         }
     }
 
+    @Override
     public void putValue(String key, Object value) {
         throw new UnsupportedOperationException(
                 "This should not be called.");                          //NOI18N
     }
 
+    @Override
     public boolean isEnabled() {
         return true;
     }
 
+    @Override
     public void setEnabled(boolean b) {
         throw new UnsupportedOperationException(
                 "This should not be called.");                          //NOI18N
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         //no property changes - no listeners
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         //no property changes - no listeners
     }

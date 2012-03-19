@@ -204,8 +204,16 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         } else {
             throw fileNotFoundException("write"); //NOI18N
         }
-    }
-
+    }  
+  
+    @Override
+    protected final void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        // TODO: this dummy implementation is far from optimal in terms of performance. It needs to be improved.
+        if (getParent() != null) {
+            getParent().refreshImpl(recursive, antiLoop, expected);
+        }
+    }    
+    
     @Override
     protected final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop == null) {
@@ -217,6 +225,8 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
             antiLoop.add(getPath());
         }
         RemoteFileObjectBase delegate = getDelegate();
+        // For link we need to refresh both delegate and link metadata itself
+        refreshThisFileMetadataImpl(recursive, antiLoop, expected);
         if (delegate != null) {
             delegate.refreshImpl(recursive, antiLoop, expected);
         } else {
@@ -276,7 +286,9 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
 
     @Override
     public void fileDeleted(FileEvent fe) {
-        fireFileDeletedEvent(getListeners(), transform(fe));
+        if (!isCyclicLink()) {
+            fireFileDeletedEvent(getListeners(), transform(fe));
+        }
     }
 
     @Override

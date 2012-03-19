@@ -73,6 +73,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -88,6 +89,7 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -114,8 +116,8 @@ public class ErrorDescriptionFactory {
         int end = (int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree);
 
         if (start != (-1) && end != (-1)) {
-            List<Fix> fixesForED = resolveDefaultFixes(context, fixes);
-            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription(context.getSeverity(), text, fixesForED, context.getInfo().getFileObject(), start, end);
+            LazyFixList fixesForED = org.netbeans.spi.editor.hints.ErrorDescriptionFactory.lazyListForFixes(resolveDefaultFixes(context, fixes));
+            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription("text/x-java:" + context.getHintMetadata().id, context.getSeverity(), text, context.getHintMetadata().description, fixesForED, context.getInfo().getFileObject(), start, end);
         }
 
         return null;
@@ -129,8 +131,8 @@ public class ErrorDescriptionFactory {
         int[] span = computeNameSpan(tree, context);
         
         if (span != null && span[0] != (-1) && span[1] != (-1)) {
-            List<Fix> fixesForED = resolveDefaultFixes(context, fixes);
-            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription(context.getSeverity(), text, fixesForED, context.getInfo().getFileObject(), span[0], span[1]);
+            LazyFixList fixesForED = org.netbeans.spi.editor.hints.ErrorDescriptionFactory.lazyListForFixes(resolveDefaultFixes(context, fixes));
+            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription("text/x-java:" + context.getHintMetadata().id, context.getSeverity(), text, context.getHintMetadata().description, fixesForED, context.getInfo().getFileObject(), span[0], span[1]);
         }
 
         return null;
@@ -177,7 +179,6 @@ public class ErrorDescriptionFactory {
         }
     }
 
-    //XXX: should not be public:
     static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
         List<Fix> auxiliaryFixes = new LinkedList<Fix>();
         HintMetadata hm = SPIAccessor.getINSTANCE().getHintMetadata(ctx);
@@ -442,66 +443,14 @@ public class ErrorDescriptionFactory {
                         return ;
                     }
 
-                    //check for already existing SuppressWarnings annotation:
-                    for (AnnotationTree at : modifiers.getAnnotations()) {
-                        TreePath tp = new TreePath(new TreePath(path, at), at.getAnnotationType());
-                        Element  e  = copy.getTrees().getElement(tp);
+                    LiteralTree[] keyLiterals = new LiteralTree[keys.length];
 
-                        if (el.equals(e)) {
-                            //found SuppressWarnings:
-                            List<? extends ExpressionTree> arguments = at.getArguments();
-
-                            if (arguments.isEmpty() || arguments.size() > 1) {
-                                Logger.getLogger(ErrorDescriptionFactory.class.getName()).log(Level.INFO, "SupressWarnings annotation has incorrect number of arguments - {0}.", arguments.size());  // NOI18N
-                                return ;
-                            }
-
-                            ExpressionTree et = at.getArguments().get(0);
-
-                            if (et.getKind() != Kind.ASSIGNMENT) {
-                                Logger.getLogger(ErrorDescriptionFactory.class.getName()).log(Level.INFO, "SupressWarnings annotation's argument is not an assignment - {0}.", et.getKind());  // NOI18N
-                                return ;
-                            }
-
-                            AssignmentTree assignment = (AssignmentTree) et;
-                            List<? extends ExpressionTree> currentValues = null;
-
-                            if (assignment.getExpression().getKind() == Kind.NEW_ARRAY) {
-                                currentValues = ((NewArrayTree) assignment.getExpression()).getInitializers();
-                            } else {
-                                currentValues = Collections.singletonList(assignment.getExpression());
-                            }
-
-                            assert currentValues != null;
-
-                            List<ExpressionTree> values = new ArrayList<ExpressionTree>(currentValues);
-
-                            for (String key : keys) {
-                                values.add(copy.getTreeMaker().Literal(key));
-                            }
-
-
-                            copy.rewrite(assignment.getExpression(), copy.getTreeMaker().NewArray(null, Collections.<ExpressionTree>emptyList(), values));
-                            return ;
-                        }
+                    for (int i = 0; i < keys.length; i++) {
+                        keyLiterals[i] = copy.getTreeMaker().
+                                Literal(keys[i]);
                     }
 
-                    List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(modifiers.getAnnotations());
-
-
-                    if ( keys.length > 1 ) {
-                        List<LiteralTree> keyLiterals = new ArrayList<LiteralTree>(keys.length);
-                        for (String key : keys) {
-                            keyLiterals.add(copy.getTreeMaker().Literal(key));
-                        }
-                        annotations.add(copy.getTreeMaker().Annotation(copy.getTreeMaker().QualIdent(el),
-                                Collections.singletonList(
-                                    copy.getTreeMaker().NewArray(null, Collections.<ExpressionTree>emptyList(), keyLiterals))));
-                    }
-                    else {
-                        annotations.add(copy.getTreeMaker().Annotation(copy.getTreeMaker().QualIdent(el), Collections.singletonList(copy.getTreeMaker().Literal(keys[0]))));
-                    }
-                    ModifiersTree nueMods = copy.getTreeMaker().Modifiers(modifiers, annotations);
+                    ModifiersTree nueMods = GeneratorUtilities.get(copy).appendToAnnotationValue(modifiers, el, "value", keyLiterals);
 
                     copy.rewrite(modifiers, nueMods);
                 }

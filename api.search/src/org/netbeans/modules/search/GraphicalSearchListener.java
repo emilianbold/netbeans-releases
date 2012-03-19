@@ -41,12 +41,27 @@
  */
 package org.netbeans.modules.search;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.modules.search.ui.FileObjectPropertySet;
+import org.netbeans.modules.search.ui.UiUtils;
+import org.netbeans.spi.search.SearchFilterDefinition;
+import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.provider.SearchComposition;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
@@ -56,6 +71,7 @@ import org.openide.util.NbBundle;
  */
 class GraphicalSearchListener<R> extends SearchListener {
 
+    private static final int INFO_EVENT_LIMIT = 100;
     private static final Logger LOG = Logger.getLogger(
             GraphicalSearchListener.class.getName());
 
@@ -78,10 +94,14 @@ class GraphicalSearchListener<R> extends SearchListener {
     
     private ResultViewPanel resultViewPanel;
 
+    private RootInfoNode rootInfoNode;
+    private EventChildren eventChildren;
+
     public GraphicalSearchListener(SearchComposition<R> searchComposition,
             ResultViewPanel resultViewPanel) {
         this.searchComposition = searchComposition;
         this.resultViewPanel = resultViewPanel;
+        this.rootInfoNode = new RootInfoNode();
     }
 
     public void searchStarted() {
@@ -98,6 +118,14 @@ class GraphicalSearchListener<R> extends SearchListener {
         });
         progressHandle.start();
         searchComposition.getSearchResultsDisplayer().searchStarted();
+        Collection<? extends Savable> unsaved =
+                Savable.REGISTRY.lookupAll(Savable.class);
+        if (unsaved.size() > 0) {
+            String msg = NbBundle.getMessage(ResultView.class,
+                    "TEXT_INFO_WARNING_UNSAVED",
+                    unsaved.iterator().next().toString(), unsaved.size());
+            eventChildren.addEvent(new EventNode(EventType.WARNING, msg));
+        }
     }
 
     public void searchFinished() {
@@ -149,11 +177,254 @@ class GraphicalSearchListener<R> extends SearchListener {
 
     @Override
     public void generalError(Throwable t) {
+        String msg = NbBundle.getMessage(ResultView.class,
+                "TEXT_INFO_ERROR", t.getMessage());                     //NOI18N
+        eventChildren.addEvent(new EventNode(EventType.ERROR, msg));
         LOG.log(Level.INFO, t.getMessage(), t);
     }
 
     @Override
-    public void fileContentMatchingError(String fileName, Throwable t) {
-        LOG.log(Level.INFO, "Error matching file " + fileName, t);      //NOI18N
+    public void fileContentMatchingError(String path, Throwable t) {
+        String msg = NbBundle.getMessage(ResultView.class,
+                "TEXT_INFO_ERROR_MATCHING", fileName(path), //NOI18N
+                t.getMessage());
+        eventChildren.addEvent(new PathEventNode(EventType.ERROR, msg, path));
+        LOG.log(Level.INFO, path + ": " + t.getMessage(), t);           //NOI18N
+    }
+
+    /**
+     * Extract file name from file path.
+     */
+    private String fileName(String filePath) {
+        Pattern p = Pattern.compile("(/|\\\\)([^/\\\\]+)(/|\\\\)?$");   //NOI18N
+        Matcher m = p.matcher(filePath);
+        if (m.find()) {
+            return m.group(2);
+        } else {
+            return filePath;
+        }
+    }
+
+    @Override
+    public void fileSkipped(FileObject fileObject,
+            SearchFilterDefinition filter, String message) {
+        String fileName = fileObject.getNameExt();
+        if (filter == null) {
+            String infoMsg;
+            if (message == null) {
+                infoMsg = NbBundle.getMessage(ResultView.class,
+                        "TEXT_INFO_SKIPPED", fileName);                 //NOI18N
+            } else {
+                infoMsg = NbBundle.getMessage(ResultView.class,
+                        "TEXT_INFO_SKIPPED_MESSAGE", fileName, message);//NOI18N
+            }
+            eventChildren.addEvent(new FileObjectEventNode(EventType.WARNING,
+                    infoMsg, fileObject));
+        } else if (!SearchInfoDefinitionFactory.DEFAULT_FILTER_DEFS.contains(
+                filter)) {
+            String infoMsg = NbBundle.getMessage(ResultView.class,
+                    "TEXT_INFO_SKIPPED_FILTER", //NOI18N
+                    fileName, getFilterName(filter));
+            eventChildren.addEvent(new FileObjectEventNode(EventType.INFO,
+                    infoMsg, fileObject));
+        }
+        LOG.log(Level.INFO, "{0} skipped {1} {2}", new Object[]{ //NOI18N
+                    fileObject.getPath(),
+                    filter != null ? filter.getClass().getName() : "", //NOI18N
+                    message != null ? message : ""});                   //NOI18N
+    }
+
+    private String getFilterName(SearchFilterDefinition filter) {
+        return filter.getClass().getSimpleName().isEmpty()
+                ? filter.getClass().getName()
+                : filter.getClass().getSimpleName();
+    }
+
+    public Node getInfoNode() {
+        return rootInfoNode;
+    }
+
+    private class RootInfoNode extends AbstractNode {
+
+        public RootInfoNode() {
+            this(new EventChildren());
+        }
+
+        private RootInfoNode(EventChildren eventChildren) {
+
+            super(eventChildren);
+            GraphicalSearchListener.this.eventChildren = eventChildren;
+            setDisplayName(UiUtils.getText("TEXT_INFO_TITLE"));           //TODO
+            setIcon(EventType.INFO);
+        }
+
+        public final void setIcon(EventType mostSeriousEventType) {
+            setIconBaseWithExtension(getIconForEventType(mostSeriousEventType));
+        }
+
+        public void fireUpdate() {
+        }
+    }
+
+    private enum EventType {
+
+        INFO(1), WARNING(2), ERROR(3);
+        private int badness;
+
+        private EventType(int badness) {
+            this.badness = badness;
+        }
+
+        public boolean worseThan(EventType eventType) {
+            return this.badness > eventType.badness;
+        }
+    }
+
+    private class EventChildren extends Children.Keys<EventNode> {
+
+        private List<EventNode> events = new ArrayList<EventNode>();
+        EventType worstType = EventType.INFO;
+
+        public synchronized void addEvent(EventNode event) {
+            if (events.size() < INFO_EVENT_LIMIT) {
+                this.events.add(event);
+                setKeys(events);
+                if (event.getType().worseThan(worstType)) {
+                    worstType = event.getType();
+                }
+                rootInfoNode.setIconBaseWithExtension(
+                        getIconForEventType(worstType));
+            } else if (events.size() == INFO_EVENT_LIMIT) {
+                this.events.add(new EventNode(EventType.INFO,
+                        UiUtils.getText("TEXT_INFO_LIMIT_REACHED")));   //NOI18N
+                setKeys(events);
+            }
+        }
+
+        @Override
+        protected Node[] createNodes(EventNode key) {
+            return new Node[]{key};
+        }
+    }
+
+    private static String getIconForEventType(EventType eventType) {
+
+        String iconBase = "org/netbeans/modules/search/res/";           //NOI18N
+        String icon;
+
+        switch (eventType) {
+            case INFO:
+                icon = "info.png";                                      //NOI18N
+                break;
+            case WARNING:
+                icon = "warning.gif";                                   //NOI18N
+                break;
+            case ERROR:
+                icon = "error.gif";                                     //NOI18N
+                break;
+            default:
+                icon = "info.png";                                      //NOI18N
+            }
+        return iconBase + icon;
+    }
+
+    private class FileObjectEventNode extends EventNode {
+
+        private FileObject fileObject;
+
+        public FileObjectEventNode(EventType type, String message,
+                FileObject fileObject) {
+            super(type, message);
+            this.fileObject = fileObject;
+        }
+
+        @Override
+        public PropertySet[] createPropertySets() {
+            PropertySet[] propertySets;
+            propertySets = new PropertySet[1];
+            propertySets[0] = new FileObjectPropertySet(fileObject);
+            return propertySets;
+        }
+    }
+
+    private class PathEventNode extends EventNode {
+
+        private String path;
+
+        public PathEventNode(EventType type, String message, String path) {
+            super(type, message);
+            this.path = path;
+        }
+
+        @Override
+        public PropertySet[] createPropertySets() {
+            final Property<String> pathProperty = new Property<String>(
+                    String.class) {
+                @Override
+                public boolean canRead() {
+                    return true;
+                }
+
+                @Override
+                public String getValue() throws IllegalAccessException,
+                        InvocationTargetException {
+                    return path;
+                }
+
+                @Override
+                public boolean canWrite() {
+                    return false;
+                }
+
+                @Override
+                public void setValue(String val) throws IllegalAccessException,
+                        IllegalArgumentException, InvocationTargetException {
+                    throw new UnsupportedOperationException();
+                }
+
+                @Override
+                public String getName() {
+                    return "path";                                      //NOI18N
+                }
+            };
+            final Property[] properties = new Property[]{pathProperty};
+            PropertySet[] sets = new PropertySet[1];
+            sets[0] = new PropertySet() {
+                @Override
+                public Property<?>[] getProperties() {
+                    return properties;
+                }
+            };
+            return sets;
+        }
+    }
+
+    private class EventNode extends AbstractNode {
+
+        private PropertySet[] propertySets;
+        private EventType type;
+
+        public EventNode(EventType type, String message) {
+            super(Children.LEAF);
+            this.type = type;
+            this.setDisplayName(message);
+            this.setIconBaseWithExtension(getIconForEventType(type));
+        }
+
+        @Override
+        public PropertySet[] getPropertySets() {
+            if (propertySets == null) {
+                propertySets = createPropertySets();
+            }
+            return propertySets;
+        }
+
+        protected PropertySet[] createPropertySets() {
+            return new PropertySet[0];
+        }
+
+        public EventType getType() {
+            return type;
+        }
     }
 }

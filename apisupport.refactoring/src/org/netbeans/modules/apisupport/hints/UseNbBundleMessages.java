@@ -243,21 +243,6 @@ public class UseNbBundleMessages {
                             wc.rewrite(mit, make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(toIdentifier(key)), params));
                         } // else annotation value, nothing to change
                         if (!isAlreadyRegistered) {
-                            Tree enclosing = findEnclosingElement(wc, treePath);
-                            Tree modifiers;
-                            switch (enclosing.getKind()) {
-                            case METHOD:
-                                modifiers = ((MethodTree) enclosing).getModifiers();
-                                break;
-                            case VARIABLE:
-                                modifiers = ((VariableTree) enclosing).getModifiers();
-                                break;
-                            case COMPILATION_UNIT:
-                                modifiers = enclosing;
-                                break;
-                            default:
-                                modifiers = ((ClassTree) enclosing).getModifiers();
-                            }
                             EditableProperties ep = new EditableProperties(true);
                             InputStream is = ctx.getResourceContent(bundleProperties);
                             try {
@@ -270,7 +255,32 @@ public class UseNbBundleMessages {
                                 lines.add(make.Literal(comment));
                             }
                             lines.add(make.Literal(key + '=' + ep.remove(key)));
-                            wc.rewrite(modifiers, addMessage(wc, modifiers, lines));
+                            TypeElement nbBundleMessages = wc.getElements().getTypeElement("org.openide.util.NbBundle.Messages");
+                            if (nbBundleMessages == null) {
+                                throw new IllegalArgumentException("cannot resolve org.openide.util.NbBundle.Messages");
+                            }
+                            GeneratorUtilities gu = GeneratorUtilities.get(wc);
+                            Tree enclosing = findEnclosingElement(wc, treePath);
+                            Tree modifiers;
+                            Tree nueModifiers;
+                            switch (enclosing.getKind()) {
+                            case METHOD:
+                                modifiers = ((MethodTree) enclosing).getModifiers();
+                                nueModifiers = gu.appendToAnnotationValue(((MethodTree) enclosing).getModifiers(), nbBundleMessages, "value", lines.toArray(new ExpressionTree[0]));
+                                break;
+                            case VARIABLE:
+                                modifiers = ((VariableTree) enclosing).getModifiers();
+                                nueModifiers = gu.appendToAnnotationValue(((VariableTree) enclosing).getModifiers(), nbBundleMessages, "value", lines.toArray(new ExpressionTree[0]));
+                                break;
+                            case COMPILATION_UNIT:
+                                modifiers = enclosing;
+                                nueModifiers = gu.appendToAnnotationValue((CompilationUnitTree) enclosing, nbBundleMessages, "value", lines.toArray(new ExpressionTree[0]));
+                                break;
+                            default:
+                                modifiers = ((ClassTree) enclosing).getModifiers();
+                                nueModifiers = gu.appendToAnnotationValue(((ClassTree) enclosing).getModifiers(), nbBundleMessages, "value", lines.toArray(new ExpressionTree[0]));
+                            }
+                            wc.rewrite(modifiers, nueModifiers);
                         // XXX remove NbBundle import if now unused
                         OutputStream os = ctx.getResourceOutput(bundleProperties);
                         try {
@@ -281,71 +291,6 @@ public class UseNbBundleMessages {
                     }
                 // XXX after JavaFix rewrite, Savable.save (on DataObject.find(src)) no longer works (JG13 again)
             }
-                    // borrowed from FindBugsHint:
-                    private Tree addMessage(WorkingCopy wc, /*Modifiers|CompilationUnit*/Tree original, List<ExpressionTree> lines) throws IllegalArgumentException {
-                        TreeMaker make = wc.getTreeMaker();
-                        // First try to insert into a value list for an existing annotation:
-                        List<? extends AnnotationTree> anns;
-                        if (original.getKind() == Kind.COMPILATION_UNIT) {
-                            anns = ((CompilationUnitTree) original).getPackageAnnotations();
-                        } else {
-                            anns = ((ModifiersTree) original).getAnnotations();
-                        }
-                        for (int i = 0; i < anns.size(); i++) {
-                            AnnotationTree ann = anns.get(i);
-                            Tree annotationType = ann.getAnnotationType();
-                            // XXX clumsy and imprecise, but how to find the FQN of the annotation type given a Tree? Want a TypeMirror for it.
-                            if (annotationType.toString().matches("((org[.]openide[.]util[.])?NbBundle[.])?Messages")) {
-                                List<? extends ExpressionTree> args = ann.getArguments();
-                                if (args.size() != 1) {
-                                    throw new IllegalArgumentException("expecting just one arg for @Messages");
-                                }
-                                AssignmentTree assign = (AssignmentTree) args.get(0);
-                                if (!assign.getVariable().toString().equals("value")) {
-                                    throw new IllegalArgumentException("expected value=... for @Messages");
-                                }
-                                ExpressionTree arg = assign.getExpression();
-                                NewArrayTree arr;
-                                if (arg.getKind() == Tree.Kind.STRING_LITERAL) {
-                                    arr = make.NewArray(null, Collections.<ExpressionTree>emptyList(), Collections.singletonList(arg));
-                                } else if (arg.getKind() == Tree.Kind.NEW_ARRAY) {
-                                    arr = (NewArrayTree) arg;
-                                } else {
-                                    throw new IllegalArgumentException("unknown arg kind " + arg.getKind() + ": " + arg);
-                                }
-                                for (ExpressionTree line : lines) {
-                                    arr = make.addNewArrayInitializer(arr, line);
-                                }
-                                ann = make.Annotation(annotationType, Collections.singletonList(arr));
-                                if (original.getKind() == Kind.COMPILATION_UNIT) {
-                                    CompilationUnitTree cut = (CompilationUnitTree) original;
-                                    List<AnnotationTree> newAnns = new ArrayList<AnnotationTree>(anns);
-                                    newAnns.set(i, ann);
-                                    return make.CompilationUnit(newAnns, cut.getPackageName(), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile());
-                                } else {
-                                    return make.insertModifiersAnnotation(make.removeModifiersAnnotation((ModifiersTree) original, i), i, ann);
-                                }
-                            }
-                        }
-                        // Not found, so create a new annotation:
-                        List<ExpressionTree> values;
-                        if (lines.size() > 1) { // @Messages({"# ...", "k=v"})
-                            values = Collections.<ExpressionTree>singletonList(make.NewArray(null, Collections.<ExpressionTree>emptyList(), lines));
-                        } else { // @Messages("k=v")
-                            values = lines;
-                        }
-                        AnnotationTree atMessages = make.Annotation(make.QualIdent("org.openide.util.NbBundle.Messages"), values);
-                        Tree result;
-                        if (original.getKind() == Kind.COMPILATION_UNIT) {
-                            CompilationUnitTree cut = (CompilationUnitTree) original;
-                            List<AnnotationTree> newAnns = new ArrayList<AnnotationTree>(anns);
-                            newAnns.add(atMessages);
-                            result = make.CompilationUnit(newAnns, cut.getPackageName(), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile());
-                        } else {
-                            result = make.insertModifiersAnnotation((ModifiersTree) original, 0, atMessages);
-                        }
-                        return GeneratorUtilities.get(wc).importFQNs(result);
-                    }
                     private Tree findEnclosingElement(WorkingCopy wc, TreePath treePath) {
                         Tree leaf = treePath.getLeaf();
                         Kind kind = leaf.getKind();

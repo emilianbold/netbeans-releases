@@ -58,6 +58,7 @@ import org.netbeans.modules.search.ReplaceTask;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.ResultView;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,9 +70,11 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
     private JButton replaceButton;
 
     public BasicReplaceResultsPanel(ResultModel resultModel,
-            BasicComposition composition, List<FileObject> rootFiles) {
+            BasicComposition composition, List<FileObject> rootFiles,
+            Node infoNode) {
         super(resultModel, composition, true, rootFiles,
-                new ResultsOutlineSupport(true, true, resultModel, rootFiles));
+                new ResultsOutlineSupport(true, true, resultModel, rootFiles,
+                infoNode));
         init();
     }
 

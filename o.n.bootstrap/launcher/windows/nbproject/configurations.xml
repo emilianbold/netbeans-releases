@@ -44,7 +44,6 @@
       <compileType>
         <cTool>
           <developmentMode>5</developmentMode>
-          <architecture>1</architecture>
           <warningLevel>2</warningLevel>
         </cTool>
         <ccTool>
@@ -55,8 +54,10 @@
             <pElem>C:/Program Files/Java/jdk1.7.0_04/include</pElem>
             <pElem>C:/Program Files/Java/jdk1.7.0_04/include/win32</pElem>
           </incDir>
-          <commandLine>-s -mno-cygwin</commandLine>
-          <warningLevel>2</warningLevel>
+          <commandLine>-mno-cygwin</commandLine>
+          <preprocessorList>
+            <Elem>NBEXEC_DLL="nbexec.dll"</Elem>
+          </preprocessorList>
         </ccTool>
         <linkerTool>
           <output>nbexec.dll</output>
@@ -71,6 +72,50 @@
           <customToolCommandline>windres.exe -Ocoff nbexec.rc ${OBJECTDIR}/nbexec.res</customToolCommandline>
           <customToolDescription>Compiling Resource files...</customToolDescription>
           <customToolOutputs>${OBJECTDIR}/nbexec.res</customToolOutputs>
+          <customToolAdditionalDep>version.h</customToolAdditionalDep>
+        </customTool>
+      </item>
+      <item path="nbexec_exe.rc" ex="false" tool="3" flavor="0">
+        <customTool>
+          <customToolDescription></customToolDescription>
+        </customTool>
+      </item>
+    </conf>
+    <conf name="nbexec64" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>Cygwin64|Cygwin</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>2</architecture>
+          <incDir>
+            <pElem>C:/Program Files/Java/jdk1.6.0_30/include</pElem>
+            <pElem>C:/Program Files/Java/jdk1.6.0_30/include/win32</pElem>
+          </incDir>
+          <commandLine>-mno-cygwin -static-libgcc -static-libstdc++</commandLine>
+          <preprocessorList>
+            <Elem>NBEXEC_DLL="nbexec64.dll"</Elem>
+          </preprocessorList>
+        </ccTool>
+        <linkerTool>
+          <output>nbexec64.dll</output>
+          <additionalDep>${OBJECTDIR}/nbexec64.res</additionalDep>
+          <linkerLibItems>
+            <linkerOptionItem>${OBJECTDIR}/nbexec64.res</linkerOptionItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="nbexec.rc" ex="false" tool="3" flavor="0">
+        <customTool>
+          <customToolCommandline>x86_64-w64-mingw32-windres.exe -Ocoff nbexec.rc ${OBJECTDIR}/nbexec64.res</customToolCommandline>
+          <customToolDescription>Compiling Resource files...</customToolDescription>
+          <customToolOutputs>${OBJECTDIR}/nbexec64.res</customToolOutputs>
           <customToolAdditionalDep>version.h</customToolAdditionalDep>
         </customTool>
       </item>

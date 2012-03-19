@@ -441,7 +441,11 @@ public class LayoutModel implements LayoutConstants {
 
     public void setUserIntervalSize(LayoutInterval interval, int dimension, int size) {
         int min = interval.getMinimumSize();
+        int pref = interval.getPreferredSize();
         int max = interval.getMaximumSize();
+        if (min == pref && max == USE_PREFERRED_SIZE && pref != size) {
+            min = USE_PREFERRED_SIZE;
+        }
         if (resizeHandler != null) {
             resizeHandler.setIntervalSize(interval, dimension, min, size, max);
         } else {

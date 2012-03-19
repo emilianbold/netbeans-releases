@@ -57,6 +57,7 @@ import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -108,12 +109,41 @@ public class Util {
             final @NonNull LibraryImplementation impl,
             final @NullAllowed String name) {
         if (supportsDisplayName(impl)) {
-            ((NamedLibraryImplementation)impl).setDisplayName(name);
-            return true;
-
-        } else {
-            return false;
+            final NamedLibraryImplementation nimpl = (NamedLibraryImplementation) impl;
+            if (!Utilities.compareObjects(nimpl.getDisplayName(), name)) {
+                nimpl.setDisplayName(name);
+                return true;
+            }
         }
+        return false;
+    }
+    
+    public static boolean supportsProperties(final @NonNull LibraryImplementation impl) {
+        assert impl != null;
+        if (impl instanceof ProxyLibraryImplementation) {
+            return supportsProperties(((ProxyLibraryImplementation)impl).getOriginal());
+        }
+        return impl instanceof LibraryImplementation3;
+    }
+    
+    @NonNull
+    public static Map<String,String> getProperties (final @NonNull LibraryImplementation impl) {
+        return supportsProperties(impl) ?
+                ((LibraryImplementation3)impl).getProperties() :
+                Collections.<String,String>emptyMap();
+    }
+    
+    public static boolean setProperties(
+        final @NonNull LibraryImplementation impl,
+        final @NonNull Map<String,String>  props) {
+        if (supportsProperties(impl)) {
+            final LibraryImplementation3 impl3 = (LibraryImplementation3)impl;
+            if (!Utilities.compareObjects(impl3.getProperties(), props)) {
+                impl3.setProperties(props);
+                return true;
+            }
+        }
+        return false;
     }
     
     public static boolean supportsProperties(final @NonNull LibraryImplementation impl) {

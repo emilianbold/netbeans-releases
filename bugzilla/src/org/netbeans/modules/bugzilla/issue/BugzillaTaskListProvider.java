@@ -59,16 +59,13 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
@@ -77,21 +74,14 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Ondra Vrabec
  */
-@ServiceProviders({
-    @ServiceProvider(service=org.netbeans.modules.bugtracking.spi.TaskListIssueProvider.class),
-    @ServiceProvider(service=BugzillaTaskListProvider.class)
-})
 public final class BugzillaTaskListProvider extends TaskListIssueProvider implements PropertyChangeListener {
 
     private static BugzillaTaskListProvider instance;
@@ -110,12 +100,12 @@ public final class BugzillaTaskListProvider extends TaskListIssueProvider implem
 
     public static synchronized BugzillaTaskListProvider getInstance() {
         if (instance == null) {
-            instance = Lookup.getDefault().lookup(BugzillaTaskListProvider.class);
+            instance = new BugzillaTaskListProvider();
         }
         return instance;
     }
 
-    public BugzillaTaskListProvider () {
+    private BugzillaTaskListProvider () {
         // initialization
         support = new PropertyChangeSupport(this);
         reloadAsync();

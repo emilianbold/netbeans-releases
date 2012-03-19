@@ -110,7 +110,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         
         functionImplEx.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         functionImplEx.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, functionImplEx, file, objects));
-        functionImplEx.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImplEx, file, fileContent, global), 
+        functionImplEx.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImplEx, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));        
         
         CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?

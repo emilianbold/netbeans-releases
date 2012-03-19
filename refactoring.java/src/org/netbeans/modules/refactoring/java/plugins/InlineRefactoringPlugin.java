@@ -270,6 +270,11 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                 }
                 break;
             case METHOD:
+                // Method can not be in annotation
+                if(element.getEnclosingElement().getKind() == ElementKind.ANNOTATION_TYPE) {
+                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodInAnnotation")); //NOI18N
+                    return preCheckProblem;
+                }
                 // Method can not be polymorphic
                 Collection<ExecutableElement> overridenMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) element, javac);
                 Collection<ExecutableElement> overridingMethods = JavaRefactoringUtils.getOverridingMethods((ExecutableElement) element, javac,cancelRequested);

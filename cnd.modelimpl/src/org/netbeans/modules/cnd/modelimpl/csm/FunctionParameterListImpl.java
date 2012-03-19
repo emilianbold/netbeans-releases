@@ -52,13 +52,11 @@ import org.netbeans.modules.cnd.api.model.CsmKnRName;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -68,21 +66,20 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionParameterList, CsmParameter> implements CsmFunctionParameterList {
 
-    protected FunctionParameterListImpl(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
+    protected FunctionParameterListImpl(CsmFile file, int start, int end, Collection<CsmParameter> parameters) {
         super(file, start, end, parameters);
     }
 
-    public static FunctionParameterListImpl create(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
+    public static FunctionParameterListImpl create(CsmFile file, int start, int end, Collection<CsmParameter> parameters) {
         return new FunctionParameterListImpl(file, start, end, parameters);
     }
 
-    private static FunctionParameterListImpl create(CsmFile file, FileContent fileContent, AST lParen, AST rParen, AST firstList, AST krList, CsmScope scope, boolean isLocal) {
+    private static FunctionParameterListImpl create(CsmFile file, FileContent fileContent, AST lParen, AST rParen, AST firstList, AST krList, CsmScope scope) {
         if (lParen == null || lParen.getType() != CPPTokenTypes.LPAREN || rParen == null || rParen.getType() != CPPTokenTypes.RPAREN) {
             return null;
         }
-        List<CsmParameter> parameters = AstRenderer.renderParameters(krList == null ? firstList : krList, file, fileContent, scope, isLocal);
-        Collection<CsmUID<CsmParameter>> paramUIDs = UIDCsmConverter.objectsToUIDs(parameters);
-        return FunctionParameterListImpl.create(file, getStartOffset(lParen), getEndOffset(rParen), paramUIDs);
+        List<CsmParameter> parameters = AstRenderer.renderParameters(krList == null ? firstList : krList, file, fileContent, scope);
+        return FunctionParameterListImpl.create(file, getStartOffset(lParen), getEndOffset(rParen), parameters);
     }
 
     /*package*/ static FunctionParameterListImpl create(CsmFunctionParameterList originalParamList, Collection<CsmParameter> parameters) {
@@ -101,7 +98,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         return "Fun " + super.toString(); // NOI18N
     }
 
-    public static FunctionParameterListImpl create(CsmFile file, FileContent fileContent, AST funAST, CsmScope scope, boolean isLocal) {
+    public static FunctionParameterListImpl create(CsmFile file, FileContent fileContent, AST funAST, CsmScope scope) {
         AST lParen = null;
         AST rParen = null;
         AST paramList = null;
@@ -139,7 +136,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         } else {
             return null;
         }
-        return create(file, fileContent, lParen, rParen, paramList, krList, scope, isLocal);
+        return create(file, fileContent, lParen, rParen, paramList, krList, scope);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -161,7 +158,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         private final ParameterListImpl<CsmParameterList<CsmKnRName>, CsmKnRName> krList;
 
         private FunctionKnRParameterListImpl(CsmFile file, int start, int end,
-                Collection<CsmUID<CsmParameter>> parameters, ParameterListImpl<CsmParameterList<CsmKnRName>, CsmKnRName> krList) {
+                Collection<CsmParameter> parameters, ParameterListImpl<CsmParameterList<CsmKnRName>, CsmKnRName> krList) {
             super(file, start, end, parameters);
             this.krList = krList;
         }

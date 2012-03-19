@@ -237,7 +237,7 @@ public class ProxyLibraryImplementation implements LibraryImplementation3, Prope
     @Override
     public Map<String,String> getProperties() {
         if (!Util.supportsProperties(original)) {
-            throw new IllegalStateException("Original does not support displayName");   //NOI18N
+            throw new IllegalStateException("Original does not support properties");   //NOI18N
         }
         return Util.getProperties(original);
     }

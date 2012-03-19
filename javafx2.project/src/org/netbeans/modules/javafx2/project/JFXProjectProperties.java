@@ -175,6 +175,10 @@ public final class JFXProjectProperties {
     public static final String PROPERTIES_FILE_EXT = "properties"; // NOI18N
     // the following should be J2SEConfigurationProvider.CONFIG_PROPS_PATH which is now inaccessible from here
     public static final String CONFIG_PROPERTIES_FILE = "nbproject/private/config.properties"; // NOI18N
+    public static final String DEFAULT_CONFIG = "<default config>"; //NOI18N
+    public static final String DEFAULT_CONFIG_STANDALONE = "Run Standalone"; //NOI18N
+    public static final String DEFAULT_CONFIG_WEBSTART = "Run as WebStart"; //NOI18N
+    public static final String DEFAULT_CONFIG_BROWSER = "Run in Browser"; //NOI18N
 
     private StoreGroup fxPropGroup = new StoreGroup();
     
@@ -231,15 +235,20 @@ public final class JFXProjectProperties {
 
     // CustomizerRun - Run type
     public enum RunAsType {
-        STANDALONE("standalone"), // NOI18N
-        ASWEBSTART("webstart"), // NOI18N
-        INBROWSER("embedded"); // NOI18N
+        STANDALONE("standalone", DEFAULT_CONFIG_STANDALONE), // NOI18N
+        ASWEBSTART("webstart", DEFAULT_CONFIG_WEBSTART), // NOI18N
+        INBROWSER("embedded", DEFAULT_CONFIG_BROWSER); // NOI18N
         private final String propertyValue;
-        RunAsType(String propertyValue) {
+        private final String defaultConfig;
+        RunAsType(String propertyValue, String defaultConfig) {
             this.propertyValue = propertyValue;
+            this.defaultConfig = defaultConfig;
         }
         public String getString() {
             return propertyValue;
+        }
+        public String getDefaultConfig() {
+            return defaultConfig;
         }
     }
     JToggleButton.ToggleButtonModel runStandalone;
@@ -539,6 +548,16 @@ public final class JFXProjectProperties {
                 (s1 != null && s2 != null && s1.equals(s2));
     }                                   
     
+    public static String getSharedConfigFilePath(final @NonNull String config)
+    {
+        return PROJECT_CONFIGS_DIR + "/" + config + "." + PROPERTIES_FILE_EXT; // NOI18N
+    }
+
+    public static String getPrivateConfigFilePath(final @NonNull String config)
+    {
+        return PROJECT_PRIVATE_CONFIGS_DIR + "/" + config + "." + PROPERTIES_FILE_EXT; // NOI18N
+    }
+
     public static class PropertiesTableModel extends AbstractTableModel {
         
         private List<Map<String,String>> properties;
@@ -763,13 +782,20 @@ public final class JFXProjectProperties {
     }
         
     public static EditableProperties readFromFile(final @NonNull Project project, final @NonNull String relativePath) throws IOException {
-        final FileObject propsFO = project.getProjectDirectory().getFileObject(relativePath);
+        final FileObject dirFO = project.getProjectDirectory();
+        return readFromFile(dirFO, relativePath);
+    }
+
+    public static EditableProperties readFromFile(final @NonNull FileObject dirFO, final @NonNull String relativePath) throws IOException {
+        assert dirFO.isFolder();
+        final FileObject propsFO = dirFO.getFileObject(relativePath);
         return readFromFile(propsFO);
     }
 
     public static EditableProperties readFromFile(final @NonNull FileObject propsFO) throws IOException {
         final EditableProperties ep = new EditableProperties(true);
         if(propsFO != null) {
+            assert propsFO.isData();
             try {
                 final InputStream is = propsFO.getInputStream();
                 ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
@@ -829,11 +855,17 @@ public final class JFXProjectProperties {
     }
 
     public static void saveToFile(final @NonNull Project project, final @NonNull String relativePath, final @NonNull EditableProperties ep) throws IOException {
-        FileObject f = project.getProjectDirectory().getFileObject(relativePath);
+        FileObject dirFO = project.getProjectDirectory();
+        saveToFile(dirFO, relativePath, ep);
+    }
+    
+    public static void saveToFile(final @NonNull FileObject dirFO, final @NonNull String relativePath, final @NonNull EditableProperties ep) throws IOException {
+        assert dirFO.isFolder();
+        FileObject f = dirFO.getFileObject(relativePath);
         final FileObject propsFO;
         if(f == null) {
-            propsFO = FileUtil.createData(project.getProjectDirectory(), relativePath);
-            assert propsFO != null : "FU.cD must not return null; called on " + project.getProjectDirectory() + " + " + relativePath; // #50802  // NOI18N
+            propsFO = FileUtil.createData(dirFO, relativePath);
+            assert propsFO != null : "FU.cD must not return null; called on " + dirFO + " + " + relativePath; // #50802  // NOI18N
         } else {
             propsFO = f;
         }
@@ -842,6 +874,7 @@ public final class JFXProjectProperties {
     
     public static void saveToFile(final @NonNull FileObject propsFO, final @NonNull EditableProperties ep) throws IOException {
         if(propsFO != null) {
+            assert propsFO.isData();
             try {
                 ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                     @Override
@@ -2416,13 +2449,12 @@ public final class JFXProjectProperties {
         }
 
         //----------------------------------------------------------
-
+        
         /**
          * Stores/updates configuration properties and parameters to EditableProperties in case of default
          * config, or directly to project properties files in case of non-default configs.
          * (modified from "A royal mess." from J2SEProjectProperties)"
          */
-        //void storeRunConfigs
         public void store(EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
 
             for (String name : PROJECT_PROPERTIES) {
@@ -2438,8 +2470,8 @@ public final class JFXProjectProperties {
                 if (config == null) {
                     continue;
                 }
-                String sharedPath = PROJECT_CONFIGS_DIR + "/" + config + "." + PROPERTIES_FILE_EXT; // NOI18N
-                String privatePath = PROJECT_PRIVATE_CONFIGS_DIR + "/" + config + "." + PROPERTIES_FILE_EXT; // NOI18N
+                String sharedPath = getSharedConfigFilePath(config);
+                String privatePath = getPrivateConfigFilePath(config);
                 Map<String,String> configProps = entry.getValue();
                 if (configProps == null) {
                     try {

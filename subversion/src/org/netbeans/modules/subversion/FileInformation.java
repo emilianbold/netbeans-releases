@@ -50,9 +50,12 @@ import java.util.*;
 import java.io.Serializable;
 import java.io.File;
 import java.util.logging.Level;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
+import org.tigris.subversion.svnclientadapter.SVNStatusUnversioned;
 
 /**
  * Immutable class encapsulating status of a file.
@@ -309,7 +312,7 @@ public class FileInformation implements Serializable {
     
     private void readEntry(File file) {
         try {
-            entry = Subversion.getInstance().getClient(true).getSingleStatus(file);
+            entry = SvnUtils.getSingleStatus(Subversion.getInstance().getClient(false), file);
         } catch (SVNClientException e) {
             // at least log the exception
             if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {

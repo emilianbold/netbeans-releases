@@ -125,11 +125,9 @@ import javax.swing.GroupLayout;
 import javax.swing.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
@@ -758,7 +756,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 int row = subTaskTable.rowAtPoint(p);
                                 TableModel model = subTaskTable.getModel();
                                 final String issueKey = (String)model.getValueAt(row,0);
-                                Issue.open(JiraUtils.getRepository(issue.getRepository()), issueKey);
+                                JiraUtils.openIssue(issue);
                             }
                         }
                     });
@@ -2392,7 +2390,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     void opened() {
-        undoRedoSupport = UndoRedoSupport.getSupport(JiraUtils.getIssue(issue));
+        undoRedoSupport = Jira.getInstance().getUndoRedoSupport(issue);
         undoRedoSupport.register(addCommentArea); 
         undoRedoSupport.register(environmentArea); 
         
@@ -2404,7 +2402,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if(issue != null) {
             commentsPanel.storeSettings();
             if (undoRedoSupport != null) {
-                undoRedoSupport.unregisterAll(JiraUtils.getIssue(issue));
+                undoRedoSupport.unregisterAll();
                 undoRedoSupport = null;
             }
         }

@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.FileObject;
@@ -68,8 +70,8 @@ import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
+import org.tigris.subversion.svnclientadapter.SVNStatusUnversioned;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
-import org.tigris.subversion.svnclientadapter.utils.Depth;
 
 /**
  *
@@ -85,12 +87,13 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
     private String repoPath;
     protected static final String SUBVERSION_1_5 = "1.5";
     protected static final String SUBVERSION_1_6 = "1.6";
+    protected static final String SUBVERSION_1_7 = "1.7";
     protected String clientVersion;
     private final static String JAVAHL = "javahl";
         
     public AbstractSvnTestCase(String testName) throws MalformedURLException, SVNClientException {
         super(testName);
-        clientVersion = SUBVERSION_1_6;
+        clientVersion = SUBVERSION_1_7;
         System.setProperty("work.dir", getWorkDirPath());
         workDir = new File(System.getProperty("work.dir")); 
         FileUtil.refreshFor(workDir);          
@@ -313,21 +316,39 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
     }
 
     protected void assertStatus(SVNStatusKind status, File file) throws SVNClientException {
-        ISVNStatus[] values = getFullWorkingClient().getStatus(new File[]{file});
+        ISVNStatus[] values;
+        try {
+            values = getFullWorkingClient().getStatus(new File[]{file});
+        } catch (SVNClientException ex) {
+            if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+                values = new ISVNStatus[] { new SVNStatusUnversioned(file) };
+            } else {
+                throw ex;
+            }
+        }
         for (ISVNStatus iSVNStatus : values) {
             assertEquals(status, iSVNStatus.getTextStatus());
         }
     }
     
     protected void assertPropertyStatus(SVNStatusKind status, File file) throws SVNClientException {
-        ISVNStatus[] values = getFullWorkingClient().getStatus(new File[]{file});
+        ISVNStatus[] values;
+        try {
+            values = getFullWorkingClient().getStatus(new File[]{file});
+        } catch (SVNClientException ex) {
+            if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+                values = new ISVNStatus[] { new SVNStatusUnversioned(file) };
+            } else {
+                throw ex;
+            }
+        }
         for (ISVNStatus iSVNStatus : values) {
             assertEquals(status, iSVNStatus.getPropStatus());
         }
     }
  
     protected ISVNStatus getSVNStatus(File file) throws SVNClientException {
-        return getFullWorkingClient().getSingleStatus(file);
+        return SvnUtils.getSingleStatus(getFullWorkingClient(), file);
     }
 
     private boolean containsParent(String message, File parent) {
@@ -340,7 +361,7 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
         return false;
     }
 
-    protected ISVNClientAdapter getFullWorkingClient() throws SVNClientException {
+    protected SvnClient getFullWorkingClient() throws SVNClientException {
         return SvnClientFactory.getInstance().createSvnClient();
     }   
     
@@ -558,6 +579,10 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
 
     protected boolean isJavahl () {
         return SvnClientFactory.isJavaHl();
+    }
+
+    protected boolean isSvnkit () {
+        return SvnClientFactory.isSvnKit();
     }
 
     protected boolean isCommandLine () {

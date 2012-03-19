@@ -45,6 +45,7 @@ import java.util.List;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.ResultModel;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -54,10 +55,10 @@ public class BasicSearchResultsPanel extends BasicAbstractResultsPanel {
 
     public BasicSearchResultsPanel(ResultModel resultModel,
             BasicComposition composition, boolean details,
-            List<FileObject> rootFiles) {
+            List<FileObject> rootFiles, Node infoNode) {
         super(resultModel, composition, details, rootFiles,
                 new ResultsOutlineSupport(false, details, resultModel,
-                rootFiles));
+                rootFiles, infoNode));
         init();
     }
 
