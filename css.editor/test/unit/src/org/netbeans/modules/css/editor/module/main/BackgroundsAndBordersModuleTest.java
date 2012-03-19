@@ -118,4 +118,18 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
         assertPropertyDeclaration("box-shadow: inset rgba(255,255,255,0.3) 0 2px 2px,  rgba(0,0,0,0.05) 0 2px 2px;");
     }
     
+    public void testBorderWidthCompletion() {
+        //issue: border-width: property value completion contains item "-{0,1}" which comes
+        //from the <length> element defined as @length=-? !length
+        //desired: the completion should not contain the minus item, at least not with 
+        //the multiplicity qualifier
+        PropertyModel pm = Properties.getPropertyModel("border-width");
+        ResolvedProperty rp = assertResolve(pm.getGrammarElement(), "", false);
+        
+        assertAlternatives(rp, "thick","thin","inherit","!length","-", "medium");
+        
+        //ok - so the minus "-" is still in the alternatives (which is correct),
+        //but finally filtered out in the code completion result by the "_operator" postfix
+    }
+    
 }
