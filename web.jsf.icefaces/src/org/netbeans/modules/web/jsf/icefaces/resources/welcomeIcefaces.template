@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ace="http://www.icefaces.org/icefaces/components"
+      xmlns:h="http://java.sun.com/jsf/html">
+    <h:head>
+        <title>ICEfaces welcome page</title>
+    </h:head>
+    <h:body>
+        <!-- Note: icefaces-ace.jar (of version 3.0) has to be included on project classpath. -->
+        <h:commandButton value="Welcome to ICEfaces" onclick="welcomeDialog.show();" type="button"/>
+
+        <ace:dialog header="Welcome to ICEfaces" widgetVar="welcomeDialog" showEffect="clip" hideEffect="explode">
+            <h:outputText value="Welcome to development in ICEfaces." />
+            <br /><br />
+            <h:outputLink value="http://www.icesoft.org/projects/ICEfaces/documentation.jsf" >ICEfaces documentation...</h:outputLink>
+        </ace:dialog>
+    </h:body>
+</html>

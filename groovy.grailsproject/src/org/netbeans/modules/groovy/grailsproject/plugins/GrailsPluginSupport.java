@@ -42,33 +42,17 @@
 
 package org.netbeans.modules.groovy.grailsproject.plugins;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.Dialog;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.logging.Logger;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
@@ -77,10 +61,12 @@ import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
-import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform.Version;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.ProgressSupport;
 import org.netbeans.modules.groovy.grailsproject.ProgressSupport.ProgressDialogDescriptor;
@@ -101,10 +87,9 @@ import org.xml.sax.InputSource;
  */
 public class GrailsPluginSupport {
 
-    private static Logger LOGGER = Logger.getLogger(GrailsPluginSupport.class.getName());
-
     private final GrailsProject project;
 
+    
     private GrailsPluginSupport(GrailsProject project) {
         this.project = project;
     }
@@ -141,6 +126,7 @@ public class GrailsPluginSupport {
 
                 return new FolderFilter() {
 
+                    @Override
                     public boolean accept(String folderName) {
                         return pluginDirs.contains(folderName);
                     }
@@ -150,6 +136,7 @@ public class GrailsPluginSupport {
 
         return new FolderFilter() {
 
+            @Override
             public boolean accept(String folderName) {
                 return true;
             }
@@ -159,7 +146,7 @@ public class GrailsPluginSupport {
     public List<GrailsPlugin> refreshAvailablePlugins() throws InterruptedException {
         final String command = "list-plugins"; // NOI18N
 
-        final ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
+        final ProjectInformation inf = ProjectUtils.getInformation(project);
         final String displayName = inf.getDisplayName() + " (" + command + ")"; // NOI18N
 
         final Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
@@ -168,6 +155,8 @@ public class GrailsPluginSupport {
         final PluginProcessor processor = new PluginProcessor();
         ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true);
         descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+
+            @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(processor));
             }
@@ -240,8 +229,10 @@ public class GrailsPluginSupport {
                     is.close();
                 }
             }
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (FileNotFoundException ex) {
+            return Collections.emptyList();
+        } catch (IOException ex) {
+            return Collections.emptyList();
         }
         Collections.sort(plugins);
         return plugins;
@@ -312,6 +303,7 @@ public class GrailsPluginSupport {
 
                 descriptor.addCancelListener(new ActionListener() {
 
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         dlg.setVisible(false);
                         dlg.dispose();
@@ -353,8 +345,9 @@ public class GrailsPluginSupport {
         final String command = uninstall ? "uninstall-plugin" : "install-plugin"; // NOI18N
 
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() {
-                ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
+                ProjectInformation inf = ProjectUtils.getInformation(project);
                 String displayName = inf.getDisplayName() + " (" + command + ")"; // NOI18N
 
                 List<String> args = new ArrayList<String>(3);
@@ -377,8 +370,11 @@ public class GrailsPluginSupport {
                 final Future<Integer> future = service.run();
 
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         desc.addCancelListener(new ActionListener() {
+
+                            @Override
                             public void actionPerformed(ActionEvent ev) {
                                 future.cancel(true);
                             }
@@ -413,6 +409,7 @@ public class GrailsPluginSupport {
                     return !broken;
                 } finally {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             dlg.setVisible(false);
                             dlg.dispose();
@@ -492,6 +489,7 @@ public class GrailsPluginSupport {
         */
         private static final Pattern PLUGIN_PATTERN = Pattern.compile("(.+)[\\s]+<(.+)>[\\s]+--(.+)"); // NOI18N
 
+        @Override
         public void processLine(String line) {
             GrailsPlugin plugin = null;
             final Matcher matcher = PLUGIN_PATTERN.matcher(line);
@@ -505,10 +503,12 @@ public class GrailsPluginSupport {
             }
         }
 
+        @Override
         public void reset() {
             // noop
         }
 
+        @Override
         public void close() {
             // noop
         }
@@ -517,5 +517,4 @@ public class GrailsPluginSupport {
             return plugins;
         }
     }
-
 }

@@ -1,10 +1,9 @@
 Name: PrimeFaces
-Version: 2.2.1
+Version: 3.2
 Description: Bundles PrimeFaces components that can be used with JSF
-OSR: SUN
 License: Apache-2.0
-Origin: http://javaserverfaces.java.net/download.html
-Files: primefaces-2.2.1.jar
+Origin: http://www.primefaces.org/downloads.html
+Files: primefaces-3.2.jar
 
 
                                  Apache License
