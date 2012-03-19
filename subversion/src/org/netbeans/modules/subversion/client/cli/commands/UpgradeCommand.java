@@ -37,58 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.svnclientadapter.svnkit;
+package org.netbeans.modules.subversion.client.cli.commands;
 
-import java.util.logging.Level;
-import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tmatesoft.svn.core.javahl.SVNClientImpl;
+import java.io.File;
+import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
 /**
  *
- * @author Tomas Stupka
+ * @author ondra
  */
-@ServiceProviders({@ServiceProvider(service=SvnClientAdapterFactory.class)})
-public class SvnKitClientAdapterFactory extends SvnClientAdapterFactory {
+public class UpgradeCommand extends SvnCommand {
     
-    private boolean available = false;
-    
-    public SvnKitClientAdapterFactory() {
-        super();
+    private final File wcRoot;
+
+    public UpgradeCommand (File wcRoot) {
+        this.wcRoot = wcRoot;
     }
 
     @Override
-    public Client provides() {
-        return Client.SVNKIT;
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.UPGRADE;
     }
 
     @Override
-    protected boolean isAvailable() {
-        if(!available) {
-            try {
-                org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory.setup();        
-            } catch (Throwable t) {
-                LOG.log(Level.WARNING, t.getMessage());
-            }
-            if(org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory.isAvailable()) {
-                available = true;
-            }
-        }
-        return available;
+    public void prepareCommand(Arguments arguments) {
+        arguments.add("upgrade"); //NOI18N
+        arguments.add(wcRoot.getAbsolutePath());
+        setCommandWorkingDirectory(wcRoot);
     }
-
-    @Override
-    public ISVNClientAdapter createClient() {
-        // is this really needed? this clears the credentials cache
-        SVNClientImpl.setRuntimeCredentialsStorage(null);
-        org.tmatesoft.svn.core.javahl17.SVNClientImpl.setRuntimeCredentialsStorage(null);
-        return org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory
-                .createSVNClient(org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory.SVNKIT_CLIENT);
-    }
-    
 }

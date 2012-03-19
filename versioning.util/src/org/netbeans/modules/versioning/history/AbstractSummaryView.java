@@ -320,7 +320,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
     }
 
     void showRemainingFiles (RevisionItem item) {
-        item.allEventsExpanded = true;
+        item.allEventsExpanded = !item.allEventsExpanded;
         ((SummaryListModel) resultsList.getModel()).refreshModel();
     }
 
@@ -582,6 +582,26 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                 }
             }
         }
+
+        public boolean isAllEventsExpanded () {
+            return allEventsExpanded;
+        }
+
+        private boolean canShowLessEvents() {
+            boolean retval = revisionExpanded;
+            if (retval) {
+                retval = false;
+                if (allEventsExpanded) {
+                    for (LogEntry.Event e : entry.getEvents()) {
+                        if (!e.isVisibleByDefault()) {
+                            retval = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            return retval;
+        }
     }
 
     private abstract class ExpandCollapseAction extends AbstractAction {
@@ -727,7 +747,8 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
 
         @Override
         boolean isVisible () {
-            return parent.isVisible() && parent.revisionExpanded && !parent.isAllEventsVisible();
+            return parent.isVisible() && parent.revisionExpanded && 
+                    (!parent.isAllEventsVisible() || parent.canShowLessEvents());
         }
 
         RevisionItem getParent () {
@@ -754,24 +775,6 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
 
         RevisionItem getParent () {
             return parent;
-        }
-    }
-
-    private static class EventComparator implements Comparator<LogEntry.Event> {
-        @Override
-        public int compare(LogEntry.Event o1, LogEntry.Event o2) {
-            if(o1 == null && o2 == null) {
-                return 0;
-            } else if(o1 == null) {
-                return -1;
-            } else if(o2 == null) {
-                return 1;
-            }
-            int c = o1.getAction().compareTo(o2.getAction());
-            if(c != 0) {
-                return c;
-            }
-            return o1.getPath().compareTo(o2.getPath());
         }
     }
 

@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
@@ -157,7 +158,7 @@ public class AddTestHidden extends AbstractCommandTestCase {
         }
         assertNotNull(e);
                         
-        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);
+        assertTrue(SvnClientExceptionHandler.isUnversionedResource(e.getMessage()) || e.getMessage().toLowerCase().contains("not found"));
         if (clientVersion.equals(SUBVERSION_1_5)) {
             // only by 1.5
             assertTrue(e.getMessage().indexOf("svn: Can't open file") > -1);
@@ -194,7 +195,7 @@ public class AddTestHidden extends AbstractCommandTestCase {
         assertStatus(SVNStatusKind.UNVERSIONED, folder);
 
         ISVNClientAdapter c = getNbClient();
-        c.addFile(folder);
+        c.addDirectory(folder, false);
 
         assertStatus(SVNStatusKind.ADDED, folder);
         assertStatus(SVNStatusKind.UNVERSIONED, file);

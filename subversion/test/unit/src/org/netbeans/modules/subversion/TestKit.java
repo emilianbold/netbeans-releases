@@ -35,6 +35,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Arrays;
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
@@ -118,7 +119,7 @@ public class TestKit {
         }
     }
 
-    static ISVNClientAdapter getClient() throws SVNClientException {        
+    static SvnClient getClient() throws SVNClientException {        
         return SvnClientFactory.getInstance().createSvnClient();
     }
 
@@ -189,7 +190,7 @@ public class TestKit {
     }
 
     public static ISVNStatus getSVNStatus(File file) throws SVNClientException {            
-        return getClient().getSingleStatus(file);        
+        return SvnUtils.getSingleStatus(getClient(), file);
     }
 
     public static ISVNInfo getSVNInfo(String url) throws SVNClientException, MalformedURLException {

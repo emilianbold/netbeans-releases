@@ -304,6 +304,7 @@ public class RepositoryImpl<R, Q, I> {
 
     public void remove() {
         repositoryProvider.remove(r);
+        RepositoryRegistry.getInstance().removeRepository(this);
     }
 
     public RepositoryController getController() {
