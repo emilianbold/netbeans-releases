@@ -82,7 +82,7 @@ final class PlatformInfoWizardPanel extends BasicWizardPanel {
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(PlatformInfoWizardPanel.class);
+        return new HelpCtx("org.netbeans.modules.apisupport.project.ui.platform.PlatformInfoWizardPanel");
     }
     
 }

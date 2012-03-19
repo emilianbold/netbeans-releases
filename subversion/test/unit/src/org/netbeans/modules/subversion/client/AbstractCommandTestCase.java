@@ -171,7 +171,6 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
         assertEquals(refInfo.getNodeKind(), info.getNodeKind());
         assertEquals(refInfo.getRepository(), info.getRepository());
         assertEquals(refInfo.getRevision(), info.getRevision());
-        assertEquals(refInfo.getSchedule(), info.getSchedule());
         assertEquals(refInfo.getUrl(), info.getUrl());
         assertEquals(refInfo.getUrlString(), info.getUrlString());
         assertEquals(refInfo.getUuid(), info.getUuid());
@@ -507,7 +506,7 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
 
     protected boolean shouldBeTestedWithCurrentClient(boolean checkCLI, boolean checkJavaHl) throws Exception {
         if( checkCLI && isCommandLine() ||
-            checkJavaHl && isJavahl())
+            checkJavaHl && (isJavahl() || isSvnkit()))
         {
             checkAcceptedVersion();
             return false;
@@ -525,8 +524,9 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
             version.indexOf("version 1.3") == -1 &&
             version.indexOf("version 1.4") == -1 &&
             version.indexOf("version 1.5") == -1 &&
-            version.indexOf("version 1.6") == -1) {
-            fail("svn cli client seems to be > 1.6. Some tests might pass now...");
+            version.indexOf("version 1.6") == -1 &&
+            version.indexOf("version 1.7") == -1) {
+            fail("svn cli client seems to be > 1.7. Some tests might pass now...");
         }
     }
 
