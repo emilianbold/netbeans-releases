@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.xsl;
 
+import java.io.IOException;
 import org.xml.sax.InputSource;
 import javax.xml.transform.Source;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -105,11 +106,17 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
         set.add (new TransformableSupport (source));
 
         // editor support defines MIME type understood by EditorKits registry         
-        TextEditorSupport.TextEditorSupportFactory editorFactory =
+        final TextEditorSupport.TextEditorSupportFactory editorFactory =
             new TextEditorSupport.TextEditorSupportFactory (this, MIME_TYPE);
         editorFactory.registerCookies (set);
 
         set.assign(XmlFileEncodingQueryImpl.class, XmlFileEncodingQueryImpl.singleton());
+
+        set.assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs(FileObject folder, String fileName) throws IOException {
+                editorFactory.createEditor().saveAs( folder, fileName );
+            }
+        });
     }
 
     @MultiViewElement.Registration(

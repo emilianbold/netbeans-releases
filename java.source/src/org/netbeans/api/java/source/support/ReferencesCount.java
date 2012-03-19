@@ -49,6 +49,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -70,6 +72,8 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 public final class ReferencesCount {
+    
+    private static final Logger LOG = Logger.getLogger(ReferencesCount.class.getName());
     
     private final Object lck = new Object();
     private final Iterable<? extends URL> roots;
@@ -177,7 +181,17 @@ public final class ReferencesCount {
                 try {
                     for (URL root : roots) {
                         final ClassIndexImpl ci = cim.getUsagesQuery(root, true);
-                        ci.getReferencesFrequences(typef, pkgf);
+                        if (ci != null) {
+                            ci.getReferencesFrequences(typef, pkgf);
+                        } else if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(
+                                Level.FINE,
+                                "No ClasIndexImpl for root: {0} scan: {1}",  //NOI18N
+                                new Object[]{
+                                    root,
+                                    SourceUtils.isScanInProgress()
+                                });
+                        }
                     }
                     typeFreqs = Collections.<String,Integer>unmodifiableMap(typef);
                     pkgFreqs = Collections.<String,Integer>unmodifiableMap(pkgf);
