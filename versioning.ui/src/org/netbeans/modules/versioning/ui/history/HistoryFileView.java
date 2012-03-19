@@ -870,7 +870,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            TreePath path = outline.getLayoutCache().getPathForRow(outline.rowAtPoint(e.getPoint()));
+            TreePath path = outline.getClosestPathForLocation(e.getX(), e.getY());
             if(path == null) {
                 return;
             }
