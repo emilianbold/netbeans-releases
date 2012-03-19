@@ -41,7 +41,12 @@
  */
 package org.netbeans.modules.css.visual.v2;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditorSupport;
 import java.beans.PropertyVetoException;
@@ -66,13 +71,57 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
     private static final String SEPARATOR = " "; //NOI18N
     private static final String NO_VALUE = "-"; //NOI18N
     private static final String OVERRIDES = "x"; //NOI18N
-    
     EditableBox editableBox;
     EditableBoxModelProperty property;
 
     public EditableBoxPropertyEditor(EditableBoxModelProperty property) {
         this.property = property;
         editableBox = property.getEditableBox();
+    }
+
+    @Override
+    public boolean isPaintable() {
+        return true;
+    }
+
+    @Override
+    public void paintValue(Graphics g, Rectangle rect) {
+        Font originalFont = g.getFont();
+        int originalFontSize = originalFont.getSize();
+        g.setFont(originalFont.deriveFont((float)(originalFontSize * 0.75)));
+
+        int height = (int) rect.getHeight();
+        int width = (int) rect.getWidth() / 4;
+
+        Color color = g.getColor();
+        
+        for (Edge e : Edge.values()) {
+            BoxElement element = editableBox.getEdge(e);
+
+            //box
+            g.setColor(Color.WHITE);
+            g.fillRect(e.ordinal() * width, 0, width, height);
+            
+            g.setColor(Color.LIGHT_GRAY);
+            g.drawRect(e.ordinal() * width, 0, width, height);
+
+            if (element != null) {
+                if (element == BoxElement.EMPTY) {
+                    //paint a cross
+                    g.drawLine(e.ordinal() * width, 0, width, height);
+                    g.drawLine(e.ordinal() * width, height, width, 0);
+                } else {
+                    g.setColor(color);
+                    g.drawString(element.asText(), e.ordinal() * width + 2, height - 2);
+                }
+            }
+
+
+        }
+
+
+
+//        super.paintValue(g, rect);
     }
 
     @Override
@@ -84,16 +133,16 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
     public boolean supportsCustomEditor() {
         return true;
     }
-    
+
     @Override
     public String getAsText() {
         StringBuilder b = new StringBuilder();
         for (Edge e : Edge.values()) {
             BoxElement mw = editableBox.getEdge(e);
-            
-            if(mw == null) {
+
+            if (mw == null) {
                 b.append(NO_VALUE);
-            } else if(BoxElement.EMPTY == mw) {
+            } else if (BoxElement.EMPTY == mw) {
                 b.append(OVERRIDES);
             } else {
                 b.append(mw.asText());
@@ -109,27 +158,27 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
         int defined = 0;
         Map<Edge, String> edges = new EnumMap<Edge, String>(Edge.class);
         String[] values = new String[4];
-        while(st.hasMoreTokens()) {
+        while (st.hasMoreTokens()) {
             values[defined++] = st.nextToken();
         }
-        
-        if(defined == 0) {
+
+        if (defined == 0) {
             throw new IllegalArgumentException("Too few arguments");
         }
-        
-        if(defined == 1) {
+
+        if (defined == 1) {
             //T == R == B == L
             edges.put(Edge.TOP, values[0]);
             edges.put(Edge.BOTTOM, values[0]);
             edges.put(Edge.RIGHT, values[0]);
             edges.put(Edge.LEFT, values[0]);
-        } else if(defined == 2) {
+        } else if (defined == 2) {
             //T == B , L == R
             edges.put(Edge.TOP, values[0]);
             edges.put(Edge.BOTTOM, values[0]);
             edges.put(Edge.RIGHT, values[1]);
             edges.put(Edge.LEFT, values[1]);
-        } else if(defined == 3) {
+        } else if (defined == 3) {
             //T == B, L, R
             edges.put(Edge.TOP, values[0]);
             edges.put(Edge.BOTTOM, values[0]);
@@ -142,7 +191,7 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
             edges.put(Edge.BOTTOM, values[2]);
             edges.put(Edge.LEFT, values[3]);
         }
-        
+
         for (Edge e : Edge.values()) {
             String token = edges.get(e);
             BoxElement element;
@@ -161,7 +210,7 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
 
         setPropertyValue();
     }
-    
+
     void setPropertyValue() {
         try {
             property.setValue(editableBox);
