@@ -468,6 +468,18 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/partialFormat2.js", Collections.<String, Object>emptyMap());
     }
 
+    public void testPartialFormat3() throws Exception {
+        reformatFileContents("testfiles/formatter/partialFormat3.js", Collections.<String, Object>emptyMap());
+    }
+
+    public void testPartialFormat4() throws Exception {
+        reformatFileContents("testfiles/formatter/partialFormat4.js", Collections.<String, Object>emptyMap());
+    }
+
+    public void testPartialFormat5() throws Exception {
+        reformatFileContents("testfiles/formatter/partialFormat5.js", Collections.<String, Object>emptyMap());
+    }
+
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
         reformatFileContents(file, options, null);
     }

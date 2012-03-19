@@ -811,7 +811,7 @@ public class FormatVisitor extends NodeVisitor {
 
     private FormatToken getFallback(int offset, boolean fallback) {
         FormatToken ret = tokenStream.getToken(offset);
-        if (ret == null && fallback && offset <= formatFinish) {
+        if (ret == null && fallback && offset < formatFinish) {
             ret = tokenStream.getTokens().get(0);
             assert ret != null && ret.getKind() == FormatToken.Kind.SOURCE_START;
         }

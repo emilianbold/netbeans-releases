@@ -49,6 +49,7 @@ import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -403,9 +404,11 @@ public class JsFormatter implements Formatter {
                                     indentationSize += continuationIndent;
                                 }
                                 try {
-                                    int diff = GsfUtilities.setLineIndentation(doc,
-                                            offsetDiff + indentationStart.getOffset(), indentationSize);
-                                    offsetDiff = offsetDiff + diff;
+                                    if (isIndentationAllowed(doc, token, context, indentationSize)) {
+                                        int diff = GsfUtilities.setLineIndentation(doc,
+                                                offsetDiff + indentationStart.getOffset(), indentationSize);
+                                        offsetDiff = offsetDiff + diff;
+                                    }
                                 } catch (BadLocationException ex) {
                                     LOGGER.log(Level.INFO, null, ex);
                                 }
@@ -581,6 +584,33 @@ public class JsFormatter implements Formatter {
 
     }
 
+    private boolean isIndentationAllowed(BaseDocument doc, FormatToken token,
+            Context context, int indentationSize) {
+
+        assert token.getKind() == FormatToken.Kind.EOL || token.getKind() == FormatToken.Kind.SOURCE_START;
+        if (token.getKind() != FormatToken.Kind.SOURCE_START || context.startOffset() <= 0) {
+            return true;
+        }
+
+        try {
+            // when we are formatting only selection we
+            // have to handle the source start indentation properly
+            int lineStartOffset = IndentUtils.lineStartOffset(doc, context.startOffset());
+            if (isWhitespace(doc.getText(lineStartOffset, context.startOffset() - lineStartOffset))) {
+                int currentIndentation = IndentUtils.lineIndent(doc, lineStartOffset);
+                if (currentIndentation != indentationSize) {
+                    // fix the indentation if possible
+                    if (lineStartOffset + indentationSize >= context.startOffset()) {
+                        return true;
+                    }
+                }
+            }
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return false;
+    }
+
     private int updateIndentationLevel(FormatToken token, int indentationLevel) {
         switch (token.getKind()) {
             case INDENTATION_INC:
@@ -599,7 +629,16 @@ public class JsFormatter implements Formatter {
         return current;
     }
 
-    private int insert(BaseDocument doc, int offset, String newString, int offsetDiff) {
+    private static boolean isWhitespace(CharSequence charSequence) {
+        for (int i = 0; i < charSequence.length(); i++) {
+            if (!Character.isWhitespace(charSequence.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static int insert(BaseDocument doc, int offset, String newString, int offsetDiff) {
         try {
             doc.insertString(offset + offsetDiff, newString, null);
             return offsetDiff + newString.length();
@@ -609,7 +648,7 @@ public class JsFormatter implements Formatter {
         return offsetDiff;
     }
 
-    private int replace(BaseDocument doc, int offset, String oldString, String newString, int offsetDiff) {
+    private static int replace(BaseDocument doc, int offset, String oldString, String newString, int offsetDiff) {
         if (oldString.equals(newString)) {
             return offsetDiff;
         }
@@ -630,7 +669,7 @@ public class JsFormatter implements Formatter {
         return offsetDiff;
     }
 
-    private int remove(BaseDocument doc, int offset, int length, int offsetDiff) {
+    private static int remove(BaseDocument doc, int offset, int length, int offsetDiff) {
         try {
             if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, length)).matches()) {
                 doc.remove(offset + offsetDiff, length);
