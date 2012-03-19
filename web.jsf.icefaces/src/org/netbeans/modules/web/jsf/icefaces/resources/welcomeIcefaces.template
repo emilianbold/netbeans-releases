@@ -4,7 +4,7 @@
       xmlns:ace="http://www.icefaces.org/icefaces/components"
       xmlns:h="http://java.sun.com/jsf/html">
     <h:head>
-        <title>ICEfaces welcome page</title>
+        <title>ICEfaces Welcome Page</title>
     </h:head>
     <h:body>
         <!-- Note: icefaces-ace.jar (of version 3.0) has to be included on project classpath. -->
