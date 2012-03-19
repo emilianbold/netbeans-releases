@@ -76,7 +76,6 @@ public final class NewTestWizardIterator implements WizardDescriptor.Instantiati
     private transient WizardDescriptor wiz;
 
     public NewTestWizardIterator() {
-        System.out.println("NewTestWizardIterator()");
     }
 
     private WizardDescriptor.Panel[] createPanels(final WizardDescriptor wizardDescriptor) {
@@ -122,30 +121,12 @@ public final class NewTestWizardIterator implements WizardDescriptor.Instantiati
     }
 
     public Set<FileObject> instantiate() throws IOException {
-        System.out.println("instantiate()...");
-//        FileObject dir = Templates.getTargetFolder(wiz);
-//        String targetName = Templates.getTargetName(wiz);
-//
-//        DataFolder df = DataFolder.findFolder(dir);
-//        FileObject template = Templates.getTemplate(wiz);
-//
-//        DataObject dTemplate = DataObject.find(template);
-//        String pkgName = getSelectedPackageName(dir);
-//        DataObject dobj;
-//        if (pkgName == null) {
-//            dobj = dTemplate.createFromTemplate(df, targetName);
-//        } else {
-//            dobj = dTemplate.createFromTemplate(df, targetName, Collections.singletonMap("package", pkgName)); // NOI18N
-//        }
-//
-//        FileObject createdFile = dobj.getPrimaryFile();
-//        TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(createdFile)).configureProject(createdFile);
-//        return Collections.singleton(createdFile);
         saveSettings(wiz);        
         
         /* collect and build necessary data: */
         String name = Templates.getTargetName(wiz);
         FileObject targetFolder = Templates.getTargetFolder(wiz);
+        TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(targetFolder)).configureProject(targetFolder);
         
         Map<CommonPlugin.CreateTestParam, Object> params
                 = TestUtil.getSettingsMap(false);
@@ -179,7 +160,6 @@ public final class NewTestWizardIterator implements WizardDescriptor.Instantiati
         }
         
         FileObject createdFile = testFileObjects[0];
-        TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(createdFile)).configureProject(createdFile);
         return Collections.singleton(createdFile);
     }
 
