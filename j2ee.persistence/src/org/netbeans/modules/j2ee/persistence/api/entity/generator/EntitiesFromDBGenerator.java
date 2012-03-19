@@ -218,7 +218,7 @@ public final class EntitiesFromDBGenerator {
     
     
     private TableClosure getTableClosure() throws SQLException, DBException{
-        TableProvider tableProvider = new DBSchemaTableProvider(getSchemaElement(), generator);
+        TableProvider tableProvider = new DBSchemaTableProvider(getSchemaElement(), generator, project);
         
         Set<Table> selectedTables = new HashSet<Table>();
         for (Table each : tableProvider.getTables()){
