@@ -80,7 +80,7 @@ final class LibraryStartWizardPanel extends NewTemplatePanel {
     }
     
     public @Override HelpCtx getHelp() {
-        return new HelpCtx(LibraryStartWizardPanel.class);
+        return new HelpCtx("org.netbeans.modules.apisupport.project.ui.wizard.LibraryStartWizardPanel");
     }
     
 }
