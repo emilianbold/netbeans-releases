@@ -806,13 +806,8 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             if(text == null) text = ""; // NOI18N
             if (text.length() <= VISIBLE_START_CHARS + 3) return text;
 
-//            Icon icon = label.getIcon();
-//            int iconWidth = icon != null ? icon.getIconWidth() : 0;
-
             FontMetrics fm = table.getFontMetrics(table.getFont());
-            TableColumn column = table.getColumnModel().getColumn(columnIdx);
             int width = table.getCellRect(rowIdx, columnIdx, false).width;
-            //            int width = label.getSize().width; // - iconWidth;
 
             String sufix = "...";                                                   // NOI18N
             int sufixLength = fm.stringWidth(sufix + " ");
