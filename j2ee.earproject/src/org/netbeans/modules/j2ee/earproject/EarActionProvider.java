@@ -54,7 +54,6 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
@@ -70,11 +69,13 @@ import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -182,8 +183,6 @@ public class EarActionProvider implements ActionProvider {
         }
         
         final String commandToExecute = realCommand;
-        Runnable action = new Runnable () {
-            public void run () {
                 Properties p = new Properties();
                 String[] targetNames;
 
@@ -198,6 +197,7 @@ public class EarActionProvider implements ActionProvider {
                     p = null;
                 }
                 final J2eeApplicationProvider app = EarActionProvider.this.project.getAppModule();
+                final ActionProgress listener = ActionProgress.start(context);
                 try {
                     Deployment.getDefault().suspendDeployOnSave(app);
                     ActionUtils.runTarget(findBuildXml(), targetNames, p).addTaskListener(new TaskListener() {
@@ -205,19 +205,18 @@ public class EarActionProvider implements ActionProvider {
                         @Override
                         public void taskFinished(Task task) {
                             Deployment.getDefault().resumeDeployOnSave(app);
+                            listener.finished(((ExecutorTask) task).result() == 0);
                         }
                     });
                 } catch (IOException e) {
                     Deployment.getDefault().resumeDeployOnSave(app);
                     Exceptions.printStackTrace(e);
+                    listener.finished(false);
                 } catch (RuntimeException ex) {
                     Deployment.getDefault().resumeDeployOnSave(app);
+                    listener.finished(false);
                     throw ex;
                 }
-            }
-        };
-        
-        action.run();
     }
 
     /**

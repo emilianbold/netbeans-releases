@@ -82,6 +82,7 @@ import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
@@ -95,11 +96,14 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.StatusDisplayer;
+import org.openide.execution.ExecutorTask;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -236,7 +240,17 @@ public class ActionProviderImpl implements ActionProvider {
 
         } else {
             setupTaskName(action, rc, lookup);
-            RunUtils.run(rc);
+            final ActionProgress listener = ActionProgress.start(lookup);
+            final ExecutorTask task = RunUtils.run(rc);
+            if (task != null) {
+                task.addTaskListener(new TaskListener() {
+                    @Override public void taskFinished(Task _) {
+                        listener.finished(task.result() == 0);
+                    }
+                });
+            } else {
+                listener.finished(false);
+            }
         }
     }
 

@@ -43,15 +43,15 @@ package org.netbeans.modules.coherence.project.actions;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -60,18 +60,18 @@ import org.netbeans.modules.coherence.project.CoherenceProjectUtils;
 import org.netbeans.modules.coherence.server.CoherenceInstance;
 import org.netbeans.modules.coherence.server.CoherenceInstanceProvider;
 import org.netbeans.modules.coherence.server.util.ClasspathPropertyUtils;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.ActionProgress;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 @ActionID(id="org.netbeans.modules.coherence.project.actions.RunOnCoherence", category="Project")
 @ActionRegistration(displayName="#LBL_RunOnCoherence", lazy=false)
@@ -81,6 +81,8 @@ import org.openide.util.NbBundle;
     @ActionReference(path="Projects/org-netbeans-modules-j2ee-earproject/Actions", position=445)
 })
 public class RunOnCoherence extends AbstractAction implements ContextAwareAction {
+
+    private static final Logger LOG = Logger.getLogger(RunOnCoherence.class.getName());
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -112,38 +114,28 @@ public class RunOnCoherence extends AbstractAction implements ContextAwareAction
                 if (artifactLocs.length > 0) {
                     URI jarLocation = artifactLocs[0];
                     File baseJar = new File(FileUtil.toFile(project.getProjectDirectory()), jarLocation.toString());
-                    List<CoherenceInstance> relatedInstances = getRelatedInstances(baseJar.getAbsolutePath());
-//                    ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
-
-                    // Should be replaced by some blocking method of ActionProvider once
-                    //  similar method will be introduced there. See issue #71515.
-                    AtomicBoolean targetResult = new AtomicBoolean(false);
-                    try {
-                        Properties properties = new Properties();
-                        org.openide.execution.ExecutorTask runTarget = ActionUtils.runTarget(
-                                getBuildXml(project),
-                                new String[] {"jar"}, //NOI18N
-                                properties);
-                        if (runTarget.result() == 0) {
-                            targetResult.set(true);
-                        }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (IllegalArgumentException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-
-                    if (targetResult.get()) {
-                        for (CoherenceInstance coherenceInstance : relatedInstances) {
-                            coherenceInstance.getServer().restart();
+                    final List<CoherenceInstance> relatedInstances = getRelatedInstances(baseJar.getAbsolutePath());
+                    ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+                    if (ap != null && Arrays.asList(ap.getSupportedActions()).contains(ActionProvider.COMMAND_BUILD) && ap.isActionEnabled(ActionProvider.COMMAND_BUILD, Lookup.EMPTY)) {
+                        final AtomicBoolean started = new AtomicBoolean();
+                        ap.invokeAction(ActionProvider.COMMAND_BUILD, Lookups.singleton(new ActionProgress() {
+                            @Override public void started() {
+                                started.set(true);
+                            }
+                            @Override public void finished(boolean success) {
+                                if (success) {
+                                    for (CoherenceInstance coherenceInstance : relatedInstances) {
+                                        coherenceInstance.getServer().restart();
+                                    }
+                                }
+                            }
+                        }));
+                        if (!started.get()) {
+                            LOG.log(Level.WARNING, "ActionProgress not supported by {0}", project);
                         }
                     }
                 }
             }
-        }
-
-        private static FileObject getBuildXml(Project project) {
-            return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         }
 
         private static List<CoherenceInstance> getRelatedInstances(String location) {

@@ -175,6 +175,7 @@ public interface ActionProvider {
      * @param context any action context, e.g. for a node selection
      *                (as in {@link ContextAwareAction})
      * @throws IllegalArgumentException if the requested command is not supported
+     * @see ActionProgress
      */
     void invokeAction(String command, Lookup context) throws IllegalArgumentException;
     
