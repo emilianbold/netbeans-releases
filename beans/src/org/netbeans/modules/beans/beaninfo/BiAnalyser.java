@@ -60,6 +60,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
+import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.beans.BeanUtils;
@@ -191,7 +192,11 @@ public final class BiAnalyser {
     BiAnalyser ( PatternAnalyser pa, CompilationInfo javac ) throws GenerateBeanException {
         int index;
         
-        this.isBeanBroken = !javac.getDiagnostics().isEmpty();
+        this.isBeanBroken = false;
+        
+        for (Diagnostic d : javac.getDiagnostics()) {
+            isBeanBroken |= d.getKind() == Diagnostic.Kind.ERROR;
+        }
 
         // Try to find and analyse existing bean info
         bis = new BeanInfoSource( pa.getFileObject() );

@@ -290,4 +290,167 @@ public class TinyTest extends NbTestCase {
                               "    }\n" +
                               "}\n");
     }
+
+    public void testFillSwitch1() throws Exception {
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public enum Test {\n" +
+                       "    A, B, C;\n" +
+                       "    private static void t(Test a) {\n" +
+                       "        sw|itch (a) {\n" +
+                       "            case A: break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .preference(Tiny.KEY_DEFAULT_ENABLED, false)
+                .run(Tiny.class)
+                .findWarning("4:8-4:14:hint:ERR_Tiny.fillSwitchCases")
+                .applyFix("FIX_Tiny.fillSwitchCases")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public enum Test {\n" +
+                              "    A, B, C;\n" +
+                              "    private static void t(Test a) {\n" +
+                              "        switch (a) {\n" +
+                              "            case A: break;\n" +
+                              "            case B: break;\n" +
+                              "            case C: break;\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+
+    public void testFillSwitch2() throws Exception {
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public enum Test {\n" +
+                       "    A, B, C;\n" +
+                       "    private static void t(Object a) {\n" +
+                       "        sw|itch ((Test) a) {\n" +
+                       "            case A: break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .preference(Tiny.KEY_DEFAULT_ENABLED, false)
+                .run(Tiny.class)
+                .findWarning("4:8-4:14:hint:ERR_Tiny.fillSwitchCases")
+                .applyFix("FIX_Tiny.fillSwitchCases")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public enum Test {\n" +
+                              "    A, B, C;\n" +
+                              "    private static void t(Object a) {\n" +
+                              "        switch ((Test) a) {\n" +
+                              "            case A: break;\n" +
+                              "            case B: break;\n" +
+                              "            case C: break;\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+
+    public void testFillSwitchDefault() throws Exception {
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public enum Test {\n" +
+                       "    A, B, C;\n" +
+                       "    private static void t(Object a) {\n" +
+                       "        sw|itch ((Test) a) {\n" +
+                       "            case A: break;\n" +
+                       "            default: break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(Tiny.class)
+                .findWarning("4:8-4:14:hint:ERR_Tiny.fillSwitchCases")
+                .applyFix("FIX_Tiny.fillSwitchCases")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public enum Test {\n" +
+                              "    A, B, C;\n" +
+                              "    private static void t(Object a) {\n" +
+                              "        switch ((Test) a) {\n" +
+                              "            case A: break;\n" +
+                              "            case B: break;\n" +
+                              "            case C: break;\n" +
+                              "            default: break;\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+
+    public void testFillSwitchGenerateDefault() throws Exception {
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public enum Test {\n" +
+                       "    A, B, C;\n" +
+                       "    private static void t(Object a) {\n" +
+                       "        sw|itch ((Test) a) {\n" +
+                       "            case A: break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(Tiny.class)
+                .findWarning("4:8-4:14:hint:ERR_Tiny.fillSwitchCasesAndDefault")
+                .applyFix("FIX_Tiny.fillSwitchCasesAndDefault")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public enum Test {\n" +
+                              "    A, B, C;\n" +
+                              "    private static void t(Object a) {\n" +
+                              "        switch ((Test) a) {\n" +
+                              "            case A: break;\n" +
+                              "            case B: break;\n" +
+                              "            case C: break;\n" +
+                              "            default: throw new AssertionError(((Test) a).name());\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+
+    public void testFillSwitchOnlyGenerateDefault() throws Exception {
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public enum Test {\n" +
+                       "    A, B, C;\n" +
+                       "    private static void t(Object a) {\n" +
+                       "        sw|itch ((Test) a) {\n" +
+                       "            case A: break;\n" +
+                       "            case B: break;\n" +
+                       "            case C: break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(Tiny.class)
+                .findWarning("4:8-4:14:hint:ERR_Tiny.fillSwitchDefault")
+                .applyFix("FIX_Tiny.fillSwitchDefault")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public enum Test {\n" +
+                              "    A, B, C;\n" +
+                              "    private static void t(Object a) {\n" +
+                              "        switch ((Test) a) {\n" +
+                              "            case A: break;\n" +
+                              "            case B: break;\n" +
+                              "            case C: break;\n" +
+                              "            default: throw new AssertionError(((Test) a).name());\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
 }
