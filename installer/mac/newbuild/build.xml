@@ -54,7 +54,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
         
     <target name="build-jdk-pkg">
-        <echo message="Building JDK XXX into ${basedir}/jdk"/>
         <ant dir="jdk" target="build-pkg"/>              
         <copy todir="${basedir}/build/">
             <fileset description="Copy JDK pkg." dir="${basedir}/jdk/build/" includes="*.pkg"/>
@@ -173,9 +172,6 @@ Microsystems, Inc. All Rights Reserved.
             <equals arg1="${jdk-bundle.build}" arg2="0"/>
         </condition>
         
-        <echo message="XXX: CLUSTERS: ${clusters}"/>
-        <echo message="XXX: JDK-BUNDLE CLUSTERS: ${jdk-bundle.clusters}"/>
-        
     </target>
 
     <!-- XXX:  small jdk-bundle <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters,prepare-javame-sdk-zip">-->
@@ -261,7 +257,6 @@ Microsystems, Inc. All Rights Reserved.
         <condition property="modules" value="${all.modules}" else="${jdk-bundle.modules}"> 
             <equals arg1="${jdk-bundle.build}" arg2="0"/>
         </condition>
-        <echo message="XXX: MODULES: ${modules}"/>
     </target>    
 
     <target name="build-modules" depends="init-modules">        
@@ -320,8 +315,12 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <target name="init-bundles">
-        <property name="main.bundles" value="-javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg)"/>
-
+        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                              -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg  ./build/JDK 7 Update 04.pkg),
+                                              -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),                                             
+                                              -php(./build/baseide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
+                                          "/>
         <property name="fx.bundles" value="    
                                                -javafx-full(./build/*pkg),
                                                -javafx(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javafx-${nb.id}.pkg)
@@ -335,11 +334,21 @@ Microsystems, Inc. All Rights Reserved.
         <condition property="bundles" value="${all.bundles}" else="${jdk-bundle.bundles}"> 
             <equals arg1="${jdk-bundle.build}" arg2="0"/>
         </condition>
-        <echo message="XXX: bundles: ${bundles}"/>
         
     </target>
-    <!-- XXX: small jdk-bundle <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,init-bundles">-->
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-jdk-pkg,init-bundles">
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,init-bundles">
+        <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
+            <delete dir="${basedir}/dist_dmg"/>                          
+            <ant target="build-dmg">
+                 <property name="dmg.name" value="${dmg.prefix.name}${ml.suffix}${bundle.type}-macosx"/>  
+                 <property name="mpkg.name" value="${mpkg.name_nb}"/>
+                 <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
+            </ant>     
+        </for-each>         
+        <delete file="${basedir}/build/sizes.pro"/>
+    </target>     
+            
+    <target name="build-jdk-bundle-dmg" depends="clean,init,build-pkg,build-jdk-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
@@ -556,7 +565,6 @@ Microsystems, Inc. All Rights Reserved.
                          
         <ant target="prepare-lproj-dirs"/>
         
-        <echo message="XXX: in build-dmg bundle.type? ${bundle.type}"/>                                             
         <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
             <filterset>
                 <filter token="NB_ID" value="${nb.id}"/>
