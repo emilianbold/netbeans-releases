@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.api.common.project;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -384,6 +385,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
+        assert EventQueue.isDispatchThread();
         if (COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return ;
