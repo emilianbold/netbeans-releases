@@ -186,7 +186,6 @@ public final class SyncItem {
         return localTransferFile.getLocalPath();
     }
 
-
     public TransferFile getRemoteTransferFile() {
         return remoteTransferFile;
     }
