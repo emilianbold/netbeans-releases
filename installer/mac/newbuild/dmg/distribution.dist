@@ -170,6 +170,7 @@ function checkChoiceUpgradeAction() {
     <!--<pkg-ref id="ident.pkg.openesb" version="0.0.0.0.0" installKBytes="@SIZE_OPENESB@" auth="Root" onConclusion="None">file:./Contents/Packages/openesb-@OPENESB_ID@.pkg</pkg-ref>-->
     <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.webcommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBCOMMON@" auth="Root" onConclusion="None">file:./Contents/Packages/webcommon-@NB_ID@.pkg</pkg-ref>
     <!--<pkg-ref id="ident.pkg.javafx" version="0.0.0.0.1" installKBytes="@SIZE_JAVAFX@" auth="Root" onConclusion="None">file:./Contents/Packages/javafx-@NB_ID@.pkg</pkg-ref>-->
     <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javame" version="0.0.0.0.1" installKBytes="@SIZE_JAVAME@" auth="Root" onConclusion="None">file:./Contents/Packages/javame-@NB_ID@.pkg</pkg-ref>
