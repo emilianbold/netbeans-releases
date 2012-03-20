@@ -17,6 +17,7 @@ PACKAGE    a                               [PUBLIC]   Test204925_07_P
 PACKAGE    a                               [PUBLIC]   Test204925_08_P
 CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
+CLASS      Abc                             [PUBLIC]   issue209405.php
 CLASS      Admin                           [PUBLIC]   Admin
 CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
