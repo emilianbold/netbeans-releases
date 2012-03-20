@@ -44,6 +44,7 @@ package org.netbeans.modules.project.ui.actions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
@@ -52,9 +53,12 @@ import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
+@SuppressWarnings({"UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR", "SIC_INNER_SHOULD_BE_STATIC_ANON"})
 public class MainProjectActionTest extends NbTestCase {
 
     public MainProjectActionTest(String name) {
@@ -77,7 +81,6 @@ public class MainProjectActionTest extends NbTestCase {
         prj2 = (TestSupport.TestProject) ProjectManager.getDefault().findProject(p2);
     }
 
-    @SuppressWarnings({"UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR", "SIC_INNER_SHOULD_BE_STATIC_ANON"})
     public void testSeqRun() throws Exception {
         final String CMD = "cmd";
         final List<Integer> invocations = new ArrayList<Integer>();
@@ -115,6 +118,50 @@ public class MainProjectActionTest extends NbTestCase {
         prj1.setLookup(Lookups.singleton(ap1));
         a.actionPerformed(Lookups.fixed(prj1, prj2));
         assertEquals("[1, 2, 1, 2, 1]", invocations.toString());
+    }
+
+    public void testDisableMultiRun() throws Exception {
+        final String CMD = "cmd";
+        final Semaphore s1 = new Semaphore(0);
+        final Semaphore s2 = new Semaphore(0);
+        class SlowRun implements ActionProvider {
+            @Override public String[] getSupportedActions() {
+                return new String[] {CMD};
+            }
+            @Override public boolean isActionEnabled(String command, Lookup context) {
+                return true;
+            }
+            @Override public void invokeAction(String command, Lookup context) {
+                final ActionProgress listener = ActionProgress.start(context);
+                new Thread() {
+                    @Override public void run() {
+                        s1.acquireUninterruptibly();
+                        listener.finished(true);
+                        s2.release();
+                    }
+                }.start();
+            }
+        }
+        InstanceContent ic = new InstanceContent();
+        Lookup context = new AbstractLookup(ic);
+        prj1.setLookup(Lookups.singleton(new SlowRun()));
+        LookupSensitiveAction a = new MainProjectAction(CMD, null, "a", null, context);
+        assertFalse(a.isEnabled());
+        ic.add(prj1);
+        a.refresh(context, true);
+        assertTrue(a.isEnabled());
+        a.actionPerformed(context);
+        assertFalse(a.isEnabled());
+        s1.release();
+        s2.acquireUninterruptibly();
+        assertTrue(a.isEnabled());
+        a.actionPerformed(context);
+        assertFalse(a.isEnabled());
+        prj2.setLookup(Lookups.singleton(new SlowRun()));
+        ic.remove(prj1);
+        ic.add(prj2);
+        a.refresh(context, true);
+        assertTrue(a.isEnabled());
     }
 
 }

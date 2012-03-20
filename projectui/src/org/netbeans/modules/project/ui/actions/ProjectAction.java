@@ -140,7 +140,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         if (!Arrays.asList(ap.getSupportedActions()).contains(command)) {
             // #47160: was a supported command (e.g. on a freeform project) but was then removed.
             Toolkit.getDefaultToolkit().beep();
-            a.refresh(a.getLookup(), false);
+            a.resultChanged(null);
             return;
         }
         LogRecord r = new LogRecord(Level.FINE, "PROJECT_ACTION"); // NOI18N
@@ -154,24 +154,24 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         UILOG.log(r);
         Mutex.EVENT.writeAccess(new Runnable() {
             @Override public void run() {
-                if (queue.isEmpty()) {
-                    ap.invokeAction(command, Lookup.EMPTY);
-                } else {
-                    final AtomicBoolean started = new AtomicBoolean();
-                    ap.invokeAction(command, Lookups.singleton(new ActionProgress() {
-                        @Override protected void started() {
-                            started.set(true);
-                        }
-                        @Override public void finished(boolean success) {
-                            if (success) { // OK, next...
-                                runSequentially(queue, a, command);
-                            } // else build failed, so skip others
-                        }
-                    }));
-                    if (!started.get()) {
-                        // Did not run action for some reason; try others?
-                        runSequentially(queue, a, command);
+                final AtomicBoolean started = new AtomicBoolean();
+                ap.invokeAction(command, Lookups.singleton(new ActionProgress() {
+                    @Override protected void started() {
+                        started.set(true);
                     }
+                    @Override public void finished(boolean success) {
+                        if (success && !queue.isEmpty()) { // OK, next...
+                            runSequentially(queue, a, command);
+                        } else { // stopping now; restore natural action enablement state
+                            a.resultChanged(null);
+                        }
+                    }
+                }));
+                if (started.get()) {
+                    a.setEnabled(false);
+                } else if (!queue.isEmpty()) {
+                    // Did not run action for some reason; try others?
+                    runSequentially(queue, a, command);
                 }
             }
         });

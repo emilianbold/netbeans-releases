@@ -77,17 +77,16 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
     private String name;
 
     public MainProjectAction(ProjectActionPerformer performer, String name, Icon icon) {
-        this( null, performer, name, icon );
+        this(null, performer, name, icon, null);
     }
 
     public MainProjectAction(String command, String name, Icon icon) {
-        this( command, null, name, icon );
+        this(command, null, name, icon, null);
     }
 
     @SuppressWarnings("LeakingThisInConstructor")
-    private MainProjectAction(String command, ProjectActionPerformer performer, String name, Icon icon) {
-
-        super(icon, null, new Class<?>[] {Project.class, DataObject.class});
+    MainProjectAction(String command, ProjectActionPerformer performer, String name, Icon icon, Lookup lookup) {
+        super(icon, lookup, new Class<?>[] {Project.class, DataObject.class});
         this.command = command;
         this.performer = performer;
         this.name = name;
