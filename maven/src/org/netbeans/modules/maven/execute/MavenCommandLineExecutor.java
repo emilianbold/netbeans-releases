@@ -50,7 +50,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -278,7 +277,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         String quote = "\"";
         // the command line parameters with space in them need to be quoted and escaped to arrive
         // correctly to the java runtime on windows
-        String escaped = "\\" + quote;
+        String escaped = "\\" + quote;        
         for (Map.Entry<? extends String,? extends String> entry : config.getProperties().entrySet()) {
             if (!entry.getKey().startsWith(ENV_PREFIX)) {
                 //skip envs, these get filled in later.
@@ -426,15 +425,21 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         for (Map.Entry<String, String> entry : envMap.entrySet()) {
             String env = entry.getKey();
             String val = entry.getValue();
+            if ("M2_HOME".equals(env.toUpperCase(Locale.ENGLISH))) {
+                continue;// #191374: would prevent bin/mvn from using selected installation
+            }
             // TODO: do we really put *all* the env vars there? maybe filter, M2_HOME and JDK_HOME?
             builder.environment().put(env, val);
             display.append(Utilities.escapeParameters(new String[] {env + "=" + val})).append(' '); // NOI18N
         }
-        for (Iterator<Map.Entry<String, String>> it = builder.environment().entrySet().iterator(); it.hasNext(); ) {
-            if ("M2_HOME".equals(it.next().getKey().toUpperCase(Locale.ENGLISH))) { // NOI18N
-                it.remove(); // #191374: would prevent bin/mvn from using selected installation
-            }
+       
+        //#195039
+        builder.environment().put("M2_HOME", mavenHome.getAbsolutePath());
+        if (!mavenHome.equals(EmbedderFactory.getDefaultMavenHome())) {
+            //only relevant display when using the non-default maven installation.
+            display.append(Utilities.escapeParameters(new String[] {"M2_HOME=" + mavenHome.getAbsolutePath()})).append(' '); // NOI18N
         }
+        
         List<String> command = builder.command();
         display.append(Utilities.escapeParameters(command.toArray(new String[command.size()])));
         printGray(ioput, display.toString());
