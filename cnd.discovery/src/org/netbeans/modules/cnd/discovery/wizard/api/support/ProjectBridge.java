@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.*;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
@@ -769,18 +770,23 @@ public class ProjectBridge {
             } else {
                 compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
             }
-            for(ToolchainManager.PredefinedMacro macro :compiler.getDescriptor().getPredefinedMacros()){
-                if (macro.getFlags() != null) {
-                    if (macro.isHidden()) {
-                        // TODO remove macro
-                    } else {
-                        // add macro
-                        List<String> list = macros.get(macro.getFlags());
-                        if (list == null) {
-                            list = new ArrayList<String>();
-                            macros.put(option, list);
+            if (compiler != null && compiler.getDescriptor() != null) {
+                final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
+                if (predefinedMacros != null) {
+                    for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
+                        if (macro.getFlags() != null) {
+                            if (macro.isHidden()) {
+                                // TODO remove macro
+                            } else {
+                                // add macro
+                                List<String> list = macros.get(macro.getFlags());
+                                if (list == null) {
+                                    list = new ArrayList<String>();
+                                    macros.put(option, list);
+                                }
+                                list.add(macro.getMacro());
+                            }
                         }
-                        list.add(macro.getMacro());
                     }
                 }
             }
