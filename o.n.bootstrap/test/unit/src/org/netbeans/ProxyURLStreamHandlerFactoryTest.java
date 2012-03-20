@@ -43,9 +43,14 @@
  */
 package org.netbeans;
 
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Utilities;
 
@@ -62,6 +67,7 @@ public class ProxyURLStreamHandlerFactoryTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         ProxyURLStreamHandlerFactory.register();
+        clearWorkDir();
     }
 
     /** Tests UNC path is correctly treated. On JDK1.5 UNCFileStreamHandler should 
@@ -81,5 +87,22 @@ public class ProxyURLStreamHandlerFactoryTest extends NbTestCase {
         assertNull("URL.getAuthority must be null.", url.getAuthority());
         uri = url.toURI();
         assertEquals("Wrong URI from URL.toURI.", expectedURI, uri.toString());
+    }
+    
+    public void testHandleSpaceInPathAsProducedByEclipse() throws Exception {
+        File d = new File(getWorkDir(), "space in path");
+        d.mkdirs();
+        File f = new File(d, "x.jar");
+        JarOutputStream os = new JarOutputStream(new FileOutputStream(f));
+        os.putNextEntry(new JarEntry("test.txt"));
+        os.write(10);
+        os.close();
+        
+        URL u = new URL("jar:" + f.toURL() + "!/test.txt");
+        DataInputStream is = new DataInputStream(u.openStream());
+        byte[] arr = new byte[100];
+        is.readFully(arr, 0, 1);
+        assertEquals("One byte", 10, arr[0]);
+        is.close();
     }
 }
