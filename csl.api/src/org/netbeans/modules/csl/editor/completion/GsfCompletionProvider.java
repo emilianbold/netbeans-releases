@@ -599,7 +599,8 @@ public class GsfCompletionProvider implements CompletionProvider {
         }
         
         private void addCodeCompletionItems(ParserResult controller, CodeCompletionHandler completer, int offset, String prefix) {
-            CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, true, QueryType.COMPLETION);
+            QueryType qtype = queryType == 9 ? QueryType.ALL_COMPLETION : QueryType.COMPLETION;
+            CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, true, qtype);
             CodeCompletionResult result = completer.complete(context);
 
             if (result == null) {
