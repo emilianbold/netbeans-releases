@@ -111,6 +111,8 @@ public class ResultsOutlineSupport {
     private void createOutlineView() {
         outlineView = new OutlineView(UiUtils.getText(
                 "BasicSearchResultsPanel.outline.nodes"));              //NOI18N
+        outlineView.getOutline().setDefaultRenderer(Node.Property.class,
+                new ResultsOutlineCellRenderer());
         setOutlineColumns();
         outlineView.addTreeExpansionListener(
                 new ExpandingTreeExpansionListener());
