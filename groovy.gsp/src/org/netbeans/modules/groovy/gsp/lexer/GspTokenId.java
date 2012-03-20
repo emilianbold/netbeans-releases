@@ -96,12 +96,14 @@ public enum GspTokenId implements TokenId {
         this.primaryCategory = primaryCategory;
     }
 
+    @Override
     public String primaryCategory() {
         return primaryCategory;
     }
 
     // Token ids declaration
     private static final Language<GspTokenId> language = new LanguageHierarchy<GspTokenId>() {
+        @Override
         protected Collection<GspTokenId> createTokenIds() {
             return EnumSet.allOf(GspTokenId.class);
         }
@@ -111,6 +113,7 @@ public enum GspTokenId implements TokenId {
             return null;
         }
         
+        @Override
         public Lexer<GspTokenId> createLexer(LexerRestartInfo<GspTokenId> info) {
             return new GspLexer(info);
         }
@@ -130,6 +133,7 @@ public enum GspTokenId implements TokenId {
             }
         }
         
+        @Override
         public String mimeType() {
             return GspTokenId.MIME_TYPE;
         }
