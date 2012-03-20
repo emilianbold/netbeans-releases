@@ -60,61 +60,59 @@ public class GspLexerBatchTest extends TestCase {
         super(testName);
     }
 
-// FIXME we should fix this !!!
-//    public void test1() {
-//        String text =
-//                "<html>" +
-//                "<g:if>" +
-//                "</g:if>" +
-//                "</html>";
-//        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, GspTokenId.language());
-//        TokenSequence<?> sequence = hierarchy.tokenSequence();
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<html>", -1);
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "<g:if>", -1);
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "</g:if>", -1);
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "</html>", -1);
-//    }
+    public void test1() {
+        String text =
+                "<html>" +
+                "<g:if>" +
+                "</g:if>" +
+                "</html>";
+        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, GspTokenId.language());
+        TokenSequence<?> sequence = hierarchy.tokenSequence();
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<html>", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "<g:if>", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "</g:if>", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "</html>", -1);
+    }
 
-// FIXME we should fix this !!!
-//    public void test2() {
-//        String text =
-//                "<html>" +
-//                "<g:if test=\"${t}\">" +
-//                "<div class=\"e\">" +
-//                "<g:renderErrors bean=\"${f.u}\" />" +
-//                "</div>" +
-//                "</g:if>" +
-//                "<div class=\"s\">${e.s}</div>" +
-//                "</html>";
-//        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, GspTokenId.language());
-//        TokenSequence<?> sequence = hierarchy.tokenSequence();
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<html>", -1);
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "<g:if test=\"${t}\">", -1);
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<div class=\"e\">", -1);
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "<g:renderErrors bean=\"${f.u}\" />", -1);
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "</div>", -1);
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "</g:if>", -1);
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<div class=\"s\">", -1);
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "${", -1);
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GROOVY, "e.s", -1);
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "}", -1);
-//        assertTrue(sequence.moveNext());
-//        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "</div></html>", -1);
-//    }
+    public void test2() {
+        String text =
+                "<html>" +
+                "<g:if test=\"${t}\">" +
+                "<div class=\"e\">" +
+                "<g:renderErrors bean=\"${f.u}\" />" +
+                "</div>" +
+                "</g:if>" +
+                "<div class=\"s\">${e.s}</div>" +
+                "</html>";
+        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, GspTokenId.language());
+        TokenSequence<?> sequence = hierarchy.tokenSequence();
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<html>", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "<g:if test=\"${t}\">", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<div class=\"e\">", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "<g:renderErrors bean=\"${f.u}\" />", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "</div>", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "</g:if>", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<div class=\"s\">", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "${", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GROOVY, "e.s", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "}", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "</div></html>", -1);
+    }
     
     public void testExclamation() {
         String text =

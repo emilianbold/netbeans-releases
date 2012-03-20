@@ -120,6 +120,7 @@ public enum GspTokenId implements TokenId {
                                   LanguagePath languagePath, InputAttributes inputAttributes) {
             switch(token.id()) {
                 case HTML:
+                case GTAG:
                     return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
                 case GROOVY_EXPR:
                 case GROOVY:
