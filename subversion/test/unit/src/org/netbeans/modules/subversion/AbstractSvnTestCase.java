@@ -302,12 +302,8 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
             if(files != null) {
                 for (File file : files) {
                     if(!file.getName().equals("cache")) { // do not delete the cache
-                        FileObject fo = FileUtil.toFileObject(file);
-                        if (fo != null) {
-                            fo.delete();
-                            if (file.exists()) {
-                                Utils.deleteRecursively(file);
-                            }
+                        if (file.exists()) {
+                            Utils.deleteRecursively(file);
                         }
                     }                    
                 }
@@ -362,6 +358,8 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
     }
 
     protected SvnClient getFullWorkingClient() throws SVNClientException {
+        // TODO: should return always javahl client as it is our reference client
+        // TODO: rewrite
         return SvnClientFactory.getInstance().createSvnClient();
     }   
     
