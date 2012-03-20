@@ -104,6 +104,7 @@ function checkChoiceUpgradeAction() {
         <line choice="netbeans">
             <line choice="baseide"></line>
             <line choice="javase"></line>
+            <line choice="webcommon"/>
             <line choice="javaee"></line>
         </line>       
         <line choice="glassfish-v3"></line>
@@ -124,6 +125,9 @@ function checkChoiceUpgradeAction() {
     </choice>
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
+    </choice>
+    <choice id="webcommon" title="webcommon-title" description="webcommon-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.webcommmon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
+        <pkg-ref id="ident.pkg.webcommon"/>
     </choice>
     <choice id="javaee" title="javaee-title" description="javaee-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javaee.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
         <pkg-ref id="ident.pkg.javaee"></pkg-ref>
