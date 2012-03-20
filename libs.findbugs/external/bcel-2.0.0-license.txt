@@ -3,7 +3,6 @@ Version: 2.0.0
 Description: Library for bytecode manipulation
 License: Apache-2.0
 Origin: http://repo1.maven.org/maven2/com/google/code/findbugs/bcel/2.0.0/bcel-2.0.0.jar
-Files: bcel-2.0.0.jar
 
 Use of BCEL 2.0.0 is governed by the terms of the license below:
 

@@ -3,7 +3,6 @@ Version: 2.0.0
 Description: Static Java Code Analysis
 Origin: http://repo1.maven.org/maven2/com/google/code/findbugs/findbugs/2.0.0/findbugs-2.0.0.jar
 License: LGPL-2.1
-Files: findbugs-2.0.0.jar
 
             GNU LESSER GENERAL PUBLIC LICENSE
                Version 2.1, February 1999
