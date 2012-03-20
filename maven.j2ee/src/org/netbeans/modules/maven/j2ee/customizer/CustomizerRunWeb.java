@@ -74,7 +74,6 @@ import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -506,21 +505,6 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         Dependency d = ModelUtils.checkModelDependency(model, "javax", oldArt, false);
         if (d != null) {
             d.setArtifactId(newArt);
-        }
-    }
-
-    /*
-     * 
-     * TODO - mkleint: this method has little relevant with the customizers, candidate for moving.
-     */
-    public static boolean isDeployOnSave(Project project) {
-        //try to apply the hint if it exists.
-        AuxiliaryProperties prop = project.getLookup().lookup(AuxiliaryProperties.class);
-        String deployOnSave = prop.get(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
-        if (deployOnSave != null) {
-            return Boolean.parseBoolean(deployOnSave);
-        } else {
-            return true;
         }
     }
     
