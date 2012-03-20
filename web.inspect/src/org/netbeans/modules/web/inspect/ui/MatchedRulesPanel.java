@@ -177,6 +177,7 @@ public class MatchedRulesPanel extends JPanel {
         Set<String> inheritedExplicitly = new HashSet<String>();
         while (element != null) {
             List<PageModel.RuleInfo> matchedRules = pageModel.getMatchedRules(element);
+            matchedRules = filterRules(matchedRules);
             List<PageModel.RuleInfo> rules;
             if (first) {
                 // Marking all properties of the given element as inherited explicitly.
@@ -227,6 +228,39 @@ public class MatchedRulesPanel extends JPanel {
             element = element.getParent();
         }
         return ruleData;
+    }
+
+    /**
+     * Filters matched rules, i.e., excludes the ones that shouldn't
+     * be shown to the user.
+     * 
+     * @param rules list of rules to filter.
+     * @return list that contains only the rules that should be displayed.
+     */
+    private List<PageModel.RuleInfo> filterRules(List<PageModel.RuleInfo> rules) {
+        List<PageModel.RuleInfo> filteredRules = new LinkedList<PageModel.RuleInfo>();
+        for (PageModel.RuleInfo rule : rules) {
+            if (isDisplayedRule(rule)) {
+                filteredRules.add(rule);
+            }
+        }
+        return filteredRules;
+    }
+
+    /**
+     * Determines whether the specified rule should be shown to the user or not.
+     * 
+     * @param rule rule to check.
+     * @return {@code true} when the rule should be displayed,
+     * returns {@code false} otherwise.
+     */
+    private boolean isDisplayedRule(PageModel.RuleInfo rule) {
+        String sourceURL = rule.getSourceURL();
+        // Do not show Firefox internal stylesheets like
+        // about:PreferenceStyleSheet or resource://gre-resources/ua.css
+        return (sourceURL == null)
+                || (!sourceURL.startsWith("about:") // NOI18N
+                && !sourceURL.startsWith("resource:")); // NOI18N
     }
 
 }
