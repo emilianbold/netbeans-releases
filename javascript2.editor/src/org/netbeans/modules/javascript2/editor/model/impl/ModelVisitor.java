@@ -97,10 +97,14 @@ public class ModelVisitor extends PathNodeVisitor {
                         IdentNode iNode = (IdentNode)accessNode.getProperty();
                         JsObject current = modelBuilder.getCurrentDeclarationScope();
                         JsObject property = current.getProperty(iNode.getName());
-                        if (property == null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
+                        if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                                 || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
                             current = current.getParent();
                             property = current.getProperty(iNode.getName());
+                        }
+                        if (property == null && current.getParent() == null) {
+                            // probably we are in global space and there is used this
+                            property = modelBuilder.getGlobal().getProperty(iNode.getName());
                         }
                         if (property != null) {
                             ((JsObjectImpl)property).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
@@ -120,7 +124,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 } else {
                     JsObject current = modelBuilder.getCurrentDeclarationScope();
                     JsObject property = current.getProperty(accessNode.getProperty().getName());
-                    if (property == null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
+                    if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                             || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
                         Node previous = getPreviousFromPath(2);
                         // check whether is not a part of method in constructor
