@@ -52,6 +52,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,6 +67,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
 import org.netbeans.modules.subversion.AbstractSvnTestCase;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient;
@@ -159,11 +162,17 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
         assertEquals(refInfo.getCopyRev(), info.getCopyRev());
         assertEquals(refInfo.getCopyUrl(), info.getCopyUrl());
         //assertEquals(refInfo.getFile(), info.getFile());
-        assertEquals(refInfo.getLastChangedDate(), info.getLastChangedDate());
+        assertEquals(DateFormat.getDateTimeInstance().format(refInfo.getLastChangedDate()), DateFormat.getDateTimeInstance().format(info.getLastChangedDate()));
         assertEquals(refInfo.getLastChangedRevision(), info.getLastChangedRevision());
         assertEquals(refInfo.getLastCommitAuthor(), info.getLastCommitAuthor());
         assertEquals(refInfo.getLastDatePropsUpdate(), info.getLastDatePropsUpdate());
-        assertEquals(refInfo.getLastDateTextUpdate(), info.getLastDateTextUpdate());
+        if (info.getLastDateTextUpdate() == null || refInfo.getLastDateTextUpdate() == null) {
+            assertTrue("" + refInfo.getLastDateTextUpdate() + " --- " + info.getLastDateTextUpdate(), 
+                    (refInfo.getLastDateTextUpdate() == null || refInfo.getLastDateTextUpdate().getTime() == 0)
+                    && ((info.getLastDateTextUpdate() == null || info.getLastDateTextUpdate().getTime() == 0)));
+        } else {
+            assertEquals(refInfo.getLastDateTextUpdate(), info.getLastDateTextUpdate());
+        }
         assertEquals(refInfo.getLockComment() != null ? refInfo.getLockComment().trim() : null, 
                      info.getLockComment() != null    ? info.getLockComment().trim()    : null);
         assertEquals(refInfo.getLockCreationDate(), info.getLockCreationDate());
@@ -275,6 +284,20 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
             separator = ", ";
         }
         return buf.toString();
+    }
+
+    private void resetFactory (boolean resetSvnClientAdapterFactory) throws Exception {
+        Field f = SvnClientFactory.class.getDeclaredField("instance");
+        f.setAccessible(true);
+        f.set(SvnClientFactory.class, null);
+        if (resetSvnClientAdapterFactory) {
+            f = SvnClientAdapterFactory.class.getDeclaredField("instance");
+            f.setAccessible(true);
+            f.set(SvnClientAdapterFactory.class, null);
+            f = SvnClientAdapterFactory.class.getDeclaredField("client");
+            f.setAccessible(true);
+            f.set(SvnClientAdapterFactory.class, null);
+        }
     }
 
     protected class FileNotifyListener implements ISVNNotifyListener {
@@ -396,10 +419,47 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
 
     protected SvnClient getNbClient() throws Exception {
         //        SvnClient c = SvnClientTestFactory.getInstance().createSvnClient();
+        String fac = System.getProperty("svnClientAdapterFactory", "javahl");
         SvnClient c = SvnClientFactory.getInstance().createSvnClient();
+        if ("svnkit".equals(fac)) {
+            assertTrue(c.toString().contains("SvnKitClientAdapter"));
+        } else if ("commandline".equals(fac)) {
+            assertTrue(c.toString().contains("CommandlineClient"));
+        } else {
+            assertTrue(c.toString().contains("JhlClientAdapter"));
+        }
         fileNotifyListener = new FileNotifyListener();
         c.addNotifyListener(fileNotifyListener);
         return c;
+    }
+    
+    
+    @Override
+    protected SvnClient getFullWorkingClient() throws SVNClientException {
+        String fac = System.getProperty("svnClientAdapterFactory", "javahl");
+        boolean resetNeeded = !"javahl".equals(fac); // for javahl setup, there's no need to change anything
+        boolean fullResetNeeded = resetNeeded && "svnkit".equals(fac);
+        try {
+            if (resetNeeded) {
+                System.setProperty("svnClientAdapterFactory", "javahl");
+                try {
+                    resetFactory(fullResetNeeded);
+                } catch (Exception ex) {
+                    throw new SVNClientException(ex);
+                }
+            }
+            SvnClient c = SvnClientFactory.getInstance().createSvnClient();
+            assertTrue(c.toString().contains("JhlClientAdapter"));
+            return c;
+        } finally {
+            if (resetNeeded) {
+                System.setProperty("svnClientAdapterFactory", fac);
+                try {
+                    resetFactory(fullResetNeeded);
+                } catch (Exception ex) {
+                }
+            }
+        }
     }
     
 //    protected ISVNClientAdapter getReferenceClient() throws Exception {

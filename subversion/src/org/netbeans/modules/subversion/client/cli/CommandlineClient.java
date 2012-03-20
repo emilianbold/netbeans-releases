@@ -161,22 +161,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         }
     }
 
-    public void checkSupportedJavaHlVersion() throws SVNClientException {
-        VersionCommand cmd = new VersionCommand();
-        try {
-            config(cmd);
-            cli.exec(cmd);
-            checkErrors(cmd);
-            if(!cmd.isSupportedJavaHl()) {
-                Subversion.LOG.log(Level.WARNING, "JavaHl for svn version >=1.6 not supported yet.");
-                throw new SVNClientException(ERR_JAVAHL_NOT_SUPPORTED + "\n" + cmd.getOutput());
-            }
-        } catch (IOException ex) {
-            Subversion.LOG.log(Level.FINE, null, ex);
-            throw new SVNClientException(ERR_CLI_NOT_AVALABLE);
-        }
-    }
-
     public String getVersion() throws SVNClientException {
         VersionCommand cmd = new VersionCommand();
         try {
@@ -629,7 +613,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public void propertySet(File file, String name, String value, boolean rec) throws SVNClientException {
-        ISVNStatus[] oldStatus = getStatus(file, rec, false);
+        ISVNStatus[] oldStatus = getStatus(file, rec, true);
         PropertySetCommand cmd = new PropertySetCommand(name, value, file, rec);
         exec(cmd);
         notifyChangedStatus(file, rec, oldStatus);
@@ -637,7 +621,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public void propertySet(File file, String name, File propFile, boolean rec) throws SVNClientException, IOException {
-        ISVNStatus[] oldStatus = getStatus(file, rec, false);
+        ISVNStatus[] oldStatus = getStatus(file, rec, true);
         PropertySetCommand cmd = new PropertySetCommand(name, propFile, file, rec);
         exec(cmd);
         notifyChangedStatus(file, rec, oldStatus);
@@ -645,7 +629,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public void propertyDel(File file, String name, boolean rec) throws SVNClientException {
-        ISVNStatus[] oldStatus = getStatus(file, rec, false);
+        ISVNStatus[] oldStatus = getStatus(file, rec, true);
         PropertyDelCommand cmd = new PropertyDelCommand(file, name, rec);
         exec(cmd);
         notifyChangedStatus(file, rec, oldStatus);
@@ -669,7 +653,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     ISVNProperty propertyGet(PropertyGetCommand cmd, final String name, final SVNUrl url, final File file) throws SVNClientException {
         exec(cmd);
         final byte[] bytes = cmd.getOutput();
-        if(bytes == null) {
+        if(bytes == null || bytes.length == 0) {
             return null;
         }
         return new ISVNProperty() {
@@ -759,14 +743,37 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     @Override
-    public ISVNProperty[] getProperties(File file) throws SVNClientException {
+    public ISVNProperty[] getProperties (final File file) throws SVNClientException {
         ListPropertiesCommand cmd = new ListPropertiesCommand(file, false);
         exec(cmd);
         List<String> names = cmd.getPropertyNames();
         List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
-        for (String name : names) {
+        for (final String name : names) {
             ISVNProperty prop = propertyGet(file, name);
-            if (prop != null) {
+            if (prop == null) {
+                props.add(new ISVNProperty() {
+                    @Override
+                    public String getName() {
+                        return name;
+                    }
+                    @Override
+                    public String getValue() {
+                        return "";
+                    }
+                    @Override
+                    public File getFile() {
+                        return file;
+                    }
+                    @Override
+                    public SVNUrl getUrl() {
+                        return null;
+                    }
+                    @Override
+                    public byte[] getData() {
+                        return new byte[0];
+                    }
+                });
+            } else {
                 props.add(prop);
             }
         }
@@ -1125,7 +1132,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         for (ISVNStatus s : oldStatuses) {
             oldStatusMap.put(s.getFile(), s);
         }
-        ISVNStatus[] newStatuses = getStatus(file, rec, false);
+        ISVNStatus[] newStatuses = getStatus(file, rec, true);
         for (ISVNStatus newStatus : newStatuses) {
             ISVNStatus oldStatus = oldStatusMap.get(newStatus.getFile());
             if( (oldStatus == null && newStatus != null) ||

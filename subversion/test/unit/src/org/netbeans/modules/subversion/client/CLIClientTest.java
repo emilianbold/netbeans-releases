@@ -63,10 +63,10 @@ public class CLIClientTest extends NbTestCase {
     public static Test suite() throws Exception {
         TestSuite suite = new TestSuite();
         System.setProperty("svnClientAdapterFactory", "commandline");
-//        SvnModuleConfig.getDefault().setExecutableBinaryPath("/home/ondra/sources/subversion-1.7.2/subversion/svn/");
         
         suite.addTestSuite(AddTestHidden.class);
         suite.addTestSuite(AvailabilityTest.class);
+        // TODO stabilize test
         suite.addTestSuite(BlameTestHidden.class);
 //        suite.addTestSuite(CancelTest.class);
         suite.addTestSuite(CatTestHidden.class);
@@ -77,7 +77,6 @@ public class CLIClientTest extends NbTestCase {
         suite.addTestSuite(ImportTestHidden.class);
         suite.addTestSuite(InfoTestHidden.class);
         suite.addTestSuite(ListTestHidden.class);
-        // unchecked yet
         suite.addTestSuite(LogTestHidden.class);
         suite.addTestSuite(MergeTestHidden.class);
         suite.addTestSuite(MkdirTestHidden.class);
@@ -88,6 +87,7 @@ public class CLIClientTest extends NbTestCase {
         suite.addTestSuite(RemoveTestHidden.class);
         suite.addTestSuite(ResolvedTestHidden.class);
         suite.addTestSuite(RevertTestHidden.class);
+        // TODO stabilize test
         suite.addTestSuite(StatusTestHidden.class);
         suite.addTestSuite(TreeConflictsTestHidden.class);
         suite.addTestSuite(SwitchToTestHidden.class);
