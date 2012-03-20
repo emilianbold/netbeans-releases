@@ -58,6 +58,8 @@ import java.util.Vector;
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.modules.debugger.ui.WatchesReader;
+import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.DnDNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -71,7 +73,7 @@ import org.openide.util.datatransfer.PasteType;
 /**
  * @author   Jan Jancura
  */
-public class WatchesNodeModel implements ExtendedNodeModel, DnDNodeModel {
+public class WatchesNodeModel implements ExtendedNodeModel, DnDNodeModel, CheckNodeModel {
 
     public static final String WATCH =
         "org/netbeans/modules/debugger/resources/watchesView/watch_16.png";
@@ -293,6 +295,36 @@ public class WatchesNodeModel implements ExtendedNodeModel, DnDNodeModel {
             };
         } else {
             return null;
+        }
+    }
+
+    @Override
+    public boolean isCheckable(Object node) throws UnknownTypeException {
+        return getWatch(node) != null;
+    }
+
+    @Override
+    public boolean isCheckEnabled(Object node) throws UnknownTypeException {
+        return getWatch(node) != null;
+    }
+
+    @Override
+    public Boolean isSelected(Object node) throws UnknownTypeException {
+        Watch w = getWatch(node);
+        if (w != null) {
+            return WatchesReader.isWatchEnabled(w);
+        } else {
+            throw new UnknownTypeException(node);
+        }
+    }
+
+    @Override
+    public void setSelected(Object node, Boolean selected) throws UnknownTypeException {
+        Watch w = getWatch(node);
+        if (w != null) {
+            WatchesReader.setWatchEnabled(w, selected);
+        } else {
+            throw new UnknownTypeException(node);
         }
     }
 

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.ant.debugger;
 
+import java.lang.reflect.Method;
 import java.util.Vector;
 import javax.swing.Action;
 
@@ -62,6 +63,8 @@ import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.openide.text.Annotatable;
 
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -122,6 +125,9 @@ public class WatchesModel implements NodeModelFilter, TableModel {
      */
     public String getShortDescription (NodeModel model, Object node) throws UnknownTypeException {
         if (node instanceof Watch) {
+            if (!isWatchEnabled((Watch) node)) {
+                return NbBundle.getMessage(WatchesModel.class, "CTL_WatchDisabled");
+            }
             String expression = ((Watch) node).getExpression ();
             return debugger.getVariableValue (expression);
         }
@@ -153,6 +159,9 @@ public class WatchesModel implements NodeModelFilter, TableModel {
             columnID == Constants.WATCH_VALUE_COLUMN_ID
         ) {
             if (node instanceof Watch) {
+                if (!isWatchEnabled((Watch) node)) {
+                    return NbBundle.getMessage(WatchesModel.class, "CTL_WatchDisabled");
+                }
                 String expression = ((Watch) node).getExpression ();
                 return debugger.getVariableValue (expression);
             }
@@ -237,4 +246,14 @@ public class WatchesModel implements NodeModelFilter, TableModel {
             );
     }
     
+    private static boolean isWatchEnabled(Watch watch) {
+        try {
+            Method isEnabledMethod = watch.getClass().getDeclaredMethod("isEnabled");
+            isEnabledMethod.setAccessible(true);
+            return (Boolean) isEnabledMethod.invoke(watch);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return true;
+        }
+    }
 }
