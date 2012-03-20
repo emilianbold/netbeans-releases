@@ -67,16 +67,16 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class Primefaces2Implementation implements JsfComponentImplementation {
+public class PrimefacesImplementation implements JsfComponentImplementation {
 
     private final String name;
     private final String description;
 
-    private static final Logger LOGGER = Logger.getLogger(Primefaces2Implementation.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PrimefacesImplementation.class.getName());
     private static final String PRIMEFACES_SPECIFIC_CLASS = "org.primefaces.application.PrimeResource"; //NOI18N
     private static final String PRIMEFACES_LIBRARY_NAME = "primefaces"; //NOI18N
 
-    public Primefaces2Implementation() {
+    public PrimefacesImplementation() {
         this.name = NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces");  //NOI18N
         this.description = NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces_Description"); //NOI18N
     }
