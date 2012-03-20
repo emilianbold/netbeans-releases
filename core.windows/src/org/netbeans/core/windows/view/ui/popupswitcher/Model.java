@@ -206,6 +206,10 @@ class Model extends AbstractTableModel {
             selectedTopItem = selCol == documentCol ? documents[selRow] : views[selRow];
             if( selectedTopItem.hasSubItems() ) {
                 newRowCount = Math.max( rowCount, selectedTopItem.getActivatableSubItems().length+selRow);
+            } else {
+                selCol = -1;
+                selRow = -1;
+                selectedTopItem = null;
             }
         }
         if( documentCol >= 0 )
