@@ -64,6 +64,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.visualvm.modules.oqlsyntax</friend>
                 <friend>org.netbeans.modules.profiler.heapwalker</friend>
                 <friend>org.netbeans.modules.profiler.oql.language</friend>
                 <package>org.netbeans.modules.profiler.oql.engine.api</package>
