@@ -79,10 +79,21 @@ public class HtmlStructureScanner implements StructureScanner {
 
     private static final Logger LOGGER = Logger.getLogger(HtmlStructureScanner.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
+    private static final long MAX_SNAPSHOT_SIZE = 4 * 1024 * 1024;
+
+    private boolean isOfSupportedSize(ParserResult info) {
+        Snapshot snapshot = info.getSnapshot();
+        int slen = snapshot.getText().length();
+        return slen < MAX_SNAPSHOT_SIZE;
+    }
 
     @Override
     public List<? extends StructureItem> scan(final ParserResult info) {
-        HtmlParserResult presult = (HtmlParserResult)info;
+        if (!isOfSupportedSize(info)) {
+            return Collections.emptyList();
+        }
+
+        HtmlParserResult presult = (HtmlParserResult) info;
         AstNode root = ((HtmlParserResult) presult).root();
 
         if (LOG) {
@@ -91,15 +102,19 @@ public class HtmlStructureScanner implements StructureScanner {
         }
 
         //return the root children
-        List<StructureItem> elements = new  ArrayList<StructureItem>(1);
+        List<StructureItem> elements = new ArrayList<StructureItem>(1);
         elements.addAll(new HtmlStructureItem(new HtmlElementHandle(root, info.getSnapshot().getSource().getFileObject()), info.getSnapshot()).getNestedItems());
-        
+
         return elements;
-        
+
     }
 
     @Override
     public Map<String, List<OffsetRange>> folds(final ParserResult info) {
+        if (!isOfSupportedSize(info)) {
+            return Collections.emptyMap();
+        }
+
         final BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
             return Collections.emptyMap();
@@ -120,13 +135,13 @@ public class HtmlStructureScanner implements StructureScanner {
                         int from = logicalRange[0];
                         int to = logicalRange[1];
 
-                        
+
                         int so = documentPosition(from, info.getSnapshot());
                         int eo = documentPosition(to, info.getSnapshot());
-                        
-                        if(so == -1 || eo == -1) {
+
+                        if (so == -1 || eo == -1) {
                             //cannot be mapped back properly
-                            return ;
+                            return;
                         }
 
                         if (eo > doc.getLength()) {
@@ -139,7 +154,7 @@ public class HtmlStructureScanner implements StructureScanner {
                         if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
                             //do not creare one line folds
                             //XXX this logic could possibly seat in the GSF folding impl.
-                            if(node.type() == AstNode.NodeType.OPEN_TAG) {
+                            if (node.type() == AstNode.NodeType.OPEN_TAG) {
                                 tags.add(new OffsetRange(so, eo));
                             } else {
                                 comments.add(new OffsetRange(so, eo));
@@ -171,7 +186,7 @@ public class HtmlStructureScanner implements StructureScanner {
     private static int documentPosition(int astOffset, Snapshot snapshot) {
         return snapshot.getOriginalOffset(astOffset);
     }
-    
+
     @Override
     public Configuration getConfiguration() {
         return new Configuration(false, false, 0);
@@ -183,7 +198,7 @@ public class HtmlStructureScanner implements StructureScanner {
         private HtmlElementHandle handle;
         private int myIndexInParent = -1;
         private List<StructureItem> items = null;
-        
+
         private HtmlStructureItem(HtmlElementHandle handle, Snapshot snapshot) {
             this.handle = handle;
             this.snapshot = snapshot;
@@ -199,7 +214,7 @@ public class HtmlStructureScanner implements StructureScanner {
             //return getName();
             // Use position-based sorting text instead; alphabetical sorting in the
             // outline (the default) doesn't really make sense for HTML tag names
-            return Integer.toHexString(10000+(int)getPosition());
+            return Integer.toHexString(10000 + (int) getPosition());
         }
 
         @Override
@@ -210,19 +225,19 @@ public class HtmlStructureScanner implements StructureScanner {
             String idAttr = getAttributeValue(node, "id"); //NOI18N
             String classAttr = getAttributeValue(node, "class"); //NOI18N
 
-            if(idAttr != null) {
+            if (idAttr != null) {
                 formatter.appendHtml("&nbsp;<font color=808080>id=" + idAttr + "</font>"); //NOI18N
             }
-            if(classAttr != null) {
+            if (classAttr != null) {
                 formatter.appendHtml("&nbsp;<font color=808080>class=" + classAttr + "</font>"); //NOI18N
             }
-            
+
             return formatter.getText();
         }
 
         private String getAttributeValue(AstNode node, String key) {
             String value = _getAttributeValue(node, key.toUpperCase(Locale.ENGLISH));
-            if(value == null) {
+            if (value == null) {
                 return _getAttributeValue(node, key.toLowerCase(Locale.ENGLISH));
             } else {
                 return value;
@@ -231,7 +246,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
         private String _getAttributeValue(AstNode node, String key) {
             AstNode.Attribute attr = node.getAttribute(key); //try lowercase
-            if(attr == null) {
+            if (attr == null) {
                 return null;
             }
             return attr.unquotedValue(); //try lowercase
@@ -243,23 +258,23 @@ public class HtmlStructureScanner implements StructureScanner {
         }
 
         synchronized int indexInParent() {
-            if(myIndexInParent == -1) {
+            if (myIndexInParent == -1) {
                 AstNode papa = handle.node().parent();
                 myIndexInParent = papa == null ? -2 : AstPath.indexInSimilarNodes(papa, handle.node());
             }
             return myIndexInParent;
         }
-        
+
         @Override
         public boolean equals(Object o) {
-            if(!(o instanceof HtmlStructureItem)) {
+            if (!(o instanceof HtmlStructureItem)) {
                 return false;
             }
-            HtmlStructureItem item = (HtmlStructureItem)o;
-            
-            AstNode he = ((HtmlStructureItem)o).handle.node();
+            HtmlStructureItem item = (HtmlStructureItem) o;
+
+            AstNode he = ((HtmlStructureItem) o).handle.node();
             AstNode me = handle.node();
-            if(he.type() == me.type() && he.name().equals(me.name())) {
+            if (he.type() == me.type() && he.name().equals(me.name())) {
                 return indexInParent() == item.indexInParent();
             }
             return false;
@@ -268,9 +283,9 @@ public class HtmlStructureScanner implements StructureScanner {
         @Override
         public int hashCode() {
             return handle.node().name().hashCode() + indexInParent();
-        
+
         }
-      
+
         @Override
         public ElementKind getKind() {
             return ElementKind.TAG;
@@ -289,12 +304,12 @@ public class HtmlStructureScanner implements StructureScanner {
 
         @Override
         public synchronized List<? extends StructureItem> getNestedItems() {
-            if(items == null) {
+            if (items == null) {
                 AstNode node = handle.node();
-                items = new  ArrayList<StructureItem>(node.children().size());
+                items = new ArrayList<StructureItem>(node.children().size());
                 List<AstNode> nonVirtualChildren = gatherNonVirtualChildren(node);
-                for(AstNode child : nonVirtualChildren) {
-                    if(child.type() == AstNode.NodeType.OPEN_TAG) {
+                for (AstNode child : nonVirtualChildren) {
+                    if (child.type() == AstNode.NodeType.OPEN_TAG) {
                         HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.getFileObject());
                         items.add(new HtmlStructureItem(childHandle, snapshot));
                     }
@@ -317,14 +332,13 @@ public class HtmlStructureScanner implements StructureScanner {
         public ImageIcon getCustomIcon() {
             return null;
         }
-
     }
 
     private static List<AstNode> gatherNonVirtualChildren(AstNode node) {
         List<AstNode> items = new LinkedList<AstNode>();
         for (AstNode child : node.children()) {
             if (child.type() == AstNode.NodeType.OPEN_TAG) {
-                if(!child.isVirtual()) {
+                if (!child.isVirtual()) {
                     items.add(child);
                 } else {
                     items.addAll(gatherNonVirtualChildren(child));

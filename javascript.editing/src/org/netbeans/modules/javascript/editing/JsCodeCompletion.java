@@ -917,7 +917,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                         }
                         String filename = request.fileObject.getNameExt();
                         for (SyntaxElement.TagAttribute tag : elementIds) {
-                            String elementId = tag.getValue();
+                            String elementId = tag.getValue().toString();
                             // Strip "'s surrounding value, if any
                             if (elementId.length() > 2 && elementId.startsWith("\"") && // NOI18N
                                     elementId.endsWith("\"")) { // NOI18N
