@@ -133,9 +133,6 @@ public class ClassPathProviderImplTest extends NbTestCase {
 
     public void testEndorsedClassPath() throws Exception {
         MockLookup.setInstances(new RepositoryIndexerImplementation() { // need to suppress RepositoryQueries.findBySHA1 for test
-            public @Override Lookup getCapabilityLookup() {
-                return Lookup.EMPTY;
-            }
             public @Override void indexRepo(RepositoryInfo repo) {}
             public @Override void updateIndexWithArtifacts(RepositoryInfo repo, Collection<Artifact> artifacts) {}
             public @Override void deleteArtifactFromIndex(RepositoryInfo repo, Artifact artifact) {}
