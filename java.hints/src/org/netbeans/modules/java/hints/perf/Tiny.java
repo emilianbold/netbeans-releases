@@ -142,17 +142,17 @@ public class Tiny {
     @TriggerPatterns({
         @TriggerPattern(value="$string.indexOf($toSearch)",
                         constraints={@ConstraintVariableType(variable="$string", type="java.lang.String"),
-                                     @ConstraintVariableType(variable="$toSeach", type="java.lang.String")}),
+                                     @ConstraintVariableType(variable="$toSearch", type="java.lang.String")}),
         @TriggerPattern(value="$string.lastIndexOf($toSearch)",
                         constraints={@ConstraintVariableType(variable="$string", type="java.lang.String"),
-                                     @ConstraintVariableType(variable="$toSeach", type="java.lang.String")}),
+                                     @ConstraintVariableType(variable="$toSearch", type="java.lang.String")}),
         @TriggerPattern(value="$string.indexOf($toSearch, $index)",
                         constraints={@ConstraintVariableType(variable="$string", type="java.lang.String"),
-                                     @ConstraintVariableType(variable="$toSeach", type="java.lang.String"),
+                                     @ConstraintVariableType(variable="$toSearch", type="java.lang.String"),
                                      @ConstraintVariableType(variable="$index", type="int")}),
         @TriggerPattern(value="$string.lastIndexOf($toSearch, $index)",
                         constraints={@ConstraintVariableType(variable="$string", type="java.lang.String"),
-                                     @ConstraintVariableType(variable="$toSeach", type="java.lang.String"),
+                                     @ConstraintVariableType(variable="$toSearch", type="java.lang.String"),
                                      @ConstraintVariableType(variable="$index", type="int")})
     })
     public static ErrorDescription lengthOneStringIndexOf(HintContext ctx) {
