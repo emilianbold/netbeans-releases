@@ -597,12 +597,12 @@ public class AstNode {
 
         private static final char NS_PREFIX_DELIMITER = ':';
 
-        protected String name;
-        protected String value;
+        protected CharSequence name;
+        protected CharSequence value;
         protected int nameOffset;
         protected int valueOffset;
 
-        public Attribute(String name, String value, int nameOffset, int valueOffset) {
+        public Attribute(CharSequence name, CharSequence value, int nameOffset, int valueOffset) {
             this.name = name;
             this.value = value;
             this.nameOffset = nameOffset;
@@ -610,7 +610,7 @@ public class AstNode {
         }
 
         public String name() {
-            return name;
+            return name.toString();
         }
 
         public String namespacePrefix() {
@@ -636,11 +636,11 @@ public class AstNode {
         }
 
         public String value() {
-            return value;
+            return value.toString();
         }
 
         public String unquotedValue() {
-            return isValueQuoted() ? value.substring(1, value.length() - 1) : value;
+            return isValueQuoted() ? value().substring(1, value().length() - 1) : value();
         }
 
         public boolean isValueQuoted() {

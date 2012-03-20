@@ -80,6 +80,7 @@ CLASS      A                               [PUBLIC]   classConstructorOptionalPa
 CLASS      A                               [PUBLIC]   test.php
 CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
+CLASS      Abc                             [PUBLIC]   issue209405.php
 CLASS      Admin                           [PUBLIC]   Admin
 CLASS      AdminPresenter                  [PUBLIC,   AdminModule
 CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
