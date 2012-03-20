@@ -639,8 +639,9 @@ public class RefactoringUtils {
      */
     public static FileObject getFileObject(TreePathHandle handle) {
         ElementHandle elementHandle = handle.getElementHandle();
-        if (elementHandle == null )
+        if (elementHandle == null ) {
             return handle.getFileObject();
+        }
        ClasspathInfo info = getClasspathInfoFor(false, handle.getFileObject()); 
        return SourceUtils.getFile(elementHandle, info);
     }    

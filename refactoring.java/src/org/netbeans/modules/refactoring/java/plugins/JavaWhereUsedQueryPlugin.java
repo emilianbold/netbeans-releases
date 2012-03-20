@@ -392,8 +392,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     private Problem checkParametersForMethod(boolean overriders, boolean usages) {
         if (!(usages || overriders)) {
             return new Problem(true, NbBundle.getMessage(JavaWhereUsedQueryPlugin.class, "MSG_NothingToFind"));
-        } else
+        } else {
             return null;
+        }
     }
     
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
@@ -471,8 +472,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
 
         @Override
         public void run(CompilationController compiler) throws IOException {
-            if (cancelled)
+            if (cancelled) {
                 return ;
+            }
             if (compiler.toPhase(JavaSource.Phase.RESOLVED)!=JavaSource.Phase.RESOLVED) {
                 return;
             }

@@ -110,7 +110,9 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
     
     private MoveFileRefactoringPlugin(AbstractRefactoring refactoring, boolean isRenameRefactoring) {
         this.refactoring = refactoring;
-        if (refactoring == null) throw new NullPointerException ();
+        if (refactoring == null) {
+            throw new NullPointerException ();
+        }
         this.isRenameRefactoring = isRenameRefactoring;
     }
     
@@ -161,8 +163,9 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
         if (!isRenameRefactoring) {
             try {
                 for (FileObject f: filesToMove) {
-                    if (!RefactoringUtils.isJavaFile(f))
+                    if (!RefactoringUtils.isJavaFile(f)) {
                         continue;
+                    }
                     String targetPackageName = this.getTargetPackageName(f);
                     if (!RefactoringUtils.isValidPackageName(targetPackageName)) {
                         String s = NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_InvalidPackage"); //NOI18N
@@ -375,9 +378,9 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
     
     String getTargetPackageName(FileObject fo) {
         if (isRenameRefactoring) {
-            if (refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class) !=null)
-                //package rename
+            if (refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class) !=null) {
                 return getNewPackageName();
+            }
             else {
                 //folder rename
                 FileObject folder = refactoring.getRefactoringSource().lookup(FileObject.class);
@@ -395,8 +398,9 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
             String postfix = (String) packagePostfix.get(fo);
             String packageName = concat(null, getNewPackageName(), postfix);
             return packageName;
-        } else
+        } else {
             return getNewPackageName();
+        }
     }
     
     private void setup(Collection fileObjects, String postfix, boolean recursively) {
@@ -417,8 +421,9 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
                 boolean addDot = !"".equals(postfix);
                 Collection col = new ArrayList();
                 for (FileObject fo2: fo.getChildren()) {
-                    if (!fo2.isFolder() || (fo2.isFolder() && recursively)) 
+                    if (!fo2.isFolder() || (fo2.isFolder() && recursively)) {
                         col.add(fo2);
+                    }
                 }
                 List<FileObject> curRootList = sameRootList;
                 if (sameRootList == null) {

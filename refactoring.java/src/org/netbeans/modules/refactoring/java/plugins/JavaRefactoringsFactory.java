@@ -180,8 +180,9 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return false;
             }
         }
-        if (object.lookup(TreePathHandle.class)!=null)
+        if (object.lookup(TreePathHandle.class)!=null) {
             return true;
+        }
         
         return a;
     }

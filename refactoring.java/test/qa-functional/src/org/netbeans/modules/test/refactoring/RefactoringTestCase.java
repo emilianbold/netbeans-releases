@@ -146,7 +146,9 @@ public abstract class RefactoringTestCase extends JellyTestCase {
      */
     protected void browseChildren(TreeModel model, Object parent, int level) {
         Object invoke = getPreviewItemLabel(parent);
-        for (int i = 0; i < level; i++) ref("    ");
+        for (int i = 0; i < level; i++) {
+            ref("    ");
+        }
         ref(invoke.toString() + "\n");
 
         int childs = model.getChildCount(parent);

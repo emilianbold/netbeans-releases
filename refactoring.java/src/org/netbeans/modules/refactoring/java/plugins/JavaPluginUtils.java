@@ -192,8 +192,9 @@ public final class JavaPluginUtils {
         
         if (type.getKind() == TypeKind.WILDCARD) {
             TypeMirror tmirr = ((WildcardType) type).getExtendsBound();
-            if (tmirr != null)
+            if (tmirr != null) {
                 return tmirr;
+            }
             else { //no extends, just '?'
                 return info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
             }
@@ -289,8 +290,9 @@ public final class JavaPluginUtils {
     }
     
     private static String getNameRaw(Tree et) {
-        if (et == null)
+        if (et == null) {
             return null;
+        }
         
         switch (et.getKind()) {
             case IDENTIFIER:
@@ -318,8 +320,9 @@ public final class JavaPluginUtils {
     }
     
     static String adjustName(String name) {
-        if (name == null)
+        if (name == null) {
             return null;
+        }
         
         String shortName = null;
         
@@ -343,8 +346,9 @@ public final class JavaPluginUtils {
     }
     
     private static String firstToLower(String name) {
-        if (name.length() == 0)
+        if (name.length() == 0) {
             return null;
+        }
         
         StringBuilder result = new StringBuilder();
         boolean toLower = true;
@@ -372,11 +376,13 @@ public final class JavaPluginUtils {
     
     private static String guessLiteralName(String str) {
         StringBuilder sb = new StringBuilder();
-        if(str.length() == 0)
+        if(str.length() == 0) {
             return null;
+        }
         char first = str.charAt(0);
-        if(Character.isJavaIdentifierStart(str.charAt(0)))
+        if(Character.isJavaIdentifierStart(str.charAt(0))) {
             sb.append(first);
+        }
         
         for (int i = 1; i < str.length(); i++) {
             char ch = str.charAt(i);
@@ -384,15 +390,19 @@ public final class JavaPluginUtils {
                 sb.append('_');
                 continue;
             }
-            if (Character.isJavaIdentifierPart(ch))
+            if (Character.isJavaIdentifierPart(ch)) {
                 sb.append(ch);
-            if (i > 40)
+            }
+            if (i > 40) {
                 break;
+            }
         }
-        if (sb.length() == 0)
+        if (sb.length() == 0) {
             return null;
-        else
+        }
+        else {
             return sb.toString();
+        }
     }
     
     public static final class VariablesFilter implements ElementUtilities.ElementAcceptor {
