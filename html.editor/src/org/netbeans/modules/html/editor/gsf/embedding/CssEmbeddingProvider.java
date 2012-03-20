@@ -41,11 +41,8 @@
  */
 package org.netbeans.modules.html.editor.gsf.embedding;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -59,28 +56,30 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  */
 public class CssEmbeddingProvider extends EmbeddingProvider {
 
+    private static final Logger LOG = Logger.getLogger(CssEmbeddingProvider.class.getSimpleName());
+    
+    private static final long MAX_SNAPSHOT_SIZE = 4 * 1024 * 1024; //4MB
+    
     public static class Factory extends TaskFactory {
 
-        private static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
-        private static final String JSP_TAG_MIME_TYPE = "text/x-tag"; // NOI18N
-        private static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
         private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
-        private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
-        private static final String GSP_TAG_MIME_TYPE = "application/x-gsp"; // NOI18N
-        private static final Map<String, Translator> translators = new HashMap<String, Translator>();
 
+        private static final Map<String, Translator> translators = new HashMap<String, Translator>();
 
         static {
             translators.put(HTML_MIME_TYPE, new CssHtmlTranslator()); //xxx can I use shared instance???
-
-//        translators.put(JSP_MIME_TYPE, new JspTranslator());
-//        translators.put(JSP_TAG_MIME_TYPE, new JspTranslator());
-//        translators.put(RHTML_MIME_TYPE, new RhtmlTranslator());
-//        translators.put(PHP_MIME_TYPE, new PhpTranslator());
         }
 
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            
+            int slen = snapshot.getText().length();
+            LOG.fine(String.format("CssEmbeddingProvider.create(snapshot): mimetype: %s, size: %s", snapshot.getMimeType(), slen)); //NOI18N
+            if(slen > MAX_SNAPSHOT_SIZE) {
+                LOG.fine(String.format("Size %s > maximum (%s) => providing no css embedding", slen, MAX_SNAPSHOT_SIZE)); //NOI18N
+                return Collections.<SchedulerTask>emptyList();
+            }
+            
             Translator t = translators.get(snapshot.getMimeType());
             if (t != null) {
                 return Collections.singleton(new CssEmbeddingProvider(snapshot.getMimeType(), t));
@@ -96,7 +95,6 @@ public class CssEmbeddingProvider extends EmbeddingProvider {
     
     }
 
-    private static final Logger LOG = Logger.getLogger(CssEmbeddingProvider.class.getName());
 
     private String sourceMimeType;
     private Translator translator;
@@ -116,7 +114,7 @@ public class CssEmbeddingProvider extends EmbeddingProvider {
                 return Collections.singletonList(Embedding.create(embeddings));
             }
         } else {
-            LOG.warning("Unexpected snapshot type: '" + snapshot.getMimeType() + "'; expecting '" + sourceMimeType + "'"); //NOI18N
+            LOG.log(Level.WARNING, "Unexpected snapshot type: ''{0}''; expecting ''{1}''", new Object[]{snapshot.getMimeType(), sourceMimeType}); //NOI18N
             return Collections.<Embedding>emptyList();
         }
     }

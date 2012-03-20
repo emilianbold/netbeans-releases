@@ -162,11 +162,48 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         SyntaxElement.TagAttribute align = attributes.get(0);
 
-        assertEquals("align", align.getName());
+        assertEquals("align", align.getName().toString());
         assertEquals(5, align.getNameOffset());
-        assertEquals("\"center\"", align.getValue());
+        assertEquals("\"center\"", align.getValue().toString());
         assertEquals(11, align.getValueOffset());
         assertEquals("\"center\"".length(), align.getValueLength());
+
+    }
+    
+    public void testTagWithOneCssEmbeddingAttribute() throws BadLocationException {
+        String text = "<div class=\"myclass\"/>";
+        List<SyntaxElement> elements = getSyntaxElements(text);
+
+        assertNotNull(elements);
+        assertEquals(1, elements.size());
+
+        SyntaxElement div = elements.get(0);
+
+        assertNotNull(div);
+        assertEquals(SyntaxElement.TYPE_TAG, div.type());
+        assertTrue(div instanceof SyntaxElement.Tag);
+
+        SyntaxElement.Tag divTag = (SyntaxElement.Tag) div;
+
+        assertEquals("div", divTag.getName());
+        assertTrue(divTag.isEmpty());
+        assertTrue(divTag.isOpenTag());
+        assertEquals(0, divTag.offset());
+        assertEquals(text.length(), divTag.length());
+        assertEquals(text, divTag.text());
+
+        List<SyntaxElement.TagAttribute> attributes = divTag.getAttributes();
+
+        assertNotNull(attributes);
+        assertEquals(1, attributes.size());
+
+        SyntaxElement.TagAttribute align = attributes.get(0);
+
+        assertEquals("class", align.getName().toString());
+        assertEquals(5, align.getNameOffset());
+        assertEquals("\"myclass\"", align.getValue().toString());
+        assertEquals(11, align.getValueOffset());
+        assertEquals("\"myclass\"".length(), align.getValueLength());
 
     }
 
@@ -199,9 +236,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         SyntaxElement.TagAttribute align = attributes.get(0);
 
-        assertEquals("align", align.getName());
+        assertEquals("align", align.getName().toString());
         assertEquals(5, align.getNameOffset());
-        assertEquals("center", align.getValue());
+        assertEquals("center", align.getValue().toString());
         assertEquals(11, align.getValueOffset());
         assertEquals("center".length(), align.getValueLength());
 
@@ -238,9 +275,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         SyntaxElement.TagAttribute align = attributes.get(0);
 
-        assertEquals("align", align.getName());
+        assertEquals("align", align.getName().toString());
         assertEquals(9, align.getNameOffset());
-        assertEquals("\"center\"", align.getValue());
+        assertEquals("\"center\"", align.getValue().toString());
         assertEquals(18, align.getValueOffset());
         assertEquals("\"center\"".length(), align.getValueLength());
 
@@ -276,17 +313,17 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         SyntaxElement.TagAttribute attr = attributes.get(0);
 
-        assertEquals("align", attr.getName());
+        assertEquals("align", attr.getName().toString());
         assertEquals(5, attr.getNameOffset());
-        assertEquals("\"center\"", attr.getValue());
+        assertEquals("\"center\"", attr.getValue().toString());
         assertEquals(11, attr.getValueOffset());
         assertEquals("\"center\"".length(), attr.getValueLength());
 
         attr = attributes.get(1);
 
-        assertEquals("title", attr.getName());
+        assertEquals("title", attr.getName().toString());
         assertEquals(23, attr.getNameOffset());
-        assertEquals("\"mydiv\"", attr.getValue());
+        assertEquals("\"mydiv\"", attr.getValue().toString());
         assertEquals(29, attr.getValueOffset());
         assertEquals("\"mydiv\"".length(), attr.getValueLength());
 
@@ -562,9 +599,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         SyntaxElement.TagAttribute attr = attributes.get(0);
 
-        assertEquals("style", attr.getName());
+        assertEquals("style", attr.getName().toString());
         assertEquals(5, attr.getNameOffset());
-        assertEquals("\"color:red\"", attr.getValue());
+        assertEquals("\"color:red\"", attr.getValue().toString());
         assertEquals(11, attr.getValueOffset());
         assertEquals("\"color:red\"".length(), attr.getValueLength());
 
