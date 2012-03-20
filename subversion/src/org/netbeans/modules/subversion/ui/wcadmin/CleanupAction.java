@@ -53,6 +53,8 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -63,6 +65,8 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Ondra Vrabec
  */
+@ActionID(id = "org.netbeans.modules.subversion.ui.wcadmin.CleanupAction", category = "Subversion")
+@ActionRegistration(displayName = "CTL_Cleanup_Title")
 public class CleanupAction extends ContextAction {
 
     @Override
@@ -77,10 +81,12 @@ public class CleanupAction extends ContextAction {
         return 0;
     }
 
+    @Override
     protected String getBaseName(Node[] activatedNodes) {
         return "CTL_Cleanup_Title"; //NOI18N
     }
 
+    @Override
     protected void performContextAction(Node[] nodes) {
         final Context ctx = getContext(nodes);
         final File[] roots = ctx.getRootFiles();
@@ -91,7 +97,7 @@ public class CleanupAction extends ContextAction {
 
         File root = roots[0];
 
-        SVNUrl repositoryUrl = null;
+        SVNUrl repositoryUrl;
         try {
             repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
         } catch (SVNClientException ex) {
@@ -104,6 +110,7 @@ public class CleanupAction extends ContextAction {
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         SvnProgressSupport support = new SvnProgressSupport() {
+            @Override
             protected void perform() {
                 for (File root : roots) {
                     try {
