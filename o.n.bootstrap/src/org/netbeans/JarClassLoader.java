@@ -919,15 +919,21 @@ public class JarClassLoader extends ProxyClassLoader {
             if (bang == -1) {
                 throw new IOException("Malformed JAR-protocol URL: " + u);
             }
+            String filePath = url.substring(0, bang);
             String jar;
-            try {
-                final URI uri = new URI(url.substring(0, bang));
+            AGAIN: for (;;) try {
+                final URI uri = new URI(filePath);
                 if (uri.getScheme().equals("file")) {
                     jar = new File(uri).getPath();
                 } else {
                     jar = null;
                 }
+                break;
             } catch (URISyntaxException x) {
+                if (filePath.contains(" ")) {
+                    filePath = filePath.replace(" ", "%20");
+                    continue;
+                }
                 throw new IOException(x);
             }
             Source _src = Source.sources.get(jar);

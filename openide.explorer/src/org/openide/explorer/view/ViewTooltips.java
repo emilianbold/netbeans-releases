@@ -96,9 +96,7 @@ import org.openide.util.Utilities;
  * @author Tim Boudreau
  */
 final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
-    /** The default instance, reference counted */
-    private static ViewTooltips INSTANCE = null;
-    private static Exception previousUnregister;
+    private static final Object KEY = new Object();
     
     /** A reference count for number of comps listened to */
     private int refcount = 0;
@@ -120,10 +118,10 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
      * from the component's addNotify() method.
      */
     synchronized static void register (JComponent comp) {
-        if (INSTANCE == null) {
-            INSTANCE = new ViewTooltips();
-        }
-        INSTANCE.attachTo (comp);
+        ViewTooltips vtt = (ViewTooltips) comp.getClientProperty(KEY);
+        assert vtt == null : "There already is " + vtt + " for " + comp;
+        comp.putClientProperty(KEY, vtt = new ViewTooltips());
+        vtt.attachTo (comp);
     }
     
     /**
@@ -132,20 +130,12 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
      * from the component's removeNotify() method.
      */
     synchronized static void unregister (JComponent comp) {
-        ViewTooltips inst = INSTANCE;
-        boolean doChecks = false;
-        assert doChecks = true;
-        if (doChecks) {
-            if (inst == null) {
-                throw new IllegalStateException("Unregister asymmetrically called for " + comp, previousUnregister);
-            }
-            previousUnregister = new Exception("Unregister for " + comp);
-        }
-
-        if (inst != null && inst.detachFrom(comp) == 0) {
-            inst.hide();
-            INSTANCE = null;
-        }
+        ViewTooltips inst = (ViewTooltips) comp.getClientProperty(KEY);
+        assert inst != null : "Trying to deregister from " + comp;
+        int zero = inst.detachFrom(comp);
+        assert zero == 0 : "The " + inst + " should no longer be needed, was: " + zero;
+        inst.hide();
+        comp.putClientProperty(KEY, null);
     }
 
     /** Start listening to mouse motion on the passed component */
@@ -672,8 +662,10 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         }
         
         private void change() {
-            if (ViewTooltips.INSTANCE != null) {
-                ViewTooltips.INSTANCE.hide();
+            ViewTooltips vtt = (ViewTooltips) (tree != null ? 
+                tree.getClientProperty(KEY) : list.getClientProperty(KEY));
+            if (vtt != null) {
+                vtt.hide();
             }
             detach();
         }
