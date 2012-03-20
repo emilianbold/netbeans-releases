@@ -48,6 +48,7 @@ package org.netbeans.editor.ext.html.parser;
 
 import java.util.*;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  * Represents a semantic element of html code.
@@ -57,13 +58,13 @@ import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
  */
 public abstract class SyntaxElement {
     
-    public static final int TYPE_COMMENT = 0;
-    public static final int TYPE_DECLARATION = 1;
-    public static final int TYPE_ERROR = 2;
-    public static final int TYPE_TEXT = 3;
-    public static final int TYPE_TAG = 4;
-    public static final int TYPE_ENDTAG = 5;
-    public static final int TYPE_ENTITY_REFERENCE = 6;
+    public static final byte TYPE_COMMENT = 0;
+    public static final byte TYPE_DECLARATION = 1;
+    public static final byte TYPE_ERROR = 2;
+    public static final byte TYPE_TEXT = 3;
+    public static final byte TYPE_TAG = 4;
+    public static final byte TYPE_ENDTAG = 5;
+    public static final byte TYPE_ENTITY_REFERENCE = 6;
     
     public static final String[] TYPE_NAMES =
             new String[]{"comment","declaration","error","text","tag","endtag","entity reference"}; //NOI18N
@@ -92,7 +93,7 @@ public abstract class SyntaxElement {
         return length;
     }
     
-    public abstract int type();
+    public abstract byte type();
     
     public CharSequence text() {
         return source.subSequence(offset(), offset() + length());
@@ -149,7 +150,7 @@ public abstract class SyntaxElement {
         }
 
         @Override
-        public int type() {
+        public byte type() {
             return TYPE_TEXT;
         }
 
@@ -162,7 +163,7 @@ public abstract class SyntaxElement {
         }
 
         @Override
-        public int type() {
+        public byte type() {
             return TYPE_ERROR;
         }
 
@@ -176,7 +177,7 @@ public abstract class SyntaxElement {
         }
 
         @Override
-        public int type() {
+        public byte type() {
             return TYPE_ENTITY_REFERENCE;
         }
 
@@ -190,7 +191,7 @@ public abstract class SyntaxElement {
         }
 
         @Override
-        public int type() {
+        public byte type() {
             return TYPE_COMMENT;
         }
 
@@ -269,7 +270,7 @@ public abstract class SyntaxElement {
         }
 
         @Override
-        public int type() {
+        public byte type() {
             return TYPE_DECLARATION;
         }
 
@@ -308,7 +309,7 @@ public abstract class SyntaxElement {
         }
 
         @Override
-        public int type() {
+        public byte type() {
             return openTag ? TYPE_TAG : TYPE_ENDTAG;
         }
 
@@ -334,7 +335,7 @@ public abstract class SyntaxElement {
         
         public TagAttribute getAttribute(String name, boolean ignoreCase) {
             for(TagAttribute ta : getAttributes()) {
-                if(ta.getName().equals(name)) {
+                if(LexerUtils.equals(ta.getName(), name, ignoreCase, false)) {
                     return ta;
                 }
             }
@@ -360,13 +361,13 @@ public abstract class SyntaxElement {
     
     public static class TagAttribute {
         
-        private String name, value;
+        private CharSequence name, value;
         private int nameOffset;
         
         private short valueOffset2nameOffsetDiff;
         private short valueLength;
         
-        public TagAttribute(String name, String value, int nameOffset, int valueOffset, int valueLength) {
+        public TagAttribute(CharSequence name, CharSequence value, int nameOffset, int valueOffset, int valueLength) {
             this.name = name;
             this.value = value;
             this.nameOffset = nameOffset;
@@ -374,15 +375,11 @@ public abstract class SyntaxElement {
             this.valueLength = (short)valueLength;
         }
         
-        public String getName() {
+        public CharSequence getName() {
             return name;
         }
         
-        void setName(String name) {
-            this.name = name;
-        }
-        
-        public String getValue() {
+        public CharSequence getValue() {
             return value;
         }
         
@@ -390,24 +387,12 @@ public abstract class SyntaxElement {
             return valueLength;
         }
         
-        void setValue(String value) {
-            this.value = value;
-        }
-        
         public int getNameOffset() {
             return nameOffset;
         }
         
-        void setNameOffset(int ofs) {
-            this.nameOffset = ofs;
-        }
-        
         public int getValueOffset() {
             return nameOffset + valueOffset2nameOffsetDiff;
-        }
-        
-        void setValueOffset(int ofs) {
-            this.valueOffset2nameOffsetDiff = (short) (ofs - nameOffset);
         }
         
         @Override

@@ -162,9 +162,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         SyntaxElement.TagAttribute align = attributes.get(0);
 
-        assertEquals("align", align.getName());
+        assertEquals("align", align.getName().toString());
         assertEquals(5, align.getNameOffset());
-        assertEquals("\"center\"", align.getValue());
+        assertEquals("\"center\"", align.getValue().toString());
         assertEquals(11, align.getValueOffset());
         assertEquals("\"center\"".length(), align.getValueLength());
 
@@ -199,9 +199,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         SyntaxElement.TagAttribute align = attributes.get(0);
 
-        assertEquals("align", align.getName());
+        assertEquals("align", align.getName().toString());
         assertEquals(5, align.getNameOffset());
-        assertEquals("center", align.getValue());
+        assertEquals("center", align.getValue().toString());
         assertEquals(11, align.getValueOffset());
         assertEquals("center".length(), align.getValueLength());
 
@@ -238,9 +238,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         SyntaxElement.TagAttribute align = attributes.get(0);
 
-        assertEquals("align", align.getName());
+        assertEquals("align", align.getName().toString());
         assertEquals(9, align.getNameOffset());
-        assertEquals("\"center\"", align.getValue());
+        assertEquals("\"center\"", align.getValue().toString());
         assertEquals(18, align.getValueOffset());
         assertEquals("\"center\"".length(), align.getValueLength());
 
@@ -276,17 +276,17 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         SyntaxElement.TagAttribute attr = attributes.get(0);
 
-        assertEquals("align", attr.getName());
+        assertEquals("align", attr.getName().toString());
         assertEquals(5, attr.getNameOffset());
-        assertEquals("\"center\"", attr.getValue());
+        assertEquals("\"center\"", attr.getValue().toString());
         assertEquals(11, attr.getValueOffset());
         assertEquals("\"center\"".length(), attr.getValueLength());
 
         attr = attributes.get(1);
 
-        assertEquals("title", attr.getName());
+        assertEquals("title", attr.getName().toString());
         assertEquals(23, attr.getNameOffset());
-        assertEquals("\"mydiv\"", attr.getValue());
+        assertEquals("\"mydiv\"", attr.getValue().toString());
         assertEquals(29, attr.getValueOffset());
         assertEquals("\"mydiv\"".length(), attr.getValueLength());
 
@@ -562,9 +562,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         SyntaxElement.TagAttribute attr = attributes.get(0);
 
-        assertEquals("style", attr.getName());
+        assertEquals("style", attr.getName().toString());
         assertEquals(5, attr.getNameOffset());
-        assertEquals("\"color:red\"", attr.getValue());
+        assertEquals("\"color:red\"", attr.getValue().toString());
         assertEquals(11, attr.getValueOffset());
         assertEquals("\"color:red\"".length(), attr.getValueLength());
 
