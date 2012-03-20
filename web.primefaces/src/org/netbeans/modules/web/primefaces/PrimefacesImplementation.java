@@ -46,6 +46,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.libraries.Library;
@@ -62,6 +63,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -69,12 +71,17 @@ import org.openide.util.NbBundle;
  */
 public class PrimefacesImplementation implements JsfComponentImplementation {
 
+    private PrimefacesCustomizer customizer;
+
     private final String name;
     private final String description;
 
     private static final Logger LOGGER = Logger.getLogger(PrimefacesImplementation.class.getName());
     private static final String PRIMEFACES_SPECIFIC_CLASS = "org.primefaces.application.PrimeResource"; //NOI18N
     private static final String PRIMEFACES_LIBRARY_NAME = "primefaces"; //NOI18N
+    private static final String PREFERENCES_NODE = "primefaces"; //NOI18N
+
+    public static final String PROP_PREFERRED_LIBRARY = "preferred-library"; //NOI18N
 
     public PrimefacesImplementation() {
         this.name = NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces");  //NOI18N
@@ -146,13 +153,16 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
 
     @Override
     public JsfComponentCustomizer createJsfComponentCustomizer(WebModule webModule) {
-        return null;
+        if (customizer == null) {
+            customizer = new PrimefacesCustomizer();
+        }
+        return customizer;
     }
 
     @Override
     public void remove(WebModule webModule) {
         try {
-            List<Library> allRegisteredPrimefaces2 = getAllRegisteredPrimefaces2();
+            List<Library> allRegisteredPrimefaces2 = getAllRegisteredPrimefaces();
             ProjectClassPathModifier.removeLibraries(
                     allRegisteredPrimefaces2.toArray(new Library[allRegisteredPrimefaces2.size()]),
                     webModule.getJavaSources()[0],
@@ -169,7 +179,7 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
      *
      * @return {{@code List} of libraries
      */
-    public static List<Library> getAllRegisteredPrimefaces2() {
+    public static List<Library> getAllRegisteredPrimefaces() {
         List<Library> libraries = new ArrayList<Library>();
         List<URL> content;
         for (Library library : LibraryManager.getDefault().getLibraries()) {
@@ -178,7 +188,7 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
             }
 
             content = library.getContent("classpath"); //NOI18N
-            if (isValidPrimefaces2Library(content)) {
+            if (isValidPrimefacesLibrary(content)) {
                 libraries.add(library);
             }
         }
@@ -193,12 +203,20 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
      * @return {@code true} if the given content contains Primefaces2 library,
      * {@code false} otherwise
      */
-    public static boolean isValidPrimefaces2Library(List<URL> libraryContent) {
+    public static boolean isValidPrimefacesLibrary(List<URL> libraryContent) {
         try {
             return Util.containsClass(libraryContent, PRIMEFACES_SPECIFIC_CLASS);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             return false;
         }
+    }
+
+    /**
+     * Gets {@code NbPreferences} for Primefaces plugin.
+     * @return Preferences of the Primefaces
+     */
+    public static Preferences getPrimefacesPreferences() {
+        return NbPreferences.forModule(PrimefacesImplementation.class).node(PrimefacesImplementation.PREFERENCES_NODE);
     }
 }
