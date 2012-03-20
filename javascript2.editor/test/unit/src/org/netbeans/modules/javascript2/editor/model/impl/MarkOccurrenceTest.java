@@ -151,6 +151,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/model/getterSettterInObjectLiteral.js", "Dog.yea^rs = 10;", true);
     }
     
+    public void testFunctionInGlobalSpace01() throws Exception {
+        checkOccurrences("testfiles/model/functionInGlobal.js", "this.printSometh^ing();", true);
+    }
+
+    public void testFunctionInGlobalSpace02() throws Exception {
+        checkOccurrences("testfiles/model/functionInGlobal.js", "this.anotherFunct^ion();", true);
+    }
+        
     @Override
     protected void assertDescriptionMatches(FileObject fileObject,
             String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
