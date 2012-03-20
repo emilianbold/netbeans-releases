@@ -41,6 +41,7 @@
 package org.openide.actions;
 
 import java.awt.EventQueue;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.openide.awt.UndoRedo;
@@ -53,9 +54,11 @@ import org.openide.windows.WindowManager;
 
 import java.beans.*;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
 
 import javax.swing.UIManager;
 import javax.swing.event.*;
@@ -221,16 +224,27 @@ implements ContextAwareAction, PropertyChangeListener, ChangeListener, LookupLis
                 undoRedo.undo();
             }
         } catch (CannotUndoException ex) {
-            Exceptions.printStackTrace(ex);
+            cannotUndoRedo(ex);
         } else try {
             if (undoRedo.canRedo()) {
                 undoRedo.redo();
             }
         } catch (CannotRedoException ex) {
-            Exceptions.printStackTrace(ex);
+            cannotUndoRedo(ex);
         }
         run();
     }
+    
+    static void cannotUndoRedo(RuntimeException ex) throws MissingResourceException, HeadlessException {
+        if (ex.getMessage() != null) {
+            JOptionPane.showMessageDialog(
+                    WindowManager.getDefault().getMainWindow(),
+                    ex.getMessage(),
+                    NbBundle.getMessage(UndoRedoAction.class, ex instanceof CannotUndoException ? "LBL_CannotUndo" : "LBL_CannotRedo"),
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
 
     @Override
     public void propertyChange(PropertyChangeEvent ev) {
