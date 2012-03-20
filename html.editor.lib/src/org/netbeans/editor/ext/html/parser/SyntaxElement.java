@@ -343,7 +343,7 @@ public abstract class SyntaxElement {
         
         @Override
         public String toString() {
-            StringBuffer ret = new StringBuffer( super.toString() );
+            StringBuilder ret = new StringBuilder( super.toString() );
             ret.append( " - {" );   // NOI18N
 
             for( Iterator i = getAttributes().iterator(); i.hasNext(); ) {
@@ -361,14 +361,17 @@ public abstract class SyntaxElement {
     public static class TagAttribute {
         
         private String name, value;
-        private int nameOffset, valueOffset, valueLength;
+        private int nameOffset;
+        
+        private short valueOffset2nameOffsetDiff;
+        private short valueLength;
         
         public TagAttribute(String name, String value, int nameOffset, int valueOffset, int valueLength) {
             this.name = name;
             this.value = value;
             this.nameOffset = nameOffset;
-            this.valueOffset = valueOffset;
-            this.valueLength = valueLength;
+            this.valueOffset2nameOffsetDiff = (short)(valueOffset - nameOffset);
+            this.valueLength = (short)valueLength;
         }
         
         public String getName() {
@@ -400,11 +403,11 @@ public abstract class SyntaxElement {
         }
         
         public int getValueOffset() {
-            return valueOffset;
+            return nameOffset + valueOffset2nameOffsetDiff;
         }
         
         void setValueOffset(int ofs) {
-            this.valueOffset = ofs;
+            this.valueOffset2nameOffsetDiff = (short) (ofs - nameOffset);
         }
         
         @Override

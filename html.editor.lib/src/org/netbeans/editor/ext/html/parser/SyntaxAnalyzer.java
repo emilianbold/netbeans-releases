@@ -200,7 +200,7 @@ public final class SyntaxAnalyzer {
     }
 
     private void tag(boolean emptyTag, ProblemDescription problem) {
-        List<SyntaxElement.TagAttribute> attributes = new ArrayList<SyntaxElement.TagAttribute>();
+        List<SyntaxElement.TagAttribute> attributes = new ArrayList<SyntaxElement.TagAttribute>(1); //use small initial capacity since typically there are one or two attribs (if any)
             for(int i = 0; i < attr_keys.size(); i++) {
                 TokenInfo key = attr_keys.get(i);
                 List<TokenInfo> values = attr_values.get(i);
