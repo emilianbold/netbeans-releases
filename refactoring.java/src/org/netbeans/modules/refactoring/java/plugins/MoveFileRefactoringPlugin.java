@@ -230,6 +230,7 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
         return super.fastCheckParameters();
     }
 
+    @SuppressWarnings("CollectionContainsUrl")
     private Problem checkProjectDeps(Set<FileObject> a) {
         if (!isRenameRefactoring) {
             Set<FileObject> sourceRoots = new HashSet<FileObject>();

@@ -566,6 +566,7 @@ public class RefactoringUtils {
      * @param files
      * @return
      */
+    @SuppressWarnings("CollectionContainsUrl")
     public static ClasspathInfo getClasspathInfoFor(boolean dependencies, boolean backSource, FileObject... files) {
         assert files.length > 0;
         Set<URL> dependentRoots = new HashSet();
@@ -980,5 +981,8 @@ public class RefactoringUtils {
             return "public"; //NOI18N
         }
         return "<default>"; //NOI18N
+    }
+
+    private RefactoringUtils() {
     }
 }

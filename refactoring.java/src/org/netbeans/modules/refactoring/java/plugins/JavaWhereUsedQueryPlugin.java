@@ -126,7 +126,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         fromLibrary = false;
         if(isSearchFromBaseClass()) {
             JavaSource source;
-            source = createSource(tph.getFileObject(), cp, tph);
+            source = JavaPluginUtils.createSource(tph.getFileObject(), cp, tph);
             try {
                 source.runUserActionTask(new Task<CompilationController>() {
 
@@ -243,7 +243,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         
         final FileObject file = tph.getFileObject();
         JavaSource source;
-        source = createSource(file, cpInfo, tph);
+        source = JavaPluginUtils.createSource(file, cpInfo, tph);
         //XXX: This is slow!
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
             @Override
@@ -424,35 +424,6 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     }
     private boolean isSearchFromBaseClass() {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS);
-    }
-
-    private static JavaSource createSource(final FileObject file, final ClasspathInfo cpInfo, final TreePathHandle tph) throws IllegalArgumentException {
-        JavaSource source;
-        if (file != null) {
-            final ClassPath mergedPlatformPath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT), ClassPath.getClassPath(file, ClassPath.BOOT));
-            final ClassPath mergedCompilePath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE), ClassPath.getClassPath(file, ClassPath.COMPILE));
-            final ClassPath mergedSourcePath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE), ClassPath.getClassPath(file, ClassPath.SOURCE));
-            final ClasspathInfo mergedInfo = ClasspathInfo.create(mergedPlatformPath, mergedCompilePath, mergedSourcePath);
-            source = JavaSource.create(mergedInfo, new FileObject[]{tph.getFileObject()});
-        } else {
-            source = JavaSource.create(cpInfo);
-        }
-        return source;
-    }
-    
-    private static ClassPath merge (final ClassPath... cps) {
-        final Set<URL> roots = new LinkedHashSet<URL>();
-        for (final ClassPath cp : cps) {
-            if (cp != null) {
-                for (final ClassPath.Entry entry : cp.entries()) {
-                    final URL root = entry.getURL();
-                    if (!roots.contains(root)) {
-                        roots.add(root);
-                    }
-                }
-            }
-        }
-        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
     }
     
     private class FindTask implements CancellableTask<CompilationController> {

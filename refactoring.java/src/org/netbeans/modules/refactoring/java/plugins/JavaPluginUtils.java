@@ -45,21 +45,19 @@ package org.netbeans.modules.refactoring.java.plugins;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
-import java.util.EnumSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.net.URL;
+import java.util.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.*;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -241,6 +239,36 @@ public final class JavaPluginUtils {
         }
         
         return tm;
+    }
+
+    public static JavaSource createSource(final FileObject file, final ClasspathInfo cpInfo, final TreePathHandle tph) throws IllegalArgumentException {
+        JavaSource source;
+        if (file != null) {
+            final ClassPath mergedPlatformPath = merge(cpInfo.getClassPath(PathKind.BOOT), ClassPath.getClassPath(file, ClassPath.BOOT));
+            final ClassPath mergedCompilePath = merge(cpInfo.getClassPath(PathKind.COMPILE), ClassPath.getClassPath(file, ClassPath.COMPILE));
+            final ClassPath mergedSourcePath = merge(cpInfo.getClassPath(PathKind.SOURCE), ClassPath.getClassPath(file, ClassPath.SOURCE));
+            final ClasspathInfo mergedInfo = ClasspathInfo.create(mergedPlatformPath, mergedCompilePath, mergedSourcePath);
+            source = JavaSource.create(mergedInfo, new FileObject[]{tph.getFileObject()});
+        } else {
+            source = JavaSource.create(cpInfo);
+        }
+        return source;
+    }
+
+    @SuppressWarnings("CollectionContainsUrl")
+    public static ClassPath merge(final ClassPath... cps) {
+        final Set<URL> roots = new LinkedHashSet<URL>(cps.length);
+        for (final ClassPath cp : cps) {
+            if (cp != null) {
+                for (final ClassPath.Entry entry : cp.entries()) {
+                    final URL root = entry.getURL();
+                    if (!roots.contains(root)) {
+                        roots.add(root);
+                    }
+                }
+            }
+        }
+        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
     }
     
     //<editor-fold defaultstate="collapsed" desc="TODO: Copy from org.netbeans.modules.java.hints.errors.Utilities">
