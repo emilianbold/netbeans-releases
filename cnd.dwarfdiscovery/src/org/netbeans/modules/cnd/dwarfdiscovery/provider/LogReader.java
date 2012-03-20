@@ -954,7 +954,7 @@ public class LogReader {
                 } else {
                     if (subFolder == null) {
                         String path = s;
-                        if (path.endsWith(relativeFolder)) {
+                        if (path.endsWith(relativeFolder) && path.length() > relativeFolder.length() + 1) {
                             path = path.substring(0,path.length()-relativeFolder.length()-1);
                             res.add(path);
                             if (res.size() > 1) {
