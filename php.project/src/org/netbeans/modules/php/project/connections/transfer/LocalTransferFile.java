@@ -71,6 +71,9 @@ final class LocalTransferFile extends TransferFile {
         if (forceDirectory && file.isFile()) {
             throw new IllegalArgumentException("File '" + file.getAbsolutePath() + "' can't be forced as a directory since it is a file");
         }
+        // get attributes so we know them even if the file is later deleted
+        getSize();
+        getTimestamp();
     }
 
     @Override
