@@ -92,12 +92,14 @@ public class JavadocUtilities {
     private static TokenSequence<JavadocTokenId> findTokenSequence(CompilationInfo javac, Doc doc) {
         Element e = javac.getElementUtilities().elementFor(doc);
 
-        if (e == null)
+        if (e == null) {
             return null;
+        }
 
         Tree tree = javac.getTrees().getTree(e);
-        if (tree == null)
+        if (tree == null) {
             return null;
+        }
 
         int elementStartOffset = (int) javac.getTrees().getSourcePositions().getStartPosition(javac.getCompilationUnit(), tree);
         TokenSequence<?> s = javac.getTokenHierarchy().tokenSequence();
@@ -202,8 +204,9 @@ public class JavadocUtilities {
      */
     public static Position[] findTagNameBounds(CompilationInfo info, Document doc, Tag tag) throws BadLocationException {
         TokenSequence<JavadocTokenId> tseq = findTokenSequence(info, tag.holder());
-        if (tseq == null)
+        if (tseq == null) {
             return null;
+        }
         moveToTag(tseq, tag, info);
         Position[] positions = new Position[2];
         positions[0] = doc.createPosition(tseq.offset());
@@ -214,12 +217,14 @@ public class JavadocUtilities {
     public static Position[] findDocBounds(CompilationInfo javac, Document doc, Doc jdoc) throws BadLocationException {
         Element e = javac.getElementUtilities().elementFor(jdoc);
 
-        if (e == null)
+        if (e == null) {
             return null;
+        }
 
         Tree tree = javac.getTrees().getTree(e);
-        if (tree == null)
+        if (tree == null) {
             return null;
+        }
 
         int elementStartOffset = (int) javac.getTrees().getSourcePositions().getStartPosition(javac.getCompilationUnit(), tree);
         TokenSequence<?> tseq = javac.getTokenHierarchy().tokenSequence();
@@ -256,8 +261,9 @@ public class JavadocUtilities {
 
     public static Position[] findTagBounds(CompilationInfo javac, Document doc, Tag tag, boolean[] isLastToken) throws BadLocationException {
         TokenSequence<JavadocTokenId> tseq = findTokenSequence(javac, tag.holder());
-        if (tseq == null)
+        if (tseq == null) {
             return null;
+        }
         moveToTag(tseq, tag, javac);
 
         int start = tseq.offset();
@@ -300,8 +306,9 @@ public class JavadocUtilities {
      */
     public static Position[] findLastTokenBounds(CompilationInfo javac, Document doc, Doc jdoc) throws BadLocationException {
         TokenSequence<JavadocTokenId> tseq = findTokenSequence(javac, jdoc);
-        if (tseq == null)
+        if (tseq == null) {
             return null;
+        }
 
         Position[] positions;
         if (tseq.isEmpty()) {
@@ -324,10 +331,12 @@ public class JavadocUtilities {
         int index = 0;
 
         for (Tag t : tags) {
-            if (t == tag)
+            if (t == tag) {
                 return index;
-            if (t.name().equals(tag.name()))
+            }
+            if (t.name().equals(tag.name())) {
                 index++;
+            }
         }
 
         return -1;

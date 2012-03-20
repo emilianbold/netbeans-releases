@@ -115,8 +115,9 @@ public final class ContextAnalyzer {
 
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    if (!created) 
+                    if (!created) {
                         ui = factory.create(null, handles.toArray(new TreePathHandle[handles.size()]), null,  new NonRecursiveFolder[0]);
+                    }
                     return ui;
                 }
             };
@@ -136,8 +137,9 @@ public final class ContextAnalyzer {
 
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    if (!created) 
+                    if (!created) {
                         ui = factory.create(null, handles.toArray(new TreePathHandle[handles.size()]), selectedElements, pkg.toArray(new NonRecursiveFolder[pkg.size()]));
+                    }
                     return ui;
                 }
             };
@@ -163,19 +165,22 @@ public final class ContextAnalyzer {
      */
     public static boolean canRefactorSingle(Lookup lookup, boolean onlyFromEditor) {
         Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
-        if(nodes.size() != 1)
+        if(nodes.size() != 1) {
             return false;
+        }
         Node node = nodes.iterator().next();
         TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
             return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
-        if(null == dObj)
+        if(null == dObj) {
             return false;
+        }
         FileObject fileObj = dObj.getPrimaryFile();
-        if(null == fileObj || !JavaRefactoringUtils.isRefactorable(fileObj))
+        if(null == fileObj || !JavaRefactoringUtils.isRefactorable(fileObj)) {
             return false;
+        }
 
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (isFromEditor(ec)) {
@@ -490,8 +495,9 @@ public final class ContextAnalyzer {
                         }
                     }
                     final NonRecursiveFolder nonrecursivefolder = node.getLookup().lookup(NonRecursiveFolder.class);
-                    if (nonrecursivefolder !=null)
+                    if (nonrecursivefolder !=null) {
                         pkg.add(nonrecursivefolder);
+                    }
                     i++;
                 }
             }
@@ -520,8 +526,9 @@ public final class ContextAnalyzer {
     private static boolean nodeHandle(Lookup lookup) {
         Node n = lookup.lookup(Node.class);
         if (n!=null) {
-            if (n.getLookup().lookup(TreePathHandle.class)!=null)
+            if (n.getLookup().lookup(TreePathHandle.class)!=null) {
                 return true;
+            }
         }
         return false;
     }

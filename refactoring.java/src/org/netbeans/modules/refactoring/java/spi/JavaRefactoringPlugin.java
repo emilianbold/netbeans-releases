@@ -315,7 +315,9 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         Exceptions.printStackTrace(t);
         
         Problem problem;
-        if (p == null) return newProblem;
+        if (p == null) {
+            return newProblem;
+        }
         problem = p;
         while(problem.getNext() != null) {
             problem = problem.getNext();
