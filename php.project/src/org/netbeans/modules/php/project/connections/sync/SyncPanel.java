@@ -127,9 +127,9 @@ public final class SyncPanel extends JPanel {
     private final PhpProject project;
     private final String remoteConfigurationName;
     // @GuardedBy(AWT)
-    private final List<ViewButton> viewButtons;
+    private final List<ViewCheckBox> viewCheckBoxes;
     // @GuardedBy(AWT)
-    private final ItemListener viewButtonListener = new ViewButtonListener();
+    private final ItemListener viewListener = new ViewListener();
 
     // @GuardedBy(AWT)
     private DialogDescriptor descriptor = null;
@@ -151,7 +151,7 @@ public final class SyncPanel extends JPanel {
         tableModel = new FileTableModel(displayedItems);
 
         initComponents();
-        viewButtons = getViewButtons();
+        viewCheckBoxes = getViewCheckBoxes();
         initViewButtons();
         initTable();
         initOperationButtons();
@@ -160,10 +160,10 @@ public final class SyncPanel extends JPanel {
         initShowSummaryCheckBox(showSummary);
     }
 
-    private JToggleButton createViewButton() {
-        ViewButton viewButton = new ViewButton();
-        viewButton.addItemListener(viewButtonListener);
-        return viewButton;
+    private JCheckBox createViewCheckBox() {
+        ViewCheckBox viewCheckBox = new ViewCheckBox();
+        viewCheckBox.addItemListener(viewListener);
+        return viewCheckBox;
     }
 
     @NbBundle.Messages({
@@ -202,42 +202,42 @@ public final class SyncPanel extends JPanel {
         return allItems;
     }
 
-    private List<ViewButton> getViewButtons() {
+    private List<ViewCheckBox> getViewCheckBoxes() {
         return Arrays.asList(
-                (ViewButton) noopToggleButton,
-                (ViewButton) downloadToggleButton,
-                (ViewButton) uploadToggleButton,
-                (ViewButton) deleteToggleButton,
-                (ViewButton) symlinkToggleButton,
-                (ViewButton) fileDirCollisionToggleButton,
-                (ViewButton) fileConflictToggleButton,
-                (ViewButton) warningToggleButton,
-                (ViewButton) errorToggleButton);
+                (ViewCheckBox) viewNoopCheckBox,
+                (ViewCheckBox) viewDownloadCheckBox,
+                (ViewCheckBox) viewUploadCheckBox,
+                (ViewCheckBox) viewDeleteCheckBox,
+                (ViewCheckBox) viewSymlinkCheckBox,
+                (ViewCheckBox) viewFileDirCollisionCheckBox,
+                (ViewCheckBox) viewFileConflictCheckBox,
+                (ViewCheckBox) viewWarningCheckBox,
+                (ViewCheckBox) viewErrorCheckBox);
     }
 
     @NbBundle.Messages({
-        "SyncPanel.view.warning=Warning",
-        "SyncPanel.view.error=Error"
+        "SyncPanel.view.warning=W&arning",
+        "SyncPanel.view.error=E&rror"
     })
     private void initViewButtons() {
         // operations
-        initViewButton(noopToggleButton, SyncItem.Operation.NOOP);
-        initViewButton(downloadToggleButton, EnumSet.of(SyncItem.Operation.DOWNLOAD, SyncItem.Operation.DOWNLOAD_REVIEW));
-        initViewButton(uploadToggleButton, EnumSet.of(SyncItem.Operation.UPLOAD, SyncItem.Operation.UPLOAD_REVIEW));
-        initViewButton(deleteToggleButton, SyncItem.Operation.DELETE);
-        initViewButton(symlinkToggleButton, SyncItem.Operation.SYMLINK);
-        initViewButton(fileDirCollisionToggleButton, SyncItem.Operation.FILE_DIR_COLLISION);
-        initViewButton(fileConflictToggleButton, SyncItem.Operation.FILE_CONFLICT);
+        initViewCheckBox(viewNoopCheckBox, SyncItem.Operation.NOOP);
+        initViewCheckBox(viewDownloadCheckBox, EnumSet.of(SyncItem.Operation.DOWNLOAD, SyncItem.Operation.DOWNLOAD_REVIEW));
+        initViewCheckBox(viewUploadCheckBox, EnumSet.of(SyncItem.Operation.UPLOAD, SyncItem.Operation.UPLOAD_REVIEW));
+        initViewCheckBox(viewDeleteCheckBox, SyncItem.Operation.DELETE);
+        initViewCheckBox(viewSymlinkCheckBox, SyncItem.Operation.SYMLINK);
+        initViewCheckBox(viewFileDirCollisionCheckBox, SyncItem.Operation.FILE_DIR_COLLISION);
+        initViewCheckBox(viewFileConflictCheckBox, SyncItem.Operation.FILE_CONFLICT);
         // warnings & errors
-        initViewButton(warningToggleButton, ImageUtilities.loadImageIcon(WARNING_ICON_PATH, false), Bundle.SyncPanel_view_warning());
-        initViewButton(errorToggleButton, ImageUtilities.loadImageIcon(ERROR_ICON_PATH, false), Bundle.SyncPanel_view_error());
-        ((ViewButton) warningToggleButton).setFilter(new SyncItemFilter() {
+        initViewCheckBox(viewWarningCheckBox, Bundle.SyncPanel_view_warning());
+        initViewCheckBox(viewErrorCheckBox, Bundle.SyncPanel_view_error());
+        ((ViewCheckBox) viewWarningCheckBox).setFilter(new SyncItemFilter() {
             @Override
             public boolean accept(SyncItem syncItem) {
                 return syncItem.hasWarning();
             }
         });
-        ((ViewButton) errorToggleButton).setFilter(new SyncItemFilter() {
+        ((ViewCheckBox) viewErrorCheckBox).setFilter(new SyncItemFilter() {
             @Override
             public boolean accept(SyncItem syncItem) {
                 return syncItem.hasError();
@@ -245,14 +245,14 @@ public final class SyncPanel extends JPanel {
         });
     }
 
-    private void initViewButton(JToggleButton button, SyncItem.Operation operation) {
-        initViewButton(button, EnumSet.of(operation));
+    private void initViewCheckBox(JCheckBox checkBox, SyncItem.Operation operation) {
+        initViewCheckBox(checkBox, EnumSet.of(operation));
     }
 
-    private void initViewButton(JToggleButton button, final EnumSet<SyncItem.Operation> operations) {
+    private void initViewCheckBox(JCheckBox checkBox, final EnumSet<SyncItem.Operation> operations) {
         SyncItem.Operation operation = operations.iterator().next();
-        initViewButton(button, operation.getIcon(), operation.getTitle());
-        ((ViewButton) button).setFilter(new SyncItemFilter() {
+        initViewCheckBox(checkBox, operation.getTitleWithMnemonic());
+        ((ViewCheckBox) checkBox).setFilter(new SyncItemFilter() {
             @Override
             public boolean accept(SyncItem syncItem) {
                 return operations.contains(syncItem.getOperation());
@@ -260,10 +260,8 @@ public final class SyncPanel extends JPanel {
         });
     }
 
-    private void initViewButton(JToggleButton button, Icon icon, String toolTip) {
-        button.setText(null);
-        button.setIcon(icon);
-        button.setToolTipText(toolTip);
+    private void initViewCheckBox(JCheckBox checkBox, String titleWithMnemonic) {
+        Mnemonics.setLocalizedText(checkBox, titleWithMnemonic);
     }
 
     private void initTable() {
@@ -524,12 +522,12 @@ public final class SyncPanel extends JPanel {
     void updateDisplayedItems() {
         assert SwingUtilities.isEventDispatchThread();
         displayedItems.clear();
-        List<ViewButton> selectedViewButtons = getSelectedViewButtons();
-        if (!selectedViewButtons.isEmpty()) {
+        List<ViewCheckBox> selectedViewCheckBoxes = getSelectedViewCheckBoxes();
+        if (!selectedViewCheckBoxes.isEmpty()) {
             // some view button selected
             for (SyncItem syncItem : allItems) {
-                for (ViewButton button : selectedViewButtons) {
-                    if (button.getFilter().accept(syncItem)) {
+                for (ViewCheckBox checkBox : selectedViewCheckBoxes) {
+                    if (checkBox.getFilter().accept(syncItem)) {
                         displayedItems.add(syncItem);
                         break;
                     }
@@ -541,9 +539,9 @@ public final class SyncPanel extends JPanel {
         tableModel.fireSyncItemsChange();
     }
 
-    private List<ViewButton> getSelectedViewButtons() {
-        List<ViewButton> selected = new ArrayList<ViewButton>(viewButtons.size());
-        for (ViewButton button : viewButtons) {
+    private List<ViewCheckBox> getSelectedViewCheckBoxes() {
+        List<ViewCheckBox> selected = new ArrayList<ViewCheckBox>(viewCheckBoxes.size());
+        for (ViewCheckBox button : viewCheckBoxes) {
             if (button.isSelected()) {
                 selected.add(button);
             }
@@ -562,15 +560,15 @@ public final class SyncPanel extends JPanel {
         firstRunInfoLabel = new JLabel();
         warningLabel = new JLabel();
         viewLabel = new JLabel();
-        noopToggleButton = createViewButton();
-        downloadToggleButton = createViewButton();
-        uploadToggleButton = createViewButton();
-        deleteToggleButton = createViewButton();
-        symlinkToggleButton = createViewButton();
-        fileDirCollisionToggleButton = createViewButton();
-        fileConflictToggleButton = createViewButton();
-        warningToggleButton = createViewButton();
-        errorToggleButton = createViewButton();
+        viewNoopCheckBox = createViewCheckBox();
+        viewDownloadCheckBox = createViewCheckBox();
+        viewUploadCheckBox = createViewCheckBox();
+        viewDeleteCheckBox = createViewCheckBox();
+        viewSymlinkCheckBox = createViewCheckBox();
+        viewFileDirCollisionCheckBox = createViewCheckBox();
+        viewFileConflictCheckBox = createViewCheckBox();
+        viewWarningCheckBox = createViewCheckBox();
+        viewErrorCheckBox = createViewCheckBox();
         itemScrollPane = new JScrollPane();
         itemTable = new JTable();
         syncInfoLabel = new JLabel();
@@ -583,28 +581,18 @@ public final class SyncPanel extends JPanel {
         resetButton = new JButton();
         showSummaryCheckBox = new JCheckBox();
 
-        Mnemonics.setLocalizedText(firstRunInfoLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.firstRunInfoLabel.text"));
-        Mnemonics.setLocalizedText(warningLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.warningLabel.text"));
-        Mnemonics.setLocalizedText(viewLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.viewLabel.text"));
-
-        noopToggleButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png"))); // NOI18N
-        Mnemonics.setLocalizedText(downloadToggleButton, " ");
-        Mnemonics.setLocalizedText(uploadToggleButton, " ");
-        Mnemonics.setLocalizedText(deleteToggleButton, " ");
-        Mnemonics.setLocalizedText(symlinkToggleButton, " ");
-        Mnemonics.setLocalizedText(fileDirCollisionToggleButton, " ");
-        Mnemonics.setLocalizedText(fileConflictToggleButton, " ");
-        Mnemonics.setLocalizedText(warningToggleButton, " ");
-        Mnemonics.setLocalizedText(errorToggleButton, " ");
+        Mnemonics.setLocalizedText(firstRunInfoLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.firstRunInfoLabel.text")); // NOI18N
+        itemTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        Mnemonics.setLocalizedText(warningLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.warningLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(viewLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.viewLabel.text")); // NOI18N
 
         itemTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         itemScrollPane.setViewportView(itemTable);
 
         Mnemonics.setLocalizedText(syncInfoLabel, "SYNC INFO LABEL"); // NOI18N
-        Mnemonics.setLocalizedText(operationLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationLabel.text"));
+        Mnemonics.setLocalizedText(operationLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationLabel.text")); // NOI18N
 
-        diffButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png"))); // NOI18N
-        diffButton.setEnabled(false);
+        diffButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png")));         diffButton.setEnabled(false);
 
         Mnemonics.setLocalizedText(noopButton, " "); // NOI18N
         noopButton.setEnabled(false);
@@ -620,7 +608,7 @@ public final class SyncPanel extends JPanel {
 
         Mnemonics.setLocalizedText(resetButton, " "); // NOI18N
         resetButton.setEnabled(false);
-        Mnemonics.setLocalizedText(showSummaryCheckBox, NbBundle.getMessage(SyncPanel.class, "SyncPanel.showSummaryCheckBox.text"));
+        Mnemonics.setLocalizedText(showSummaryCheckBox, NbBundle.getMessage(SyncPanel.class, "SyncPanel.showSummaryCheckBox.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -632,25 +620,39 @@ public final class SyncPanel extends JPanel {
 
                         .addGap(0, 0, Short.MAX_VALUE).addComponent(showSummaryCheckBox)).addComponent(itemScrollPane, Alignment.LEADING).addGroup(Alignment.LEADING, layout.createSequentialGroup()
 
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING, false).addGroup(layout.createSequentialGroup()
                                 .addComponent(operationLabel)
 
                                 .addPreferredGap(ComponentPlacement.RELATED).addComponent(diffButton).addGap(18, 18, 18).addComponent(noopButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton)).addComponent(firstRunInfoLabel).addComponent(syncInfoLabel).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup()
                                 .addComponent(viewLabel)
 
-                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(noopToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(symlinkToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(fileDirCollisionToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(fileConflictToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(warningToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(errorToggleButton))).addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
+                                .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                                        .addComponent(viewFileDirCollisionCheckBox)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(viewFileConflictCheckBox)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(viewWarningCheckBox)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(viewErrorCheckBox)).addGroup(layout.createSequentialGroup()
+                                        .addComponent(viewNoopCheckBox)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(viewDownloadCheckBox)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(viewUploadCheckBox)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(viewDeleteCheckBox)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(viewSymlinkCheckBox))))).addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {deleteButton, downloadButton, noopButton, resetButton, uploadButton});
-
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {deleteToggleButton, downloadToggleButton, errorToggleButton, fileConflictToggleButton, fileDirCollisionToggleButton, noopToggleButton, symlinkToggleButton, uploadToggleButton, warningToggleButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(firstRunInfoLabel)
 
-                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewLabel).addComponent(noopToggleButton).addComponent(downloadToggleButton).addComponent(uploadToggleButton).addComponent(deleteToggleButton).addComponent(symlinkToggleButton).addComponent(fileDirCollisionToggleButton).addComponent(fileConflictToggleButton).addComponent(warningToggleButton).addComponent(errorToggleButton)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewLabel).addComponent(viewNoopCheckBox).addComponent(viewDownloadCheckBox).addComponent(viewUploadCheckBox).addComponent(viewDeleteCheckBox).addComponent(viewSymlinkCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewFileDirCollisionCheckBox).addComponent(viewFileConflictCheckBox).addComponent(viewWarningCheckBox).addComponent(viewErrorCheckBox)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                         .addComponent(syncInfoLabel)
 
                         .addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteButton).addComponent(resetButton).addComponent(operationLabel))).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
@@ -661,28 +663,28 @@ public final class SyncPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton deleteButton;
-    private JToggleButton deleteToggleButton;
     private JButton diffButton;
     private JButton downloadButton;
-    private JToggleButton downloadToggleButton;
-    private JToggleButton errorToggleButton;
-    private JToggleButton fileConflictToggleButton;
-    private JToggleButton fileDirCollisionToggleButton;
     private JLabel firstRunInfoLabel;
     private JScrollPane itemScrollPane;
     private JTable itemTable;
     private JButton noopButton;
-    private JToggleButton noopToggleButton;
     private JLabel operationLabel;
     private JButton resetButton;
     private JCheckBox showSummaryCheckBox;
-    private JToggleButton symlinkToggleButton;
     private JLabel syncInfoLabel;
     private JButton uploadButton;
-    private JToggleButton uploadToggleButton;
+    private JCheckBox viewDeleteCheckBox;
+    private JCheckBox viewDownloadCheckBox;
+    private JCheckBox viewErrorCheckBox;
+    private JCheckBox viewFileConflictCheckBox;
+    private JCheckBox viewFileDirCollisionCheckBox;
     private JLabel viewLabel;
+    private JCheckBox viewNoopCheckBox;
+    private JCheckBox viewSymlinkCheckBox;
+    private JCheckBox viewUploadCheckBox;
+    private JCheckBox viewWarningCheckBox;
     private JLabel warningLabel;
-    private JToggleButton warningToggleButton;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
@@ -918,9 +920,9 @@ public final class SyncPanel extends JPanel {
 
     }
 
-    private static final class ViewButton extends JToggleButton {
+    private static final class ViewCheckBox extends JCheckBox {
 
-        private static final long serialVersionUID = 874534687646546546L;
+        private static final long serialVersionUID = 16576854546544L;
 
         private SyncItemFilter filter;
 
@@ -939,7 +941,7 @@ public final class SyncPanel extends JPanel {
         boolean accept(SyncItem syncItem);
     }
 
-    private class ViewButtonListener implements ItemListener {
+    private class ViewListener implements ItemListener {
 
         @Override
         public void itemStateChanged(ItemEvent e) {

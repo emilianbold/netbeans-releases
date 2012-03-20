@@ -25,7 +25,7 @@
                   </Group>
                   <Component id="itemScrollPane" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="operationLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -47,23 +47,28 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="viewLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="noopToggleButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="downloadToggleButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="uploadToggleButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="deleteToggleButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="symlinkToggleButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="fileDirCollisionToggleButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="fileConflictToggleButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="warningToggleButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="errorToggleButton" linkSize="2" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Component id="viewFileDirCollisionCheckBox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="viewFileConflictCheckBox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="viewWarningCheckBox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="viewErrorCheckBox" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <Component id="viewNoopCheckBox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="viewDownloadCheckBox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="viewUploadCheckBox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="viewDeleteCheckBox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="viewSymlinkCheckBox" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
                           </Group>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -83,18 +88,21 @@
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="viewLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="noopToggleButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="downloadToggleButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="uploadToggleButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="deleteToggleButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="symlinkToggleButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="fileDirCollisionToggleButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="fileConflictToggleButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="warningToggleButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="errorToggleButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="viewNoopCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="viewDownloadCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="viewUploadCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="viewDeleteCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="viewSymlinkCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="viewFileDirCollisionCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="viewFileConflictCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="viewWarningCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="viewErrorCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-              <Component id="itemScrollPane" pref="421" max="32767" attributes="0"/>
+              <Component id="itemScrollPane" pref="350" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
@@ -141,78 +149,49 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JToggleButton" name="noopToggleButton">
-      <Properties>
-        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/netbeans/modules/php/project/ui/resources/diff.png"/>
-        </Property>
-      </Properties>
+    <Component class="javax.swing.JCheckBox" name="viewNoopCheckBox">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewButton();"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewCheckBox();"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JToggleButton" name="downloadToggleButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value=" " noResource="true"/>
-      </Properties>
+    <Component class="javax.swing.JCheckBox" name="viewDownloadCheckBox">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewButton();"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewCheckBox();"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JToggleButton" name="uploadToggleButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value=" " noResource="true"/>
-      </Properties>
+    <Component class="javax.swing.JCheckBox" name="viewUploadCheckBox">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewButton();"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewCheckBox();"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JToggleButton" name="deleteToggleButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value=" " noResource="true"/>
-      </Properties>
+    <Component class="javax.swing.JCheckBox" name="viewDeleteCheckBox">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewButton();"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewCheckBox();"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JToggleButton" name="symlinkToggleButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value=" " noResource="true"/>
-      </Properties>
+    <Component class="javax.swing.JCheckBox" name="viewSymlinkCheckBox">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewButton();"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewCheckBox();"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JToggleButton" name="fileDirCollisionToggleButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value=" " noResource="true"/>
-      </Properties>
+    <Component class="javax.swing.JCheckBox" name="viewFileDirCollisionCheckBox">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewButton();"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewCheckBox();"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JToggleButton" name="fileConflictToggleButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value=" " noResource="true"/>
-      </Properties>
+    <Component class="javax.swing.JCheckBox" name="viewFileConflictCheckBox">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewButton();"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewCheckBox();"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JToggleButton" name="warningToggleButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value=" " noResource="true"/>
-      </Properties>
+    <Component class="javax.swing.JCheckBox" name="viewWarningCheckBox">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewButton();"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewCheckBox();"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JToggleButton" name="errorToggleButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value=" " noResource="true"/>
-      </Properties>
+    <Component class="javax.swing.JCheckBox" name="viewErrorCheckBox">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewButton();"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createViewCheckBox();"/>
       </AuxValues>
     </Component>
     <Container class="javax.swing.JScrollPane" name="itemScrollPane">

@@ -76,42 +76,46 @@ public final class SyncItem {
 
 
     @NbBundle.Messages({
-        "Operation.noop.title=No operation",
-        "Operation.download.title=Download",
-        "Operation.downloadReview.title=Download with review",
-        "Operation.upload.title=Upload",
-        "Operation.uploadReview.title=Upload with review",
-        "Operation.delete.title=Delete",
-        "Operation.symlink.title=Symbolic link",
-        "Operation.fileDirCollision.title=File vs. directory collision",
-        "Operation.fileConflict.title=File conflict",
+        "Operation.noop.titleWithMnemonic=No o&peration",
+        "Operation.download.titleWithMnemonic=&Download",
+        "Operation.downloadReview.titleWithMnemonic=Download &with review",
+        "Operation.upload.titleWithMnemonic=&Upload",
+        "Operation.uploadReview.titleWithMnemonic=Upload w&ith review",
+        "Operation.delete.titleWithMnemonic=D&elete",
+        "Operation.symlink.titleWithMnemonic=S&ymbolic link",
+        "Operation.fileDirCollision.titleWithMnemonic=File &vs. directory collision",
+        "Operation.fileConflict.titleWithMnemonic=File c&onflict",
     })
     public static enum Operation {
 
-        NOOP(Bundle.Operation_noop_title(), NOOP_ICON_PATH, false),
-        DOWNLOAD(Bundle.Operation_download_title(), DOWNLOAD_ICON_PATH, true),
-        DOWNLOAD_REVIEW(Bundle.Operation_downloadReview_title(), DOWNLOAD_REVIEW_ICON_PATH, true),
-        UPLOAD(Bundle.Operation_upload_title(), UPLOAD_ICON_PATH, true),
-        UPLOAD_REVIEW(Bundle.Operation_uploadReview_title(), UPLOAD_REVIEW_ICON_PATH, true),
-        DELETE(Bundle.Operation_delete_title(), DELETE_ICON_PATH, false),
-        SYMLINK(Bundle.Operation_symlink_title(), SYMLINK_ICON_PATH, false),
-        FILE_DIR_COLLISION(Bundle.Operation_fileDirCollision_title(), FILE_DIR_COLLISION_ICON_PATH, false),
-        FILE_CONFLICT(Bundle.Operation_fileConflict_title(), FILE_CONFLICT_ICON_PATH, false);
+        NOOP(Bundle.Operation_noop_titleWithMnemonic(), NOOP_ICON_PATH, false),
+        DOWNLOAD(Bundle.Operation_download_titleWithMnemonic(), DOWNLOAD_ICON_PATH, true),
+        DOWNLOAD_REVIEW(Bundle.Operation_downloadReview_titleWithMnemonic(), DOWNLOAD_REVIEW_ICON_PATH, true),
+        UPLOAD(Bundle.Operation_upload_titleWithMnemonic(), UPLOAD_ICON_PATH, true),
+        UPLOAD_REVIEW(Bundle.Operation_uploadReview_titleWithMnemonic(), UPLOAD_REVIEW_ICON_PATH, true),
+        DELETE(Bundle.Operation_delete_titleWithMnemonic(), DELETE_ICON_PATH, false),
+        SYMLINK(Bundle.Operation_symlink_titleWithMnemonic(), SYMLINK_ICON_PATH, false),
+        FILE_DIR_COLLISION(Bundle.Operation_fileDirCollision_titleWithMnemonic(), FILE_DIR_COLLISION_ICON_PATH, false),
+        FILE_CONFLICT(Bundle.Operation_fileConflict_titleWithMnemonic(), FILE_CONFLICT_ICON_PATH, false);
 
 
-        private final String title;
+        private final String titleWithMnemonic;
         private final String iconPath;
         private final boolean progress;
 
 
-        private Operation(String title, String iconPath, boolean progress) {
-            this.title = title;
+        private Operation(String titleWithMnemonic, String iconPath, boolean progress) {
+            this.titleWithMnemonic = titleWithMnemonic;
             this.iconPath = iconPath;
             this.progress = progress;
         }
 
         public String getTitle() {
-            return title;
+            return titleWithMnemonic.replace("&", ""); // NOI18N
+        }
+
+        public String getTitleWithMnemonic() {
+            return titleWithMnemonic;
         }
 
         public Icon getIcon() {
