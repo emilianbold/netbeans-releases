@@ -80,7 +80,7 @@ public class SearchPanel extends JPanel implements FocusListener,
 
     private static SearchPanel currentlyShown = null;
     private boolean replacing;
-    private boolean projectWide = false; // TODO
+    private boolean projectWide = Utils.hasProjectSearchScope();
     private List<PresenterProxy> presenters;
     private DialogDescriptor dialogDescr;
     /**

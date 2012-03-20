@@ -93,7 +93,7 @@ public final class Util {
      * @return a repository in case it was properly specified n the ui, otherwise null
      */
     public static Repository createRepository() {
-        RepositoryImpl impl = BugtrackingUtil.createRepository();
+        RepositoryImpl impl = BugtrackingUtil.createRepository(false);
         return impl != null ? impl.getRepository() : null;
     }
     

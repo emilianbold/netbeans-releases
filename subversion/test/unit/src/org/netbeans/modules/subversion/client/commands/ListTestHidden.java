@@ -125,7 +125,10 @@ public class ListTestHidden extends AbstractCommandTestCase {
         commit(getWC());
                                 
         ISVNDirEntry[] entries1 = getNbClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);        
-        fail("implement list assert against expected values");
+        assertEquals(3, entries1.length);
+        ISVNDirEntry[] entries2 = getFullWorkingClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);
+        
+        assertEntryArrays(entries1, entries2);
     }
     
     public void testListFilesRecursively() throws Exception {                        
@@ -140,8 +143,11 @@ public class ListTestHidden extends AbstractCommandTestCase {
         add(file3);                       
         commit(getWC());
                         
-        ISVNDirEntry[] entries1 = getNbClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);        
-        fail("implement list assert against expected values");
+        ISVNDirEntry[] entries1 = getNbClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, true);        
+        assertEquals(4, entries1.length);
+        ISVNDirEntry[] entries2 = getFullWorkingClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, true);
+        
+        assertEntryArrays(entries1, entries2);
     }
 
 //    XXX not idea how to push a null username through svnclientadapter

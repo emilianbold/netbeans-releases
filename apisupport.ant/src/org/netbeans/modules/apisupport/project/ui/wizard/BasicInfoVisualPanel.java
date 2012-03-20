@@ -91,7 +91,6 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
     
     private boolean locationUpdated;
     private boolean nameUpdated;
-    private boolean mainProjectTouched;
     
     /** Creates new form BasicInfoVisualPanel */
     BasicInfoVisualPanel(final NewModuleProjectData data) {
@@ -101,21 +100,6 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
         initPlatformCombo(suitePlatformValue);
         initPanels();
         setComponentsVisibility();
-        mainProject.setSelected(!isLibraryWizard() && ModuleUISettings.getDefault().getSetAsMain());
-        switch (data.getWizardType()) {
-            case SUITE:
-            case APPLICATION:
-            case LIBRARY_MODULE:
-                break;
-            case MODULE:
-            case SUITE_COMPONENT:
-                if (TypeChooserPanelImpl.getDefaultSuitesComboBox().getItemCount() > 0) {
-                    mainProject.setSelected(false);
-                }
-                break;
-            default:
-                assert false : "Unknown wizard type = " + data.getWizardType();
-        }
         attachDocumentListeners();
         setInitialLocation();
         setInitialProjectName();
@@ -162,9 +146,6 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
                     return;
                 }
 
-                if (!mainProjectTouched) {
-                    mainProject.setSelected(isStandAlone);
-                }
                 if (!locationUpdated) {
                     setInitialLocation();
                 }
@@ -212,7 +193,6 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
         suitePlatform.setVisible(isSuiteWizard);
         suitePlatformValue.setVisible(isSuiteWizard);
         manageSuitePlatform.setVisible(isSuiteWizard);
-        mainProject.setVisible(!isLibraryWizard);
         
         if (typeChooserPanel != null){
             typeChooserPanel.setComponentsVisibility(isSuiteComponentWizard, isLibraryWizard);
@@ -304,8 +284,6 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
         getData().setProjectName(getNameValue());
         getData().setProjectLocation(getLocationValue());
         getData().setProjectFolder(folderValue.getText());
-        getData().setMainProject(mainProject.isSelected());
-        ModuleUISettings.getDefault().setSetAsMain(mainProject.isSelected());
         getData().setNetBeansOrg(isNetBeansOrgFolder());
         getData().setStandalone(ModuleTypePanel.isStandalone(getSettings()));
         getData().setSuiteRoot(ModuleTypePanel.getSuiteRoot(getSettings()));
@@ -432,7 +410,6 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
         suitePlatformValue = PlatformComponentFactory.getNbPlatformsComboxBox();
         manageSuitePlatform = new javax.swing.JButton();
         separator3 = new javax.swing.JSeparator();
-        mainProject = new javax.swing.JCheckBox();
         pnlThouShaltBeholdLayout = new javax.swing.JPanel();
         typeChooserPanelContainer = new javax.swing.JPanel();
 
@@ -569,22 +546,6 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(infoPanel, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(mainProject, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_SetAsMainProject")); // NOI18N
-        mainProject.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mainProjectActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(mainProject, gridBagConstraints);
-        mainProject.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "ACS_CTL_MainProject")); // NOI18N
-        mainProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "ACS_CTL_MainProject")); // NOI18N
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -608,11 +569,7 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
     private void manageSuitePlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageSuitePlatformActionPerformed
         managePlatform(suitePlatformValue);
     }//GEN-LAST:event_manageSuitePlatformActionPerformed
-    
-    private void mainProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mainProjectActionPerformed
-        mainProjectTouched = true;
-    }//GEN-LAST:event_mainProjectActionPerformed
-        
+            
     private void managePlatform(final JComboBox platformCombo) {
         NbPlatformCustomizer.showCustomizer();
         platformCombo.setModel(new PlatformComponentFactory.NbPlatformListModel()); // refresh
@@ -637,7 +594,6 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
     private javax.swing.JPanel infoPanel;
     private javax.swing.JLabel locationLbl;
     private javax.swing.JTextField locationValue;
-    private javax.swing.JCheckBox mainProject;
     private javax.swing.JButton manageSuitePlatform;
     private javax.swing.ButtonGroup moduleTypeGroup;
     private javax.swing.JLabel nameLbl;

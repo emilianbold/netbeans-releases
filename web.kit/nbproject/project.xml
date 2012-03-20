@@ -181,6 +181,13 @@
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.cloud.amazon</code-name-base>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <test-type>

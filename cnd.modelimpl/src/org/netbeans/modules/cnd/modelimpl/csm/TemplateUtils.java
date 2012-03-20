@@ -252,6 +252,9 @@ public class TemplateUtils {
                             break;                                    
                         }                                
                     }
+                    while (varDecl != null && varDecl.getNextSibling() != null && varDecl.getNextSibling().getType() == CPPTokenTypes.CSM_PTR_OPERATOR) {
+                        varDecl = varDecl.getNextSibling();
+                    }                    
                     // check for existense of CSM_VARIABLE_DECLARATION branch
                     if (varDecl != null && varDecl.getNextSibling() != null &&
                             varDecl.getNextSibling().getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {

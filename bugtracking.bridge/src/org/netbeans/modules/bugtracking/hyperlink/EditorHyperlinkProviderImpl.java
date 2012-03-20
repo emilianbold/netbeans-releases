@@ -59,6 +59,7 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -83,11 +84,9 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
 
     //--------------------------------------------------------------------------
 
-    private final Result<IssueFinder> lookupResult = Lookup.getDefault().lookupResult(IssueFinder.class);
     private IssueFinder[] issueFinders;
 
     {
-        lookupResult.addLookupListener(this);
         refreshIssueFinders();
     }
 
@@ -97,7 +96,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
     }
 
     private void refreshIssueFinders() {
-        Collection<? extends IssueFinder> allInstances = lookupResult.allInstances();
+        Collection<IssueFinder> allInstances = IssueFinderUtils.getIssueFinders();
         IssueFinder[] newResult = new IssueFinder[allInstances.size()];
         allInstances.toArray(newResult);
         issueFinders = newResult;

@@ -113,7 +113,7 @@ final class ShowJavadocAction extends NodeAction {
     }
     
     public final HelpCtx getHelpCtx() {
-        return new HelpCtx(ShowJavadocAction.class);
+        return new HelpCtx("org.netbeans.modules.apisupport.project.ui.ShowJavadocAction");
     }
     
     public @Override final boolean asynchronous() {

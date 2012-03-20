@@ -43,6 +43,8 @@ package org.netbeans.modules.search.ui;
 
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -113,6 +115,28 @@ public class ResultsOutlineSupport {
         outlineView.addTreeExpansionListener(
                 new ExpandingTreeExpansionListener());
         outlineView.getOutline().setRootVisible(false);
+        outlineView.addHierarchyListener(new HierarchyListener() {
+            @Override
+            public void hierarchyChanged(HierarchyEvent e) {
+                if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED)
+                        != 0) {
+                    if (outlineView.isShowing()) {
+                        onAttach();
+                    } else {
+                        onDetach();
+                        outlineView.removeHierarchyListener(this);
+                    }
+                }
+            }
+        });
+    }
+
+    private void onAttach() {
+        outlineView.expandNode(resultsNode);
+    }
+
+    private void onDetach() {
+        resultModel.close();
     }
 
     private void setOutlineColumns() {
@@ -581,6 +605,10 @@ public class ResultsOutlineSupport {
 
     public Node getRootNode() {
         return invisibleRoot;
+    }
+
+    public Node getResultsNode() {
+        return resultsNode;
     }
 
     public void setResultsNodeText(String text) {

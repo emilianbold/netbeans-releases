@@ -68,7 +68,6 @@ import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Repository;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -186,7 +185,6 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
             if ("SNAPSHOT".equals(version)) { // NOI18N
                 addSnapshotRepo(projFile);
             }
-            Templates.setDefinesMainProject(wiz, projects.size() > 1);
             return projects;
     }
     

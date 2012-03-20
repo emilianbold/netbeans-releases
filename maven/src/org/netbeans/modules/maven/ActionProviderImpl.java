@@ -64,7 +64,7 @@ import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
@@ -362,7 +362,7 @@ public class ActionProviderImpl implements ActionProvider {
                         mapping.setActionName(tit);
                         mapping.setDisplayName(pnl.isRememberedAs());
                         //TODO shall we write to configuration based files or not?
-                        ModelHandle.putMapping(mapping, proj, conf.getDefaultConfig());
+                        ModelHandle2.putMapping(mapping, proj, conf.getDefaultConfig());
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }

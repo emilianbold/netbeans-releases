@@ -44,32 +44,26 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.awt.Dialog;
 import java.awt.Toolkit;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.project.ui.NoMainProjectWarning;
 import org.netbeans.modules.project.ui.OpenProjectList;
+import static org.netbeans.modules.project.ui.actions.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Actions;
-import org.openide.awt.MouseUtils;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
 
 /** Invokes command on the main project.
@@ -121,8 +115,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
         return needsInit;
     }
 
-
-
+    @Messages("MainProjectAction.no_main=Set a main project, or select one project or project file, or keep just one project open.")
     public @Override void actionPerformed(Lookup context) {
         // first try to find main project
         Project p = OpenProjectList.getDefault().getMainProject();
@@ -144,14 +137,10 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
         }
 
         // if no main project or no selected or more than one project opened,
-        // then show warning and allow choose a main project
+        // then show warning
         if (p == null) {
-            // show warning, if cancel then return
-            if (showNoMainProjectWarning (OpenProjectList.getDefault().getOpenProjects (), 
-                    getPresenterName(name, OpenProjectList.getDefault().getMainProject(), p))) {
-                return ;
-            }
-            p = OpenProjectList.getDefault().getMainProject();
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MainProjectAction_no_main(), NotifyDescriptor.WARNING_MESSAGE));
+            return;
         }
 
         if ( command != null ) {
@@ -263,113 +252,9 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
         return toReturn;
     }
 
-    private boolean showNoMainProjectWarning(Project[] projects, String action) {
-        boolean canceled;
-        final JButton okButton = new JButton (NbBundle.getMessage (NoMainProjectWarning.class, "LBL_NoMainClassWarning_ChooseMainProject_OK")); // NOI18N
-        okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (NoMainProjectWarning.class, "AD_NoMainClassWarning_ChooseMainProject_OK"));
-
-        // no main project set => warning
-        final NoMainProjectWarning panel = new NoMainProjectWarning (projects);
-
-        Object[] options = new Object[] {
-            okButton,
-            DialogDescriptor.CANCEL_OPTION
-        };
-
-        panel.addChangeListener (new ChangeListener () {
-           public @Override void stateChanged (ChangeEvent e) {
-               if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
-                   // click button and the finish dialog with selected class
-                   if (panel.getSelectedProject () != null) {
-                       okButton.doClick ();
-                   }
-               } else {
-                   okButton.setEnabled (panel.getSelectedProject () != null);
-               }
-           }
-        });
-
-        okButton.setEnabled (panel.getSelectedProject () != null);
-
-        DialogDescriptor desc = new DialogDescriptor (panel,
-                action == null ?
-                    NbBundle.getMessage(NoMainProjectWarning.class, "CTL_NoMainProjectWarning_Title") :
-                    Actions.cutAmpersand(action),
-            true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
-        desc.setMessageType (DialogDescriptor.INFORMATION_MESSAGE);
-        Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
-        dlg.setVisible (true);
-        if (desc.getValue() != options[0]) {
-            canceled = true;
-        } else {
-            Project mainProject = panel.getSelectedProject ();
-            OpenProjectList.getDefault ().setMainProject (mainProject);
-            canceled = false;
-        }
-        dlg.dispose();
-
-        return canceled;
-    }
-
     @Override
     protected void refresh(Lookup context, boolean immediate) {
         refreshView(context, immediate);
     }
-
-    /* Backed out; see issue #105664 for discussion:
-    public Component getToolbarPresenter() {
-        final JButton button = DropDownButtonFactory.createDropDownButton(
-                new ImageIcon(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB)), null); // image replaced anyway
-        Actions.connect(button, this);
-        final PropertyChangeListener[] weakPCL = {null};
-        PropertyChangeListener pcl = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String prop = evt != null ? evt.getPropertyName() : null;
-                if (prop == null || prop.equals(OpenProjectList.PROPERTY_MAIN_PROJECT) ||
-                        prop.equals(ProjectConfigurationProvider.PROP_CONFIGURATIONS)) {
-                    Mutex.EVENT.readAccess(new Runnable() {
-                        public void run() {
-                            JPopupMenu menu = null;
-                            final Project p = OpenProjectList.getDefault().getMainProject();
-                            if (p != null) {
-                                ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
-                                if (ap != null) {
-                                    if (Arrays.asList(ap.getSupportedActions()).contains(command)) {
-                                        final ProjectConfigurationProvider<?> pcp =
-                                                p.getLookup().lookup(ProjectConfigurationProvider.class);
-                                        if (pcp != null) {
-                                            pcp.removePropertyChangeListener(weakPCL[0]);
-                                            pcp.addPropertyChangeListener(weakPCL[0]);
-                                            if (pcp.configurationsAffectAction(command) && pcp.getConfigurations().size() > 1) {
-                                                menu = new JPopupMenu();
-                                                for (final ProjectConfiguration config : pcp.getConfigurations()) {
-                                                    JMenuItem item = new JMenuItem(config.getDisplayName());
-                                                    menu.add(item);
-                                                    item.addActionListener(new ActionListener() {
-                                                        public void actionPerformed(ActionEvent e) {
-                                                            p.getLookup().lookup(ActionProvider.class).invokeAction(
-                                                                    command, Lookups.singleton(config));
-                                                        }
-                                                    });
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            button.putClientProperty(DropDownButtonFactory.PROP_DROP_DOWN_MENU, menu);
-                        }
-                    });
-                }
-            }
-        };
-        // avoid premature GC:
-        button.putClientProperty("listener", pcl); // NOI18N
-        weakPCL[0] = WeakListeners.propertyChange(pcl, null);
-        OpenProjectList.getDefault().addPropertyChangeListener(weakPCL[0]);
-        pcl.propertyChange(null);
-        return button;
-    }
-    */
 
 }

@@ -65,7 +65,6 @@ import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardTy
 import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.awt.Mnemonics;
@@ -132,7 +131,6 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
 
         switch (type) {
             case LIBRARY:
-                setAsMainCheckBox.setVisible(false);
                 createMainCheckBox.setVisible(false);
                 mainClassTextField.setVisible(false);
                 preloaderCheckBox.setVisible(false);
@@ -185,7 +183,6 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                 break;
         }
 
-        setAsMainCheckBox.setSelected(WizardSettings.getSetAsMain(type));
         mainClassTextField.getDocument().addDocumentListener(this);
         txtLibFolder.getDocument().addDocumentListener(this);
         txtPreloaderProject.getDocument().addDocumentListener(this);
@@ -328,7 +325,6 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
         lblHint = new javax.swing.JLabel();
         createMainCheckBox = new javax.swing.JCheckBox();
         mainClassTextField = new javax.swing.JTextField();
-        setAsMainCheckBox = new javax.swing.JCheckBox();
         lblPlatform = new javax.swing.JLabel();
         platformComboBox = new javax.swing.JComboBox();
         btnManagePlatforms = new javax.swing.JButton();
@@ -368,8 +364,6 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
         });
 
         mainClassTextField.setText("com.myapp.Main");
-
-        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
 
         lblPlatform.setLabelFor(platformComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(lblPlatform, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Platform_ComboBox")); // NOI18N
@@ -452,14 +446,9 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(createMainCheckBox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(mainClassTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(setAsMainCheckBox)
-                                .addGap(0, 0, Short.MAX_VALUE)))))
+                        .addComponent(createMainCheckBox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(mainClassTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -495,8 +484,6 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(createMainCheckBox)
                     .addComponent(mainClassTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(setAsMainCheckBox)
                 .addContainerGap(25, Short.MAX_VALUE))
         );
 
@@ -507,8 +494,6 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
         createMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_createMainCheckBox")); // NOI18N
         mainClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCN_mainClassTextFiled")); // NOI18N
         mainClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCD_mainClassTextFiled")); // NOI18N
-        setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox")); // NOI18N
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_setAsMainCheckBox")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_PanelOptionsVisual")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_PanelOptionsVisual")); // NOI18N
@@ -619,8 +604,6 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
 
     @Override
     void store(WizardDescriptor d) {
-        Templates.setDefinesMainProject(d, setAsMainCheckBox.isSelected());
-        WizardSettings.setSetAsMain(type, setAsMainCheckBox.isSelected());
         d.putProperty(JavaFXProjectWizardIterator.MAIN_CLASS, createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null);
         d.putProperty(JavaFXProjectWizardIterator.SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null);
         
@@ -651,7 +634,6 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
     private javax.swing.JTextField mainClassTextField;
     private javax.swing.JComboBox platformComboBox;
     private javax.swing.JCheckBox preloaderCheckBox;
-    private javax.swing.JCheckBox setAsMainCheckBox;
     private javax.swing.JTextField txtLibFolder;
     private javax.swing.JTextField txtPreloaderProject;
     // End of variables declaration//GEN-END:variables

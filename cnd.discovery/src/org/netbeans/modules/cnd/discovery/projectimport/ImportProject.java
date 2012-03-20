@@ -164,7 +164,6 @@ public class ImportProject implements PropertyChangeListener {
     private boolean runConfigure = false;
     private boolean manualCA = false;
     private boolean buildArifactWasAnalyzed = false;
-    private boolean setAsMain;
     private final String hostUID;
     private final ExecutionEnvironment executionEnvironment;
     private final ExecutionEnvironment fileSystemExecutionEnvironment;
@@ -226,7 +225,6 @@ public class ImportProject implements PropertyChangeListener {
             makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH); 
         }
         runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
-        setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N
         toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         defaultToolchain = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         
@@ -279,7 +277,6 @@ public class ImportProject implements PropertyChangeListener {
             runMake = "true".equals(wizard.getProperty(WizardConstants.PROPERTY_RUN_REBUILD)); // NOI18N
         }
         manualCA = "true".equals(wizard.getProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE)); // NOI18N
-        setAsMain = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_SET_AS_MAIN));
         toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         defaultToolchain = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
     }
@@ -386,9 +383,6 @@ public class ImportProject implements PropertyChangeListener {
                     return;
                 }
                 OpenProjects.getDefault().removePropertyChangeListener(this);
-                //if (setAsMain) {
-                //    OpenProjects.getDefault().setMainProject(makeProject);
-                //}
                 RP.post(new Runnable() {
 
                     @Override
@@ -412,9 +406,6 @@ public class ImportProject implements PropertyChangeListener {
     private void doWork() {
         try {
             //OpenProjects.getDefault().open(new Project[]{makeProject}, false);
-            //if (setAsMain) {
-            //    OpenProjects.getDefault().setMainProject(makeProject);
-            //}
             if (makeProject instanceof Runnable) {
                 ((Runnable)makeProject).run();
             }

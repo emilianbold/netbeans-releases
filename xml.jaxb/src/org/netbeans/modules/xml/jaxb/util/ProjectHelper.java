@@ -58,6 +58,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.ErrorManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.transform.OutputKeys;
@@ -108,13 +109,8 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.*;
 import org.openide.util.RequestProcessor.Task;
-import org.openide.util.TaskListener;
-import org.openide.util.WeakListeners;
 
 /**
  * @author gmpatil
@@ -152,6 +148,11 @@ public class ProjectHelper {
     public static final String IDE_MODULE_INSTALL_NAME = "modules/org-netbeans-modules-xml-wsdl-model.jar"; // NOI18N
     public static final String IDE_MODULE_INSTALL_CBN = "org.netbeans.modules.xml.wsdl.model"; // NOI18N
 
+    /**
+     * Property that disables CoS support in Java
+     */
+    public static final String JAXB_COMPILE_ON_SAVE = "compile.on.save.unsupported.jaxb"; // NOI18N
+    
     // Make sure nobody instantiates this class.
     private ProjectHelper(){ }
     
@@ -271,6 +272,28 @@ public class ProjectHelper {
         }
 
         return relPath;
+    }
+    
+    public static void disableCoS(Project p, final boolean enable) {
+        final AntProjectHelper helper = getAntProjectHelper(p);
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    if (enable) {
+                        ep.setProperty(JAXB_COMPILE_ON_SAVE, Boolean.TRUE.toString());
+                    } else {
+                        ep.remove(JAXB_COMPILE_ON_SAVE);
+                    }
+                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    
+                    return null;
+                }
+            });
+        } catch (MutexException ex) {
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+        }
     }
 
     private static void addJAXBLibrary(Project prj) {
@@ -896,6 +919,10 @@ public class ProjectHelper {
             scs.removeSchema(schema);
             saveXMLBindingSchemas(project, scs);
             refreshBuildScript(project);
+            
+            if (scs.sizeSchema() == 0) {
+                disableCoS(project, false);
+            }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -1140,12 +1167,14 @@ public class ProjectHelper {
                 PROP_VAL_JAXB_LIB_CLASSPATH);
         saveProjectProperty(prj, PROP_JAXB_GEN_SRC_CLASSPATH, 
                 PROP_VAL_JAXB_LIB_CLASSPATH);        
+        
         try {
             ProjectManager.getDefault().saveProject(prj);
             Schemas scs = ProjectHelper.getXMLBindingSchemas(prj);
             ProjectHelper.refreshBuildScript(prj);
             scs.setVersion(JAXBWizModuleConstants.LATEST_CFG_VERSION);
             ProjectHelper.saveXMLBindingSchemas(prj, scs);
+            disableCoS(prj, scs.sizeSchema() != 0);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

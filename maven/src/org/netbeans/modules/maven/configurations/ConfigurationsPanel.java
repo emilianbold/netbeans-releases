@@ -52,7 +52,7 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -64,14 +64,14 @@ import org.openide.util.NbBundle;
 @SuppressWarnings("serial")
 public class ConfigurationsPanel extends javax.swing.JPanel {
     private NbMavenProjectImpl project;
-    private ModelHandle handle;
-    List<ModelHandle.Configuration> lastNonProfileList = new ArrayList<ModelHandle.Configuration>();
+    private ModelHandle2 handle;
+    List<ModelHandle2.Configuration> lastNonProfileList = new ArrayList<ModelHandle2.Configuration>();
     /** Creates new form ConfigurationsPanel */
     private ConfigurationsPanel() {
         initComponents();
     }
 
-    ConfigurationsPanel(ModelHandle handle, NbMavenProjectImpl project) {
+    ConfigurationsPanel(ModelHandle2 handle, NbMavenProjectImpl project) {
         this();
         this.handle = handle;
         this.project = project;
@@ -87,7 +87,7 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component supers = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                ModelHandle.Configuration conf = (ModelHandle.Configuration)value;
+                ModelHandle2.Configuration conf = (ModelHandle2.Configuration)value;
                 if (conf == ConfigurationsPanel.this.handle.getActiveConfiguration()) {
                     supers.setFont(supers.getFont().deriveFont(Font.BOLD));
                 }
@@ -96,6 +96,7 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
         });
         
         lstConfigurations.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 checkButtonEnablement();
             }
@@ -105,7 +106,7 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
     }
 
     private void checkButtonEnablement() {
-        ModelHandle.Configuration conf = (ModelHandle.Configuration) lstConfigurations.getSelectedValue();
+        ModelHandle2.Configuration conf = (ModelHandle2.Configuration) lstConfigurations.getSelectedValue();
         if (conf == null || conf.isProfileBased() || conf.isDefault()) {
             btnEdit.setEnabled(false);
             btnRemove.setEnabled(false);
@@ -119,7 +120,7 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
 //        boolean isProfile = false;
         DefaultListModel model = new DefaultListModel();
         if (handle.getConfigurations() != null) {
-            for (ModelHandle.Configuration hndl : handle.getConfigurations()) {
+            for (ModelHandle2.Configuration hndl : handle.getConfigurations()) {
                 model.addElement(hndl);
 //                if (hndl.isProfileBased()) {
 //                    isProfile = true;
@@ -240,18 +241,18 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     pnl.attachDescriptor(dd);
     Object ret = DialogDisplayer.getDefault().notify(dd);
     if (ret == DialogDescriptor.OK_OPTION) {
-        ModelHandle.Configuration conf = ModelHandle.createCustomConfiguration(pnl.getConfigurationId());
+        ModelHandle2.Configuration conf = ModelHandle2.createCustomConfiguration(pnl.getConfigurationId());
         conf.setShared(pnl.isShared());
         conf.setActivatedProfiles(pnl.getProfiles());
         handle.addConfiguration(conf);
-        handle.markAsModified(handle.getConfigurations());
+        handle.markConfigurationsAsModified();
         createListModel();
         lstConfigurations.setSelectedValue(conf, true);
     }
 }//GEN-LAST:event_btnAddActionPerformed
 
 private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
-    ModelHandle.Configuration conf = (ModelHandle.Configuration) lstConfigurations.getSelectedValue();
+    ModelHandle2.Configuration conf = (ModelHandle2.Configuration) lstConfigurations.getSelectedValue();
     if (conf != null) {
         NewConfigurationPanel pnl = new NewConfigurationPanel();
         pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigurationsPanel.class, "ACSD_Edit_Config"));
@@ -263,7 +264,7 @@ private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
         if (ret == DialogDescriptor.OK_OPTION) {
             conf.setShared(pnl.isShared());
             conf.setActivatedProfiles(pnl.getProfiles());
-            handle.markAsModified(handle.getConfigurations());
+            handle.markConfigurationsAsModified();
             createListModel();
             lstConfigurations.setSelectedValue(conf, true);
         }
@@ -271,7 +272,7 @@ private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 }//GEN-LAST:event_btnEditActionPerformed
 
 private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveActionPerformed
-    ModelHandle.Configuration conf = (ModelHandle.Configuration) lstConfigurations.getSelectedValue();
+    ModelHandle2.Configuration conf = (ModelHandle2.Configuration) lstConfigurations.getSelectedValue();
     if (conf != null) {
         handle.removeConfiguration(conf);
         createListModel();
@@ -279,7 +280,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 }//GEN-LAST:event_btnRemoveActionPerformed
 
 private void btnActivateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActivateActionPerformed
-    ModelHandle.Configuration conf = (ModelHandle.Configuration) lstConfigurations.getSelectedValue();
+    ModelHandle2.Configuration conf = (ModelHandle2.Configuration) lstConfigurations.getSelectedValue();
     if (conf != null) {
         handle.setActiveConfiguration(conf);
     }

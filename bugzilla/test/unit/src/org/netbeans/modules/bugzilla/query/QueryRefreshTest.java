@@ -172,7 +172,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         private TestLookup(InstanceContent ic) {
             super(ic);
             ic.add(new DummyBugtrackingOwnerSupport());
-            ic.add(new BugzillaTaskListProvider());
+            ic.add(BugzillaTaskListProvider.getInstance());
         }
     }
 

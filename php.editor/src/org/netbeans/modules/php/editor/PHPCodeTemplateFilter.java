@@ -94,9 +94,13 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
     public boolean accept(CodeTemplate template) {
         try {
             future.get(300, TimeUnit.MILLISECONDS).get(300, TimeUnit.MILLISECONDS);
-            if (template.getContexts() != null && !template.getContexts().isEmpty() && context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
+            if (isDefaultTemplate(template)) {
                 String abbrev = template.getAbbreviation();
-                return "fnc".equals(abbrev) || "fcom".equals(abbrev); //NOI18N
+                if (context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
+                    return "fnc".equals(abbrev) || "fcom".equals(abbrev); //NOI18N
+                } else if (context == CompletionContext.INTERFACE_CONTEXT_KEYWORDS) {
+                    return "ifnc".equals(abbrev); //NOI18N
+                }
             }
             return accept;
 
@@ -105,6 +109,10 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         } catch (ExecutionException ee) {
         }
         return false;
+    }
+
+    private boolean isDefaultTemplate(final CodeTemplate template) {
+        return template.getContexts() != null && !template.getContexts().isEmpty();
     }
 
     @Override
@@ -129,6 +137,9 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
                         accept = true;
                         break;
                     case CLASS_CONTEXT_KEYWORDS:
+                        accept = true;
+                        break;
+                    case INTERFACE_CONTEXT_KEYWORDS:
                         accept = true;
                         break;
                 }

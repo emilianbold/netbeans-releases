@@ -44,9 +44,6 @@ package org.netbeans.modules.maven.customizer;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import javax.swing.JList;
-import javax.swing.event.DocumentEvent;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,16 +58,19 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.spi.project.ActionProvider;
@@ -101,7 +101,7 @@ public class RunJarPanel extends javax.swing.JPanel {
 
     private static final String PROFILE_CMD = "profile"; // NOI18N
     
-    private ModelHandle handle;
+    private ModelHandle2 handle;
     private NbMavenProjectImpl project;
     private NetbeansActionMapping run;
     private NetbeansActionMapping debug;
@@ -114,7 +114,7 @@ public class RunJarPanel extends javax.swing.JPanel {
     private DocumentListener docListener;
     private ActionListener comboListener;
     
-    public RunJarPanel(ModelHandle handle, NbMavenProjectImpl project) {
+    public RunJarPanel(ModelHandle2 handle, NbMavenProjectImpl project) {
         initComponents();
         this.handle = handle;
         this.project = project;
@@ -152,19 +152,23 @@ public class RunJarPanel extends javax.swing.JPanel {
 
         btnMainClass.addActionListener(new MainClassListener(roots.toArray(new FileObject[roots.size()]), txtMainClass));
         docListener = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent arg0) {
                 applyChanges();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent arg0) {
                 applyChanges();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent arg0) {
                 applyChanges();
             }
         };
         comboListener = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 removeListeners();
                 initValues();
@@ -193,7 +197,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         run = null;
         debug = null;
         profile = null;
-        ActionToGoalMapping mapp = handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
+        ActionToGoalMapping mapp = handle.getActionMappings((ModelHandle2.Configuration) comConfiguration.getSelectedItem());
         @SuppressWarnings("unchecked")
         List<NetbeansActionMapping> lst = mapp.getActions();
         for (NetbeansActionMapping m : lst) {
@@ -208,13 +212,13 @@ public class RunJarPanel extends javax.swing.JPanel {
             }
         }
         if (run == null) {
-            run = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
+            run = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
         }
         if (debug == null) {
-            debug = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
+            debug = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
         }
         if (profile == null) {
-            profile = ModelHandle.getDefaultMapping(PROFILE_CMD, project);
+            profile = ModelHandle2.getDefaultMapping(PROFILE_CMD, project);
         }
         isCurrentRun = checkNewMapping(run);
         isCurrentDebug = checkNewMapping(debug);
@@ -421,7 +425,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         String newParams = txtArguments.getText().trim();
         String newVMParams = txtVMOptions.getText().trim();
         String newWorkDir = txtWorkDir.getText().trim();
-        ActionToGoalMapping a2gm = handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
+        ActionToGoalMapping a2gm = handle.getActionMappings((ModelHandle2.Configuration) comConfiguration.getSelectedItem());
         if (isCurrentRun || isCurrentDebug || isCurrentProfile) {
             String newAllParams = newVMParams + " -classpath %classpath "; //NOI18N
             if (newMainClass.trim().length() > 0) {
@@ -442,7 +446,7 @@ public class RunJarPanel extends javax.swing.JPanel {
                     changed = true;
                 }
                 if (changed) {
-                    ModelHandle.setUserActionMapping(run, a2gm);
+                    ModelHandle2.setUserActionMapping(run, a2gm);
                     handle.markAsModified(a2gm);
                 }
             }
@@ -457,7 +461,7 @@ public class RunJarPanel extends javax.swing.JPanel {
                     changed = true;
                 }
                 if (changed) {
-                    ModelHandle.setUserActionMapping(debug, a2gm);
+                    ModelHandle2.setUserActionMapping(debug, a2gm);
                     handle.markAsModified(a2gm);
                 }
             }
@@ -473,7 +477,7 @@ public class RunJarPanel extends javax.swing.JPanel {
                 }
                 profile.addProperty(RUN_EXEC, DEFAULT_PROFILER_EXEC);
                 if (changed) {
-                    ModelHandle.setUserActionMapping(profile, a2gm);
+                    ModelHandle2.setUserActionMapping(profile, a2gm);
                     handle.markAsModified(a2gm);
                 }
             }
@@ -580,7 +584,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         lblConfiguration.setVisible(true);
         comConfiguration.setVisible(true);
         DefaultComboBoxModel comModel = new DefaultComboBoxModel();
-        for (ModelHandle.Configuration conf : handle.getConfigurations()) {
+        for (ModelHandle2.Configuration conf : handle.getConfigurations()) {
             comModel.addElement(conf);
         }
         comConfiguration.setModel(comModel);
@@ -607,6 +611,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         
         /** Handles button events
          */        
+        @Override
         public void actionPerformed( ActionEvent e ) {
             
             // only chooseMainClassButton can be performed
@@ -617,6 +622,7 @@ public class RunJarPanel extends javax.swing.JPanel {
                 DialogDescriptor.CANCEL_OPTION
             };
             panel.addChangeListener (new ChangeListener () {
+                @Override
                public void stateChanged(ChangeEvent e) {
                    if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
                        // click button and finish the dialog with selected class
