@@ -47,7 +47,6 @@
 var pageWorkers = require("page-worker");
 var self = require("self");
 var tabs = require("tabs");
-var contextMenu = require("context-menu");
 
 var pendingMessages = [];
 var backgroundPageReady = false;
@@ -166,6 +165,9 @@ for each (var tab in tabs) {
 // * PAGE INSPECTION *
 // *******************
 
+var contextMenu = require('context-menu');
+var {Cc, Ci} = require('chrome');
+
 var PageInspectionContext = function() {
     this.cleanup();
 };
@@ -214,12 +216,21 @@ PageInspectionContext.prototype.initInspectedPage = function() {
         contentScriptFile: self.data.url('eval.js')
     });
     this.inspectedPage.on('message', function(message) {
-        if (message.message === 'ready') {
+        var type = message.message;
+        if (type === 'ready') {
             that.inspectedPageReady = true;
             for (var i=0; i<that.pendingMessages; i++) {
                 that.inspectedPage.postMessage(that.pendingMessages[i]);
             }
             that.pendingMessages = [];
+        } else if (type === 'matchedRules') {
+            var rules = that.getMatchedRules(message.element);
+            that.backgroundPage.postMessage({
+                message: 'eval',
+                status: 'ok',
+                id: message.id,
+                result: rules
+            });
         } else {
             that.backgroundPage.postMessage(message);
         }
@@ -258,7 +269,7 @@ PageInspectionContext.prototype.initBackgroundPage = function() {
             var worker = that.tab.attach({
                 contentScript: 'window.alert("Unable to connect to NetBeans!"); self.postMessage("");',
                 onMessage: function() {
-                    // Alert shown => the worked can be destroyed
+                    // Alert shown => the worker can be destroyed
                     worker.destroy();
                 }
             });
@@ -275,6 +286,73 @@ PageInspectionContext.prototype.initBackgroundPage = function() {
         console.log(error.name + ': ' + error.message);
         that.cleanup();
     });
+};
+
+PageInspectionContext.prototype.getMatchedRules = function(elementHandle) {
+    var matchedRules = [];
+    var inIDOMUtils = Cc['@mozilla.org/inspector/dom-utils;1'].getService(Ci.inIDOMUtils);
+    var wm = Components.classes['@mozilla.org/appshell/window-mediator;1']  
+                .getService(Components.interfaces.nsIWindowMediator);  
+    var browserEnumerator = wm.getEnumerator('navigator:browser');  
+
+    while (browserEnumerator.hasMoreElements()) {  
+        var browserWin = browserEnumerator.getNext();  
+        var tabbrowser = browserWin.gBrowser;
+        var numTabs = tabbrowser.browsers.length;
+        for (var index = 0; index < numTabs; index++) {
+            var browser = tabbrowser.getBrowserAtIndex(index);  
+// PENDING more tabs with the same URL
+            if (this.tab && this.tab.url === browser.currentURI.spec) {
+                var document = browser.contentDocument;
+                var element = this.findElement(document.documentElement, elementHandle);
+                if (element === null) {
+                    console.log('Element not found!');
+                    return matchedRules;
+                } else {
+                    var rules = inIDOMUtils.getCSSStyleRules(element);
+                    var numRules = rules.Count();
+                    // The specificity of the returned rules increases with
+                    // the increasing index => we process them in the opposite order
+                    for (var i = numRules-1; i >= 0; i--) {
+                        var rule = rules.GetElementAt(i);
+                        var ruleInfo = {};
+                        ruleInfo.sourceURL = rule.parentStyleSheet.href;
+                        ruleInfo.selector = rule.selectorText;
+                        var styleInfo = new Object();
+                        ruleInfo.style = styleInfo;
+                        var style = rule.style;
+                        for (var j=0; j<style.length; j++) {
+                            var stylename = style[j];
+                            var stylevalue = style.getPropertyValue(stylename);
+                            styleInfo[stylename] = stylevalue;
+                        }
+                        matchedRules.push(ruleInfo);
+                    }
+                }
+                return matchedRules;
+            }
+        }
+    }
+    return matchedRules;
+};
+
+PageInspectionContext.prototype.findElement = function(parent, elementHandle) {
+    if (elementHandle.length === 0) {
+        return parent;
+    }
+    var index = elementHandle.shift();
+    var child = parent.firstChild;
+    while (child && (index >= 0)) {
+        if (child && child.nodeType === 1) {
+            if (index === 0) {
+                return this.findElement(child, elementHandle);
+            } else {
+                index--;
+            }
+        }
+        child = child.nextSibling;
+    }
+    return null;
 };
 
 // Unfortunately, the main script (=this script) doesn't support WebSockets.

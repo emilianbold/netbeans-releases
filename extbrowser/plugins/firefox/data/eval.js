@@ -55,22 +55,45 @@ self.on('message', function(message) {
                 // This page has been destroyed/detached
             }
         };
+        // Do not remove this function - it serves as an API.
+        // Scripts that want to get matched rules call this method.
+        var matchedRulesRequest = 'netbeansMatchedRulesRequest';
+        var getFirefoxMatchedRules = function(element) {
+            // Throwing the exception avoids posting the result of this
+            // script back to IDE (the result of this script is not
+            // important, the real result is produced by the main script).
+            throw {
+                name: matchedRulesRequest,
+                element: simpleElementHandle(element)
+            };
+        };
         try {
             result.result = eval(message.script);
             result.status = 'ok';
             postMessageToNetBeans(result);
         } catch (err) {
-            result.status = 'error';
-            console.log('Problem during script evaluation!');
-            console.log(message);
-            console.log(err);
-            if (err.name && err.message) {
-                result.result = err.name + ':' + err.message;
-                console.log(result.result);
+            if (err.name && err.name === matchedRulesRequest) {
+                // Evaluation failed intentionally - matched rules must be
+                // obtained by the main script of the addon => passing
+                // the request there
+                postMessageToNetBeans({
+                    message: 'matchedRules',
+                    element: err.element,
+                    id: message.id
+                });
             } else {
-                result.result = err;
+                result.status = 'error';
+                console.log('Problem during script evaluation!');
+                console.log(JSON.stringify(message));
+                if (err.name && err.message) {
+                    result.result = err.name + ': ' + err.message;
+                    console.log(result.result);
+                } else {
+                    result.result = err;
+                    console.log(err);
+                }
+                postMessageToNetBeans(result);
             }
-            postMessageToNetBeans(result);
         }
     } else {
         console.log('Ignoring unexpected message from the background page!');
@@ -82,3 +105,30 @@ self.on('message', function(message) {
 self.postMessage({
     message: 'ready'
 });
+
+// Produces simple description of how to locate the element in the DOM.
+// Unfortunately, we cannot pass the reference to the element to
+// main script directly. Hence, we use this method to let the main
+// script know how to locate the element.
+var simpleElementHandle = function(element) {
+    var handle = [];
+    var parent = element.parentNode;
+    while (parent && parent.nodeType === 1) {
+        var index = 0;
+        var child = parent.firstChild;
+        while (child) {
+            if (child.nodeType === 1) {
+                if (child === element) {
+                    handle.push(index);
+                    break;
+                } else {
+                    index++;
+                }
+            }
+            child = child.nextSibling;
+        }
+        element = parent;
+        parent = parent.parentNode;
+    }
+    return handle.reverse();
+}

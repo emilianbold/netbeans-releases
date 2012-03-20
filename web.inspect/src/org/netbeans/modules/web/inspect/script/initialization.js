@@ -446,9 +446,6 @@ NetBeans.reloadScript = function(url) {
     }
 };
 
-// PENDING Chrome specific; the means of invocation
-// of this method must change because it requires
-// privilege access when rewritten to work in Firefox;
 NetBeans.getMatchedRules = function(handle) {
     var matchedStyle = [];
     var element = this.getElement(handle);
@@ -481,8 +478,11 @@ NetBeans.getMatchedRules = function(handle) {
                 matchedStyle.push(ruleInfo);
             }
         }
+    } else if (getFirefoxMatchedRules) {
+        // Invoke helper method in our Firefox extension
+        matchedStyle = getFirefoxMatchedRules(element);
     } else {
-        console.log('getMatchedCSSRules() method not available.');
+        console.log('getMatchedRules() method not available.');
     }
     return matchedStyle;
 };

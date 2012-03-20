@@ -46,7 +46,12 @@ lastIDSentToCS = 0;
 lastIDGotFromCS = 0;
 inspectMessage = null;
 
-socket = new MozWebSocket("ws://127.0.0.1:8008/");
+serverURL = 'ws://127.0.0.1:8008/';
+if (WebSocket) {
+    socket = new WebSocket(serverURL);
+} else {
+    socket = new MozWebSocket(serverURL);
+}
 
 socket.onerror = function(e) {
     console.log('Socket error!');
