@@ -105,6 +105,7 @@ made subject to such option by the copyright holder.
     <bind actionName="find-previous" key="S-F3"/>
     <bind actionName="find-selection" key="D-F3"/>
     <bind actionName="generate-code" key="O-INSERT"/>
+    <bind actionName="remove-surrounding-code" key="O-DELETE"/>
     <bind actionName="in-place-refactoring" key="D-R"/>
     <bind actionName="incremental-search-forward" key="FIND"/>
     <bind actionName="incremental-search-forward" key="D-F"/>
