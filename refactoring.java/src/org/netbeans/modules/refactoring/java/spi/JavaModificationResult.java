@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,51 +34,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.modules.refactoring.spi.impl;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import org.netbeans.modules.refactoring.api.RefactoringElement;
-import org.netbeans.modules.refactoring.api.RefactoringSession;
-import org.netbeans.modules.refactoring.spi.impl.UndoManager;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.PositionBounds;
-
-/** 
  *
- * @author Martin Matula, Daniel Prusa
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-public class UndoWatcher {
+package org.netbeans.modules.refactoring.java.spi;
 
-     private static Collection extractCES(Collection elements) {
-        HashSet result = new HashSet();
-        for (Iterator it = elements.iterator(); it.hasNext();) {
-            RefactoringElement e = (RefactoringElement) it.next();
-            PositionBounds pb = e.getPosition();
-            if (pb != null) {
-                CloneableEditorSupport ces = pb.getBegin().getCloneableEditorSupport();
-                result.add(ces);
-            }
-        }
-        return result;
-    }
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import org.netbeans.modules.refactoring.spi.ModificationResult;
+import org.openide.filesystems.FileObject;
 
-    public static void watch(RefactoringSession session, InvalidationListener l) {
-        UndoManager.getDefault().watch(extractCES(session.getRefactoringElements()), l);
-    }
+/**
+ *
+ * @author Jan Becicka
+ */
+class JavaModificationResult implements ModificationResult {
 
-    public static void stopWatching(InvalidationListener l) {
-        UndoManager.getDefault().stopWatching(l);
-    }
+    private org.netbeans.api.java.source.ModificationResult delegate;
     
-    public static void watch(DataObject o) {
-        EditorCookie ces = o.getCookie(EditorCookie.class);
-        assert ces instanceof CloneableEditorSupport;
-        UndoManager.getDefault().watch(Collections.singleton((CloneableEditorSupport)ces), null);
+    JavaModificationResult(org.netbeans.api.java.source.ModificationResult r) {
+        this.delegate = r;
+    }
+
+    @Override
+    public Collection<? extends FileObject> getModifiedFileObjects() {
+        return delegate.getModifiedFileObjects();
+    }
+
+    @Override
+    public Collection<? extends File> getNewFiles() {
+        return delegate.getNewFiles();
+    }
+
+    @Override
+    public void commit() throws IOException {
+        delegate.commit();
+    }
+
+    @Override
+    public String getResultingSource(FileObject file) throws IOException, IllegalArgumentException {
+        return delegate.getResultingSource(file);
     }
 }
