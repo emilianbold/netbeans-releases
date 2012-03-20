@@ -16,6 +16,7 @@ var engine = {
     }
 }
 
+var colors = [0, 1, 2]
 function computeColor(limit) {
     try {
         color = 0;

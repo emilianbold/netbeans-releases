@@ -71,7 +71,7 @@ public final class FormatToken {
                 Kind.BEFORE_WHILE_BRACE, Kind.BEFORE_FOR_BRACE,
                 Kind.BEFORE_DO_BRACE, Kind.BEFORE_SWITCH_BRACE,
                 Kind.BEFORE_TRY_BRACE, Kind.BEFORE_CATCH_BRACE,
-                Kind.BEFORE_FINALLY_BRACE);
+                Kind.BEFORE_FINALLY_BRACE, Kind.BEFORE_ARRAY_LITERAL_BRACKET);
     }
 
     private final Kind kind;
@@ -241,7 +241,11 @@ public final class FormatToken {
         BEFORE_SWITCH_BRACE,
         BEFORE_TRY_BRACE,
         BEFORE_CATCH_BRACE,
-        BEFORE_FINALLY_BRACE
+        BEFORE_FINALLY_BRACE,
+
+        // array literal brackets
+        AFTER_ARRAY_LITERAL_BRACKET,
+        BEFORE_ARRAY_LITERAL_BRACKET
     }
 
 }

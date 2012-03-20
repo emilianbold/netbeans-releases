@@ -341,6 +341,14 @@ public class JsFormatter implements Formatter {
                             offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceBeforeMethodDeclLeftBrace());
                             break;
+                        case AFTER_ARRAY_LITERAL_BRACKET:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinArrayBrackets());
+                            break;
+                        case BEFORE_ARRAY_LITERAL_BRACKET:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinArrayBrackets());
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // remove trailing spaces

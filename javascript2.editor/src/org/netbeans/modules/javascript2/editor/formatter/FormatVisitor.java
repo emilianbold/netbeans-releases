@@ -499,6 +499,28 @@ public class FormatVisitor extends NodeVisitor {
         return super.visit(tryNode, onset);
     }
 
+    @Override
+    public Node visit(LiteralNode literalNode, boolean onset) {
+        if (onset) {
+            Object value = literalNode.getValue();
+            if (value != null && Collection.class.isAssignableFrom(value.getClass())) {
+                int start = getStart(literalNode);
+                int finish = getFinish(literalNode);
+                FormatToken leftBracket = getNextToken(start, JsTokenId.BRACKET_LEFT_BRACKET, finish);
+                if (leftBracket != null) {
+                    appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_BRACKET));
+                    FormatToken rightBracket = getPreviousToken(finish - 1, JsTokenId.BRACKET_RIGHT_BRACKET, start + 1);
+                    if (rightBracket != null) {
+                        FormatToken previous = rightBracket.previous();
+                        if (previous != null) {
+                            appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY_LITERAL_BRACKET));
+                        }
+                    }
+                }
+            }
+        }
+        return super.visit(literalNode, onset);
+    }
 
     private boolean handleWhile(WhileNode whileNode) {
         Block body = whileNode.getBody();
