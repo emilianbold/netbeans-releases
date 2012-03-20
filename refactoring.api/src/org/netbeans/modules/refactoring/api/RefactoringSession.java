@@ -140,11 +140,15 @@ public final class RefactoringSession {
             } finally {
                 UndoableWrapper wrapper = MimeLookup.getLookup("").lookup(UndoableWrapper.class);
                 for (Transaction commit:SPIAccessor.DEFAULT.getCommits(bag)) {
-                    setWrappers(commit, wrapper);
+                    if (wrapper !=null)
+                        setWrappers(commit, wrapper);
+                    
                     commit.commit();
-                    unsetWrappers(commit, wrapper);
+                    if (wrapper !=null)
+                        unsetWrappers(commit, wrapper);
                 }
-                wrapper.close();
+                if (wrapper !=null)
+                    wrapper.close();
             }
             if (saveAfterDone) {
                 LifecycleManager.getDefault().saveAll();
