@@ -83,8 +83,12 @@ public class ModifyingRefactoring extends RefactoringTestCase {
     private void getFiles(File dir,List<String> res) {
         File[] listFiles = dir.listFiles();
         for (File file : listFiles) {
-            if(file.getName().startsWith(".")) continue; //ignoring hidden files
-            if(file.isDirectory()) getFiles(file,res);
+            if(file.getName().startsWith(".")) {
+                continue;
+            } //ignoring hidden files
+            if(file.isDirectory()) {
+                getFiles(file,res);
+            }
             res.add(file.getAbsolutePath());
         }        
     }
@@ -110,7 +114,9 @@ public class ModifyingRefactoring extends RefactoringTestCase {
         for (String fileName : newFiles) {
             if(!origFiles.contains(fileName)) {
                 File f = new File(fileName);
-                if(!f.exists()) fail("File "+fileName+" does not exists");
+                if(!f.exists()) {
+                    fail("File "+fileName+" does not exists");
+                }
                 if(f.isDirectory()) {
                     ref("Created directory:\n");
                     String rootDir = new File(getDataDir(), "projects/RefactoringTest/src").getAbsolutePath();                   

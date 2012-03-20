@@ -172,7 +172,9 @@ public class Utilities {
             URL url = new URL("http://spbweb.russia.sun.com/~ok153203/jEdit41.zip");
             System.err.println("");
             File dir = new File(System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator);
-            if (!dir.exists()) dir.mkdirs();
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
             out = new BufferedOutputStream(new FileOutputStream(dir.getAbsolutePath() + File.separator + "jEdit41.zip"));
             conn = url.openConnection();
             in = conn.getInputStream();
@@ -252,11 +254,13 @@ public class Utilities {
         System.out.println();
         System.out.println("#####  Results for "+name+"   #####");
         System.out.print("#####        [");
-        for(int i=1;i<=repeat;i++)
+        for(int i=1;i<=repeat;i++) {
             System.out.print(results[i]+"ms, ");
+        }
         System.out.println("]");
-        for (int i=1;i<=name.length()+27;i++)
+        for (int i=1;i<=name.length()+27;i++) {
             System.out.print("#");
+        }
         System.out.println();
         System.out.println();
 
@@ -301,8 +305,12 @@ public class Utilities {
         if (testTag!=null) {
             for (int i=1;i<=repeat;i++) {
                 perfDataTag=allPerfDoc.createElement("PerformanceData");
-                if (i==1) perfDataTag.setAttribute("runOrder", "1");
-                    else perfDataTag.setAttribute("runOrder", "2");
+                if (i==1) {
+                    perfDataTag.setAttribute("runOrder", "1");
+                }
+                    else {
+                    perfDataTag.setAttribute("runOrder", "2");
+                }
                 perfDataTag.setAttribute("value", new Long(results[i]).toString());
                 testTag.appendChild(perfDataTag);
             }
@@ -316,8 +324,12 @@ public class Utilities {
             testTag.setAttribute("classname", classname);
             for (int i=1;i<=repeat;i++) {
                 perfDataTag=allPerfDoc.createElement("PerformanceData");
-                if (i==1) perfDataTag.setAttribute("runOrder", "1");
-                    else perfDataTag.setAttribute("runOrder", "2");
+                if (i==1) {
+                    perfDataTag.setAttribute("runOrder", "1");
+                }
+                    else {
+                    perfDataTag.setAttribute("runOrder", "2");
+                }
                 perfDataTag.setAttribute("value", new Long(results[i]).toString());
                 testTag.appendChild(perfDataTag);
             }

@@ -51,6 +51,8 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -69,6 +71,8 @@ public final class ClassIndexManager {
     public static final String PROP_DIRTY_ROOT = "dirty"; //NOI18N
     public static final String PROP_SOURCE_ROOT = "source";  //NOI18N
 
+    private static final Logger LOG = Logger.getLogger(ClassIndexManager.class.getName());
+    
     private static ClassIndexManager instance;
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
     private final Map<URL, ClassIndexImpl> transientInstances = new HashMap<URL, ClassIndexImpl> ();
@@ -120,20 +124,27 @@ public final class ClassIndexManager {
                         try {
                             final String typeAttr = JavaIndex.getAttribute(translatedRoot, PROP_SOURCE_ROOT, null);
                             final String dirtyAttr = JavaIndex.getAttribute(translatedRoot, PROP_DIRTY_ROOT, null);
-                            if (Boolean.TRUE.toString().equals(typeAttr)) {
-                                index[0] = PersistentClassIndex.create (
-                                        root,
-                                        JavaIndex.getIndex(root),
-                                        ClassIndexImpl.Type.SOURCE,
-                                        ClassIndexImpl.Type.SOURCE);
-                                transientInstances.put(root,index[0]);
-                            } else if (Boolean.FALSE.toString().equals(typeAttr)) {
-                                index[0] = PersistentClassIndex.create (
-                                        root,
-                                        JavaIndex.getIndex(root),
-                                        ClassIndexImpl.Type.BINARY,
-                                        ClassIndexImpl.Type.BINARY);
-                                transientInstances.put(root,index[0]);
+                            if (!Boolean.TRUE.toString().equals(dirtyAttr)) {                                
+                                if (Boolean.TRUE.toString().equals(typeAttr)) {
+                                    index[0] = PersistentClassIndex.create (
+                                            root,
+                                            JavaIndex.getIndex(root),
+                                            ClassIndexImpl.Type.SOURCE,
+                                            ClassIndexImpl.Type.SOURCE);
+                                    transientInstances.put(root,index[0]);
+                                } else if (Boolean.FALSE.toString().equals(typeAttr)) {
+                                    index[0] = PersistentClassIndex.create (
+                                            root,
+                                            JavaIndex.getIndex(root),
+                                            ClassIndexImpl.Type.BINARY,
+                                            ClassIndexImpl.Type.BINARY);
+                                    transientInstances.put(root,index[0]);
+                                }
+                            } else {
+                                LOG.log(
+                                    Level.FINE,
+                                    "Index for root: {0} is broken.",   //NOI18N
+                                    root);
                             }
                         } catch(IOException ioe) {
                             /*Handled bellow by return null*/

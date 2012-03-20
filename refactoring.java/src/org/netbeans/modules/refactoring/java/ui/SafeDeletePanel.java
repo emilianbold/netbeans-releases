@@ -110,7 +110,9 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
         //to the element
         searchInComments.setEnabled(true);
         
-        if (initialized) return;
+        if (initialized) {
+            return;
+        }
         
         final String labelText;
         

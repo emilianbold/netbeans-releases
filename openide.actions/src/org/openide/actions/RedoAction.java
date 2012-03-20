@@ -43,7 +43,10 @@
  */
 package org.openide.actions;
 
+import java.awt.HeadlessException;
+import java.util.MissingResourceException;
 import javax.swing.Action;
+import javax.swing.JOptionPane;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -52,16 +55,14 @@ import org.openide.util.actions.CallableSystemAction;
 
 import javax.swing.UIManager;
 import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
-/** Redo an edit. Since version 6.18 this class
-* implements {@link ContextAwareAction}.
-*
-* @see UndoAction
-* @author   Ian Formanek, Jaroslav Tulach
-*/
+
 public class RedoAction extends CallableSystemAction implements ContextAwareAction {
     private static String SWING_DEFAULT_LABEL = UIManager.getString("AbstractUndoableEdit.redoText"); //NOI18N
 
@@ -106,7 +107,7 @@ public class RedoAction extends CallableSystemAction implements ContextAwareActi
                 undoRedo.redo();
             }
         } catch (CannotRedoException ex) {
-            Exceptions.printStackTrace(ex);
+            UndoRedoAction.cannotUndoRedo(ex);
         }
 
         UndoAction.updateStatus();

@@ -43,6 +43,8 @@ package org.netbeans.modules.findbugs.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -54,18 +56,40 @@ keywords = "#AdvancedOption_Keywords_FindBugs",
 keywordsCategory = "Advanced/FindBugs")
 @org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_FindBugs=FindBugs", "AdvancedOption_Keywords_FindBugs=findbugs,java"})
 public final class FindBugsOptionsPanelController extends OptionsPanelController {
+    private static final Logger LOG = Logger.getLogger(FindBugsOptionsPanelController.class.getName());
 
     private FindBugsPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
     public void update() {
-        getPanel(null).load();
+        FindBugsPanel panelCopy;
+
+        synchronized (this) {
+            panelCopy = panel;
+        }
+
+        if (panelCopy == null) {
+            LOG.log(Level.SEVERE, "OptionsPanelController.update called before OptionsPanelController.getComponent");
+            return;
+        }
+
+        panelCopy.load();
         changed = false;
     }
 
     public void applyChanges() {
-        getPanel(null).store();
+        FindBugsPanel panelCopy;
+
+        synchronized (this) {
+            panelCopy = panel;
+        }
+
+        if (panelCopy == null) {
+            return;
+        }
+        
+        panelCopy.store();
         changed = false;
     }
 
@@ -73,8 +97,18 @@ public final class FindBugsOptionsPanelController extends OptionsPanelController
         // need not do anything special, if no changes have been persisted yet
     }
 
-    public boolean isValid() {
-        return getPanel(null).valid();
+    public synchronized boolean isValid() {
+        FindBugsPanel panelCopy;
+
+        synchronized (this) {
+            panelCopy = panel;
+        }
+
+        if (panelCopy == null) {
+            return true;
+        }
+        
+        return panelCopy.valid();
     }
 
     public boolean isChanged() {
@@ -85,8 +119,11 @@ public final class FindBugsOptionsPanelController extends OptionsPanelController
         return null; // new HelpCtx("...ID") if you have a help set
     }
 
-    public FindBugsPanel getComponent(Lookup masterLookup) {
-        return getPanel(masterLookup);
+    public synchronized FindBugsPanel getComponent(Lookup masterLookup) {
+        if (panel == null) {
+            panel = new FindBugsPanel(masterLookup.lookup(OptionsFilter.class), null);
+        }
+        return panel;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -95,13 +132,6 @@ public final class FindBugsOptionsPanelController extends OptionsPanelController
 
     public void removePropertyChangeListener(PropertyChangeListener l) {
         pcs.removePropertyChangeListener(l);
-    }
-
-    private FindBugsPanel getPanel(Lookup masterLookup) {
-        if (panel == null) {
-            panel = new FindBugsPanel(masterLookup.lookup(OptionsFilter.class), null);
-        }
-        return panel;
     }
 
     void changed() {
@@ -114,6 +144,16 @@ public final class FindBugsOptionsPanelController extends OptionsPanelController
 
     @Override
     protected void setCurrentSubcategory(String subpath) {
-        getComponent(null).selectById(subpath);
+        FindBugsPanel panelCopy;
+
+        synchronized (this) {
+            panelCopy = panel;
+        }
+
+        if (panelCopy == null) {
+            return;
+        }
+
+        panelCopy.selectById(subpath);
     }
 }

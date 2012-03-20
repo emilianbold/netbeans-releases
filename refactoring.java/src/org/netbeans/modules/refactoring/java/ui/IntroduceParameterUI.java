@@ -183,8 +183,9 @@ public class IntroduceParameterUI implements RefactoringUI, JavaRefactoringUIFac
             Tree leaf = tp.getLeaf();
 
             if (   !ExpressionTree.class.isAssignableFrom(leaf.getKind().asInterface())
-                && (leaf.getKind() != Tree.Kind.VARIABLE || ((VariableTree) leaf).getInitializer() == null))
-               continue;
+                && (leaf.getKind() != Tree.Kind.VARIABLE || ((VariableTree) leaf).getInitializer() == null)) {
+                continue;
+            }
 
             long treeStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), leaf);
             long treeEnd   = ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), leaf);
@@ -199,17 +200,21 @@ public class IntroduceParameterUI implements RefactoringUI, JavaRefactoringUIFac
                 type = ci.getTrees().getOriginalType((ErrorType) type);
             }
 
-            if (type == null || ignoredTypes.contains(type.getKind()))
+            if (type == null || ignoredTypes.contains(type.getKind())) {
                 continue;
+            }
 
-            if(tp.getLeaf().getKind() == Tree.Kind.ASSIGNMENT)
+            if(tp.getLeaf().getKind() == Tree.Kind.ASSIGNMENT) {
                 continue;
+            }
 
-            if (tp.getLeaf().getKind() == Tree.Kind.ANNOTATION)
+            if (tp.getLeaf().getKind() == Tree.Kind.ANNOTATION) {
                 continue;
+            }
 
-            if (!isInsideClass(tp))
+            if (!isInsideClass(tp)) {
                 return null;
+            }
 
             TreePath candidate = tp;
 

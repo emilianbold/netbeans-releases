@@ -4543,7 +4543,6 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private TokenSequence<JavaTokenId> nextNonWhitespaceToken(TokenSequence<JavaTokenId> ts) {
             while(ts.moveNext()) {
-                int offset = ts.offset();
                 switch (ts.token().id()) {
                     case WHITESPACE:
                     case LINE_COMMENT:

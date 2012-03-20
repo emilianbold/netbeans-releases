@@ -48,9 +48,12 @@ import javax.lang.model.element.Element;
 import javax.swing.JComponent;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
+import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -60,7 +63,7 @@ import org.openide.util.RequestProcessor;
     @NavigatorPanel.Registration(mimeType="text/x-java", position=100, displayName="#LBL_members"),
     @NavigatorPanel.Registration(mimeType="application/x-class-file", displayName="#LBL_members")
 })
-public class ClassMemberPanel implements NavigatorPanel {
+public class ClassMemberPanel implements NavigatorPanelWithUndo {
 
     private ClassMemberPanelUI component;
 
@@ -134,5 +137,10 @@ public class ClassMemberPanel implements NavigatorPanel {
     
     public static ClassMemberPanel getInstance() {
         return INSTANCE;
-    }    
+    }
+
+    @Override
+    public UndoRedo getUndoRedo() {
+        return Lookups.forPath("org/netbeans/modules/refactoring").lookup(UndoRedo.class);
+    }
 }
