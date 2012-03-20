@@ -156,7 +156,7 @@ public class UsedNamesComputer {
         @Override
         public void visit(NamespaceName node) {
             UsedNamespaceName usedName = new UsedNamespaceName(node);
-            if (!specialNames.contains(usedName.getName()) && !VariousUtils.isPrimitiveType(usedName.getName())) {
+            if (isValidTypeName(usedName.getName())) {
                 processUsedName(usedName);
             }
         }
@@ -164,9 +164,13 @@ public class UsedNamesComputer {
         @Override
         public void visit(PHPDocTypeNode node) {
             UsedNamespaceName usedName = new UsedNamespaceName(node);
-            if (!specialNames.contains(usedName.getName()) && !VariousUtils.isPrimitiveType(usedName.getName())) {
+            if (isValidTypeName(usedName.getName())) {
                 processUsedName(usedName);
             }
+        }
+
+        private boolean isValidTypeName(final String typeName) {
+            return !specialNames.contains(typeName) && !VariousUtils.isPrimitiveType(typeName);
         }
 
         private void processUsedName(final UsedNamespaceName usedName) {
