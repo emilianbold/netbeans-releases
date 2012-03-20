@@ -253,7 +253,7 @@ public final class DiffPanel extends JPanel {
 
     @NbBundle.Messages({
         "DiffPanel.error.copyContent=Content of file cannot be copied to temporary file.",
-        "DiffPanel.error.opening=Local file cannot be opened.",
+        "DiffPanel.error.opening=Local file cannot be opened."
     })
     EditableTmpLocalFileStreamSource getLocalStreamSource(String name, String mimeType) {
         localTmpFile = TmpLocalFile.onDisk(getExtension(name));

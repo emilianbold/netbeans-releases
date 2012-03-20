@@ -169,7 +169,7 @@ public final class SyncPanel extends JPanel {
     @NbBundle.Messages({
         "# {0} - project name",
         "# {1} - remote configuration name",
-        "SyncPanel.title=Remote Synchronization for {0}: {1}",
+        "SyncPanel.title=Remote Synchronization for {0}: {1}"
     })
     public boolean open(boolean firstRun) {
         assert SwingUtilities.isEventDispatchThread();

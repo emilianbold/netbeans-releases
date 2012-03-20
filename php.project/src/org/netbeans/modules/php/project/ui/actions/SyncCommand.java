@@ -129,7 +129,7 @@ public class SyncCommand extends RemoteCommand implements Displayable {
             "SyncCommand.download.title=Download",
             "SyncCommand.upload.title=Upload",
             "SyncCommand.localDelete.title=Local Delete",
-            "SyncCommand.remoteDelete.title=Remote Delete",
+            "SyncCommand.remoteDelete.title=Remote Delete"
         })
         @Override
         public void process(SyncResult result) {

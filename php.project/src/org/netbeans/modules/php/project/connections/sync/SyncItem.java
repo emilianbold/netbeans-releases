@@ -84,7 +84,7 @@ public final class SyncItem {
         "Operation.delete.titleWithMnemonic=D&elete",
         "Operation.symlink.titleWithMnemonic=S&ymbolic link",
         "Operation.fileDirCollision.titleWithMnemonic=File &vs. directory collision",
-        "Operation.fileConflict.titleWithMnemonic=File c&onflict",
+        "Operation.fileConflict.titleWithMnemonic=File c&onflict"
     })
     public static enum Operation {
 
