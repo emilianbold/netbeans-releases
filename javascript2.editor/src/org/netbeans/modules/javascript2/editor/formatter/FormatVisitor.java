@@ -233,58 +233,58 @@ public class FormatVisitor extends NodeVisitor {
         visit((Block) functionNode, onset);
 
         if (onset && !isScript(functionNode)) {
-            FormatToken function = getPreviousToken(getStart(functionNode), JsTokenId.KEYWORD_FUNCTION);
-            if (function != null) {
-                FormatToken leftParen = getNextToken(function.getOffset(), JsTokenId.BRACKET_LEFT_PAREN);
-                if (leftParen != null) {
-                    FormatToken previous = leftParen.previous();
+            int start = getFunctionStart(functionNode);
+
+            FormatToken leftParen = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN);
+            if (leftParen != null) {
+                FormatToken previous = leftParen.previous();
+                if (previous != null) {
+                    appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION));
+                }
+
+                // mark the within parenthesis places
+
+                // remove original paren marks
+                FormatToken mark = leftParen.next();
+                assert mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark.getKind();
+                tokenStream.removeToken(mark);
+
+                // this works if the offset starts with block as it is now
+                FormatToken rightParen = getPreviousToken(getStart(functionNode),
+                        JsTokenId.BRACKET_RIGHT_PAREN, leftParen.getOffset());
+                if (rightParen != null) {
+                    previous = rightParen.previous();
+                    assert previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous.getKind();
+                    tokenStream.removeToken(previous);
+                }
+
+                // mark left brace of block - this works if function node
+                // start offset is offset of the left brace
+                FormatToken leftBrace = getNextToken(getStart(functionNode),
+                        JsTokenId.BRACKET_LEFT_CURLY, getFinish(functionNode));
+                if (leftBrace != null) {
+                    previous = leftBrace.previous();
                     if (previous != null) {
-                        appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION));
+                        appendToken(previous, FormatToken.forFormat(
+                                FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_BRACE));
                     }
+                }
 
-                    // mark the within parenthesis places
+                // place the new marks
+                if (!functionNode.getParameters().isEmpty()) {
+                    appendToken(leftParen, FormatToken.forFormat(
+                            FormatToken.Kind.AFTER_FUNCTION_DECLARATION_PARENTHESIS));
 
-                    // remove original paren marks
-                    FormatToken mark = leftParen.next();
-                    assert mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark.getKind();
-                    tokenStream.removeToken(mark);
-
-                    // this works if the offset starts with block as it is now
-                    FormatToken rightParen = getPreviousToken(getStart(functionNode),
-                            JsTokenId.BRACKET_RIGHT_PAREN, leftParen.getOffset());
                     if (rightParen != null) {
                         previous = rightParen.previous();
-                        assert previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous.getKind();
-                        tokenStream.removeToken(previous);
-                    }
-
-                    // mark left brace of block - this works if function node
-                    // start offset is offset of the left brace
-                    FormatToken leftBrace = getNextToken(getStart(functionNode),
-                            JsTokenId.BRACKET_LEFT_CURLY, getFinish(functionNode));
-                    if (leftBrace != null) {
-                        previous = leftBrace.previous();
                         if (previous != null) {
                             appendToken(previous, FormatToken.forFormat(
-                                    FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_BRACE));
-                        }
-                    }
-
-                    // place the new marks
-                    if (!functionNode.getParameters().isEmpty()) {
-                        appendToken(leftParen, FormatToken.forFormat(
-                                FormatToken.Kind.AFTER_FUNCTION_DECLARATION_PARENTHESIS));
-
-                        if (rightParen != null) {
-                            previous = rightParen.previous();
-                            if (previous != null) {
-                                appendToken(previous, FormatToken.forFormat(
-                                        FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARENTHESIS));
-                            }
+                                    FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARENTHESIS));
                         }
                     }
                 }
             }
+
         }
         return null;
     }
@@ -829,6 +829,10 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         return start;
+    }
+
+    private static int getFunctionStart(FunctionNode node) {
+        return com.oracle.nashorn.parser.Token.descPosition(node.getFirstToken());
     }
 
     private int getFinish(Node node) {
