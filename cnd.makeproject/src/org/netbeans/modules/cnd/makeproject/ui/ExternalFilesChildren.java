@@ -69,7 +69,7 @@ final class ExternalFilesChildren extends BaseMakeViewChildren {
         Item item = (Item) key;
         DataObject fileDO = item.getDataObject();
         Node node;
-        if (fileDO != null) {
+        if (fileDO != null && fileDO.isValid()) {
             node = new ViewItemNode(this, getFolder(), item, fileDO, provider.getProject());
         } else {
             node = new BrokenViewItemNode(this, getFolder(), item, provider.getProject());
