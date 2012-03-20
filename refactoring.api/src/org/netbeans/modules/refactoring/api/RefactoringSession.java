@@ -53,15 +53,25 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.spi.impl.UndoManager;
+import org.netbeans.modules.refactoring.spi.impl.UndoableWrapper;
+import org.netbeans.spi.editor.document.UndoableEditWrapper;
 import org.openide.LifecycleManager;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -128,9 +138,13 @@ public final class RefactoringSession {
                     }
                 }
             } finally {
+                UndoableWrapper wrapper = MimeLookup.getLookup("").lookup(UndoableWrapper.class);
                 for (Transaction commit:SPIAccessor.DEFAULT.getCommits(bag)) {
+                    setWrappers(commit, wrapper);
                     commit.commit();
+                    unsetWrappers(commit, wrapper);
                 }
+                wrapper.close();
             }
             if (saveAfterDone) {
                 LifecycleManager.getDefault().saveAll();
@@ -175,10 +189,14 @@ public final class RefactoringSession {
                     f.undoChange();
                 }
             }
+            UndoableWrapper wrapper = MimeLookup.getLookup("").lookup(UndoableWrapper.class);
             for (ListIterator<Transaction> commitIterator = commits.listIterator(commits.size()); commitIterator.hasPrevious();) {
-                commitIterator.previous().rollback();
+                final Transaction commit = commitIterator.previous();
+                setWrappers(commit, wrapper);
+                commit.rollback();
+                unsetWrappers(commit, wrapper);
             }
-            
+            wrapper.close();
             while (it.hasPrevious()) {
                 fireProgressListenerStep();
                 RefactoringElementImplementation element = (RefactoringElementImplementation) it.previous();
@@ -253,6 +271,37 @@ public final class RefactoringSession {
             progressSupport.fireProgressListenerStop(this);
         }
     }
+    
+    private void setWrappers(Transaction commit, UndoableWrapper wrap) {
+        wrap.setActive(true);
+        
+        //        if (!(commit instanceof RefactoringCommit))
+        //            return;
+        //        for (FileObject f:((RefactoringCommit) commit).getModifiedFiles()) {
+        //            Document doc = getDocument(f);
+        //            if (doc!=null)
+        //                doc.putProperty(BaseDocument.UndoableEditWrapper.class, wrap);
+        //        }
+    }
+
+    private void unsetWrappers(Transaction commit, UndoableWrapper wrap) {
+        wrap.setActive(false);
+
+        //        setWrappers(commit, null);
+    }
+
+    private Document getDocument(FileObject f) {
+        try {
+            DataObject dob = DataObject.find(f);
+            EditorCookie cookie = dob.getLookup().lookup(EditorCookie.class);
+            if (cookie == null)
+                return null;
+            return cookie.getDocument();
+        } catch (DataObjectNotFoundException ex) {
+            return null;
+        }
+    }
+
     
     private class ElementsCollection extends AbstractCollection<RefactoringElement> {
         @Override
