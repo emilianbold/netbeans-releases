@@ -47,6 +47,7 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
@@ -64,8 +65,10 @@ import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -320,6 +323,42 @@ public class SftpClient implements RemoteClient {
             LOGGER.log(Level.FINE, "Error while listing files for " + pwd, ex);
             sftpLogger.error(ex.getLocalizedMessage());
             throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotListFiles", pwd), ex);
+        }
+        return result;
+    }
+
+    @Override
+    public synchronized RemoteFile listFile(String absolutePath) throws RemoteException {
+        assert absolutePath.startsWith(TransferFile.REMOTE_PATH_SEPARATOR) : "Not absolute path give but: " + absolutePath;
+
+        RemoteFile result = null;
+        try {
+            sftpLogger.info("LIST"); // NOI18N
+            sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_DirListing"));
+
+            SftpATTRS attrs = sftpClient.stat(absolutePath);
+            if (!attrs.isDir()) {
+                @SuppressWarnings("unchecked")
+                Collection<ChannelSftp.LsEntry> files = sftpClient.ls(absolutePath);
+                if (files.size() == 1) {
+                    for (ChannelSftp.LsEntry file : files) {
+                        if (file.getFilename().equals(RemoteUtils.getName(absolutePath))) {
+                            String parentPath = RemoteUtils.getParentPath(absolutePath);
+                            assert parentPath != null : "Parent path should exist for " + absolutePath;
+                            result = new RemoteFileImpl(file, parentPath);
+                        }
+                    }
+
+                } else {
+                    assert false : "Only one file should be found and not " + files.size();
+                }
+            }
+
+            sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_DirectorySendOk"));
+        } catch (SftpException ex) {
+            LOGGER.log(Level.FINE, "Error while listing file for " + absolutePath, ex);
+            sftpLogger.error(ex.getLocalizedMessage());
+            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotListFile", absolutePath), ex);
         }
         return result;
     }

@@ -200,7 +200,7 @@ public final class SyntaxAnalyzer {
     }
 
     private void tag(boolean emptyTag, ProblemDescription problem) {
-        List<SyntaxElement.TagAttribute> attributes = new ArrayList<SyntaxElement.TagAttribute>();
+        List<SyntaxElement.TagAttribute> attributes = new ArrayList<SyntaxElement.TagAttribute>(1); //use small initial capacity since typically there are one or two attribs (if any)
             for(int i = 0; i < attr_keys.size(); i++) {
                 TokenInfo key = attr_keys.get(i);
                 List<TokenInfo> values = attr_values.get(i);
@@ -209,27 +209,43 @@ public final class SyntaxAnalyzer {
                 if(values == null) {
                     //attribute has no value
                     SyntaxElement.TagAttribute ta = new SyntaxElement.TagAttribute(
-                            key.token.text().toString().intern(),
-                            joinedValue.toString().intern(), 
+                            key.token.text(),
+                            null, 
                             key.offset,
-                            key.offset + key.token.length(),
+                            -1,
                             0);
                     attributes.add(ta);
                 } else {
-                    for(TokenInfo t: values) {
-                        joinedValue.append(t.token.text());
+                    if(values.size() == 1) {
+                        //one part value
+                        TokenInfo ti = values.get(0);
+                        
+                        SyntaxElement.TagAttribute ta = new SyntaxElement.TagAttribute(
+                                key.token.text(),
+                                ti.token.text(), 
+                                key.offset, 
+                                ti.offset,
+                                ti.token.length());
+                        
+                        attributes.add(ta);
+                        
+                    } else {
+                        //multipart value
+                        for(TokenInfo t: values) {
+                            joinedValue.append(t.token.text());
+                        }
+
+                        TokenInfo firstValuePart = values.get(0);
+                        TokenInfo lastValuePart = values.get(values.size() - 1);
+
+                        SyntaxElement.TagAttribute ta = new SyntaxElement.TagAttribute(
+                                key.token.text(),
+                                joinedValue.toString().intern(), 
+                                key.offset, 
+                                firstValuePart.offset,
+                                lastValuePart.offset + lastValuePart.token.length() - firstValuePart.offset);
+                        attributes.add(ta);
                     }
-
-                    TokenInfo firstValuePart = values.get(0);
-                    TokenInfo lastValuePart = values.get(values.size() - 1);
-
-                    SyntaxElement.TagAttribute ta = new SyntaxElement.TagAttribute(
-                            key.token.text().toString().intern(),
-                            joinedValue.toString().intern(), 
-                            key.offset, 
-                            firstValuePart.offset,
-                            lastValuePart.offset + lastValuePart.token.length() - firstValuePart.offset);
-                    attributes.add(ta);
                 }
             }
 
