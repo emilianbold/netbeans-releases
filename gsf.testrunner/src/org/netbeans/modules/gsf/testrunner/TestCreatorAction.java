@@ -100,8 +100,12 @@ public class TestCreatorAction extends NodeAction {
             return false;
         }
         Collection<? extends Lookup.Item<TestCreatorProvider>> providers = Lookup.getDefault().lookupResult(TestCreatorProvider.class).allItems();
+        boolean enable;
         for (Lookup.Item<TestCreatorProvider> provider : providers) {
-            return provider.getInstance().enable(activatedNodes);
+            enable = provider.getInstance().enable(activatedNodes);
+            if(enable) {
+                return true;
+            }
         }
         return false;
     }
