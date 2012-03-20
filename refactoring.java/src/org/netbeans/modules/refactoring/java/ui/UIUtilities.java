@@ -474,8 +474,7 @@ public final class UIUtilities {
             try {
                 bounds = typeParameterElement.getBounds();
                 if ((bounds != null) && (bounds.size() > 0)) {
-                    if (bounds.size() == 1 && "java.lang.Object".equals( bounds.get(0).toString())) { // NOI18N
-                    } else {
+                    if(!(bounds.size() == 1 && "java.lang.Object".equals( bounds.get(0).toString()))) { // NOI18N
                         stringBuilder.append(" extends "); // NOI18N
                         first = true;
                         for (TypeMirror typeMirror : bounds) {
