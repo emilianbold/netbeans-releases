@@ -60,6 +60,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
 
@@ -668,29 +669,23 @@ public final class NbDocument extends Object {
     }
     
     private static void doShow(final Line l, final int column, final Line.ShowOpenType openType, final Line.ShowVisibilityType visibilityType) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            l.show(openType, visibilityType, column);
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    l.show(openType, visibilityType, column);
-                }
-            });
-        }
+        Mutex.EVENT.writeAccess(new Runnable() {
+
+            @Override
+            public void run() {
+                l.show(openType, visibilityType, column);
+            }
+        });
     }
 
     private static void doOpen(final Openable oc) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            oc.open();
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    oc.open();
-                }
-            });
-        }
+        Mutex.EVENT.writeAccess(new Runnable() {
+
+            @Override
+            public void run() {
+                oc.open();
+            }
+        });
     }
 
     /** Specialized version of document that knows how to lock the document

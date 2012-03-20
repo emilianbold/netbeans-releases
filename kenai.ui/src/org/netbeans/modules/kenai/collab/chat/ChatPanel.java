@@ -94,9 +94,6 @@ import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -107,8 +104,6 @@ import org.openide.util.NbBundle;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import static org.netbeans.modules.kenai.collab.chat.ChatTopComponent.*;
-import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 
 /**

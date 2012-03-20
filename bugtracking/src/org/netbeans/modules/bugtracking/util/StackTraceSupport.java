@@ -73,7 +73,6 @@ import org.netbeans.modules.bugtracking.spi.VCSAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.text.DataEditorSupport;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
