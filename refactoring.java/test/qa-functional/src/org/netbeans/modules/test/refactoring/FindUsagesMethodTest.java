@@ -118,8 +118,9 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
             new EventTool().waitNoEvent(500);
             assertEquals(false, findUsagesClassOperator.getFind().isEnabled());
         } finally {
-            if (findUsagesClassOperator != null)
+            if (findUsagesClassOperator != null) {
                 findUsagesClassOperator.getCancel().push();
+            }
         }
     }
 
@@ -150,8 +151,9 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         } finally {
             System.out.println("Waited "+(System.currentTimeMillis()-currentTimeMillis));
             timeouts.setTimeout("ComponentOperator.WaitComponentTimeout", origTimeout);
-            if (findUsagesClassOperator != null)
+            if (findUsagesClassOperator != null) {
                 findUsagesClassOperator.getCancel().push();
+            }
         }
     }
 
@@ -182,8 +184,9 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         } finally {
             System.out.println("Waited "+(System.currentTimeMillis()-currentTimeMillis));
             timeouts.setTimeout("ComponentOperator.WaitComponentTimeout", origTimeout);
-            if (findUsagesClassOperator != null)
+            if (findUsagesClassOperator != null) {
                 findUsagesClassOperator.getCancel().push();
+            }
         }
     }
 

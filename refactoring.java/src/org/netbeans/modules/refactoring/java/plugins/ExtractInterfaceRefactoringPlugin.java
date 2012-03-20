@@ -261,8 +261,9 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
      */
     private static List<TypeMirror> findUsedGenericTypes(ExtractInterfaceRefactoring refactoring, CompilationInfo javac, TypeElement javaClass) {
         List<TypeMirror> typeArgs = JavaRefactoringUtils.elementsToTypes(javaClass.getTypeParameters());
-        if (typeArgs.isEmpty())
+        if (typeArgs.isEmpty()) {
             return typeArgs;
+        }
         
         Types typeUtils = javac.getTypes();
         Set<TypeMirror> used = Collections.newSetFromMap(new IdentityHashMap<TypeMirror, Boolean>());
@@ -316,8 +317,9 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         public void performChange() {
             try {
                 FileObject folderFO = URLMapper.findFileObject(folderURL);
-                if (folderFO == null)
+                if (folderFO == null) {
                     return;
+                }
                 
                 // create new file
                 
