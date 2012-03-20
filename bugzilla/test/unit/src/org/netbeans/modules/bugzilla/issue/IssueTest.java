@@ -61,6 +61,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
@@ -787,8 +788,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
     // XXX test new issue
 
     private void addHandler(LogHandler lh) {
-        Logger l = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager");
-        l.addHandler(lh);
+        BugtrackingManager.LOG.addHandler(lh);
     }
 
     private void assertStatus(int expectedStatus, BugzillaIssue issue, IssueField f) throws IllegalAccessException, IllegalArgumentException, NoSuchMethodException, InvocationTargetException {
