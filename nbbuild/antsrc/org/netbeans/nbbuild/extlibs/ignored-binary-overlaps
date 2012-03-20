@@ -31,4 +31,4 @@ javacard/JCDK3.0.2_ConnectedEdition/lib/commons-httpclient-3.0.jar mobility/modu
 
 # Amazon Beanstalk SDK distributed as is:
 enterprise/modules/ext/commons-logging-1.1.1.jar ide/modules/ext/commons-logging-1.1.1.jar
-enterprise/modules/ext/commons-codec-1.3.jar ide/modules/org-apache-commons-codec.jar
+enterprise/modules/ext/commons-codec-1.3.jar javacard/JCDK3.0.2_ConnectedEdition/lib/commons-codec-1.3.jar

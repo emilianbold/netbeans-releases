@@ -55,9 +55,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.customizer.support.SelectedItemsTable;
 import org.netbeans.modules.maven.api.customizer.support.SelectedItemsTable.SelectedItemsTableModel;
+import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
@@ -79,11 +80,12 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
     private static final String PUBLIC_PACKAGES = "publicPackages";
 
     private final SelectedItemsTableModel tableModel;
-    private final ModelHandle handle;
+    private final ModelHandle2 handle;
     private final Project project;
+    private ModelOperation<POMModel> operation;
 
     /** Creates new form PublicPackagesPanel */
-    public PublicPackagesPanel(ModelHandle handle, Project prj) {
+    public PublicPackagesPanel(ModelHandle2 handle, Project prj) {
         this.handle = handle;
         this.project = prj;
         tableModel = new SelectedItemsTableModel(this);
@@ -174,8 +176,15 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
     }
 
     @Override
-    public void write(SortedMap<String, Boolean> selItems) {
-        POMModel pomModel = handle.getPOMModel();
+    public void write(SortedMap<String, Boolean> items) {
+        if (operation != null) {
+            handle.removePOMModification(operation);
+        }
+        final SortedMap<String, Boolean> selItems = new TreeMap<String, Boolean>(items);
+        operation = new ModelOperation<POMModel>() {
+
+            @Override
+            public void performOperation(POMModel pomModel) {
         Build build = pomModel.getProject().getBuild();
         boolean selEmpty = true;
         for (Boolean selected : selItems.values()) {
@@ -220,7 +229,6 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
         if (selEmpty) {
             if (packages != null) {
                 config.removeExtensibilityElement(packages);
-                handle.markAsModified(pomModel);
             }
             return;
         }
@@ -239,7 +247,9 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
             packages.addExtensibilityElement(publicP);
         }
 
-        handle.markAsModified(pomModel);
+    }
+        };
+        handle.addPOMModification(operation);
     }
 
     /**

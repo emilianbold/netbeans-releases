@@ -271,7 +271,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         String[] lines = new String[files.length];
         for (int i = 0; i < files.length; i++) {
             lines[i] = files[i].getAbsolutePath();            
-            if (files[i].getName().indexOf('@') != -1) {
+            if (files[i].getAbsolutePath().indexOf('@') != -1) {
                 lines[i] += '@';
             }
         }

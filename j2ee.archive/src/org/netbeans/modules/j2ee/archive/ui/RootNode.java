@@ -118,7 +118,6 @@ public class RootNode extends org.openide.nodes.AbstractNode {
         actions.add(ProjectSensitiveActions.projectCommandAction(
                 ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null)); // NOI18N
         actions.add(null);
-        actions.add(CommonProjectActions.setAsMainProjectAction());
         actions.add(CommonProjectActions.openSubprojectsAction());
         actions.add(CommonProjectActions.closeProjectAction());
         actions.add(null);

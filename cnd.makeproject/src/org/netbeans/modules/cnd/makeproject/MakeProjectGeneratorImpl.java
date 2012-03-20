@@ -165,7 +165,6 @@ public class MakeProjectGeneratorImpl {
 
         if (prjParams.getOpenFlag()) {
             OpenProjects.getDefault().open(new Project[]{p}, false);
-            OpenProjects.getDefault().setMainProject(p);
         }
 
         return p;

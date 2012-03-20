@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.MultiTermQuery;
@@ -1151,10 +1152,21 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     if (fieldName != null) {
                         Query q;
                         if (ArtifactInfo.NAMES.equals(fieldName)) {
-                            String clsname = field.getValue().replace(".", "/"); //NOI18N
-                            q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase()));
+                            try {
+                                String clsname = field.getValue().replace(".", "/"); //NOI18N
+                                q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase()));
+                            } catch (IllegalArgumentException iae) {
+                                //#204651 only escape when problems occur
+                                String clsname = QueryParser.escape(field.getValue().replace(".", "/")); //NOI18N
+                                q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase()));
+                            }
                         } else if (ArtifactInfo.ARTIFACT_ID.equals(fieldName)) {
-                            q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(field.getValue()));
+                            try {
+                                q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(field.getValue()));
+                            } catch (IllegalArgumentException iae) {
+                                //#204651 only escape when problems occur
+                                q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(QueryParser.escape(field.getValue())));
+                            }
                         } else {
                             if (field.getMatch() == QueryField.MATCH_EXACT) {
                                 q = new TermQuery(new Term(fieldName, field.getValue()));

@@ -133,8 +133,9 @@ public class RenameTransformer extends RefactoringVisitor {
     }
     
     private void renameUsageIfMatch(final TreePath path, Tree tree, Element elementToFind) {
-        if (workingCopy.getTreeUtilities().isSynthetic(path))
+        if (workingCopy.getTreeUtilities().isSynthetic(path)) {
             return;
+        }
         TreePath elementPath = path;
         Trees trees = workingCopy.getTrees();
         Element el = workingCopy.getTrees().getElement(elementPath);
@@ -309,8 +310,9 @@ public class RenameTransformer extends RefactoringVisitor {
     }
     
     private void renameDeclIfMatch(TreePath path, Tree tree, Element elementToFind) {
-        if (workingCopy.getTreeUtilities().isSynthetic(path))
+        if (workingCopy.getTreeUtilities().isSynthetic(path)) {
             return;
+        }
         Element el = workingCopy.getTrees().getElement(path);
         if (el==null) {
             return;

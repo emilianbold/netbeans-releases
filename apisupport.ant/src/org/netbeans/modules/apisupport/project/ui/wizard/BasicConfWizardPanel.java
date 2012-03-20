@@ -97,7 +97,7 @@ final class BasicConfWizardPanel extends NewTemplatePanel {
     }
     
     public @Override HelpCtx getHelp() {
-        return new HelpCtx(BasicConfWizardPanel.class);
+        return new HelpCtx("org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel");
     }
     
 }

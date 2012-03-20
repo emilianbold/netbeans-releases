@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
  * @author Vladimir Voskresensky
  */
 public interface APTTraceFlags {
-    public static final boolean APT_OPTIMIZE_MEMORY = DebugUtils.getBoolean("apt.best.memory", true); // NOI18N
     public static final boolean APT_SHARE_MACROS = DebugUtils.getBoolean("apt.share.macros", true); // NOI18N
 
     public static final boolean APT_SHARE_TEXT = DebugUtils.getBoolean("apt.share.text", true); // NOI18N

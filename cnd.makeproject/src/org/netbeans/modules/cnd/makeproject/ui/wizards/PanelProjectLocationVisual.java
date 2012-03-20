@@ -116,8 +116,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         // Accessibility
         makefileTextField.getAccessibleContext().setAccessibleDescription(getString("AD_MAKEFILE"));
 
-        setAsMainCheckBox.setVisible(true);
-
         createMainTextField.setText("main"); // NOI18N
         createMainTextField.getDocument().addDocumentListener(PanelProjectLocationVisual.this);
 
@@ -258,7 +256,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         createMainCheckBox = new javax.swing.JCheckBox();
         createMainTextField = new javax.swing.JTextField();
         createMainComboBox = new javax.swing.JComboBox();
-        setAsMainCheckBox = new javax.swing.JCheckBox();
         hostLabel = new javax.swing.JLabel();
         toolchainLabel = new javax.swing.JLabel();
         hostComboBox = new javax.swing.JComboBox();
@@ -359,7 +356,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
         createMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(createMainCheckBox, bundle.getString("LBL_createMainfile")); // NOI18N
-        createMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         createMainCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createMainCheckBoxActionPerformed(evt);
@@ -387,18 +383,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
         add(createMainComboBox, gridBagConstraints);
-
-        setAsMainCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, bundle.getString("LBL_setAsMainCheckBox")); // NOI18N
-        setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        add(setAsMainCheckBox, gridBagConstraints);
 
         hostLabel.setLabelFor(hostComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_HOST")); // NOI18N
@@ -654,7 +638,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             }
         }
 
-        d.putProperty(WizardConstants.PROPERTY_SET_AS_MAIN, setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE);
         d.putProperty(WizardConstants.MAIN_CLASS, null); // NOI18N
 
         MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
@@ -770,7 +753,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private javax.swing.JTextField projectLocationTextField;
     private javax.swing.JLabel projectNameLabel;
     private javax.swing.JTextField projectNameTextField;
-    private javax.swing.JCheckBox setAsMainCheckBox;
     private javax.swing.JComboBox toolchainComboBox;
     private javax.swing.JLabel toolchainLabel;
     // End of variables declaration//GEN-END:variables

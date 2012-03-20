@@ -403,12 +403,15 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     private Tree translateLastStatement(BlockTree body, Tree parent, Tree grandparent, List<StatementTree> newStatementList, Tree lastStatement) {
         Tree result = lastStatement;
         if (parent.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
-            if (result.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
-                result = ((ExpressionStatementTree) result).getExpression();
-            } else if (result.getKind() == Tree.Kind.RETURN) {
-                result = ((ReturnTree) result).getExpression();
-            } else {
-                // TODO: Problem, need an expression, but last statement is not an expression.
+            switch (result.getKind()) {
+                case EXPRESSION_STATEMENT:
+                    result = ((ExpressionStatementTree) result).getExpression();
+                    break;
+                case RETURN:
+                    result = ((ReturnTree) result).getExpression();
+                    break;
+                default:
+                    // TODO: Problem, need an expression, but last statement is not an expression.
             }
         } else {
             switch (grandparent.getKind()) {

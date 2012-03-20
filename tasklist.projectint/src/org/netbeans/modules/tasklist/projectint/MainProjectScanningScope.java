@@ -62,7 +62,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -75,7 +74,7 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 
 /**
- * Task scanning scope for the main project and all opened projects that depend on it.
+ * Task scanning scope for the selected project.
  * 
  * @author S. Aubrecht
  */
@@ -127,21 +126,6 @@ public class MainProjectScanningScope extends TaskScanningScope
         if( owner.equals( p ) )
             return true;
         
-        if( p.equals( OpenProjects.getDefault().getMainProject() ) ) {
-            Project[] projects = OpenProjects.getDefault().getOpenProjects();
-            for( int i=0; i<projects.length; i++ ) {
-                if( projects[i].equals( p ) )
-                    continue;
-
-                SubprojectProvider subProjectProvider = projects[i].getLookup().lookup( SubprojectProvider.class );
-                if( null != subProjectProvider 
-                        && subProjectProvider.getSubprojects().contains( p )
-                        && projects[i].equals( owner ) ) {
-                    return true;
-                }
-            }
-        }
-        
         return false;
     }
 
@@ -160,10 +144,7 @@ public class MainProjectScanningScope extends TaskScanningScope
                 OpenProjects.getDefault().addPropertyChangeListener( this );
                 TopComponent.getRegistry().addPropertyChangeListener( this );
 
-                Project p = OpenProjects.getDefault().getMainProject();
-                if( null == p ) {
-                    p = findCurrentProject();
-                }
+                Project p = findCurrentProject();
                 setCurrentProject(p, false);
             } else if( null == newCallback && null != callback ) {
                 OpenProjects.getDefault().removePropertyChangeListener( this );
@@ -175,19 +156,7 @@ public class MainProjectScanningScope extends TaskScanningScope
     }
     
     public void propertyChange( PropertyChangeEvent e ) {
-        if( OpenProjects.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() ) ) {
-            synchronized( this ) {
-                if( null != callback ) {
-                    Project p = OpenProjects.getDefault().getMainProject();
-                    if( null == p ) {
-                        p = findCurrentProject();
-                    } else {
-                        setCurrentProject(null, false);
-                    }
-                    setCurrentProject( p, true );
-                }
-            }
-        } else if( TopComponent.Registry.PROP_ACTIVATED_NODES.equals( e.getPropertyName() ) ) {
+        if( TopComponent.Registry.PROP_ACTIVATED_NODES.equals( e.getPropertyName() ) ) {
             //start timer to switch current project
             if( null != refreshTimer )
                 refreshTimer.cancel();
@@ -196,11 +165,8 @@ public class MainProjectScanningScope extends TaskScanningScope
 
                 @Override
                 public void run() {
-                    Project p = OpenProjects.getDefault().getMainProject();
-                    if( null == p ) {
-                        p = findCurrentProject();
+                    Project p = findCurrentProject();
                         setCurrentProject( p, true );
-                    }
                 }
             }, 500);
         }
@@ -233,16 +199,11 @@ public class MainProjectScanningScope extends TaskScanningScope
                     NbBundle.getMessage(MainProjectScanningScope.class, "LBL_NoProjectStatusBar") ); //NOI18N
         } else {
             ProjectInformation pi = ProjectUtils.getInformation(p);
-            if( p.equals(OpenProjects.getDefault().getMainProject()) ) {
-                labels.put( Utils.KEY_STATUS_BAR_LABEL, 
-                        NbBundle.getMessage(MainProjectScanningScope.class, "LBL_MainProjectStatusBar") ); //NOI18N
-            } else {
                 labels.put(AbstractAction.SHORT_DESCRIPTION, NbBundle.getMessage(MainProjectScanningScope.class, 
                         "HINT_CurrentProjectScope", pi.getDisplayName()) ); //NOI18N
                 labels.put(AbstractAction.NAME, pi.getDisplayName());
                 labels.put( Utils.KEY_STATUS_BAR_LABEL, 
                         NbBundle.getMessage(MainProjectScanningScope.class, "LBL_CurrentProjectStatusBar", pi.getDisplayName()) ); //NOI18N
-            }
         }
     }
     

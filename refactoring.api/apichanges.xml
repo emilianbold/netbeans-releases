@@ -49,6 +49,22 @@ made subject to such option by the copyright holder.
     <apidef name="refactoring">Refactoring API</apidef>
 </apidefs>
 <changes>
+    <change id="RefactoringCommit">
+        <api name="refactoring"/>
+        <summary>Added RefactoringCommit and ModificationResult SPI classes.</summary>
+        <version major="1" minor="23"/>
+        <date day="20" month="3" year="2011"/>
+        <author login="jbecicka"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added RefactoringCommit and ModificationResult SPI classes.
+            </p>    
+        </description>
+        <class package="org.netbeans.modules.refactoring.spi" name="ModificationResult"/>
+        <class package="org.netbeans.modules.refactoring.spi" name="RefactoringCommit"/>
+        <issue number="209110"/>
+    </change>
     <change id="CopyRefactoring">
         <api name="refactoring"/>
         <summary>Added CopyRefactoring to support Copy of multiple files.</summary>

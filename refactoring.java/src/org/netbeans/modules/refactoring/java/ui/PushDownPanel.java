@@ -125,7 +125,9 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
     
     @Override
     public void initialize() {
-        if (initialized) return;
+        if (initialized) {
+            return;
+        }
         final TreePathHandle handle = refactoring.getSourceType();
         JavaSource source = JavaSource.forFileObject(handle.getFileObject());
         try {
@@ -163,8 +165,9 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                     i++;
                 }
                 members = new Object[i][3];
-                if (i > 0)
-                    System.arraycopy(allMembers, 0, members, 0, i);
+                if (i > 0) {
+                        System.arraycopy(allMembers, 0, members, 0, i);
+                    }
                 
                 // set renderer for the second column ("Member") do display name of the feature
                 membersTable.setDefaultRenderer(COLUMN_CLASSES[1], new UIUtilities.JavaElementTableCellRenderer() {
@@ -232,8 +235,9 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                 Object element = members[i][1];
                 MemberInfo member;
                 member = (MemberInfo) element;
-                if (members[i][2]!=null)
-                        member.setMakeAbstract((Boolean)members[i][2]);
+                if (members[i][2]!=null) {
+                    member.setMakeAbstract((Boolean)members[i][2]);
+                }
                 list.add(member);
             }
         }

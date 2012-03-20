@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,16 +34,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.refactoring.java.spi;
 
-package org.netbeans.modules.refactoring.spi.impl;
-
-import java.util.EventListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import org.netbeans.modules.refactoring.spi.ModificationResult;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jan Becicka
  */
-public interface InvalidationListener extends EventListener {
-    void invalidateObject();
+class JavaModificationResult implements ModificationResult {
+
+    private org.netbeans.api.java.source.ModificationResult delegate;
+    
+    JavaModificationResult(org.netbeans.api.java.source.ModificationResult r) {
+        this.delegate = r;
+    }
+
+    @Override
+    public Collection<? extends FileObject> getModifiedFileObjects() {
+        return delegate.getModifiedFileObjects();
+    }
+
+    @Override
+    public Collection<? extends File> getNewFiles() {
+        return delegate.getNewFiles();
+    }
+
+    @Override
+    public void commit() throws IOException {
+        delegate.commit();
+    }
+
+    @Override
+    public String getResultingSource(FileObject file) throws IOException, IllegalArgumentException {
+        return delegate.getResultingSource(file);
+    }
 }

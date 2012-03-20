@@ -48,7 +48,7 @@ import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 /**
- *
+ * Subversion 1.7
  * @author tomas
  */
 public class JhlClientTest extends NbTestCase {
@@ -78,6 +78,7 @@ public class JhlClientTest extends NbTestCase {
         suite.addTestSuite(ImportTestHidden.class);
         suite.addTestSuite(InfoTestHidden.class);
         suite.addTestSuite(ListTestHidden.class);
+        // unchecked yet
         suite.addTestSuite(LogTestHidden.class);
         suite.addTestSuite(MergeTestHidden.class);
         suite.addTestSuite(MkdirTestHidden.class);

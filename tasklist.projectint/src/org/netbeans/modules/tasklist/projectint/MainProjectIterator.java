@@ -45,16 +45,12 @@
 package org.netbeans.modules.tasklist.projectint;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
 
 /**
  * Iterate all resources (files and folders) that are under the current main project
@@ -92,36 +88,15 @@ class MainProjectIterator implements Iterator<FileObject> {
     }
     
     protected Iterator<FileObject> createIterator() {
-        boolean isMainProject = true;
-        Project currentProject = OpenProjects.getDefault().getMainProject();
-        if( null == currentProject ) {
-            isMainProject = false;
-            currentProject = MainProjectScanningScope.findCurrentProject();
+        Project currentProject = MainProjectScanningScope.findCurrentProject();
             if( null == currentProject )
                 return new EmptyIterator();
-        }
         
         ArrayList<FileObject> roots = new ArrayList<FileObject>(10);
         
         addProject( currentProject, roots );
         
-        if( isMainProject )
-            addDependantProjects( currentProject, roots );
-        
         return new FileObjectIterator( roots );
-    }
-    
-    private void addDependantProjects( Project mainProject, ArrayList<FileObject> roots ) {
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        for( int i=0; i<projects.length; i++ ) {
-            if( projects[i].equals( mainProject ) )
-                continue;
-            
-            SubprojectProvider subProjectProvider = projects[i].getLookup().lookup( SubprojectProvider.class );
-            if( null != subProjectProvider && subProjectProvider.getSubprojects().contains( mainProject ) ) {
-                addProject( projects[i], roots );
-            }
-        }
     }
     
     private void addProject( Project p, ArrayList<FileObject> roots ) {
