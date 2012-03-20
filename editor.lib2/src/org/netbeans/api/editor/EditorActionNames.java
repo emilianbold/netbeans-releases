@@ -118,4 +118,10 @@ public final class EditorActionNames {
      * @since 1.56
      */
     public static final String moveCodeElementDown = "move-code-element-down"; // NOI18N
+
+    /**
+     * Remove the enclosing parts of a nested statement.
+     * @since 1.57
+     */
+    public static final String removeSurroundingCode = "remove-surrounding-code"; // NOI18N
 }

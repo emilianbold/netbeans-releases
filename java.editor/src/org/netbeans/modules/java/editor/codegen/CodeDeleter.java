@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,54 +40,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.actions;
 
-import java.awt.event.ActionEvent;
+package org.netbeans.modules.java.editor.codegen;
 
-import javax.swing.Action;
-import javax.swing.text.JTextComponent;
-
-import org.netbeans.api.editor.EditorActionNames;
-import org.netbeans.api.editor.EditorActionRegistration;
-import org.netbeans.api.editor.EditorActionRegistrations;
-import org.netbeans.api.editor.EditorUtilities;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.spi.editor.AbstractEditorAction;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 
 /**
- * Move entire code elements (statements and class members) up or down.
+ * Interface to be implemented by all deleters removing their code snippets 
+ * from documents using the Remove Surrounding Code editor action.
  *
  * @author Dusan Balek
  */
-@EditorActionRegistrations({
-    @EditorActionRegistration(name = EditorActionNames.moveCodeElementUp,
-                              menuPath = "Source",
-                              menuPosition = 840,
-                              menuText = "#" + EditorActionNames.moveCodeElementUp + "_menu_text"),
-    @EditorActionRegistration(name = EditorActionNames.moveCodeElementDown,
-                              menuPath = "Source",
-                              menuPosition = 860,
-                              menuText = "#" + EditorActionNames.moveCodeElementDown + "_menu_text")
-})
-public class MoveCodeElementAction extends AbstractEditorAction {
+public interface CodeDeleter {
 
-    @Override
-    public void actionPerformed(ActionEvent evt, JTextComponent component) {
-        if (component != null) {
-            String actionName = EditorActionNames.moveCodeElementUp.equals(actionName())
-                    ? BaseKit.moveSelectionElseLineUpAction
-                    : BaseKit.moveSelectionElseLineDownAction;
-            Action action = EditorUtilities.getAction(component.getUI().getEditorKit(component), actionName);
-            if (action != null) {
-                action.actionPerformed(evt);
-                return;
-            }
-        }
-        component.getToolkit().beep();
-    }
+    /**
+     * Gets the deleter's name to be displayed in the popup that appears on
+     * the Remove Surrounding Code action invocation.
+     * @return non-null name
+     */
+    public String getDisplayName();
+
+    /**
+     * Invokes the deleter to remove the code snippet from a document.
+     */
+    public void invoke();
+    
+    /**
+     * Gets a bag highlighting the code snippet to be removed.
+     * @return non-null highlights bag.
+     */
+    public OffsetsBag getHighlight();
 }
