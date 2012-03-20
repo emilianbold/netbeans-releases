@@ -79,7 +79,7 @@ public final class Watch {
      * @return <code>true</code> if the watch is enabled,
      *         <code>false</code> otherwise.
      */
-    boolean isEnabled () {
+    synchronized boolean isEnabled () {
         return enabled;
     }
     
@@ -89,8 +89,10 @@ public final class Watch {
      *                <code>false</code> otherwise
      */
     void setEnabled(boolean enabled) {
-        if (enabled == this.enabled) return ;
-        this.enabled = enabled;
+        synchronized(this) {
+            if (enabled == this.enabled) return ;
+            this.enabled = enabled;
+        }
         pcs.firePropertyChange (PROP_ENABLED, !enabled, enabled);
     }
     
@@ -99,7 +101,7 @@ public final class Watch {
      *
      * @return expression this watch is created for
      */
-    public String getExpression () {
+    public synchronized String getExpression () {
         return expression;
     }
 
@@ -109,8 +111,11 @@ public final class Watch {
      * @param expression expression to watch
      */
     public void setExpression (String expression) {
-        String old = this.expression;
-        this.expression = expression;
+        String old;
+        synchronized(this) {
+            old = this.expression;
+            this.expression = expression;
+        }
         pcs.firePropertyChange (PROP_EXPRESSION, old, expression);
     }
     
