@@ -788,7 +788,7 @@ public final class ToolchainManagerImpl {
         Element e = doc.createElement("cpp_standard"); // NOI18N
         element.appendChild(e);
         Element c;
-        String[] names = new String[]{"default", "cpp11"}; // NOI18N
+        String[] names = new String[]{"default", "cpp98", "cpp11"}; // NOI18N
         for (int i = 0; i < flags.length; i++) {
             c = doc.createElement(names[i]);
             c.setAttribute("flags", flags[i]); // NOI18N
@@ -1345,16 +1345,17 @@ public final class ToolchainManagerImpl {
     static final class CppStandard {
 
         String cppDefault;
+        String cpp98;
         String cpp11;
         int default_selection = 0;
 
         public boolean isValid() {
-            return cppDefault != null && cpp11 != null;
+            return cppDefault != null && cpp98 != null && cpp11 != null;
         }
 
         public String[] values() {
             if (isValid()) {
-                return new String[]{cppDefault, cpp11};
+                return new String[]{cppDefault, cpp98, cpp11};
             }
             return null;
         }
@@ -1847,10 +1848,15 @@ public final class ToolchainManagerImpl {
                     if (isDefault) {
                         st.default_selection = 0;
                     }
+                } else if (path.endsWith(".cpp98")) { // NOI18N
+                    st.cpp98 = flags;
+                    if (isDefault) {
+                        st.default_selection = 1;
+                    }
                 } else if (path.endsWith(".cpp11")) { // NOI18N
                     st.cpp11 = flags;
                     if (isDefault) {
-                        st.default_selection = 1;
+                        st.default_selection = 2;
                     }
                 }
             } else if (path.indexOf(".c_standard.") > 0) { // NOI18N
