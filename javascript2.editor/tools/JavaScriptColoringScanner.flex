@@ -166,9 +166,10 @@ Exponent = [eE] [+-]? [0-9]+
 StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
 SStringCharacter = [^\r\n\'\\] | \\{LineTerminator}
 
-SimpleRegexpCharacter  = [^/\r\n\[\\] | \\{InputCharacter}
-RegexpCharacter  = {SimpleRegexpCharacter} | \[{SimpleRegexpCharacter}+\]
-RegexpFirstCharacter  = [^/\r\n\[\*\\] | \\{InputCharacter} | \[{SimpleRegexpCharacter}+\]
+RegexpBackslashSequence = \\{InputCharacter}
+RegexpClass = "["([^\x5d\r\n\\] | {RegexpBackslashSequence})*"]"
+RegexpCharacter = [^\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClass}
+RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClass}
 
 %state STRING
 %state STRINGEND
@@ -177,6 +178,7 @@ RegexpFirstCharacter  = [^/\r\n\[\*\\] | \\{InputCharacter} | \[{SimpleRegexpCha
 %state REGEXP
 %state REGEXPEND
 %state LCOMMENTEND
+%state ERROR
 
 %%
 
@@ -237,7 +239,7 @@ RegexpFirstCharacter  = [^/\r\n\[\*\\] | \\{InputCharacter} | \[{SimpleRegexpCha
   /* null literal */
   "null"                         { return JsTokenId.KEYWORD_NULL; }
 
-  "/"[\*]                        { return JsTokenId.UNKNOWN; }
+  "/"[*]                         { return JsTokenId.UNKNOWN; }
   "/"
                                  {
                                      if (canFollowLiteral) {
@@ -419,22 +421,17 @@ RegexpFirstCharacter  = [^/\r\n\[\*\\] | \\{InputCharacter} | \[{SimpleRegexpCha
 }
 
 <REGEXP> {
-  "/"                            {
+  {RegexpFirstCharacter}{RegexpCharacter}*"/"
+                                 {
                                      yypushback(1);
                                      yybegin(REGEXPEND);
                                      if (tokenLength - 1 > 0) {
                                          return JsTokenId.REGEXP;
                                      }
                                  }
-
-  {RegexpFirstCharacter}{RegexpCharacter}+
-                                 { }
-  {LineTerminator}               {
+  .                              {
                                      yypushback(1);
-                                     yybegin(YYINITIAL);
-                                     if (tokenLength - 1 > 0) {
-                                         return JsTokenId.UNKNOWN;
-                                     }
+                                     yybegin(ERROR);
                                  }
 }
 
@@ -442,6 +439,19 @@ RegexpFirstCharacter  = [^/\r\n\[\*\\] | \\{InputCharacter} | \[{SimpleRegexpCha
   "/"{IdentifierPart}*           {
                                      yybegin(YYINITIAL);
                                      return JsTokenId.REGEXP_END;
+                                 }
+  .                              {
+                                     yypushback(1);
+                                     yybegin(ERROR);
+                                 }
+}
+<ERROR> {
+  .*{LineTerminator}             {
+                                     yypushback(1);
+                                     yybegin(YYINITIAL);
+                                     if (tokenLength - 1 > 0) {
+                                         return JsTokenId.UNKNOWN;
+                                     }
                                  }
 }
 
