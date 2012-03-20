@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.web.primefaces.ui;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
@@ -85,13 +85,13 @@ public class PrimefacesCustomizerPanel extends javax.swing.JPanel implements Hel
      */
     public final void initLibraries(final boolean setStoredValue) {
         long time = System.currentTimeMillis();
-        final List<String> primefacesLibraries = new ArrayList<String>();
+        final List<Library> primefacesLibraries = new ArrayList<Library>();
 
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
                 for (Library library : PrimefacesImplementation.getAllRegisteredPrimefaces()) {
-                    primefacesLibraries.add(library.getDisplayName());
+                    primefacesLibraries.add(library);
                 }
 
                 // update the combo box with libraries
@@ -117,15 +117,17 @@ public class PrimefacesCustomizerPanel extends javax.swing.JPanel implements Hel
      * Gets in combo box chosen PrimeFaces library.
      * @return name of selected library
      */
-    public String getPrimefacesLibrary() {
-        if (primefacesLibrariesComboBox.getSelectedItem() != null) {
-            return (String) primefacesLibrariesComboBox.getSelectedItem();
+    public Library getPrimefacesLibrary() {
+        Object selectedItem = primefacesLibrariesComboBox.getSelectedItem();
+        if (selectedItem != null && selectedItem instanceof Library) {
+            return (Library) selectedItem;
         }
         return null;
     }
 
-    private void setPrimefacesLibrariesComboBox(List<String> items) {
+    private void setPrimefacesLibrariesComboBox(List<Library> items) {
         primefacesLibrariesComboBox.setModel(new DefaultComboBoxModel(items.toArray()));
+        primefacesLibrariesComboBox.setRenderer(new LibraryComboBoxRenderer());
         primefacesLibrariesComboBox.setEnabled(!items.isEmpty());
     }
 
@@ -234,5 +236,16 @@ public class PrimefacesCustomizerPanel extends javax.swing.JPanel implements Hel
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
+    }
+
+    private class LibraryComboBoxRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            ((JLabel) component).setText(((Library) value).getDisplayName());
+            return component;
+        }
+
     }
 }

@@ -57,6 +57,7 @@ import org.netbeans.modules.web.jsf.api.JsfComponentUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
+import org.netbeans.modules.web.primefaces.ui.PrimefacesCustomizerPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -66,6 +67,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
+ * Represents support for PrimeFaces component libraries.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
@@ -100,44 +102,34 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
 
     @Override
     public Set<FileObject> extend(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
+        // Add PrimeFaces library to WebModule classpath
         try {
-            ProjectClassPathModifier.addLibraries(
-                    new Library[]{LibraryManager.getDefault().getLibrary(PRIMEFACES_LIBRARY_NAME)},
-                    webModule.getJavaSources()[0],
-                    ClassPath.COMPILE);
-
-            // generate PrimeFaces welcome page
-            FileObject welcomePage = generateWelcomePage(webModule);
-            return Collections.singleton(welcomePage);
+            Library primefacesLibrary = getPreferredLibrary(jsfComponentCustomizer);
+            if (primefacesLibrary == null) {
+                LOGGER.log(Level.SEVERE, "No PrimeFaces library found.");
+            } else {
+                // TODO - enhance library by maven dependencies
+                FileObject[] javaSources = webModule.getJavaSources();
+                ProjectClassPathModifier.addLibraries(
+                        new Library[] {primefacesLibrary},
+                        javaSources[0],
+                        ClassPath.COMPILE);
+            }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
         } catch (UnsupportedOperationException ex) {
             LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
         }
-        return Collections.<FileObject>emptySet();
-    }
 
-    private static FileObject generateWelcomePage(WebModule webModule) throws IOException {
-        FileObject templateFO = FileUtil.getConfigFile("Templates/Other/welcomePrimefaces.xhtml"); //NOI18N
-        DataObject templateDO = DataObject.find(templateFO);
-        DataObject generated = templateDO.createFromTemplate(
-                DataFolder.findFolder(webModule.getDocumentBase()),
-                "welcomePrimefaces"); //NOI18N
-        JsfComponentUtils.reformat(generated);
-        
-        // update and reformat index page
-        updateIndexPage(webModule);
-        
-        return generated.getPrimaryFile();
-    }
-
-    private static void updateIndexPage(WebModule webModule) throws DataObjectNotFoundException {
-        FileObject indexFO = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
-        DataObject indexDO = DataObject.find(indexFO);
-        JsfComponentUtils.enhanceFileBody(indexDO, "</h:body>", "<br />\n<h:link outcome=\"welcomePrimefaces\" value=\"Primefaces welcome page\" />"); //NOI18N
-        if (indexFO.isValid() && indexFO.canWrite()) {
-            JsfComponentUtils.reformat(indexDO);
+        // generate PrimeFaces welcome page
+        try {
+            FileObject welcomePage = generateWelcomePage(webModule);
+            return Collections.singleton(welcomePage);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Exception during creating welcome page and extending index", ex); //NOI18N
         }
+
+        return Collections.<FileObject>emptySet();
     }
 
     @Override
@@ -162,9 +154,9 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     @Override
     public void remove(WebModule webModule) {
         try {
-            List<Library> allRegisteredPrimefaces2 = getAllRegisteredPrimefaces();
+            List<Library> allRegisteredPrimefaces = getAllRegisteredPrimefaces();
             ProjectClassPathModifier.removeLibraries(
-                    allRegisteredPrimefaces2.toArray(new Library[allRegisteredPrimefaces2.size()]),
+                    allRegisteredPrimefaces.toArray(new Library[allRegisteredPrimefaces.size()]),
                     webModule.getJavaSources()[0],
                     ClassPath.COMPILE);
         } catch (IOException ex) {
@@ -175,7 +167,7 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     }
 
      /**
-     * Returns {@code List} of all Primefaces2 libraries registered in the IDE.
+     * Returns {@code List} of all Primefaces libraries registered in the IDE.
      *
      * @return {{@code List} of libraries
      */
@@ -197,7 +189,7 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
 
     /**
      * Checks if given library content contains mandatory class in cases of
-     * Primefaces2 library.
+     * Primefaces library.
      *
      * @param libraryContent library content
      * @return {@code true} if the given content contains Primefaces2 library,
@@ -218,5 +210,59 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
      */
     public static Preferences getPrimefacesPreferences() {
         return NbPreferences.forModule(PrimefacesImplementation.class).node(PrimefacesImplementation.PREFERENCES_NODE);
+    }
+
+    /**
+     * Gets library selected in the customizer if was at least opened, otherwise it looks into preferences for
+     * lastly used library, otherwise it choose any registered PrimeFaces library.
+     */
+    private static Library getPreferredLibrary(JsfComponentCustomizer jsfComponentCustomizer) {
+        // get the PrimeFaces library from customizer
+        if (jsfComponentCustomizer != null) {
+            PrimefacesCustomizerPanel panel = ((PrimefacesCustomizerPanel) jsfComponentCustomizer.getComponent());
+            Library libarary = panel.getPrimefacesLibrary();
+            if (libarary != null) {
+                return LibraryManager.getDefault().getLibrary(libarary.getName());
+            }
+        }
+
+        // search for library stored in PrimeFaces preferences
+        Library primefacesLibrary = LibraryManager.getDefault().getLibrary(
+                getPrimefacesPreferences().get(PROP_PREFERRED_LIBRARY, "")); //NOI18N
+        if (primefacesLibrary != null) {
+            return primefacesLibrary;
+        }
+
+        // otherwise search for any registered PrimeFaces library in IDE
+        return getAllRegisteredPrimefaces().get(0);
+    }
+
+    /**
+     * Generates PrimeFaces's welcome page in the webmodule.
+     */
+    private static FileObject generateWelcomePage(WebModule webModule) throws IOException {
+        FileObject templateFO = FileUtil.getConfigFile("Templates/Other/welcomePrimefaces.xhtml"); //NOI18N
+        DataObject templateDO = DataObject.find(templateFO);
+        DataObject generated = templateDO.createFromTemplate(
+                DataFolder.findFolder(webModule.getDocumentBase()),
+                "welcomePrimefaces"); //NOI18N
+        JsfComponentUtils.reformat(generated);
+
+        // update and reformat index page
+        updateIndexPage(webModule);
+
+        return generated.getPrimaryFile();
+    }
+
+    /**
+     * Updates index page of the webmodule - includes link to PrimeFaces's welcome page.
+     */
+    private static void updateIndexPage(WebModule webModule) throws DataObjectNotFoundException {
+        FileObject indexFO = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
+        DataObject indexDO = DataObject.find(indexFO);
+        JsfComponentUtils.enhanceFileBody(indexDO, "</h:body>", "<br />\n<h:link outcome=\"welcomePrimefaces\" value=\"Primefaces welcome page\" />"); //NOI18N
+        if (indexFO.isValid() && indexFO.canWrite()) {
+            JsfComponentUtils.reformat(indexDO);
+        }
     }
 }

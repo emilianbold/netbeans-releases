@@ -122,7 +122,7 @@ public class PrimefacesCustomizer implements JsfComponentCustomizer {
     public void saveConfiguration() {
         Preferences preferences = PrimefacesImplementation.getPrimefacesPreferences();
         if (panel.getPrimefacesLibrary() != null) {
-            preferences.put(PrimefacesImplementation.PROP_PREFERRED_LIBRARY, panel.getPrimefacesLibrary());
+            preferences.put(PrimefacesImplementation.PROP_PREFERRED_LIBRARY, panel.getPrimefacesLibrary().getName());
         }
     }
 
