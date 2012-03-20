@@ -97,8 +97,13 @@ public class PHPVarCommentParser {
                     typeNodes.add(docType);
                 }
                 // counting variable
-                startDocNode = startOffset + comment.indexOf(parts[1]);
-                PHPDocNode variableNode = new PHPDocNode(startDocNode, startDocNode + parts[1].length(), parts[1]);
+                String variableName = parts[1];
+                int indexOfArrayDimension = parts[1].indexOf("["); //NOI18N
+                if (indexOfArrayDimension != -1) {
+                    variableName = parts[1].substring(0, indexOfArrayDimension);
+                }
+                startDocNode = startOffset + comment.indexOf(variableName);
+                PHPDocNode variableNode = new PHPDocNode(startDocNode, startDocNode + variableName.length(), variableName);
                 startDocNode = startOffset + comment.indexOf(PHPDOCTAG);
                 PHPDocVarTypeTag variableType =  new PHPDocVarTypeTag(startDocNode, endPosition, PHPDocTag.Type.VAR, definition, typeNodes, variableNode);
                 return new PHPVarComment(startOffset, endOffset, variableType);

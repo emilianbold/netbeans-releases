@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,26 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.primefaces;
+package org.netbeans.modules.php.editor.parser;
 
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
-import org.netbeans.modules.web.jsf.spi.components.JsfComponentProvider;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PrimefacesProvider implements JsfComponentProvider {
+public class PHPVarCommentParserTest extends CslTestBase {
 
+    public PHPVarCommentParserTest(String testName) {
+        super(testName);
+    }
 
-    @Override
-    public Set<JsfComponentImplementation> getJsfComponents() {
-        JsfComponentImplementation descriptor = new PrimefacesImplementation();
-        return Collections.singleton(descriptor);
+    public void testArray_01() throws Exception {
+        String comment = " @var $b['y'] TestClass ";
+        PHPVarCommentParser parser = new PHPVarCommentParser();
+        PHPVarComment varComment = parser.parse(0, comment.length(), comment);
+        assertEquals(Comment.Type.TYPE_VARTYPE, varComment.getCommentType());
+        assertEquals("$b", varComment.getVariable().getVariable().getValue());
+        assertEquals(1, varComment.getVariable().getTypes().size());
+    }
+
+    public void testArray_02() throws Exception {
+        String comment = " @var $b[\"y\"] TestClass ";
+        PHPVarCommentParser parser = new PHPVarCommentParser();
+        PHPVarComment varComment = parser.parse(0, comment.length(), comment);
+        assertEquals(Comment.Type.TYPE_VARTYPE, varComment.getCommentType());
+        assertEquals("$b", varComment.getVariable().getVariable().getValue());
+        assertEquals(1, varComment.getVariable().getTypes().size());
     }
 
 }
