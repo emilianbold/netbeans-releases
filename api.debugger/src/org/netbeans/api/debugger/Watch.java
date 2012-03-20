@@ -60,14 +60,38 @@ public final class Watch {
     public static final String PROP_EXPRESSION = "expression"; // NOI18N
     /** Name of the property for the value of the watched expression. This constant is not used at all. */
     public static final String PROP_VALUE = "value"; // NOI18N
+    /** Name of the property for the enabled status of the watch. */
+    static final String PROP_ENABLED = "enabled"; // NOI18N
 
     private String          expression;
+    private boolean         enabled = true;
     private PropertyChangeSupport pcs;
     
     
     Watch (String expr) {
         this.expression = expr;
         pcs = new PropertyChangeSupport (this);
+    }
+    
+    /**
+     * Test whether the watch is enabled.
+     *
+     * @return <code>true</code> if the watch is enabled,
+     *         <code>false</code> otherwise.
+     */
+    boolean isEnabled () {
+        return enabled;
+    }
+    
+    /**
+     * Set enabled state of the watch.
+     * @param enabled <code>true</code> if this watch should be enabled,
+     *                <code>false</code> otherwise
+     */
+    void setEnabled(boolean enabled) {
+        if (enabled == this.enabled) return ;
+        this.enabled = enabled;
+        pcs.firePropertyChange (PROP_ENABLED, !enabled, enabled);
     }
     
     /**
