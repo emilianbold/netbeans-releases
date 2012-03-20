@@ -62,10 +62,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import sun.misc.IOUtils;
 
 /**
  * Simple backup facility can be used to backup files and implement undo For
@@ -358,7 +356,7 @@ abstract class BackupFacility2 {
                 MessageDigest md = MessageDigest.getInstance("MD5");
                 try {
                     is = new DigestInputStream(is, md);
-                    IOUtils.readFully(is, -1, true);
+                    readFully(is, -1, true);
                 } finally {
                     is.close();
                 }
@@ -367,6 +365,52 @@ abstract class BackupFacility2 {
                 throw new IOException(ex);
             }
         }
+        
+        /**
+         * Read up to
+         * <code>length</code> of bytes from
+         * <code>in</code> until EOF is detected.
+         *
+         * @param in input stream, must not be null
+         * @param length number of bytes to read, -1 or Integer.MAX_VALUE means
+         * read as much as possible
+         * @param readAll if true, an EOFException will be thrown if not enough
+         * bytes are read. Ignored when length is -1 or Integer.MAX_VALUE
+         * @return bytes read
+         * @throws IOException Any IO error or a premature EOF is detected
+         */
+        private static byte[] readFully(InputStream is, int length, boolean readAll)
+                throws IOException {
+            byte[] output = {};
+            if (length == -1) {
+                length = Integer.MAX_VALUE;
+            }
+            int pos = 0;
+            while (pos < length) {
+                int bytesToRead;
+                if (pos >= output.length) { // Only expand when there's no room
+                    bytesToRead = Math.min(length - pos, output.length + 1024);
+                    if (output.length < pos + bytesToRead) {
+                        output = Arrays.copyOf(output, pos + bytesToRead);
+                    }
+                } else {
+                    bytesToRead = output.length - pos;
+                }
+                int cc = is.read(output, pos, bytesToRead);
+                if (cc < 0) {
+                    if (readAll && length != Integer.MAX_VALUE) {
+                        throw new EOFException("Detect premature EOF");
+                    } else {
+                        if (output.length != pos) {
+                            output = Arrays.copyOf(output, pos);
+                        }
+                        break;
+                    }
+                }
+                pos += cc;
+            }
+            return output;
+        }    
 
         private static java.lang.reflect.Field undoRedo;
 
