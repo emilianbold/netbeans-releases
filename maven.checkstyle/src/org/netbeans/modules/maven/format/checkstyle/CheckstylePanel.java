@@ -96,7 +96,7 @@ public class CheckstylePanel extends javax.swing.JPanel {
                         modprops = model.getFactory().createProperties();
                         model.getProject().setProperties(modprops);
                     }
-                    modprops.setProperty(Constants.HINT_COMPILE_ON_SAVE, modifiedValue); //NOI18N
+                    modprops.setProperty(Constants.HINT_CHECKSTYLE_FORMATTING, modifiedValue);
                 }
                 
             };
