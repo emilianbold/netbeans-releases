@@ -169,6 +169,43 @@ public class SyntaxAnalyzerTest extends TestBase {
         assertEquals("\"center\"".length(), align.getValueLength());
 
     }
+    
+    public void testTagWithOneCssEmbeddingAttribute() throws BadLocationException {
+        String text = "<div class=\"myclass\"/>";
+        List<SyntaxElement> elements = getSyntaxElements(text);
+
+        assertNotNull(elements);
+        assertEquals(1, elements.size());
+
+        SyntaxElement div = elements.get(0);
+
+        assertNotNull(div);
+        assertEquals(SyntaxElement.TYPE_TAG, div.type());
+        assertTrue(div instanceof SyntaxElement.Tag);
+
+        SyntaxElement.Tag divTag = (SyntaxElement.Tag) div;
+
+        assertEquals("div", divTag.getName());
+        assertTrue(divTag.isEmpty());
+        assertTrue(divTag.isOpenTag());
+        assertEquals(0, divTag.offset());
+        assertEquals(text.length(), divTag.length());
+        assertEquals(text, divTag.text());
+
+        List<SyntaxElement.TagAttribute> attributes = divTag.getAttributes();
+
+        assertNotNull(attributes);
+        assertEquals(1, attributes.size());
+
+        SyntaxElement.TagAttribute align = attributes.get(0);
+
+        assertEquals("class", align.getName().toString());
+        assertEquals(5, align.getNameOffset());
+        assertEquals("\"myclass\"", align.getValue().toString());
+        assertEquals(11, align.getValueOffset());
+        assertEquals("\"myclass\"".length(), align.getValueLength());
+
+    }
 
     public void testTagWithUnquotedAttribute() throws BadLocationException {
         String text = "<div align=center/>";
