@@ -3,7 +3,6 @@ Version: 2.0.0
 Description: String format verification library
 License: GPL
 Origin: http://repo1.maven.org/maven2/com/google/code/findbugs/jFormatString/2.0.0/jFormatString-2.0.0.jar
-Files: jFormatString-2.0.0.jar
 
 		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991

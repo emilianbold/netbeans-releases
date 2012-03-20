@@ -2,7 +2,6 @@ Name: JSR305
 Version: 2.0.0
 License: BSD
 Origin: http://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.0/jsr305-2.0.0.jar
-Files: jsr305-2.0.0
 
 Use of JSR 305 2.0.0 is governed by the terms of the license below:
 
