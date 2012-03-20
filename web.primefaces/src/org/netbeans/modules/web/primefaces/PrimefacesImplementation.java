@@ -80,9 +80,9 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(PrimefacesImplementation.class.getName());
     private static final String PRIMEFACES_SPECIFIC_CLASS = "org.primefaces.application.PrimeResource"; //NOI18N
-    private static final String PRIMEFACES_LIBRARY_NAME = "primefaces"; //NOI18N
     private static final String PREFERENCES_NODE = "primefaces"; //NOI18N
 
+    /** Preferences property name used for getting lastly used PrimeFaces library. */
     public static final String PROP_PREFERRED_LIBRARY = "preferred-library"; //NOI18N
 
     public PrimefacesImplementation() {
@@ -167,9 +167,8 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     }
 
      /**
-     * Returns {@code List} of all Primefaces libraries registered in the IDE.
-     *
-     * @return {{@code List} of libraries
+     * Gets {@code List} of all Primefaces libraries registered in the IDE.
+     * @return list of libraries
      */
     public static List<Library> getAllRegisteredPrimefaces() {
         List<Library> libraries = new ArrayList<Library>();
@@ -188,12 +187,9 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     }
 
     /**
-     * Checks if given library content contains mandatory class in cases of
-     * Primefaces library.
-     *
+     * Checks if given library content contains mandatory Primefaces classes.
      * @param libraryContent library content
-     * @return {@code true} if the given content contains Primefaces2 library,
-     * {@code false} otherwise
+     * @return {@code true} if the given content contains required Primefaces class, {@code false} otherwise
      */
     public static boolean isValidPrimefacesLibrary(List<URL> libraryContent) {
         try {

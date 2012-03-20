@@ -109,7 +109,7 @@ public class PrimefacesCustomizerPanel extends javax.swing.JPanel implements Hel
             }
         });
 
-        LOGGER.log(Level.FINEST, "Time spent in {0} initLibraries = {1} ms", //NOI18N
+        LOGGER.log(Level.FINEST, "Time spent in {0} initLibraries = {1} ms",
                 new Object[]{this.getClass().getName(), System.currentTimeMillis() - time});
     }
 
