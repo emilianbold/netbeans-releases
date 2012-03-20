@@ -45,6 +45,7 @@
 package org.openide.util;
 
 import java.lang.reflect.Method;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1075,6 +1076,46 @@ outer:  do {
         assert Thread.holdsLock(processorLock);
         return queue;
     }
+    
+    /**
+     * @return a top level ThreadGroup. The method ensures that even Processors
+     * created by internal execution will survive the end of the task.
+     */
+    private static final TopLevelThreadGroup TOP_GROUP = new TopLevelThreadGroup();
+    private static final class TopLevelThreadGroup implements PrivilegedAction<ThreadGroup> {
+        public ThreadGroup getTopLevelThreadGroup() {
+            ThreadGroup orig = java.security.AccessController.doPrivileged(this);
+            ThreadGroup nuova = null;
+
+            try {
+                Class<?> appContext = Class.forName("sun.awt.AppContext");
+                Method instance = appContext.getMethod("getAppContext");
+                Method getTG = appContext.getMethod("getThreadGroup");
+                nuova = (ThreadGroup) getTG.invoke(instance.invoke(null));
+            } catch (Exception exception) {
+                logger().log(Level.FINE, "Cannot access sun.awt.AppContext", exception);
+                return orig;
+            }
+
+            assert nuova != null;
+
+            if (nuova != orig) {
+                logger().log(Level.WARNING, "AppContext group {0} differs from originally used {1}", new Object[]{nuova, orig});
+            }
+            return nuova;
+            
+        }
+        @Override
+        public ThreadGroup run() {
+            ThreadGroup current = Thread.currentThread().getThreadGroup();
+
+            while (current.getParent() != null) {
+                current = current.getParent();
+            }
+
+            return current;
+        }
+    }
 
     private static abstract class TaskFutureWrapper implements ScheduledFuture<Void>, Runnable, RunnableWrapper {
         volatile Task t;
@@ -1855,7 +1896,7 @@ outer:  do {
         private final Object lock = new Object();
 
         public Processor() {
-            super(getTopLevelThreadGroup(), "Inactive RequestProcessor thread"); // NOI18N
+            super(TOP_GROUP.getTopLevelThreadGroup(), "Inactive RequestProcessor thread"); // NOI18N
             setDaemon(true);
         }
 
@@ -1874,7 +1915,7 @@ outer:  do {
 
                     return proc;
                 } else {
-                    assert checkAccess(getTopLevelThreadGroup());
+                    assert checkAccess(TOP_GROUP.getTopLevelThreadGroup());
                     Processor proc = pool.pop();
                     proc.idle = false;
 
@@ -2081,45 +2122,6 @@ outer:  do {
                 }
             }
             logger().log(Level.SEVERE, "Error in RequestProcessor " + todo.debug(), ex);
-        }
-
-        /**
-         * @return a top level ThreadGroup. The method ensures that even
-         * Processors created by internal execution will survive the
-         * end of the task.
-         */
-        static ThreadGroup getTopLevelThreadGroup() {
-            java.security.PrivilegedAction<ThreadGroup> run = new java.security.PrivilegedAction<ThreadGroup>() {
-                    @Override
-                    public ThreadGroup run() {
-                        ThreadGroup current = Thread.currentThread().getThreadGroup();
-
-                        while (current.getParent() != null) {
-                            current = current.getParent();
-                        }
-
-                        return current;
-                    }
-                };
-            ThreadGroup orig = java.security.AccessController.doPrivileged(run);
-            ThreadGroup nuova = null;
-
-            try {
-                Class<?> appContext = Class.forName("sun.awt.AppContext");
-                Method instance = appContext.getMethod("getAppContext");
-                Method getTG = appContext.getMethod("getThreadGroup");
-                nuova = (ThreadGroup) getTG.invoke(instance.invoke(null));
-            } catch (Exception exception) {
-                logger().log(Level.FINE, "Cannot access sun.awt.AppContext", exception);
-                return orig;
-            }
-
-            assert nuova != null;
-
-            if (nuova != orig) {
-                logger().log(Level.WARNING, "AppContext group {0} differs from originally used {1}", new Object[]{nuova, orig});
-            }
-            return nuova;
         }
 
         private static final Map<Class<? extends Runnable>,Object> warnedClasses = Collections.synchronizedMap(
