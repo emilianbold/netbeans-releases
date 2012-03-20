@@ -56,7 +56,7 @@ public class SessionProviderImpl extends SessionProvider {
     private String sessionName;
 
     public SessionProviderImpl(ContextProvider contextProvider) {
-        org.netbeans.modules.web.javascript.debugger.wrd.Debugger d = contextProvider.lookupFirst(null, org.netbeans.modules.web.javascript.debugger.wrd.Debugger.class);
+        org.netbeans.modules.web.javascript.debugger.Debugger d = contextProvider.lookupFirst(null, org.netbeans.modules.web.javascript.debugger.Debugger.class);
         sessionName = d.getUrlToDebug();
     }
 

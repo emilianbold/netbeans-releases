@@ -45,7 +45,7 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
 import java.beans.PropertyChangeEvent;
 import org.netbeans.api.debugger.*;
-import org.netbeans.modules.web.javascript.debugger.wrd.Debugger;
+import org.netbeans.modules.web.javascript.debugger.Debugger;
 
 
 /**
