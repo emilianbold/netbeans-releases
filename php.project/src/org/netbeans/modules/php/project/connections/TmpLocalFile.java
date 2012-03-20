@@ -83,8 +83,17 @@ public abstract class TmpLocalFile {
      * @return tmp local file or {@code null} if any error occurs.
      */
     public static TmpLocalFile onDisk() {
+        return onDisk(null);
+    }
+
+    /**
+     * Suitable for big remote files, uses local temp file.
+     * @param extension file extension, can be {@code null}
+     * @return tmp local file or {@code null} if any error occurs.
+     */
+    public static TmpLocalFile onDisk(String extension) {
         try {
-            return new DiskTmpLocalFile();
+            return new DiskTmpLocalFile(extension);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Cannot create local tmp file", ex);
         }
@@ -96,6 +105,12 @@ public abstract class TmpLocalFile {
      * @return {@code true} if the tmp file is in memory only
      */
     public abstract boolean isInMemory();
+
+    /**
+     * Return absolute path on disk, if available.
+     * @return absolute path on disk, if available; {@code null} otherwise
+     */
+    public abstract String getAbsolutePath();
 
     /**
      * Get the file output stream, can be {@code null} if any error occurs.
@@ -140,6 +155,11 @@ public abstract class TmpLocalFile {
         }
 
         @Override
+        public String getAbsolutePath() {
+            return null;
+        }
+
+        @Override
         public OutputStream getOutputStream() {
             outputStream.reset();
             return outputStream;
@@ -164,8 +184,8 @@ public abstract class TmpLocalFile {
         private final File file;
 
 
-        public DiskTmpLocalFile() throws IOException {
-            file = FileUtil.normalizeFile(File.createTempFile("nb-php-remote-tmp-file-", null)); // NOI18N
+        public DiskTmpLocalFile(String extension) throws IOException {
+            file = FileUtil.normalizeFile(File.createTempFile("nb-php-remote-tmp-file-", extension != null ? "." + extension : null)); // NOI18N
             file.deleteOnExit();
         }
 
@@ -177,6 +197,11 @@ public abstract class TmpLocalFile {
         @Override
         public boolean isInMemory() {
             return false;
+        }
+
+        @Override
+        public String getAbsolutePath() {
+            return file.getAbsolutePath();
         }
 
         @Override
