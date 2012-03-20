@@ -55,7 +55,9 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
@@ -93,6 +95,8 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
     private Image icon16;
     private Image icon32;
     
+    private DataObject originalDO;
+    
     PaletteItemNode(DataNode original, 
                     String name, 
                     String bundleName, 
@@ -113,6 +117,8 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
         this.tooltipKey = tooltipKey;
         this.icon16URL = icon16URL;
         this.icon32URL = icon32URL;
+        
+        this.originalDO = original.getLookup().lookup(DataObject.class);
     }
  
     PaletteItemNode(DataNode original, 
@@ -164,7 +170,7 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
         
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
             if (icon16 == null) {
-                icon16 = _getIcon(icon16URL);
+                icon16 = _getIcon(type, icon16URL);
                 if (icon16 == null)
                     icon16 = ImageUtilities.loadImage("org/netbeans/modules/palette/resources/unknown16.gif"); // NOI18N
             }
@@ -172,7 +178,7 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
         }
         else if (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32) {
             if (icon32 == null) {
-                icon32 = _getIcon(icon32URL);
+                icon32 = _getIcon(type, icon32URL);
                 if (icon32 == null)
                     icon32 = ImageUtilities.loadImage("org/netbeans/modules/palette/resources/unknown32.gif"); // NOI18N
             }
@@ -255,6 +261,8 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
         }
         catch (Exception ex) {
             Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ex );
+            // fall back to the original:
+            dName = getOriginal().getDisplayName();
         }
 
         return (dName == null ? "" : dName);
@@ -287,12 +295,14 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
         }
         catch (Exception ex) {
             Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ex );
+            // fall back to the original:
+            tooltip = getOriginal().getShortDescription();
         }
 
         return (tooltip == null ? "" :  tooltip);
     }
 
-    public Image _getIcon(String iconURL) {
+    public Image _getIcon(int iconType, String iconURL) {
 
         Image icon = null;
         try {
@@ -306,7 +316,12 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
                 //the URL may point to an external file
                 icon = ImageIO.read( new URL(iconURL) );
             } catch( IOException ex ) {
-            Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ex );
+                Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ex );
+                // fall back to the original:
+                if (!FileUtil.isParentOf(
+                        FileUtil.getConfigRoot(), originalDO.getPrimaryFile())) {
+                    icon = getOriginal().getIcon(BeanInfo.ICON_COLOR_16x16);
+                }
             }
         }
 
