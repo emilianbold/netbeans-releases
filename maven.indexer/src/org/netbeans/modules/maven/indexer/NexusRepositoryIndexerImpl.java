@@ -563,7 +563,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 public @Override Void run() throws Exception {
                     boolean index = loadIndexingContext2(repo);
                     if (index) {
-                        NexusRepositoryIndexerImpl.this.indexLoadedRepo(repo, true);
+                        try {
+                            NexusRepositoryIndexerImpl.this.indexLoadedRepo(repo, true);
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.INFO, "could not (re-)index " + repo.getId(), ex);
+                            return null;
+                        }    
                     }
                     Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
@@ -613,7 +618,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 public @Override Void run() throws Exception {
                     boolean index = loadIndexingContext2(repo);
                     if (index) {
-                        indexLoadedRepo(repo, true); //TODO do we care here?
+                        try {
+                            indexLoadedRepo(repo, true); //TODO do we care here?
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.INFO, "could not (re-)index " + repo.getId(), ex);
+                            return null;
+                        }
                     }
                     Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
