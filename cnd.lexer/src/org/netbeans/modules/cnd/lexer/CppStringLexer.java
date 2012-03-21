@@ -45,9 +45,8 @@
 package org.netbeans.modules.cnd.lexer;
 
 import org.netbeans.api.lexer.PartType;
-import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -82,6 +81,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
         fromState(stateObj); // last line in contstructor
     }
 
+    @Override
     public Object state() {
         return Integer.valueOf(state);
     }
@@ -90,6 +90,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
         this.state = state == null ? INIT : state.intValue();
     }
 
+    @Override
     public Token<CppStringTokenId> nextToken() {
         int startState = state;
         state = OTHER;
@@ -223,7 +224,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
 
     private Token<CppStringTokenId> token(CppStringTokenId id, String fixedText, PartType part) {
         assert id != null : "id must be not null";
-        Token<CppStringTokenId> token = null;
+        Token<CppStringTokenId> token;
         if (fixedText != null && !escapedLF) {
             // create flyweight token
             token = tokenFactory.getFlyweightToken(id, fixedText);
@@ -246,7 +247,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
         if (skipEscapedLF) { // skip escaped LF
             int next;
             while (c == '\\') {
-                switch (next = input.read()) {
+                switch (input.read()) {
                     case '\r':
                         input.consumeNewline();
                         // nobreak
@@ -265,6 +266,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
         return c;
     }
 
+    @Override
     public void release() {
     }
 
