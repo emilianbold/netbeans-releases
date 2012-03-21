@@ -142,16 +142,8 @@ public class Utils {
         if(project==null) {
             return null;
         }
+        String implClass = getImplClass(fileObject);
         JaxWsModel model = project.getLookup().lookup(JaxWsModel.class);
-        ClassPath classPath = ClassPath.getClassPath(fileObject,
-                ClassPath.SOURCE);
-        if (classPath == null) {
-            return null;
-        }
-        String implClass = classPath.getResourceName(fileObject, '.', false);
-        if (implClass == null) {
-            return null;
-        }
         if(model==null) {
             JAXWSLightSupport support = JAXWSLightSupport.getJAXWSLightSupport(
                     fileObject);
@@ -172,6 +164,52 @@ public class Utils {
             Service service = model.findServiceByImplementationClass(implClass);
             return new ConfigProjectService( support , service , dataObject);
         }
+    }
+    
+    public static boolean isService( FileObject fileObject ){
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        if(project==null) {
+            return false;
+        }
+        JaxWsModel model = project.getLookup().lookup(JaxWsModel.class);
+        if ( model == null ){
+            JAXWSLightSupport support = JAXWSLightSupport.getJAXWSLightSupport(
+                    fileObject);
+            if ( support == null ){
+                return false;
+            }
+            List<JaxWsService> services = support.getServices();
+            for (JaxWsService service : services) {
+                String implementationClass = service.getImplementationClass();
+                if ( getImplClass(fileObject).equals( implementationClass )){
+                    return service.isServiceProvider();
+                }
+            }
+            return false;
+        }
+        else {
+            if ( fileObject.getAttribute("jax-ws-service")!=null && 
+                    fileObject.getAttribute("jax-ws-service-provider")==null)       // NOI18N
+            {
+                
+                return true;
+            }
+            return false;
+        }
+    }
+    
+    private static String getImplClass( FileObject fileObject ){
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        if(project==null) {
+            return null;
+        }
+        ClassPath classPath = ClassPath.getClassPath(fileObject,
+                ClassPath.SOURCE);
+        if (classPath == null) {
+            return null;
+        }
+        String implClass = classPath.getResourceName(fileObject, '.', false);
+        return implClass;
     }
     
     public static Service getService(ProjectService projectService){
