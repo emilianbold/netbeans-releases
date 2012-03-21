@@ -88,11 +88,15 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
     public void paintValue(Graphics g, Rectangle rect) {
         Font originalFont = g.getFont();
         int originalFontSize = originalFont.getSize();
-        g.setFont(originalFont.deriveFont((float)(originalFontSize * 0.75)));
+        Font derivedFont = originalFont.deriveFont((float)(originalFontSize * 0.75));
+        g.setFont(derivedFont);
 
         int height = (int) rect.getHeight();
         int width = (int) rect.getWidth() / 4;
 
+        int fontHeight = derivedFont.getSize();
+        int textY = height - ((height - fontHeight) / 2);
+                
         Color color = g.getColor();
         
         for (Edge e : Edge.values()) {
@@ -108,11 +112,12 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
             if (element != null) {
                 if (element == BoxElement.EMPTY) {
                     //paint a cross
-                    g.drawLine(e.ordinal() * width, 0, width, height);
-                    g.drawLine(e.ordinal() * width, height, width, 0);
+                    int x = e.ordinal() * width;
+                    g.drawLine(x, 0, x + width, height);
+                    g.drawLine(x, height, x + width, 0);
                 } else {
                     g.setColor(color);
-                    g.drawString(element.asText(), e.ordinal() * width + 2, height - 2);
+                    g.drawString(element.asText(), e.ordinal() * width + 2, textY);
                 }
             }
 
