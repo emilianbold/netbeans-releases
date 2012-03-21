@@ -41,11 +41,14 @@
  */
 package org.netbeans.modules.tasks.ui.dashboard;
 
-import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import java.awt.*;
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.tasks.ui.LinkButton;
+import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import org.netbeans.modules.tasks.ui.treelist.LeafNode;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.openide.util.NbBundle;
@@ -68,6 +71,8 @@ public class TitleNode extends LeafNode {
         super(null);
         this.titleName = titleName;
         this.button = button;
+        lblProgress = createProgressLabel(NbBundle.getMessage(TitleNode.class, "LBL_LoadingInProgress"));
+        lblProgress.setForeground(ColorManager.getDefault().getDefaultBackground());
     }
 
     @Override
@@ -83,8 +88,6 @@ public class TitleNode extends LeafNode {
                 lblName.setForeground(ColorManager.getDefault().getDefaultBackground());
                 panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
-                lblProgress = createProgressLabel(NbBundle.getMessage(TitleNode.class, "LBL_LoadingInProgress"));
-                lblProgress.setForeground(ColorManager.getDefault().getDefaultBackground());
                 panel.add(lblProgress, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
                 panel.add(new JLabel(), new GridBagConstraints(4, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
