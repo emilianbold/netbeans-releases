@@ -54,9 +54,9 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author jpeska
  */
-public class CategoryStorageTest extends NbTestCase {
+public class DashboardStorageTest extends NbTestCase {
 
-    public CategoryStorageTest(String arg0) {
+    public DashboardStorageTest(String arg0) {
         super(arg0);
     }
 
@@ -73,7 +73,7 @@ public class CategoryStorageTest extends NbTestCase {
     }
 
     public void testClosedEntriesStorage() throws Exception {
-        CategoryStorage storage = CategoryStorage.getInstance();
+        DashboardStorage storage = DashboardStorage.getInstance();
         List<String> categoryNames = new ArrayList<String>();
         categoryNames.add("Dummy1");
         categoryNames.add("Dummy2");
@@ -100,7 +100,7 @@ public class CategoryStorageTest extends NbTestCase {
     }
 
     public void testCategoryStorage() throws Exception {
-        CategoryStorage storage = CategoryStorage.getInstance();
+        DashboardStorage storage = DashboardStorage.getInstance();
         List<TaskEntry> tasks = new ArrayList<TaskEntry>();
         tasks.add(new TaskEntry("issue1", "repo1"));
         tasks.add(new TaskEntry("issue2", "repo1"));
@@ -112,9 +112,9 @@ public class CategoryStorageTest extends NbTestCase {
         List<CategoryEntry> readCategories = storage.readCategories();
         assertEquals(1, readCategories.size());
         CategoryEntry category = readCategories.get(0);
-        assertTrue(category.getTasks().contains(new TaskEntry("issue1", "repo1")));
-        assertTrue(category.getTasks().contains(new TaskEntry("issue2", "repo1")));
-        assertTrue(category.getTasks().contains(new TaskEntry("issue3", "repo2")));
+        assertTrue(category.getTaskEntries().contains(new TaskEntry("issue1", "repo1")));
+        assertTrue(category.getTaskEntries().contains(new TaskEntry("issue2", "repo1")));
+        assertTrue(category.getTaskEntries().contains(new TaskEntry("issue3", "repo2")));
 
         String categoryName2 = "category2";
         storage.storeCategory(categoryName2, tasks);
@@ -122,18 +122,30 @@ public class CategoryStorageTest extends NbTestCase {
         readCategories = storage.readCategories();
         assertEquals(2, readCategories.size());
 
+        String categoryName2Rename = "category2rename";
+        storage.renameCategory(categoryName2, categoryName2Rename);
+        assertNull(storage.readCategory(categoryName2));
+        assertNotNull(storage.readCategory(categoryName2Rename));
+        readCategories = storage.readCategories();
+        assertEquals(2, readCategories.size());
+
+        assertFalse(storage.deleteCategory(categoryName2));
+        assertTrue(storage.deleteCategory(categoryName2Rename));
+
+        readCategories = storage.readCategories();
+        assertEquals(1, readCategories.size());
     }
 
     private void emptyStorage() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
         File f = getStorageRootFile();
         StorageUtils.deleteRecursively(f);
-        Field field = CategoryStorage.class.getDeclaredField("storageFolder");
+        Field field = DashboardStorage.class.getDeclaredField("storageFolder");
         field.setAccessible(true);
-        field.set(CategoryStorage.getInstance(), f);
+        field.set(DashboardStorage.getInstance(), f);
     }
 
     private File getStorageRootFile() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        CategoryStorage storage = CategoryStorage.getInstance();
+        DashboardStorage storage = DashboardStorage.getInstance();
         Method m = storage.getClass().getDeclaredMethod("getStorageRootFile");
         m.setAccessible(true);
         return (File) m.invoke(storage, new Object[0]);
