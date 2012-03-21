@@ -61,8 +61,9 @@ import org.netbeans.spi.lexer.TokenFactory;
  */
 
 public class CppStringLexer implements Lexer<CppStringTokenId> {
-    private static final int INIT              = 0;
-    private static final int OTHER              = 1;
+    private static final int INIT   = 0;
+    private static final int OTHER  = 1;
+    private static final int RAW    = 2;
 
     private static final int EOF = LexerInput.EOF;
 
@@ -99,7 +100,42 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
             switch (ch) {
                 case 'L':
                     if (startState == INIT) {
-                        return token(CppStringTokenId.PREFIX);
+                        return token(CppStringTokenId.PREFIX_L);
+                    }
+                    break;
+                case 'U':
+                    if (startState == INIT) {
+                        int next = read();
+                        if (next == 'R') {
+                            return token(CppStringTokenId.PREFIX_UR);
+                        } else {
+                            input.backup(1);
+                            return token(CppStringTokenId.PREFIX_U);
+                        }
+                    }
+                    break;
+                case 'u':
+                    if (startState == INIT) {
+                        int next = read();
+                        if (next == '8') {
+                            next = read();
+                            if (next == 'R') {
+                                return token(CppStringTokenId.PREFIX_u8R);
+                            } else {
+                                input.backup(1);
+                                return token(CppStringTokenId.PREFIX_u8);
+                            }
+                        } else if (next == 'R') {
+                            return token(CppStringTokenId.PREFIX_uR);
+                        } else {
+                            input.backup(1);
+                            return token(CppStringTokenId.PREFIX_u);
+                        }
+                    }
+                    break;
+                case 'R':
+                    if (startState == INIT) {
+                        return token(CppStringTokenId.PREFIX_R);
                     }
                     break;
                 case EOF:

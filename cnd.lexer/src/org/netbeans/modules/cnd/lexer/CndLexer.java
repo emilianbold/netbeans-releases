@@ -455,15 +455,29 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                     default:
                         c = translateSurrogates(c);
                         if (CndLexerUtilities.isCppIdentifierStart(c)) {
-                            if (c == 'L') {
+                            if (c == 'L' || c == 'U' || c == 'u') {
                                 int next = read(true);
+                                boolean raw_string = false;
+                                if (next == 'R' && (c == 'u' || c == 'U')) {
+                                    // uR or UR
+                                    raw_string = true;
+                                    next = read(true);
+                                } else if (c == 'u' && next == '8') {
+                                    // u8
+                                    next = read(true);
+                                    if (next == 'R') {
+                                        // u8R
+                                        raw_string = true;
+                                        next = read(true);
+                                    }
+                                }
                                 if (next == '"') {
-                                    // string with L prefix
-                                    Token<CppTokenId> out = finishDblQuote();
+                                    // string with L/U/u/R prefixes
+                                    Token<CppTokenId> out = raw_string ? finishRawString() : finishDblQuote();
                                     assert out != null : "not handled dobule quote";
                                     return out;
                                 } else if (next == '\'') {
-                                    // char with L prefix
+                                    // char with L or U/u prefix
                                     Token<CppTokenId> out = finishSingleQuote();
                                     assert out != null : "not handled single quote";
                                     return out;
@@ -702,6 +716,10 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
         }
         backup(1);
         return token(CppTokenId.SHARP);
+    }
+
+    private Token<CppTokenId> finishRawString() {
+        return finishDblQuote();
     }
 
     @SuppressWarnings("fallthrough")
