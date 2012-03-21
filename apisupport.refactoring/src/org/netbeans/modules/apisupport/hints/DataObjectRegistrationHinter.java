@@ -41,12 +41,6 @@
  */
 package org.netbeans.modules.apisupport.hints;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,19 +54,25 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle.Messages;
-import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.apisupport.hints.Bundle.*;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
 
 /**
  * #207219: {@code DataObject.Registration} conversion.
@@ -105,6 +105,11 @@ public class DataObjectRegistrationHinter implements Hinter {
     }
 
     // not always of the same mimetype of related dataobject
+    @Messages({
+        "DataObjectRegistrationHinter.no_DataObject=No visible dataObject, please try to convert Factories folder first",
+        "# {0} - Java source file name", "# {1} - list of MIME types", "DataObjectRegistrationHinter.fix.regular=Convert registration to Java annotation in {0} ({1})",
+        "# {0} - Java source file name", "# {1} - list of MIME types", "DataObjectRegistrationHinter.fix.special=Convert registration to Java annotation in {0} ({1}) <b>be careful mimeType not matching</b>"
+    })
     private void processActions(final Context ctx, final FileObject file) throws Exception {
 
         if (annotationsActionsDataObjectAvailable(ctx)) {
@@ -137,7 +142,7 @@ public class DataObjectRegistrationHinter implements Hinter {
                     }
                 }
                 if (visibleLoaderFactories.isEmpty()) {
-                    ctx.addHint(Severity.VERIFIER, "No visible dataObject, please try to convert Factories folder first");
+                    ctx.addHint(Severity.VERIFIER, DataObjectRegistrationHinter_no_DataObject());
                 } else {
                     List<Fix> fixes = new ArrayList<Fix>(); // prepare list of fixes
                     boolean mimeMatch = false;
@@ -152,7 +157,6 @@ public class DataObjectRegistrationHinter implements Hinter {
                         boolean restrict = true;
                         // mime list
                         StringBuilder sbMime = new StringBuilder();
-                        sbMime.append("(");
                         for (String aMime : loader.getValue()) {
                             if (actionsMime.equals(aMime)) {
                                 restrict = false;
@@ -162,14 +166,8 @@ public class DataObjectRegistrationHinter implements Hinter {
                             sbMime.append(",");
                         }
                         sbMime.deleteCharAt(sbMime.length() - 1);
-                        sbMime.append(")");
-
-                        // Convert to Java Annotation[ ]... + 
-                        String mimeMatchwarning = "";
-                        if (!mimeMatch) {
-                            mimeMatchwarning = " <b>be careful mimeType not matching</b>";
-                        }
-                        final String informationText = "in " + loader.getKey().substring(loader.getKey().lastIndexOf(".") + 1) + ".java " + sbMime.toString() + " " + mimeMatchwarning;
+                        String fname = loader.getKey().substring(loader.getKey().lastIndexOf(".") + 1) + ".java";
+                        final String text = mimeMatch ? DataObjectRegistrationHinter_fix_regular(fname, sbMime) : DataObjectRegistrationHinter_fix_special(fname, sbMime);
                         final String fixParam = loader.getKey();
                         if (!mimeMatch) {
                             restrict = false;
@@ -179,7 +177,7 @@ public class DataObjectRegistrationHinter implements Hinter {
 
                                 @Override
                                 public String getText() {
-                                    return ctx.standardAnnotationFixDescription() + " " + informationText;
+                                    return text;
                                 }
 
                                 @Override
@@ -250,7 +248,8 @@ public class DataObjectRegistrationHinter implements Hinter {
     }
 
     @Messages({
-        "# {0} - file attribute name", "DataObjectHinter_unrecognized_attr=Unrecognized DataObject attribute: {0}"
+        "# {0} - file attribute name", "DataObjectHinter_unrecognized_attr=Unrecognized DataObject attribute: {0}",
+        "DataObjectRegistrationHinter.use.displayName=Please convert to displayName to be able to use Loader hinter"
     })
     private boolean checkAttributes(FileObject file, Context ctx) {
         boolean attributesCompatible = true;
@@ -262,7 +261,7 @@ public class DataObjectRegistrationHinter implements Hinter {
         }
         if (file.getAttribute("literal:SystemFileSystem.localizingBundle") != null) {
             attributesCompatible = false;
-            ctx.addHint(Severity.HINT, "Please convert to displayName to be able to use Loader hinter");
+            ctx.addHint(Severity.HINT, DataObjectRegistrationHinter_use_displayName());
         }
         return attributesCompatible;
     }
@@ -452,7 +451,7 @@ public class DataObjectRegistrationHinter implements Hinter {
                             ann = make.Annotation(annotationType, Collections.singletonList(arr));
 
 
-                            nue = make.insertModifiersAnnotation(make.removeModifiersAnnotation((ModifiersTree) modifiers, i), i, ann);
+                            nue = make.insertModifiersAnnotation(make.removeModifiersAnnotation(modifiers, i), i, ann);
                         }
                     }
 
