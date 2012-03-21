@@ -44,68 +44,58 @@
 
 package org.netbeans.modules.groovy.editor.options;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
-
 import javax.swing.text.Document;
+import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
-import static org.netbeans.modules.groovy.editor.options.FmtOptions.*;
 
 /** 
- *  XXX make sure the getters get the defaults from somewhere
  *  XXX add support for profiles
  *  XXX get the preferences node from somewhere else in odrer to be able not to
  *      use the getters and to be able to write to it.
  * 
- * @author Dusan Balek
+ * @author Dusan Balek, Martin Janicek
  */
 public final class CodeStyle {
 
+    private static final String continuationIndentSize = "continuationIndentSize"; //NOI18N
+    private static final String reformatComments = "reformatComments"; //NOI18N
+    private static final String indentHtml = "indentHtml"; //NOI18N
+    private static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
+
     private final Preferences preferences;
+    private final Document doc;
 
-    private CodeStyle(Preferences preferences) {
-        this.preferences = preferences;
-    }
 
-    /** For testing purposes only */
-    public static CodeStyle get(Preferences prefs) {
-        return new CodeStyle(prefs);
+    private CodeStyle(Document doc) {
+        this.preferences = CodeStylePreferences.get(doc).getPreferences();
+        this.doc = doc;
     }
 
     public static CodeStyle get(Document doc) {
-        return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
+        return new CodeStyle(doc);
     }
 
-    // General tabs and indents ------------------------------------------------
-    
     public int getIndentSize() {
-        int indentLevel = preferences.getInt(indentSize, getDefaultAsInt(indentSize));
-
-        if (indentLevel <= 0) {
-            boolean expandTabs = preferences.getBoolean(expandTabToSpaces, getDefaultAsBoolean(expandTabToSpaces));
-            if (expandTabs) {
-                indentLevel = preferences.getInt(spacesPerTab, getDefaultAsInt(spacesPerTab));
-            } else {
-                indentLevel = preferences.getInt(tabSize, getDefaultAsInt(tabSize));
-            }
-        }
-
-        return indentLevel;
+        return IndentUtils.indentLevelSize(doc);
     }
 
     public int getContinuationIndentSize() {
-        return preferences.getInt(continuationIndentSize, getDefaultAsInt(continuationIndentSize));
+        return preferences.getInt(continuationIndentSize, 4);
     }
 
-    public boolean reformatComments() {
-        return preferences.getBoolean(reformatComments, getDefaultAsBoolean(reformatComments));
+    public boolean isReformatComments() {
+        return preferences.getBoolean(reformatComments, false);
     }
 
-    public boolean indentHtml() {
-        return preferences.getBoolean(indentHtml, getDefaultAsBoolean(indentHtml));
+    public boolean isIndentHtml() {
+        return preferences.getBoolean(indentHtml, true);
     }
     
     public int getRightMargin() {
-        return preferences.getInt(rightMargin, getDefaultAsInt(rightMargin));
+        return preferences.getInt(rightMargin, 80);
     }
-
 }
