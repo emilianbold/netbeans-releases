@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.web.primefaces;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
@@ -49,6 +52,8 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
@@ -58,8 +63,10 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.modules.web.primefaces.ui.PrimefacesCustomizerPanel;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.JarFileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -81,6 +88,7 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     private static final Logger LOGGER = Logger.getLogger(PrimefacesImplementation.class.getName());
     private static final String PRIMEFACES_SPECIFIC_CLASS = "org.primefaces.application.PrimeResource"; //NOI18N
     private static final String PREFERENCES_NODE = "primefaces"; //NOI18N
+    private static final String POM_PROPERTIES_PATH = "META-INF/maven/org.primefaces/primefaces/pom.properties"; //NOI18N
 
     /** Preferences property name used for getting lastly used PrimeFaces library. */
     public static final String PROP_PREFERRED_LIBRARY = "preferred-library"; //NOI18N
@@ -108,7 +116,19 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
             if (primefacesLibrary == null) {
                 LOGGER.log(Level.SEVERE, "No PrimeFaces library found.");
             } else {
-                // TODO - enhance library by maven dependencies
+                // in cases of Maven, update library to contains maven-pom references if needed
+                Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+                AntArtifactProvider antArtifactProvider = project.getLookup().lookup(AntArtifactProvider.class);
+                if (antArtifactProvider == null) {
+                    List<URL> mavenContent = primefacesLibrary.getContent("maven-pom"); //NOI18N
+                    if (mavenContent == null || mavenContent.isEmpty()) {
+                        List<URI> pomURIs = getPomURIs(primefacesLibrary);
+                        if (!pomURIs.isEmpty()) {
+                            primefacesLibrary = JsfComponentUtils.enhanceLibraryWithPomContent(primefacesLibrary, pomURIs);
+                        }
+                    }
+                }
+
                 FileObject[] javaSources = webModule.getJavaSources();
                 ProjectClassPathModifier.addLibraries(
                         new Library[] {primefacesLibrary},
@@ -206,6 +226,31 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
      */
     public static Preferences getPrimefacesPreferences() {
         return NbPreferences.forModule(PrimefacesImplementation.class).node(PrimefacesImplementation.PREFERENCES_NODE);
+    }
+
+    private static List<URI> getPomURIs(Library library) {
+        String baseUri = "http://repository.primefaces.org/org/primefaces/primefaces/<VERSION>/primefaces-<VERSION>.pom"; //NOI18N
+        String versionItem = "version="; //NOI18N
+        List<URI> poms = new LinkedList<URI>();
+        for (URI uri : library.getURIContent("classpath")) { //NOI18N
+            try {
+                URL archiveFileURL = FileUtil.getArchiveFile(uri.toURL());
+                JarFileSystem jsf = new JarFileSystem(new File(archiveFileURL.toURI()));
+                FileObject resource = jsf.findResource(POM_PROPERTIES_PATH);
+                if (resource != null) {
+                    String propertiesText = resource.asText();
+                    int indexOfVersion = propertiesText.indexOf(versionItem); //NOI18N
+                    String version = propertiesText.substring(indexOfVersion + versionItem.length());
+                    version = version.substring(0, version.indexOf("\n")); //NOI18N
+                    poms.add(new URI(baseUri.replaceAll("<VERSION>", version.trim()))); //NOI18N
+                }
+            } catch (URISyntaxException ex) {
+                LOGGER.log(Level.WARNING, "Primefaces version wasn't parsed", ex);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Primefaces version wasn't parsed", ex);
+            }
+        }
+        return poms;
     }
 
     /**
