@@ -47,7 +47,7 @@ package org.netbeans.modules.groovy.gsp.lexer;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import static org.netbeans.lib.lexer.test.LexerTestUtilities.assertTokenEquals;
 
 /**
  * Test GSP lexer
@@ -66,16 +66,12 @@ public class GspLexerBatchTest extends TestCase {
                 "<g:if>" +
                 "</g:if>" +
                 "</html>";
-        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, GspTokenId.language());
-        TokenSequence<?> sequence = hierarchy.tokenSequence();
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<html>", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "<g:if>", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "</g:if>", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "</html>", -1);
+        TokenSequence<?> sequence = createTokenSequence(text);
+
+        checkNext(sequence, GspTokenId.HTML, "<html>");
+        checkNext(sequence, GspTokenId.GTAG, "<g:if>");
+        checkNext(sequence, GspTokenId.GTAG, "</g:if>");
+        checkNext(sequence, GspTokenId.HTML, "</html>");
     }
 
     public void test2() {
@@ -88,87 +84,66 @@ public class GspLexerBatchTest extends TestCase {
                 "</g:if>" +
                 "<div class=\"s\">${e.s}</div>" +
                 "</html>";
-        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, GspTokenId.language());
-        TokenSequence<?> sequence = hierarchy.tokenSequence();
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<html>", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "<g:if test=\"", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "${", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GROOVY_EXPR, "t", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "}", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "\">", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<div class=\"e\">", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "<g:renderErrors bean=\"", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "${", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GROOVY_EXPR, "f.u", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "}", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "\" />", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "</div>", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GTAG, "</g:if>", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<div class=\"s\">", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "${", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GROOVY, "e.s", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "}", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "</div></html>", -1);
+        TokenSequence<?> sequence = createTokenSequence(text);
+        
+        checkNext(sequence,GspTokenId.HTML, "<html>");
+        checkNext(sequence,GspTokenId.GTAG, "<g:if test=\"");
+        checkNext(sequence,GspTokenId.DELIMITER, "${");
+        checkNext(sequence,GspTokenId.GROOVY_EXPR, "t");
+        checkNext(sequence,GspTokenId.DELIMITER, "}");
+        checkNext(sequence,GspTokenId.GTAG, "\">");
+        checkNext(sequence,GspTokenId.HTML, "<div class=\"e\">");
+        checkNext(sequence,GspTokenId.GTAG, "<g:renderErrors bean=\"");
+        checkNext(sequence,GspTokenId.DELIMITER, "${");
+        checkNext(sequence,GspTokenId.GROOVY_EXPR, "f.u");
+        checkNext(sequence,GspTokenId.DELIMITER, "}");
+        checkNext(sequence,GspTokenId.GTAG, "\" />");
+        checkNext(sequence,GspTokenId.HTML, "</div>");
+        checkNext(sequence,GspTokenId.GTAG, "</g:if>");
+        checkNext(sequence,GspTokenId.HTML, "<div class=\"s\">");
+        checkNext(sequence,GspTokenId.DELIMITER, "${");
+        checkNext(sequence,GspTokenId.GROOVY, "e.s");
+        checkNext(sequence,GspTokenId.DELIMITER, "}");
+        checkNext(sequence,GspTokenId.HTML, "</div></html>");
     }
     
     public void testExclamation() {
-        String text =
-                "<p>a!</p>";
-        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, GspTokenId.language());
-        TokenSequence<?> sequence = hierarchy.tokenSequence();
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<p>a!</p>", -1);
+        String text = "<p>a!</p>";
+        TokenSequence<?> sequence = createTokenSequence(text);
+        
+        checkNext(sequence,GspTokenId.HTML, "<p>a!</p>");
     }
 
     public void testPercent() {
         String text = "<a class=\"home\" href=\"${createLinkTo(dir:'')}\">Home</a>";
-        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, GspTokenId.language());
-        TokenSequence<?> sequence = hierarchy.tokenSequence();
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<a class=\"home\" href=\"", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "${", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GROOVY, "createLinkTo(dir:'')", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "}", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "\">Home</a>", -1);
+        TokenSequence<?> sequence = createTokenSequence(text);
+        
+        checkNext(sequence,GspTokenId.HTML, "<a class=\"home\" href=\"");
+        checkNext(sequence,GspTokenId.DELIMITER, "${");
+        checkNext(sequence,GspTokenId.GROOVY, "createLinkTo(dir:'')");
+        checkNext(sequence,GspTokenId.DELIMITER, "}");
+        checkNext(sequence,GspTokenId.HTML, "\">Home</a>");
     }
 
     public void testExpressionInValue() {
         String text = 
                 "<%@ page import=\"org.grails.bookmarks.*\" %>" +
                 "<style type=\"text/css\">.searchbar {width:97%;}</style>";
-        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, GspTokenId.language());
-        TokenSequence<?> sequence = hierarchy.tokenSequence();
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "<%@", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GROOVY, " page import=\"org.grails.bookmarks.*\" ", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "%>", -1);
-        assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<style type=\"text/css\">.searchbar {width:97%;}</style>", -1);
+        TokenSequence<?> sequence = createTokenSequence(text);
+        
+        checkNext(sequence,GspTokenId.DELIMITER, "<%@");
+        checkNext(sequence,GspTokenId.GROOVY, " page import=\"org.grails.bookmarks.*\" ");
+        checkNext(sequence,GspTokenId.DELIMITER, "%>");
+        checkNext(sequence,GspTokenId.HTML, "<style type=\"text/css\">.searchbar {width:97%;}</style>");
     }
 
+    private TokenSequence createTokenSequence(String text) {
+        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, GspTokenId.language());
+        return hierarchy.tokenSequence();
+    }
+
+    private void checkNext(TokenSequence<?> sequence, GspTokenId gspTokenId, String expectedContent) {
+        assertTrue(sequence.moveNext());
+        assertTokenEquals(sequence, gspTokenId, expectedContent, -1);
+    }
 }
