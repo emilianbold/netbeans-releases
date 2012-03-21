@@ -46,9 +46,9 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.extbrowser.spi.ExternalBrowserDescriptor;
 import org.netbeans.modules.web.browser.spi.BrowserDebuggerImplementation;
-import org.netbeans.modules.web.javascript.debugger.wrd.Debugger;
-import org.netbeans.modules.web.javascript.debugger.wrd.DebuggerListener;
-import org.netbeans.modules.web.javascript.debugger.wrd.DebuggerState;
+import org.netbeans.modules.web.javascript.debugger.Debugger;
+import org.netbeans.modules.web.javascript.debugger.DebuggerListener;
+import org.netbeans.modules.web.javascript.debugger.DebuggerState;
 
 public class ChromeBrowserDebuggerImpl implements BrowserDebuggerImplementation {
 

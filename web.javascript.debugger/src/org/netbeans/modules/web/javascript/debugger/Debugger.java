@@ -39,33 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.javascript.debugger.wrd;
+package org.netbeans.modules.web.javascript.debugger;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import org.chromium.sdk.*;
-import org.chromium.sdk.Breakpoint;
 import org.chromium.sdk.Breakpoint.Target;
+import org.chromium.sdk.*;
 import org.chromium.sdk.wip.*;
-import org.netbeans.api.debugger.*;
-import org.netbeans.api.project.Project;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerInfo;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.browser.api.BrowserDebugger;
-import org.netbeans.modules.web.javascript.debugger.DebuggerConstants;
-import org.netbeans.modules.web.javascript.debugger.DebuggerEngineProviderImpl;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.AbstractBreakpoint;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.LineBreakpoint;
-import org.netbeans.modules.web.javascript.debugger.callstack.CallStackModel;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * Debugger based on WebKit Remote Debugging.
