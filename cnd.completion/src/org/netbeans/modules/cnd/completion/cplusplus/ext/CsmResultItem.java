@@ -436,13 +436,13 @@ public abstract class CsmResultItem implements CompletionItem {
                     return false;
                 }
             }
-            if (lastID instanceof CppTokenId) {
-                switch ((CppTokenId) lastID) {
-                    case CLASS:
-                    case STRUCT:
-                    case UNION:
-                        return true;
-                }
+        }
+        if (lastID instanceof CppTokenId) {
+            switch ((CppTokenId) lastID) {
+                case CLASS:
+                case STRUCT:
+                case UNION:
+                    return true;
             }
         }
         return false;
