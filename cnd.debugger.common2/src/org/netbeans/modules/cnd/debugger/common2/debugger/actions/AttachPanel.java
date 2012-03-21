@@ -595,15 +595,7 @@ public final class AttachPanel extends TopComponent {
         Object cmdobj = processModel.getValueAt(selectedRow, cmdIndex);
 
         if (cmdobj instanceof String) {
-            String cmdstring = (String) cmdobj;
-	    if ( cmdstring != null) {
-		int i = cmdstring.indexOf(" "); // NOI18N
-		if (i == -1) // EOL
-		    i = cmdstring.length();
-		String executablePath = cmdstring.substring(0,i);
-
-		executableProjectPanel.setExecutablePath(executablePath);
-	    }
+            executableProjectPanel.setExecutablePath((String) cmdobj);
 	}
     }
     
