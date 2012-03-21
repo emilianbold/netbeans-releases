@@ -66,7 +66,7 @@ import org.openide.util.Parameters;
  *
  * @author Dusan Balek
  */
-public final class ModificationResult {
+public final class ModificationResult implements org.netbeans.modules.refactoring.spi.ModificationResult {
 
     private boolean committed;
     private final Map<FileObject, List<Difference>> diffs = new HashMap<FileObject, List<Difference>>();
