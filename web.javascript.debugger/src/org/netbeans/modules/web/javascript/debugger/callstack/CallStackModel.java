@@ -52,6 +52,7 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -97,7 +98,7 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
     private AtomicReference<? extends CallFrame>  myCurrentStack;
     
     private List<Annotation> annotations = new ArrayList<Annotation>();
-
+    
     public CallStackModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
         debugger.addListener(this);
@@ -175,12 +176,7 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
             return Bundle.CTL_CallstackModel_Column_Name_Name();
         } else if (node instanceof CallFrame) {
             CallFrame frame = (CallFrame)node;
-            String file = frame.getScript().getName();
-            int index = file.lastIndexOf("/");
-            if (index != -1) {
-                file = file.substring(index+1);
-            }
-            return frame.getFunctionName() +" at " +file + ":" + (frame.getStatementStartPosition().getLine()+1);
+            return frame.getFunctionName();
         } else {
             throw new UnknownTypeException(node);
         }
@@ -240,9 +236,14 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
     public Object getValueAt(Object node, String columnID)
             throws UnknownTypeException {
         if (node instanceof CallFrame) {
+            CallFrame frame = (CallFrame) node;
             if ( columnID.equals(Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID) ){
-                CallFrame frame = (CallFrame) node;
-                return frame.getScript().getSource();
+                String file = frame.getScript().getName();
+                int index = file.lastIndexOf("/");
+                if (index != -1) {
+                    file = file.substring(index+1);
+                }
+                return file + ":" + (frame.getStatementStartPosition().getLine()+1);
             }
         } 
         throw new UnknownTypeException("Unknown Type Node: " + node + " or columnID: " + columnID);
@@ -252,7 +253,7 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
     public boolean isReadOnly(Object node, String columnID) throws
             UnknownTypeException {
         if ( node instanceof CallFrame ){
-            if (columnID.equals(Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID) ) {
+            if (columnID.equals(Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID)) {
                 return true;
             }
         } 
