@@ -819,6 +819,9 @@ public class AstRenderer {
     @SuppressWarnings("fallthrough")
     protected void renderVariableInClassifier(AST ast, ClassEnumBase<?> classifier,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
+        if(AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_typedef)) {
+            return;
+        }        
         AST token = ast.getFirstChild();
         boolean unnamedStaticUnion = false;
         boolean _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
@@ -945,11 +948,12 @@ public class AstRenderer {
 
         Pair results = new Pair();
 
-        AST typedefNode = ast.getFirstChild();
-
-        if (typedefNode != null && typedefNode.getType() == CPPTokenTypes.LITERAL_typedef) {
-
-            AST classNode = typedefNode.getNextSibling();
+        AST node = ast.getFirstChild();
+        if (node != null && AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_typedef)) {
+            if(node.getType() == CPPTokenTypes.LITERAL_typedef) {
+                node = node.getNextSibling();
+            }
+            AST classNode = node;
             while (classNode != null && isVolatileQualifier(classNode.getType()) || isConstQualifier(classNode.getType())) {
                 classNode = classNode.getNextSibling();
             }

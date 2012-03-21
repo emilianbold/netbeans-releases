@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,57 +34,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.debugger.jpda.ui.completion;
 
-package org.netbeans.modules.spring.beans.refactoring;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.refactoring.spi.BackupFacility;
-import org.netbeans.modules.refactoring.spi.BackupFacility.Handle;
-import org.netbeans.modules.refactoring.spi.Transaction;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.editor.NbEditorKit;
 
 /**
  *
- * @author Andrei Badea
+ * @author Martin Entlicher
  */
-public class ModificationTransaction implements Transaction {
+public class JavaMethodNbDebugEditorKit extends NbEditorKit {
+    
+    public static final String MIME_TYPE = "text/x-java-nbdebug-class-method"; // NOI18N
 
-    private final Modifications mods;
-    private final List<Handle> handles = new ArrayList<Handle>();
-    private boolean committed;
-
-    public ModificationTransaction(Modifications mods) {
-        this.mods = mods;
+    @Override
+    public String getContentType() {
+        return MIME_TYPE;
     }
-
-    public void commit() {
-        if (committed) {
-            restore();
-        } else {
-            try {
-                handles.add(BackupFacility.getDefault().backup(mods.getModifiedFileObjects()));
-                mods.commit();
-                committed = true;
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-    }
-
-    public void rollback() {
-        restore();
-    }
-
-    private void restore() {
-        for (Handle handle : handles) {
-            try {
-                handle.restore();
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-    }
+    
 }

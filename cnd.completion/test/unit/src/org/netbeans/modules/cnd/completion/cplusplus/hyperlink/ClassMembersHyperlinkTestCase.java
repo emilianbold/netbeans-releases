@@ -1023,6 +1023,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 203212 - Autocompletion does not work if usign namespaces
         performTest("bug203212.cpp", 28, 54, "bug203212.cpp", 21, 1);
     }    
+
+    public void testBug207148() throws Exception {
+        // Bug 207148 - C++ structs marked as erroneus code
+        performTest("bug207148.cpp", 8, 9, "bug207148.cpp", 2, 4);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

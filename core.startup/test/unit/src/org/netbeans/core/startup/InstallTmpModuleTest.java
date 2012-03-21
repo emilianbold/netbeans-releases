@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,61 +34,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.refactoring.javascript.plugins;
+package org.netbeans.core.startup;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.modules.csl.spi.support.ModificationResult;
-import org.netbeans.modules.refactoring.spi.BackupFacility;
-import org.netbeans.modules.refactoring.spi.Transaction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import junit.framework.Test;
+import org.netbeans.InvalidException;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbModuleSuite.Configuration;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 /**
  *
- * @author Jan Becicka
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+public class InstallTmpModuleTest extends NbTestCase {
+    private static final Logger LOG = Logger.getLogger(InstallTmpModuleTest.class.getName());
 
-public class RetoucheCommit implements Transaction {
-    ArrayList<BackupFacility.Handle> ids = new ArrayList<BackupFacility.Handle>();
-    private boolean commited = false;
-    Collection<ModificationResult> results;
-    
-    public RetoucheCommit(Collection<ModificationResult> results) {
-        this.results = results;
+    public InstallTmpModuleTest(String name) {
+        super(name);
     }
     
-    public void commit() {
-        try {
-            if (commited) {
-                for (BackupFacility.Handle id:ids) {
-                    try {
-                        id.restore();
-                    } catch (IOException ex) {
-                        throw (RuntimeException) new RuntimeException().initCause(ex);
-                    }
-                }
-            } else {
-                commited = true;
-                for (ModificationResult result:results) {
-                    ids.add(BackupFacility.getDefault().backup(result.getModifiedFileObjects()));
-                    result.commit();
-                }
-            }
-            
-        } catch (IOException ex) {
-            throw (RuntimeException) new RuntimeException().initCause(ex);
-        }
+    public static Test suite() {
+        Configuration c = NbModuleSuite.createConfiguration(InstallTmpModuleTest.class);
+        c.addTest("testInstallJARFromTmp").failOnException(Level.INFO).gui(false);
+        return c.suite();
     }
     
-    public void rollback() {
-        for (BackupFacility.Handle id:ids) {
-            try {
-                id.restore();
-            } catch (IOException ex) {
-                throw (RuntimeException) new RuntimeException().initCause(ex);
+    public void testInstallJARFromTmp() throws Exception {
+        final ModuleManager mgr = Main.getModuleSystem().getManager();
+        File dir = File.createTempFile("dir", ".dir");
+        dir.delete();
+        dir.mkdirs();
+        assertTrue("Directory created", dir.isDirectory());
+        assertEquals("No files in it", 0, dir.list().length);
+        File f = CLILookupHelpTest.createJAR(dir, "org.tmp.test", null);
+        final Module m = mgr.create(f, null, false, false, false);
+
+        mgr.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            @Override
+            public Void run() throws Exception {
+                mgr.enable(m);
+                return null;
             }
-        }
+        });
+        
+        assertTrue("Module is enabled", m.isEnabled());
+        
     }
 }
-            

@@ -86,7 +86,7 @@ public class CppStringLexerTestCase extends NbTestCase {
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.TEXT, "t");
     }
-    
+
     public void testNextToken2() {
         String text = "\\e\\t\\b\\b\\t \\tabc\\rsddfdsffffffffff\\uuuuAbcD\\377";
         

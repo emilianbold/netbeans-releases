@@ -120,17 +120,19 @@ public class ComputeAnnotations {
         Collection<? extends CsmMethod> overriddenMethods = Collections.<CsmMethod>emptyList();
         if (CsmKindUtilities.isMethod(func)) {
             CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(func);
-            baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
-            if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
-                overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(meth, false);
-            }
-            if (BaseAnnotation.LOGGER.isLoggable(Level.FINEST)) {
-                BaseAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), toString(func)});
-                for (CsmMethod baseMethod : baseMethods) {
-                    BaseAnnotation.LOGGER.log(Level.FINEST, "    {0}", toString(baseMethod));
+            if(meth != null) {
+                baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
+                if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
+                    overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(meth, false);
                 }
+                if (BaseAnnotation.LOGGER.isLoggable(Level.FINEST)) {
+                    BaseAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), toString(func)});
+                    for (CsmMethod baseMethod : baseMethods) {
+                        BaseAnnotation.LOGGER.log(Level.FINEST, "    {0}", toString(baseMethod));
+                    }
+                }
+                baseMethods.remove(meth);
             }
-            baseMethods.remove(meth);
         }
         Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(func);
         Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(func);

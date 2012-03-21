@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,64 +34,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.refactoring.php;
+package org.netbeans.modules.debugger.jpda.ui.completion;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.modules.csl.spi.support.ModificationResult;
-import org.netbeans.modules.refactoring.spi.BackupFacility;
-import org.netbeans.modules.refactoring.spi.Transaction;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 
 /**
- * @todo Copied from javascript module. Should be a part of either CSL or better
- * the refactoring API.
  *
- * @author Jan Becicka
+ * @author Martin Entlicher
  */
-public class RetoucheCommit implements Transaction {
+class ClassSearchScopeType implements SearchScopeType {
+    
+    private String prefix;
 
-    ArrayList<BackupFacility.Handle> ids = new ArrayList<BackupFacility.Handle>();
-    private boolean commited = false;
-    Collection<ModificationResult> results;
+    public ClassSearchScopeType() {
+        prefix = null;
+    }
 
-    public RetoucheCommit(Collection<ModificationResult> results) {
-        this.results = results;
+    public ClassSearchScopeType(String prefix) {
+        this.prefix = prefix;
     }
 
     @Override
-    public void commit() {
-        try {
-            if (commited) {
-                for (BackupFacility.Handle id : ids) {
-                    try {
-                        id.restore();
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-            } else {
-                commited = true;
-                for (ModificationResult result : results) {
-                    ids.add(BackupFacility.getDefault().backup(result.getModifiedFileObjects()));
-                    result.commit();
-                }
-            }
-
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+    public Set<? extends String> getPackages() {
+        if (prefix == null) {
+            return null;
+        }
+        int dot = prefix.lastIndexOf('.');
+        if (dot > 0) {
+            return Collections.singleton(prefix.substring(0, dot));
+        } else {
+            return new HashSet(Arrays.asList(new String[] { "java.lang", "" }));
         }
     }
 
     @Override
-    public void rollback() {
-        for (BackupFacility.Handle id : ids) {
-            try {
-                id.restore();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
+    public boolean isSources() {
+        return true;
     }
+
+    @Override
+    public boolean isDependencies() {
+        return true;
+    }
+
 }
