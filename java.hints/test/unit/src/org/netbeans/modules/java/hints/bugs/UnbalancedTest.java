@@ -151,6 +151,22 @@ public class UnbalancedTest extends NbTestCase {
                 .assertWarnings();
     }
 
+    public void testNegForeach209850() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "  private final int aa[][] = new int[3][3];\n" +
+                       "  public void get() {\n" +
+                       "    for (int[] span : aa) {\n" +
+                       "         System.err.println(span[0] + span[1]);\n" +
+                       "    }\n" +
+                       "  }\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertWarnings();
+    }
+
     public void testCollectionWriteOnly1() throws Exception {
         HintTest
                 .create()
