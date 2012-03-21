@@ -363,6 +363,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                     }
                     Token<TokenId> token = ts.token();
                     if(token.id() == CppTokenId.STRING_LITERAL ||
+                       token.id() == CppTokenId.RAW_STRING_LITERAL ||
                        token.id() == CppTokenId.CHAR_LITERAL) {
                             return token;
                     }
@@ -550,6 +551,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                                 embedded.move(0);
                                 tss.addFirst(embedded);
                                 break;
+                            case RAW_STRING_LITERAL:
                             case STRING_LITERAL:
                             case CHAR_LITERAL:
                                 CharSequence text = token.text();
