@@ -293,7 +293,7 @@ public final class GsfUtilities {
 
             // Simple text search if no known offset (e.g. broken/unparseable source)
             if ((ec != null) && (search != null) && (offset == -1)) {
-                StyledDocument doc = ec.openDocument();
+                StyledDocument doc = NbDocument.getDocument(od);
 
                 try {
                     String text = doc.getText(0, doc.getLength());
@@ -311,34 +311,8 @@ public final class GsfUtilities {
                     LOG.log(Level.WARNING, null, ble);
                 }
             }
-
-            if ((ec != null) && (lc != null) && (offset != -1)) {
-                StyledDocument doc = ec.openDocument();
-
-                if (doc != null) {
-                    int line = NbDocument.findLineNumber(doc, offset);
-                    int lineOffset = NbDocument.findLineOffset(doc, line);
-                    int column = offset - lineOffset;
-
-                    if (line != -1) {
-                        Line l = lc.getLineSet().getCurrent(line);
-
-                        if (l != null) {
-                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
-
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            OpenCookie oc = od.getCookie(OpenCookie.class);
-
-            if (oc != null) {
-                oc.open();
-
-                return true;
-            }
+            
+            return NbDocument.openDocument(od, offset, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }

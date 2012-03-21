@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -1078,31 +1078,31 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     private String[] setupRunSingleTestMethod(Properties p, SingleMethod methodSpec) {
-        return setupTestSingle(p, new FileObject[] {methodSpec.getFile()});
+//        return setupTestSingle(p, new FileObject[] {methodSpec.getFile()});
 
-        //FileObject[] testSrcPath = projectTestRoots.getRoots();
-        //FileObject testFile = methodSpec.getFile();
-        //FileObject root = getRoot(testSrcPath, testFile);
-        //String relPath = FileUtil.getRelativePath(root, testFile);
-        //String className = getClassName(relPath);
-        //p.setProperty("javac.includes", relPath); // NOI18N
-        //p.setProperty("test.class", className); // NOI18N
-        //p.setProperty("test.method", methodSpec.getMethodName()); // NOI18N
-        //return new String[] {"test-single-method"}; // NOI18N
+        FileObject[] testSrcPath = projectTestRoots.getRoots();
+        FileObject testFile = methodSpec.getFile();
+        FileObject root = getRoot(testSrcPath, testFile);
+        String relPath = FileUtil.getRelativePath(root, testFile);
+        String className = getClassName(relPath);
+        p.setProperty("javac.includes", relPath); // NOI18N
+        p.setProperty("test.class", className); // NOI18N
+        p.setProperty("test.method", methodSpec.getMethodName()); // NOI18N
+        return new String[] {"test-single-method"}; // NOI18N
     }
 
     private String[] setupDebugSingleTestMethod(Properties p, SingleMethod methodSpec) {
-        return setupDebugTestSingle(p, new FileObject[] {methodSpec.getFile()});
+//        return setupDebugTestSingle(p, new FileObject[] {methodSpec.getFile()});
 
-        //FileObject[] testSrcPath = projectTestRoots.getRoots();
-        //FileObject testFile = methodSpec.getFile();
-        //FileObject root = getRoot(testSrcPath, testFile);
-        //String relPath = FileUtil.getRelativePath(root, testFile);
-        //String className = getClassName(relPath);
-        //p.setProperty("javac.includes", relPath); // NOI18N
-        //p.setProperty("test.class", className); // NOI18N
-        //p.setProperty("test.method", methodSpec.getMethodName()); // NOI18N
-        //return new String[] {"debug-test-method"}; // NOI18N
+        FileObject[] testSrcPath = projectTestRoots.getRoots();
+        FileObject testFile = methodSpec.getFile();
+        FileObject root = getRoot(testSrcPath, testFile);
+        String relPath = FileUtil.getRelativePath(root, testFile);
+        String className = getClassName(relPath);
+        p.setProperty("javac.includes", relPath); // NOI18N
+        p.setProperty("test.class", className); // NOI18N
+        p.setProperty("test.method", methodSpec.getMethodName()); // NOI18N
+        return new String[] {"debug-test-method"}; // NOI18N
     }
 
     private static String getClassName(String relPath) {
@@ -1168,12 +1168,12 @@ public abstract class BaseActionProvider implements ActionProvider {
             return false;
         } else if (command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD)
                 || command.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
-            if (isCompileOnSaveEnabled()) {
+//            if (isCompileOnSaveEnabled()) {
                 SingleMethod[] methodSpecs = findTestMethods(context);
                 return (methodSpecs != null) && (methodSpecs.length == 1);
-            } else {
-                return false;
-            }
+//            } else {
+//                return false;
+//            }
         } else {
             // other actions are global
             return true;
