@@ -140,8 +140,8 @@ public final class VersioningSupport {
         if (folder.getPath().startsWith("\\\\")) { //NOI18N
             return folder.getParentFile() == null || folder.getParentFile().getPath().equals("\\\\"); //NOI18N
         }
-        for (VCSFileProxy unversionedFolder : Utils.getUnversionedFolders()) {
-            if (Utils.isAncestorOrEqual(unversionedFolder, folder, true)) {
+        for (String unversionedFolderPath : Utils.getUnversionedFolders()) {
+            if (Utils.isAncestorOrEqual(unversionedFolderPath, folder)) {
                 return true;
             }
         }

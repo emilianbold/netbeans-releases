@@ -110,6 +110,10 @@ public final class VCSFileProxy {
         return new VCSFileProxy(parent.getPath() + "/" + child, parent.proxy);   // NOI18N
     }
     
+    static VCSFileProxy createFileProxy(String path) {
+        return new VCSFileProxy(path, null);
+    }
+    
     static VCSFileProxy createFileProxy(VCSFileProxy parent, String child, boolean isDirectory) {
         VCSFileProxy file = new VCSFileProxy(parent.getPath() + "/" + child, parent.proxy); // NOI18N
         file.isDirectory = isDirectory;
