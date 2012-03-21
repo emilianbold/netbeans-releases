@@ -204,7 +204,7 @@ public final class JavaIndex {
         synchronized (cacheLock) {
             if (cacheRoot != null && cacheRoot.equals(root)) {
                 result = cacheValue == null ? null : cacheValue.get();
-                if (cacheValue != null) {
+                if (result != null) {
                     return result;
                 }
             }
