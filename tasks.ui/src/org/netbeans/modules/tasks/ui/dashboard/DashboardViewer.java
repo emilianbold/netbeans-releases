@@ -240,6 +240,9 @@ public final class DashboardViewer {
             }
             //set new category
             toAdd.setCategory(category);
+            if (DashboardViewer.getInstance().isTaskNodeActive(taskNode)) {
+                DashboardViewer.getInstance().setActiveTaskNode(toAdd);
+            }
             model.contentChanged(destCategoryNode);
             destCategoryNode.refresh();
         }
