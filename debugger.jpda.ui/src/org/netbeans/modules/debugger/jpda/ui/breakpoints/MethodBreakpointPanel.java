@@ -44,13 +44,16 @@
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.JScrollPane;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
-import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
+import org.netbeans.modules.debugger.jpda.ui.completion.JavaClassNbDebugEditorKit;
+import org.netbeans.modules.debugger.jpda.ui.completion.JavaMethodNbDebugEditorKit;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -73,7 +76,10 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
     private ActionsPanel                actionsPanel; 
     private MethodBreakpoint            breakpoint;
     private boolean                     createBreakpoint = false;
-    private JTextField                  tfClassName;
+    private JEditorPane                 epClassName;
+    private JScrollPane                 spClassName;
+    private JEditorPane                 epMethodName;
+    private JScrollPane                 spMethodName;
     
     
     private static MethodBreakpoint createBreakpoint () {
@@ -118,18 +124,44 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         String className = "";
         String[] cf = b.getClassFilters ();
         className = ClassBreakpointPanel.concatClassFilters(cf);
-        tfClassName = new JTextField(className);
-        tfClassName.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MethodBreakpointPanel.class, "ACSN_Method_Breakpoint_ClassName"));
-        tfClassName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_Method_Breakpoint_ClassName"));
-        jLabel3.setLabelFor(tfClassName);
-        HelpCtx.setHelpIDString(tfClassName, HELP_ID);
-        panelClassName.add(java.awt.BorderLayout.CENTER, tfClassName);
+        String tooltipText = NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Field_Breakpoint_Class_Name");
+        Pair<JScrollPane, JEditorPane> editorCC = ClassBreakpointPanel.addClassNameEditorCC(JavaClassNbDebugEditorKit.MIME_TYPE, null, className, tooltipText);
+        spClassName = editorCC.get1();
+        epClassName = editorCC.get2();
+        epClassName.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MethodBreakpointPanel.class, "ACSN_Method_Breakpoint_ClassName"));
+        epClassName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_Method_Breakpoint_ClassName"));
+        jLabel3.setLabelFor(spClassName);
+        HelpCtx.setHelpIDString(epClassName, HELP_ID);
+        panelClassName.add(java.awt.BorderLayout.CENTER, spClassName);
+        
+        editorCC = ClassBreakpointPanel.addClassNameEditorCC(JavaMethodNbDebugEditorKit.MIME_TYPE, null, className, org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Method_Name"));
+        spMethodName = editorCC.get1();
+        epMethodName = editorCC.get2();
+        jLabel1.setLabelFor(spMethodName);
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        pSettings.add(spMethodName, gridBagConstraints);
+        epMethodName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Method_Name")); // NOI18N
+        epMethodName.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                epMethodName.getDocument().putProperty("class-name", epClassName.getText());
+            }
+            @Override
+            public void focusLost(FocusEvent e) {}
+        });
+        
         if ("".equals (b.getMethodName ())) {
-            tfMethodName.setText (org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "Method_Breakpoint_ALL_METHODS"));
+            epMethodName.setText (org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "Method_Breakpoint_ALL_METHODS"));
             cbAllMethods.setSelected (true);
-            tfMethodName.setEnabled (false);
+            epMethodName.setEnabled (false);
         } else {
-            tfMethodName.setText (b.getMethodName () + " " + createParamTypesFromSignature(b.getMethodSignature()));
+            epMethodName.setText (b.getMethodName () + " " + createParamTypesFromSignature(b.getMethodSignature()));
         }
         cbBreakpointType.addItem (NbBundle.getMessage(MethodBreakpointPanel.class, "LBL_Method_Breakpoint_Type_Entry"));
         cbBreakpointType.addItem (NbBundle.getMessage(MethodBreakpointPanel.class, "LBL_Method_Breakpoint_Type_Exit"));
@@ -301,7 +333,6 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         jLabel3 = new javax.swing.JLabel();
         cbAllMethods = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
-        tfMethodName = new javax.swing.JTextField();
         panelClassName = new javax.swing.JPanel();
         stopOnLabel = new javax.swing.JLabel();
         cbBreakpointType = new javax.swing.JComboBox();
@@ -341,7 +372,6 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         pSettings.add(cbAllMethods, gridBagConstraints);
         cbAllMethods.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_CB_Method_Breakpoint_All_Methods")); // NOI18N
 
-        jLabel1.setLabelFor(tfMethodName);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_Method_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -351,17 +381,6 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(jLabel1, gridBagConstraints);
         jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_L_Method_Breakpoint_Method_Name")); // NOI18N
-
-        tfMethodName.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Method_Name")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(tfMethodName, gridBagConstraints);
-        tfMethodName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Method_Name")); // NOI18N
 
         panelClassName.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -427,11 +446,11 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
     private void cbAllMethodsActionPerformed (java.awt.event.ActionEvent evt)//GEN-FIRST:event_cbAllMethodsActionPerformed
     {//GEN-HEADEREND:event_cbAllMethodsActionPerformed
         if (cbAllMethods.isSelected ()) {
-            tfMethodName.setText (org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "Method_Breakpoint_ALL_METHODS"));
-            tfMethodName.setEnabled (false);
+            epMethodName.setText (org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "Method_Breakpoint_ALL_METHODS"));
+            epMethodName.setEnabled (false);
         } else {
-            tfMethodName.setText ("");
-            tfMethodName.setEnabled (true);
+            epMethodName.setText ("");
+            epMethodName.setEnabled (true);
         }
     }//GEN-LAST:event_cbAllMethodsActionPerformed
 
@@ -456,10 +475,10 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         //String className = ((String) tfPackageName.getText ()).trim ();
         //if (className.length () > 0)
         //    className += '.';
-        String className = tfClassName.getText ().trim ();
+        String className = epClassName.getText ().trim ();
         breakpoint.setClassFilters (new String[] {className});
         if (!cbAllMethods.isSelected ()) {
-            String methodAndSignature = tfMethodName.getText ().trim ();
+            String methodAndSignature = epMethodName.getText ().trim ();
             String methodName;
             String signature;
             int index = methodAndSignature.indexOf("(");
@@ -510,7 +529,7 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
     }
     
     private String valiadateMsg () {
-        if (tfClassName.getText().trim ().length() == 0 || (tfMethodName.getText().trim ().length() == 0 && !cbAllMethods.isSelected())) {
+        if (epClassName.getText().trim ().length() == 0 || (epMethodName.getText().trim ().length() == 0 && !cbAllMethods.isSelected())) {
             return NbBundle.getMessage(MethodBreakpointPanel.class, "MSG_No_Class_or_Method_Name_Spec");
         }
         return null;
@@ -528,23 +547,6 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
     private javax.swing.JPanel pSettings;
     private javax.swing.JPanel panelClassName;
     private javax.swing.JLabel stopOnLabel;
-    private javax.swing.JTextField tfMethodName;
     // End of variables declaration//GEN-END:variables
 
-    /*
-    public static class ClassEditorKit extends NbEditorKit {
-        
-        static final String MIME_TYPE = "text/x-nb-debugger-jpda-class"; // NOI18N
-        
-        public ClassEditorKit() {
-            //updateActions();
-        }
-        
-        @Override
-        public String getContentType() {
-            return MIME_TYPE;
-        }
-
-    }
-     */
 }
