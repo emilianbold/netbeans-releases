@@ -55,6 +55,7 @@ import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.BasicSearchCriteria;
+import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.Manager;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.PrintDetailsTask;
@@ -94,6 +95,8 @@ public abstract class BasicAbstractResultsPanel
             "org/netbeans/modules/search/res/logical_view.png";         //NOI18N
     private static final String FOLDER_VIEW_ICON =
             "org/netbeans/modules/search/res/file_view.png";            //NOI18N
+    private static final String MODE_FLAT = "flat";                     //NOI18N
+    private static final String MODE_TREE = "tree";                     //NOI18N
     protected ResultModel resultModel;
     private JButton nextButton;
     private JButton prevButton;
@@ -120,6 +123,10 @@ public abstract class BasicAbstractResultsPanel
         initSelectionListeners();
         initActions();
         initResultNodeAdditionListener();
+        if (MODE_TREE.equals(
+                FindDialogMemory.getDefault().getResultsViewMode())) {
+            resultsOutlineSupport.setFolderTreeMode();
+        }
     }
 
     private void initSelectionListeners() {
@@ -165,6 +172,7 @@ public abstract class BasicAbstractResultsPanel
 
     @Override
     protected AbstractButton[] createButtons() {
+        final FindDialogMemory memory = FindDialogMemory.getDefault();
         toggleViewButton = new JToggleButton();
         toggleViewButton.setEnabled(true);
         toggleViewButton.setIcon(ImageUtilities.loadImageIcon(FOLDER_VIEW_ICON,
@@ -173,14 +181,17 @@ public abstract class BasicAbstractResultsPanel
                 FLAT_VIEW_ICON, true));
         toggleViewButton.setToolTipText(UiUtils.getText(
                 "TEXT_BUTTON_TOGGLE_VIEW"));                            //NOI18N
-        toggleViewButton.setSelected(false);
+        toggleViewButton.setSelected(
+                MODE_TREE.equals(memory.getResultsViewMode()));
         toggleViewButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (toggleViewButton.isSelected()) {
                     resultsOutlineSupport.setFolderTreeMode();
+                    memory.setResultsViewMode(MODE_TREE);
                 } else {
                     resultsOutlineSupport.setFlatMode();
+                    memory.setResultsViewMode(MODE_FLAT);
                 }
                 try {
                     getExplorerManager().setSelectedNodes(new Node[]{

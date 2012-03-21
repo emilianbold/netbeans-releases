@@ -155,6 +155,12 @@ public final class FindDialogMemory {
     private String resultsColumnWidthsDetails;
     private String resultsColumnWidthsReplacing;
 
+    /** Tree or flat result view mode. */
+    private String resultsViewMode;
+
+    /** Last selected search provider. */
+    private String provider;
+
     /** Preferences node for storing history info */
     private static Preferences prefs;
     /** Name of preferences node where we persist history */
@@ -177,6 +183,8 @@ public final class FindDialogMemory {
     private static final String PROP_RESULTS_COLUMN_WIDTHS = "results_column_widths"; //NOI18N
     private static final String PROP_RESULTS_COLUMN_WIDTHS_DETAILS = "results_column_widths_details"; //NOI18N
     private static final String PROP_RESULTS_COLUMN_WIDTHS_REPLACING = "results_column_widths_replacing"; //NOI18N
+    private static final String PROP_RESULTS_VIEW_MODE = "results_view_mode"; //NOI18N
+    private static final String PROP_PROVIDER = "provider"; //NOI18N
     /** Creates a new instance of FindDialogMemory */
     private FindDialogMemory() {
         prefs = NbPreferences.forModule(FindDialogMemory.class).node(PREFS_NODE);
@@ -216,6 +224,8 @@ public final class FindDialogMemory {
                 "100:30:200:-1:50:|0:");                                //NOI18N
         resultsColumnWidthsReplacing = prefs.get(PROP_RESULTS_COLUMN_WIDTHS_REPLACING,
                 "100:30:-1:-1:-1:|0:");                                 //NOI18N
+        resultsViewMode = prefs.get(PROP_RESULTS_VIEW_MODE, null);
+        provider = prefs.get(PROP_PROVIDER, null);
         fileNamePatterns = new ArrayList<String>(maxFileNamePatternCount);
         replExpressions = new ArrayList<String>(maxReplExprCount);
         ignoreList = new ArrayList();
@@ -484,5 +494,23 @@ public final class FindDialogMemory {
         this.resultsColumnWidthsReplacing = resultsColumnWidthsReplacing;
         prefs.put(PROP_RESULTS_COLUMN_WIDTHS_REPLACING,
                 resultsColumnWidthsReplacing);
+    }
+
+    public String getResultsViewMode() {
+        return resultsViewMode;
+    }
+
+    public void setResultsViewMode(String resultsViewMode) {
+        this.resultsViewMode = resultsViewMode;
+        prefs.put(PROP_RESULTS_VIEW_MODE, resultsViewMode);
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+        prefs.put(PROP_PROVIDER, provider);
     }
 }
