@@ -48,6 +48,7 @@ import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.treelist.LeafNode;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
+import org.openide.util.NbBundle;
 
 /**
  * Category Node. E.g. My Projects, Open Projects
@@ -57,10 +58,11 @@ import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 public class TitleNode extends LeafNode {
 
     private JPanel panel;
-    private JLabel name;
+    private JLabel lblName;
     private String titleName;
     private LinkButton button;
     private final Object LOCK = new Object();
+    private ProgressLabel lblProgress;
 
     public TitleNode(String titleName, LinkButton button) {
         super(null);
@@ -75,21 +77,37 @@ public class TitleNode extends LeafNode {
                 panel = new JPanel(new GridBagLayout());
                 panel.setBorder(new EmptyBorder(0, 0, 0, 0));
                 panel.setOpaque(false);
+                lblName = new TreeLabel(titleName);
+                lblName.setBorder(new EmptyBorder(0, 0, 0, 5));
+                lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
+                lblName.setForeground(ColorManager.getDefault().getDefaultBackground());
+                panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
-                name = new TreeLabel(titleName);
-                name.setBorder(new EmptyBorder(0, 0, 0, 5));
-                name.setFont(name.getFont().deriveFont(Font.BOLD));
-                name.setForeground(ColorManager.getDefault().getDefaultBackground());
-                panel.add(name, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+                lblProgress = createProgressLabel(NbBundle.getMessage(TitleNode.class, "LBL_LoadingInProgress"));
+                lblProgress.setForeground(ColorManager.getDefault().getDefaultBackground());
+                panel.add(lblProgress, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
                 panel.add(new JLabel(), new GridBagConstraints(4, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
 
                 if (button != null) {
                     panel.add(button, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
                 }
-
             }
         }
         return panel;
+    }
+
+    void setProgressVisible(final boolean visible) {
+        if (lblProgress != null) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    lblProgress.setVisible(visible);
+                    panel.repaint();
+                    panel.revalidate();
+                    fireContentChanged();
+                }
+            });
+        }
     }
 }

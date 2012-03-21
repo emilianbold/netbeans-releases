@@ -78,14 +78,14 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
     private LinkButton btnChanged;
     private LinkButton btnTotal;
 
-    public QueryNode(Query query, TreeListNode parent) {
+    public QueryNode(Query query, TreeListNode parent, boolean refresh) {
         super(true, parent, query.getDisplayName());
         this.query = query;
         labels = new ArrayList<TreeLabel>();
         buttons = new ArrayList<LinkButton>();
         updateNodes();
         query.addPropertyChangeListener(this);
-        refresh = query.getIssues().isEmpty();
+        this.refresh = refresh;
     }
 
     private void updateNodes() {
