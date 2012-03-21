@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTError;
@@ -123,7 +124,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     @Override
     protected boolean needPPTokens() {
-        return true;
+        return APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM;
     }
 
     public TokenStream getFilteredTokenStream(APTLanguageFilter lang) {
