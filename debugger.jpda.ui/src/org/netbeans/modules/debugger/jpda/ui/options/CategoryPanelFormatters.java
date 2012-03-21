@@ -135,7 +135,6 @@ class CategoryPanelFormatters extends StorablePanel {
         copyButton = new javax.swing.JButton();
         subtypesLabel = new javax.swing.JLabel();
         testChildrenTextField = new javax.swing.JTextField();
-        formatChildrenLabelIf = new javax.swing.JLabel();
         childrenCodeLabel = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
 
@@ -275,8 +274,6 @@ class CategoryPanelFormatters extends StorablePanel {
         testChildrenTextField.setEditable(false);
         testChildrenTextField.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.testChildrenTextField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(formatChildrenLabelIf, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenLabelIf.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(childrenCodeLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.childrenCodeLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -289,7 +286,7 @@ class CategoryPanelFormatters extends StorablePanel {
                         .addGap(12, 12, 12)
                         .addComponent(formatterNameLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 490, Short.MAX_VALUE))
+                        .addComponent(jSeparator1))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -298,23 +295,21 @@ class CategoryPanelFormatters extends StorablePanel {
                                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                         .addComponent(formatterClassTypesLabel)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(formatterClassTypesTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE))
+                                        .addComponent(formatterClassTypesTextField))
                                     .addComponent(formatValueLabel, javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(childrenCodeLabel, javax.swing.GroupLayout.Alignment.LEADING))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(subtypesLabel)
                                 .addGap(6, 6, 6))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(formattersScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE)
+                                .addComponent(formattersScrollPane)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(12, 12, 12)
                         .addComponent(formatChildrenLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(testChildrenTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(formatChildrenLabelIf))
+                        .addComponent(testChildrenTextField))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(24, 24, 24)
                         .addComponent(formatValueScrollPane))
@@ -345,8 +340,7 @@ class CategoryPanelFormatters extends StorablePanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(formatChildrenLabel)
-                    .addComponent(testChildrenTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(formatChildrenLabelIf))
+                    .addComponent(testChildrenTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(childrenCodeLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -670,7 +664,6 @@ class CategoryPanelFormatters extends StorablePanel {
             String childrenExpandTest = f.getChildrenExpandTestCode();
             if (childrenExpandTest != null && childrenExpandTest.trim().length() > 0) {
                 testChildrenTextField.setVisible(true);
-                formatChildrenLabelIf.setVisible(true);
                 testChildrenTextField.setText(childrenExpandTest);
                 org.openide.awt.Mnemonics.setLocalizedText(formatChildrenLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenLabel.text")); // NOI18N
                 if (isChildrenCodeDisplayed) {
@@ -680,7 +673,6 @@ class CategoryPanelFormatters extends StorablePanel {
                 }
             } else {
                 testChildrenTextField.setVisible(false);
-                formatChildrenLabelIf.setVisible(false);
                 if (isChildrenCodeDisplayed) {
                     org.openide.awt.Mnemonics.setLocalizedText(formatChildrenLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenLabelNoTestCode.text")); // NOI18N
                     childrenCodeLabel.setVisible(false);
@@ -746,7 +738,6 @@ class CategoryPanelFormatters extends StorablePanel {
     private javax.swing.JEditorPane formatChildrenCodeEditorPane;
     private javax.swing.JScrollPane formatChildrenCodeScrollPane;
     private javax.swing.JLabel formatChildrenLabel;
-    private javax.swing.JLabel formatChildrenLabelIf;
     private javax.swing.JScrollPane formatChildrenListScrollPane;
     private javax.swing.JTable formatChildrenListTable;
     private javax.swing.JEditorPane formatValueEditorPane;

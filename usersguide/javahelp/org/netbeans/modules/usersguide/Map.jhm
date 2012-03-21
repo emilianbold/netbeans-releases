@@ -108,7 +108,6 @@ Other names may be trademarks of their respective owners.
 
 <mapID target="workspace.window.managing" url="configure/workspace/window_managing.html" />
 <mapID target="configure.tbcustomize" url="configure/workspace/toolbar_customize.html" />
-<mapID target="configure.tbcommands" url="configure/workspace/toolbar_commands.html" />
 
 
 <!-- TODO - plugin manager TOC topics -->
