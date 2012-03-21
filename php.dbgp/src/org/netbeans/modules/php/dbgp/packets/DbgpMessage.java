@@ -351,18 +351,19 @@ public abstract class DbgpMessage {
             return null;
         }
         String original = new String(bytes);
-        String input = null;
+        String inputWithoutNullChars = null;
         try {
             // this is basically workaround for a bug in xdebug, where xdebug
             // includes invalid xml characters into the message.
-            input = removeNonXMLCharacters(original);
-            InputSource is = new InputSource(new StringReader(input));
+            String input = removeNonXMLCharacters(original);
+            inputWithoutNullChars = input.replace("&#0;", ""); //NOI18N
+            InputSource is = new InputSource(new StringReader(inputWithoutNullChars));
             is.setEncoding("UTF-8");
             Document doc = BUILDER.parse( is );
             return doc.getDocumentElement();
         }
         catch (SAXException e) {
-            LOGGER.log(Level.SEVERE, "Possible invalid XML - ORIGINAL:\n\n{0}\n\nAFTER REPLACE:\n\n{1}", new Object[]{original, input});
+            LOGGER.log(Level.SEVERE, "Possible invalid XML - ORIGINAL:\n\n{0}\n\nAFTER REPLACE:\n\n{1}", new Object[]{original, inputWithoutNullChars});
             notifyPacketError(e);
 
             return null;
