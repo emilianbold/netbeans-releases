@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.groovy.gsp.lexer;
 
 import junit.framework.TestCase;
@@ -62,10 +61,10 @@ public class GspLexerBatchTest extends TestCase {
 
     public void test1() {
         String text =
-                "<html>" +
-                "<g:if>" +
-                "</g:if>" +
-                "</html>";
+                "<html>"
+                + "<g:if>"
+                + "</g:if>"
+                + "</html>";
         TokenSequence<?> sequence = createTokenSequence(text);
 
         checkNext(sequence, GspTokenId.HTML, "<html>");
@@ -76,65 +75,65 @@ public class GspLexerBatchTest extends TestCase {
 
     public void test2() {
         String text =
-                "<html>" +
-                "<g:if test=\"${t}\">" +
-                "<div class=\"e\">" +
-                "<g:renderErrors bean=\"${f.u}\" />" +
-                "</div>" +
-                "</g:if>" +
-                "<div class=\"s\">${e.s}</div>" +
-                "</html>";
+                "<html>"
+                + "<g:if test=\"${t}\">"
+                + "<div class=\"e\">"
+                + "<g:renderErrors bean=\"${f.u}\" />"
+                + "</div>"
+                + "</g:if>"
+                + "<div class=\"s\">${e.s}</div>"
+                + "</html>";
         TokenSequence<?> sequence = createTokenSequence(text);
-        
-        checkNext(sequence,GspTokenId.HTML, "<html>");
-        checkNext(sequence,GspTokenId.GTAG, "<g:if test=\"");
-        checkNext(sequence,GspTokenId.DELIMITER, "${");
-        checkNext(sequence,GspTokenId.GROOVY_EXPR, "t");
-        checkNext(sequence,GspTokenId.DELIMITER, "}");
-        checkNext(sequence,GspTokenId.GTAG, "\">");
-        checkNext(sequence,GspTokenId.HTML, "<div class=\"e\">");
-        checkNext(sequence,GspTokenId.GTAG, "<g:renderErrors bean=\"");
-        checkNext(sequence,GspTokenId.DELIMITER, "${");
-        checkNext(sequence,GspTokenId.GROOVY_EXPR, "f.u");
-        checkNext(sequence,GspTokenId.DELIMITER, "}");
-        checkNext(sequence,GspTokenId.GTAG, "\" />");
-        checkNext(sequence,GspTokenId.HTML, "</div>");
-        checkNext(sequence,GspTokenId.GTAG, "</g:if>");
-        checkNext(sequence,GspTokenId.HTML, "<div class=\"s\">");
-        checkNext(sequence,GspTokenId.DELIMITER, "${");
-        checkNext(sequence,GspTokenId.GROOVY, "e.s");
-        checkNext(sequence,GspTokenId.DELIMITER, "}");
-        checkNext(sequence,GspTokenId.HTML, "</div></html>");
+
+        checkNext(sequence, GspTokenId.HTML, "<html>");
+        checkNext(sequence, GspTokenId.GTAG, "<g:if test=\"");
+        checkNext(sequence, GspTokenId.DELIMITER, "${");
+        checkNext(sequence, GspTokenId.GROOVY_EXPR, "t");
+        checkNext(sequence, GspTokenId.DELIMITER, "}");
+        checkNext(sequence, GspTokenId.GTAG, "\">");
+        checkNext(sequence, GspTokenId.HTML, "<div class=\"e\">");
+        checkNext(sequence, GspTokenId.GTAG, "<g:renderErrors bean=\"");
+        checkNext(sequence, GspTokenId.DELIMITER, "${");
+        checkNext(sequence, GspTokenId.GROOVY_EXPR, "f.u");
+        checkNext(sequence, GspTokenId.DELIMITER, "}");
+        checkNext(sequence, GspTokenId.GTAG, "\" />");
+        checkNext(sequence, GspTokenId.HTML, "</div>");
+        checkNext(sequence, GspTokenId.GTAG, "</g:if>");
+        checkNext(sequence, GspTokenId.HTML, "<div class=\"s\">");
+        checkNext(sequence, GspTokenId.DELIMITER, "${");
+        checkNext(sequence, GspTokenId.GROOVY, "e.s");
+        checkNext(sequence, GspTokenId.DELIMITER, "}");
+        checkNext(sequence, GspTokenId.HTML, "</div></html>");
     }
-    
+
     public void testExclamation() {
         String text = "<p>a!</p>";
         TokenSequence<?> sequence = createTokenSequence(text);
-        
-        checkNext(sequence,GspTokenId.HTML, "<p>a!</p>");
+
+        checkNext(sequence, GspTokenId.HTML, "<p>a!</p>");
     }
 
     public void testPercent() {
         String text = "<a class=\"home\" href=\"${createLinkTo(dir:'')}\">Home</a>";
         TokenSequence<?> sequence = createTokenSequence(text);
-        
-        checkNext(sequence,GspTokenId.HTML, "<a class=\"home\" href=\"");
-        checkNext(sequence,GspTokenId.DELIMITER, "${");
-        checkNext(sequence,GspTokenId.GROOVY, "createLinkTo(dir:'')");
-        checkNext(sequence,GspTokenId.DELIMITER, "}");
-        checkNext(sequence,GspTokenId.HTML, "\">Home</a>");
+
+        checkNext(sequence, GspTokenId.HTML, "<a class=\"home\" href=\"");
+        checkNext(sequence, GspTokenId.DELIMITER, "${");
+        checkNext(sequence, GspTokenId.GROOVY, "createLinkTo(dir:'')");
+        checkNext(sequence, GspTokenId.DELIMITER, "}");
+        checkNext(sequence, GspTokenId.HTML, "\">Home</a>");
     }
 
     public void testExpressionInValue() {
-        String text = 
-                "<%@ page import=\"org.grails.bookmarks.*\" %>" +
-                "<style type=\"text/css\">.searchbar {width:97%;}</style>";
+        String text =
+                "<%@ page import=\"org.grails.bookmarks.*\" %>"
+                + "<style type=\"text/css\">.searchbar {width:97%;}</style>";
         TokenSequence<?> sequence = createTokenSequence(text);
-        
-        checkNext(sequence,GspTokenId.DELIMITER, "<%@");
-        checkNext(sequence,GspTokenId.GROOVY, " page import=\"org.grails.bookmarks.*\" ");
-        checkNext(sequence,GspTokenId.DELIMITER, "%>");
-        checkNext(sequence,GspTokenId.HTML, "<style type=\"text/css\">.searchbar {width:97%;}</style>");
+
+        checkNext(sequence, GspTokenId.DELIMITER, "<%@");
+        checkNext(sequence, GspTokenId.GROOVY, " page import=\"org.grails.bookmarks.*\" ");
+        checkNext(sequence, GspTokenId.DELIMITER, "%>");
+        checkNext(sequence, GspTokenId.HTML, "<style type=\"text/css\">.searchbar {width:97%;}</style>");
     }
 
     private TokenSequence createTokenSequence(String text) {
