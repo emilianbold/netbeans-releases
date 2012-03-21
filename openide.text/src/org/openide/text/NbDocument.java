@@ -51,6 +51,9 @@ import javax.swing.JEditorPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
+import javax.swing.undo.UndoableEdit;
+import org.netbeans.modules.openide.text.NbDocumentRefactoringHack;
+import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
 
 
@@ -518,6 +521,53 @@ public final class NbDocument extends Object {
         }
         ((Annotatable) doc).removeAnnotation(annotation);
     }
+    
+    /**
+     * TODO: will be removed after API review
+     */
+    
+    static {
+        NbDocumentRefactoringHack.APIAccessor.DEFAULT = new APIAccessorImpl();
+    }
+    
+    private static class APIAccessorImpl extends NbDocumentRefactoringHack.APIAccessor {
+
+        @Override
+        public <T> T getEditToBeUndoneOfType(EditorCookie ec, Class<T> type) {
+            return NbDocument.getEditToBeUndoneOfType(ec, type);
+        }
+
+        @Override
+        public <T> T getEditToBeRedoneOfType(EditorCookie ec, Class<T> type) {
+            return NbDocument.getEditToBeRedoneOfType(ec, type);
+        }
+        
+    }
+
+    static <T> T getEditToBeUndoneOfType(EditorCookie ec, Class<T> type) {
+        return getEditToBeUndoneRedoneOfType(ec, type, false);
+    }
+    
+    static <T> T getEditToBeRedoneOfType(EditorCookie ec, Class<T> type) {
+        return getEditToBeUndoneRedoneOfType(ec, type, true);
+    }
+    
+    private static <T> T getEditToBeUndoneRedoneOfType(EditorCookie ec, Class<T> type, boolean redone) {
+        UndoRedo ur;
+        if (ec instanceof CloneableEditorSupport &&
+                ((ur = ((CloneableEditorSupport)ec).getUndoRedo()) instanceof UndoRedoManager))
+        {
+            UndoRedoManager urManager = (UndoRedoManager) ur;
+            UndoableEdit edit = urManager.editToBeUndoneRedone(redone);
+            if (type.isInstance(edit)) {
+                @SuppressWarnings("unchecked") T inst = (T) edit;
+                return inst;
+            }
+        }
+        return null;
+    }
+    
+    //End of TODO
 
     /** Specialized version of document that knows how to lock the document
     * for complex modifications.

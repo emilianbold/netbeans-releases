@@ -54,7 +54,7 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.spi.editor.AbstractEditorAction;
 
 /**
- * Move move entire code elements (statements and class members) up or down.
+ * Move entire code elements (statements and class members) up or down.
  *
  * @author Dusan Balek
  */

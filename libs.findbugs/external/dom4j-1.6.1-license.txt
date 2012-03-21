@@ -3,7 +3,6 @@ Version: 1.6.1
 Description: XML DOM API
 License: DOM4J-BSD
 Origin: http://repo1.maven.org/maven2/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar
-Files: dom4j-1.6.1.jar
 
 Use of DOM4J 1.6.1 is governed by the terms of the license below:
 

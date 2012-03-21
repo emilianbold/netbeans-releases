@@ -83,7 +83,7 @@ public class testCCPhpDoc extends cc {
     public void automaticCommentGenerationOnGlobalVariable() {
         startTest();
 
-                EditorOperator eoPHP = new EditorOperator("index.php");
+        EditorOperator eoPHP = new EditorOperator("index.php");
         if (!DeleteFileContent(eoPHP))
             fail("File not empty - can't continue. Text: " + eoPHP.getText());
         Sleep(1000);
@@ -132,7 +132,7 @@ public class testCCPhpDoc extends cc {
      */
     public void automaticCommentGenerationOnClassVariable() throws Exception {
         startTest();
- 
+
         EditorOperator eoPHP = new EditorOperator("index.php");
         if (!DeleteFileContent(eoPHP))
             fail("File not empty - can't continue. Text: " + eoPHP.getText());
@@ -271,12 +271,12 @@ public class testCCPhpDoc extends cc {
         String text = eoPHP.getText();
         String idealText = "<?php\n"
                 + "/**\n"
-                + " *\n"
+                + " * \n"
                 + " * @global type $_myvar\n"
                 + " * @staticvar int $staticvar\n"
                 + " * @param type $param1\n"
                 + " * @param type $param2\n"
-                + " * @return int \n"
+                + " * @return int\n"
                 + " */\n"
                 + "function firstFunc($param1, $param2 = 'optional') {\n"
                 + "static $staticvar = 7;\n"
@@ -287,7 +287,7 @@ public class testCCPhpDoc extends cc {
 
         assertEquals("expected: " + idealText
                 + " was " + text, idealText, text);
-
+ 
         endTest();
     }
 }

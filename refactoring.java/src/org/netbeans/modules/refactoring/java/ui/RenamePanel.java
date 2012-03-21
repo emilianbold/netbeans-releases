@@ -90,8 +90,12 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         updateReferencesCheckBox.setVisible(showUpdateReferences);
         nameField.setEnabled(editable);
         //parent.setPreviewEnabled(false);        
-        if(editable) nameField.requestFocus();
-        else textCheckBox.requestFocus();
+        if(editable) {
+            nameField.requestFocus();
+        }
+        else {
+            textCheckBox.requestFocus();
+        }
         nameField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void changedUpdate(DocumentEvent event) {
@@ -202,8 +206,12 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     
     @Override
     public void requestFocus() {
-        if(nameField.isEnabled()) nameField.requestFocus();
-        else textCheckBox.requestFocus();
+        if(nameField.isEnabled()) {
+            nameField.requestFocus();
+        }
+        else {
+            textCheckBox.requestFocus();
+        }
     }
     
     /** This method is called from within the constructor to
@@ -346,8 +354,9 @@ private void renameTestClassCheckBoxStateChanged(javax.swing.event.ChangeEvent e
     }
     
     public boolean isUpdateReferences() {
-        if (updateReferencesCheckBox.isVisible() && updateReferencesCheckBox.isSelected())
+        if (updateReferencesCheckBox.isVisible() && updateReferencesCheckBox.isSelected()) {
             return false;
+        }
         return true;
     }
     

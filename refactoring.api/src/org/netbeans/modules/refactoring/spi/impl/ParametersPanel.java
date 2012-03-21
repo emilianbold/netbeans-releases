@@ -81,7 +81,7 @@ import org.openide.awt.Mnemonics;
  *
  * @author Martin Matula, Jan Becicka
  */
-public class ParametersPanel extends JPanel implements ProgressListener, ChangeListener, InvalidationListener {
+public class ParametersPanel extends JPanel implements ProgressListener, ChangeListener {
     
     public static final String JUMP_TO_FIRST_OCCURENCE = "JUMP_TO_FIRST_OCCURENCE"; //NOI18N
 
@@ -495,10 +495,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                                         null);
                                 DialogDisplayer.getDefault().notifyLater(nd);
                             } else {
-                                UndoWatcher.watch(session, ParametersPanel.this);
+                                //UndoWatcher.watch(session, ParametersPanel.this);
                                 session.addProgressListener(ParametersPanel.this);
                                 session.doRefactoring(true);
-                                UndoWatcher.stopWatching(ParametersPanel.this);
+                                //UndoWatcher.stopWatching(ParametersPanel.this);
                             }
                         }
                     } finally {
@@ -1092,10 +1092,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         return rui.getHelpCtx();
     }
     
-    @Override
-    public void invalidateObject() {
-    }
-
     private RefactoringSession getResult() {
         synchronized (RESULT_LOCK) {
             return result;

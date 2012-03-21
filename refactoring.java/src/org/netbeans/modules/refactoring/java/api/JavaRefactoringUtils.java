@@ -320,12 +320,14 @@ public final class JavaRefactoringUtils {
         }
 
         private void addIfMatch(TreePath path, Tree tree, Element elementToFind) {
-            if (cc.getTreeUtilities().isSynthetic(path))
+            if (cc.getTreeUtilities().isSynthetic(path)) {
                 return;
+            }
 
             Element el = cc.getTrees().getElement(path);
-            if (el==null)
+            if (el==null) {
                 return;
+            }
 
             if (elementToFind.getKind() == ElementKind.METHOD && el.getKind() == ElementKind.METHOD) {
                 if (el.equals(elementToFind) || cc.getElements().overrides(((ExecutableElement) el), (ExecutableElement) elementToFind, (TypeElement) elementToFind.getEnclosingElement())) {
@@ -349,9 +351,13 @@ public final class JavaRefactoringUtils {
 
         @Override
         public void run(CompilationController cc) throws Exception {
-            if (cancelled) return;
+            if (cancelled) {
+                return;
+            }
             cc.toPhase(Phase.RESOLVED);
-            if (cancelled) return;
+            if (cancelled) {
+                return;
+            }
             this.cc = cc;
             try {
                 TreePath path = new TreePath (cc.getCompilationUnit());

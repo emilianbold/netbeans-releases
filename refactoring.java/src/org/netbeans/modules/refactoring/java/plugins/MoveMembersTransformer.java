@@ -419,10 +419,6 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 public Boolean visitIdentifier(IdentifierTree node, TypeMirror source) {
                     TreePath thisPath = new TreePath(currentPath, node);
                     Element el = workingCopy.getTrees().getElement(thisPath);
-
-                    if(el.getKind() == ElementKind.TYPE_PARAMETER) {
-                        
-                    }
                     
                     if (isElementBeingMoved(el) == null) {
                         String isThis = node.toString();

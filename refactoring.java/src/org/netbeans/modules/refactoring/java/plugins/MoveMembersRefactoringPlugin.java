@@ -51,6 +51,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -250,7 +251,7 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         final Collection<? extends TreePathHandle> tphs = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
         TreePathHandle target = refactoring.getTarget().lookup(TreePathHandle.class);
         FileObject file = target.getFileObject();
-        JavaSource source = createSource(file, cpInfo, target);
+        JavaSource source = JavaPluginUtils.createSource(file, cpInfo, target);
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
             public void cancel() {
@@ -286,35 +287,6 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         return set;
     }
 
-    private static JavaSource createSource(final FileObject file, final ClasspathInfo cpInfo, final TreePathHandle tph) throws IllegalArgumentException {
-        JavaSource source;
-        if (file != null) {
-            final ClassPath mergedPlatformPath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT), ClassPath.getClassPath(file, ClassPath.BOOT));
-            final ClassPath mergedCompilePath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE), ClassPath.getClassPath(file, ClassPath.COMPILE));
-            final ClassPath mergedSourcePath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE), ClassPath.getClassPath(file, ClassPath.SOURCE));
-            final ClasspathInfo mergedInfo = ClasspathInfo.create(mergedPlatformPath, mergedCompilePath, mergedSourcePath);
-            source = JavaSource.create(mergedInfo, new FileObject[]{tph.getFileObject()});
-        } else {
-            source = JavaSource.create(cpInfo);
-        }
-        return source;
-    }
-
-    private static ClassPath merge(final ClassPath... cps) {
-        final Set<URL> roots = new LinkedHashSet<URL>();
-        for (final ClassPath cp : cps) {
-            if (cp != null) {
-                for (final ClassPath.Entry entry : cp.entries()) {
-                    final URL root = entry.getURL();
-                    if (!roots.contains(root)) {
-                        roots.add(root);
-                    }
-                }
-            }
-        }
-        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
-    }
-
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         fireProgressListenerStart(ProgressEvent.START, -1);
@@ -331,6 +303,7 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         return prob != null ? prob : JavaPluginUtils.chainProblems(transformer.getProblem(), p);
     }
 
+    @SuppressWarnings("CollectionContainsUrl")
     private Problem checkProjectDeps(FileObject sourceFile, FileObject targetFile) {
         Set<FileObject> sourceRoots = new HashSet<FileObject>();
         ClassPath cp = ClassPath.getClassPath(sourceFile, ClassPath.SOURCE);
