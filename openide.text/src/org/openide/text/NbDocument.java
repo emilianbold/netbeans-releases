@@ -575,7 +575,7 @@ public final class NbDocument extends Object {
      * position specified by the offset while controlling open and visibility behavior.
      * This method can be called from any thread but blocks until the document is opened.
      *
-     * @param provider for example a {@link DataObject}
+     * @param provider for example a {@code org.openide.loaders.DataObject}
      * @param offset the position the document should be opened (starting at 0)
      * @param openType control open behavior, {@link org.openide.text.Line.ShowOpenType#OPEN}
      * would typically be used
@@ -624,7 +624,7 @@ public final class NbDocument extends Object {
      * position specified by the line and column while controlling open and visibility behavior.
      * This method can be called from any thread but blocks until the document is opened.
      *
-     * @param provider for example a {@link DataObject}
+     * @param provider for example a {@code org.openide.loaders.DataObject}
      * @param line the line the document should be opened (starting at 0)
      * @param column the column which should be selected (starting at 0), value
      * -1 does not change previously selected column
