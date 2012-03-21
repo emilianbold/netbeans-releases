@@ -74,8 +74,8 @@ made subject to such option by the copyright holder.
                 <package>org.testng.xml</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/testng-6.4.1beta.jar</runtime-relative-path>
-                <binary-origin>external/testng-6.4.1beta.jar</binary-origin>
+                <runtime-relative-path>ext/testng-6.5beta-dist.jar</runtime-relative-path>
+                <binary-origin>external/testng-6.5beta-dist.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
