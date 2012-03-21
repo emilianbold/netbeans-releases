@@ -163,10 +163,10 @@ public class RADIO implements ActiveEditorDrop {
                 SyntaxElement.Tag tag = (SyntaxElement.Tag)e;
                 if(tag.getName().equalsIgnoreCase("input")) { //NOI18N
                     SyntaxElement.TagAttribute typeAttr = tag.getAttribute("type"); //NOI18N
-                    if(typeAttr != null && "radio".equalsIgnoreCase(typeAttr.getValue())) { //NOI18N
+                    if(typeAttr != null && "radio".equalsIgnoreCase(typeAttr.getValue().toString())) { //NOI18N
                         SyntaxElement.TagAttribute nameAttr = tag.getAttribute("name"); //NOI18N
                         if(nameAttr != null) {
-                            String name = nameAttr.getValue();
+                            String name = nameAttr.getValue().toString();
                             if(name != null) {
                                 names.add(name);
                             }

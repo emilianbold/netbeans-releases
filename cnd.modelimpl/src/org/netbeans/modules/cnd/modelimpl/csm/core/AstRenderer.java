@@ -1549,7 +1549,7 @@ public class AstRenderer {
         boolean _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
         AST typeAST = ast.getFirstChild();
         AST tokType = typeAST;
-        if (tokType != null && tokType.getType() == CPPTokenTypes.LITERAL_template) {
+        while (tokType != null && tokType.getType() == CPPTokenTypes.LITERAL_template) {
             typeAST = tokType = skipTemplateSibling(tokType);
         }
         tokType = getFirstSiblingSkipQualifiers(tokType);

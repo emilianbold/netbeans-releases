@@ -102,6 +102,7 @@ public final class PhpOptions {
 
     // "hidden" (without any UI and not project specific)
     private static final String DEFAULT_PHP_VERSION = "defaultPhpVersion"; // NOI18N
+    private static final String REMOTE_SYNC_SHOW_SUMMARY = "remote.sync.showSummary"; // NOI18N
 
     private static final PhpOptions INSTANCE = new PhpOptions();
 
@@ -310,6 +311,14 @@ public final class PhpOptions {
 
     public void setDefaultPhpVersion(PhpLanguageProperties.PhpVersion phpVersion) {
         getPreferences().put(DEFAULT_PHP_VERSION, phpVersion.name());
+    }
+
+    public boolean getRemoteSyncShowSummary() {
+        return getPreferences().getBoolean(REMOTE_SYNC_SHOW_SUMMARY, true);
+    }
+
+    public void setRemoteSyncShowSummary(boolean showSummary) {
+        getPreferences().putBoolean(REMOTE_SYNC_SHOW_SUMMARY, showSummary);
     }
 
 }

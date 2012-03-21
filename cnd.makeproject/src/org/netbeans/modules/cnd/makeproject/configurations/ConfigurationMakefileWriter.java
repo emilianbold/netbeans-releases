@@ -435,9 +435,11 @@ public class ConfigurationMakefileWriter {
                     return compiler.getName();
                 } else {
                     // Fake tool, get name from the descriptor (see IZ#174566).
-                    String[] names = compiler.getDescriptor().getNames();
-                    if (names != null && names.length > 0) {
-                        return names[0];
+                    if (compiler.getDescriptor() != null) {
+                        String[] names = compiler.getDescriptor().getNames();
+                        if (names != null && names.length > 0) {
+                            return names[0];
+                        }
                     }
                 }
             }

@@ -930,13 +930,15 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                         // If this alternative is before function declaration
                         // then code like "template<T> int foo(T);" incorrectly
                         // becomes a CSM_TEMPL_FWD_CL_OR_STAT_MEM.
-			(declaration_specifiers[true, false]
+                        
+			((template_head)? declaration_specifiers[true, false]
 				(init_declarator_list[declOther])? SEMICOLON /*{end_of_stmt();}*/)=>
 			//{beginTemplateDeclaration();}
 			{ if (statementTrace>=1) 
 				printf("external_declaration_template_10[%d]: Class template declaration\n",
 					LT(1).getLine());
 			}
+                        (template_head)?
 			declaration_specifiers[true, false]
 				(init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
 			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}

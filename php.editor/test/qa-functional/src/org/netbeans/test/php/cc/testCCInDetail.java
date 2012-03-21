@@ -44,9 +44,12 @@
 package org.netbeans.test.php.cc;
 
 import java.awt.event.InputEvent;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -142,7 +145,7 @@ public class testCCInDetail extends cc {
                 fail("NPE instead of competion info.");
             }
 
-            System.out.println("Looking for completion " + cc.sResult + " for " + cc.sCode);
+            System.out.println("Looking for completion " + cc.sResult + " for " + cc.sCode);    
             CheckCompletionItems(completionInfo.listItself, asResult);
             completionInfo.listItself.hideAll();
         } else if (CCompletionCase.COMPLETION_STRING == cc.iCompletionType) {
@@ -207,8 +210,8 @@ public class testCCInDetail extends cc {
             new CCompletionCase("*/", "class MyClass {\npublic func", "public func", CCompletionCase.COMPLETION_LIST, 0, "function", -1, 3),
             new CCompletionCase("*/", "class MyClass {\npublic function func", "function func", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -1, 3),
 //            new CCompletionCase("*/", "class MyClass {\npublic function func(){\n$th\n}\n}\n{{", "$th", CCompletionCase.COMPLETION_STRING, 0, "[$]this->", -2, 8),
-            new CCompletionCase("*/", "class MyClass {\npublic function func(){\necho \"$th\";\n}\n}\n{{", "$th", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -2, 8),
             new CCompletionCase("*/", "class MyClass {\npublic $test;\npublic function func(){\necho \"Hello\";\n}\n}\n$test= new MyClass();\n$test->\n{{", "$test->", CCompletionCase.COMPLETION_LIST, 0, "test|func", -6, 10),
+            new CCompletionCase("*/", "class MyClass {\n public function func2(){}\n public function func(){\necho \"$this->\";\n}\n}\n{{", "$this->", CCompletionCase.COMPLETION_LIST, 0, "func|func2", -6, 9),            
 //            new CCompletionCase("*/", "class MyClass {\nprotected $test;\nprotected function func(){\necho \"Hello\";\n}\n}\n$test=new MyClass();\n$test->\n{{", "$test->", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10),
 //            new CCompletionCase("*/", "class MyClass {\nprivate $test;\nprivate function func(){\necho \"Hello\";\n}\n}\n$test=new MyClass();\n$test->\n{{", "$test->", CCompletionCase.COMPLETION_LIST, 0, "$fu", -6, 10),
 //            new CCompletionCase("*/", "class MyClass {\npublic static $test;\npublic static function func(){\necho \"Hello\";\n}\n}\n$test=MyClass::\n{{", "MyClass::", CCompletionCase.COMPLETION_LIST, 0, "$test|func", -6, 10),

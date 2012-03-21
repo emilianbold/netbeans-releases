@@ -59,9 +59,11 @@ import org.openide.util.NbBundle;
 public class CCCompilerConfiguration extends CCCCompilerConfiguration {
     
     public static final int STANDARD_DEFAULT = 0;
-    public static final int STANDARD_CPP11 = 1;
+    public static final int STANDARD_CPP98 = 1;
+    public static final int STANDARD_CPP11 = 2;
     private static final String[] STANDARD_NAMES = {
         getString("STANDARD_DEFAULT"),
+        getString("STANDARD_CPP98"),
         getString("STANDARD_CPP11"),};
     private IntConfiguration cppStandard;        
     
