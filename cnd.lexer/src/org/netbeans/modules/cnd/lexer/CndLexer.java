@@ -455,14 +455,14 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                     default:
                         c = translateSurrogates(c);
                         if (CndLexerUtilities.isCppIdentifierStart(c)) {
-                            if (c == 'L' || c == 'U' || c == 'u') {
+                            if (c == 'L' || c == 'U' || c == 'u' || c == 'R') {
                                 int next = read(true);
-                                boolean raw_string = false;
+                                boolean raw_string = (c == 'R');
                                 if (next == 'R' && (c == 'u' || c == 'U')) {
                                     // uR or UR
                                     raw_string = true;
                                     next = read(true);
-                                } else if (c == 'u' && next == '8') {
+                                } else if (next == '8' && c == 'u') {
                                     // u8
                                     next = read(true);
                                     if (next == 'R') {
@@ -718,8 +718,102 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
         return token(CppTokenId.SHARP);
     }
 
+    static boolean isRawStringDelimeterCharacter(int c) {
+        switch (c) {
+            case '.':
+            // {}[]#<>%:;?*+-/^&|~!=,"'
+            case '{':
+            case '}':
+            case '[':
+            case ']':
+            case '#':
+            case '<':
+            case '>':
+            case '%':
+            case ':':
+            case ';':
+            case '?':
+            case '*':
+            case '+':
+            case '-':
+            case '/':
+            case '^':
+            case '&':
+            case '|':
+            case '~':
+            case '!':
+            case '=':
+            case ',':
+            case '"':
+                return true;
+            default:
+                return CndLexerUtilities.isCppIdentifierPart(c);
+        }
+    }
+
+    private enum RawStringLexingState {
+        START,
+        PREFIX_DELIMETER,
+        BODY,
+        POSTFIX_DELIMETER,
+        ERROR
+    }
+
+    @SuppressWarnings("fallthrough")
     private Token<CppTokenId> finishRawString() {
-        return finishDblQuote();
+        RawStringLexingState state = RawStringLexingState.PREFIX_DELIMETER;
+        StringBuilder delim = new StringBuilder("");
+        String delimeter = "";
+        while (true) {
+            int read = read(false);
+            switch (state) {
+                case PREFIX_DELIMETER:
+                {
+                    if (!isRawStringDelimeterCharacter(read)) {
+                        if (read != '(') {
+                            state = RawStringLexingState.ERROR;
+                        } else {
+                            delimeter = delim.toString();
+                            state = RawStringLexingState.BODY;
+                        }
+                    } else {
+                        delim.append(read);
+                    }
+                    break;
+                }
+                case BODY:
+                {
+                    if (read == ')') {
+                        state = RawStringLexingState.POSTFIX_DELIMETER;
+                    }
+                    break;
+                }
+                case POSTFIX_DELIMETER:
+                {
+                    StringBuilder postfix = new StringBuilder();
+                    if (read == '"' && delimeter.length() == 0) {
+                        return token(CppTokenId.RAW_STRING_LITERAL);
+                    } else {
+                        state = RawStringLexingState.ERROR;
+                    }
+                    break;
+                }
+                case ERROR:
+                {
+                    // incorrect delimeter, try to recover
+                    switch (read) {
+                        case '"': // NOI18N
+                            return tokenPart(CppTokenId.RAW_STRING_LITERAL, PartType.START);
+                        case '\r':
+                        case '\n':
+                            backup(1); // leave new line for the own token
+                        case EOF:
+                            return tokenPart(CppTokenId.RAW_STRING_LITERAL, PartType.START);
+                    }
+                }
+
+            }
+        }
     }
 
     @SuppressWarnings("fallthrough")

@@ -63,7 +63,6 @@ import org.netbeans.spi.lexer.TokenFactory;
 public class CppStringLexer implements Lexer<CppStringTokenId> {
     private static final int INIT   = 0;
     private static final int OTHER  = 1;
-    private static final int RAW    = 2;
 
     private static final int EOF = LexerInput.EOF;
 
@@ -72,12 +71,14 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
     private TokenFactory<CppStringTokenId> tokenFactory;
     private boolean escapedLF = false;
     private final boolean dblQuoted;
+    private final boolean rawString;
     private int state = INIT;
 
-    public CppStringLexer(LexerRestartInfo<CppStringTokenId> info, boolean doubleQuotedString) {
+    public CppStringLexer(LexerRestartInfo<CppStringTokenId> info, boolean doubleQuotedString, boolean raw) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
         this.dblQuoted = doubleQuotedString;
+        this.rawString = raw;
         Integer stateObj = (Integer) info.state();
         fromState(stateObj); // last line in contstructor
     }
@@ -107,6 +108,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                     if (startState == INIT) {
                         int next = read();
                         if (next == 'R') {
+                            assert rawString;
                             return token(CppStringTokenId.PREFIX_UR);
                         } else {
                             input.backup(1);
@@ -120,12 +122,14 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                         if (next == '8') {
                             next = read();
                             if (next == 'R') {
+                                assert rawString;
                                 return token(CppStringTokenId.PREFIX_u8R);
                             } else {
                                 input.backup(1);
                                 return token(CppStringTokenId.PREFIX_u8);
                             }
                         } else if (next == 'R') {
+                            assert rawString;
                             return token(CppStringTokenId.PREFIX_uR);
                         } else {
                             input.backup(1);
@@ -135,6 +139,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                     break;
                 case 'R':
                     if (startState == INIT) {
+                        assert rawString;
                         return token(CppStringTokenId.PREFIX_R);
                     }
                     break;

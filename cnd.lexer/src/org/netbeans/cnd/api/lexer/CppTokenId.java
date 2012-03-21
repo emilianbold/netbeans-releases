@@ -226,6 +226,7 @@ public enum CppTokenId implements TokenId {
     UNSIGNED_LONG_LONG_LITERAL(null, "number"), // NOI18N
     CHAR_LITERAL(null, "character"), // NOI18N
     STRING_LITERAL(null, "string"), // NOI18N
+    RAW_STRING_LITERAL(null, "string"), // NOI18N
     
     TRUE("true", "literal"), // C++ // NOI18N
     FALSE("false", "literal"), // C++ // NOI18N
@@ -498,6 +499,7 @@ public enum CppTokenId implements TokenId {
                 CppTokenId.DOUBLE_LITERAL,
                 CppTokenId.UNSIGNED_LITERAL,
                 CppTokenId.CHAR_LITERAL,
+                CppTokenId.RAW_STRING_LITERAL,
                 CppTokenId.STRING_LITERAL
             );
             cats.put(LITERAL_CATEGORY, l);
@@ -526,6 +528,8 @@ public enum CppTokenId implements TokenId {
                             (token.partType() == PartType.COMPLETE) ? 2 : 0);
                 case DOXYGEN_LINE_COMMENT:
                     return LanguageEmbedding.create(DoxygenTokenId.language(), 3, 0);
+                case RAW_STRING_LITERAL:
+                    return LanguageEmbedding.create(CppStringTokenId.languageRawString(), 0, 0);
                 case STRING_LITERAL:
                     return LanguageEmbedding.create(CppStringTokenId.languageDouble(), 0, 0);
                 case CHAR_LITERAL:

@@ -184,8 +184,8 @@ public class CppLexerBatchTestCase extends TestCase {
         assertEquals(PartType.START, ts.token().partType());
     }
 
-    public void test_unicodeStrings() {
-        // u8"This is a Unicode Character: \u2018."
+    public void testUTF16Strings() {
+        // u"This is a bigger Unicode Character: \u2018."
         String text = "u\"This is a bigger Unicode Character: \\u2018.\"";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
@@ -202,8 +202,8 @@ public class CppLexerBatchTestCase extends TestCase {
         assertFalse("No more tokens", ts.moveNext());
     }
 
-    public void test_UnicodeStrings() {
-        // u8"This is a Unicode Character: \u2018."
+    public void testUTF32Strings() {
+        // U"This is a Unicode Character: \u2018."
         String text = "U\"This is a Unicode Character: \\u2018.\"";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
@@ -220,7 +220,7 @@ public class CppLexerBatchTestCase extends TestCase {
         assertFalse("No more tokens", ts.moveNext());
     }
 
-    public void test_unicode8Strings() {
+    public void testUTF8trings() {
         // u8"This is a Unicode Character: \u2018."
         String text = "u8\"This is a Unicode Character: \\u2018.\"";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
@@ -236,6 +236,38 @@ public class CppLexerBatchTestCase extends TestCase {
         assertFalse("No more tokens", ep.moveNext());
 
         assertFalse("No more tokens", ts.moveNext());
+    }
+
+    public void test_RawStrings() {
+        // R"(The String Data \ Stuff " )"
+        String text = "R\"delimeter(The String Data \\ Stuff \" )delimeter\"";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        CndLexerUnitTest.dumpTokens(ts, "ts");
+    }
+
+    public void test_RawUTF8Strings() {
+        // u8R"XXX(I'm a "raw UTF-8" string.)XXX"
+        String text = "u8R\"XXX(I'm a \"raw UTF-8\" string.)XXX\"";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        CndLexerUnitTest.dumpTokens(ts, "ts");
+    }
+
+    public void test_RawUTF16Strings() {
+        // uR"*(This is a "raw UTF-16" string.)*"
+        String text = "uR\"*(This is a \"raw UTF-16\" string.)*\"";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        CndLexerUnitTest.dumpTokens(ts, "ts");
+    }
+
+    public void test_RawUTF32Strings() {
+        // UR".(This is a "raw UTF-32" string.)."
+        String text = "UR\".(This is a \"raw UTF-32\" string.).\"";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        CndLexerUnitTest.dumpTokens(ts, "ts");
     }
 
     public void testNumberLiterals() {

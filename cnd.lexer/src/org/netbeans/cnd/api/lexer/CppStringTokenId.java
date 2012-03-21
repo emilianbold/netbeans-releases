@@ -116,15 +116,21 @@ public enum CppStringTokenId implements TokenId {
     }
 
     private static final Language<CppStringTokenId> languageDouble;
+    private static final Language<CppStringTokenId> languageRawString;
     private static final Language<CppStringTokenId> languageSingle;
 
     static {
-        languageDouble = new StringHierarchy(true).language();
-        languageSingle = new StringHierarchy(false).language();
+        languageDouble = new StringHierarchy(true, false).language();
+        languageRawString = new StringHierarchy(true, true).language();
+        languageSingle = new StringHierarchy(false, false).language();
     }
 
     public static Language<CppStringTokenId> languageDouble() {
         return languageDouble;
+    }
+
+    public static Language<CppStringTokenId> languageRawString() {
+        return languageRawString;
     }
 
     public static Language<CppStringTokenId> languageSingle() {
@@ -133,8 +139,10 @@ public enum CppStringTokenId implements TokenId {
 
     private static final class StringHierarchy extends LanguageHierarchy<CppStringTokenId> {
         private final boolean dblQuoted;
-        public StringHierarchy(boolean doubleQuotedString) {
+        private final boolean raw;
+        public StringHierarchy(boolean doubleQuotedString, boolean raw) {
             this.dblQuoted = doubleQuotedString;
+            this.raw = raw;
         }
 
         @Override
@@ -149,7 +157,7 @@ public enum CppStringTokenId implements TokenId {
 
         @Override
         protected Lexer<CppStringTokenId> createLexer(LexerRestartInfo<CppStringTokenId> info) {
-            return new CppStringLexer(info, this.dblQuoted);
+            return new CppStringLexer(info, this.dblQuoted, this.raw);
         }
 
         @Override
