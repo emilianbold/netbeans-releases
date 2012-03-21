@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.groovy.gsp.lexer;
 
-import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -55,7 +54,6 @@ import org.netbeans.spi.lexer.TokenFactory;
  * Syntax class for GSP tags, recognizing GSP delimiters.
  *
  * @todo move state constants into the enum type
- * @todo now handling only GEXPR and not GTAG_EXPR, clear this
  * 
  * @author Martin Adamek
  */
@@ -84,9 +82,11 @@ public final class GspLexer implements Lexer<GspTokenId> {
     private static final int GSCRIPT = 12;      // after '%{ ...'       expecting }
     private static final int GDIRECT = 13;      // after '@{ ...'       expecting }
     private static final int GDECLAR = 14;      // after '!{ ...'       expecting }
-    private static final int GSTART_TAG = 15;   // after '<g: ...'      expecting / or >
+    private static final int GSTART_TAG = 15;   // after '<g: ...'      expecting /, > or $
     private static final int GEND_TAG = 16;     // after '</g: ...'     expecting >
     private static final int GINDEPENDENT_TAG = 17;   // after '<g: ... /'    expecting >
+    private static final int GTAG_EXPR = 18;    // after '<g: ... $'    expecting {
+    private static final int GTAG_EXPR_PC = 19; // after '<g: ... ${'   expecting }
 
     private static final int ISA_LT = 21;       // after '<'            expecting % or /
     private static final int ISA_DL = 22;       // after '$'            expecting {
@@ -96,9 +96,8 @@ public final class GspLexer implements Lexer<GspTokenId> {
     
     private static final int ISA_LT_PC = 31;    // after '<%'           expecting =, @, ! or %
     private static final int ISA_LT_G = 32;     // after '<g'           expecting :
-    private static final int ISA_LT_BS = 33;    // after '</'
-
-    private static final int ISA_LT_BS_G = 41;  // after '</'           expecting g
+    private static final int ISA_LT_BS = 33;    // after '</'           expecting g
+    private static final int ISA_LT_BS_G = 41;  // after '</g'          expecting :
     
     private static final int JEXPR_PC = 101;    // after '<%= ... %'    expecting >
     private static final int JSCRIPT_PC = 102;  // after '<% ... %'     expecting >
@@ -513,6 +512,9 @@ public final class GspLexer implements Lexer<GspTokenId> {
                         case '/':
                             state = GINDEPENDENT_TAG;
                             break;
+                        case '$':
+                            state = GTAG_EXPR;
+                            break;
                         default:
                             state = GSTART_TAG;
                             break;
@@ -538,6 +540,38 @@ public final class GspLexer implements Lexer<GspTokenId> {
                             state = GSTART_TAG;
                             break;
                     }
+                case GTAG_EXPR: // after <g: ... $
+                    switch (actChar) {
+                        case '{':
+                            if (input.readLength() == 2) {
+                                state = GTAG_EXPR_PC;
+                                return token(GspTokenId.DELIMITER);
+                            } else {
+                                input.backup(2);
+                                state = GSTART_TAG;
+                                return token(GspTokenId.GTAG);
+                            }
+                        default:
+                            state = GSTART_TAG;
+                            break;
+                    }
+                    break;
+                case GTAG_EXPR_PC: // after <g: ... ${
+                    switch(actChar) {
+                        case '}':
+                            if(input.readLength() == 1) {
+                                state = GSTART_TAG;
+                                return token(GspTokenId.DELIMITER);
+                            } else {
+                                input.backup(1);
+                                state = GTAG_EXPR_PC;
+                                return token(GspTokenId.GROOVY_EXPR);
+                            }
+                        default:
+                            state = GTAG_EXPR_PC;
+                            break;
+                    }
+
             }
         }
             
@@ -568,7 +602,7 @@ public final class GspLexer implements Lexer<GspTokenId> {
             case GDECLAR: return token(GspTokenId.GROOVY); // !{ ... }!
             case GSTART_TAG: return token(GspTokenId.GTAG); // <g:..>
             case GEND_TAG: return token(GspTokenId.GTAG); // </g:..>
-            case GINDEPENDENT_TAG: return token(GspTokenId.GTAG); // </g:.. />
+            case GINDEPENDENT_TAG: return token(GspTokenId.GTAG); // <g:.. />
             case ISA_LT: return token(GspTokenId.DELIMITER);
             case ISA_DL: return token(GspTokenId.DELIMITER);
             case ISA_PC: return token(GspTokenId.DELIMITER);
