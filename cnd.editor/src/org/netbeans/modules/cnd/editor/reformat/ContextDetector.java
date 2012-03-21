@@ -185,6 +185,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                     case UNSIGNED_LONG_LITERAL:
                     case UNSIGNED_LONG_LONG_LITERAL:
                     case CHAR_LITERAL:
+                    case RAW_STRING_LITERAL:
                     case STRING_LITERAL:
                         //it's a template specialization
                         break;
