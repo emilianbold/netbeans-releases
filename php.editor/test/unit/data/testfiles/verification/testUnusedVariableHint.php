@@ -93,6 +93,12 @@ if ($ins instanceof $instanceOf) {
 
 }
 
+$omg = 60;
+$gom = 60;
+switch ($omg) { 
+    case $gom: break;
+}
+
 //END
 ?>
 
