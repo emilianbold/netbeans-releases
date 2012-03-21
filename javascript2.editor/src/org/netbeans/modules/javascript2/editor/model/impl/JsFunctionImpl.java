@@ -83,9 +83,9 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         }
     }
     
-    public static JsFunctionImpl createGlobal(FileObject file) {
-        Identifier ident = new IdentifierImpl(file.getName(), new OffsetRange(0, (int)file.getSize()));
-        return new JsFunctionImpl(file, ident);
+    public static JsFunctionImpl createGlobal(FileObject fileObject, int length) {
+        Identifier ident = new IdentifierImpl(fileObject.getName(), new OffsetRange(0, length));
+        return new JsFunctionImpl(fileObject, ident);
     }
     
     private JsFunctionImpl(FileObject file, Identifier name) {
