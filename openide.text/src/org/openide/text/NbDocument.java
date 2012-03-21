@@ -539,8 +539,8 @@ public final class NbDocument extends Object {
      * for confirmation.
      *
      *
-     * @param provider for example a {@link DataObject}
-     * @return {@link javax.swing.text.StyledDocument} or null
+     * @param provider for example a {@code org.openide.loaders.DataObject}
+     * @return a document or null
      * @since org.openide.text 6.45
      */
     @NbBundle.Messages("TXT_Question=Question")
