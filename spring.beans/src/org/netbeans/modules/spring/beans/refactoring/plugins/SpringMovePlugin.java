@@ -47,20 +47,18 @@ package org.netbeans.modules.spring.beans.refactoring.plugins;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.spring.api.beans.SpringScope;
-import org.netbeans.modules.spring.beans.refactoring.ModificationTransaction;
-import org.netbeans.modules.spring.beans.refactoring.Modifications;
-import org.netbeans.modules.spring.beans.refactoring.Occurrences;
+import org.netbeans.modules.spring.beans.refactoring.*;
 import org.netbeans.modules.spring.beans.refactoring.Occurrences.Occurrence;
-import org.netbeans.modules.spring.beans.refactoring.SpringRefactoringElement;
-import org.netbeans.modules.spring.beans.refactoring.SpringRefactorings;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -159,7 +157,7 @@ class SpringMovePlugin implements RefactoringPlugin {
                     }
                 }
             }
-            refactoringElements.registerTransaction(new ModificationTransaction(mods));
+            refactoringElements.registerTransaction(new RefactoringCommit(Collections.singleton(mods)));
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
