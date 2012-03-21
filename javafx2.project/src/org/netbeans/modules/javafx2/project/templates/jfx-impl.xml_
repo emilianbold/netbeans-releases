@@ -8,6 +8,26 @@
          xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:fx="javafx:com.sun.javafx.tools.ant">
     <description>JavaFX-specific Ant calls</description>
 
+
+    <!-- Empty placeholders for easier customization in ../build.xml -->
+    
+    <target name="-pre-jfx-jar">
+        <!-- Called right before <fx:jar> task. You can override this target in the ../build.xml file. -->
+    </target>
+
+    <target name="-post-jfx-jar">
+        <!-- Called right after <fx:jar> task. You can override this target in the ../build.xml file. -->
+    </target>
+
+    <target name="-pre-jfx-deploy">
+        <!-- Called right before <fx:deploy> task. You can override this target in the ../build.xml file. -->
+    </target>
+
+    <target name="-post-jfx-deploy">
+        <!-- Called right after <fx:deploy> task. You can override this target in the ../build.xml file. -->
+    </target>
+    
+    
     <!-- Check system and JDK version -->
 
     <target name="-check-operating-system">
@@ -21,11 +41,105 @@
         <echo message="running.on.windows = ${running.on.windows}" level="verbose"/>
     </target>
 
-    <target name="-check-jdk-version" depends="-do-init" unless="jdk-version-checked-in-jfximpl">
+    <target name="-check-platform-home-fxsdk-java" depends="-check-property-javafx.sdk" if="javafx.sdk.defined">
+        <condition property="do.set.platform.home.fxsdk.java">
+            <and>
+                <not><isset property="active.platform.home.java.executable"/></not>
+                <or>
+                    <available file="${javafx.sdk}${file.separator}bin${file.separator}java"/>
+                    <available file="${javafx.sdk}${file.separator}bin${file.separator}java.exe"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-platform-home-fxsdk-java" depends="-check-platform-home-fxsdk-java" if="do.set.platform.home.fxsdk.java">
+        <property name="active.platform.home.java.executable" value="${javafx.sdk}${file.separator}bin${file.separator}java"/>
+    </target>
+    <target name="-check-platform-home-java" if="platform.home">
+        <condition property="do.set.platform.home.java">
+            <and>
+                <not><isset property="active.platform.home.java.executable"/></not>
+                <or>
+                    <available file="${platform.home}${file.separator}bin${file.separator}java"/>
+                    <available file="${platform.home}${file.separator}bin${file.separator}java.exe"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-platform-home-java" depends="-set-platform-home-fxsdk-java,-check-platform-home-java" if="do.set.platform.home.java">
+        <property name="active.platform.home.java.executable" value="${platform.home}${file.separator}bin${file.separator}java"/>
+    </target>
+    <target name="-check-platform-home-probjdk-java" unless="active.platform.home.java.executable">
+        <condition property="do.set.platform.home.probjdk.java">
+            <and>
+                <not><isset property="active.platform.home.java.executable"/></not>
+                <or>
+                    <available file="${java.home}${file.separator}..${file.separator}bin${file.separator}java"/>
+                    <available file="${java.home}${file.separator}..${file.separator}bin${file.separator}java.exe"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-platform-home-probjdk-java" depends="-set-platform-home-java,-check-platform-home-probjdk-java" if="do.set.platform.home.probjdk.java">
+        <property name="active.platform.home.java.executable" value="${java.home}${file.separator}..${file.separator}bin${file.separator}java"/>
+    </target>
+    <target name="-check-platform-home-envjdk-java" unless="active.platform.home.java.executable">
+        <property environment="env"/>
+        <condition property="do.set.platform.home.envjdk.java">
+            <and>
+                <not><isset property="active.platform.home.java.executable"/></not>
+                <or>
+                    <available file="${env.JAVA_HOME}${file.separator}bin${file.separator}java"/>
+                    <available file="${env.JAVA_HOME}${file.separator}bin${file.separator}java.exe"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-platform-home-envjdk-java" depends="-set-platform-home-probjdk-java,-check-platform-home-envjdk-java" if="do.set.platform.home.envjdk.java">
+        <property environment="env"/>
+        <property name="active.platform.home.java.executable" value="${env.JAVA_HOME}${file.separator}bin${file.separator}java"/>
+    </target>
+    <target name="-check-platform-home-fxrt-java" depends="-check-property-javafx.runtime" if="javafx.runtime.defined">
+        <condition property="do.set.platform.home.fxrt.java">
+            <and>
+                <not><isset property="active.platform.home.java.executable"/></not>
+                <or>
+                    <available file="${javafx.runtime}${file.separator}bin${file.separator}java"/>
+                    <available file="${javafx.runtime}${file.separator}bin${file.separator}java.exe"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-platform-home-fxrt-java" depends="-set-platform-home-envjdk-java,-check-platform-home-fxrt-java" if="do.set.platform.home.fxrt.java">
+        <property name="active.platform.home.java.executable" value="${javafx.runtime}${file.separator}bin${file.separator}java"/>
+        <echo message="Warning: java executable not found in JDK, evaluating java executable in RT instead." level="info"/>
+    </target>
+    <target name="-check-platform-home-jre-java" unless="active.platform.home.java.executable">
+        <condition property="do.set.platform.home.jre.java">
+            <and>
+                <not><isset property="active.platform.home.java.executable"/></not>
+                <or>
+                    <available file="${java.home}${file.separator}bin${file.separator}java"/>
+                    <available file="${java.home}${file.separator}bin${file.separator}java.exe"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-platform-home-jre-java" depends="-set-platform-home-fxrt-java,-check-platform-home-jre-java" if="do.set.platform.home.jre.java">
+        <property name="active.platform.home.java.executable" value="${java.home}${file.separator}bin${file.separator}java"/>
+        <echo message="Warning: java executable not found in JDK, evaluating java executable in RT instead." level="info"/>
+    </target>
+    <target name="-check-platform-home" depends="-set-platform-home-jre-java">
+        <echo message="active.platform.home.java.executable = ${active.platform.home.java.executable}" level="verbose"/>
+        <fail message="Error:${line.separator}java executable not found !" unless="active.platform.home.java.executable"/>
+    </target>
+        
+    <target name="-check-jdk-version" depends="-do-init,-check-platform-home" unless="jdk-version-checked-in-jfximpl">
         <local name="version-output"/>
-        <exec executable="${platform.java}" outputproperty="version-output">
+        <exec executable="${active.platform.home.java.executable}" outputproperty="version-output">
             <arg value="-version"/>
         </exec>
+        <echo message="version-output:${line.separator}${version-output}" level="verbose"/>
         <condition property="have-jdk-older-than-1.6">
             <or>
                 <contains string="${version-output}" substring="java version &quot;1.0"/>
@@ -91,52 +205,115 @@
         <echo message="javafx.sdk.missing-default = ${javafx.sdk.missing-default}" level="verbose"/>
     </target>
 
-    <target name="-check-ant-javafx-location-jdk" depends="-check-property-javafx.sdk" unless="ant-javafx.jar.location">
-        <condition property="ant-javafx-available-inside-jdk">
+    <target name="-check-ant-javafx-in-fxsdk-lib" depends="-check-property-javafx.sdk" if="javafx.sdk.defined">
+        <condition property="do.set.ant-javafx.in.fxsdk.lib">
             <and>
-                <isset property="platform.home"/>
-                <available file="${platform.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
+                <not><isset property="ant-javafx.jar.location"/></not>
+                <available file="${javafx.sdk}${file.separator}lib${file.separator}ant-javafx.jar"/>
             </and>
         </condition>
-        <echo message="ant-javafx-available-inside-jdk = ${ant-javafx-available-inside-jdk}" level="verbose"/>
     </target>
-    <target name="-set-ant-javafx-path-jdk" depends="-check-ant-javafx-location-jdk" if="ant-javafx-available-inside-jdk">
-        <property name="ant-javafx.jar.location" value="${platform.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
-        <echo message="ant-javafx.jar.location = ${ant-javafx.jar.location}" level="verbose"/>
+    <target name="-set-ant-javafx-in-fxsdk-lib" depends="-check-ant-javafx-in-fxsdk-lib" if="do.set.ant-javafx.in.fxsdk.lib">
+        <property name="ant-javafx.jar.location" value="${javafx.sdk}${file.separator}lib${file.separator}ant-javafx.jar"/>
     </target>
-    <target name="-check-ant-javafx-location-fxsdk" depends="-check-property-javafx.sdk" unless="ant-javafx.jar.location">
-        <condition property="ant-javafx-available-inside-fxsdk">
+    <target name="-check-ant-javafx-in-fxsdk-tools" depends="-check-property-javafx.sdk" if="javafx.sdk.defined">
+        <condition property="do.set.ant-javafx.in.fxsdk.tools">
             <and>
-                <isset property="javafx.sdk.defined"/>
+                <not><isset property="ant-javafx.jar.location"/></not>
                 <available file="${javafx.sdk}${file.separator}tools${file.separator}ant-javafx.jar"/>
             </and>
         </condition>
-        <echo message="ant-javafx-available-inside-fxsdk = ${ant-javafx-available-inside-fxsdk}" level="verbose"/>
     </target>
-    <target name="-set-ant-javafx-path-fxsdk" depends="-set-ant-javafx-path-jdk,-check-ant-javafx-location-fxsdk" if="ant-javafx-available-inside-fxsdk">
+    <target name="-set-ant-javafx-in-fxsdk-tools" depends="-set-ant-javafx-in-fxsdk-lib,-check-ant-javafx-in-fxsdk-tools" if="do.set.ant-javafx.in.fxsdk.tools">
         <property name="ant-javafx.jar.location" value="${javafx.sdk}${file.separator}tools${file.separator}ant-javafx.jar"/>
-        <echo message="ant-javafx.jar.location = ${ant-javafx.jar.location}" level="verbose"/>
     </target>
-        
-    <target name="-check-ant-javafx-version-check" depends="-set-ant-javafx-path-jdk,-set-ant-javafx-path-fxsdk">
-        <condition property="do-check-ant-javafx-version">
+    <target name="-check-ant-javafx-in-platform-home-lib" if="platform.home">
+        <condition property="do.set.ant-javafx.in.platform.home.lib">
             <and>
-                <isset property="ant-javafx.jar.location"/>
-                <not><isset property="ant-javafx-version-checked-in-jfximpl"/></not>
+                <not><isset property="ant-javafx.jar.location"/></not>
+                <available file="${platform.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
             </and>
         </condition>
     </target>
-    <target name="-check-ant-javafx-version" depends="-check-ant-javafx-version-check" if="do-check-ant-javafx-version">
+    <target name="-set-ant-javafx-in-platform-home-lib" depends="-set-ant-javafx-in-fxsdk-tools,-check-ant-javafx-in-platform-home-lib" if="do.set.ant-javafx.in.platform.home.lib">
+        <property name="ant-javafx.jar.location" value="${platform.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
+    </target>
+    <target name="-check-ant-javafx-in-platform-home-tools" if="platform.home">
+        <condition property="do.set.ant-javafx.in.platform.home.tools">
+            <and>
+                <not><isset property="ant-javafx.jar.location"/></not>
+                <available file="${platform.home}${file.separator}tools${file.separator}ant-javafx.jar"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-ant-javafx-in-platform-home-tools" depends="-set-ant-javafx-in-platform-home-lib,-check-ant-javafx-in-platform-home-tools" if="do.set.ant-javafx.in.platform.home.tools">
+        <property name="ant-javafx.jar.location" value="${platform.home}${file.separator}tools${file.separator}ant-javafx.jar"/>
+    </target>
+    <target name="-check-ant-javafx-in-probjdk-lib" unless="ant-javafx.jar.location">
+        <condition property="do.set.ant-javafx.in.probjdk.lib">
+            <and>
+                <not><isset property="ant-javafx.jar.location"/></not>
+                <available file="${java.home}${file.separator}..${file.separator}lib${file.separator}ant-javafx.jar"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-ant-javafx-in-probjdk-lib" depends="-set-ant-javafx-in-platform-home-tools,-check-ant-javafx-in-probjdk-lib" if="do.set.ant-javafx.in.probjdk.lib">
+        <property name="ant-javafx.jar.location" value="${java.home}${file.separator}..${file.separator}lib${file.separator}ant-javafx.jar"/>
+    </target>
+    <target name="-check-ant-javafx-in-probjdk-tools" unless="ant-javafx.jar.location">
+        <condition property="do.set.ant-javafx.in.probjdk.tools">
+            <and>
+                <not><isset property="ant-javafx.jar.location"/></not>
+                <available file="${java.home}${file.separator}..${file.separator}tools${file.separator}ant-javafx.jar"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-ant-javafx-in-probjdk-tools" depends="-set-ant-javafx-in-probjdk-lib,-check-ant-javafx-in-probjdk-tools" if="do.set.ant-javafx.in.probjdk.tools">
+        <property name="ant-javafx.jar.location" value="${java.home}${file.separator}..${file.separator}tools${file.separator}ant-javafx.jar"/>
+    </target>
+    <target name="-check-ant-javafx-in-envjdk-lib" unless="ant-javafx.jar.location">
+        <property environment="env"/>
+        <condition property="do.set.ant-javafx.in.envjdk.lib">
+            <and>
+                <not><isset property="ant-javafx.jar.location"/></not>
+                <available file="${env.JAVA_HOME}${file.separator}lib${file.separator}ant-javafx.jar"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-ant-javafx-in-envjdk-lib" depends="-set-ant-javafx-in-probjdk-tools,-check-ant-javafx-in-envjdk-lib" if="do.set.ant-javafx.in.envjdk.lib">
+        <property name="ant-javafx.jar.location" value="${env.JAVA_HOME}${file.separator}lib${file.separator}ant-javafx.jar"/>
+    </target>
+    <target name="-check-ant-javafx-in-envjdk-tools" unless="ant-javafx.jar.location">
+        <property environment="env"/>
+        <condition property="do.set.ant-javafx.in.envjdk.tools">
+            <and>
+                <not><isset property="ant-javafx.jar.location"/></not>
+                <available file="${env.JAVA_HOME}${file.separator}tools${file.separator}ant-javafx.jar"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-ant-javafx-in-envjdk-tools" depends="-set-ant-javafx-in-envjdk-lib,-check-ant-javafx-in-envjdk-tools" if="do.set.ant-javafx.in.envjdk.tools">
+        <property name="ant-javafx.jar.location" value="${env.JAVA_HOME}${file.separator}tools${file.separator}ant-javafx.jar"/>
+    </target>
+    <target name="-pre-check-ant-javafx-version" depends="-set-ant-javafx-in-envjdk-tools" unless="ant-javafx-version-already-checked-in-jfximpl">
+        <condition property="do.check.ant-javafx.version">
+            <and>
+                <isset property="ant-javafx.jar.location"/>
+                <not><isset property="ant-javafx-version-already-checked-in-jfximpl"/></not>
+            </and>
+        </condition>
+    </target>
+    <target name="-check-ant-javafx-version" depends="-pre-check-ant-javafx-version" if="do.check.ant-javafx.version">
+        <echo message="ant-javafx.jar.location = ${ant-javafx.jar.location}" level="verbose"/>
         <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
             uri="javafx:com.sun.javafx.tools.ant"
             classpath="${ant-javafx.jar.location}"/>
         <condition property="have-fx-ant-init">
             <typefound name="javafx:com.sun.javafx.tools.ant:init-ant"/>
         </condition>
-        <property name="ant-javafx-version-checked-in-jfximpl" value="true"/>
+        <property name="ant-javafx-version-already-checked-in-jfximpl" value="true"/>
         <echo message="have-fx-ant-init = ${have-fx-ant-init}" level="verbose"/>
     </target>
-
     <target name="-check-jfx-sdk-version-old" depends="-check-ant-javafx-version" unless="have-fx-ant-init">
         <property name="javafx.ant.version" value="1.0"/>
     </target>
@@ -156,8 +333,14 @@
         <condition property="jfx-deployment-available">
             <and>
                 <or>
-                    <isset property="ant-javafx-available-inside-jdk"/>
-                    <isset property="ant-javafx-available-inside-fxsdk"/>
+                    <isset property="do.set.ant-javafx.in.fxsdk.lib"/>
+                    <isset property="do.set.ant-javafx.in.fxsdk.tools"/>
+                    <isset property="do.set.ant-javafx.in.platform.home.lib"/>
+                    <isset property="do.set.ant-javafx.in.platform.home.tools"/>
+                    <isset property="do.set.ant-javafx.in.probjdk.lib"/>
+                    <isset property="do.set.ant-javafx.in.probjdk.tools"/>
+                    <isset property="do.set.ant-javafx.in.envjdk.lib"/>
+                    <isset property="do.set.ant-javafx.in.envjdk.tools"/>
                 </or>
                 <isset property="ant-javafx.jar.location"/>
             </and>
@@ -182,10 +365,10 @@
                 <isset property="javafx.sdk.missing-default"/>
             </and>
         </condition>
-        <fail message="Error:${line.separator}JavaFX deployment executable not found in active JDK.${line.separator}Please check that the JDK is correctly installed and its version is at least 7u4 on Mac or 7u6 on other systems." if="jfx-deployment-missing+jdk7u6"/>
-        <fail message="Error:${line.separator}JavaFX deployment executable not found.${line.separator}JavaFX SDK path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.sdk in project.properties file).${line.separator}Note: If missing, the default JavaFX-enabled platform gets created automatically when creating a new FX Project." if="jfx-deployment-missing+javafx.sdk.missing+default"/>
-        <fail message="Error:${line.separator}JavaFX deployment executable not found.${line.separator}JavaFX SDK path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.sdk in project.properties file)." if="jfx-deployment-missing+javafx.sdk.missing-default"/>
-        <fail message="Error:${line.separator}JavaFX deployment executable not found." unless="jfx-deployment-available"/>
+        <fail message="Error:${line.separator}JavaFX deployment library not found in active JDK.${line.separator}Please check that the JDK is correctly installed and its version is at least 7u4 on Mac or 7u6 on other systems." if="jfx-deployment-missing+jdk7u6"/>
+        <fail message="Error:${line.separator}JavaFX deployment library not found.${line.separator}JavaFX SDK path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.sdk in project.properties file).${line.separator}Note: If missing, the default JavaFX-enabled platform gets created automatically when creating a new FX Project." if="jfx-deployment-missing+javafx.sdk.missing+default"/>
+        <fail message="Error:${line.separator}JavaFX deployment library not found.${line.separator}JavaFX SDK path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.sdk in project.properties file)." if="jfx-deployment-missing+javafx.sdk.missing-default"/>
+        <fail message="Error:${line.separator}JavaFX deployment library not found." unless="jfx-deployment-available"/>
         <echo message="jfx-deployment-available = ${jfx-deployment-available}" level="verbose"/>
     </target>
     
@@ -217,54 +400,99 @@
         <echo message="javafx.runtime.missing-default = ${javafx.runtime.missing-default}" level="verbose"/>
     </target>
 
-    <target name="-check-jfxrt-location-fxrt" depends="-check-property-javafx.runtime" unless="jfxrt.jar.location">
-        <condition property="jfxrt-available-inside-fxrt">
+    <target name="-check-jfxrt-in-fxrt" depends="-check-property-javafx.runtime" if="javafx.runtime.defined">
+        <condition property="do.set.jfxrt.in.fxrt">
             <and>
-                <isset property="javafx.runtime.defined"/>
+                <not><isset property="jfxrt.jar.location"/></not>
                 <available file="${javafx.runtime}${file.separator}lib${file.separator}jfxrt.jar"/>
             </and>
         </condition>
-        <echo message="jfxrt-available-inside-fxrt = ${jfxrt-available-inside-fxrt}" level="verbose"/>
     </target>
-    <target name="-set-jfxrt-path-fxrt" depends="-check-jfxrt-location-fxrt" if="jfxrt-available-inside-fxrt">
+    <target name="-set-jfxrt-in-fxrt" depends="-check-jfxrt-in-fxrt" if="do.set.jfxrt.in.fxrt">
         <property name="jfxrt.jar.location" value="${javafx.runtime}${file.separator}lib${file.separator}jfxrt.jar"/>
-        <echo message="jfxrt.jar.location = ${jfxrt.jar.location}" level="verbose"/>
     </target>
-    <target name="-check-jfxrt-location-jdk" depends="-check-property-javafx.runtime" unless="jfxrt.jar.location">
-        <condition property="jfxrt-available-inside-jdk">
+    <target name="-check-jfxrt-in-fxsdk-jre" depends="-check-property-javafx.sdk" if="javafx.sdk.defined">
+        <condition property="do.set.jfxrt.in.fxsdk.jre">
             <and>
-                <isset property="platform.home"/>
-                <available file="${platform.home}${file.separator}jre${file.separator}lib${file.separator}jfxrt.jar"/>
+                <not><isset property="jfxrt.jar.location"/></not>
+                <available file="${javafx.sdk}${file.separator}jre${file.separator}lib${file.separator}jfxrt.jar"/>
             </and>
         </condition>
-        <echo message="jfxrt-available-inside-jdk = ${jfxrt-available-inside-jdk}" level="verbose"/>
     </target>
-    <target name="-set-jfxrt-path-jdk" depends="-set-jfxrt-path-fxrt,-check-jfxrt-location-jdk" if="jfxrt-available-inside-jdk">
-        <property name="jfxrt.jar.location" value="${platform.home}${file.separator}jre${file.separator}lib${file.separator}jfxrt.jar"/>
-        <echo message="jfxrt.jar.location = ${jfxrt.jar.location}" level="verbose"/>
+    <target name="-set-jfxrt-in-fxsdk-jre" depends="-set-jfxrt-in-fxrt,-check-jfxrt-in-fxsdk-jre" if="do.set.jfxrt.in.fxsdk.jre">
+        <property name="jfxrt.jar.location" value="${javafx.sdk}${file.separator}jre${file.separator}lib${file.separator}jfxrt.jar"/>
     </target>
-    <target name="-check-jfxrt-location-fxsdk" depends="-check-property-javafx.runtime" unless="jfxrt.jar.location">
-        <condition property="jfxrt-available-inside-fxsdk">
+    <target name="-check-jfxrt-in-fxsdk-rt" depends="-check-property-javafx.sdk" if="javafx.sdk.defined">
+        <condition property="do.set.jfxrt.in.fxsdk.rt">
             <and>
-                <isset property="javafx.sdk.defined"/>
+                <not><isset property="jfxrt.jar.location"/></not>
                 <available file="${javafx.sdk}${file.separator}rt${file.separator}lib${file.separator}jfxrt.jar"/>
             </and>
         </condition>
-        <echo message="jfxrt-available-inside-fxsdk = ${jfxrt-available-inside-fxsdk}" level="verbose"/>
     </target>
-    <target name="-set-jfxrt-path-fxsdk" depends="-set-jfxrt-path-jdk,-check-jfxrt-location-fxsdk" if="jfxrt-available-inside-fxsdk">
+    <target name="-set-jfxrt-in-fxsdk-rt" depends="-set-jfxrt-in-fxsdk-jre,-check-jfxrt-in-fxsdk-rt" if="do.set.jfxrt.in.fxsdk.rt">
         <property name="jfxrt.jar.location" value="${javafx.sdk}${file.separator}rt${file.separator}lib${file.separator}jfxrt.jar"/>
+    </target>
+    <target name="-check-jfxrt-in-platform-home-jre" if="platform.home">
+        <condition property="do.set.jfxrt.in.platform.home.jre">
+            <and>
+                <not><isset property="jfxrt.jar.location"/></not>
+                <available file="${platform.home}${file.separator}jre${file.separator}lib${file.separator}jfxrt.jar"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-jfxrt-in-platform-home-jre" depends="-set-jfxrt-in-fxsdk-rt,-check-jfxrt-in-platform-home-jre" if="do.set.jfxrt.in.platform.home.jre">
+        <property name="jfxrt.jar.location" value="${platform.home}${file.separator}jre${file.separator}lib${file.separator}jfxrt.jar"/>
+    </target>
+    <target name="-check-jfxrt-in-platform-home-rt" if="platform.home">
+        <condition property="do.set.jfxrt.in.platform.home.rt">
+            <and>
+                <not><isset property="jfxrt.jar.location"/></not>
+                <available file="${platform.home}${file.separator}rt${file.separator}lib${file.separator}jfxrt.jar"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-jfxrt-in-platform-home-rt" depends="-set-jfxrt-in-platform-home-jre,-check-jfxrt-in-platform-home-rt" if="do.set.jfxrt.in.platform.home.rt">
+        <property name="jfxrt.jar.location" value="${platform.home}${file.separator}rt${file.separator}lib${file.separator}jfxrt.jar"/>
+    </target>
+    <target name="-check-jfxrt-in-jre" unless="jfxrt.jar.location">
+        <condition property="do.set.jfxrt.in.jre">
+            <and>
+                <not><isset property="jfxrt.jar.location"/></not>
+                <available file="${java.home}${file.separator}lib${file.separator}jfxrt.jar"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-jfxrt-in-jre" depends="-set-jfxrt-in-platform-home-rt,-check-jfxrt-in-jre" if="do.set.jfxrt.in.jre">
+        <property name="jfxrt.jar.location" value="${java.home}${file.separator}lib${file.separator}jfxrt.jar"/>
+    </target>
+    <target name="-check-jfxrt-in-envjdk-jre" unless="jfxrt.jar.location">
+        <property environment="env"/>
+        <condition property="do.set.jfxrt.in.envjdk.jre">
+            <and>
+                <not><isset property="ant-javafx.jar.location"/></not>
+                <available file="${env.JAVA_HOME}${file.separator}jre${file.separator}lib${file.separator}jfxrt.jar"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-jfxrt-in-envjdk-jre" depends="-set-jfxrt-in-jre,-check-jfxrt-in-envjdk-jre" if="do.set.jfxrt.in.envjdk.jre">
+        <property name="jfxrt.jar.location" value="${env.JAVA_HOME}${file.separator}jre${file.separator}lib${file.separator}jfxrt.jar"/>
+    </target>
+    <target name="-pre-check-jfx-runtime" depends="-set-jfxrt-in-envjdk-jre">
         <echo message="jfxrt.jar.location = ${jfxrt.jar.location}" level="verbose"/>
     </target>
 
-    <target name="-check-jfx-runtime" depends="-check-jdk-version, -check-property-javafx.sdk, -check-property-javafx.runtime,
-            -set-jfxrt-path-fxrt, -set-jfxrt-path-jdk, -set-jfxrt-path-fxsdk">
+    <target name="-check-jfx-runtime" depends="-check-jdk-version, -pre-check-jfx-runtime">
         <condition property="jfx-runtime-available">
             <and>
                 <or>
-                    <isset property="jfxrt-available-inside-jdk"/>
-                    <isset property="jfxrt-available-inside-fxrt"/>
-                    <isset property="jfxrt-available-inside-fxsdk"/>
+                    <isset property="do.set.jfxrt.in.fxrt"/>
+                    <isset property="do.set.jfxrt.in.fxsdk.jre"/>
+                    <isset property="do.set.jfxrt.in.fxsdk.rt"/>
+                    <isset property="do.set.jfxrt.in.platform.home.jre"/>
+                    <isset property="do.set.jfxrt.in.platform.home.rt"/>
+                    <isset property="do.set.jfxrt.in.jre"/>
+                    <isset property="do.set.jfxrt.in.envjdk.jre"/>
                 </or>
                 <isset property="jfxrt.jar.location"/>
             </and>
@@ -276,9 +504,10 @@
 
     <!-- Check availability of WebStart executable -->
 
-    <target name="-check-jfx-webstart-location" depends="-check-property-javafx.runtime">
-        <condition property="jfx-webstart-available-inside-fxsdk">
+    <target name="-check-webstart-in-fxrt" depends="-check-property-javafx.runtime" if="javafx.runtime.defined">
+        <condition property="do.set.webstart.in.fxrt">
             <and>
+                <not><isset property="active.webstart.executable"/></not>
                 <isset property="javafx.runtime.defined"/>
                 <or>
                     <available file="${javafx.runtime}${file.separator}bin${file.separator}javaws.exe"/>
@@ -286,56 +515,158 @@
                 </or>
             </and>
         </condition>
-        <condition property="jfx-webstart-available-inside-jdk">
+    </target>
+    <target name="-set-webstart-in-fxrt" depends="-check-webstart-in-fxrt" if="do.set.webstart.in.fxrt">
+        <property name="active.webstart.executable" value="${javafx.runtime}${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-check-webstart-in-fxsdk-jre" depends="-check-property-javafx.sdk" if="javafx.sdk.defined">
+        <condition property="do.set.webstart.in.fxsdk.jre">
             <and>
-                <isset property="platform.home"/>
+                <not><isset property="active.webstart.executable"/></not>
+                <isset property="javafx.sdk.defined"/>
+                <or>
+                    <available file="${javafx.sdk}${file.separator}jre${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${javafx.sdk}${file.separator}jre${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-webstart-in-fxsdk-jre" depends="-set-webstart-in-fxrt,-check-webstart-in-fxsdk-jre" if="do.set.webstart.in.fxsdk.jre">
+        <property name="active.webstart.executable" value="${javafx.sdk}${file.separator}jre${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-check-webstart-in-fxsdk" depends="-check-property-javafx.sdk" if="javafx.sdk.defined">
+        <condition property="do.set.webstart.in.fxsdk">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <isset property="javafx.sdk.defined"/>
+                <or>
+                    <available file="${javafx.sdk}${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${javafx.sdk}${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-webstart-in-fxsdk" depends="-set-webstart-in-fxsdk-jre,-check-webstart-in-fxsdk" if="do.set.webstart.in.fxsdk">
+        <property name="active.webstart.executable" value="${javafx.sdk}${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-check-webstart-in-platform-home-jre" if="platform.home">
+        <condition property="do.set.webstart.in.platform.home.jre">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <or>
+                    <available file="${platform.home}${file.separator}jre${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${platform.home}${file.separator}jre${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-webstart-in-platform-home-jre" depends="-set-webstart-in-fxsdk,-check-webstart-in-platform-home-jre" if="do.set.webstart.in.platform.home.jre">
+        <property name="active.webstart.executable" value="${platform.home}${file.separator}jre${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-check-webstart-in-platform-home" if="platform.home">
+        <condition property="do.set.webstart.in.platform.home">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
                 <or>
                     <available file="${platform.home}${file.separator}bin${file.separator}javaws.exe"/>
                     <available file="${platform.home}${file.separator}bin${file.separator}javaws"/>
                 </or>
             </and>
         </condition>
-        <echo message="jfx-webstart-available-inside-fxsdk = ${jfx-webstart-available-inside-fxsdk}" level="verbose"/>
-        <echo message="jfx-webstart-available-inside-jdk = ${jfx-webstart-available-inside-jdk}" level="verbose"/>
     </target>
-
-    <target name="-check-jfx-webstart-location-unix" depends="-check-operating-system" if="running.on.unix">
+    <target name="-set-webstart-in-platform-home" depends="-set-webstart-in-platform-home-jre,-check-webstart-in-platform-home" if="do.set.webstart.in.platform.home">
+        <property name="active.webstart.executable" value="${platform.home}${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-check-webstart-in-jre" unless="active.webstart.executable">
+        <condition property="do.set.webstart.in.jre">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <or>
+                    <available file="${java.home}${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${java.home}${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-webstart-in-jre" depends="-set-webstart-in-platform-home,-check-webstart-in-jre" if="do.set.webstart.in.jre">
+        <property name="active.webstart.executable" value="${java.home}${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-check-webstart-in-probjdk" unless="active.webstart.executable">
+        <condition property="do.set.webstart.in.probjdk">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <or>
+                    <available file="${java.home}${file.separator}..${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${java.home}${file.separator}..${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-webstart-in-probjdk" depends="-set-webstart-in-jre,-check-webstart-in-probjdk" if="do.set.webstart.in.probjdk">
+        <property name="active.webstart.executable" value="${java.home}${file.separator}..${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-check-webstart-in-envjdk" unless="active.webstart.executable">
+        <property environment="env"/>
+        <condition property="do.set.webstart.in.envjdk">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <or>
+                    <available file="${env.JAVA_HOME}${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${env.JAVA_HOME}${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-webstart-in-envjdk" depends="-set-webstart-in-probjdk,-check-webstart-in-envjdk" if="do.set.webstart.in.envjdk">
+        <property name="active.webstart.executable" value="${env.JAVA_HOME}${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-pre-check-webstart-in-unix" depends="-check-operating-system,-set-webstart-in-envjdk" unless="active.webstart.executable">
+        <condition property="running.on.unix-active.webstart.executable">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <isset property="running.on.unix"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-check-webstart-in-unix" depends="-pre-check-webstart-in-unix" if="running.on.unix-active.webstart.executable">
         <local name="exec.which.javaws.result"/>
         <exec executable="which" failifexecutionfails="false" failonerror="false" resultproperty="exec.which.javaws.result" outputproperty="exec.which.javaws.output">
             <arg value="javaws"/>
         </exec>
-        <condition property="jfx-webstart-available-unix-anywhere">
+        <condition property="do.set.webstart.in.unix">
             <and>
+                <not><isset property="active.webstart.executable"/></not>
                 <isset property="exec.which.javaws.result"/>
                 <equals arg1="${exec.which.javaws.result}" arg2="0"/>
                 <isset property="exec.which.javaws.output"/>
                 <not><equals arg1="${exec.which.javaws.output}" arg2=""/></not>
             </and>
         </condition>
-        <echo message="jfx-webstart-available-unix-anywhere = ${jfx-webstart-available-unix-anywhere}" level="verbose"/>
+        <echo message="do.set.webstart.in.unix = ${do.set.webstart.in.unix}" level="verbose"/>
     </target>
-
-    <target name="-set-jfx-webstart-path-fxsdk" depends="-check-jfx-webstart-location" if="jfx-webstart-available-inside-fxsdk">
-        <property name="active.webstart.executable" value="${javafx.runtime}${file.separator}bin${file.separator}javaws"/>
-        <echo message="active.webstart.executable = ${active.webstart.executable}" level="verbose"/>
-    </target>
-    <target name="-set-jfx-webstart-path-jdk" depends="-check-jfx-webstart-location, -set-jfx-webstart-path-fxsdk" if="jfx-webstart-available-inside-jdk">
-        <property name="active.webstart.executable" value="${platform.home}${file.separator}bin${file.separator}javaws"/>
-        <echo message="active.webstart.executable = ${active.webstart.executable}" level="verbose"/>
-    </target>
-    <target name="-set-jfx-webstart-path-unix" depends="-check-jfx-webstart-location-unix, -set-jfx-webstart-path-jdk" if="jfx-webstart-available-unix-anywhere">
+    <target name="-set-webstart-in-unix" depends="-set-webstart-in-envjdk,-check-webstart-in-unix" if="do.set.webstart.in.unix">
         <property name="active.webstart.executable" value="${exec.which.javaws.output}"/>
+    </target>
+    <target name="-pre-check-jfx-webstart" depends="-set-webstart-in-unix">
         <echo message="active.webstart.executable = ${active.webstart.executable}" level="verbose"/>
     </target>
 
-    <target name="-check-jfx-webstart" depends="-check-jfx-webstart-location, -set-jfx-webstart-path-fxsdk, 
-            -set-jfx-webstart-path-jdk, -check-jfx-webstart-location-unix, -set-jfx-webstart-path-unix, -check-property-javafx.runtime">
+    <target name="-check-jfx-webstart" depends="-pre-check-jfx-webstart">
         <condition property="jfx-webstart-available">
-            <or>
-                <isset property="jfx-webstart-available-inside-fxsdk"/>
-                <isset property="jfx-webstart-available-inside-jdk"/>
-                <isset property="jfx-webstart-available-unix-anywhere"/>
-            </or>
+            <and>
+                <or>
+                    <isset property="do.set.webstart.in.fxrt"/>
+                    <isset property="do.set.webstart.in.fxsdk.jre"/>
+                    <isset property="do.set.webstart.in.fxsdk"/>
+                    <isset property="do.set.webstart.in.platform.home.jre"/>
+                    <isset property="do.set.webstart.in.platform.home"/>
+                    <isset property="do.set.webstart.in.jre"/>
+                    <isset property="do.set.webstart.in.probjdk"/>
+                    <isset property="do.set.webstart.in.envjdk"/>
+                    <isset property="do.set.webstart.in.unix"/>
+                </or>
+                <isset property="active.webstart.executable"/>
+            </and>
         </condition>
         <condition property="jfx-webstart-missing+jdk7u6">
             <and>
@@ -870,6 +1201,7 @@
     <!-- fx:jar scripted call enables passing of arbitrarily long list of params and fx-version dependent behavior -->
     <macrodef name="deploy-jar">
         <sequential>
+            <antcall target="-pre-jfx-jar"/>
             <typedef name="fx_jar" classname="com.sun.javafx.tools.ant.FXJar" classpath="${ant-javafx.jar.location}"/>
             <echo message="Launching &lt;fx:jar&gt; task from ${ant-javafx.jar.location}" level="info"/>
             <property name="pp_jar_destfile" value="${jfx.deployment.dir}${file.separator}${jfx.deployment.jar}"/>
@@ -1033,6 +1365,7 @@
                     jar.perform();
                 ]]>
             </script>
+            <antcall target="-post-jfx-jar"/>
         </sequential>
     </macrodef>
 
@@ -1101,6 +1434,7 @@
     <!-- fx:deploy scripted call enables passing of arbitrarily long lists of params, vmoptions and callbacks and fx-version dependent behavior -->
     <macrodef name="deploy-deploy">
         <sequential>
+            <antcall target="-pre-jfx-deploy"/>
             <typedef name="fx_deploy" classname="com.sun.javafx.tools.ant.DeployFXTask" classpath="${ant-javafx.jar.location}"/>
             <echo message="Launching &lt;fx:deploy&gt; task from ${ant-javafx.jar.location}" level="info"/>
             <property name="pp_deploy_dir" value="${jfx.deployment.dir}"/>
@@ -1335,6 +1669,7 @@
                     deploy.perform();
                 ]]>
             </script>
+            <antcall target="-post-jfx-deploy"/>
         </sequential>
     </macrodef>
 

@@ -44,6 +44,7 @@ package org.netbeans.editor.ext.html.parser.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -58,7 +59,7 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author  mfukala@netbeans.org, Tomasz.Slota@Sun.COM
+ * @author mfukala@netbeans.org, Tomasz.Slota@Sun.COM
  */
 public class AstNode {
 
@@ -69,23 +70,85 @@ public class AstNode {
         UNKNOWN_TAG, ROOT, COMMENT, DECLARATION, ERROR,
         TEXT, TAG, UNMATCHED_TAG, OPEN_TAG, ENDTAG, ENTITY_REFERENCE
     };
-    private final String name;
-    private NodeType nodeType;
-    protected int startOffset;
+    //an attempt to save some memory
+    private static byte children = 0;
+//    private static byte parent = 1;
+    private static byte attributes = 2;
+    private static byte content = 3;
+    private static byte contentModel = 4;
+    private static byte dtdElement = 5;
+    private static byte descriptions = 6;
+    private static byte stack = 7;
+//    private static byte matchingNode = 8;
+    private static byte properties = 9;
+
+    private static class PEntry {
+        private byte type;
+        private Object entry;
+        private PEntry next;
+
+        public PEntry(byte type, Object entry, PEntry next) {
+            this.type = type;
+            this.entry = entry;
+            this.next = next;
+        }
+        
+    }
+    //to store arbitrary and usually not used properties
+    private PEntry pEntry;
+
+    private void putProp(byte type, Object value) {
+        if(pEntry == null) {
+            //not a single entry
+            pEntry = new PEntry(type, value, null);
+            return ;
+        }
+
+        PEntry pe = pEntry;
+        PEntry lastNonNullPe;
+        do {
+            lastNonNullPe = pe;
+            if (pe.type == type) {
+                //update existing entry
+                pe.entry = value;
+                return ;
+            }
+            pe = pe.next;
+        } while (pe != null);
+        
+        //no entry of such type found - add a new one to the last entry
+        lastNonNullPe.next = new PEntry(type, value, null);
+    }
+
+    //linked list
+    private Object getProp(byte type) {
+        PEntry pe = pEntry;
+        while (pe != null) {
+            if (pe.type == type) {
+                return pe.entry;
+            }
+            pe = pe.next;
+        }
+        return null;
+    }
+    //base properties held by the AstNode itself
+    protected final int startOffset;
     protected int endOffset;
     protected int logicalEndOffset;
-    private List<AstNode> children = null;
+    private final String name;
+    private boolean empty = false;
+    private final NodeType nodeType;
     private AstNode parent = null;
-    private Map<String, Attribute> attributes = null;
-    private Content content = null;
-    private ContentModel contentModel = null;
-    private Element dtdElement = null;
-    private Collection<ProblemDescription> descriptions = null;
-    private List<String> stack = null; //for debugging
     private AstNode matchingNode = null;
-    private boolean isEmpty = false;
-    private Map<String, Object> properties;
 
+//    private List<AstNode> children = null;
+//    private Map<String, Attribute> attributes = null;
+//    private Content content = null;
+//    private ContentModel contentModel = null;
+//    private Element dtdElement = null;
+//    private Collection<ProblemDescription> descriptions = null;
+//    private List<String> stack = null; //for debugging
+//    private Map<String, Object> properties;
     public static AstNode createRootNode(int from, int to, DTD dtd) {
         return new RootAstNode(from, to, dtd);
     }
@@ -93,25 +156,82 @@ public class AstNode {
     //TODO - replace the public constructors by factory methods
     public AstNode(String name, NodeType nodeType, int startOffset, int endOffset, Element dtdElement, boolean isEmpty, List<String> stack) {
         this(name, nodeType, startOffset, endOffset, isEmpty);
-        this.dtdElement = dtdElement;
-        this.contentModel = dtdElement != null ? dtdElement.getContentModel() : null;
-        this.content = contentModel != null ? contentModel.getContent() : null;
-        this.stack = stack;
+
+        setDtdElement(dtdElement);
+
+        setContentModel(dtdElement != null ? dtdElement.getContentModel() : null);
+
+        ContentModel contentModel = getContentModel();
+        setContent(contentModel != null ? contentModel.getContent() : null);
+
+        setStack(stack);
     }
 
     public AstNode(String name, NodeType nodeType, int startOffset, int endOffset, boolean isEmpty) {
-        //issue 195617 - NPE when AstNode's name is null
         Parameters.notNull("name", name);
-//        if(name == null) {
-//            name = "null";
-//        }
-        
+
         this.name = name;
         this.nodeType = nodeType;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.logicalEndOffset = endOffset;
-        this.isEmpty = isEmpty;
+        this.empty = isEmpty;
+    }
+
+    private ContentModel getContentModel() {
+        return (ContentModel) getProp(contentModel);
+    }
+
+    private void setContentModel(ContentModel model) {
+        putProp(contentModel, model);
+    }
+
+    private Content getContent() {
+        return (Content) getProp(content);
+    }
+
+    private void setContent(Content c) {
+        putProp(content, c);
+    }
+
+    private List<String> getStack() {
+        return (List<String>) getProp(stack);
+    }
+
+    private void setStack(List<String> s) {
+        putProp(stack, s);
+    }
+
+    private Collection<ProblemDescription> getDescriptions_property() { //we already have getDescriptions()
+        return (Collection<ProblemDescription>) getProp(descriptions);
+    }
+
+    private void setDescriptions(Collection<ProblemDescription> d) {
+        putProp(descriptions, d);
+    }
+
+    private List<AstNode> getChildren() {
+        return (List<AstNode>) getProp(children);
+    }
+
+    private void setChildren(List<AstNode> c) {
+        putProp(children, c);
+    }
+
+    private Map<String, Attribute> getAttributes_property() {
+        return (Map<String, Attribute>) getProp(attributes);
+    }
+
+    private void setAttributes(Map<String, Attribute> a) {
+        putProp(attributes, a);
+    }
+
+    private Map<String, Object> getProperties() {
+        return (Map<String, Object>) getProp(properties);
+    }
+
+    private void setProperties(Map<String, Object> p) {
+        putProp(properties, p);
     }
 
     public boolean isRootNode() {
@@ -131,17 +251,16 @@ public class AstNode {
     }
 
     public AstNode getMatchingTag() {
+//        return (AstNode) getProp(matchingNode);
         return matchingNode;
     }
 
     /**
-     * Returns an offsets range of the area which this node spans.
-     * The behaviour differs based on the node type.
-     * For matched open tags nodes the range is following:
-     * openTag.startOffset, matchingTag.endOffset
+     * Returns an offsets range of the area which this node spans. The behaviour
+     * differs based on the node type. For matched open tags nodes the range is
+     * following: openTag.startOffset, matchingTag.endOffset
      *
-     * For the rest of node types the area is
-     * node.startOffset, node.endOffset
+     * For the rest of node types the area is node.startOffset, node.endOffset
      *
      * @return non-null int array - new int[]{from, to};
      *
@@ -155,6 +274,7 @@ public class AstNode {
     }
 
     public void setMatchingNode(AstNode match) {
+//        putProp(matchingNode, match);]
         this.matchingNode = match;
     }
 
@@ -175,57 +295,61 @@ public class AstNode {
     }
 
     public Element getDTDElement() {
-        return dtdElement;
+        return (Element) getProp(dtdElement);
+    }
+
+    private void setDtdElement(Element de) {
+        putProp(dtdElement, de);
     }
 
     public boolean reduce(Element element) {
-        if (contentModel == null) {
+        if (getContentModel() == null) {
             return false; //unknown tag can contain anything, error reports done somewhere else
         }
 
         Boolean canReduce = null;
         //process includes/excludes from the root node to the leaf
         List<AstNode> path = new ArrayList<AstNode>();
-        for(AstNode node = this; node.type() != AstNode.NodeType.ROOT; node = node.parent()) {
+        for (AstNode node = this; node.type() != AstNode.NodeType.ROOT; node = node.parent()) {
             path.add(0, node);
         }
-        for(AstNode node : path) {
+        for (AstNode node : path) {
             DTD.ContentModel cModel = node.getDTDElement().getContentModel();
-            if(cModel.getIncludes().contains(element)) {
+            if (cModel.getIncludes().contains(element)) {
                 canReduce = true;
             }
-            if(cModel.getExcludes().contains(element)) {
+            if (cModel.getExcludes().contains(element)) {
                 canReduce = false;
             }
         }
 
-        if(canReduce != null) {
+        if (canReduce != null) {
             return canReduce;
         }
 
         //explicitly exluded or included elements doesn't affect the reduction!
-        if (contentModel.getExcludes().contains(element)) {
+        if (getContentModel().getExcludes().contains(element)) {
             return false;
         }
-        if (contentModel.getIncludes().contains(element)) {
+        if (getContentModel().getIncludes().contains(element)) {
             return true;
         }
-        Content c = content.reduce(element.getName());
+        Content c = getContent().reduce(element.getName());
         if (c != null) {
-            content = c;
+            setContent(c);
             return true;
         } else {
             //hack!?!?!!
             //nothing reduced, it still may be valid if one of the expected elements
             //has optional start && end
-            for (Object o : contentModel.getContent().getPossibleElements()) {
+            for (Object o : getContentModel().getContent().getPossibleElements()) {
                 Element e = (Element) o;
                 if (e != null && e.hasOptionalStart() && e.hasOptionalEnd()) {
                     //try to reduce here
                     Content c2 = e.getContentModel().getContent().reduce(element.getName());
                     if (c2 != null) {
                         //hmmm, the element can contain the element
-                        content = Content.EMPTY_CONTENT; //?????????????????
+                        setContent(Content.EMPTY_CONTENT); //?????????????????
                         return true;
                     }
                 }
@@ -241,14 +365,15 @@ public class AstNode {
 //        }
 //    }
     public boolean isResolved() {
+        Content content = getContent();
         if (content == null) {
             return false;
         }
         //CDATA or EMPTY element
         if (content instanceof DTD.ContentLeaf) {
             DTD.ContentLeaf cleaf = (DTD.ContentLeaf) content;
-            if ("CDATA".equals(cleaf.getElementName()) ||
-                    "EMPTY".equals(cleaf.getElementName())) {
+            if ("CDATA".equals(cleaf.getElementName())
+                    || "EMPTY".equals(cleaf.getElementName())) {
                 return true;
             }
         }
@@ -266,19 +391,20 @@ public class AstNode {
 
     public List<Element> getUnresolvedElements() {
         if (!isResolved()) {
-            return (List<Element>) content.getPossibleElements();
+            return (List<Element>) getContent().getPossibleElements();
         } else {
             return null;
         }
     }
 
     public List<Element> getAllPossibleElements() {
+        Content content = getContent();
         assert content != null;
 
         List<Element> col = new ArrayList<Element>();
         col.addAll((Collection<Element>) content.getPossibleElements());
-        col.addAll(contentModel.getIncludes());
-        col.removeAll(contentModel.getExcludes());
+        col.addAll(getContentModel().getIncludes());
+        col.removeAll(getContentModel().getExcludes());
         return col;
     }
 
@@ -289,7 +415,9 @@ public class AstNode {
         int to = endOffset();
 
         if (type() == NodeType.OPEN_TAG) {
-            to = from + 1 /* "<".length() */ + name().length(); //end of the tag name
+            to = from + 1 /*
+                     * "<".length()
+                     */ + name().length(); //end of the tag name
             if (to == endOffset() - 1) {
                 //if the closing greater than '>' symbol immediately follows
                 //the tag name extend the description area to it as well
@@ -307,21 +435,21 @@ public class AstNode {
     }
 
     public synchronized void addDescription(ProblemDescription message) {
-        if (descriptions == null) {
-            descriptions = new ArrayList<ProblemDescription>(2);
+        if (getDescriptions_property() == null) {
+            setDescriptions(new ArrayList<ProblemDescription>(2));
         }
-        descriptions.add(message);
+        getDescriptions_property().add(message);
     }
 
     public synchronized void addDescriptions(Collection<ProblemDescription> messages) {
-        if (descriptions == null) {
-            descriptions = new LinkedHashSet<ProblemDescription>(2);
+        if (getDescriptions_property() == null) {
+            setDescriptions(new LinkedHashSet<ProblemDescription>(messages.size()));
         }
-        descriptions.addAll(messages);
+        getDescriptions_property().addAll(messages);
     }
 
     public Collection<ProblemDescription> getDescriptions() {
-        return descriptions == null ? Collections.<ProblemDescription>emptyList() : descriptions;
+        return getDescriptions_property() == null ? Collections.<ProblemDescription>emptyList() : getDescriptions_property();
     }
 
     public String name() {
@@ -353,13 +481,14 @@ public class AstNode {
     }
 
     public List<AstNode> children() {
+        List<AstNode> children = getChildren();
         return children == null ? Collections.EMPTY_LIST : children;
     }
 
     public List<AstNode> children(NodeFilter filter) {
         List<AstNode> filtered = new ArrayList<AstNode>(children().size());
-        for(AstNode child : children()) {
-            if(filter.accepts(child)) {
+        for (AstNode child : children()) {
+            if (filter.accepts(child)) {
                 filtered.add(child);
             }
         }
@@ -367,7 +496,7 @@ public class AstNode {
     }
 
     public boolean isEmpty() {
-        return isEmpty;
+        return empty;
     }
 
     public String getNamespacePrefix() {
@@ -381,14 +510,15 @@ public class AstNode {
     }
 
     public Object getProperty(String key) {
+        Map<String, Object> properties = getProperties();
         return properties == null ? null : properties.get(key);
     }
 
     public synchronized void setProperty(String key, Object value) {
-        if (properties == null) {
-            properties = new HashMap<String, Object>();
+        if (getProperties() == null) {
+            setProperties(new HashMap<String, Object>());
         }
-        properties.put(key, value);
+        getProperties().put(key, value);
     }
 
     public AstNode getRootNode() {
@@ -401,14 +531,15 @@ public class AstNode {
 
     public void addChild(AstNode child) {
         initChildren();
-        children.add(child);
+        getChildren().add(child);
         child.setParent(this);
     }
 
     public boolean insertBefore(AstNode node, AstNode insertBeforeNode) {
+        List<AstNode> children = getChildren();
         initChildren();
         int idx = children.indexOf(insertBeforeNode);
-        if(idx == -1) {
+        if (idx == -1) {
             return false; //no such node in children
         }
         children.add(idx, node);
@@ -418,7 +549,7 @@ public class AstNode {
 
     public void addChildren(List<AstNode> childrenList) {
         initChildren();
-        for(AstNode child : childrenList) {
+        for (AstNode child : childrenList) {
             addChild(child);
         }
     }
@@ -426,44 +557,47 @@ public class AstNode {
     public void removeChild(AstNode child) {
         initChildren();
         child.setParent(null);
-        children.remove(child);
+        getChildren().remove(child);
     }
 
     public void removeChildren(List<AstNode> childrenList) {
         initChildren();
-        for(AstNode child : new ArrayList<AstNode>(childrenList)) {
+        for (AstNode child : new ArrayList<AstNode>(childrenList)) {
             removeChild(child);
         }
     }
 
     private synchronized void initChildren() {
-        if (children == null) {
-            children = new LinkedList<AstNode>();
+        if (getChildren() == null) {
+            setChildren(new LinkedList<AstNode>());
         }
     }
 
     public void setAttribute(Attribute attr) {
-        if (attributes == null) {
-            attributes = new HashMap<String, Attribute>();
+        if (getAttributes_property() == null) {
+            setAttributes(new HashMap<String, Attribute>());
         }
-        attributes.put(attr.name(), attr);
+        getAttributes_property().put(attr.name(), attr);
     }
 
     public Collection<String> getAttributeKeys() {
+        Map<String, Attribute> attributes = getAttributes_property();
         return attributes == null ? Collections.EMPTY_LIST : attributes.keySet();
     }
 
     public Collection<Attribute> getAttributes() {
+        Map<String, Attribute> attributes = getAttributes_property();
         return attributes == null ? Collections.EMPTY_LIST : attributes.values();
     }
 
     public Collection<Attribute> getAttributes(AttributeFilter filter) {
-        if(attributes == null) {
+        Map<String, Attribute> attributes = getAttributes_property();
+        if (attributes == null) {
             return Collections.EMPTY_LIST;
         }
-        Collection<Attribute> filtered = new ArrayList<Attribute>(getAttributes().size() / 2);
-        for(Attribute attr : getAttributes()) {
-            if(filter.accepts(attr)) {
+        Collection<Attribute> filtered = new ArrayList<Attribute>(getAttributes_property().size() / 2);
+        for (Attribute attr : getAttributes()) {
+            if (filter.accepts(attr)) {
                 filtered.add(attr);
             }
         }
@@ -471,6 +605,7 @@ public class AstNode {
     }
 
     public Attribute getAttribute(String attributeName) {
+        Map<String, Attribute> attributes = getAttributes_property();
         return attributes == null ? null : attributes.get(attributeName);
     }
 
@@ -481,7 +616,7 @@ public class AstNode {
 
     @Override
     public String toString() {
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
 
         //basic info
         boolean isTag = type() == NodeType.OPEN_TAG || type() == NodeType.ENDTAG;
@@ -490,7 +625,7 @@ public class AstNode {
             b.append(type() == NodeType.OPEN_TAG ? "<" : "");
             b.append(type() == NodeType.ENDTAG ? "</" : "");
         }
-        if(getMatchingTag() != null) {
+        if (getMatchingTag() != null) {
             b.append('*');
         }
 
@@ -506,7 +641,7 @@ public class AstNode {
             b.append(type());
         }
         b.append('(');
-        if(isVirtual()) {
+        if (isVirtual()) {
             b.append("virtual");
         } else {
             b.append(startOffset());
@@ -534,31 +669,31 @@ public class AstNode {
 
         b.append('{');
         //attributes
-        for(Attribute a : getAttributes()) {
+        for (Attribute a : getAttributes()) {
             b.append(a.toString());
             b.append(',');
         }
         b.append('}');
 
         //attched messages
-        for (ProblemDescription d : getDescriptions()) {
+        for (ProblemDescription d : getDescriptions_property()) {
             b.append(d.getKey());
             b.append(' ');
         }
 
         //dump stack if possible
-        if (stack != null) {
+        if (getStack() != null) {
             b.append(";S:");
-            for (String item : stack) {
+            for (String item : getStack()) {
                 b.append(item);
                 b.append(',');
             }
             b.deleteCharAt(b.length() - 1);
         }
 
-        if(!getDescriptions().isEmpty()) {
+        if (!getDescriptions_property().isEmpty()) {
             b.append("; issues:");
-            for(ProblemDescription d : getDescriptions()) {
+            for (ProblemDescription d : getDescriptions_property()) {
                 b.append(d);
             }
         }
@@ -575,34 +710,39 @@ public class AstNode {
         return parent;
     }
 
-    /** returns the AST path from the root element */
+    /**
+     * returns the AST path from the root element
+     */
     public AstPath path() {
         return new AstPath(null, this);
     }
 
-    private void setParent(AstNode parent) {
-        this.parent = parent;
+    private void setParent(AstNode p) {
+        this.parent = p;
     }
 
     public static interface NodeFilter {
+
         public boolean accepts(AstNode node);
     }
 
-    /** Attributes acceptor, allows to query node attributes.*/
+    /**
+     * Attributes acceptor, allows to query node attributes.
+     */
     public static interface AttributeFilter {
+
         public boolean accepts(Attribute attribute);
     }
 
     public static class Attribute {
 
         private static final char NS_PREFIX_DELIMITER = ':';
-
-        protected String name;
-        protected String value;
+        protected CharSequence name;
+        protected CharSequence value;
         protected int nameOffset;
         protected int valueOffset;
 
-        public Attribute(String name, String value, int nameOffset, int valueOffset) {
+        public Attribute(CharSequence name, CharSequence value, int nameOffset, int valueOffset) {
             this.name = name;
             this.value = value;
             this.nameOffset = nameOffset;
@@ -610,7 +750,7 @@ public class AstNode {
         }
 
         public String name() {
-            return name;
+            return name.toString();
         }
 
         public String namespacePrefix() {
@@ -636,19 +776,19 @@ public class AstNode {
         }
 
         public String value() {
-            return value;
+            return value.toString();
         }
 
         public String unquotedValue() {
-            return isValueQuoted() ? value.substring(1, value.length() - 1) : value;
+            return isValueQuoted() ? value().substring(1, value().length() - 1) : value();
         }
 
         public boolean isValueQuoted() {
             if (value.length() < 2) {
                 return false;
             } else {
-                return ((value.charAt(0) == '\'' || value.charAt(0) == '"') &&
-                        (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
+                return ((value.charAt(0) == '\'' || value.charAt(0) == '"')
+                        && (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
             }
         }
 
@@ -656,8 +796,6 @@ public class AstNode {
         public String toString() {
             return "Attr[" + name() + "(" + nameOffset() + ")=" + value + "(" + valueOffset() + ")]";
         }
-
-
     }
 
     private static class RootAstNode extends AstNode {

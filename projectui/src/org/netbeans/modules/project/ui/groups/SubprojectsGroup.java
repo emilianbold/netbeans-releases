@@ -58,7 +58,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
 /**
- * A main project and all (recursive) subprojects, with an optional main project.
+ * One project and all (recursive) subprojects.
  * @author Jesse Glick
  */
 public class SubprojectsGroup extends Group {
@@ -69,8 +69,6 @@ public class SubprojectsGroup extends Group {
 
     /**
      * Create a new group based on a superproject.
-     * The main project is always initialized to be the superproject itself,
-     * but this could be changed later.
      * The display name is by default that of the superproject.
      */
     public static SubprojectsGroup create(String name, Project project) {
@@ -81,7 +79,6 @@ public class SubprojectsGroup extends Group {
         p.put(KEY_NAME, name);
         p.put(KEY_KIND, KIND);
         p.put(KEY_PATH, path);
-        p.put(KEY_MAIN, path);
         return new SubprojectsGroup(id);
     }
 

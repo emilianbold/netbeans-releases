@@ -361,11 +361,8 @@ private void bypassRefactoringCheckBoxItemStateChanged(java.awt.event.ItemEvent 
             project = (Project) projectsComboBox.getSelectedItem();
             updateRoots();
             updatePackages();
-        } else 
-        if ( rootComboBox == e.getSource() ) {            
+        } else if ( rootComboBox == e.getSource() ) {            
             updatePackages();
-        }
-        else if ( packageComboBox == e.getSource() ) {
         }
     }    
     

@@ -118,7 +118,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
             ClassScope classScope = (ClassScope) inScope;
             return ModelUtils.merge(classScope.getDeclaredVariables(), super.getDeclaredVariables());
         }
-        return Collections.emptyList();
+        return super.getDeclaredVariables();
     }
 
     @Override

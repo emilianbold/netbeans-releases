@@ -121,8 +121,9 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             );
             return createProblem(null, true, msg);
         }
-        if (fo.getFileObject(refactoring.getNewName(), (refactoring.getRefactoringSource().lookup(FileObject.class)).getExt()) != null)
+        if (fo.getFileObject(refactoring.getNewName(), (refactoring.getRefactoringSource().lookup(FileObject.class)).getExt()) != null) {
             return createProblem(null, true, new MessageFormat(NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_ClassToMoveClashes")).format(new Object[]{refactoring.getNewName()}));
+        }
         return null;
     }
 

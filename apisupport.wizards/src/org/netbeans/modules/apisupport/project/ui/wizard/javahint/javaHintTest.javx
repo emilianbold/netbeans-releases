@@ -15,7 +15,7 @@ import org.netbeans.modules.java.hints.test.api.HintTest;
    -- for Ant-based modules, add "requires.nb.javac=true" into nbproject/project.properties
    -- for Maven-based modules, use dependency:copy in validate phase to create
       target/endorsed/org-netbeans-libs-javacapi-*.jar and add to endorseddirs
-      in maven-compiler-plugin configuration
+      in maven-compiler-plugin and maven-surefire-plugin configuration
  */
 public class ${CLASS_NAME}Test {
 

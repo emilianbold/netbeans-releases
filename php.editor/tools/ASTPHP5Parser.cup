@@ -999,7 +999,8 @@ T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE T_SEMICOLON:end
 	int methodStart = modifier == null ? startleft : modifierleft;
 	modifier = modifier == null ? ASTPHP5Parser.PUBLIC : modifier;
 	Identifier functionId = new Identifier(functionNameleft, functionNameright, functionName);
-	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, endright, functionId, paramList, null, isReference.booleanValue());
+        Block block = new Block(endleft, endright, Collections.EMPTY_LIST, false);
+	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, endright, functionId, paramList, block, isReference.booleanValue());
 	MethodDeclaration methodDeclaration = new MethodDeclaration(methodStart, endright, modifier.intValue(), functionDeclaration, true);
 	RESULT = methodDeclaration;
 :}

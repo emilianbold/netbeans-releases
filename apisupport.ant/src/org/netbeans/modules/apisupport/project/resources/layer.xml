@@ -64,10 +64,6 @@
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                 
                     <attr name="position" intvalue="2000"/>
                 </file>
-                <file name="org-netbeans-modules-project-ui-SetMainProject.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SetMainProject.instance"/>
-                    <attr name="position" intvalue="2100"/>
-                </file>
                 <file name="org-netbeans-modules-project-ui-actions-OpenSubprojects.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions-OpenSubprojects.instance"/>
                     <attr name="position" intvalue="2200"/>
@@ -175,10 +171,6 @@
                 <file name="sep-4.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="1500"/>
-                </file>
-                <file name="org-netbeans-modules-project-ui-SetMainProject.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SetMainProject.instance"/>
-                    <attr name="position" intvalue="1600"/>
                 </file>
                 <file name="org-netbeans-modules-project-ui-actions-OpenSubprojects.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions-OpenSubprojects.instance"/>

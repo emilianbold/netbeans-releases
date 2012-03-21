@@ -283,8 +283,9 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
     
     private static List<TypeMirror> findUsedGenericTypes(CompilationInfo javac, TypeElement javaClass,ExtractSuperclassRefactoring refactoring) {
         List<TypeMirror> typeArgs = JavaRefactoringUtils.elementsToTypes(javaClass.getTypeParameters());
-        if (typeArgs.isEmpty())
+        if (typeArgs.isEmpty()) {
             return typeArgs;
+        }
         
         Types typeUtils = javac.getTypes();
         Set<TypeMirror> used = Collections.newSetFromMap(new IdentityHashMap<TypeMirror, Boolean>());
@@ -351,8 +352,9 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         public void performChange() {
             try {
                 FileObject folderFO = URLMapper.findFileObject(folderURL);
-                if (folderFO == null)
+                if (folderFO == null) {
                     return;
+                }
                 
                 // create new file
                 

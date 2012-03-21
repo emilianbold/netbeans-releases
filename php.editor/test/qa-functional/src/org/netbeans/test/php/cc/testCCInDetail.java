@@ -44,9 +44,12 @@
 package org.netbeans.test.php.cc;
 
 import java.awt.event.InputEvent;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -65,7 +68,9 @@ public class testCCInDetail extends cc {
                 NbModuleSuite.createConfiguration(testCCInDetail.class).addTest(
                 "CreateApplication",
                 "CreatePHPFile",
-                "DetailedCodeCompletionTesting").enableModules(".*").clusters(".*") //.gui( true )
+                "testPhp54ArrayDereferencing",
+                "DetailedCodeCompletionTesting",
+                "testPhp54AnonymousObject").enableModules(".*").clusters(".*") //.gui( true )
                 );
     }
 
@@ -120,8 +125,8 @@ public class testCCInDetail extends cc {
         }
     };
 
-    private boolean CheckCodeCompletion(CCompletionCase cc) {
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+    private boolean CheckCodeCompletion(CCompletionCase cc, String fileName) {
+        EditorOperator eoPHP = new EditorOperator(fileName);
         // Locate position
         eoPHP.setCaretPosition(cc.sInitialLocation, false);
         // Type cod
@@ -166,6 +171,24 @@ public class testCCInDetail extends cc {
         return true;
     }
 
+    public void testPhp54ArrayDereferencing() {
+        CreatePHPFile(TEST_PHP_NAME, "PHP File", null);
+        startTest();
+        CCompletionCase test = new CCompletionCase("*/", "class MyClass {\n public $v;\n/**  @return MyClass[]     */\n public function getArray() {\n return array(new MyClass());\n }\n}\n\n $aa = new MyClass();\n $aa->getArray()[0]->", "$aa->getArray()[0]->", CCompletionCase.COMPLETION_LIST, 0, "v|getArray", -1, 12);
+        boolean result = CheckCodeCompletion(test, "NewEmptyPHP.php");
+        assertTrue("Failed Array Dereferencing test", result);
+        endTest();
+    }
+
+    public void testPhp54AnonymousObject() {
+        CreatePHPFile(TEST_PHP_NAME, "PHP File", null);
+        startTest();
+        CCompletionCase test = new CCompletionCase("*/", "class MyClass {\n public $v;\n public $f;\n}\n\n (new MyClass())->", "(new MyClass())->", CCompletionCase.COMPLETION_LIST, 0, "v|f", -1, 12);
+        boolean result = CheckCodeCompletion(test, "NewEmptyPHP2.php");
+        assertTrue("Failed Array AnonymousObject test", result);
+        endTest();
+    }
+
     public void DetailedCodeCompletionTesting() {
         startTest();
 
@@ -206,24 +229,24 @@ public class testCCInDetail extends cc {
             new CCompletionCase("*/", "class MyClass {\npubl", "publ", CCompletionCase.COMPLETION_STRING, 0, "public ", -1, 3),
             new CCompletionCase("*/", "class MyClass {\npublic func", "public func", CCompletionCase.COMPLETION_LIST, 0, "function", -1, 3),
             new CCompletionCase("*/", "class MyClass {\npublic function func", "function func", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -1, 3),
-//            new CCompletionCase("*/", "class MyClass {\npublic function func(){\n$th\n}\n}\n{{", "$th", CCompletionCase.COMPLETION_STRING, 0, "[$]this->", -2, 8),
-            new CCompletionCase("*/", "class MyClass {\npublic function func(){\necho \"$th\";\n}\n}\n{{", "$th", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -2, 8),
+            //            new CCompletionCase("*/", "class MyClass {\npublic function func(){\n$th\n}\n}\n{{", "$th", CCompletionCase.COMPLETION_STRING, 0, "[$]this->", -2, 8),
             new CCompletionCase("*/", "class MyClass {\npublic $test;\npublic function func(){\necho \"Hello\";\n}\n}\n$test= new MyClass();\n$test->\n{{", "$test->", CCompletionCase.COMPLETION_LIST, 0, "test|func", -6, 10),
-//            new CCompletionCase("*/", "class MyClass {\nprotected $test;\nprotected function func(){\necho \"Hello\";\n}\n}\n$test=new MyClass();\n$test->\n{{", "$test->", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10),
-//            new CCompletionCase("*/", "class MyClass {\nprivate $test;\nprivate function func(){\necho \"Hello\";\n}\n}\n$test=new MyClass();\n$test->\n{{", "$test->", CCompletionCase.COMPLETION_LIST, 0, "$fu", -6, 10),
-//            new CCompletionCase("*/", "class MyClass {\npublic static $test;\npublic static function func(){\necho \"Hello\";\n}\n}\n$test=MyClass::\n{{", "MyClass::", CCompletionCase.COMPLETION_LIST, 0, "$test|func", -6, 10),
-//            new CCompletionCase("*/", "class MyClass {\nprotected static $test;\nprotected static function func(){\necho \"Hello\";\n}\n}\n$test=MyClass::\n{{", "MyClass::", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10),
-//            new CCompletionCase("*/", "class MyClass {\nprivate static $test;\nprivate static function func(){\necho \"Hello\";\n}\n}\n$test=MyClass::\n{{", "MyClass::", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10)
+            new CCompletionCase("*/", "class MyClass {\n public function func2(){}\n public function func(){\necho \"$this->\";\n}\n}\n{{", "$this->", CCompletionCase.COMPLETION_LIST, 0, "func|func2", -6, 9),
+            //            new CCompletionCase("*/", "class MyClass {\nprotected $test;\nprotected function func(){\necho \"Hello\";\n}\n}\n$test=new MyClass();\n$test->\n{{", "$test->", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10),
+        //            new CCompletionCase("*/", "class MyClass {\nprivate $test;\nprivate function func(){\necho \"Hello\";\n}\n}\n$test=new MyClass();\n$test->\n{{", "$test->", CCompletionCase.COMPLETION_LIST, 0, "$fu", -6, 10),
+        //            new CCompletionCase("*/", "class MyClass {\npublic static $test;\npublic static function func(){\necho \"Hello\";\n}\n}\n$test=MyClass::\n{{", "MyClass::", CCompletionCase.COMPLETION_LIST, 0, "$test|func", -6, 10),
+        //            new CCompletionCase("*/", "class MyClass {\nprotected static $test;\nprotected static function func(){\necho \"Hello\";\n}\n}\n$test=MyClass::\n{{", "MyClass::", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10),
+        //            new CCompletionCase("*/", "class MyClass {\nprivate static $test;\nprivate static function func(){\necho \"Hello\";\n}\n}\n$test=MyClass::\n{{", "MyClass::", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10)
         };
 
 //    EditorOperator eoPHP = new EditorOperator( "EmptyPHP.php" );
         String sFailed = "";
         int iFailed = 0;
         for (CCompletionCase cc : accTests) {
-            if (!CheckCodeCompletion(cc)) {
+            if (!CheckCodeCompletion(cc, "NewEmptyPHP1.php")) {
                 iFailed++;
                 sFailed = sFailed + "|" + cc.sResult;
-            }   
+            }
         }
         if (0 != iFailed) {
             fail("" + iFailed + " test(s) failed, invalid results: \"" + sFailed + "\"");

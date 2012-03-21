@@ -192,7 +192,7 @@ public class VersionsCache {
                         if (Setup.REVISION_BASE.equals(pegRevision)) {
                             try {
                                 // we can't contact server with BASE being peg revision
-                                ISVNStatus st = client.getSingleStatus(base);
+                                ISVNStatus st = SvnUtils.getSingleStatus(client, base);
                                 if (st != null && st.getRevision() != null) {
                                     pegRevision = st.getRevision().toString();
                                 } else {

@@ -135,10 +135,12 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 thisString = "this"; // NOI18N
             } else {
                 TypeElement thisOuter = getOuter(getCurrentClass());
-                if (thisOuter!=null)
-                    thisString = getOuter(getCurrentClass()).getQualifiedName().toString() + ".this"; // NOI18N
-                else 
-                    thisString = "this"; // NOI18N
+                if (thisOuter!=null) {
+                    thisString = getOuter(getCurrentClass()).getQualifiedName().toString() + ".this";
+                } // NOI18N
+                else {
+                    thisString = "this";
+                } // NOI18N
             
             }
             if (thisString != null && currentElement instanceof ExecutableElement) {
@@ -423,8 +425,9 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
 
     private boolean isThisReferenceToInner() {
         Element cur = getCurrentElement();
-        if (cur==null || cur.getKind() == ElementKind.PACKAGE)
-                return false;
+        if (cur==null || cur.getKind() == ElementKind.PACKAGE) {
+            return false;
+        }
 
         Tree innerTree = workingCopy.getTrees().getTree(inner);
 
@@ -444,14 +447,18 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     
     private boolean isThisReferenceToOuter() {
         Element cur = getCurrentElement();
-        if (cur==null || cur.getKind() == ElementKind.PACKAGE)
-                return false;
+        if (cur==null || cur.getKind() == ElementKind.PACKAGE) {
+            return false;
+        }
         TypeElement encl = workingCopy.getElementUtilities().enclosingTypeElement(cur);
         if (outer.equals(encl)) {
             TypeElement currentClass = getCurrentClass();
-            if (currentClass == null) return false;
-            if (workingCopy.getTypes().isSubtype(currentClass.asType(), inner.asType()))
+            if (currentClass == null) {
+                return false;
+            }
+            if (workingCopy.getTypes().isSubtype(currentClass.asType(), inner.asType())) {
                 return true;
+            }
             return outer.equals(cur.getEnclosingElement());
         }
         return false;
@@ -472,8 +479,9 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
 
 
     private boolean isIn(Element el) {
-        if (el==null)
+        if (el==null) {
             return false;
+        }
         Element current = el;
         while (current.getKind() != ElementKind.PACKAGE) {
             if (current.equals(inner)) {

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.configurations;
 
-import org.codehaus.plexus.util.StringUtils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -55,10 +54,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.codehaus.plexus.util.StringUtils;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -232,7 +232,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
 
     public @Override void customize() {
         CustomizerProviderImpl prv = project.getLookup().lookup(CustomizerProviderImpl.class);
-        prv.showCustomizer(ModelHandle.PANEL_CONFIGURATION);
+        prv.showCustomizer(ModelHandle2.PANEL_CONFIGURATION);
     }
 
     public @Override boolean configurationsAffectAction(String action) {

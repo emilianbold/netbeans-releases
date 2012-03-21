@@ -44,12 +44,7 @@ package org.netbeans.modules.web.jsf.icefaces;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -70,6 +65,10 @@ import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -84,11 +83,11 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
     /**
      * Name of the node in NetBeans preferences.
      */
-    public static final String PREFERENCES_NODE = "icefaces2";
+    public static final String PREFERENCES_NODE = "icefaces";
     /**
      * Framework name used also for statistics.
      */
-    public static final String ICEFACES_NAME = "ICEfaces 2.0"; //NOI18N
+    public static final String ICEFACES_NAME = "ICEfaces"; //NOI18N
     /**
      * Base class for which is searched by detecting ICEfaces2 on the classpath of the project.
      */
@@ -101,9 +100,9 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
     private Icefaces2Customizer customizer;
 
     // Constants for web.xml
-    private static final String FACES_SAVING_METHOD = "javax.faces.STATE_SAVING_METHOD";
-    private static final String FACES_SKIP_COMMENTS = "javax.faces.FACELETS_SKIP_COMMENTS";
-    private static final String icefacesPom ="http://anonsvn.icefaces.org/repo/maven2/releases/org/icefaces/icefaces/2.0.2/icefaces-2.0.2.pom";
+    private static final String FACES_SAVING_METHOD = "javax.faces.STATE_SAVING_METHOD"; //NOI18N
+    private static final String FACES_SKIP_COMMENTS = "javax.faces.FACELETS_SKIP_COMMENTS"; //NOI18N
+    private static final String icefacesPom ="http://anonsvn.icesoft.org//repo/maven2/releases/org/icefaces/icefaces/3.0.0/icefaces-3.0.0.pom"; //NOI18N
 
     @Override
     public String getName() {
@@ -112,7 +111,7 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(Icefaces2Implementation.class, "DESC_Icefaces2Implementation"); //NOI18N
+        return NbBundle.getMessage(Icefaces2Implementation.class, "DESC_IcefacesImplementation"); //NOI18N
     }
 
     @Override
@@ -195,7 +194,37 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
             LOGGER.log(Level.WARNING, "Exception during updating web.xml DD", ex); //NOI18N
         }
 
+        // generate ICEfaces welcome page
+        try {
+            FileObject welcomePage = generateWelcomePage(webModule);
+            Collections.singleton(welcomePage);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Exception during welcome page creation", ex); //NOI18N
+        }
         return Collections.<FileObject>emptySet();
+    }
+
+    private static FileObject generateWelcomePage(WebModule webModule) throws IOException {
+        FileObject templateFO = FileUtil.getConfigFile("Templates/Other/welcomeIcefaces.xhtml"); //NOI18N
+        DataObject templateDO = DataObject.find(templateFO);
+        DataObject generated = templateDO.createFromTemplate(
+                DataFolder.findFolder(webModule.getDocumentBase()),
+                "welcomeIcefaces"); //NOI18N
+        JsfComponentUtils.reformat(generated);
+
+        // update and reformat index page
+        updateIndexPage(webModule);
+
+        return generated.getPrimaryFile();
+    }
+
+    private static void updateIndexPage(WebModule webModule) throws DataObjectNotFoundException {
+        FileObject indexFO = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
+        DataObject indexDO = DataObject.find(indexFO);
+        JsfComponentUtils.enhanceFileBody(indexDO, "</h:body>", "<br />\n<h:link outcome=\"welcomeIcefaces\" value=\"ICEfaces welcome page\" />"); //NOI18N
+        if (indexFO.isValid() && indexFO.canWrite()) {
+            JsfComponentUtils.reformat(indexDO);
+        }
     }
 
     @Override

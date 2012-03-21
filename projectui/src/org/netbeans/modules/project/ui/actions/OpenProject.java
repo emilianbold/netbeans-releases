@@ -129,12 +129,6 @@ public class OpenProject extends BasicAction {
                     Project projectsArray[] = new Project[ projects.size() ];
                     projects.toArray( projectsArray );
                     
-                    Project mainProject = null;
-                    if ( opls.isOpenAsMain() && projectsArray.length == 1 ) {
-                        // Set main project if selected
-                        mainProject = projectsArray[0];
-                    }
-
                     if (projectsArray.length == 1) {
                         projectToExpand = projectsArray[0];
                     }
@@ -143,7 +137,7 @@ public class OpenProject extends BasicAction {
                         projectsArray,                    // Put the project into OpenProjectList
                         opls.isOpenSubprojects(),         // And optionaly open subprojects
                         true,                             // open asynchronously
-                        mainProject);
+                        null);
                     
                     ProjectUtilities.makeProjectTabVisible();
                     break; // and exit the loop

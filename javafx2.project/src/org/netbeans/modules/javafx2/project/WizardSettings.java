@@ -44,7 +44,6 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.util.prefs.Preferences;
-import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardType;
 import org.openide.util.NbPreferences;
 
 /**
@@ -55,7 +54,6 @@ public class WizardSettings {
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; // NOI18N
     private static final String NEW_APP_COUNT = "newApplicationCount";  // NOI18N
     private static final String NEW_LIB_COUNT = "newLibraryCount"; // NOI18N
-    private static final String SET_AS_MAIN = "setAsMain."; // NOI18N
 
     private WizardSettings() {
     }
@@ -88,11 +86,4 @@ public class WizardSettings {
         getPreferences().putInt(NEW_LIB_COUNT, count);
     }
 
-    static boolean getSetAsMain(WizardType wizardType) {
-        return getPreferences().getBoolean(SET_AS_MAIN + wizardType, wizardType != WizardType.LIBRARY);
-    }
-
-    static void setSetAsMain(WizardType wizardType, boolean setAsMain) {
-        getPreferences().putBoolean(SET_AS_MAIN + wizardType, setAsMain);
-    }
 }

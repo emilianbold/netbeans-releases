@@ -583,7 +583,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
     private void addFriend(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFriend
         AddFriendPanel addFriend = new AddFriendPanel(getProperties());
         DialogDescriptor descriptor = new DialogDescriptor(addFriend, getMessage("CTL_AddNewFriend_Title"));
-        descriptor.setHelpCtx(new HelpCtx(AddFriendPanel.class));
+        descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.apisupport.project.ui.customizer.AddFriendPanel"));
         final JButton okButton = new JButton(getMessage("CTL_OK"));
         JButton cancel = new JButton(getMessage("CTL_Cancel"));
         okButton.setEnabled(false);

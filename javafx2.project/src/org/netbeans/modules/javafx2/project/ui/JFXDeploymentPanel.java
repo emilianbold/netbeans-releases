@@ -70,21 +70,54 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
     public JFXDeploymentPanel(JFXProjectProperties props) {
         this.jfxProps = props;
         initComponents();
-        checkBoxUpgradeBackground.setModel(jfxProps.getBackgroundUpdateCheckModel());
-        checkBoxNoInternet.setModel(jfxProps.getAllowOfflineModel());
-        checkBoxInstallPerm.setModel(jfxProps.getInstallPermanentlyModel());
-        checkBoxDeskShortcut.setModel(jfxProps.getAddDesktopShortcutModel());
-        checkBoxMenuShortcut.setModel(jfxProps.getAddStartMenuShortcutModel());
-        textFieldIcon.setDocument(jfxProps.getIconDocumentModel());
-        refreshCustomJSLabel();
-        if(jfxProps.getRuntimeCP().isEmpty()) {
-            buttonDownloadMode.setEnabled(false);
+        if(JFXProjectProperties.isTrue(props.getEvaluator().getProperty(JFXProjectProperties.JAVAFX_SWING))) {
+            // disable UI components irrelevant for FX-in-Swing project
+            labelInitialRemark.setVisible(false);
+            labelInitialRemark.setEnabled(false);
+            labelInitialRemarkSwing.setVisible(true);
+            labelProperties.setVisible(false);
+            checkBoxUpgradeBackground.setVisible(false);
+            checkBoxNoInternet.setVisible(false);
+            checkBoxInstallPerm.setVisible(false);
+            checkBoxDeskShortcut.setVisible(false);
+            checkBoxMenuShortcut.setVisible(false);
+            labelCustomJS.setVisible(false);
+            labelCustomJSMessage.setVisible(false);
+            buttonCustomJSMessage.setVisible(false);
+            labelDownloadMode.setVisible(false);
+            labelDownloadModeMessage.setVisible(false);
+            buttonDownloadMode.setVisible(false);
+            checkBoxUpgradeBackground.setEnabled(false);
+            checkBoxNoInternet.setEnabled(false);
+            checkBoxInstallPerm.setEnabled(false);
+            checkBoxDeskShortcut.setEnabled(false);
+            checkBoxMenuShortcut.setEnabled(false);
+            labelCustomJS.setEnabled(false);
+            labelCustomJSMessage.setEnabled(false);
+            buttonCustomJSMessage.setEnabled(false);
             labelDownloadMode.setEnabled(false);
-            labelDownloadModeMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_DownloadModeNone")); // NOI18N
             labelDownloadModeMessage.setEnabled(false);
+            buttonDownloadMode.setEnabled(false);
         } else {
-            refreshDownloadModeControls();
+            labelInitialRemark.setVisible(true);
+            labelInitialRemarkSwing.setVisible(false);
+            labelInitialRemarkSwing.setEnabled(false);
+            checkBoxUpgradeBackground.setModel(jfxProps.getBackgroundUpdateCheckModel());
+            checkBoxNoInternet.setModel(jfxProps.getAllowOfflineModel());
+            checkBoxInstallPerm.setModel(jfxProps.getInstallPermanentlyModel());
+            checkBoxDeskShortcut.setModel(jfxProps.getAddDesktopShortcutModel());
+            checkBoxMenuShortcut.setModel(jfxProps.getAddStartMenuShortcutModel());
+            refreshCustomJSLabel();
+            if(jfxProps.getRuntimeCP().isEmpty()) {
+                buttonDownloadMode.setEnabled(false);
+                labelDownloadMode.setEnabled(false);
+                labelDownloadModeMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_DownloadModeNone")); // NOI18N
+                labelDownloadModeMessage.setEnabled(false);
+            } else {
+                refreshDownloadModeControls();
+            }
         }
+        textFieldIcon.setDocument(jfxProps.getIconDocumentModel());
         checkBoxUnrestrictedAcc.setSelected(jfxProps.getSigningEnabled());
         labelSigning.setEnabled(jfxProps.getSigningEnabled());
         labelSigningMessage.setEnabled(jfxProps.getSigningEnabled());
@@ -104,6 +137,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
         panelTop = new javax.swing.JPanel();
         labelInitialRemark = new javax.swing.JLabel();
+        labelInitialRemarkSwing = new javax.swing.JLabel();
         labelProperties = new javax.swing.JLabel();
         checkBoxUpgradeBackground = new javax.swing.JCheckBox();
         checkBoxNoInternet = new javax.swing.JCheckBox();
@@ -142,6 +176,17 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.weightx = 0.1;
         panelTop.add(labelInitialRemark, gridBagConstraints);
         labelInitialRemark.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelInitialRemark.AccessibleContext.accessibleDescription")); // NOI18N
+
+        labelInitialRemarkSwing.setText(org.openide.util.NbBundle.getBundle(JFXDeploymentPanel.class).getString("JFXDeploymentPanel.labelInitialRemarkSwing.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 0.1;
+        panelTop.add(labelInitialRemarkSwing, gridBagConstraints);
+        labelInitialRemarkSwing.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelInitialRemarkSwing.AccessibleContext.accessibleDescription")); // NOI18N
 
         labelProperties.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelProperties.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -552,6 +597,7 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
     private javax.swing.JLabel labelIcon;
     private javax.swing.JLabel labelIconRemark;
     private javax.swing.JLabel labelInitialRemark;
+    private javax.swing.JLabel labelInitialRemarkSwing;
     private javax.swing.JLabel labelProperties;
     private javax.swing.JLabel labelSigning;
     private javax.swing.JLabel labelSigningMessage;

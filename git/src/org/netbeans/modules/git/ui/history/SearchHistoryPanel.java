@@ -296,6 +296,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             resultsPanel.repaint();
         }
         updateActions();
+        fileInfoCheckBox.setEnabled(tbSummary.isSelected());
 
         searchCriteriaPanel.setVisible(criteriaVisible);
         expandCriteriaButton.setIcon(criteriaVisible ? ICON_EXPANDED : ICON_COLLAPSED);

@@ -270,6 +270,9 @@ final class BinaryFS extends FileSystem implements DataInput {
         if (relURL.startsWith("user@")) {
             return "jar:file:" + System.getProperty("netbeans.user") + relURL.substring(5);
         }
+        if (relURL.startsWith("abs@")) {
+            return "jar:file:" + relURL.substring(4);
+        }
         int indx = relURL.indexOf('@');
         if (indx == -1) {
             return relURL;

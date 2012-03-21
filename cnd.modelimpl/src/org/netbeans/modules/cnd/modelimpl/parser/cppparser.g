@@ -708,7 +708,8 @@ template_explicit_specialization
     (LITERAL___extension__!)? LITERAL_template LESSTHAN GREATERTHAN
     (
         // Template explicit specialisation function definition (VK 30/05/06)
-        (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
+        ((LITERAL_template LESSTHAN GREATERTHAN)? declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
+        (LITERAL_template LESSTHAN GREATERTHAN)?
         {if(statementTrace >= 1) printf("external_declaration_0a[%d]: template " + "explicit-specialisation function definition\n", LT(1).getLine());}
         function_definition
         { #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
@@ -929,13 +930,15 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                         // If this alternative is before function declaration
                         // then code like "template<T> int foo(T);" incorrectly
                         // becomes a CSM_TEMPL_FWD_CL_OR_STAT_MEM.
-			(declaration_specifiers[true, false]
+                        
+			((template_head)? declaration_specifiers[true, false]
 				(init_declarator_list[declOther])? SEMICOLON /*{end_of_stmt();}*/)=>
 			//{beginTemplateDeclaration();}
 			{ if (statementTrace>=1) 
 				printf("external_declaration_template_10[%d]: Class template declaration\n",
 					LT(1).getLine());
 			}
+                        (template_head)?
 			declaration_specifiers[true, false]
 				(init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
 			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
@@ -2749,15 +2752,15 @@ parameter_list [boolean symTabCheck]
 
 parameter_declaration_list [boolean symTabCheck]
 	:	
-	({!symTabCheck || action.isType(LT(1).getText())}?	parameter_declaration 
+	({!symTabCheck || action.isType(LT(1).getText())}?	parameter_declaration[false]
 		(// Have not been able to find way of stopping warning of
 		 // non-determinism between alt 1 and exit branch of block
-		 COMMA! parameter_declaration
+		 COMMA! parameter_declaration[false]
 		)*
 	)
 	;
 
-parameter_declaration
+parameter_declaration[boolean inTemplateParams]
 	:	{beginParameterDeclaration();}
 		(
 			{!((LA(1)==SCOPE) && (LA(2)==STAR||LA(2)==LITERAL_OPERATOR)) &&
@@ -2774,8 +2777,12 @@ parameter_declaration
 		|
 			ELLIPSIS
 		)
-		(ASSIGNEQUAL 
-		 assignment_expression
+		(ASSIGNEQUAL
+                    (   
+                        {inTemplateParams}? template_param_expression
+                    |
+                        assignment_expression
+                    )
 		)?
 		{ #parameter_declaration = #(#[CSM_PARAMETER_DECLARATION, "CSM_PARAMETER_DECLARATION"], #parameter_declaration); }
 	;
@@ -2848,7 +2855,7 @@ exception_type_id
 	{ /*TypeSpecifier*/int ts; String so; }
 	:
 	//( (so = scope_override IDENT) | built_in_type ) (STAR | AMPERSAND)*
-        parameter_declaration
+        parameter_declaration[false]
 	;
 
 protected
@@ -2994,7 +3001,7 @@ template_parameter
 	|
 		template_template_parameter
 	|	
-		parameter_declaration	// DW 30/06/03 This doesn't seem to match the
+		parameter_declaration[true]	// DW 30/06/03 This doesn't seem to match the
 					// current standard
 	)
 	;
