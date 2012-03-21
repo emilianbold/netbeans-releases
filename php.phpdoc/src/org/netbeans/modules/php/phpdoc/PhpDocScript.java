@@ -129,7 +129,7 @@ public class PhpDocScript extends PhpProgram {
                 .addArgument("-t") // NOI18N
                 .addArgument(sanitizedPhpDocTarget)
                 // title
-                .addArgument("-ti") // NOI18N
+                .addArgument("--title") // NOI18N
                 .addArgument(PhpDocPreferences.getPhpDocTitle(phpModule));
         ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
                 .frontWindow(false)
