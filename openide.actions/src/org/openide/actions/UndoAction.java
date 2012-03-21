@@ -56,6 +56,7 @@ import org.openide.windows.WindowManager;
 import java.beans.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import javax.swing.JOptionPane;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -185,7 +186,7 @@ implements ContextAwareAction {
                 undoRedo.undo();
             }
         } catch (CannotUndoException ex) {
-            Exceptions.printStackTrace(ex);
+            UndoRedoAction.cannotUndoRedo(ex);
         }
 
         updateStatus();

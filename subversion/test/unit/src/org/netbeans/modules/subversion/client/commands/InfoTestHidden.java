@@ -99,9 +99,6 @@ public class InfoTestHidden extends AbstractCommandTestCase {
     }
 
     public void testInfoWrongUrlWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoWrongUrl("@bancha");
         testInfoWrongUrl("ban@cha");
         testInfoWrongUrl("bancha@");
@@ -133,27 +130,18 @@ public class InfoTestHidden extends AbstractCommandTestCase {
     }
 
     public void testInfoNotManagedFileWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoNotManaged("folder", "@file");
         testInfoNotManaged("folder", "fi@le");
         testInfoNotManaged("folder", "file@");
     }
 
     public void testInfoNotManagedFolderWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoNotManaged("@folder", "file");
         testInfoNotManaged("fol@der", "file");
         testInfoNotManaged("folder@", "file");
     }
 
     public void testInfoNotManagedFolderAndFileWithAtSigns() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoNotManaged("@folder", "@file");
         testInfoNotManaged("@folder", "fi@le");
         testInfoNotManaged("@folder", "file@");
@@ -189,9 +177,6 @@ public class InfoTestHidden extends AbstractCommandTestCase {
     }
 
     public void testInfoFileWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoFile("@file");
         testInfoFile("fi@le");
         testInfoFile("file@");
@@ -202,9 +187,6 @@ public class InfoTestHidden extends AbstractCommandTestCase {
     }
 
     public void testInfoFileWithAtSignInDir() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoFile("folder/@file");
         testInfoFile("folder/fi@le");
         testInfoFile("folder/file@");
@@ -308,9 +290,6 @@ public class InfoTestHidden extends AbstractCommandTestCase {
     }
 
     public void testInfoDeletedWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoDeleted("@file");
         testInfoDeleted("fi@le");
         testInfoDeleted("file@");

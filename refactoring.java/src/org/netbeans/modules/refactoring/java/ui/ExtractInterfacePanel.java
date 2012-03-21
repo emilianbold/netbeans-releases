@@ -294,7 +294,9 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
 
         private void initialize() {
             final TreePathHandle sourceType = refactoring.getSourceType();
-            if (sourceType == null) return;
+            if (sourceType == null) {
+                return;
+            }
             
             FileObject fo = sourceType.getFileObject();
             JavaSource js = JavaSource.forFileObject(fo);
@@ -335,20 +337,23 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
             
             for (Tree member : sourceTree.getMembers()) {
                 TreePath memberTreePath = javac.getTrees().getPath(javac.getCompilationUnit(), member);
-                if (javac.getTreeUtilities().isSynthetic(memberTreePath))
+                if (javac.getTreeUtilities().isSynthetic(memberTreePath)) {
                     continue;
+                }
                 
                 Element memberElm = javac.getTrees().getElement(memberTreePath);
                 Set<Modifier> mods;
-                if (memberElm == null || !(mods = memberElm.getModifiers()).contains(Modifier.PUBLIC))
+                if (memberElm == null || !(mods = memberElm.getModifiers()).contains(Modifier.PUBLIC)) {
                     continue;
+                }
                 
                 Group group;
                 String format = ElementHeaders.NAME;
                 if (memberElm.getKind() == ElementKind.FIELD) {
                     if (!mods.contains(Modifier.STATIC) || !mods.contains(Modifier.FINAL)
-                            || ((VariableTree) member).getInitializer() == null)
+                            || ((VariableTree) member).getInitializer() == null) {
                         continue;
+                    }
                     group = Group.FIELD;
                     format += " : " + ElementHeaders.TYPE; // NOI18N
 // XXX see ExtractInterfaceRefactoringPlugin class description
@@ -357,8 +362,9 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
 //                        continue;
 //                    group = 3;
                 } else if (memberElm.getKind() == ElementKind.METHOD) {
-                    if (mods.contains(Modifier.STATIC))
+                    if (mods.contains(Modifier.STATIC)) {
                         continue;
+                    }
                     group = Group.METHOD;
                     format += ElementHeaders.PARAMETERS + " : " + ElementHeaders.TYPE; // NOI18N
                 } else {

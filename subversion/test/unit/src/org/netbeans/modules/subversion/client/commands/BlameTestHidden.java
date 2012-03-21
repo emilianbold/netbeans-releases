@@ -137,9 +137,6 @@ public class BlameTestHidden extends AbstractCommandTestCase {
     }
 
     public void testBlameFileWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         blame(fileAnnotator, "@file");
         blame(fileAnnotator, "fi@le");
         blame(fileAnnotator, "file@");
@@ -150,9 +147,6 @@ public class BlameTestHidden extends AbstractCommandTestCase {
     }
 
     public void testBlameFileInDirWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         blame(fileAnnotator, "folder/@file");
         blame(fileAnnotator, "folder/fi@le");
         blame(fileAnnotator, "folder/file@");
@@ -163,9 +157,6 @@ public class BlameTestHidden extends AbstractCommandTestCase {
     }
 
     public void testBlameUrlWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         blame(urlAnnotator, "@file");
         blame(urlAnnotator, "fi@le");
         blame(urlAnnotator, "file@");

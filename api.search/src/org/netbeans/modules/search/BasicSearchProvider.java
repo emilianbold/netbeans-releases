@@ -215,8 +215,19 @@ public class BasicSearchProvider extends SearchProvider {
         public boolean isUsable(NotificationLineSupport notifySupport) {
             boolean usable = form.isUsable();
             if (!usable) {
-                notifySupport.setErrorMessage(UiUtils.getText(
-                        "BasicSearchForm.txtErrorMissingCriteria"));    //NOI18N
+                BasicSearchCriteria bsc = form.getBasicSearchCriteria();
+                String msg;
+                if (bsc.isTextPatternInvalid()) {
+                    msg = "BasicSearchForm.txtErrorTextPattern";        //NOI18N
+                } else if (bsc.isSearchAndReplace()
+                        && bsc.isReplacePatternInvalid()) {
+                    msg = "BasicSearchForm.txtErrorReplacePattern";     //NOI18N
+                } else if (bsc.isFileNamePatternInvalid()) {
+                    msg = "BasicSearchForm.txtErrorFileName";           //NOI18N
+                } else {
+                    msg = "BasicSearchForm.txtErrorMissingCriteria";    //NOI18N
+                }
+                notifySupport.setErrorMessage(UiUtils.getText(msg));
             } else {
                 notifySupport.clearMessages();
             }

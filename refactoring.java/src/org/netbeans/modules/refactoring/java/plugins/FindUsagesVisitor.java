@@ -167,8 +167,9 @@ public class FindUsagesVisitor extends FindVisitor {
                     return;
                 }
                 final Name id = ((MemberSelectTree) idTree).getIdentifier();
-                if (id.contentEquals("*")) //NOI18N
+                if (id.contentEquals("*")) {
                     return;
+                }
                 Tree classTree = ((MemberSelectTree) idTree).getExpression();
                 path = trees.getPath(workingCopy.getCompilationUnit(), classTree);
                 el = trees.getElement(path);

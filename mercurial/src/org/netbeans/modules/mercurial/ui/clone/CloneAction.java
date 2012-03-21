@@ -65,7 +65,6 @@ import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -74,8 +73,6 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -355,7 +352,7 @@ public class CloneAction extends ContextAction {
                                 prj = projectManager.findProject(cloneProj);
                             }
                             if (prj != null) {
-                                HgProjectUtils.openProject(prj, this, HgModuleConfig.getDefault().getSetMainProject());
+                                HgProjectUtils.openProject(prj, this);
                                 hg.versionedFilesChanged();
                                 hg.refreshAllAnnotations();
                             } else {

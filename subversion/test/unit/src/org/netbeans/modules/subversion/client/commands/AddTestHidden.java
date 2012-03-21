@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
@@ -63,9 +64,6 @@ public class AddTestHidden extends AbstractCommandTestCase {
     }
 
     public void testAddFileWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testAddFile("@file");
         testAddFile("fi@le");
         testAddFile("file@");
@@ -76,9 +74,6 @@ public class AddTestHidden extends AbstractCommandTestCase {
     }
 
     public void testAddFileInDirWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testAddFile("dir/@file");
         testAddFile("dir/fi@le");
         testAddFile("dir/file@");
@@ -109,11 +104,9 @@ public class AddTestHidden extends AbstractCommandTestCase {
 
         try {
             c.addFile(file);
+            fail("should fail");
         } catch (SVNClientException ex) {
-            if (isCommandLine()) {
-                ex.printStackTrace();
-                fail("cmd client cannot throw the exception");
-            }
+            
         }
         assertStatus(SVNStatusKind.ADDED, file);
 
@@ -157,13 +150,8 @@ public class AddTestHidden extends AbstractCommandTestCase {
         }
         assertNotNull(e);
                         
-        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);
-        if (clientVersion.equals(SUBVERSION_1_5)) {
-            // only by 1.5
-            assertTrue(e.getMessage().indexOf("svn: Can't open file") > -1);
-            assertTrue(e.getMessage().indexOf(".svn/entries': No such file or directory") > -1
-                    || e.getMessage().indexOf("cannot find the path specified") > -1);
-        }
+        assertTrue(SvnClientExceptionHandler.isUnversionedResource(e.getMessage()) || e.getMessage().toLowerCase().contains("not found")
+                 || e.getMessage().toLowerCase().contains("some targets don't exist"));
         
         assertNotifiedFiles(new File[]{});  
     }
@@ -194,7 +182,7 @@ public class AddTestHidden extends AbstractCommandTestCase {
         assertStatus(SVNStatusKind.UNVERSIONED, folder);
 
         ISVNClientAdapter c = getNbClient();
-        c.addFile(folder);
+        c.addDirectory(folder, false);
 
         assertStatus(SVNStatusKind.ADDED, folder);
         assertStatus(SVNStatusKind.UNVERSIONED, file);
@@ -222,12 +210,9 @@ public class AddTestHidden extends AbstractCommandTestCase {
         assertStatus(SVNStatusKind.ADDED, folder);
 
         try {
-            c.addFile(folder);
+            c.addDirectory(folder, false);
+            fail("cmd client cannot throw the exception");
         } catch (SVNClientException ex) {
-            if (isCommandLine()) {
-                ex.printStackTrace();
-                fail("cmd client cannot throw the exception");
-            }
         }
         assertStatus(SVNStatusKind.ADDED, folder);
 
@@ -261,23 +246,10 @@ public class AddTestHidden extends AbstractCommandTestCase {
         assertStatus(SVNStatusKind.UNVERSIONED, parentFolder);        
         assertStatus(SVNStatusKind.UNVERSIONED, folder);        
                 
-        SVNClientException e = null;        
-        try {
-            getNbClient().addFile(folder);
-        } catch (SVNClientException ex) {
-            e = ex;
-        }
-        assertNotNull(e);
-                        
-        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);        
-        if (clientVersion.equals(SUBVERSION_1_5)) {
-            // only by 1.5
-            assertTrue(e.getMessage().indexOf("svn: Can't open file") > -1);
-            assertTrue(e.getMessage().indexOf(".svn/entries': No such file or directory") > -1
-                    || e.getMessage().indexOf("cannot find the path specified") > -1);
-        }
-        
-        assertNotifiedFiles(new File[]{});  
+        // javahl and svnkit work as with --parents, auto add also parents.
+        // fails with commandline client, --parents should be implemented in cli impl
+        getNbClient().addFile(folder);
+        assertNotifiedFiles(new File[]{folder, parentFolder});  
     }
     
     public void testAddFolderRecursivelly() throws Exception {

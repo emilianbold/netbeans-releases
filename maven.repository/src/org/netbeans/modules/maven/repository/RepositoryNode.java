@@ -157,7 +157,6 @@ public class RepositoryNode extends AbstractNode {
     @Messages({
         "LBL_Id=ID",
         "LBL_Name=Name",
-        "LBL_Repository_Type=Repository Manager Type",
         "LBL_Local=Local",
         "LBL_Local_repository_path=Local repository path",
         "LBL_Remote_Index=Remote Index Downloadable",
@@ -175,8 +174,6 @@ public class RepositoryNode extends AbstractNode {
             Node.Property<?> name = new PropertySupport.Reflection<String>(info, String.class, "getName", null); //NOI18N
             name.setDisplayName(LBL_Name());
             name.setShortDescription(""); //NOI18N
-            Node.Property<?> type = new PropertySupport.Reflection<String>(info, String.class, "getType", null); //NOI18N
-            type.setDisplayName(LBL_Repository_Type());
             Node.Property<?> local = new PropertySupport.Reflection<Boolean>(info, Boolean.TYPE, "isLocal", null); //NOI18N
             local.setName("local"); //NOI18N
             local.setDisplayName(LBL_Local());
@@ -195,7 +192,7 @@ public class RepositoryNode extends AbstractNode {
                 }
             };
             basicProps.put(new Node.Property<?>[] {
-                id, name, type, local, localRepoLocation, remoteDownloadable, repoURL, indexURL, lastIndexed
+                id, name, local, localRepoLocation, remoteDownloadable, repoURL, indexURL, lastIndexed
             });
         } catch (NoSuchMethodException exc) {
             exc.printStackTrace();

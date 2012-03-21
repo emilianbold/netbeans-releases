@@ -50,7 +50,8 @@ import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
@@ -65,10 +66,11 @@ import org.netbeans.modules.maven.spi.customizer.SelectedItemsTablePersister;
  */
 public class FelixExportPersister implements SelectedItemsTablePersister {
 
-    private final ModelHandle handle;
+    private final ModelHandle2 handle;
     private final Project project;
+    private ModelOperation<POMModel> operation;    
 
-    public FelixExportPersister (Project project, ModelHandle handle) {
+    public FelixExportPersister (Project project, ModelHandle2 handle) {
         this.project = project;
         this.handle = handle;
     }
@@ -101,9 +103,15 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
 
     @Override
     public void write(SortedMap<String, Boolean> selItems) {
-        Map<Integer, String> exportIns = InstructionsConverter.computeExportInstructions(selItems, project);
-        final POMModel pomModel = handle.getPOMModel();
+        if (operation != null) {
+            handle.removePOMModification(operation);
+        }
         
+        final Map<Integer, String> exportIns = InstructionsConverter.computeExportInstructions(selItems, project);
+        operation = new ModelOperation<POMModel>() {
+
+            @Override
+            public void performOperation(POMModel pomModel) {
         Build build = pomModel.getProject().getBuild();
         Plugin felixPlugin = null;
         if (build != null) {
@@ -147,7 +155,9 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
         exportEl.setElementText(exportIns.get(InstructionsConverter.EXPORT_PACKAGE));
         privateEl.setElementText(exportIns.get(InstructionsConverter.PRIVATE_PACKAGE));
 
-        handle.markAsModified(pomModel);
+    }
+        };
+        handle.addPOMModification(operation);
     }
 
 

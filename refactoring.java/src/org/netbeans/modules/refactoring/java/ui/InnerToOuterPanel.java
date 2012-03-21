@@ -87,7 +87,9 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
      */
     @Override
     public void initialize() {
-        if (initialized) return;
+        if (initialized) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

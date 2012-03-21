@@ -675,8 +675,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         return new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting())
+                if (e.getValueIsAdjusting()) {
                     return;
+                }
                 
                 ListSelectionModel lsm = (ListSelectionModel) e.getSource();
 
@@ -689,8 +690,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     boolean enableRemoveBtn = true;
                     for (int i = minIndex; i <= maxIndex; i++) {
                         enableRemoveBtn = model.isRemovable(i);
-                        if (!enableRemoveBtn)
+                        if (!enableRemoveBtn) {
                             break;
+                        }
                     }
                     removeButton.setEnabled(enableRemoveBtn);
                 }
@@ -717,8 +719,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     for (int i = 0; i < selectedRows.length; i++) {
                         if (selectedRows[i] < model.getRowCount()) {
                             enableRemoveBtn = model.isCellEditable(selectedRows[i], 0);
-                            if (!enableRemoveBtn)
+                            if (!enableRemoveBtn) {
                                 break;
+                            }
                         }
                     }
                     removeButton.setEnabled(enableRemoveBtn);
@@ -797,8 +800,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
     private boolean acceptEditedValue() {
         TableCellEditor tce = paramTable.getCellEditor();
-        if (tce != null)
+        if (tce != null) {
             return paramTable.getCellEditor().stopCellEditing();
+        }
         return false;
     }
     
@@ -851,8 +855,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         } else if (mods.contains(Modifier.PUBLIC)) {
 //            this.modifiers.add(Modifier.PUBLIC);
             modifiersCombo.setSelectedIndex(MOD_PUBLIC_INDEX);
-        } else
+        } else {
             modifiersCombo.setSelectedIndex(MOD_DEFAULT_INDEX);
+        }
     }
 
     public String genDeclarationString() {

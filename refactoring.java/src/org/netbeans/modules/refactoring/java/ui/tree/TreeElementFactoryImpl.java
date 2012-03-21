@@ -74,16 +74,19 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
         } else {
             result = map.get(o);
         }
-        if (result!= null)
+        if (result!= null) {
             return result;
+        }
         if (o instanceof FileObject) {
             FileObject fo = (FileObject) o;
             if (fo.isFolder()) {
                 SourceGroup sg = FolderTreeElement.getSourceGroup(fo);
-                if (sg!=null && fo.equals(sg.getRootFolder())) 
+                if (sg!=null && fo.equals(sg.getRootFolder())) {
                     result = new SourceGroupTreeElement(sg);
-                else 
+                }
+                else {
                     result = new FolderTreeElement(fo);
+                }
             } else {
                 result = new FileTreeElement(fo);
             }

@@ -75,7 +75,7 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
- *
+ * Test is written for 1.7 subversion support, do not even try to run it with 1.6 client
  * @author Tomas Stupka
  */
 public class InteceptorTest extends NbTestCase {
@@ -98,6 +98,11 @@ public class InteceptorTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {          
         super.setUp();
+        if (!"javahl".equals(System.getProperty("svnClientAdapterFactory", null))
+                && !"commandline".equals(System.getProperty("svnClientAdapterFactory", null))
+                && !"svnkit".equals(System.getProperty("svnClientAdapterFactory", null))) {
+            System.setProperty("svnClientAdapterFactory", "svnkit");
+        }
         MockServices.setServices(new Class[] {
             VersioningAnnotationProvider.class,
             SubversionVCS.class});
@@ -472,7 +477,7 @@ public class InteceptorTest extends NbTestCase {
         delete(folder);
 
         // test
-        assertTrue(folder.exists());
+        assertFalse(folder.exists());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(folder).getTextStatus());
         
         assertCachedStatus(folder, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);        
@@ -545,9 +550,9 @@ public class InteceptorTest extends NbTestCase {
         delete(folder);
         
         // test
-        assertTrue(folder.exists());
-        assertTrue(folder1.exists());
-        assertTrue(folder2.exists());
+        assertFalse(folder.exists());
+        assertFalse(folder1.exists());
+        assertFalse(folder2.exists());
         assertFalse(file11.exists());
         assertFalse(file12.exists());
         assertFalse(file21.exists());
@@ -623,12 +628,12 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file22).getTextStatus());
         
         assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(folder));        
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, getStatus(folder1));        
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, getStatus(folder2));        
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, getStatus(file11));        
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, getStatus(file12));        
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, getStatus(file21));        
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, getStatus(file22));        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(folder1));        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(folder2));        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(file11));        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(file12));        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(file21));        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(file22));        
         
         commit(wc);
         assertFalse(folder.exists());
@@ -863,7 +868,7 @@ public class InteceptorTest extends NbTestCase {
         moveDO(fromFolder, toFolder);
 
         // test
-        assertTrue(fromFolder.exists()); // TODO later delete from folder
+        assertFalse(fromFolder.exists());
         assertFalse(fromFile.exists());
         assertTrue(toFolder.exists());
         assertTrue(toFile.exists());
@@ -909,7 +914,7 @@ public class InteceptorTest extends NbTestCase {
         moveDO(fromFolder, toFolder);
 
 //        // test         t.
-        assertTrue(fromFolder.exists());
+        assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         File toFolder1 = new File(toFolder, fromFolder1.getName());
         assertTrue(toFolder1.exists());
@@ -1011,16 +1016,16 @@ public class InteceptorTest extends NbTestCase {
         moveFO(fromFolder, toFolder);
 
         // test
-        assertTrue(fromFolder.exists()); // TODO later delete from folder
+        assertFalse(fromFolder.exists()); // TODO later delete from folder
         assertFalse(fromFile.exists());
         assertTrue(toFolder.exists());
         assertTrue(toFile.exists());
-        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFolder).getTextStatus());
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder).getTextStatus());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile).getTextStatus());
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());
         assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFolder).getTextStatus());
 
-        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFolder));
+        assertCachedStatus(fromFolder, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
         assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
         assertCachedStatus(toFolder, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
 
@@ -1055,7 +1060,7 @@ public class InteceptorTest extends NbTestCase {
         moveFO(fromFolder, toFolder);
 
 //        // test         t.
-        assertTrue(fromFolder.exists());
+        assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         File toFolder1 = new File(toFolder, fromFolder1.getName());
         assertTrue(toFolder1.exists());
@@ -1070,9 +1075,9 @@ public class InteceptorTest extends NbTestCase {
         File toFile22 = new File(toFolder2, "file22");
         assertTrue(toFile22.exists());
 
-        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFolder).getTextStatus());
-        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFolder1).getTextStatus());
-        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFolder2).getTextStatus());
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder).getTextStatus());
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder1).getTextStatus());
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder2).getTextStatus());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile11).getTextStatus());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile12).getTextStatus());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile21).getTextStatus());
@@ -1085,9 +1090,9 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile21).getTextStatus());
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile22).getTextStatus());
 
-        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFolder));
-        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFolder1));
-        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFolder2));
+        assertCachedStatus(fromFolder, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
+        assertCachedStatus(fromFolder1, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
+        assertCachedStatus(fromFolder2, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
         assertCachedStatus(fromFile11, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
         assertCachedStatus(fromFile12, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
         assertCachedStatus(fromFile21, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
@@ -1103,9 +1108,9 @@ public class InteceptorTest extends NbTestCase {
         commit(wc);
         commit(wc2);
 
-        assertTrue(fromFolder.exists());
-        assertTrue(fromFolder1.exists());
-        assertTrue(fromFolder2.exists());
+        assertFalse(fromFolder.exists());
+        assertFalse(fromFolder1.exists());
+        assertFalse(fromFolder2.exists());
         assertFalse(fromFile11.exists());
         assertFalse(fromFile12.exists());
         assertFalse(fromFile21.exists());
@@ -2944,7 +2949,7 @@ public class InteceptorTest extends NbTestCase {
         renameDO(fromFolder, toFolder);
         
         // test 
-        assertTrue(fromFolder.exists());
+        assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder).getTextStatus());        
         assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFolder).getTextStatus());        
@@ -2968,7 +2973,7 @@ public class InteceptorTest extends NbTestCase {
         moveDO(fromFolder, toFolder);
         
         // test 
-        assertTrue(fromFolder.exists());
+        assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder).getTextStatus());
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFolder).getTextStatus());        
@@ -3001,7 +3006,7 @@ public class InteceptorTest extends NbTestCase {
         renameDO(fromFolder, toFolder);
                                         
         // test 
-        assertTrue(fromFolder.exists());
+        assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         File toFolder1 = new File(toFolder, "folder1");
         assertTrue(toFolder1.exists());
@@ -3078,7 +3083,7 @@ public class InteceptorTest extends NbTestCase {
         moveDO(fromFolder, toFolder);
 
         // test         t.
-        assertTrue(fromFolder.exists());
+        assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         File toFolder1 = new File(toFolder, fromFolder1.getName());
         assertTrue(toFolder1.exists());
@@ -3670,7 +3675,7 @@ public class InteceptorTest extends NbTestCase {
         renameFO(fromFolder, toFolder);
         
         // test 
-        assertTrue(fromFolder.exists());
+        assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder).getTextStatus());        
         assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFolder).getTextStatus());        
@@ -3694,7 +3699,7 @@ public class InteceptorTest extends NbTestCase {
         moveFO(fromFolder, toFolder);
         
         // test 
-        assertTrue(fromFolder.exists());
+        assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder).getTextStatus());        
         assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFolder).getTextStatus());        
@@ -3727,7 +3732,7 @@ public class InteceptorTest extends NbTestCase {
         renameFO(fromFolder, toFolder);
                                         
         // test 
-        assertTrue(fromFolder.exists());
+        assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         File toFolder1 = new File(toFolder, "folder1");
         assertTrue(toFolder1.exists());
@@ -3807,7 +3812,7 @@ public class InteceptorTest extends NbTestCase {
         moveFO(fromFolder, toFolder);
                                                 
         // test         t.
-        assertTrue(fromFolder.exists());
+        assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         File toFolder1 = new File(toFolder, fromFolder1.getName());
         assertTrue(toFolder1.exists());

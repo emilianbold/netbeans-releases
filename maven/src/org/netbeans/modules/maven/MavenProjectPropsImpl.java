@@ -76,9 +76,6 @@ public class MavenProjectPropsImpl {
 
     private static final Logger LOG = Logger.getLogger(MavenProjectPropsImpl.class.getName());
 
-    private boolean transaction = false;
-    private TreeMap<String, String> transPropsShared;
-    private TreeMap<String, String> transPropsPrivate;
     private final AuxiliaryConfiguration aux;
     private boolean sharedChanged;
     private final NbMavenProjectImpl nbprji;
@@ -97,21 +94,12 @@ public class MavenProjectPropsImpl {
     }
 
     public synchronized String get(String key, boolean shared, boolean usePom) {
-            if (transaction) {
-                if (shared && transPropsShared.containsKey(key)) {
-                    return transPropsShared.get(key);
-                }
-                if (!shared && transPropsPrivate.containsKey(key)) {
-                    return transPropsPrivate.get(key);
-                }
-            } else {
                 TreeMap<String, String> props = readProperties(getAuxConf(), shared);
                 //TODO optimize
                 String ret =  props.get(key);
                 if (ret != null) {
                     return ret;
                 }
-            }
             if (shared && usePom) {
                 String val = nbprji.getOriginalMavenProject().getProperties().getProperty(key);
                 if (val != null) {
@@ -125,16 +113,8 @@ public class MavenProjectPropsImpl {
             if (shared) {
                 //TODO put props to project.. shall we actually do it here?
             }
-            if (transaction) {
-                if (shared) {
-                    sharedChanged |= !Utilities.compareObjects(value, transPropsShared.put(key, value));
-                } else {
-                    transPropsPrivate.put(key, value);
-                }
-            } else {
                 writeAuxiliaryData(getAuxConf(), key, value, shared);
             }
-    }
 
     public synchronized Iterable<String> listKeys(boolean shared) {
             TreeMap<String, String> props = readProperties(getAuxConf(), shared);
@@ -174,7 +154,7 @@ public class MavenProjectPropsImpl {
         }
     }
 
-    private void writeAuxiliaryData(AuxiliaryConfiguration conf, TreeMap<String, String> props, boolean shared) {
+    public static void writeAuxiliaryData(AuxiliaryConfiguration conf, TreeMap<String, String> props, boolean shared) {
         Element el = getOrCreateRootElement(conf, shared);
         Element enEl;
         for (String key : props.keySet()) {
@@ -204,7 +184,7 @@ public class MavenProjectPropsImpl {
         }
     }
 
-    private Element getOrCreateRootElement(AuxiliaryConfiguration conf, boolean shared) {
+    private static Element getOrCreateRootElement(AuxiliaryConfiguration conf, boolean shared) {
         Element el = conf.getConfigurationFragment(ROOT, NAMESPACE, shared);
         if (el == null) {
             el = XMLUtil.createDocument(ROOT, NAMESPACE, null, null).getDocumentElement();
@@ -242,32 +222,6 @@ public class MavenProjectPropsImpl {
         return readProperties(getAuxConf(), shared);
     }
 
-    public synchronized void startTransaction() {
-            transaction = true;
-            transPropsShared = getRawProperties(true);
-            transPropsPrivate = getRawProperties(false);
-            sharedChanged = false;
-    }
-
-    public synchronized void commitTransaction() {
-            transaction = false;
-            if (transPropsShared == null) {
-                LOG.warning("Committing a transaction that was canceled.");
-                return;
-            }
-            if (sharedChanged) {
-                writeAuxiliaryData(getAuxConf(), transPropsShared, true);
-            }
-            writeAuxiliaryData(getAuxConf(), transPropsPrivate, false);
-            transPropsPrivate = null;
-            transPropsShared = null;
-    }
-
-    public synchronized void cancelTransaction() {
-            transaction = false;
-            transPropsPrivate = null;
-            transPropsShared = null;
-    }
 
     static class Merger implements LookupMerger<AuxiliaryProperties> {
         private MavenProjectPropsImpl primary;

@@ -71,7 +71,7 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
 
     private List<PropertyChangeListener> listeners;
     
-    private volatile Map<String,String> properties;
+    private volatile Map<String,String> properties = Collections.<String,String>emptyMap();
 
     /**
      * Create new LibraryImplementation supporting given <tt>library</tt>.
