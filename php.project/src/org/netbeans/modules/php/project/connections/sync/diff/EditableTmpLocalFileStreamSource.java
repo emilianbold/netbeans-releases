@@ -102,11 +102,15 @@ public class EditableTmpLocalFileStreamSource extends TmpLocalFileStreamSource {
         return null;
     }
 
-    public void save() throws IOException {
+    public boolean save() throws IOException {
         if (editorCookie == null) {
-            return;
+            return false;
         }
-        editorCookie.saveDocument();
+        if (editorCookie.isModified()) {
+            editorCookie.saveDocument();
+            return true;
+        }
+        return false;
     }
 
     private EditorCookie getEditorCookie(TmpLocalFile tmpFile) throws IOException {
