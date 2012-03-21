@@ -93,10 +93,10 @@ import org.xml.sax.SAXException;
 public class Hk2DeploymentManager implements DeploymentManager2 {
 
     private volatile ServerInstance serverInstance;
-    private volatile InstanceProperties instanceProperties;
-    private Hk2PluginProperties pluginProperties;
-    private String uri;
-    private ServerUtilities su;
+    private final InstanceProperties instanceProperties;
+    private final Hk2PluginProperties pluginProperties;
+    private final String uri;
+    private final ServerUtilities su;
     
     /**
      * 
@@ -108,6 +108,7 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
         this.uri = uri;
         this.su = su;
         pluginProperties = new Hk2PluginProperties(this,su);
+        instanceProperties = InstanceProperties.getInstanceProperties(getUri());
     }
         
     
@@ -567,7 +568,7 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
      * 
      * @return 
      */
-    public String getUri() {
+    public final String getUri() {
         return uri;
     }
     
@@ -584,10 +585,6 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
      * @return 
      */
     public InstanceProperties getInstanceProperties() {
-        // !PW FIXME synchronization - using volatile for now, could do a little better
-        if(instanceProperties == null) {
-            instanceProperties = InstanceProperties.getInstanceProperties(getUri());
-        }
         return instanceProperties;
     }
     

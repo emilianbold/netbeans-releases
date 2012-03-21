@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.antlr.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.Hashtable;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
@@ -191,29 +192,41 @@ public class CPPParserEx extends CPPParser {
         
     @Override
     public int LA(int i) {
-        final int newIndex = skipIncludeTokensIfNeeded(i);
-        int LA = super.LA(newIndex);
-        assert !isIncludeToken(LA) : super.LT(newIndex) + " not expected";
-        return LA;
+        if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
+            final int newIndex = skipIncludeTokensIfNeeded(i);
+            int LA = super.LA(newIndex);
+            assert !isIncludeToken(LA) : super.LT(newIndex) + " not expected";
+            return LA;
+        } else {
+            return super.LA(i);
+        }
     }
 
     @Override
     public Token LT(int i) {
-        Token LT = super.LT(skipIncludeTokensIfNeeded(i));
-        assert !isIncludeToken(LT.getType()) : LT + " not expected ";
-        return LT;
+        if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
+            Token LT = super.LT(skipIncludeTokensIfNeeded(i));
+            assert !isIncludeToken(LT.getType()) : LT + " not expected ";
+            return LT;
+        } else {
+            return super.LT(i);
+        }
     }
     
     @Override
     public void consume() {
-        assert !isIncludeToken(super.LA(1)) : super.LT(1) + " not expected ";
-        super.consume();
-        // consume following includes as well
-        while (isIncludeToken(super.LA(1))) {
-            Token t = super.LT(1);
-            onIncludeToken(t);
+        if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
+            assert !isIncludeToken(super.LA(1)) : super.LT(1) + " not expected ";
             super.consume();
-        }        
+            // consume following includes as well
+            while (isIncludeToken(super.LA(1))) {
+                Token t = super.LT(1);
+                onIncludeToken(t);
+                super.consume();
+            }      
+        } else {
+            super.consume();
+        }
     }
 
     private int skipIncludeTokensIfNeeded(int i) {
