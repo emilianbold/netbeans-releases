@@ -138,12 +138,4 @@ made subject to such option by the copyright holder.
             </folder> <!-- png-gif-jpeg-bmp -->
         </folder> <!-- image -->
     </folder> <!-- Loaders -->
-    
-    <folder name="Actions">
-        <folder name="View">
-            <file name="org.netbeans.modules.image.ZoomInAction.instance"/>
-            <file name="org.netbeans.modules.image.ZoomOutAction.instance"/>
-	    <file name="org.netbeans.modules.image.CustomZoomAction.instance"/>
-        </folder>
-    </folder>
 </filesystem>
