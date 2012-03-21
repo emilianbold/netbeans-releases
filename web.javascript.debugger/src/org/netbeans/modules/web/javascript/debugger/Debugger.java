@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.javascript.debugger;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -70,7 +71,13 @@ import org.openide.util.NbBundle;
     "ConnectionNotEstablished2=Connection was not established. Cause: {0}",
     "NewBreakpoint=Breakpoint set for {0}:{1}",
     "FailedBreakpoint=Could not set breakpoint. Reason: {0}",
-    "StateChanged=Debugger state changed to {0}"
+    "StateChanged=Debugger state changed to {0}",
+    "ConnectionFailed=Connection failed and debugging will not be started.\n"
+        + "Make sure the Chrome/Chromium runs with '--remote-debugging-port=9222' switch.\n"
+        + "That can be achieved in many ways, for example you can configure the browser\n"
+        + "via Tools->Options. Note that once the browser was started without the switch\n"
+        + "it will require browser restart to activate the remote debugging.",
+    "BreakpointWasHit=Paused on breakpoint: {0}"
 })
 public class Debugger {
 
@@ -113,7 +120,7 @@ public class Debugger {
         for (DebuggerListener l : listeners) {
             l.stateChanged(this);
         }
-        BrowserDebugger.getOutputLogger().getOut().println(Bundle.StateChanged(getState().getName()));
+        //BrowserDebugger.log(Bundle.StateChanged(getState().getName()));
     }
 
     public String getUrlToDebug() {
@@ -123,7 +130,7 @@ public class Debugger {
     private boolean connect(String host, int port, String urlToDebug) throws IOException {
         this.urlToDebug = urlToDebug;
         logger = new LoggerFactoryImpl();
-        BrowserDebugger.getOutputLogger().getOut().println(Bundle.ConnectingTo(host, String.valueOf(port)));
+        BrowserDebugger.log(Bundle.ConnectingTo(host, String.valueOf(port)));
         try {
             browser = WipBrowserFactory.INSTANCE.createBrowser(
                     new InetSocketAddress(host, port), logger);
@@ -133,7 +140,7 @@ public class Debugger {
             List<? extends WipBrowser.WipTabConnector> tabs = browser.getTabs(backend);
             for (WipBrowser.WipTabConnector tabConnector : tabs) {
                 if (tabConnector.getUrl().equals(urlToDebug)) {
-                    BrowserDebugger.getOutputLogger().getOut().println(Bundle.ConnectionEstablished());
+                    BrowserDebugger.log(Bundle.ConnectionEstablished());
                     listener = new TabListener();
                     debugListener = listener.getDebugEventListenerImpl();
                     WipBrowserTab tab = tabConnector.attach(listener);
@@ -150,10 +157,13 @@ public class Debugger {
                     return true;
                 }
             }
-            BrowserDebugger.getOutputLogger().getErr().println(Bundle.ConnectionNotEstablished());
+            BrowserDebugger.logError(Bundle.ConnectionNotEstablished());
+            return false;
+        } catch (ConnectException ce) {
+            BrowserDebugger.logError(Bundle.ConnectionFailed());
             return false;
         } catch (Throwable t) {
-            BrowserDebugger.getOutputLogger().getErr().println(Bundle.ConnectionNotEstablished2(t.getMessage()));
+            BrowserDebugger.logError(Bundle.ConnectionNotEstablished2(t.getMessage()));
             Exceptions.printStackTrace(t);
             return false;
         }
@@ -183,35 +193,38 @@ public class Debugger {
 
             @Override
             public void success(Breakpoint breakpoint) {
-                String target = breakpoint.getTarget().accept(new Breakpoint.Target.Visitor<String>() {
-
-                    @Override
-                    public String visitScriptName(String scriptName) {
-                        return scriptName;
-                    }
-
-                    @Override
-                    public String visitScriptId(Object scriptId) {
-                        return scriptId.toString();
-                    }
-
-                    @Override
-                    public String visitUnknown(Target target) {
-                        return target.toString();
-                    }
-                });
-                BrowserDebugger.getOutputLogger().getErr().println(Bundle.NewBreakpoint(target, breakpoint.getLineNumber()));
+                BrowserDebugger.log(Bundle.NewBreakpoint(getBreapointScript(breakpoint), breakpoint.getLineNumber()));
             }
 
             @Override
             public void failure(String errorMessage) {
-                BrowserDebugger.getOutputLogger().getErr().println(Bundle.FailedBreakpoint(errorMessage));
+                BrowserDebugger.logError(Bundle.FailedBreakpoint(errorMessage));
             }
         };
         javascriptVm.setBreakpoint(new Breakpoint.Target.ScriptName(file),
                 b.getLine().getLineNumber(), // line
                 1, // column
                 true, null, bc, null); // other parameters.
+    }
+    
+    private static String getBreapointScript(Breakpoint breakpoint) {
+        return breakpoint.getTarget().accept(new Breakpoint.Target.Visitor<String>() {
+
+            @Override
+            public String visitScriptName(String scriptName) {
+                return scriptName;
+            }
+
+            @Override
+            public String visitScriptId(Object scriptId) {
+                return scriptId.toString();
+            }
+
+            @Override
+            public String visitUnknown(Target target) {
+                return target.toString();
+            }
+        });
     }
     
     public void removeBreakpoint(org.netbeans.api.debugger.Breakpoint b) {
@@ -311,6 +324,9 @@ public class Debugger {
         public void suspended(DebugContext debugContext) {
             state = DebuggerState.SUSPENDED;
             savedDebugContext = debugContext;
+            for (Breakpoint b : debugContext.getBreakpointsHit()) {
+                BrowserDebugger.log(Bundle.BreakpointWasHit(getBreapointScript(b)+":"+b.getLineNumber()));
+            }
             semaphore.release();
             fireStateChange();
         }
