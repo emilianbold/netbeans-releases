@@ -67,7 +67,18 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public enum CppStringTokenId implements TokenId {
 
     TEXT(null, "string"), //NOI18N
-    PREFIX("L", "string"), // NOI18N
+    PREFIX_L("L", "string"), // NOI18N
+    // raw string
+    PREFIX_R("R", "string"), // NOI18N
+    // unicode strings
+    PREFIX_U("U", "string"), // NOI18N
+    PREFIX_u("u", "string"), // NOI18N
+    PREFIX_u8("u8", "string"), // NOI18N
+    // raw unicode strings
+    PREFIX_UR("UR", "string"), // NOI18N
+    PREFIX_uR("uR", "string"), // NOI18N
+    PREFIX_u8R("u8R", "string"), // NOI18N
+    
     SINGLE_QUOTE("'", "string"), // NOI18N
     DOUBLE_QUOTE("\"", "string"), // NOI18N
     BACKSPACE("\\b", "string-escape"), //NOI18N
@@ -105,15 +116,21 @@ public enum CppStringTokenId implements TokenId {
     }
 
     private static final Language<CppStringTokenId> languageDouble;
+    private static final Language<CppStringTokenId> languageRawString;
     private static final Language<CppStringTokenId> languageSingle;
 
     static {
-        languageDouble = new StringHierarchy(true).language();
-        languageSingle = new StringHierarchy(false).language();
+        languageDouble = new StringHierarchy(true, false).language();
+        languageRawString = new StringHierarchy(true, true).language();
+        languageSingle = new StringHierarchy(false, false).language();
     }
 
     public static Language<CppStringTokenId> languageDouble() {
         return languageDouble;
+    }
+
+    public static Language<CppStringTokenId> languageRawString() {
+        return languageRawString;
     }
 
     public static Language<CppStringTokenId> languageSingle() {
@@ -122,8 +139,10 @@ public enum CppStringTokenId implements TokenId {
 
     private static final class StringHierarchy extends LanguageHierarchy<CppStringTokenId> {
         private final boolean dblQuoted;
-        public StringHierarchy(boolean doubleQuotedString) {
+        private final boolean raw;
+        public StringHierarchy(boolean doubleQuotedString, boolean raw) {
             this.dblQuoted = doubleQuotedString;
+            this.raw = raw;
         }
 
         @Override
@@ -138,7 +157,7 @@ public enum CppStringTokenId implements TokenId {
 
         @Override
         protected Lexer<CppStringTokenId> createLexer(LexerRestartInfo<CppStringTokenId> info) {
-            return new CppStringLexer(info, this.dblQuoted);
+            return new CppStringLexer(info, this.dblQuoted, this.raw);
         }
 
         @Override

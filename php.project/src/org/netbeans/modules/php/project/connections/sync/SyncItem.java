@@ -186,7 +186,6 @@ public final class SyncItem {
         return localTransferFile.getLocalPath();
     }
 
-
     public TransferFile getRemoteTransferFile() {
         return remoteTransferFile;
     }
@@ -216,7 +215,7 @@ public final class SyncItem {
     }
 
     public void cleanupTmpLocalFile() {
-        if (tmpLocalFile != null) {
+        if (hasTmpLocalFile()) {
             tmpLocalFile.cleanup();
         }
     }
@@ -328,12 +327,17 @@ public final class SyncItem {
         return true;
     }
 
+    public boolean hasTmpLocalFile() {
+        return tmpLocalFile != null;
+    }
+
     public TmpLocalFile getTmpLocalFile() {
         return tmpLocalFile;
     }
 
     public void setTmpLocalFile(TmpLocalFile tmpLocalFile) {
         assert tmpLocalFile != null;
+        cleanupTmpLocalFile();
         this.tmpLocalFile = tmpLocalFile;
     }
 
@@ -439,7 +443,7 @@ public final class SyncItem {
                 + ", remoteFile: " + (remoteTransferFile != null) // NOI18N
                 + ", operation: " + getOperation() // NOI18N
                 + ", valid: " + valid // NOI18N
-                + ", tmpLocalFile: " + (tmpLocalFile != null) // NOI18N
+                + ", tmpLocalFile: " + (hasTmpLocalFile()) // NOI18N
                 + "}"; // NOI18N
     }
 

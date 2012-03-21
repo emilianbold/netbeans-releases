@@ -46,6 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -386,6 +388,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         private final int caretOffset;
         private final List<VariableName> usedVariables = new LinkedList<VariableName>();
         private static final RequestProcessor RP = new RequestProcessor("ExistingVariableResolver"); //NOI18N
+        private static final Logger LOGGER = Logger.getLogger(ExistingVariableResolver.class.getName());
+        private static final int RESOLVING_TIMEOUT = 300;
 
         public ExistingVariableResolver(CompletionRequest request) {
             this.request = request;
@@ -426,13 +430,13 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 });
                 VariableName variableToUseName = null;
                 try {
-                    variableToUseName = futureVariableToUse.get(300, TimeUnit.MILLISECONDS);
+                    variableToUseName = futureVariableToUse.get(RESOLVING_TIMEOUT, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOGGER.log(Level.FINE, "Resolving of existing variables has been interrupted.");
                 } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOGGER.log(Level.SEVERE, "Exception has been thrown during resolving of existing variables.", ex);
                 } catch (TimeoutException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOGGER.log(Level.FINE, "Timeout for resolving existing variables has been exceed: {0}", RESOLVING_TIMEOUT);
                 }
                 if (variableToUseName != null) {
                     usedVariables.add(variableToUseName);
