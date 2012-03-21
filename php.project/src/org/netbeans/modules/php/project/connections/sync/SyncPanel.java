@@ -802,12 +802,22 @@ public final class SyncPanel extends JPanel {
         private static final long serialVersionUID = 567654543546954L;
 
 
+        @NbBundle.Messages({
+            "# {0} - file name",
+            "SyncPanel.localFile.modified.mark={0}*"
+        })
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             String text = (String) value;
             JLabel rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             rendererComponent.setHorizontalAlignment(SwingConstants.LEFT);
             rendererComponent.setToolTipText(text);
+            if (column == 3) {
+                // local file
+                if (displayedItems.get(row).hasTmpLocalFile()) {
+                    text = Bundle.SyncPanel_localFile_modified_mark(text);
+                }
+            }
             rendererComponent.setText(text);
             rendererComponent.setIcon(null);
             return rendererComponent;
