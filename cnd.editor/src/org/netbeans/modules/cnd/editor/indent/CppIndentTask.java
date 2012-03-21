@@ -194,7 +194,8 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
     private int indentLine(TokenItem token, int caretOffset) {
         //if ((dotPos >= 1 && DocumentUtilities.getText(doc).charAt(dotPos-1) != '\\')
         //    || (dotPos >= 2 && DocumentUtilities.getText(doc).charAt(dotPos-2) == '\\')) {
-        if (token.getTokenID() == CppTokenId.STRING_LITERAL || token.getTokenID() == CppTokenId.CHAR_LITERAL) {
+        if (token.getTokenID() == CppTokenId.STRING_LITERAL || token.getTokenID() == CppTokenId.RAW_STRING_LITERAL ||
+                token.getTokenID() == CppTokenId.CHAR_LITERAL) {
             int start = token.getTokenSequence().offset();
             Token<TokenId> tok = token.getTokenSequence().token();
             if (start < caretOffset && caretOffset < start + tok.length()) {
