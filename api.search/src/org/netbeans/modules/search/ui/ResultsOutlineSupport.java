@@ -48,14 +48,24 @@ import java.awt.event.HierarchyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.JScrollPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.table.TableColumn;
+import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.Selectable;
+import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.Visualizer;
@@ -93,6 +103,8 @@ public class ResultsOutlineSupport {
     private List<FileObject> rootFiles;
     private Node infoNode;
     private Node invisibleRoot;
+    private List<TableColumn> allColumns = new ArrayList<TableColumn>(5);
+    private ETableColumnModel columnModel;
 
     public ResultsOutlineSupport(boolean replacing, boolean details,
             ResultModel resultModel, List<FileObject> rootFiles,
@@ -120,9 +132,9 @@ public class ResultsOutlineSupport {
         outlineView.addHierarchyListener(new HierarchyListener() {
             @Override
             public void hierarchyChanged(HierarchyEvent e) {
-                if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED)
+                if ((e.getChangeFlags() & HierarchyEvent.DISPLAYABILITY_CHANGED)
                         != 0) {
-                    if (outlineView.isShowing()) {
+                    if (outlineView.isDisplayable()) {
                         onAttach();
                     } else {
                         onDetach();
@@ -131,6 +143,8 @@ public class ResultsOutlineSupport {
                 }
             }
         });
+        outlineView.getOutline().getColumnModel().addColumnModelListener(
+                new ColumnsListener());
     }
 
     private void onAttach() {
@@ -139,12 +153,82 @@ public class ResultsOutlineSupport {
 
     private void onDetach() {
         resultModel.close();
+        saveColumnState();
+    }
+
+    private void loadColumnState() {
+        String state;
+        FindDialogMemory memory = FindDialogMemory.getDefault();
+        if (replacing) {
+            state = memory.getResultsColumnWidthsReplacing();
+        } else if (details) {
+            state = memory.getResultsColumnWidthsDetails();
+        } else {
+            state = memory.getResultsColumnWidths();
+        }
+        String[] parts = state.split("\\|");                            //NOI18N
+        if (parts == null || parts.length != 2) {
+            return;
+        }
+        String[] order = parts[1].split(":");                           //NOI18N
+        for (int i = 0; i < order.length; i++) {
+            try {
+                int modelIndex = Integer.parseInt(order[i]);
+                int oldIndex = columnModel.getColumnIndex(
+                        allColumns.get(modelIndex).getIdentifier());
+                columnModel.moveColumn(oldIndex, i);
+
+            } catch (NumberFormatException e) {
+            }
+        }
+        String[] widths = parts[0].split(":");                          //NOI18N
+        for (int i = 0; i < widths.length && i < allColumns.size(); i++) {
+            String widthStr = widths[i];
+            if (widthStr != null && !widthStr.isEmpty()) {
+                try {
+                    int width = Integer.parseInt(widthStr);
+                    if (width == -1) {
+                        columnModel.setColumnHidden(allColumns.get(i), true);
+                    } else {
+                        allColumns.get(i).setPreferredWidth(width);
+                    }
+                } catch (NumberFormatException e) {
+                }
+            }
+        }
+    }
+
+    private void saveColumnState() {
+        StringBuilder sb = new StringBuilder();
+        for (TableColumn tc : allColumns) {
+            if (columnModel.isColumnHidden(tc)) {
+                sb.append(-1);
+            } else {
+                sb.append(tc.getWidth());
+            }
+            sb.append(":");                                             //NOI18N
+        }
+        sb.append("|");                                                 //NOI18N
+        Enumeration<TableColumn> columns = columnModel.getColumns();
+        while (columns.hasMoreElements()) {
+            TableColumn tc = columns.nextElement();
+            int index = allColumns.indexOf(tc);
+            if (index >= 0) {
+                sb.append(index);
+                sb.append(":");                                         //NOI18N
+            }
+        }
+        String str = sb.toString();
+        if (replacing) {
+            FindDialogMemory.getDefault().setResultsColumnWidthsReplacing(str);
+        } else if (details) {
+            FindDialogMemory.getDefault().setResultsColumnWidthsDetails(str);
+        } else {
+            FindDialogMemory.getDefault().setResultsColumnWidths(str);
+        }
     }
 
     private void setOutlineColumns() {
-        if (replacing) {
-            return;
-        }
         if (details) {
             outlineView.addPropertyColumn(
                     "detailsCount", UiUtils.getText( //NOI18N
@@ -158,25 +242,15 @@ public class ResultsOutlineSupport {
                 "BasicSearchResultsPanel.outline.lastModified"));       //NOI18N
         outlineView.getOutline().setAutoResizeMode(
                 Outline.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-        if (details) {
-            sizeColumn(0, 80, 10000); // file name, matching lines
-            sizeColumn(1, 20, 500); // details count
-            sizeColumn(2, 40, 5000); // path
-            sizeColumn(3, 20, 500); // size
-            sizeColumn(4, 20, 500); // last modified
-        } else {
-            sizeColumn(0, 80, 2000); // file name, matching lines
-            sizeColumn(1, 40, 5000); // path
-            sizeColumn(2, 20, 500); // size
-            sizeColumn(3, 20, 500); // last modified
+        this.columnModel =
+                (ETableColumnModel) outlineView.getOutline().getColumnModel();
+        Enumeration<TableColumn> cols = columnModel.getColumns();
+        while (cols.hasMoreElements()) {
+            allColumns.add(cols.nextElement());
         }
-    }
-
-    private void sizeColumn(int index, int min, int max) {
-        Object id = outlineView.getOutline().getColumnModel().getColumn(
-                index).getIdentifier();
-        outlineView.getOutline().getColumn(id).setMinWidth(min);
-        outlineView.getOutline().getColumn(id).setMaxWidth(max);
+        loadColumnState();
+        outlineView.setVerticalScrollBarPolicy(
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
     }
 
     public void update() {
@@ -615,5 +689,32 @@ public class ResultsOutlineSupport {
 
     public void setResultsNodeText(String text) {
         resultsNode.setDisplayName(text);
+    }
+
+    private class ColumnsListener implements TableColumnModelListener {
+
+        @Override
+        public void columnAdded(TableColumnModelEvent e) {
+            saveColumnState();
+        }
+
+        @Override
+        public void columnRemoved(TableColumnModelEvent e) {
+            saveColumnState();
+        }
+
+        @Override
+        public void columnMoved(TableColumnModelEvent e) {
+            saveColumnState();
+        }
+
+        @Override
+        public void columnMarginChanged(ChangeEvent e) {
+            saveColumnState();
+        }
+
+        @Override
+        public void columnSelectionChanged(ListSelectionEvent e) {
+        }
     }
 }
