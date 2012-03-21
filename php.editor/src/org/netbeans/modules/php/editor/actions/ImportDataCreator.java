@@ -75,10 +75,6 @@ public class ImportDataCreator {
         this.options = options;
     }
 
-    @NbBundle.Messages({
-        "CanNotBeResolved=<html><font color='#FF0000'>&lt;cannot be resolved&gt;",
-        "DoNotUseType=Don't use type."
-    })
     public ImportData create() {
         data = new ImportData(usedNames.size());
         int index = 0;
@@ -93,11 +89,11 @@ public class ImportDataCreator {
     private void processTypeName(final int index, final String typeName) {
         data.names[index] = typeName;
         Set<TypeElement> possibleTypes = fetchPossibleTypes(typeName);
-        if (possibleTypes.isEmpty()) {
+        Set<TypeElement> filteredDuplicates = filterDuplicates(possibleTypes);
+        Set<TypeElement> filteredTypeElements = filterExactUnqualifiedName(filteredDuplicates, typeName);
+        if (filteredTypeElements.isEmpty()) {
             insertEmptyData(index);
         } else {
-            Set<TypeElement> filteredDuplicates = filterDuplicates(possibleTypes);
-            Set<TypeElement> filteredTypeElements = filterExactUnqualifiedName(filteredDuplicates, typeName);
             insertPossibleData(index, filteredTypeElements, typeName);
         }
     }
@@ -111,6 +107,7 @@ public class ImportDataCreator {
         return possibleTypes;
     }
 
+    @NbBundle.Messages("CanNotBeResolved=<html><font color='#FF0000'>&lt;cannot be resolved&gt;")
     private void insertEmptyData(final int index) {
         data.variants[index] = new String[1];
         data.variants[index][0] = Bundle.CanNotBeResolved();
@@ -119,6 +116,7 @@ public class ImportDataCreator {
         data.icons[index][0] = IconsUtils.getErrorGlyphIcon();
     }
 
+    @NbBundle.Messages("DoNotUseType=Don't use type.")
     private void insertPossibleData(final int index, final Set<TypeElement> filteredTypeElements, final String typeName) {
         data.variants[index] = new String[filteredTypeElements.size() + 1];
         data.icons[index] = new Icon[data.variants[index].length];
