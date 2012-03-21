@@ -93,11 +93,11 @@ public class ImportDataCreator {
     private void processTypeName(final int index, final String typeName) {
         data.names[index] = typeName;
         Set<TypeElement> possibleTypes = fetchPossibleTypes(typeName);
-        if (possibleTypes.isEmpty()) {
+        Set<TypeElement> filteredDuplicates = filterDuplicates(possibleTypes);
+        Set<TypeElement> filteredTypeElements = filterExactUnqualifiedName(filteredDuplicates, typeName);
+        if (filteredTypeElements.isEmpty()) {
             insertEmptyData(index);
         } else {
-            Set<TypeElement> filteredDuplicates = filterDuplicates(possibleTypes);
-            Set<TypeElement> filteredTypeElements = filterExactUnqualifiedName(filteredDuplicates, typeName);
             insertPossibleData(index, filteredTypeElements, typeName);
         }
     }
