@@ -3,4 +3,4 @@ OpenIDE-Module: org.netbeans.modules.tasks.ui
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/tasks/ui/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/tasks/ui/resources/layer.xml
 OpenIDE-Module-Requires: org.openide.windows.WindowManager
-OpenIDE-Module-Specification-Version: 0.5.0
+OpenIDE-Module-Specification-Version: 0.6.0
