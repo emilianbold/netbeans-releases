@@ -43,8 +43,10 @@
 package org.netbeans.modules.java.hints.perf;
 
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Collection;
@@ -310,6 +312,46 @@ wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Identifier("'" + content + "'"));
         }
 
         String displayName = NbBundle.getMessage(Tiny.class, key);
+
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fixes);
+    }
+
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.collectionsToArray",
+          description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.collectionsToArray",
+          category="performance",
+          enabled=false,
+          suppressWarnings="CollectionsToArray")
+    @TriggerPattern(value = "$collection.toArray(new $clazz[0])",
+                    constraints=@ConstraintVariableType(variable="$collection",
+                                                        type="java.util.Collection"))
+    public static ErrorDescription collectionsToArray(HintContext ctx) {
+        boolean pureMemberSelect = true;
+        TreePath tp = ctx.getVariables().get("$collection");
+        if (tp == null) return null;
+        Tree msTest = tp.getLeaf();
+        OUTER: while (true) {
+            switch (msTest.getKind()) {
+                case IDENTIFIER: break OUTER;
+                case MEMBER_SELECT: msTest = ((MemberSelectTree) msTest).getExpression(); break;
+                default:
+                    pureMemberSelect = false;
+                    break OUTER;
+            }
+        }
+
+        Fix[] fixes;
+
+        if (pureMemberSelect) {
+            String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_Tiny_collectionsToArray");
+
+            fixes = new Fix[] {
+                JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$collection.toArray(new $clazz[$collection.size()])")
+            };
+        } else {
+            fixes = new Fix[0];
+        }
+
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_Tiny_collectionsToArray");
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fixes);
     }

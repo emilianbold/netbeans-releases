@@ -707,7 +707,7 @@ public class BracketCompletion {
      * @param dotPos position to be tested
      */
     static boolean posWithinString(BaseDocument doc, int dotPos) {
-        return posWithinQuotes(doc, dotPos, '\"', new CppTokenId[]{CppTokenId.STRING_LITERAL});
+        return posWithinQuotes(doc, dotPos, '\"', new CppTokenId[]{CppTokenId.STRING_LITERAL, CppTokenId.RAW_STRING_LITERAL});
     }
 
     /**
@@ -732,6 +732,7 @@ public class BracketCompletion {
             TokenId id = cppTS.token().id();
             if(id instanceof CppTokenId) {
                 switch ((CppTokenId)id) {
+                    case RAW_STRING_LITERAL:
                     case STRING_LITERAL:
                     case CHAR_LITERAL:
                     case PREPROCESSOR_USER_INCLUDE:

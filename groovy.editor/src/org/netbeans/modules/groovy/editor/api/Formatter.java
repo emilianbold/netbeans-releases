@@ -549,7 +549,7 @@ public class Formatter implements org.netbeans.modules.csl.api.Formatter {
                             }
                         }
 
-                        if (!indentOnly && codeStyle.reformatComments()) {
+                        if (!indentOnly && codeStyle.isReformatComments()) {
                             reformatComments(doc, startOffset, endOffset);
                         }
                     } catch (BadLocationException ble) {
@@ -610,7 +610,7 @@ public class Formatter implements org.netbeans.modules.csl.api.Formatter {
             boolean continued = false;
             boolean indentHtml = false;
             if (isGspDocument) {
-                indentHtml = codeStyle.indentHtml();
+                indentHtml = codeStyle.isIndentHtml();
             }
 
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {

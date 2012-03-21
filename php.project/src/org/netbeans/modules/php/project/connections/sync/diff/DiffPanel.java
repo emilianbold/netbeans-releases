@@ -128,16 +128,21 @@ public final class DiffPanel extends JPanel {
             dialog.dispose();
         }
         boolean ok = descriptor.getValue() == NotifyDescriptor.OK_OPTION;
+        boolean fileModified = false;
         try {
             if (editableTmpLocalFileStreamSource != null) {
-                editableTmpLocalFileStreamSource.save();
+                fileModified = editableTmpLocalFileStreamSource.save();
             }
         } finally {
             if (ok) {
                 // clean any old tmp file
                 syncItem.cleanupTmpLocalFile();
-                // set new tmp file
-                syncItem.setTmpLocalFile(localTmpFile);
+                // set new tmp file?
+                if (fileModified) {
+                    syncItem.setTmpLocalFile(localTmpFile);
+                } else {
+                    localTmpFile.cleanup();
+                }
             } else {
                 // cancel -> cleanup local tmp file
                 if (localTmpFile != null) {

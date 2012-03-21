@@ -91,6 +91,7 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
 
@@ -552,7 +553,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
             };
 
             final Collection<ModificationResult> results = processFiles(files, transform);
-            elements.registerTransaction(new RetoucheCommit(results));
+            elements.registerTransaction(new RefactoringCommit(results));
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
                     for (Difference diff: result.getDifferences(jfo)) {

@@ -86,17 +86,23 @@ public class CndLexerUnitTest extends NbTestSuite {
         TestSuite suite = new CndLexerUnitTest();
         return suite;
     }
-    
+
+    /**
+     *
+     * @param ts token stream to dump
+     * @param tsName name of ts parameter as is in call function,
+     *      i.e. "ep" in usage CndLexerUnitTest.dumpTokens(ep, "ep");
+     */
     public static void dumpTokens(TokenSequence<?> ts, String tsName) {
         if (ts != null) {
             while (ts.moveNext()) {
                 Token<?> token = ts.token();
                 String tokIDName = token.id().getClass().getName();
-                System.err.println("LexerTestUtilities.assertNextTokenEquals(" + tsName + ", " + tokIDName + "." + token.id() + ", \"" + escapeText(token.text()) + "\");");
+                System.out.println("LexerTestUtilities.assertNextTokenEquals(" + tsName + ", " + tokIDName + "." + token.id() + ", \"" + escapeText(token.text()) + "\");");
             }
         }
-        System.err.println("\nassertFalse(\"No more tokens\", " + tsName + ".moveNext());");
-        System.err.println("------");
+        System.out.println("\nassertFalse(\"No more tokens\", " + tsName + ".moveNext());");
+        System.out.println("------");
     }
     
     private static String escapeText(CharSequence in) {
