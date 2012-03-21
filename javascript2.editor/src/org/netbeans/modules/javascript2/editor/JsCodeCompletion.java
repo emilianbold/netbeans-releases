@@ -116,58 +116,98 @@ class JsCodeCompletion implements CodeCompletionHandler {
             request.prefix = pref;
             
         final List<CompletionProposal> resultList = new ArrayList<CompletionProposal>();
-        switch (context) {
-            case GLOBAL:
-                HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
-                for(JsObject object : request.result.getModel().getVariables(caretOffset)) {
-                    if (!(object instanceof JsFunction && ((JsFunction)object).isAnonymous())
-                            && startsWith(object.getName(), request.prefix)) {
-                        JsElement element = addedProperties.get(object.getName());
-                        if (element == null) {
-                            if (object.isDeclared()) {
-                                resultList.add(JsCompletionItem.Factory.create(object, request));
-                            }
-                            addedProperties.put(object.getName(), object);
-                        } else if (!element.isDeclared() && object.isDeclared()) {
-                            resultList.add(JsCompletionItem.Factory.create(object, request));
-                            addedProperties.put(object.getName(), object);
-                        }
-                        
-                    }
-                }
-                completeKeywords(request, resultList);
-                Collection<IndexedElement> fromIndex = JsIndex.get(fileObject).getGlobalVar(request.prefix);
-                for (IndexedElement indexElement: fromIndex) {
-                    if(startsWith(indexElement.getName(), request.prefix)) {
-                        JsElement element = addedProperties.get(indexElement.getName());
+        if (ccContext.getQueryType() == QueryType.ALL_COMPLETION) {
+            switch (context) {
+                case GLOBAL:
+                    Collection<IndexedElement> fromIndex = JsIndex.get(fileObject).getGlobalVar(request.prefix);
+                    HashMap<String, JsElement> addedGlobal = new HashMap<String, JsElement>();
+                    for (IndexedElement indexElement : fromIndex) {
+                        JsElement element = addedGlobal.get(indexElement.getName());
                         if (element == null) {
                             if (indexElement.isDeclared()) {
                                 resultList.add(JsCompletionItem.Factory.create(indexElement, request));
                             }
-                            addedProperties.put(indexElement.getName(), indexElement);
-                        } else if (!element.isDeclared() && indexElement.isDeclared()){
+                            addedGlobal.put(indexElement.getName(), indexElement);
+                        } else if (!element.isDeclared() && indexElement.isDeclared()) {
                             resultList.add(JsCompletionItem.Factory.create(indexElement, request));
-                            addedProperties.put(indexElement.getName(), indexElement);
+                            addedGlobal.put(indexElement.getName(), indexElement);
                         }
                     }
-                }
-                
-                for(JsElement element: addedProperties.values()) {
-                    if (!element.isDeclared()) {
-                        resultList.add(JsCompletionItem.Factory.create(element, request));
+                    break;    
+                case EXPRESSION:    
+                case OBJECT_MEMBERS:    
+                case OBJECT_PROPERTY:
+                    Collection<? extends IndexResult> indexResults = JsIndex.get(fileObject).query(JsIndex.FIELD_BASE_NAME, request.prefix, QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
+                    HashMap<String, JsElement> all = new HashMap<String, JsElement>();
+                    for (IndexResult indexResult : indexResults) {
+                        IndexedElement indexElement = IndexedElement.create(indexResult);
+                        JsElement element = all.get(indexElement.getName());
+                        if (element == null) {
+                            if (indexElement.isDeclared()) {
+                                resultList.add(JsCompletionItem.Factory.create(indexElement, request));
+                            }
+                            all.put(indexElement.getName(), indexElement);
+                        } else if (!element.isDeclared() && indexElement.isDeclared()) {
+                            resultList.add(JsCompletionItem.Factory.create(indexElement, request));
+                            all.put(indexElement.getName(), indexElement);
+                        }
                     }
-                }
-                break;
-            case EXPRESSION:
-                completeExpression(request, resultList);
-                break;
-            case OBJECT_PROPERTY:
-                completeObjectProperty(request, resultList);
-                break;
-            case OBJECT_MEMBERS:
-                completeObjectMember(request, resultList);
-            default:
-                result = CodeCompletionResult.NONE;
+                    break;
+            }
+        } else {
+            switch (context) {
+                case GLOBAL:
+                    HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
+                    for (JsObject object : request.result.getModel().getVariables(caretOffset)) {
+                        if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
+                                && startsWith(object.getName(), request.prefix)) {
+                            JsElement element = addedProperties.get(object.getName());
+                            if (element == null) {
+                                if (object.isDeclared()) {
+                                    resultList.add(JsCompletionItem.Factory.create(object, request));
+                                }
+                                addedProperties.put(object.getName(), object);
+                            } else if (!element.isDeclared() && object.isDeclared()) {
+                                resultList.add(JsCompletionItem.Factory.create(object, request));
+                                addedProperties.put(object.getName(), object);
+                            }
+
+                        }
+                    }
+                    completeKeywords(request, resultList);
+                    Collection<IndexedElement> fromIndex = JsIndex.get(fileObject).getGlobalVar(request.prefix);
+                    for (IndexedElement indexElement : fromIndex) {
+                        if (startsWith(indexElement.getName(), request.prefix)) {
+                            JsElement element = addedProperties.get(indexElement.getName());
+                            if (element == null) {
+                                if (indexElement.isDeclared()) {
+                                    resultList.add(JsCompletionItem.Factory.create(indexElement, request));
+                                }
+                                addedProperties.put(indexElement.getName(), indexElement);
+                            } else if (!element.isDeclared() && indexElement.isDeclared()) {
+                                resultList.add(JsCompletionItem.Factory.create(indexElement, request));
+                                addedProperties.put(indexElement.getName(), indexElement);
+                            }
+                        }
+                    }
+
+                    for (JsElement element : addedProperties.values()) {
+                        if (!element.isDeclared()) {
+                            resultList.add(JsCompletionItem.Factory.create(element, request));
+                        }
+                    }
+                    break;
+                case EXPRESSION:
+                    completeExpression(request, resultList);
+                    break;
+                case OBJECT_PROPERTY:
+                    completeObjectProperty(request, resultList);
+                    break;
+                case OBJECT_MEMBERS:
+                    completeObjectMember(request, resultList);
+                default:
+                    result = CodeCompletionResult.NONE;
+            }
         }
         
         long end = System.currentTimeMillis();
