@@ -50,6 +50,7 @@ import java.beans.PropertyVetoException;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.AbstractButton;
+import javax.swing.ActionMap;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import org.netbeans.modules.search.BasicComposition;
@@ -117,6 +118,7 @@ public abstract class BasicAbstractResultsPanel
         getExplorerManager().setRootContext(
                 resultsOutlineSupport.getRootNode());
         initSelectionListeners();
+        initActions();
         initResultNodeAdditionListener();
     }
 
@@ -133,6 +135,12 @@ public abstract class BasicAbstractResultsPanel
                 });
     }
 
+    private void initActions() {
+        ActionMap map = getActionMap();
+
+        map.put("jumpNext", new PrevNextAction(1));                    // NOI18N
+        map.put("jumpPrev", new PrevNextAction(-1));                   // NOI18N
+    }
     public void update() {
         if (details && expandButton != null && !expandButton.isEnabled()) {
             expandButton.setEnabled(resultModel.size() > 0);
@@ -588,5 +596,18 @@ public abstract class BasicAbstractResultsPanel
             removeChildAdditionListener(n);
         }
         removedNode.removeNodeListener(resultsNodeAdditionListener);
+    }
+
+    private final class PrevNextAction extends javax.swing.AbstractAction {
+
+        private int direction;
+
+        public PrevNextAction(int direction) {
+            this.direction = direction;
+        }
+
+        public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
+            shift(direction);
+        }
     }
 }
