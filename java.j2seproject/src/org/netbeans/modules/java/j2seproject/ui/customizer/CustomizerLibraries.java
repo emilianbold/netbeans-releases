@@ -50,6 +50,7 @@ import java.net.URL;
 import java.util.Iterator;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -178,13 +179,17 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         librariesLocation.setDocument(uiProperties.SHARED_LIBRARIES_MODEL);
         jComboBoxTarget.setModel(uiProperties.PLATFORM_MODEL);               
         jComboBoxTarget.setRenderer(uiProperties.PLATFORM_LIST_RENDERER);
-        jComboBoxTarget.putClientProperty ("JComboBox.isTableCellEditor", Boolean.TRUE);    //NOI18N
-        jComboBoxTarget.addItemListener(new java.awt.event.ItemListener(){ 
-            public void itemStateChanged(java.awt.event.ItemEvent e){ 
-                javax.swing.JComboBox combo = (javax.swing.JComboBox)e.getSource(); 
-                combo.setPopupVisible(false); 
-            } 
-        });
+        if (!UIManager.getLookAndFeel().getClass().getName().toUpperCase().contains("AQUA")) {  //NOI18N
+            //Not needed on Mac AQUA L&F also this causes an appearance problem on it
+            jComboBoxTarget.putClientProperty ("JComboBox.isTableCellEditor", Boolean.TRUE);    //NOI18N
+            jComboBoxTarget.addItemListener(new java.awt.event.ItemListener(){ 
+                @Override
+                public void itemStateChanged(java.awt.event.ItemEvent e){ 
+                    javax.swing.JComboBox combo = (javax.swing.JComboBox)e.getSource(); 
+                    combo.setPopupVisible(false); 
+                } 
+            });
+        }
         testBroken();
         if (J2SECompositePanelProvider.LIBRARIES.equals(subcat.getCategory())) {
             showSubCategory(subcat.getSubcategory());
