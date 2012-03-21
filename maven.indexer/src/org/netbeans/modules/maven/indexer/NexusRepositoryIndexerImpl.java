@@ -50,9 +50,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.*;
+import org.apache.lucene.store.SimpleFSDirectory;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.index.*;
@@ -212,10 +214,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
             LOGGER.log(Level.FINE, "Loading Context: {0}", info.getId());
                 File loc = new File(getDefaultIndexLocation(), info.getId()); // index folder
-                if (!loc.exists() || loc.listFiles().length <= 0) {
-                    //TODO this condition is not enough..
+                try {
+                    if (!loc.exists() || !new File(loc, "timestamp").exists() || !IndexReader.indexExists(new SimpleFSDirectory(loc))) {
+                        index = true;
+                        LOGGER.log(Level.FINER, "Index Not Available: {0} at: {1}", new Object[] {info.getId(), loc.getAbsolutePath()});
+                    }
+                } catch (IOException ex) {
                     index = true;
-                    LOGGER.log(Level.FINER, "Index Not Available: {0} at: {1}", new Object[] {info.getId(), loc.getAbsolutePath()});
+                    LOGGER.log(Level.FINER, "Index Not Available: " + info.getId() + " at: " + loc.getAbsolutePath(), ex);
                 }
 
                 List<IndexCreator> creators = new ArrayList<IndexCreator>();
@@ -1165,18 +1171,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>(repos.size());
         for (final RepositoryInfo repo : repos) {
             File loc = new File(getDefaultIndexLocation(), repo.getId()); // index folder
-            if (loc.exists()) {
-                File timestamp = new File(loc, "timestamp"); //NOI18N
-                if (timestamp.exists()) {
+            try {
+                if (loc.exists() && new File(loc, "timestamp").exists() && IndexReader.indexExists(new SimpleFSDirectory(loc))) {
                     toRet.add(repo);
                 }
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINER, "Index Not Available: " +repo.getId() + " at: " + loc.getAbsolutePath(), ex);
             }
         }
         return toRet;
-    }
-
-    private boolean isLoaded(final RepositoryInfo repo) {
-        return !getLoaded(Collections.singletonList(repo)).isEmpty();
     }
 
     private String toNexusField(String field) {
