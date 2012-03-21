@@ -498,7 +498,6 @@ public final class SyncPanel extends JPanel {
         DiffPanel diffPanel = new DiffPanel(remoteClient, syncItem, ProjectPropertiesSupport.getEncoding(project));
         try {
             if (diffPanel.open()) {
-                assert syncItem.getTmpLocalFile() != null : "TMP local file should be found for " + syncItem;
                 syncItem.setOperation(SyncItem.Operation.UPLOAD);
                 // need to redraw table
                 updateDisplayedItems();
