@@ -42,24 +42,24 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 <library version="1.0">
-    <name>TestNG-6.4beta</name>
+    <name>TestNG-6.5beta</name>
     <type>j2se</type>
     <localizing-bundle>org.netbeans.libs.testng.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.libs.testng/modules/ext/testng-6.4.1beta.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.testng/modules/ext/testng-6.5beta-dist.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.libs.testng/docs/testng-6.4beta-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.testng/docs/testng-6.5beta-javadoc.zip!/</resource>
     </volume>
     <volume>
         <type>maven-pom</type>
         <!-- snapshot versions are not available :-( -->
 <!--        <resource>http://repo1.maven.org/maven2/org/testng/testng/6.3.2/testng-6.3.2.pom</resource>-->
-        <resource>http://repo1.maven.org/maven2/org/testng/testng/6.3.1/testng-6.3.1.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/testng/testng/6.4/testng-6.4.pom</resource>
     </volume>
 </library>

@@ -96,7 +96,7 @@ public class AntTestNGSupport extends TestNGSupportImplementation {
         FileObject ng = cp.findResource("org.testng.annotations.Test"); //NOI18N
         if (ng == null) {
             // add library to the project
-            Library nglib = LibraryManager.getDefault().getLibrary("TestNG-6.4beta"); //NOI18N
+            Library nglib = LibraryManager.getDefault().getLibrary("TestNG-6.5beta"); //NOI18N
             try {
                 if (!ProjectClassPathModifier.addLibraries(new Library[]{nglib}, createdFile, ClassPath.COMPILE)) {
                     LOGGER.log(Level.FINE, "TestNG library not added to project {0}", p); //NOI18N
