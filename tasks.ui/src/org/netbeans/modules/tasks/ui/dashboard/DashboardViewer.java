@@ -436,13 +436,20 @@ public final class DashboardViewer {
         addRepositoryToModel(index, repositoryNode);
     }
 
-    public void removeRepository(AbstractRepositoryNode repositoryNode) {
+    public void removeRepository(final AbstractRepositoryNode repositoryNode) {
         if (repositoryNode instanceof RepositoryNode) {
             repositoryNodes.remove((RepositoryNode) repositoryNode);
         } else {
             closedRepositoryNodes.remove((ClosedRepositoryNode) repositoryNode);
         }
         model.removeRoot(repositoryNode);
+
+        requestProcessor.post(new Runnable() {
+            @Override
+            public void run() {
+                repositoryNode.getRepository().remove();
+            }
+        });
     }
 
     public void closeRepository(RepositoryNode repositoryNode) {

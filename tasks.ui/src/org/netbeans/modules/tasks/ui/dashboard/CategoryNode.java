@@ -82,9 +82,6 @@ public class CategoryNode extends AbstractCategoryNode {
     @Override
     protected List<TreeListNode> createChildren() {
         List<TaskNode> children = getFilteredTaskNodes();
-        for (TaskNode taskNode : children) {
-            taskNode.setCategory(getCategory());
-        }
         Collections.sort(children);
         return new ArrayList<TreeListNode>(children);
     }
