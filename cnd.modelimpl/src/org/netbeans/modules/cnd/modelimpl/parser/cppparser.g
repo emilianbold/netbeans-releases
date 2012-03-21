@@ -1804,7 +1804,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
         (options {greedy=true;} :type_attribute_specification)?
 //  |   LITERAL_typename	{td=true;}	direct_declarator 
     |   literal_typeof LPAREN typeof_param RPAREN
-    )                
+    )
+    ({allowTypedef}? LITERAL_typedef {td=true;})?
 )
 {declarationSpecifier(td, fd, sc, tq, ts, ds);}
 ;
