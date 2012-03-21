@@ -271,6 +271,17 @@
     <target name="-set-ant-javafx-in-probjdk-tools" depends="-set-ant-javafx-in-probjdk-lib,-check-ant-javafx-in-probjdk-tools" if="do.set.ant-javafx.in.probjdk.tools">
         <property name="ant-javafx.jar.location" value="${java.home}${file.separator}..${file.separator}tools${file.separator}ant-javafx.jar"/>
     </target>
+    <target name="-check-ant-javafx-in-macjdk-lib" unless="ant-javafx.jar.location">
+        <condition property="do.set.ant-javafx.in.macjdk.lib">
+            <and>
+                <not><isset property="ant-javafx.jar.location"/></not>
+                <available file="${java.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-ant-javafx-in-macjdk-lib" depends="-set-ant-javafx-in-probjdk-tools,-check-ant-javafx-in-macjdk-lib" if="do.set.ant-javafx.in.macjdk.lib">
+        <property name="ant-javafx.jar.location" value="${java.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
+    </target>
     <target name="-check-ant-javafx-in-envjdk-lib" unless="ant-javafx.jar.location">
         <property environment="env"/>
         <condition property="do.set.ant-javafx.in.envjdk.lib">
@@ -280,7 +291,7 @@
             </and>
         </condition>
     </target>
-    <target name="-set-ant-javafx-in-envjdk-lib" depends="-set-ant-javafx-in-probjdk-tools,-check-ant-javafx-in-envjdk-lib" if="do.set.ant-javafx.in.envjdk.lib">
+    <target name="-set-ant-javafx-in-envjdk-lib" depends="-set-ant-javafx-in-macjdk-lib,-check-ant-javafx-in-envjdk-lib" if="do.set.ant-javafx.in.envjdk.lib">
         <property name="ant-javafx.jar.location" value="${env.JAVA_HOME}${file.separator}lib${file.separator}ant-javafx.jar"/>
     </target>
     <target name="-check-ant-javafx-in-envjdk-tools" unless="ant-javafx.jar.location">
