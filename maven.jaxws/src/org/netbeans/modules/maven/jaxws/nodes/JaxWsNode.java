@@ -145,20 +145,26 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         this.implBeanClass = implBeanClass;
         project = FileOwnerQuery.getOwner(srcRoot);
         
-        /*if (implBeanClass.getAttribute("jax-ws-service") == null ||
-                service.isServiceProvider() && 
-                implBeanClass.getAttribute("jax-ws-service-provider") == null)  // NOI18N
+        if (implBeanClass.getAttribute("jax-ws-service") == null && service.isServiceProvider() )
+              // isServiceProvider() means class is WS not a client
+                /*|| service.isServiceProvider() && 
+                implBeanClass.getAttribute("jax-ws-service-provider") == null)  // NOI18N*/
         {
             try {
                 if (implBeanClass.getAttribute("jax-ws-service") == null) {     // NOI18N
                     implBeanClass.setAttribute("jax-ws-service", Boolean.TRUE); // NOI18N
                 }
-                if (service.isServiceProvider() && 
+                /* JaxWsService represent both WS and WS-client.
+                 * isServiceProvider() method distinguishes WS itself and client.
+                 * That differs from Service in ant based project where service provider
+                 * identified by corresponding specific annotation. 
+                 *   
+                 * if (service.isServiceProvider() && 
                         implBeanClass.getAttribute("jax-ws-service-provider") == null) // NOI18N
                 {
                     implBeanClass.setAttribute("jax-ws-service-provider",       // NOI18N
                             Boolean.TRUE);
-                }
+                }*/
                 getDataObject().setValid(false);
                 getDataObject();
             } 
@@ -168,7 +174,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
             catch (IOException ex) {
                 LOG.log( Level.WARNING, null , ex);
             }
-        }*/
+        }
         
         String serviceName = service.getServiceName();
         setName(serviceName);
