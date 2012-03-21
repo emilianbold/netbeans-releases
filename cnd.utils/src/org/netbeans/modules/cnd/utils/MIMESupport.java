@@ -76,7 +76,7 @@ public final class MIMESupport {
         Parameters.notNull("file object", fo); // NOI18N
         // try fast check
         String mime = FileUtil.getMIMEType(fo, SOURCE_MIME_TYPES);
-        if (mime == null) {
+        if (mime == null || mime.equals("content/unknown")) { // NOI18N
             // now full check
             mime = FileUtil.getMIMEType(fo);
         }
