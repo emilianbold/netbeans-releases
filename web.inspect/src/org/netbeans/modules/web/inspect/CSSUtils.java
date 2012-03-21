@@ -254,6 +254,11 @@ public class CSSUtils {
         registerProperty(new CSSProperty("outline-offset", false)); // NOI18N
         registerProperty(new CSSProperty("resize", false)); // NOI18N
         registerProperty(new CSSProperty("text-overflow", false)); // NOI18N
+        // https://developer.mozilla.org/en/CSS/-moz-border-top-colors
+        registerProperty(new CSSProperty("border-top-colors", false)); // NOI18N
+        registerProperty(new CSSProperty("border-right-colors", false)); // NOI18N
+        registerProperty(new CSSProperty("border-bottom-colors", false)); // NOI18N
+        registerProperty(new CSSProperty("border-left-colors", false)); // NOI18N
     }
 
     /**

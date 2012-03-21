@@ -43,6 +43,7 @@ package org.netbeans.modules.web.inspect.ui;
 
 import java.awt.SystemColor;
 import java.util.Map;
+import java.util.TreeMap;
 import javax.swing.*;
 import javax.swing.GroupLayout.*;
 import javax.swing.LayoutStyle.*;
@@ -91,7 +92,11 @@ public class MatchedRulesRulePanel extends JPanel {
         rulesHorizontalGroup.addPreferredGap(ComponentPlacement.RELATED);
         rulesHorizontalGroup.addGroup(ruleValuesHorizontalGroup);
         horizontalGroup.addGroup(rulesHorizontalGroup);
-        for (Map.Entry<String,String> entry : rule.getStyle().entrySet()) {
+        // Extensions return low-level properties only and they do not
+        // honor the order of the properties. So, there is probably
+        // no reason not to sort the properties.
+        Map<String,String> sortedStyle = new TreeMap<String,String>(rule.getStyle());
+        for (Map.Entry<String,String> entry : sortedStyle.entrySet()) {
             String name = entry.getKey();
             String value = entry.getValue();
             JComponent nameComponent = createPropertyNameComponent(name);
