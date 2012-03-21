@@ -252,7 +252,8 @@ public class ProjectTab extends TopComponent
     
     @Override
     public UndoRedo getUndoRedo() {
-        return Lookups.forPath("org/netbeans/modules/refactoring").lookup(UndoRedo.class);
+        final UndoRedo undoRedo = Lookups.forPath("org/netbeans/modules/refactoring").lookup(UndoRedo.class);
+        return undoRedo==null?UndoRedo.NONE:undoRedo;
     }    
     
     /* Singleton accessor. As ProjectTab is persistent singleton this
