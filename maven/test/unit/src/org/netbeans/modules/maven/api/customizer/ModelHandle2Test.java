@@ -49,9 +49,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
 
-public class ModelHandleTest extends NbTestCase {
+public class ModelHandle2Test extends NbTestCase {
 
-    public ModelHandleTest(String name) {
+    public ModelHandle2Test(String name) {
         super(name);
     }
 
@@ -74,14 +74,14 @@ public class ModelHandleTest extends NbTestCase {
             }
         }
         assertEquals("jetty", cp.getActiveConfiguration().getId());
-        NetbeansActionMapping mapp = ModelHandle.getMapping("run", project, cp.getActiveConfiguration());
+        NetbeansActionMapping mapp = ModelHandle2.getMapping("run", project, cp.getActiveConfiguration());
         assertNotNull(mapp);
         assertEquals("Jetty", mapp.getDisplayName());
         Map<String,String> props = mapp.getProperties();
         assertNotNull(props);
         assertEquals("{someprop=v}", props.toString());
         props.remove("someprop");
-        ModelHandle.putMapping(mapp, project, cp.getActiveConfiguration());
+        ModelHandle2.putMapping(mapp, project, cp.getActiveConfiguration());
         assertEquals("jetty", cp.getActiveConfiguration().getId());
         assertFalse(nbactionsJetty.asText().contains("someprop"));
     }
