@@ -229,7 +229,6 @@ public class EditorModule extends ModuleInstall {
              public void propertyChange(PropertyChangeEvent evt){
                  if (evt == null)
                      return;             
-                 EditorFindSupport efs = EditorFindSupport.getInstance();
                  if (SearchHistory.ADD_TO_HISTORY.equals(evt.getPropertyName())){
                      EditorFindSupport.getInstance().setHistory(
                              SearchHistoryUtility.convertFromSearchHistoryToEditorFindSupport(SearchHistory.getDefault().getSearchPatterns()));

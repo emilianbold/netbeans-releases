@@ -48,7 +48,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import org.netbeans.modules.editor.impl.ReplaceBar;
+import org.netbeans.modules.editor.search.ReplaceBar;
 
 /**
  *

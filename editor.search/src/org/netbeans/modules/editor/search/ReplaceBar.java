@@ -37,7 +37,7 @@
  * therefore, elected the GPL Version 2 license, then the option applies only
  * if the new code is made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.editor.impl;
+package org.netbeans.modules.editor.search;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -51,8 +51,10 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.EditorKit;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.GuardedException;
-import org.netbeans.modules.editor.impl.SearchBar.ExpandMenu;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -63,11 +65,9 @@ public final class ReplaceBar extends JPanel {
     private static final Logger LOG = Logger.getLogger(ReplaceBar.class.getName());
     private static final boolean CLOSE_ON_ENTER = Boolean.getBoolean("org.netbeans.modules.editor.search.closeOnEnter"); // NOI18N
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
-    private static final int DEFAULT_INCREMANTAL_SEARCH_COMBO_WIDTH = 200;
-    private static final int MAX_INCREMANTAL_SEARCH_COMBO_WIDTH = 350;
     private SearchBar searchBar;
     private final JComboBox replaceComboBox;
-    private final JTextField replaceTextField;
+    private final JTextComponent replaceTextField;
     private final JButton replaceButton;
     private final JButton replaceAllButton;
     private final JLabel replaceLabel;
@@ -75,7 +75,7 @@ public final class ReplaceBar extends JPanel {
     private ActionListener actionListenerForPreserveCase;
     private final JCheckBox backwardsCheckBox;
     private final FocusTraversalPolicy searchBarFocusTraversalPolicy;
-    private List<JComponent> focusList = new ArrayList<JComponent>();
+    private List<Component> focusList = new ArrayList<Component>();
     private boolean popupMenuWasCanceled = false;
 
     public static ReplaceBar getInstance(SearchBar searchBar) {
@@ -87,41 +87,41 @@ public final class ReplaceBar extends JPanel {
         }
         return replacebarInstance;
     }
-    private final ExpandMenu expandMenu;
+    private final SearchExpandMenu expandMenu;
 
     private ReplaceBar(SearchBar searchBar) {
         setSearchBar(searchBar);
         addEscapeKeystrokeFocusBackTo(this);
-        searchBar.addKeystrokeFindActionTo(this);
-        searchBar.addKeystrokeReplaceActionTo(this);
-
+        
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         setFocusCycleRoot(true);
         Color bgColor = getBackground();
-        setBackground(new Color(Math.max(0, bgColor.getRed() - 20),
+        bgColor = new Color(Math.max(0, bgColor.getRed() - 20),
                 Math.max(0, bgColor.getGreen() - 20),
-                Math.max(0, bgColor.getBlue() - 20)));
+                Math.max(0, bgColor.getBlue() - 20));
+        setBackground(bgColor);
         setForeground(UIManager.getColor("textText")); //NOI18N
 
         // padding at the end of the toolbar
         add(Box.createHorizontalStrut(8)); //spacer in the beginnning of the toolbar
-
-        replaceComboBox = createReplaceComboBox();
+        SearchComboBox scb = new SearchComboBox();
+        scb.getEditor().getEditorComponent().setBackground(bgColor);
+        replaceComboBox = scb;
+        replaceComboBox.addPopupMenuListener(new ReplacePopupMenuListener());
         replaceLabel = new JLabel();
         Mnemonics.setLocalizedText(replaceLabel, NbBundle.getMessage(ReplaceBar.class, "CTL_Replace")); // NOI18N
         replaceLabel.setLabelFor(replaceComboBox);
         add(replaceLabel);
-        replaceTextField = (JTextField) replaceComboBox.getEditor().getEditorComponent();
+        replaceTextField = scb.getEditorPane();
         replaceTextField.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceText")); // NOI18N
         // flatten the action map for the text field to allow removal
-        ActionMap origActionMap = replaceTextField.getActionMap();
-        ActionMap newActionMap = new ActionMap();
-        for (Object key : origActionMap.allKeys()) {
-            newActionMap.put(key, origActionMap.get(key));
-        }
-        replaceTextField.setActionMap(newActionMap);
+//        ActionMap origActionMap = replaceTextField.getActionMap();
+//        ActionMap newActionMap = new ActionMap();
+//        for (Object key : origActionMap.allKeys()) {
+//            newActionMap.put(key, origActionMap.get(key));
+//        }
+//        replaceTextField.setActionMap(newActionMap);
         replaceTextField.getActionMap().remove("toggle-componentOrientation"); // NOI18N
-        replaceTextField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.CTRL_DOWN_MASK), "none"); // NOI18N
         replaceTextField.addFocusListener(new FocusAdapter() {
 
             @Override
@@ -178,7 +178,7 @@ public final class ReplaceBar extends JPanel {
         preserveCaseCheckBox.setSelected(searchBar.getFindSupportValue(EditorFindSupport.FIND_PRESERVE_CASE));
         preserveCaseCheckBox.setEnabled(!searchBar.getRegExp() && !searchBar.getFindSupportValue(EditorFindSupport.FIND_MATCH_CASE));
 
-        expandMenu = searchBar.new ExpandMenu(backwardsCheckBox.getHeight());
+        expandMenu = new SearchExpandMenu(backwardsCheckBox.getHeight());
         JButton expButton = expandMenu.getExpandButton();
         expButton.setMnemonic(NbBundle.getMessage(ReplaceBar.class, "CTL_ReplaceExpandButton_Mnemonic").charAt(0)); // NOI18N
         expButton.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceExpandButton")); // NOI18N
@@ -187,10 +187,12 @@ public final class ReplaceBar extends JPanel {
         // padding at the end of the toolbar
         add(expandMenu.getPadding());
 
-        searchBarFocusTraversalPolicy = createSearchBarFocusTraversalPolicy();
+        focusList.clear();
+        focusList.add(searchBar.getIncSearchTextField());
+        focusList.add(replaceTextField);
+        searchBarFocusTraversalPolicy = new ListFocusTraversalPolicy(focusList);
 
         setVisible(false);
-        createFocusList();
         makeBarExpandable(expandMenu);
     }
 
@@ -198,14 +200,11 @@ public final class ReplaceBar extends JPanel {
         return searchBar;
     }
 
-    
     private void setSearchBar(SearchBar searchBar) {
         this.searchBar = searchBar;
-        createFocusList();
-
     }
 
-    private void makeBarExpandable(ExpandMenu expMenu) {
+    private void makeBarExpandable(SearchExpandMenu expMenu) {
         expMenu.addToInbar(backwardsCheckBox);
         expMenu.addToInbar(preserveCaseCheckBox);
         expMenu.addAllToBarOrder(Arrays.asList(this.getComponents()));
@@ -233,7 +232,7 @@ public final class ReplaceBar extends JPanel {
         }
     }
 
-    private void addEnterKeystrokeReplaceTo(JTextField replaceTextField) {
+    private void addEnterKeystrokeReplaceTo(JTextComponent replaceTextField) {
         replaceTextField.getInputMap().put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
                 "replace-next"); // NOI18N
@@ -250,7 +249,7 @@ public final class ReplaceBar extends JPanel {
         });
     }
 
-    private void addShiftEnterReplaceAllTo(JTextField textField) {
+    private void addShiftEnterReplaceAllTo(JTextComponent textField) {
         textField.getInputMap().put(KeyStroke.getKeyStroke(
                 KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK, true),
                 "replace-all"); // NOI18N
@@ -265,120 +264,6 @@ public final class ReplaceBar extends JPanel {
                 }
             }
         });
-    }
-
-    private void createFocusList() {
-        focusList.clear();
-        focusList.add(searchBar.getIncSearchTextField());
-        focusList.add(replaceTextField);
-//        focusList.add(replaceButton);
-//        focusList.add(replaceAllButton);
-//        focusList.add(expandButton);
-//        focusList.add(searchBar.getFindPreviousButton());
-//        focusList.add(searchBar.getFindNextButton());
-//        focusList.add(searchBar.getExpandButton());
-
-    }
-
-    private List<JComponent> getFocusList() {
-        return focusList;
-    }
-
-    private FocusTraversalPolicy createSearchBarFocusTraversalPolicy() {
-        return new FocusTraversalPolicy() {
-
-            @Override
-            public Component getComponentAfter(Container aContainer, Component aComponent) {
-                int indexOf = getFocusList().indexOf(aComponent);
-                if (indexOf == -1) {
-                    return null;
-                } else if (indexOf == getFocusList().size() - 1) {
-                    return isFocusableComponent(getFocusList().get(0)) ? getFocusList().get(0) : getComponentAfter(aContainer, getFocusList().get(0));
-                } else {
-                    return isFocusableComponent(getFocusList().get(indexOf + 1)) ? getFocusList().get(indexOf + 1) : getComponentAfter(aContainer, getFocusList().get(indexOf + 1));
-                }
-            }
-
-            @Override
-            public Component getComponentBefore(Container aContainer, Component aComponent) {
-                int indexOf = getFocusList().indexOf(aComponent);
-                if (indexOf == -1) {
-                    return null;
-                } else if (indexOf == 0) {
-                    return isFocusableComponent(getFocusList().get(getFocusList().size() - 1)) && getFocusList().get(getFocusList().size() - 1).isVisible() ? getFocusList().get(getFocusList().size() - 1) : getComponentBefore(aContainer, getFocusList().get(getFocusList().size() - 1));
-                } else {
-                    return isFocusableComponent(getFocusList().get(indexOf - 1)) ? getFocusList().get(indexOf - 1) : getComponentBefore(aContainer, getFocusList().get(indexOf - 1));
-                }
-            }
-
-            @Override
-            public Component getFirstComponent(Container aContainer) {
-                return getFocusList().get(0);
-            }
-
-            @Override
-            public Component getLastComponent(Container aContainer) {
-                return getFocusList().get(getFocusList().size() - 1);
-            }
-
-            @Override
-            public Component getDefaultComponent(Container aContainer) {
-                return getFocusList().get(0);
-            }
-
-            private boolean isFocusableComponent(Component aComponent) {
-                return aComponent.isEnabled() && aComponent.isVisible();
-            }
-        };
-    }
-
-    private JComboBox createReplaceComboBox() {
-        JComboBox repComboBox = new JComboBox() {
-
-            @Override
-            public Dimension getMinimumSize() {
-                return getPreferredSize();
-            }
-
-            @Override
-            public Dimension getMaximumSize() {
-                return getPreferredSize();
-            }
-
-            @Override
-            public Dimension getPreferredSize() {
-                int width;
-                int editsize = this.getEditor().getEditorComponent().getPreferredSize().width + 10;
-                if (editsize > DEFAULT_INCREMANTAL_SEARCH_COMBO_WIDTH && editsize < MAX_INCREMANTAL_SEARCH_COMBO_WIDTH) {
-                    width = editsize;
-                } else if (editsize >= MAX_INCREMANTAL_SEARCH_COMBO_WIDTH) {
-                    width = MAX_INCREMANTAL_SEARCH_COMBO_WIDTH;
-                } else {
-                    width = DEFAULT_INCREMANTAL_SEARCH_COMBO_WIDTH;
-                }
-                return new Dimension(width,
-                        super.getPreferredSize().height);
-            }
-        };
-
-        repComboBox.setEditable(true);
-        repComboBox.addPopupMenuListener(new PopupMenuListener() {
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                
-            }
-
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-  
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-                popupMenuWasCanceled = true;
-            }
-        });
-        return repComboBox;
     }
 
     private void addEscapeKeystrokeFocusBackTo(JPanel jpanel) {
@@ -397,6 +282,10 @@ public final class ReplaceBar extends JPanel {
                     
             }
         });
+    }
+
+    public JTextComponent getReplaceTextField() {
+        return replaceTextField;
     }
 
     void updateReplaceComboBoxHistory(String incrementalSearchText) {
@@ -418,6 +307,7 @@ public final class ReplaceBar extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     preserveCaseCheckBox.setEnabled(!searchBar.getRegexpCheckBox().isSelected() && !searchBar.getMatchCaseCheckBox().isSelected());
+
                 }
             };
         } else {
@@ -466,7 +356,7 @@ public final class ReplaceBar extends JPanel {
         searchBar.getPreferredSize();
     }
 
-    void looseFocus() {
+    public void looseFocus() {
         if (!isVisible()) {
             return;
         }
@@ -475,10 +365,11 @@ public final class ReplaceBar extends JPanel {
         setVisible(false);
     }
 
-    void gainFocus() {
+    public void gainFocus() {
         if (!isVisible()) {
             changeSearchBarToBePartOfReplaceBar();
             setVisible(true);
+            SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) replaceTextField);
         }
         searchBar.gainFocus();
         searchBar.getIncSearchTextField().requestFocusInWindow();
@@ -515,6 +406,22 @@ public final class ReplaceBar extends JPanel {
             } catch (BadLocationException ble) {
                 LOG.log(Level.WARNING, null, ble);
             }
+        }
+    }
+
+    private class ReplacePopupMenuListener implements PopupMenuListener {
+
+        @Override
+        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+        }
+
+        @Override
+        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+        }
+
+        @Override
+        public void popupMenuCanceled(PopupMenuEvent e) {
+            popupMenuWasCanceled = true;
         }
     }
 }
