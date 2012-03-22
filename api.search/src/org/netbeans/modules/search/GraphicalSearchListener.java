@@ -122,8 +122,7 @@ class GraphicalSearchListener<R> extends SearchListener {
                 Savable.REGISTRY.lookupAll(Savable.class);
         if (unsaved.size() > 0) {
             String msg = NbBundle.getMessage(ResultView.class,
-                    "TEXT_INFO_WARNING_UNSAVED",
-                    unsaved.iterator().next().toString(), unsaved.size());
+                    "TEXT_INFO_WARNING_UNSAVED");
             eventChildren.addEvent(new EventNode(EventType.WARNING, msg));
         }
     }
