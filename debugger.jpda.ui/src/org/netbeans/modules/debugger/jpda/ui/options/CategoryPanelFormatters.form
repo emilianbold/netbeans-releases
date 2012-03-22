@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -55,7 +55,7 @@
                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                       <Component id="formatterNameLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="jSeparator1" pref="490" max="32767" attributes="0"/>
+                      <Component id="jSeparator1" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -65,7 +65,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="formatterClassTypesLabel" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="formatterClassTypesTextField" pref="366" max="32767" attributes="0"/>
+                                      <Component id="formatterClassTypesTextField" max="32767" attributes="0"/>
                                   </Group>
                                   <Component id="formatValueLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="childrenCodeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -75,7 +75,7 @@
                               <EmptySpace min="6" pref="6" max="6" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
-                              <Component id="formattersScrollPane" pref="505" max="32767" attributes="0"/>
+                              <Component id="formattersScrollPane" max="32767" attributes="0"/>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -85,9 +85,7 @@
                       <EmptySpace min="12" pref="12" max="12" attributes="0"/>
                       <Component id="formatChildrenLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="testChildrenTextField" pref="412" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="formatChildrenLabelIf" min="-2" max="-2" attributes="0"/>
+                      <Component id="testChildrenTextField" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
@@ -128,7 +126,6 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="formatChildrenLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="testChildrenTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="formatChildrenLabelIf" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="childrenCodeLabel" min="-2" max="-2" attributes="0"/>
@@ -368,13 +365,6 @@
         <Property name="editable" type="boolean" value="false"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelFormatters.testChildrenTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="formatChildrenLabelIf">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelFormatters.formatChildrenLabelIf.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
