@@ -74,13 +74,13 @@ import org.openide.util.NbBundle.Messages;
  */
 public class ModelHandle2 {
     
-    public static final String PANEL_RUN = ModelHandle.PANEL_RUN;
-    public static final String PANEL_BASIC = ModelHandle.PANEL_BASIC;
-    public static final String PANEL_CONFIGURATION = ModelHandle.PANEL_CONFIGURATION;
-    public static final String PANEL_MAPPING = ModelHandle.PANEL_MAPPING;
-    public static final String PANEL_LIBRARIES = ModelHandle.PANEL_LIBRARIES;
-    public static final String PANEL_SOURCES = ModelHandle.PANEL_SOURCES;
-    public static final String PANEL_COMPILE = ModelHandle.PANEL_COMPILE;
+    public static final String PANEL_RUN = "RUN"; //NOI18N
+    public static final String PANEL_BASIC = "BASIC"; //NOI18N
+    public static final String PANEL_CONFIGURATION = "CONFIGURATION"; //NOI18N
+    public static final String PANEL_MAPPING = "MAPPING"; //NOI18N
+    public static final String PANEL_LIBRARIES = "LIBRARIES"; //NOI18N
+    public static final String PANEL_SOURCES = "SOURCES"; //NOI18N
+    public static final String PANEL_COMPILE = "COMPILE"; //NOI18N
 
     
     private final MavenProjectPropsImpl auxiliaryProps;
