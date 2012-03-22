@@ -274,15 +274,15 @@
             </test-dependencies>  -->
             <public-packages/>
             <class-path-extension>
-                <runtime-relative-path>ext/json_simple-1.1.jar</runtime-relative-path>
+                <runtime-relative-path>ext/chrome/json_simple-1.1.jar</runtime-relative-path>
                 <binary-origin>external/json_simple-1.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/lib.org.chromium.sdk.jar</runtime-relative-path>
+                <runtime-relative-path>ext/chrome/lib.org.chromium.sdk.jar</runtime-relative-path>
                 <binary-origin>external/lib.org.chromium.sdk.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/lib.org.chromium.sdk.wipbackend.protocol_1_0.jar</runtime-relative-path>
+                <runtime-relative-path>ext/chrome/lib.org.chromium.sdk.wipbackend.protocol_1_0.jar</runtime-relative-path>
                 <binary-origin>external/lib.org.chromium.sdk.wipbackend.protocol_1_0.jar</binary-origin>
             </class-path-extension>
         </data>
