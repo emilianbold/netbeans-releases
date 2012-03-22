@@ -328,7 +328,7 @@ Microsystems, Inc. All Rights Reserved.
                                                -javafx(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javafx-${nb.id}.pkg)
                                           "/>
 
-        <property name="jdk-bundle.bundles" value="-jdk(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/jdk/${jdk.package.name}.pkg)"/>
+        <property name="jdk-bundle.bundles" value="-jdk(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/${jdk.package.name}.pkg)"/>
 
         <condition property="all.bundles" value="${main.bundles}" else="${main.bundles},${fx.bundles}"> 
             <equals arg1="${javafx.build}" arg2="0"/>
@@ -355,7 +355,7 @@ Microsystems, Inc. All Rights Reserved.
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
                  <property name="dmg.name" value="${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx"/>
-                 <property name="mpkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_nb_jdk}"/>
+                 <property name="mpkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_jdk}"/>
                  <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
             </ant>     
         </for-each>         
@@ -598,6 +598,7 @@ Microsystems, Inc. All Rights Reserved.
         </copy> 
         
         <mkdir dir="${mpkg.file}/Contents/Packages"/>         
+        <echo message="Copying ${packages} to '${mpkg.file}'/Contents/Packages..."/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="cp -RPf ${packages} '${mpkg.file}'/Contents/Packages"/>
