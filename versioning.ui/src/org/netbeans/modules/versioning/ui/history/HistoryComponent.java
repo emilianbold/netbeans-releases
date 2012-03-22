@@ -626,6 +626,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         }
         @Override
         public boolean accept(Object value) {
+            if(HistoryRootNode.isLoadNext(value) || HistoryRootNode.isWait(value)) return true;
+            
             HistoryEntry e = getEntry(value);
             if(e != null) {
                 if(!e.isLocalHistory()) return true;
@@ -654,6 +656,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private class ByUserFilter extends Filter {
         @Override
         public boolean accept(Object value) {
+            if(HistoryRootNode.isLoadNext(value) || HistoryRootNode.isWait(value)) return true;
+            
             String byUser = getToolbar().containsField.getText();
             if(byUser == null || "".equals(byUser)) return true;                // NOI18N
             
@@ -676,6 +680,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private class ByMsgFilter extends Filter {
         @Override
         public boolean accept(Object value) {
+            if(HistoryRootNode.isLoadNext(value) || HistoryRootNode.isWait(value)) return true;
+            
             String byMsg = getToolbar().containsField.getText();
             if(byMsg == null || "".equals(byMsg)) return true;
             

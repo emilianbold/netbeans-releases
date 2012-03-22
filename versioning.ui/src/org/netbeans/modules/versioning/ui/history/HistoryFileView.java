@@ -713,7 +713,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     valueString = escapeForHTMLLabel(valueString); // XXX might clash with rendered filter matches
                     
                     Filter f = tc != null ? tc.getSelectedFilter() : null;
-                    if(f != null) {
+                    if(f != null && !(value instanceof HistoryRootNode.LoadNextNode.MessageProperty)) {
                         valueString = f.getRendererValue(valueString);
                     }
                     if(value instanceof RevisionNode.MessageProperty) {
