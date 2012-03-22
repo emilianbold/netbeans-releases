@@ -812,6 +812,22 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "$sql = \" {$this->field1} {$this->object2->xxx} {$this->fie^ld3['array1']} \";", true);
     }
 
+    public void testQualifiedUseStatement_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Kit^chen {", true);
+    }
+
+    public void testQualifiedUseStatement_02() throws Exception {
+        checkOccurrences(getTestPath(), "use pl\\dagguh\\someproject\\rooms\\Kit^chen;", true);
+    }
+
+    public void testQualifiedUseStatement_03() throws Exception {
+        checkOccurrences(getTestPath(), "Kit^chen::DEFAULT_SIZE;", true);
+    }
+
+    public void testQualifiedUseStatement_04() throws Exception {
+        checkOccurrences(getTestPath(), "use pl\\dagguh\\someproject\\rooms\\Kit^chen as Alias;", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

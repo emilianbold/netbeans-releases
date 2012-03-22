@@ -116,18 +116,15 @@ public class GroovyEmbeddingProvider extends EmbeddingProvider {
 
         return embeddings;
     }
-    /** Perform groovy translation
+    /** 
+     * Perform groovy translation.
+     * 
      * @param outputBuffer The buffer to emit the translation to
      * @param tokenHierarchy The token hierarchy for the RHTML code
      * @param tokenSequence  The token sequence for the RHTML code
      */
-    private void translate(Snapshot snapshot, /*TokenHierarchy<Document> tokenHierarchy,*/
-            TokenSequence<? extends GspTokenId> tokenSequence, List<Embedding> embeddings) {
-        //StringBuilder buffer = outputBuffer;
-
+    private void translate(Snapshot snapshot, TokenSequence<? extends GspTokenId> tokenSequence, List<Embedding> embeddings) {
         embeddings.add(snapshot.create("def _buf ='';", GroovyTokenId.GROOVY_MIME_TYPE));
-//        buffer.append("def _buf ='';"); // NOI18N
-//        codeBlocks.add(new CodeBlockData(0, 0, 0, buffer.length()));
 
         boolean skipNewline = false;
         while(tokenSequence.moveNext()) {
@@ -136,7 +133,6 @@ public class GroovyEmbeddingProvider extends EmbeddingProvider {
             if (token.id() == GspTokenId.HTML){
                 int sourceStart = tokenSequence.offset(); //token.offset(tokenHierarchy);
                 int sourceEnd = sourceStart + token.length();
-                //int generatedStart = buffer.length();
 
                 CharSequence charSequence = token.text();
                 String text = charSequence == null ? "" : charSequence.toString();
@@ -159,12 +155,10 @@ public class GroovyEmbeddingProvider extends EmbeddingProvider {
 
                 if (found) {
                     embeddings.add(snapshot.create(sourceStart, i, GroovyTokenId.GROOVY_MIME_TYPE));
-                    //buffer.append(text.substring(0, i));
                     text = text.substring(i);
                 }
 
                 embeddings.add(snapshot.create("_buf += \"\"\"", GroovyTokenId.GROOVY_MIME_TYPE));
-                //buffer.append("_buf += \"\"\""); // NOI18N
                 if (skipNewline && text.startsWith("\n")) { // NOI18N
                     text = text.substring(1);
                     sourceEnd--;
@@ -172,21 +166,11 @@ public class GroovyEmbeddingProvider extends EmbeddingProvider {
                 // FIXME what to do with this ?
                 // FIXME this does not seem to be correct
                 embeddings.add(snapshot.create(text.replace("\"", "\\\""), GroovyTokenId.GROOVY_MIME_TYPE));
-                //text = text.replace("\"", "\\\"");
-                //buffer.append(text);
-
                 embeddings.add(snapshot.create("\"\"\";", GroovyTokenId.GROOVY_MIME_TYPE));
-                //buffer.append("\"\"\";"); // NOI18N
-//                int generatedEnd = buffer.length();
-
-//                CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart, generatedEnd);
-//                codeBlocks.add(blockData);
 
                 skipNewline = false;
             } else if (token.id() == GspTokenId.GROOVY){
                 int sourceStart = tokenSequence.offset();//token.offset(tokenHierarchy);
-                //int sourceEnd = sourceStart + token.length();
-                //int generatedStart = buffer.length();
 
                 String text = token.text().toString();
                 // handle <%-- foo --%> and %{-- bar --%} comments
@@ -196,45 +180,22 @@ public class GroovyEmbeddingProvider extends EmbeddingProvider {
                     int last = text.lastIndexOf("--");
                     if (first != last && (last - 2) > 0) {
                         embeddings.add(snapshot.create("/*", GroovyTokenId.GROOVY_MIME_TYPE));
-                        //buffer.append("/*");
                         embeddings.add(snapshot.create(sourceStart + first + 2, last - 2, GroovyTokenId.GROOVY_MIME_TYPE));
-                        //buffer.append(text.substring(first + 2, last));
                         embeddings.add(snapshot.create("*/", GroovyTokenId.GROOVY_MIME_TYPE));
-                        //buffer.append("*/");
                     }
                 } else {
                     embeddings.add(snapshot.create(sourceStart, text.length(), GroovyTokenId.GROOVY_MIME_TYPE));
-                    //buffer.append(text);
                     embeddings.add(snapshot.create(";", GroovyTokenId.GROOVY_MIME_TYPE));
-                    //buffer.append(';');
                 }
-                skipNewline = false;
-
-//                int generatedEnd = buffer.length();
-//
-//                CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart, generatedEnd);
-//                codeBlocks.add(blockData);
-
                 skipNewline = false;
             } else if (token.id() == GspTokenId.GROOVY_EXPR) {
                 embeddings.add(snapshot.create("_buf += (", GroovyTokenId.GROOVY_MIME_TYPE));
-                //buffer.append("_buf += ("); // NOI18N
                 int sourceStart = tokenSequence.offset();//token.offset(tokenHierarchy);
-                //int sourceEnd = sourceStart + token.length();
-                //int generatedStart = buffer.length();
 
                 String text = token.text().toString();
                 skipNewline = false;
                 embeddings.add(snapshot.create(sourceStart, text.length(), GroovyTokenId.GROOVY_MIME_TYPE));
-                //buffer.append(text);
-
                 embeddings.add(snapshot.create(";)", GroovyTokenId.GROOVY_MIME_TYPE));
-//                buffer.append(';');
-//                int generatedEnd = buffer.length();
-//
-//                CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart, generatedEnd);
-//                codeBlocks.add(blockData);
-//                buffer.append(")"); // NOI18N
             }
         }
 
@@ -242,7 +203,6 @@ public class GroovyEmbeddingProvider extends EmbeddingProvider {
 
     public static final class Factory extends TaskFactory {
         public Factory() {
-            // no-op
         }
 
         public @Override Collection<? extends SchedulerTask> create(Snapshot snapshot) {
@@ -253,5 +213,4 @@ public class GroovyEmbeddingProvider extends EmbeddingProvider {
             return Collections.singleton(new GroovyEmbeddingProvider());
         }
     }
-
 }

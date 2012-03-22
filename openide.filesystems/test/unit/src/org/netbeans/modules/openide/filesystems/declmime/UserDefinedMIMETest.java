@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,49 +34,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.openide.filesystems.declmime;
 
-package org.netbeans.modules.extbrowser;
+import java.io.OutputStream;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-import java.awt.Image;
-import java.beans.*;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class UserDefinedMIMETest extends NbTestCase {
 
-public class NetscapeBrowserBeanInfo extends SimpleBeanInfo {
-
-    public BeanDescriptor getBeanDescriptor() {
-        BeanDescriptor descr = new BeanDescriptor (NetscapeBrowser.class);
-        descr.setDisplayName (NbBundle.getMessage (NetscapeBrowserBeanInfo.class, "CTL_NetscapeBrowserName"));
-        descr.setShortDescription (NbBundle.getMessage (NetscapeBrowserBeanInfo.class, "HINT_NetscapeBrowserName"));
-
-        descr.setValue ("helpID", "org.netbeans.modules.extbrowser.ExtWebBrowser");  // NOI18N //TODO
-	return descr;
-    }
-
-    public PropertyDescriptor[] getPropertyDescriptors() {
-        return new PropertyDescriptor [0];
-    }
-
-    /**
-    * Returns the icon. 
-    */
-    public Image getIcon (int type) {
-        return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.gif"); // NOI18N
+    public UserDefinedMIMETest(String name) {
+        super(name);
     }
     
-    /**
-     * Claim there are no other relevant BeanInfo objects.  You
-     * may override this if you want to (for example) return a
-     * BeanInfo for a base class.
-     */
-    public BeanInfo[] getAdditionalBeanInfo () {
-        try {
-            return new BeanInfo[] { Introspector.getBeanInfo (ExtWebBrowser.class) };
-        } catch (IntrospectionException ie) {
-            Exceptions.printStackTrace(ie);
-            return null;
-        }
+    public void testDefineAFileAndCheckType() throws Exception {
+        FileObject type = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/type.inc");
+        assertEquals("At first unknown", "content/unknown", type.getMIMEType());
+        
+        FileObject mimeRoot = FileUtil.getConfigFile("Services/MIMEResolver/");
+        assertNotNull("Mime root found", mimeRoot);
+        
+        
+        String txt = "<?xml version='1.0' encoding='UTF-8'?>\n"
+            + "<!DOCTYPE MIME-resolver PUBLIC '-//NetBeans//DTD MIME Resolver 1.1//EN' 'http://www.netbeans.org/dtds/mime-resolver-1_1.dtd'>\n"
+            + "<MIME-resolver>\n"
+            + "  <file>\n"
+            + "    <ext name='XXX'/>\n"
+            + "    <ext name='inc'/>\n"
+            + "    <resolver mime='text/x-h'/>\n"
+            + "</file>\n"
+            + "</MIME-resolver>\n";
+        
+        FileObject udmr = FileUtil.createData(mimeRoot, "user-defined-mime-resolver.xml");
+        
+        assertEquals("Still unknown", "content/unknown", type.getMIMEType());
+        
+        
+        OutputStream os = udmr.getOutputStream();
+        os.write(txt.getBytes("UTF-8"));
+        os.close();
+        udmr.setAttribute("position", 555);
+        udmr.setAttribute("user-defined-mime-resolver", Boolean.TRUE);
+        
+        assertEquals("Recognized well at the end", "text/x-h", type.getMIMEType());
     }
-    
 }

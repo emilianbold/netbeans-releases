@@ -86,11 +86,12 @@ public class AskForUrlPanel extends JPanel {
 
         initComponents();
 
-        Set<String> urls = new LinkedHashSet<String>();
-        urls.add(defaultUrl.toExternalForm());
-        urls.addAll(ProjectSettings.getDebugUrls(project));
-        for (String s : urls) {
+        for (String s : ProjectSettings.getDebugUrls(project)) {
             urlComboBox.addItem(s);
+        }
+        if (urlComboBox.getItemCount() == 0) {
+            // add default url
+            urlComboBox.addItem(defaultUrl.toExternalForm());
         }
 
         urlComboBoxEditor = (JTextField) urlComboBox.getEditor().getEditorComponent();
@@ -128,7 +129,7 @@ public class AskForUrlPanel extends JPanel {
         if (ok) {
             Set<String> urls = new LinkedHashSet<String>();
             urls.add((String) urlComboBox.getSelectedItem());
-            for (int i = 1; i < urlComboBox.getItemCount(); ++i) {
+            for (int i = 0; i < urlComboBox.getItemCount(); ++i) {
                 urls.add((String) urlComboBox.getItemAt(i));
             }
             ProjectSettings.setDebugUrls(project, new ArrayList<String>(urls));

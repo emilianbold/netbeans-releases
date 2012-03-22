@@ -43,10 +43,10 @@
  */
 package org.netbeans.modules.cnd.lexer;
 
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -102,7 +102,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
             int next;
             while (c == '\\') {
                 escapedEatenChars++;
-                switch (next = input.read()) {
+                switch (input.read()) {
                     case '\r':
                         if (consumeNewline()) {
                             escapedEatenChars++;
@@ -692,7 +692,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
 
     private Token<CppTokenId> token(CppTokenId id, String fixedText, PartType part) {
         assert id != null : "id must be not null";
-        Token<CppTokenId> token = null;
+        Token<CppTokenId> token;
         if (fixedText != null && !isTokenSplittedByEscapedLine()) {
             // create flyweight token
             token = tokenFactory.getFlyweightToken(id, fixedText);
@@ -718,101 +718,12 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
         return token(CppTokenId.SHARP);
     }
 
-    static boolean isRawStringDelimeterCharacter(int c) {
-        switch (c) {
-            case '.':
-            // {}[]#<>%:;?*+-/^&|~!=,"'
-            case '{':
-            case '}':
-            case '[':
-            case ']':
-            case '#':
-            case '<':
-            case '>':
-            case '%':
-            case ':':
-            case ';':
-            case '?':
-            case '*':
-            case '+':
-            case '-':
-            case '/':
-            case '^':
-            case '&':
-            case '|':
-            case '~':
-            case '!':
-            case '=':
-            case ',':
-            case '"':
-                return true;
-            default:
-                return CndLexerUtilities.isCppIdentifierPart(c);
-        }
-    }
-
-    private enum RawStringLexingState {
-        START,
-        PREFIX_DELIMETER,
-        BODY,
-        POSTFIX_DELIMETER,
-        ERROR
-    }
-
-    @SuppressWarnings("fallthrough")
     private Token<CppTokenId> finishRawString() {
-        RawStringLexingState state = RawStringLexingState.PREFIX_DELIMETER;
-        StringBuilder delim = new StringBuilder("");
-        String delimeter = "";
-        while (true) {
-            int read = read(false);
-            switch (state) {
-                case PREFIX_DELIMETER:
-                {
-                    if (!isRawStringDelimeterCharacter(read)) {
-                        if (read != '(') {
-                            state = RawStringLexingState.ERROR;
-                        } else {
-                            delimeter = delim.toString();
-                            state = RawStringLexingState.BODY;
-                        }
-                    } else {
-                        delim.append(read);
-                    }
-                    break;
-                }
-                case BODY:
-                {
-                    if (read == ')') {
-                        state = RawStringLexingState.POSTFIX_DELIMETER;
-                    }
-                    break;
-                }
-                case POSTFIX_DELIMETER:
-                {
-                    StringBuilder postfix = new StringBuilder();
-                    if (read == '"' && delimeter.length() == 0) {
-                        return token(CppTokenId.RAW_STRING_LITERAL);
-                    } else {
-                        state = RawStringLexingState.ERROR;
-                    }
-                    break;
-                }
-                case ERROR:
-                {
-                    // incorrect delimeter, try to recover
-                    switch (read) {
-                        case '"': // NOI18N
-                            return tokenPart(CppTokenId.RAW_STRING_LITERAL, PartType.START);
-                        case '\r':
-                        case '\n':
-                            backup(1); // leave new line for the own token
-                        case EOF:
-                            return tokenPart(CppTokenId.RAW_STRING_LITERAL, PartType.START);
-                    }
-                }
-
-            }
+        PartType type = CppStringLexer.finishRawString(input);
+        if (type == PartType.COMPLETE) {
+            return token(CppTokenId.RAW_STRING_LITERAL);
+        } else {
+            return tokenPart(CppTokenId.RAW_STRING_LITERAL, type);
         }
     }
 
