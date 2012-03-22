@@ -1052,6 +1052,8 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
             }
 
             updateVisibleRanges();
+            
+            HintsUI.getDefault().caretUpdate(null);
         } catch (BadLocationException ex) {
             throw new IOException(ex);
         } finally {
@@ -1329,9 +1331,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
         }
     }
 
-    private static final class TooltipResolver implements HighlightAttributeValue<String> {
-
-        public String getValue(final JTextComponent component, final Document document, Object attributeKey, final int startOffset, final int endOffset) {
+        public static String resolveWarnings(final Document document, final int startOffset, final int endOffset) {
             final Object source = document.getProperty(Document.StreamDescriptionProperty);
 
             if (!(source instanceof DataObject) || !(document instanceof BaseDocument)) {
@@ -1383,6 +1383,10 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
                                     continue;
                                 }
 
+                                if (pb.getBegin().getOffset() == pb.getEnd().getOffset()) {
+                                    continue;
+                                }
+
                                 if (ed.getSeverity() == Severity.ERROR) {
                                     trueErrors.add(ed);
                                 } else {
@@ -1401,7 +1405,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
 
                             concatDescription(others, description);
 
-                            result[0] = description.toString() + NbBundle.getMessage(AnnotationHolder.class, "LBL_shortcut_promotion"); //NOI18N
+                            result[0] = description.toString(); //NOI18N
                         }
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
@@ -1410,6 +1414,12 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
             });
 
             return result[0];
+        }
+        
+    private static final class TooltipResolver implements HighlightAttributeValue<String> {
+
+        public String getValue(final JTextComponent component, final Document document, Object attributeKey, final int startOffset, final int endOffset) {
+            return resolveWarnings(document, startOffset, endOffset) + NbBundle.getMessage(AnnotationHolder.class, "LBL_shortcut_promotion");
         }
 
     }

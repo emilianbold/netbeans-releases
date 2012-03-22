@@ -45,12 +45,12 @@
 package org.netbeans.modules.cnd.lexer;
 
 import junit.framework.TestCase;
-import org.netbeans.cnd.api.lexer.CppStringTokenId;
-import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.cnd.api.lexer.DoxygenTokenId;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CppStringTokenId;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.DoxygenTokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**
@@ -240,26 +240,29 @@ public class CppLexerBatchTestCase extends TestCase {
 
     public void test_RawStrings() {
         // R"(The String Data \ Stuff " )"
-        String text = "R\"delimeter(The String Data \\ Stuff \" )delimeter\"";
+        String text = "R\"delimeter(The String Data \\ Stuff \" )delimeterff )delimeter\"";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
-        CndLexerUnitTest.dumpTokens(ts, "ts");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.RAW_STRING_LITERAL, "R\"delimeter(The String Data \\ Stuff \" )delimeterff )delimeter\"");
+        assertFalse("No more tokens", ts.moveNext());
     }
 
     public void test_RawUTF8Strings() {
         // u8R"XXX(I'm a "raw UTF-8" string.)XXX"
-        String text = "u8R\"XXX(I'm a \"raw UTF-8\" string.)XXX\"";
+        String text = "u8R\"XXX(I'm a \"raw UTF-8\" XXX string.)XXX\"";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
-        CndLexerUnitTest.dumpTokens(ts, "ts");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.RAW_STRING_LITERAL, "u8R\"XXX(I'm a \"raw UTF-8\" XXX string.)XXX\"");
+        assertFalse("No more tokens", ts.moveNext());
     }
 
     public void test_RawUTF16Strings() {
         // uR"*(This is a "raw UTF-16" string.)*"
-        String text = "uR\"*(This is a \"raw UTF-16\" string.)*\"";
+        String text = "uR\"*(This is a \"raw UTF-16\" string.)*)*\"";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
-        CndLexerUnitTest.dumpTokens(ts, "ts");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.RAW_STRING_LITERAL, "uR\"*(This is a \"raw UTF-16\" string.)*)*\"");
+        assertFalse("No more tokens", ts.moveNext());
     }
 
     public void test_RawUTF32Strings() {
@@ -267,7 +270,8 @@ public class CppLexerBatchTestCase extends TestCase {
         String text = "UR\".(This is a \"raw UTF-32\" string.).\"";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
-        CndLexerUnitTest.dumpTokens(ts, "ts");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.RAW_STRING_LITERAL, "UR\".(This is a \"raw UTF-32\" string.).\"");
+        assertFalse("No more tokens", ts.moveNext());
     }
 
     public void testNumberLiterals() {
