@@ -67,7 +67,8 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages({
     "ConnectingTo=Connecting to {0}:{1} ...",
     "ConnectionEstablished=Connection established",
-    "ConnectionNotEstablished=Connection was not established",
+    "ConnectionNotEstablished=Connection was not established. The browser has not opened\n"
+        + "the expected page: {0}",
     "ConnectionNotEstablished2=Connection was not established. Cause: {0}",
     "NewBreakpoint=Breakpoint set for {0}:{1}",
     "FailedBreakpoint=Could not set breakpoint. Reason: {0}",
@@ -158,7 +159,7 @@ public class Debugger {
                     return true;
                 }
             }
-            BrowserDebugger.logError(Bundle.ConnectionNotEstablished());
+            BrowserDebugger.logError(Bundle.ConnectionNotEstablished(urlToDebug));
             return false;
         } catch (ConnectException ce) {
             BrowserDebugger.logError(Bundle.ConnectionFailed());
