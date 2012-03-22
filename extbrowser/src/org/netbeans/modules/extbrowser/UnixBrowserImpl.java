@@ -44,14 +44,11 @@
 
 package org.netbeans.modules.extbrowser;
 
-import java.awt.*;
-import java.beans.*;
 import java.io.*;
 import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
-import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
 
 import org.openide.*;
 import org.openide.awt.StatusDisplayer;
@@ -76,6 +73,8 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
      * Status is checked after each second.
      */
     protected static final int CMD_TIMEOUT = 6;
+    
+    private static RequestProcessor RP = new RequestProcessor();
     
     /** Creates modified NbProcessDescriptor that can be used to start
      * browser process when <CODE>-remote openURL()</CODE> options
@@ -172,7 +171,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
             p = cmd.exec (new ExtWebBrowser.UnixBrowserFormat (url.toString ()));
             
-            RequestProcessor.getDefault ().post (new Status (cmd, p, url), 1000);
+            RP.post (new Status (cmd, p, url), 1000);
 
             pcs.firePropertyChange (PROP_URL, getURL(), url);
         }
@@ -240,6 +239,13 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
          * If the execution is not finished during timeout message is displayed.
          */
         public void run () {
+            try {
+                // wait for process to finish before testing exit status:
+                p.waitFor();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
             boolean retried = false;
             if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
                 ExtWebBrowser.getEM().log(Level.FINE, "Retried: " + retried); // NOI18N
@@ -258,7 +264,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                     ExtWebBrowser.getEM().log(Level.FINE, "Time: " + System.currentTimeMillis()); // NOI18N
                 }
                 if (retries > 0) {
-                    RequestProcessor.getDefault().post(this, 1000);
+                    RP.post(this, 1000);
                     return;
                 } else {
                     if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
