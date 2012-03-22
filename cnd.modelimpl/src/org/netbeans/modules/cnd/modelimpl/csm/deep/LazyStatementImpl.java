@@ -158,6 +158,8 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
 
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
+        // HAVE TO BE ONLY DELEGATION INTO SUPER
+        // because non-lazy will be deserialized as lazy
         super.write(output);
     }
 

@@ -48,7 +48,7 @@ import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 /**
- *
+ * intended to be run with 1.7 client
  * @author tomas
  */
 public class SvnKitClientTest extends NbTestCase {
@@ -78,6 +78,7 @@ public class SvnKitClientTest extends NbTestCase {
         suite.addTestSuite(ImportTestHidden.class);
         suite.addTestSuite(InfoTestHidden.class);
         suite.addTestSuite(ListTestHidden.class);
+        // unchecked yet
         suite.addTestSuite(LogTestHidden.class);
         suite.addTestSuite(MergeTestHidden.class);
         suite.addTestSuite(MkdirTestHidden.class);

@@ -79,8 +79,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ChangeListener 
     @Override
     void store(WizardDescriptor settings) {
         GrailsPlatform.getDefault().removeChangeListener(this);
-        settings.putProperty( /*XXX Define somewhere */ "setAsMain", // NOI18N
-                setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE );
     }
 
     @Override
@@ -113,7 +111,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ChangeListener 
     private void initComponents() {
 
         configureButton = new javax.swing.JButton();
-        setAsMainCheckBox = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(configureButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "PanelOptionsVisual.configureButton.text")); // NOI18N
         configureButton.addActionListener(new java.awt.event.ActionListener() {
@@ -122,26 +119,19 @@ public class PanelOptionsVisual extends SettingsPanel implements ChangeListener 
             }
         });
 
-        setAsMainCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "PanelOptionsVisual.setAsMainCheckBox.text")); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(configureButton)
-                    .addComponent(setAsMainCheckBox))
+                .addComponent(configureButton)
                 .addContainerGap(246, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(configureButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(setAsMainCheckBox)
-                .addContainerGap(44, Short.MAX_VALUE))
+                .addContainerGap(75, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -153,7 +143,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ChangeListener 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton configureButton;
-    private javax.swing.JCheckBox setAsMainCheckBox;
     // End of variables declaration//GEN-END:variables
 
 }

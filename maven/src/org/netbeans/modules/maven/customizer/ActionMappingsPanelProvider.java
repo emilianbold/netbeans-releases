@@ -41,9 +41,9 @@
  */
 
 package org.netbeans.modules.maven.customizer;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import javax.swing.JComponent;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -56,15 +56,17 @@ import org.openide.util.NbBundle;
 @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=400)
 public class ActionMappingsPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
+    @Override
     public Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
-                ModelHandle.PANEL_MAPPING, 
+                ModelHandle2.PANEL_MAPPING, 
                 NbBundle.getMessage(ActionMappingsPanelProvider.class, "TIT_Action_Mappings"), 
                 null);
     }
     
+    @Override
     public JComponent createComponent(Category category, Lookup context) {
-        ModelHandle handle = context.lookup(ModelHandle.class);
+        ModelHandle2 handle = context.lookup(ModelHandle2.class);
         NbMavenProjectImpl project = context.lookup(NbMavenProjectImpl.class);
         return new ActionMappings(handle, project);
     }

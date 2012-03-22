@@ -130,7 +130,9 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     }
 
     private void initializeInEDT() {
-        if (initialized) return;
+        if (initialized) {
+            return;
+        }
         final TreePathHandle handle = refactoring.getSourceType();
         JavaSource source = JavaSource.forFileObject(handle.getFileObject());
         try {

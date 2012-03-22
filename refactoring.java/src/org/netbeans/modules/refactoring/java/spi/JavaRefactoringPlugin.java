@@ -59,7 +59,7 @@ import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.FindVisitor;
 import org.netbeans.modules.refactoring.java.plugins.JavaPluginUtils;
-import org.netbeans.modules.refactoring.java.plugins.RetoucheCommit;
+import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
@@ -104,9 +104,17 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
      * @author Jan Becicka
      */
     public static Transaction createTransaction(@NonNull Collection<ModificationResult> modifications) {
-        return new RetoucheCommit(modifications);
+        return new RefactoringCommit(createJavaModifications(modifications));
     }
 
+    private static Collection<org.netbeans.modules.refactoring.spi.ModificationResult> createJavaModifications(Collection<ModificationResult> modifications) {
+        LinkedList<org.netbeans.modules.refactoring.spi.ModificationResult> result = new LinkedList();
+        for (ModificationResult r:modifications) {
+            result.add(new JavaModificationResult(r));
+        }
+        return result;
+    }
+    
     
     protected Problem preCheck(CompilationController javac) throws IOException {
         return null;
@@ -307,7 +315,9 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         Exceptions.printStackTrace(t);
         
         Problem problem;
-        if (p == null) return newProblem;
+        if (p == null) {
+            return newProblem;
+        }
         problem = p;
         while(problem.getNext() != null) {
             problem = problem.getNext();

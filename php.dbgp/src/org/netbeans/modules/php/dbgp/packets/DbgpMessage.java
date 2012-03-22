@@ -77,37 +77,37 @@ import org.xml.sax.SAXException;
  *
  */
 public abstract class DbgpMessage {
-    
+
     private static final Logger LOGGER = Logger.getLogger(DbgpMessage.class.getName());
 
-    private static final String ERR_PACKET_ERROR 
+    private static final String ERR_PACKET_ERROR
                                                 = "ERR_PacketError";    // NOI18N
 
     private static final String     INIT        = "init";               // NOI18N
-    
+
     private static final String     RESPONSE    = "response";           // NOI18N
-    
+
     private static final String     STREAM      = "stream";             // NOI18N
-    
+
     static final String             ISO_CHARSET = "ISO-8859-1";         // NOI18N
-    
+
     private static final int        MAX_PACKET_SIZE = 1024;
-    
-    
+
+
     protected static final String     HTML_APOS       = "&apos;";       // NOI18N
-    
+
     protected static final String     HTML_QUOTE      = "&quot;";       // NOI18N
-    
+
     protected static final String     HTML_AMP        = "&amp";         // NOI18N
-    
+
     protected static final String     HTML_LT         = "&lt";          // NOI18N
-    
+
     protected static final String     HTML_GT         = "&gt";          // NOI18N
-    
-    protected static final java.util.Map<String,Character> 
-                                    ENTITIES          = 
+
+    protected static final java.util.Map<String,Character>
+                                    ENTITIES          =
             new HashMap<String,Character>( );
-    
+
     static {
         ENTITIES.put( HTML_APOS , '\'');
         ENTITIES.put( HTML_QUOTE , '"');
@@ -115,18 +115,18 @@ public abstract class DbgpMessage {
         ENTITIES.put( HTML_LT , '<');
         ENTITIES.put( HTML_GT  , '>');
     }
-    
+
     DbgpMessage( Node node ){
         myNode = node;
     }
 
     public static DbgpMessage create( InputStream inputStream ) throws SocketException{
-        
+
         try {
             int size = getDataSize(inputStream);
             if ( size <0 ) {
                 notifyPacketError( null );
-                Logger.getLogger( DbgpMessage.class.getName() ).log( 
+                Logger.getLogger( DbgpMessage.class.getName() ).log(
                         Level.FINE, "Got " +size+" as data size" ); // NOI18N
                 return null;
             }
@@ -141,20 +141,20 @@ public abstract class DbgpMessage {
         }
         return null;
     }
-    
+
     public abstract void process( DebugSession session, DbgpCommand command );
-    
+
     public static int getMaxDataSize() {
         return myMaxDataSize.get();
     }
-    
+
     public static void setMaxDataSize( int size ) {
         int maxSize = myMaxDataSize.get();
         if ( maxSize <size ) {
             myMaxDataSize.compareAndSet( maxSize, size);
         }
     }
-    
+
     public static DbgpMessage create( Node node ) {
         if ( node == null ) {
             return null;
@@ -173,10 +173,10 @@ public abstract class DbgpMessage {
     }
 
     protected static void log( IOException e ) {
-        Logger.getLogger( DbgpMessage.class.getName() ).log( 
+        Logger.getLogger( DbgpMessage.class.getName() ).log(
                 Level.SEVERE, null, e );
     }
-    
+
     protected static String getNodeValue( Node node ){
         NodeList list = node.getChildNodes();
         StringBuilder builder = new StringBuilder();
@@ -191,12 +191,12 @@ public abstract class DbgpMessage {
         }
         return replaceHtmlEntities( builder.toString() );
     }
-    
+
     protected static String getAttribute( Node node , String attrName ){
         Node attr = node.getAttributes().getNamedItem( attrName );
         return attr == null ? null : replaceHtmlEntities( attr.getNodeValue() );
     }
-    
+
     protected static boolean getBoolean( Node node , String attrName ){
        String value = getAttribute(node, attrName);
        if ( value == null ){
@@ -209,7 +209,7 @@ public abstract class DbgpMessage {
            return false;
        }
     }
-    
+
     protected static Node getChild( Node node , String nodeName ) {
         NodeList list = node.getChildNodes();
         for (int i = 0; i < list.getLength(); i++) {
@@ -220,7 +220,7 @@ public abstract class DbgpMessage {
         }
         return null;
     }
-    
+
     protected static List<Node> getChildren( Node node , String nodeName ) {
         List<Node> result = new LinkedList<Node>();
         NodeList list = node.getChildNodes();
@@ -232,19 +232,19 @@ public abstract class DbgpMessage {
         }
         return result;
     }
-    
+
     protected Node getNode(){
         return myNode;
     }
-    
+
     private static void log( ParserConfigurationException e ) {
-        Logger.getLogger( DbgpMessage.class.getName() ).log( 
+        Logger.getLogger( DbgpMessage.class.getName() ).log(
                 Level.SEVERE, null, e );
     }
-    
+
     private static void logDebugInfo( byte[] bytes ) {
         try {
-            Logger.getLogger( DbgpMessage.class.getName() ).log( 
+            Logger.getLogger( DbgpMessage.class.getName() ).log(
                     Level.FINE, new String( bytes , ISO_CHARSET));
         }
         catch (UnsupportedEncodingException e) {
@@ -258,27 +258,27 @@ public abstract class DbgpMessage {
     private static void notifyPacketError( Exception e ) {
         Exception exception = e;
         if ( exception == null ) {
-            exception = new Exception( NbBundle.getMessage( DbgpMessage.class, 
+            exception = new Exception( NbBundle.getMessage( DbgpMessage.class,
                     ERR_PACKET_ERROR));
         }
-        Logger.getLogger( DbgpMessage.class.getName() ).log( 
+        Logger.getLogger( DbgpMessage.class.getName() ).log(
                 Level.SEVERE, null, e );
     }
-    
+
     private static byte[] getContent( InputStream inputStream, int size )
-        throws IOException 
+        throws IOException
     {
         byte[] bytes = new byte[ size ];
-        int count = 0; 
+        int count = 0;
         while( count < size ) {
             int awaitedBytes = size - count ;
-            int length = awaitedBytes < getMaxDataSize() ? 
-                    awaitedBytes : getMaxDataSize(); 
+            int length = awaitedBytes < getMaxDataSize() ?
+                    awaitedBytes : getMaxDataSize();
             count+= inputStream.read( bytes , count , length);
         }
         if ( count != size ) {
             notifyPacketError( null );
-            Logger.getLogger( DbgpMessage.class.getName() ).log( 
+            Logger.getLogger( DbgpMessage.class.getName() ).log(
                     Level.FINE, "Red " +count+" bytes from socket input stream," +
                     		" but expected " +size +" bytes" );       // NOI18N
             return null;
@@ -308,7 +308,7 @@ public abstract class DbgpMessage {
             return -1;
         }
     }
-    
+
     /**
      * Remove invalid XML characters from the string
      * @param text The string containing xml message.
@@ -317,7 +317,7 @@ public abstract class DbgpMessage {
     private static String removeNonXMLCharacters(String text) {
         StringBuilder out = new StringBuilder();
         StringBuilder errorMessage = null;
-        int codePoint;           
+        int codePoint;
         int index = 0;
         while (index < text.length()) {
             codePoint = text.codePointAt(index);
@@ -344,29 +344,33 @@ public abstract class DbgpMessage {
             LOGGER.warning(errorMessage.toString());
         }
         return out.toString();
-    } 
+    }
 
     private static Node getNode( byte[] bytes ) throws IOException {
         if ( BUILDER == null || bytes == null ) {
             return null;
         }
+        String original = new String(bytes);
+        String inputWithoutNullChars = null;
         try {
             // this is basically workaround for a bug in xdebug, where xdebug
             // includes invalid xml characters into the message.
-            String input = removeNonXMLCharacters(new String(bytes));
-            InputSource is = new InputSource(new StringReader(input));
+            String input = removeNonXMLCharacters(original);
+            inputWithoutNullChars = input.replace("&#0;", ""); //NOI18N
+            InputSource is = new InputSource(new StringReader(inputWithoutNullChars));
             is.setEncoding("UTF-8");
             Document doc = BUILDER.parse( is );
             return doc.getDocumentElement();
         }
         catch (SAXException e) {
+            LOGGER.log(Level.SEVERE, "Possible invalid XML - ORIGINAL:\n\n{0}\n\nAFTER REPLACE:\n\n{1}", new Object[]{original, inputWithoutNullChars});
             notifyPacketError(e);
-            
+
             return null;
         }
         //return null;
     }
-    
+
     private static String replaceHtmlEntities( String str ) {
         if ( str.indexOf( "&" ) == -1 ) {
             return str;
@@ -380,13 +384,13 @@ public abstract class DbgpMessage {
             return str;
         }
     }
-    
+
     private Node myNode;
-    
+
     private static DocumentBuilder BUILDER;
-    
+
     private static AtomicInteger myMaxDataSize = new AtomicInteger( MAX_PACKET_SIZE);
-    
+
     static {
         try {
             BUILDER = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -403,11 +407,11 @@ public abstract class DbgpMessage {
          * @see org.xml.sax.EntityResolver#resolveEntity(java.lang.String, java.lang.String)
          */
         @Override
-        public InputSource resolveEntity( String publicId, String systemId ) 
-            throws SAXException, IOException 
+        public InputSource resolveEntity( String publicId, String systemId )
+            throws SAXException, IOException
         {
             return null;
         }
-        
+
     }
 }

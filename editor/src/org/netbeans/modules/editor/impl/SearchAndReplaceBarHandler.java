@@ -210,9 +210,7 @@ public abstract class SearchAndReplaceBarHandler {
                                     jp.add(searchBarInstance);
                                     if (replaceBarInstance.isVisible()) {
                                         jp.add(replaceBarInstance);
-                                        if (replaceBarInstance.hadFocusOnTextField()) {
-                                            replaceBarInstance.gainFocus();
-                                        }
+                                        replaceBarInstance.gainFocus();
                                     }
                                     jp.revalidate();
 

@@ -228,6 +228,7 @@ public class MoveClassRefactoringPlugin extends JavaRefactoringPlugin {
         return prob != null ? prob : JavaPluginUtils.chainProblems(p, transformer.getProblem());
     }
 
+    @SuppressWarnings("CollectionContainsUrl")
     private Problem checkProjectDeps(Set<FileObject> a) {
         ClasspathInfo cpInfo = getClasspathInfo(moveRefactoring);
         Set<FileObject> sourceRoots = new HashSet<FileObject>();

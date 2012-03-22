@@ -93,8 +93,9 @@ public class PushDownRefactoringUI implements RefactoringUI, JavaRefactoringUIFa
             // set of elements the action was invoked on
 
            // create an instance of push down refactoring object
-            if (!(selected instanceof TypeElement))
+            if (!(selected instanceof TypeElement)) {
                 selected = info.getElementUtilities().enclosingTypeElement(selected);
+            }
             TreePath tp = info.getTrees().getPath(selected);
             TreePathHandle sourceType = TreePathHandle.create(tp, info);
             description = ElementHeaders.getHeader(tp, info, ElementHeaders.NAME);

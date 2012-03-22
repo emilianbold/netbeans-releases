@@ -101,6 +101,7 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
+import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -125,6 +126,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -135,7 +137,7 @@ import org.openide.windows.WindowManager;
  * @author Petr Hrebejk
  */
 public class ProjectTab extends TopComponent 
-                        implements ExplorerManager.Provider, PropertyChangeListener {
+                        implements ExplorerManager.Provider, PropertyChangeListener, UndoRedo.Provider {
                 
     public static final String ID_LOGICAL = "projectTabLogical_tc"; // NOI18N                            
     public static final String ID_PHYSICAL = "projectTab_tc"; // NOI18N                        
@@ -247,6 +249,12 @@ public class ProjectTab extends TopComponent
     public ExplorerManager getExplorerManager() {
         return manager;
     }
+    
+    @Override
+    public UndoRedo getUndoRedo() {
+        final UndoRedo undoRedo = Lookups.forPath("org/netbeans/modules/refactoring").lookup(UndoRedo.class);
+        return undoRedo==null?UndoRedo.NONE:undoRedo;
+    }    
     
     /* Singleton accessor. As ProjectTab is persistent singleton this
      * accessor makes sure that ProjectTab is deserialized by window system.

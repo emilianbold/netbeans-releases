@@ -122,6 +122,8 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
 
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
+        // HAVE TO BE ONLY DELEGATION INTO SUPER
+        // because it is deserialized as lazy
         super.write(output);
     }
 

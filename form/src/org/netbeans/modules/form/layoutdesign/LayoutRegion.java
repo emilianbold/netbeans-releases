@@ -385,6 +385,10 @@ class LayoutRegion implements LayoutConstants {
                 || (p2L == p2T && (p2L == p1L || p2T == p1T));
     }
 
+    static boolean overlap(LayoutRegion r1, LayoutRegion r2) {
+        return overlap(r1, r2, HORIZONTAL, 0) && overlap(r1, r2, VERTICAL, 0);
+    }
+
     /**
      * @return whether given regions occupy the same space
      */

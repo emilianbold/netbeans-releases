@@ -177,8 +177,9 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI, JavaRefactoring
     
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
-        if(panel == null)
+        if(panel == null) {
             panel = new UseSuperTypePanel(refactoring, className);
+        }
         return panel;
     }
 

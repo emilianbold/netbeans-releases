@@ -80,6 +80,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     private JSpinner spGridSize = new JSpinner(new SpinnerNumberModel(10, 2, 100, 1));
     private PropertyPanel guideLineColEditor = new PropertyPanel();
     private PropertyPanel selectionBorderColEditor = new PropertyPanel();    
+    private JCheckBox cbPaintLayout = new JCheckBox();
 
     private Set<Component> brandedInvisibleComponents;
 
@@ -130,6 +131,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         loc(selectionBorderColLabel, "Selection_Border_Color"); // NOI18N
         loc(guideLineColLabel, "Guiding_Line_Color"); // NOI18N
         loc(gridSizeLabel, "Grid_Size"); // NOI18N
+        loc(cbPaintLayout, "Paint_Layout"); // NOI18N
 
         generateComponetsLabel.setToolTipText(loc("Generate_Components_Hint")); // NOI18N
         variableModifierLabel.setToolTipText(loc("HINT_VARIABLES_MODIFIER")); // NOI18N
@@ -143,6 +145,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         cbFold.setToolTipText(loc("HINT_FOLD_GENERATED_CODE")); // NOI18N
         cbAssistant.setToolTipText(loc("HINT_ASSISTANT_SHOWN")); // NOI18N
         cbFQN.setToolTipText(loc("HINT_GENERATE_FQN")); // NOI18N
+        cbPaintLayout.setToolTipText(loc("Paint_Layout_Hint")); // NOI18N
         rbGenerateLocals.getAccessibleContext().setAccessibleDescription(loc("Generate_Locals_ACSD")); // NOI18N
         rbGenerateFields.getAccessibleContext().setAccessibleDescription(loc("Generate_Fields_ACSD")); // NOI18N
 
@@ -167,6 +170,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         brandVisibility("guideLineColEditor", guideLineColLabel, guideLineColEditor); // NOI18NS
         brandVisibility("selectionBorderColEditor", selectionBorderColLabel, selectionBorderColEditor); // NOI18N
         brandVisibility("spGridSize", gridSizeLabel, spGridSize); // NOI18N
+        brandVisibility("cbPaintLayout", cbPaintLayout); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         layout.setAutoCreateGaps(true);
@@ -197,6 +201,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         addComponent(selectionBorderColEditor, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE, componentHorizontalGroup);
         addComponent(spGridSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, 40, componentHorizontalGroup);
         addComponent(cbLayoutStyle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE, componentHorizontalGroup);
+        addComponent(cbPaintLayout, componentHorizontalGroup);
 
         layout.setHorizontalGroup(
             layout.createSequentialGroup()
@@ -230,6 +235,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                 selectionBorderColLabel, selectionBorderColEditor);
         addLine(layout, verticalGroup, GroupLayout.Alignment.CENTER,
                 gridSizeLabel, spGridSize);
+        addComponent(cbPaintLayout, verticalGroup);
         verticalGroup.addContainerGap();
 
         layout.setVerticalGroup(verticalGroup);
@@ -245,6 +251,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         rbGenerateLocals.addActionListener (this);
         cbAutoI18n.addActionListener(this);
         spGridSize.addChangeListener(this);
+        cbPaintLayout.addActionListener(this);
     }
 
     private void addComponent(Component comp, GroupLayout.Group targetGroup) {
@@ -346,6 +353,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         cbComponentNames.setSelectedIndex(options.getAutoSetComponentName());
         cbAutoI18n.setSelectedIndex(options.getI18nAutoMode());
         spGridSize.setValue(options.getGridX());
+        cbPaintLayout.setSelected(options.getPaintAdvancedLayoutInfo() > 0);
         listen = true;
         changed = false;
     }
@@ -373,9 +381,10 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
             case 3: options.setVariablesModifier (Modifier.PRIVATE);
                     break;
         }
+        options.setPaintAdvancedLayoutInfo(cbPaintLayout.isSelected() ? 3 : 0);
         changed = false;
     }
-    
+
     void cancel () {
         changed = false;
     }

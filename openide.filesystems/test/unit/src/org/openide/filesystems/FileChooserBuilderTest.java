@@ -370,7 +370,7 @@ public class FileChooserBuilderTest extends NbTestCase {
                 ch.setSelectedFile (selDir);
             }
         });
-        assertTrue (ch.isShowing());
+        assertTrue ("Button is visible: " + ch, ch.isShowing());
         final AtomicReference<AbstractButton> btn = new AtomicReference<AbstractButton>();
         EventQueue.invokeAndWait(new Runnable() {
 

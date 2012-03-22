@@ -90,21 +90,28 @@ public class ServiceModel {
             = new ArrayList<ServiceChangeListener>();
     
     /** Creates a new instance of ServiceModel */
-    private ServiceModel(FileObject implementationClass) {
+    private ServiceModel(FileObject implementationClass, boolean populate) {
         this.implementationClass=implementationClass;
-        populateModel();
+        if ( populate ){
+            assert implementationClass != null;
+            populateModel();
+        }
     }
     
     private boolean changeSource=true;
     
     public static ServiceModel getServiceModel(FileObject implClass) {
-        return new ServiceModel(implClass);
+        return new ServiceModel(implClass, true);
+    }
+    
+    static ServiceModel getServiceModel() {
+        return new ServiceModel(null, false);
     }
 
     public FileObject getImplementationClass() {
         return implementationClass;
     }
-
+    
     public String getName() {
         return name;
     }
@@ -343,7 +350,7 @@ public class ServiceModel {
         public void fileChanged(FileEvent fe) {
             
             FileObject implClass = fe.getFile();
-            ServiceModel newModel = new ServiceModel(implClass);
+            ServiceModel newModel = new ServiceModel(implClass,true);
             ServiceModel.this.mergeModel(newModel);
         }
         
@@ -361,7 +368,18 @@ public class ServiceModel {
     }
     
     private void populateModel() {
-        Utils.populateModel(implementationClass, this);
+        ServiceModel model = Utils.populateModel(implementationClass);
+        if ( model == null ){
+            return;
+        }
+        serviceName = model.serviceName;
+        portName = model.portName;
+        name = model.name;
+        endpointInterface = model.endpointInterface;
+        wsdlLocation = model.wsdlLocation;
+        targetNamespace = model.targetNamespace;
+        status = model.status;
+        operations = model.operations;  
     }
     
     /** package private due to test functionality */ 
@@ -387,7 +405,7 @@ public class ServiceModel {
             changeSource=true;
         }
     }
-    
+
     /* probably not needed
     public boolean isEqualTo(ServiceModel model) {
         if (!serviceName.equals(model.serviceName)) return false;

@@ -43,11 +43,11 @@
 package org.netbeans.modules.maven.j2ee.customizer;
 
 import java.io.IOException;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
-import static org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb.PROP_SHOW_IN_BROWSER;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import static org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb.PROP_SHOW_IN_BROWSER;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.openide.util.Exceptions;
 
@@ -57,7 +57,7 @@ public class CustomizerRunEar extends BaseRunCustomizer {
     private Ear module;
 
     
-    public CustomizerRunEar(ModelHandle handle, Project project) {
+    public CustomizerRunEar(ModelHandle2 handle, Project project) {
         super(handle, project);
         initComponents();
         

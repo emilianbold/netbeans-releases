@@ -277,7 +277,6 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         handle.progress(3);
 
-        // add main project dir before preloader one to keep it selected as main
         resultSet.add(dir);
         
         // create preloader project
@@ -305,7 +304,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         
         // Returning FileObject of project directory. 
-        // Project will be open and set as main
+        // Project will be opened
         int ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         switch (type) {
             case APPLICATION:
@@ -321,8 +320,6 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                 WizardSettings.setNewProjectCount(ind);
                 break;
         }
-//        Project project = ProjectManager.getDefault().findProject(dir);
-//        OpenProjects.getDefault().setMainProject(project);
         
         handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class,
                 "LBL_NewJ2SEProjectWizardIterator_WizardProgress_PreparingToOpen"), 5); // NOI18N

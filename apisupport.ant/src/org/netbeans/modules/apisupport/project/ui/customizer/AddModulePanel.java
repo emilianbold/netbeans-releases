@@ -104,7 +104,7 @@ public final class AddModulePanel extends JPanel {
         final AddModulePanel addPanel = new AddModulePanel(props);
         final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
                 getMessage("CTL_AddModuleDependencyTitle"));
-        descriptor.setHelpCtx(new HelpCtx(AddModulePanel.class));
+        descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel"));
         descriptor.setClosingOptions(new Object[0]);
         final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
         descriptor.setButtonListener(new ActionListener() {

@@ -129,7 +129,7 @@ public class HtmlHintsProvider implements HintsProvider {
         }
 
         //add html-css related hints
-        HtmlCssHints.computeHints(manager, context, hints);
+//        HtmlCssHints.computeHints(manager, context, hints);
         
     }
 

@@ -91,7 +91,7 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
     @Override
     public boolean isValid() {
         Preferences preferences = Icefaces2Implementation.getIcefacesPreferences();
-        String icefacesLibrary = preferences.get(Icefaces2Implementation.ICEFACES_CORE_CLASS, ""); //NOI18N
+        String icefacesLibrary = preferences.get(Icefaces2Implementation.PREF_LIBRARY_NAME, ""); //NOI18N
         if (LibraryManager.getDefault().getLibrary(icefacesLibrary) != null) {
             return true;
         }

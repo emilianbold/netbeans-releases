@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.refactoring.php.rename;
 
-import org.netbeans.modules.refactoring.php.RetoucheCommit;
 import org.netbeans.modules.refactoring.php.DiffElement;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +55,7 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.php.findusages.PhpWhereUsedQueryPlugin;
 import org.netbeans.modules.refactoring.php.findusages.WarningFileElement;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedElement;
+import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -101,7 +101,7 @@ public class PhpRenameRefactoringPlugin extends PhpWhereUsedQueryPlugin {
             refactorElement(modificationResult, whereUsedElement);
         }
 
-        refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
+        refactoringElements.registerTransaction(new RefactoringCommit(Collections.singletonList(modificationResult)));
         for (FileObject fo : modificationResult.getModifiedFileObjects()) {
             for (Difference diff : modificationResult.getDifferences(fo)) {
                 refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));

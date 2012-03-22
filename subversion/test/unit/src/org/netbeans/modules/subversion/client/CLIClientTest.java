@@ -46,9 +46,10 @@ import org.netbeans.modules.subversion.client.commands.*;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 
 /**
- *
+ * Subversion 1.7
  * @author tomas
  */
 public class CLIClientTest extends NbTestCase {
@@ -62,6 +63,7 @@ public class CLIClientTest extends NbTestCase {
     public static Test suite() throws Exception {
         TestSuite suite = new TestSuite();
         System.setProperty("svnClientAdapterFactory", "commandline");
+//        SvnModuleConfig.getDefault().setExecutableBinaryPath("/home/ondra/sources/subversion-1.7.2/subversion/svn/");
         
         suite.addTestSuite(AddTestHidden.class);
         suite.addTestSuite(AvailabilityTest.class);
@@ -75,6 +77,7 @@ public class CLIClientTest extends NbTestCase {
         suite.addTestSuite(ImportTestHidden.class);
         suite.addTestSuite(InfoTestHidden.class);
         suite.addTestSuite(ListTestHidden.class);
+        // unchecked yet
         suite.addTestSuite(LogTestHidden.class);
         suite.addTestSuite(MergeTestHidden.class);
         suite.addTestSuite(MkdirTestHidden.class);

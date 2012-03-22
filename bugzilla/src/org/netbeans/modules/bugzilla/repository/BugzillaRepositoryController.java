@@ -65,6 +65,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.*;
 import org.openide.util.RequestProcessor.Task;
 
@@ -215,6 +216,9 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
             getHttpUser(),
             getHttpPassword(),
             isLocalUserEnabled());
+        if(BugzillaUtil.isNbRepository(repository)) {
+            NBRepositorySupport.getInstance().setNBBugzillaRepository(repository);
+        }
     }
 
     public void populate() {

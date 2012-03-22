@@ -189,8 +189,9 @@ public class MoveTransformer extends RefactoringVisitor {
                     if (isElementMoving(el)) {
                         if (!elementsAlreadyImported.contains(el)) {
                             String targetPackageName = getTargetPackageName(el);
-                            if (!RefactoringUtils.getPackageName(workingCopy.getCompilationUnit()).equals(targetPackageName))
+                            if (!RefactoringUtils.getPackageName(workingCopy.getCompilationUnit()).equals(targetPackageName)) {
                                 elementsToImport.add(el);
+                            }
                         }
                 } else if (el.getKind() != ElementKind.PACKAGE) {
                         Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
@@ -278,8 +279,9 @@ public class MoveTransformer extends RefactoringVisitor {
     
     private PackageElement getPackageOf(Element el) {
         //return workingCopy.getElements().getPackageOf(el);
-        while (el.getKind() != ElementKind.PACKAGE) 
+        while (el.getKind() != ElementKind.PACKAGE) {
             el = el.getEnclosingElement();
+        }
         return (PackageElement) el;
     }
 
@@ -377,8 +379,9 @@ public class MoveTransformer extends RefactoringVisitor {
 
     private CompilationUnitTree insertImport(CompilationUnitTree node, String imp, Element orig, String targetPkgOfOrig) {
         for (ImportTree tree: node.getImports()) {
-            if (tree.getQualifiedIdentifier().toString().equals(imp)) 
+            if (tree.getQualifiedIdentifier().toString().equals(imp)) {
                 return node;
+            }
             if (orig!=null) {
                 if (tree.getQualifiedIdentifier().toString().equals(getPackageOf(orig).getQualifiedName()+".*") && isPackageRename()) { // NOI18N
                     rewrite(tree.getQualifiedIdentifier(), make.Identifier(targetPkgOfOrig + ".*")); // NOI18N

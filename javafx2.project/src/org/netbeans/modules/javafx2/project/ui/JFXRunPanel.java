@@ -124,11 +124,26 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
     public JFXRunPanel(JFXProjectProperties props) {
         this.jfxProps = props;
         initComponents();
-
         project = jfxProps.getProject();
         evaluator = jfxProps.getEvaluator();
         configs = jfxProps.getConfigs();
         
+        if(JFXProjectProperties.isTrue(props.getEvaluator().getProperty(JFXProjectProperties.JAVAFX_SWING))) {
+            checkBoxPreloader.setVisible(false);
+            textFieldPreloader.setVisible(false);
+            labelPreloaderClass.setVisible(false);
+            comboBoxPreloaderClass.setVisible(false);
+            buttonPreloader.setVisible(false);
+            buttonPreloaderDefault.setVisible(false);
+            checkBoxPreloader.setEnabled(false);
+            textFieldPreloader.setEnabled(false);
+            labelPreloaderClass.setEnabled(false);
+            comboBoxPreloaderClass.setEnabled(false);
+            buttonPreloader.setEnabled(false);
+            buttonPreloaderDefault.setEnabled(false);
+            labelAppClass.setText(NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.MainClass"));  // NOI18N
+        }
+
         data = new JTextField[] {
             textFieldAppClass,
             textFieldVMOptions,

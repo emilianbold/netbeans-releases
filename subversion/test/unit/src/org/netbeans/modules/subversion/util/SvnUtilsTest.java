@@ -187,7 +187,7 @@ public class SvnUtilsTest extends NbTestCase {
         testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file[]"), new SVNUrl("file:///var/lib/repository/svn/ja1/file%5B%5D"));
         testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file%5b%5d"), new SVNUrl("file:///var/lib/repository/svn/ja1/file%5B%5D"));
         testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file%5B%5D"), new SVNUrl("file:///var/lib/repository/svn/ja1/file%5B%5D"));
-        testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file[ ]"), new SVNUrl("file:///var/lib/repository/svn/ja1/file%5B %5D"));
+        testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file[ ]"), new SVNUrl("file:///var/lib/repository/svn/ja1/file%5B%20%5D"));
         testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file-*_.java@"), new SVNUrl("file:///var/lib/repository/svn/ja1/file-*_.java@")); // do not escape '@', '/', ':'
         testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file;?#%[]@"), new SVNUrl("file:///var/lib/repository/svn/ja1/file%3B%23%25%5B%5D@")); // do not escape '@', '/', ':'
 

@@ -55,7 +55,6 @@ import java.util.prefs.Preferences;
 import java.io.File;
 import java.net.InetAddress;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -98,8 +97,6 @@ public class HgModuleConfig {
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CLONE_COMPLETED = "cloneCompleted.showCloneCompleted";        // NOI18N  
 
-    private static final String SET_MAIN_PROJECT = "cloneCompleted.setMainProject";        // NOI18N  
-
     private static final String URL_EXP = "annotator.urlExp";                                               // NOI18N
     private static final String ANNOTATION_EXP = "annotator.annotationExp";                                 // NOI18N
     
@@ -127,10 +124,6 @@ public class HgModuleConfig {
     
     public boolean getShowCloneCompleted() {
         return getPreferences().getBoolean(SHOW_CLONE_COMPLETED, true);
-    }
-    
-    public boolean getSetMainProject() {
-        return getPreferences().getBoolean(SET_MAIN_PROJECT, true);
     }
     
     public Pattern [] getIgnoredFilePatterns() {
@@ -461,10 +454,6 @@ public class HgModuleConfig {
 
     public void setShowCloneCompleted(boolean bl) {
         getPreferences().putBoolean(SHOW_CLONE_COMPLETED, bl);
-    }
-    
-    public void setSetMainProject(boolean bl) {
-        getPreferences().putBoolean(SET_MAIN_PROJECT, bl);
     }
     
     public void insertRecentUrl(final RepositoryConnection rc) {

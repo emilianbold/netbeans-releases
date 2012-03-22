@@ -136,7 +136,8 @@ public class FXMLOpenAction extends AbstractAction implements ContextAwareAction
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (opener != null) {
+        boolean isNewFile = Thread.currentThread().getStackTrace()[2].getFileName().equals("ProjectUtilities.java"); // NOI18N
+        if (opener != null && !isNewFile) {
             opener.open(context);
         } else if (defaultOpener.isEnabled(context)) {
             defaultOpener.open(context);

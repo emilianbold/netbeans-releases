@@ -48,6 +48,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.UseScope;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -155,7 +156,7 @@ public class UsedNamesComputer {
         @Override
         public void visit(NamespaceName node) {
             UsedNamespaceName usedName = new UsedNamespaceName(node);
-            if (!specialNames.contains(usedName.getName())) {
+            if (isValidTypeName(usedName.getName())) {
                 processUsedName(usedName);
             }
         }
@@ -163,9 +164,13 @@ public class UsedNamesComputer {
         @Override
         public void visit(PHPDocTypeNode node) {
             UsedNamespaceName usedName = new UsedNamespaceName(node);
-            if (!specialNames.contains(usedName.getName())) {
+            if (isValidTypeName(usedName.getName())) {
                 processUsedName(usedName);
             }
+        }
+
+        private boolean isValidTypeName(final String typeName) {
+            return !specialNames.contains(typeName) && !VariousUtils.isPrimitiveType(typeName);
         }
 
         private void processUsedName(final UsedNamespaceName usedName) {

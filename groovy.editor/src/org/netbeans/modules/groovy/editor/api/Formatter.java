@@ -45,7 +45,6 @@ package org.netbeans.modules.groovy.editor.api;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
@@ -90,10 +89,12 @@ public class Formatter implements org.netbeans.modules.csl.api.Formatter {
         this.rightMarginOverride = rightMarginOverride;
     }
     
+    @Override
     public boolean needsParserResult() {
         return false;
     }
 
+    @Override
     public void reindent(Context context) {
         if (codeStyle != null) {
             reindent(context, null, true);
@@ -103,6 +104,7 @@ public class Formatter implements org.netbeans.modules.csl.api.Formatter {
         }
     }
 
+    @Override
     public void reformat(Context context, ParserResult compilationInfo) {
         if (codeStyle != null) {
             reindent(context, compilationInfo, false);
@@ -112,6 +114,7 @@ public class Formatter implements org.netbeans.modules.csl.api.Formatter {
         }
     }
     
+    @Override
     public int indentSize() {
         if (codeStyle != null) {
             return codeStyle.getIndentSize();
@@ -120,6 +123,7 @@ public class Formatter implements org.netbeans.modules.csl.api.Formatter {
         }
     }
     
+    @Override
     public int hangingIndentSize() {
         if (codeStyle != null) {
             return codeStyle.getContinuationIndentSize();
@@ -498,6 +502,7 @@ public class Formatter implements org.netbeans.modules.csl.api.Formatter {
                     offsets, indents, indentEmptyLines, includeEnd, indentOnly);
 
             doc.runAtomic(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         // Iterate in reverse order such that offsets are not affected by our edits
@@ -544,7 +549,7 @@ public class Formatter implements org.netbeans.modules.csl.api.Formatter {
                             }
                         }
 
-                        if (!indentOnly && codeStyle.reformatComments()) {
+                        if (!indentOnly && codeStyle.isReformatComments()) {
                             reformatComments(doc, startOffset, endOffset);
                         }
                     } catch (BadLocationException ble) {
@@ -605,7 +610,7 @@ public class Formatter implements org.netbeans.modules.csl.api.Formatter {
             boolean continued = false;
             boolean indentHtml = false;
             if (isGspDocument) {
-                indentHtml = codeStyle.indentHtml();
+                indentHtml = codeStyle.isIndentHtml();
             }
 
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {

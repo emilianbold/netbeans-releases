@@ -42,12 +42,17 @@
 
 package org.netbeans.modules.keyring.fallback;
 
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 
 public class MasterPasswordEncryptionTest extends NbTestCase {
 
     public MasterPasswordEncryptionTest(String n) {
         super(n);
+    }
+
+    @Override protected Level logLevel() {
+        return Level.FINE;
     }
 
     public void testEncryption() throws Exception {

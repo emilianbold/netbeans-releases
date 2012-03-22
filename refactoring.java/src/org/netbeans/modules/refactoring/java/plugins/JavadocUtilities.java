@@ -59,7 +59,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
@@ -67,11 +66,10 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 
 /**
@@ -92,12 +90,14 @@ public class JavadocUtilities {
     private static TokenSequence<JavadocTokenId> findTokenSequence(CompilationInfo javac, Doc doc) {
         Element e = javac.getElementUtilities().elementFor(doc);
 
-        if (e == null)
+        if (e == null) {
             return null;
+        }
 
         Tree tree = javac.getTrees().getTree(e);
-        if (tree == null)
+        if (tree == null) {
             return null;
+        }
 
         int elementStartOffset = (int) javac.getTrees().getSourcePositions().getStartPosition(javac.getCompilationUnit(), tree);
         TokenSequence<?> s = javac.getTokenHierarchy().tokenSequence();
@@ -202,8 +202,9 @@ public class JavadocUtilities {
      */
     public static Position[] findTagNameBounds(CompilationInfo info, Document doc, Tag tag) throws BadLocationException {
         TokenSequence<JavadocTokenId> tseq = findTokenSequence(info, tag.holder());
-        if (tseq == null)
+        if (tseq == null) {
             return null;
+        }
         moveToTag(tseq, tag, info);
         Position[] positions = new Position[2];
         positions[0] = doc.createPosition(tseq.offset());
@@ -214,12 +215,14 @@ public class JavadocUtilities {
     public static Position[] findDocBounds(CompilationInfo javac, Document doc, Doc jdoc) throws BadLocationException {
         Element e = javac.getElementUtilities().elementFor(jdoc);
 
-        if (e == null)
+        if (e == null) {
             return null;
+        }
 
         Tree tree = javac.getTrees().getTree(e);
-        if (tree == null)
+        if (tree == null) {
             return null;
+        }
 
         int elementStartOffset = (int) javac.getTrees().getSourcePositions().getStartPosition(javac.getCompilationUnit(), tree);
         TokenSequence<?> tseq = javac.getTokenHierarchy().tokenSequence();
@@ -256,8 +259,9 @@ public class JavadocUtilities {
 
     public static Position[] findTagBounds(CompilationInfo javac, Document doc, Tag tag, boolean[] isLastToken) throws BadLocationException {
         TokenSequence<JavadocTokenId> tseq = findTokenSequence(javac, tag.holder());
-        if (tseq == null)
+        if (tseq == null) {
             return null;
+        }
         moveToTag(tseq, tag, javac);
 
         int start = tseq.offset();
@@ -300,8 +304,9 @@ public class JavadocUtilities {
      */
     public static Position[] findLastTokenBounds(CompilationInfo javac, Document doc, Doc jdoc) throws BadLocationException {
         TokenSequence<JavadocTokenId> tseq = findTokenSequence(javac, jdoc);
-        if (tseq == null)
+        if (tseq == null) {
             return null;
+        }
 
         Position[] positions;
         if (tseq.isEmpty()) {
@@ -324,10 +329,12 @@ public class JavadocUtilities {
         int index = 0;
 
         for (Tag t : tags) {
-            if (t == tag)
+            if (t == tag) {
                 return index;
-            if (t.name().equals(tag.name()))
+            }
+            if (t.name().equals(tag.name())) {
                 index++;
+            }
         }
 
         return -1;
@@ -578,26 +585,7 @@ public class JavadocUtilities {
     private static boolean doOpenImpl(FileObject fo, int offset) {
         try {
             DataObject od = DataObject.find(fo);
-            EditorCookie ec = od.getCookie(EditorCookie.class);
-            LineCookie lc = od.getCookie(LineCookie.class);
-
-            if (ec != null && lc != null && offset != -1) {
-                StyledDocument doc = ec.openDocument();
-                if (doc != null) {
-                    int line = NbDocument.findLineNumber(doc, offset);
-                    int lineOffset = NbDocument.findLineOffset(doc, line);
-                    int column = offset - lineOffset;
-
-                    if (line != -1) {
-                        Line l = lc.getLineSet().getCurrent(line);
-
-                        if (l != null) {
-                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
-                            return true;
-                        }
-                    }
-                }
-            }
+            return NbDocument.openDocument(od, offset, ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
         } catch (IOException ex) {
             Logger.getLogger(JavadocUtilities.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }

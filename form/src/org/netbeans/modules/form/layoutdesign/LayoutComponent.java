@@ -412,6 +412,12 @@ public final class LayoutComponent implements LayoutConstants {
         }
     }
 
+    static boolean isUnplacedComponent(LayoutComponent comp) {
+        LayoutComponent cont = comp.getParent();
+        return cont != null && comp.getParentRoots()[HORIZONTAL]
+                                 != cont.getDefaultLayoutRoot(HORIZONTAL);
+    }
+
     // -----
     // current state of the layout - current position and size of component
     // kept to be available quickly for the layout designer
