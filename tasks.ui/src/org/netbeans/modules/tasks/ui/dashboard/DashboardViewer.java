@@ -659,6 +659,7 @@ public final class DashboardViewer {
                 closedRepoNodes.add(closedRepositoryNode);
             } else {
                 RepositoryNode repositoryNode = new RepositoryNode(repository, false);
+                //TODO uncomment when query refresh is fixed
                 //refreshQueries(repository.getQueries());
                 repoNodes.add(repositoryNode);
             }
