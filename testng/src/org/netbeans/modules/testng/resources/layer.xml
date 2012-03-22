@@ -175,4 +175,12 @@ made subject to such option by the copyright holder.
 
         </folder>
     </folder>
+
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="testng.xml" url="testng.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.testng.Bundle#testng"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
