@@ -88,10 +88,11 @@ public class CppStringLexerTestCase extends NbTestCase {
     }
 
     public void testNextToken2() {
-        String text = "\\e\\t\\b\\b\\t \\tabc\\rsddfdsffffffffff\\uuuuAbcD\\377";
+        String text = "\"\\e\\t\\b\\b\\t \\tabc\\rsddfdsffffffffff\\uuuuAbcD\\377\"";
         
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppStringTokenId.languageDouble());
         TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.FIRST_QUOTE, "\"");
         LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.ANSI_COLOR, "\\e");
         LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.TAB, "\\t");
         LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.BACKSPACE, "\\b");
@@ -104,6 +105,14 @@ public class CppStringLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.TEXT, "sddfdsffffffffff");
         LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.UNICODE_ESCAPE, "\\uuuuAbcD");
         LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.OCTAL_ESCAPE, "\\377");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.LAST_QUOTE, "\"");
     }
-    
+
+    public void testRawTokens() {
+        // uR"*(This is a "raw UTF-16" string.)*)*"
+        String text = "uR\"*(This is a \"raw UTF-16\" string.)*)*\"";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppStringTokenId.languageRawString());
+        TokenSequence<?> ts = hi.tokenSequence();
+        CndLexerUnitTest.dumpTokens(ts, "ts");
+    }
 }

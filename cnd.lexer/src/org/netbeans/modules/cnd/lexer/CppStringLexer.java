@@ -63,7 +63,8 @@ import org.netbeans.spi.lexer.TokenFactory;
 
 public class CppStringLexer implements Lexer<CppStringTokenId> {
     private static final int INIT   = 0;
-    private static final int OTHER  = 1;
+    private static final int PREFIX  = 1;
+    private static final int OTHER  = 2;
 
     private static final int EOF = LexerInput.EOF;
 
@@ -102,11 +103,13 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
             switch (ch) {
                 case 'L':
                     if (startState == INIT) {
+                        state = PREFIX;
                         return token(CppStringTokenId.PREFIX_L);
                     }
                     break;
                 case 'U':
                     if (startState == INIT) {
+                        state = PREFIX;
                         int next = read();
                         if (next == 'R') {
                             assert rawString;
@@ -119,6 +122,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                     break;
                 case 'u':
                     if (startState == INIT) {
+                        state = PREFIX;
                         int next = read();
                         if (next == '8') {
                             next = read();
@@ -140,6 +144,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                     break;
                 case 'R':
                     if (startState == INIT) {
+                        state = PREFIX;
                         assert rawString;
                         return token(CppStringTokenId.PREFIX_R);
                     }
@@ -161,7 +166,15 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                         input.backup(1);
                         return token(CppStringTokenId.TEXT);
                     }
-                    return token(CppStringTokenId.DOUBLE_QUOTE);
+                    if (this.dblQuoted) {
+                        if (startState == PREFIX || startState == INIT) {
+                            return token(CppStringTokenId.FIRST_QUOTE);
+                        } else {
+                            return token(CppStringTokenId.LAST_QUOTE);
+                        }
+                    } else {
+                        return token(CppStringTokenId.DOUBLE_QUOTE);
+                    }
                 case '\\': //NOI18N
                     if (input.readLength() > 1) {// already read some text
                         input.backup(1);

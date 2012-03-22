@@ -80,7 +80,9 @@ public enum CppStringTokenId implements TokenId {
     PREFIX_u8R("u8R", "string"), // NOI18N
     
     SINGLE_QUOTE("'", "string"), // NOI18N
+    FIRST_QUOTE("\"", "string"), // NOI18N
     DOUBLE_QUOTE("\"", "string"), // NOI18N
+    LAST_QUOTE("\"", "string"), // NOI18N
     BACKSPACE("\\b", "string-escape"), //NOI18N
     ANSI_COLOR(null, "string-escape"), //NOI18N
     FORM_FEED("\\f","string-escape"), //NOI18N
