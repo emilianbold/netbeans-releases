@@ -1028,6 +1028,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 207148 - C++ structs marked as erroneus code
         performTest("bug207148.cpp", 8, 9, "bug207148.cpp", 2, 4);
     }    
+
+    public void testBug206220() throws Exception {
+        // Bug 206220 - friend and nested class
+        performTest("bug206220.cpp", 14, 17, "bug206220.cpp", 4, 5);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 
