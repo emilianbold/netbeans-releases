@@ -85,8 +85,8 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
     private PageModel pageModel;
     /** Context actions (actions shown when the panel/view is right-clicked) of this panel. */
     private Action[] contextActions;
-    /** Determines whether we are just updating selection from the model. */
-    private boolean updatingSelection = false;
+    /** Determines whether we are just updating view from the model. */
+    private boolean updatingView = false;
 
     /**
      * Creates a new {@code DomPanel}.
@@ -167,23 +167,28 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
      * @param document new DOM that should be shown in the panel.
      */
     private void update(boolean rebuild, Document document) {
-        if (document == null) {
-            Node root = new AbstractNode(Children.LEAF);
-            replace(treeView, noDomLabel);
-            manager.setRootContext(root);
-        } else {
-            Element documentElement = document.getDocumentElement();
-            if (rebuild) {
-                ElementNode root = new ElementNode();
-                root.setElement(documentElement);
-                manager.setRootContext(new FakeRootNode(root, getContextActions()));
+        updatingView  = true;
+        try {
+            if (document == null) {
+                Node root = new AbstractNode(Children.LEAF);
+                replace(treeView, noDomLabel);
+                manager.setRootContext(root);
             } else {
-                // Trying to keep the selected nodes and expanded branches in the tree view
-                FakeRootNode fakeRoot = (FakeRootNode)manager.getRootContext();
-                ElementNode oldRoot = (ElementNode)fakeRoot.getRealRoot();
-                oldRoot.setElement(documentElement);
+                Element documentElement = document.getDocumentElement();
+                if (rebuild) {
+                    ElementNode root = new ElementNode();
+                    root.setElement(documentElement);
+                    manager.setRootContext(new FakeRootNode(root, getContextActions()));
+                } else {
+                    // Trying to keep the selected nodes and expanded branches in the tree view
+                    FakeRootNode fakeRoot = (FakeRootNode)manager.getRootContext();
+                    ElementNode oldRoot = (ElementNode)fakeRoot.getRealRoot();
+                    oldRoot.setElement(documentElement);
+                }
+                replace(noDomLabel, treeView);
             }
-            replace(noDomLabel, treeView);
+        } finally {
+            updatingView = false;
         }
     }
 
@@ -282,13 +287,13 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                updatingSelection = true;
+                updatingView = true;
                 try {
                     manager.setSelectedNodes(nodeSelection.toArray(new Node[nodeSelection.size()]));
                 } catch (PropertyVetoException pvex) {
                     Logger.getLogger(DomPanel.class.getName()).log(Level.INFO, null, pvex);
                 } finally {
-                    updatingSelection = false;
+                    updatingView = false;
                 }
             }
         });
@@ -305,7 +310,7 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(propName)) {
-                    if (updatingSelection) {
+                    if (updatingView) {
                         // This change was triggered by update from the model
                         // => no need to synchronize back into the model.
                         // In fact, synchronization back into the model could be
