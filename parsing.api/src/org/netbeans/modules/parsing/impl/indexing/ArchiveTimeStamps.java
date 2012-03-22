@@ -212,24 +212,25 @@ final class ArchiveTimeStamps {
         @Override
         public void run() {
             final Store store = getAndSetPropertiesToSave(null);
-            assert store != null;
-            try {
-                LOG.fine("STORING");             //NOI18N
-                final FileObject file = getArchiveTimeStampsFile(true);
-                final FileLock lock = file.lock();
+            if (store != null) {
                 try {
-                    final OutputStream out = new BufferedOutputStream(file.getOutputStream(lock));
+                    LOG.fine("STORING");             //NOI18N
+                    final FileObject file = getArchiveTimeStampsFile(true);
+                    final FileLock lock = file.lock();
                     try {
-                        store.store(out);
+                        final OutputStream out = new BufferedOutputStream(file.getOutputStream(lock));
+                        try {
+                            store.store(out);
+                        } finally {
+                            out.close();
+                        }
                     } finally {
-                        out.close();
+                        lock.releaseLock();
                     }
-                } finally {
-                    lock.releaseLock();
+                    LOG.fine("STORED");             //NOI18N
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
                 }
-                LOG.fine("STORED");             //NOI18N
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
             }
         }
 
