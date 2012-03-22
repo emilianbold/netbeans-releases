@@ -978,7 +978,9 @@ public class VariousUtils {
             } else {
                 if (state.equals(State.CLASSNAME)) {
                     if (!metaAll.toString().startsWith("\\")) { //NOI18N
-                        metaAll = transformToFullyQualifiedType(metaAll, tokenSequence, varScope);
+                        if (tokenSequence.moveNext()) { // return to last valid token
+                            metaAll = transformToFullyQualifiedType(metaAll, tokenSequence, varScope);
+                        }
                     }
                     state = State.STOP;
                     break;
@@ -1388,7 +1390,11 @@ public class VariousUtils {
                 UseScope matchedUseElement = null;
                 int lastOffset = -1; // remember offset of the last use declaration, that fits
                 for (UseScope useElement : namespace.getDeclaredUses()) {
-                    if (useElement.getOffset() < offset) {
+                    // trying to make a FQ from exact use element, they are FQ by default
+                    if (useElement.getNameRange().containsInclusive(offset)) {
+                        qualifiedName = QualifiedName.create(true, qualifiedName.getSegments());
+                        break;
+                    } else if (useElement.getOffset() < offset) {
                         AliasedName aliasName = useElement.getAliasedName();
                         if (aliasName != null) {
                             //if it's allisased name
