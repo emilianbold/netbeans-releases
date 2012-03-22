@@ -56,9 +56,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-jdk-pkg">
         <ant dir="jdk" target="build-pkg"/>              
         <copy todir="${basedir}/build/">
-            <fileset description="Copy JDK pkg." dir="${basedir}/jdk/build/" includes="*.pkg"/>
+            <fileset description="Copy ${jdk.package.name}.pkg." dir="${basedir}/jdk/build/" includes="*.pkg"/>
         </copy>
-        <echo message="Copy JDK pkg..... into ${basedir}/build/"/>
+        <echo message="Copy ${jdk.package.name}.pkg into ${basedir}/jdk/build/"/>
     </target>
         
     <target name="build-openesb-pkg">
@@ -318,7 +318,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="init-bundles">
         <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
-                                              -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg  ./build/JDK 7 Update 04.pkg),
+                                              -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg),
                                               -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                               -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),                                             
                                               -php(./build/baseide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
@@ -328,7 +328,7 @@ Microsystems, Inc. All Rights Reserved.
                                                -javafx(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javafx-${nb.id}.pkg)
                                           "/>
 
-        <property name="jdk-bundle.bundles" value="-jdk(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/JDK\ 7\ Update\ 04.pkg)"/>
+        <property name="jdk-bundle.bundles" value="-jdk(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/jdk/${jdk.package.name}.pkg)"/>
 
         <condition property="all.bundles" value="${main.bundles}" else="${main.bundles},${fx.bundles}"> 
             <equals arg1="${javafx.build}" arg2="0"/>
