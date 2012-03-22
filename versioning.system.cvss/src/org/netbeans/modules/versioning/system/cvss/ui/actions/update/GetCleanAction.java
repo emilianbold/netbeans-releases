@@ -51,7 +51,6 @@ import org.netbeans.lib.cvsclient.file.FileUtils;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.openide.util.NbBundle;
-import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -63,6 +62,7 @@ import java.io.*;
 import java.util.logging.Logger;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.LifecycleManager;
 
@@ -260,7 +260,7 @@ public class GetCleanAction extends AbstractSystemAction {
             if (e.getCause() instanceof InterruptedException) {
                 // command aborted
             } else {
-                ErrorManager.getDefault().notify(e);
+                CvsVersioningSystem.LOG.log(Level.INFO, null, e);
             }
         }
     }
