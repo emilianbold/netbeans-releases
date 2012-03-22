@@ -85,6 +85,8 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
     private PageModel pageModel;
     /** Context actions (actions shown when the panel/view is right-clicked) of this panel. */
     private Action[] contextActions;
+    /** Determines whether we are just updating selection from the model. */
+    private boolean updatingSelection = false;
 
     /**
      * Creates a new {@code DomPanel}.
@@ -235,28 +237,43 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (PageModel.PROP_SELECTED_ELEMENTS.equals(propName)) {
-                    Collection<ElementHandle> selection = pageModel.getSelectedElements();
-                    List<Node> nodeSelection = new ArrayList<Node>();
-                    for (ElementHandle handle : selection) {
-                        Node root = manager.getRootContext();
-                        if (root instanceof FakeRootNode) {
-                            root = ((FakeRootNode)root).getRealRoot();
-                        }
-                        if (root instanceof ElementNode) {
-                            ElementNode node = ((ElementNode)root).locate(handle);
-                            if (node != null) {
-                                nodeSelection.add(node);
-                            }
-                        }
-                    }
-                    try {
-                        manager.setSelectedNodes(nodeSelection.toArray(new Node[nodeSelection.size()]));
-                    } catch (PropertyVetoException pvex) {
-                        Logger.getLogger(DomPanel.class.getName()).log(Level.INFO, null, pvex);
-                    }
+                    updateSelectionFromModel();
                 }
             }
         };
+    }
+
+    /**
+     * Updates selection in this view from the model.
+     */
+    private void updateSelectionFromModel() {
+        Collection<ElementHandle> selection = pageModel.getSelectedElements();
+        final List<Node> nodeSelection = new ArrayList<Node>();
+        for (ElementHandle handle : selection) {
+            Node root = manager.getRootContext();
+            if (root instanceof FakeRootNode) {
+                root = ((FakeRootNode)root).getRealRoot();
+            }
+            if (root instanceof ElementNode) {
+                ElementNode node = ((ElementNode)root).locate(handle);
+                if (node != null) {
+                    nodeSelection.add(node);
+                }
+            }
+        }
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                updatingSelection = true;
+                try {
+                    manager.setSelectedNodes(nodeSelection.toArray(new Node[nodeSelection.size()]));
+                } catch (PropertyVetoException pvex) {
+                    Logger.getLogger(DomPanel.class.getName()).log(Level.INFO, null, pvex);
+                } finally {
+                    updatingSelection = false;
+                }
+            }
+        });
     }
 
     /**
@@ -270,6 +287,14 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(propName)) {
+                    if (updatingSelection) {
+                        // This change was triggered by update from the model
+                        // => no need to synchronize back into the model.
+                        // In fact, synchronization back into the model could be
+                        // harmful when some part of the selection is not found among
+                        // the displayed nodes (when the view is not 100% up to date).
+                        return;
+                    }
                     Node[] nodes = manager.getSelectedNodes();
                     final List<ElementHandle> elements = new ArrayList<ElementHandle>(nodes.length);
                     for (Node node : nodes) {
