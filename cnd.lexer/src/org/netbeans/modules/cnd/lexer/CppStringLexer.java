@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.lexer;
 
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -311,4 +312,114 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
     public void release() {
     }
 
+    private enum RawStringLexingState {
+        PREFIX_DELIMETER,
+        BODY,
+        POSTFIX_DELIMETER,
+        ERROR
+    }
+
+    protected static PartType finishRawString(LexerInput input) {
+        RawStringLexingState state = RawStringLexingState.PREFIX_DELIMETER;
+        StringBuilder delim = new StringBuilder("");
+        String delimeter = "";
+        while (true) {
+            int read = input.read();
+            switch (state) {
+                case PREFIX_DELIMETER: {
+                    if (isRawStringDelimeterCharacter(read)) {
+                        delim.append((char) read);
+                        break;
+                    }
+                    if (read == '(') {
+                        delimeter = delim.toString();
+                        state = RawStringLexingState.BODY;
+                    } else {
+                        state = RawStringLexingState.ERROR;
+                    }
+                    break;
+                }
+                case BODY: {
+                    if (read == ')') {
+                        state = RawStringLexingState.POSTFIX_DELIMETER;
+                    }
+                    break;
+                }
+                case POSTFIX_DELIMETER: {
+                    boolean ok = true;
+                    // characters after closing ')' met in body should be as in start delimeter
+                    for (int i = 0; i < delimeter.length(); i++) {
+                        if (delimeter.charAt(i) == (char) read) {
+                            read = input.read();
+                        } else {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    if (read == '"' && ok) {
+                        return PartType.COMPLETE;
+                    }
+                    if (read == EOF) {
+                        return PartType.START;
+                    }
+                    if (read == ')') {
+                        // next round to detect postfix delimeter
+                        state = RawStringLexingState.POSTFIX_DELIMETER;
+                    } else {
+                        // it still was a body
+                        state = RawStringLexingState.BODY;
+                    }
+                    break;
+                }
+                case ERROR: {
+                    // incorrect delimeter, try to recover
+                    switch (read) {
+                        case '"': // NOI18N
+                            return PartType.START;
+                        case '\r':
+                        case '\n':
+                            input.backup(1);
+                            return PartType.START;
+                        case EOF:
+                            return PartType.START;
+                    }
+                }
+
+            }
+        }
+    }
+
+    private static boolean isRawStringDelimeterCharacter(int c) {
+        switch (c) {
+            case '.':
+            // {}[]#<>%:;?*+-/^&|~!=,"'
+            case '{':
+            case '}':
+            case '[':
+            case ']':
+            case '#':
+            case '<':
+            case '>':
+            case '%':
+            case ':':
+            case ';':
+            case '?':
+            case '*':
+            case '+':
+            case '-':
+            case '/':
+            case '^':
+            case '&':
+            case '|':
+            case '~':
+            case '!':
+            case '=':
+            case ',':
+            case '"':
+            case '\'':
+                return true;
+            default:
+                return CndLexerUtilities.isCppIdentifierPart(c);
+        }
+    }
 }
