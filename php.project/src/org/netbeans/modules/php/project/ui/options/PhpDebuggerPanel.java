@@ -81,12 +81,7 @@ public class PhpDebuggerPanel extends JPanel {
 
         watchesAndEvalListener = new WatchesAndEvalListener(maxStructuresDepthTextField, maxChildrenTextField);
 
-        init();
         initListeners();
-    }
-
-    private void init() {
-        watchesAndEvalListener.enableDependentFields(watchesAndEvalCheckBox.isSelected());
     }
 
     private void initListeners() {
@@ -145,6 +140,7 @@ public class PhpDebuggerPanel extends JPanel {
     public void setWatchesAndEval(boolean watchesAndEval) {
         watchesAndEvalCheckBox.removeItemListener(watchesAndEvalListener);
         watchesAndEvalCheckBox.setSelected(watchesAndEval);
+        watchesAndEvalListener.enableDependentFields(watchesAndEval);
         watchesAndEvalCheckBox.addItemListener(watchesAndEvalListener);
     }
 
