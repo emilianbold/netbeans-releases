@@ -79,4 +79,8 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testPerson() throws Exception {
         checkStructure("testfiles/model/person.js");
     }
+    
+    public void testAnonymousFunction() throws Exception {
+        checkStructure("testfiles/model/jQueryFragment01.js");
+    }
 }
