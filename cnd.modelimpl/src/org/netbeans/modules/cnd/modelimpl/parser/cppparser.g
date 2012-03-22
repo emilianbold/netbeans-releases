@@ -3765,8 +3765,40 @@ protected
 isGreaterthanInTheRestOfExpression
     :
         (lazy_expression[true, true])?
+        (options {greedy=true;}:	
+            ( ASSIGNEQUAL              
+            | TIMESEQUAL
+            | DIVIDEEQUAL
+            | MINUSEQUAL
+            | PLUSEQUAL
+            | MODEQUAL
+            | SHIFTLEFTEQUAL
+            | SHIFTRIGHTEQUAL
+            | BITWISEANDEQUAL
+            | BITWISEXOREQUAL
+            | BITWISEOREQUAL
+            )
+            (lazy_expression[true, true]
+            | array_initializer)
+        )*
         (   COMMA 
             lazy_expression[true, true]
+            (options {greedy=true;}:	
+                ( ASSIGNEQUAL              
+                | TIMESEQUAL
+                | DIVIDEEQUAL
+                | MINUSEQUAL
+                | PLUSEQUAL
+                | MODEQUAL
+                | SHIFTLEFTEQUAL
+                | SHIFTRIGHTEQUAL
+                | BITWISEANDEQUAL
+                | BITWISEXOREQUAL
+                | BITWISEOREQUAL
+                )
+                (lazy_expression[true, true]
+                | array_initializer)
+            )*
         )*
         GREATERTHAN
     ;
