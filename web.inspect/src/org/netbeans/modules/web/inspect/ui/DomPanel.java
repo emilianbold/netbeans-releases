@@ -146,6 +146,12 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                     @Override
                     public void run() {
                         update(rebuild, document);
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateSelectionFromModel();
+                            }
+                        });
                     }
                 });
             }
