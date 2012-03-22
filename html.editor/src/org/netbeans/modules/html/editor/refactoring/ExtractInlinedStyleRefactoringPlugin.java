@@ -55,9 +55,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.tree.NodeUtils;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
@@ -68,12 +66,16 @@ import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.html.editor.HtmlSourceUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.tree.ElementType;
+import org.netbeans.modules.html.editor.lib.api.tree.Node;
+import org.netbeans.modules.html.editor.lib.api.tree.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.tree.Tag;
 import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
 import org.netbeans.modules.html.editor.refactoring.api.SelectorType;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
@@ -81,8 +83,9 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @todo Define some pattern for the generation the class and id selector in the css options.
- * 
+ * @todo Define some pattern for the generation the class and id selector in the
+ * css options.
+ *
  * @author marekfukala
  */
 public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
@@ -127,7 +130,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
         switch (refactoring.getMode()) {
             case refactorToExistingEmbeddedSection:
                 OffsetRange sectionRange = refactoring.getExistingEmbeddedCssSection();
-                if(sectionRange == null) {
+                if (sectionRange == null) {
                     return new Problem(true, NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_ErrorCannotDetermineEmbeddedSectionEnd"));
                 } else {
                     refactorToEmbeddedSection(modificationResult, context, sectionRange.getEnd());
@@ -184,81 +187,78 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
             //jsf hack - we need to put the generated <link/> or <style/> sections to the proper place,
             //which is <h:head> tag in case of JSF. Ideally there should be an SPI which the frameworks
             //would implement and which would provide a default places for such elements.
-            AstNode jsfHtmlLibRoot = result.root("http://java.sun.com/jsf/html"); //NOI18N
+            Node jsfHtmlLibRoot = result.root("http://java.sun.com/jsf/html"); //NOI18N
             if (jsfHtmlLibRoot != null) {
-                AstNodeUtils.visitChildren(jsfHtmlLibRoot, new AstNodeVisitor() {
-
+                NodeUtils.visitChildren(jsfHtmlLibRoot, new NodeVisitor() {
                     @Override
-                    public void visit(AstNode node) {
+                    public void visit(Node node) {
                         //assume <h:head>
-                        if (node.name().endsWith("head")) { //NOI18N
+                        Tag t = (Tag) node;
+                        if (LexerUtils.equals("head", t.unqualifiedName(), true, true)) { //NOI18N
                             //append the section as first head's child if there are
                             //no existing link attribute
-                            insertPositionRef.set(node.endOffset()); //end of the open tag offset
+                            insertPositionRef.set(node.to()); //end of the open tag offset
                             increaseIndent.set(true);
                         }
                     }
-                }, AstNode.NodeType.OPEN_TAG);
+                }, ElementType.OPEN_TAG);
 
             }
 
-
-            AstNode root = result.root();
-            AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
-
+            Node root = result.root();
+            NodeUtils.visitChildren(root, new NodeVisitor() {
                 @Override
-                public void visit(AstNode node) {
-                    if("html".equalsIgnoreCase(node.name())) { //NOI18N
-                            if(insertPositionRef.get() == -1) { //h:head already found?
+                public void visit(Node node) {
+                    Tag t = (Tag) node;
+                    if (LexerUtils.equals("html", t.name(), true, true)) {
+                        if (insertPositionRef.get() == -1) { //h:head already found?
                             //append the section as first html's child if there are
                             //no existing link attribute and head tag
-                            insertPositionRef.set(node.endOffset()); //end of the open tag offset
+                            insertPositionRef.set(node.to()); //end of the open tag offset
                             increaseIndent.set(true);
+                        } else if (LexerUtils.equals("head", t.name(), true, true)) {
+                            //NOI18N
+                            //append the section as first head's child if there are
+                            //no existing style sections
+                            insertPositionRef.set(node.to()); //end of the open tag offset
+                            increaseIndent.set(true);
+                        } else if (LexerUtils.equals("style", t.name(), true, true)) {
+                            //NOI18N
+                            //existing style section
+                            //append the new section after the last one
+                            insertPositionRef.set(node.logicalRange()[1]); //end of the end tag offset
+                            increaseIndent.set(false);
                         }
-                    } else if ("head".equalsIgnoreCase(node.name())) { //NOI18N
-                        //NOI18N
-                        //append the section as first head's child if there are
-                        //no existing style sections
-                        insertPositionRef.set(node.endOffset()); //end of the open tag offset
-                        increaseIndent.set(true);
-                    } else if ("style".equalsIgnoreCase(node.name())) {
-                        //NOI18N
-                        //existing style section
-                        //append the new section after the last one
-                        insertPositionRef.set(node.getLogicalRange()[1]); //end of the end tag offset
-                        increaseIndent.set(false);
                     }
                 }
-            }, AstNode.NodeType.OPEN_TAG);
+            }, ElementType.OPEN_TAG);
+            
             int embeddedInsertOffset = insertPositionRef.get();
-            if (embeddedInsertOffset == -1) {
+            if (embeddedInsertOffset
+                    == -1) {
                 //TODO probably missing head tag? - generate? html tag may be missing as well
                 return false;
             }
             int insertOffset = context.getModel().getSnapshot().getOriginalOffset(embeddedInsertOffset);
-            if (insertOffset == -1) {
+            if (insertOffset
+                    == -1) {
                 return false; //cannot properly map back
             }
             int baseIndent = Utilities.getRowIndent((BaseDocument) context.getDocument(), insertOffset);
-            if (baseIndent == -1) {
+            if (baseIndent
+                    == -1) {
                 //in case of empty line
                 baseIndent = 0;
             }
+
             if (increaseIndent.get()) {
                 //add one indent level (after HEAD open tag)
                 baseIndent += IndentUtils.indentLevelSize(context.getDocument());
             }
-
-
             //generate the embedded id selector section
             String baseIndentString = IndentUtils.createIndentString(context.getDocument(), baseIndent);
-            String prefix = new StringBuilder().append('\n').
-                    append(baseIndentString).
-                    append("<style type=\"text/css\">\n").toString(); //NOI18N
-
-            String postfix = new StringBuilder().append('\n').
-                    append(baseIndentString).
-                    append("</style>").toString(); //NOI18N
+            String prefix = new StringBuilder().append('\n').append(baseIndentString).append("<style type=\"text/css\">\n").toString(); //NOI18N
+            String postfix = new StringBuilder().append('\n').append(baseIndentString).append("</style>").toString(); //NOI18N
 
             return refactorToEmbeddedSection(modifications, context, context.getFile(), insertOffset, baseIndent, prefix, postfix);
 
@@ -313,10 +313,10 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                     if (selectorType == SelectorType.ID) {
                         DeclarationItem resolvedDeclaration = declaration.getResolvedTarget();
 
-                        if(resolvedDeclaration == null) {
+                        if (resolvedDeclaration == null) {
                             //no declaration of the selector found in the project,
                             //we need to generate  a new one.
-                             List<String> lines = new ArrayList<String>();
+                            List<String> lines = new ArrayList<String>();
                             lines.add(""); //empty line = will add new line
                             lines.add(new StringBuilder().append('.').append(si.getTagsId()).append('{').toString()); //NOI18N
                             appendConvertedInlinedCodeLines(lines, si);
@@ -560,7 +560,6 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
     private static int getPreviousLineIndent(final Document doc, final int insertOffset) {
         final AtomicInteger ret = new AtomicInteger(0); //default is 0 indent if something fails in the later runnable
         doc.render(new Runnable() {
-
             @Override
             public void run() {
                 try {

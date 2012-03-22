@@ -43,7 +43,7 @@ package org.netbeans.modules.html.editor.hints;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;

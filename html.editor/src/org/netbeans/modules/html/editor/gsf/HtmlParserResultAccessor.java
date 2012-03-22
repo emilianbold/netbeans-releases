@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.openide.util.Exceptions;
 

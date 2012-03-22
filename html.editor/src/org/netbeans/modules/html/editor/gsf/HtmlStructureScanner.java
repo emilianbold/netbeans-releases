@@ -41,35 +41,19 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
-import org.netbeans.editor.ext.html.parser.api.AstPath;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.tree.*;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -94,7 +78,7 @@ public class HtmlStructureScanner implements StructureScanner {
         }
 
         HtmlParserResult presult = (HtmlParserResult) info;
-        AstNode root = ((HtmlParserResult) presult).root();
+        Node root = ((HtmlParserResult) presult).root();
 
         if (LOG) {
             LOGGER.log(Level.FINE, "HTML parser tree output:");
@@ -124,14 +108,13 @@ public class HtmlStructureScanner implements StructureScanner {
         final List<OffsetRange> tags = new ArrayList<OffsetRange>();
         final List<OffsetRange> comments = new ArrayList<OffsetRange>();
 
-        AstNodeVisitor foldsSearch = new AstNodeVisitor() {
-
+        NodeVisitor foldsSearch = new NodeVisitor() {
             @Override
-            public void visit(AstNode node) {
-                if (node.type() == AstNode.NodeType.OPEN_TAG
-                        || node.type() == AstNode.NodeType.COMMENT) {
+            public void visit(Node node) {
+                if (node.type() == ElementType.OPEN_TAG
+                        || node.type() == ElementType.COMMENT) {
                     try {
-                        int[] logicalRange = node.getLogicalRange();
+                        int[] logicalRange = node.logicalRange();
                         int from = logicalRange[0];
                         int to = logicalRange[1];
 
@@ -154,7 +137,7 @@ public class HtmlStructureScanner implements StructureScanner {
                         if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
                             //do not creare one line folds
                             //XXX this logic could possibly seat in the GSF folding impl.
-                            if (node.type() == AstNode.NodeType.OPEN_TAG) {
+                            if (node.type() == ElementType.OPEN_TAG) {
                                 tags.add(new OffsetRange(so, eo));
                             } else {
                                 comments.add(new OffsetRange(so, eo));
@@ -170,9 +153,9 @@ public class HtmlStructureScanner implements StructureScanner {
         //the document is touched during the ast tree visiting, we need to lock it
         doc.readLock();
         try {
-            Collection<AstNode> roots = ((HtmlParserResult) info).roots().values();
-            for (AstNode root : roots) {
-                AstNodeUtils.visitChildren(root, foldsSearch);
+            Collection<Node> roots = ((HtmlParserResult) info).roots().values();
+            for (Node root : roots) {
+                NodeUtils.visitChildren(root, foldsSearch);
             }
         } finally {
             doc.readUnlock();
@@ -221,7 +204,7 @@ public class HtmlStructureScanner implements StructureScanner {
         public String getHtml(HtmlFormatter formatter) {
             formatter.appendHtml(getName());
 
-            AstNode node = handle.node();
+            Node node = handle.node();
             String idAttr = getAttributeValue(node, "id"); //NOI18N
             String classAttr = getAttributeValue(node, "class"); //NOI18N
 
@@ -235,7 +218,7 @@ public class HtmlStructureScanner implements StructureScanner {
             return formatter.getText();
         }
 
-        private String getAttributeValue(AstNode node, String key) {
+        private String getAttributeValue(Node node, String key) {
             String value = _getAttributeValue(node, key.toUpperCase(Locale.ENGLISH));
             if (value == null) {
                 return _getAttributeValue(node, key.toLowerCase(Locale.ENGLISH));
@@ -244,12 +227,16 @@ public class HtmlStructureScanner implements StructureScanner {
             }
         }
 
-        private String _getAttributeValue(AstNode node, String key) {
-            AstNode.Attribute attr = node.getAttribute(key); //try lowercase
+        private String _getAttributeValue(Node node, String key) {
+            if (node.type() != ElementType.OPEN_TAG) {
+                return null;
+            }
+            Tag t = (Tag) node;
+            Attribute attr = t.getAttribute(key); //try lowercase
             if (attr == null) {
                 return null;
             }
-            return attr.unquotedValue(); //try lowercase
+            return NodeUtils.unquotedValue(attr).toString();
         }
 
         @Override
@@ -259,10 +246,24 @@ public class HtmlStructureScanner implements StructureScanner {
 
         synchronized int indexInParent() {
             if (myIndexInParent == -1) {
-                AstNode papa = handle.node().parent();
-                myIndexInParent = papa == null ? -2 : AstPath.indexInSimilarNodes(papa, handle.node());
+                Node papa = handle.node().parent();
+                myIndexInParent = papa == null ? -2 : indexInSimilarNodes(papa, handle.node());
             }
             return myIndexInParent;
+        }
+
+        //copied! from TreePath!!!
+        private static int indexInSimilarNodes(Node parent, Node node) {
+            int index = -1;
+            for (Node child : parent.children()) {
+                if (node.nodeId().equals(child.nodeId()) && node.type() == child.type()) {
+                    index++;
+                }
+                if (child == node) {
+                    break;
+                }
+            }
+            return index;
         }
 
         @Override
@@ -272,9 +273,9 @@ public class HtmlStructureScanner implements StructureScanner {
             }
             HtmlStructureItem item = (HtmlStructureItem) o;
 
-            AstNode he = ((HtmlStructureItem) o).handle.node();
-            AstNode me = handle.node();
-            if (he.type() == me.type() && he.name().equals(me.name())) {
+            Node he = ((HtmlStructureItem) o).handle.node();
+            Node me = handle.node();
+            if (he.type() == me.type() && LexerUtils.equals(he.nodeId(), me.nodeId(), false, false)) {
                 return indexInParent() == item.indexInParent();
             }
             return false;
@@ -282,7 +283,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
         @Override
         public int hashCode() {
-            return handle.node().name().hashCode() + indexInParent();
+            return handle.node().nodeId().hashCode() + indexInParent();
 
         }
 
@@ -305,11 +306,11 @@ public class HtmlStructureScanner implements StructureScanner {
         @Override
         public synchronized List<? extends StructureItem> getNestedItems() {
             if (items == null) {
-                AstNode node = handle.node();
+                Node node = handle.node();
                 items = new ArrayList<StructureItem>(node.children().size());
-                List<AstNode> nonVirtualChildren = gatherNonVirtualChildren(node);
-                for (AstNode child : nonVirtualChildren) {
-                    if (child.type() == AstNode.NodeType.OPEN_TAG) {
+                List<Node> nonVirtualChildren = gatherNonVirtualChildren(node);
+                for (Node child : nonVirtualChildren) {
+                    if (child.type() == ElementType.OPEN_TAG) {
                         HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.getFileObject());
                         items.add(new HtmlStructureItem(childHandle, snapshot));
                     }
@@ -334,11 +335,11 @@ public class HtmlStructureScanner implements StructureScanner {
         }
     }
 
-    private static List<AstNode> gatherNonVirtualChildren(AstNode node) {
-        List<AstNode> items = new LinkedList<AstNode>();
-        for (AstNode child : node.children()) {
-            if (child.type() == AstNode.NodeType.OPEN_TAG) {
-                if (!child.isVirtual()) {
+    private static List<Node> gatherNonVirtualChildren(Node node) {
+        List<Node> items = new LinkedList<Node>();
+        for (Node child : node.children()) {
+            if (child.type() == ElementType.OPEN_TAG) {
+                if (!NodeUtils.isVirtualNode(child)) {
                     items.add(child);
                 } else {
                     items.addAll(gatherNonVirtualChildren(child));

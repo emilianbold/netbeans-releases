@@ -60,7 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
+import org.netbeans.modules.html.editor.lib.api.HelpResolver;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.CharSequences;

@@ -45,9 +45,8 @@ import java.io.IOException;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.editor.ext.html.dtd.*;
-import org.netbeans.editor.ext.html.dtd.DTD.Content;
-import org.netbeans.editor.ext.html.dtd.DTD.Element;
+import org.netbeans.modules.html.editor.lib.dtd.DTD.Content;
+import org.netbeans.modules.html.editor.lib.dtd.DTD.Element;
 import org.netbeans.modules.html.editor.test.TestBase;
 import static org.junit.Assert.*;
 
@@ -72,7 +71,7 @@ public class DTDParserTest extends TestBase {
     }
 
     public void testDTDParserXHTML() {
-        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(XHTML_DOCTYPE, null);
+        DTD dtd = org.netbeans.modules.html.editor.lib.dtd.Registry.getDTD(XHTML_DOCTYPE, null);
         assertNotNull(dtd);
 
         Element htmlElement = dtd.getElement("html");
@@ -101,7 +100,7 @@ public class DTDParserTest extends TestBase {
     }
 
     private void testDTDParser_HTML_BODY_Elements(String doctype) {
-        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(doctype, null);
+        DTD dtd = org.netbeans.modules.html.editor.lib.dtd.Registry.getDTD(doctype, null);
         assertNotNull(dtd);
 
         Element htmlElement = dtd.getElement("HTML");
@@ -127,7 +126,7 @@ public class DTDParserTest extends TestBase {
     }
 
     private void testTable(String doctype) {
-        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(doctype, null);
+        DTD dtd = org.netbeans.modules.html.editor.lib.dtd.Registry.getDTD(doctype, null);
         assertNotNull(dtd);
 
         Element el = dtd.getElement("TABLE");
@@ -139,7 +138,7 @@ public class DTDParserTest extends TestBase {
     }
 
     public void testReduceSgmlAmpGroups() {
-        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(HTML401_TRANS, null);
+        DTD dtd = org.netbeans.modules.html.editor.lib.dtd.Registry.getDTD(HTML401_TRANS, null);
         assertNotNull(dtd);
         Element el = dtd.getElement("HEAD");
         assertNotNull(el);
@@ -185,7 +184,7 @@ public class DTDParserTest extends TestBase {
     }
 
     public void testOption() {
-        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(HTML401_STRICT, null);
+        DTD dtd = org.netbeans.modules.html.editor.lib.dtd.Registry.getDTD(HTML401_STRICT, null);
         assertNotNull(dtd);
 
         Element el = dtd.getElement("OPTION");
@@ -195,7 +194,7 @@ public class DTDParserTest extends TestBase {
     }
     
     public void testFrameset() {
-        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD("-//W3C//DTD HTML 4.01 Frameset//EN", null);
+        DTD dtd = org.netbeans.modules.html.editor.lib.dtd.Registry.getDTD("-//W3C//DTD HTML 4.01 Frameset//EN", null);
         assertNotNull(dtd);
     }
 

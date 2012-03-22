@@ -47,10 +47,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import org.netbeans.editor.ext.html.dtd.DTD;
-import org.netbeans.editor.ext.html.dtd.DTD.Attribute;
-import org.netbeans.editor.ext.html.dtd.DTD.Element;
-import org.netbeans.editor.ext.html.dtd.Registry;
+import org.netbeans.modules.html.editor.lib.dtd.DTD;
+import org.netbeans.modules.html.editor.lib.dtd.DTD.Attribute;
+import org.netbeans.modules.html.editor.lib.dtd.DTD.Element;
+import org.netbeans.modules.html.editor.lib.dtd.Registry;
 import org.netbeans.modules.html.editor.test.TestBase;
 
 /**

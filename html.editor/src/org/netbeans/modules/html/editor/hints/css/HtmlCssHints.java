@@ -42,18 +42,9 @@
 package org.netbeans.modules.html.editor.hints.css;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -62,7 +53,15 @@ import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.hints.EmbeddingUtil;
+import org.netbeans.modules.html.editor.lib.api.tree.Attribute;
+import org.netbeans.modules.html.editor.lib.api.tree.AttributeFilter;
+import org.netbeans.modules.html.editor.lib.api.tree.ElementType;
+import org.netbeans.modules.html.editor.lib.api.tree.Node;
+import org.netbeans.modules.html.editor.lib.api.tree.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.tree.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.tree.Tag;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -85,13 +84,13 @@ public class HtmlCssHints {
             return;
         }
         try {
-            AstNodeUtils.visitChildren(result.root(), new HintsAstNodeVisitor(context, file, project, hints), AstNode.NodeType.OPEN_TAG);
+            NodeUtils.visitChildren(result.root(), new HintsNodeVisitor(context, file, project, hints), ElementType.OPEN_TAG);
         } catch (IOException ex) {
             //no-op
         }
     }
 
-    private static class HintsAstNodeVisitor implements AstNodeVisitor {
+    private static class HintsNodeVisitor implements NodeVisitor {
 
         private final RuleContext context;
         private final List<Hint> hints;
@@ -101,7 +100,7 @@ public class HtmlCssHints {
         private final Map<String, Collection<FileObject>> ids2files;
         private final Map<String, Collection<FileObject>> classes2files;
 
-        public HintsAstNodeVisitor(RuleContext context, FileObject file, Project project, List<Hint> hints) throws IOException {
+        public HintsNodeVisitor(RuleContext context, FileObject file, Project project, List<Hint> hints) throws IOException {
             this.context = context;
             this.file = file;
             this.hints = hints;
@@ -132,21 +131,22 @@ public class HtmlCssHints {
         }
 
         @Override
-        public void visit(AstNode node) {
-            for (Attribute id : node.getAttributes(new AstNode.AttributeFilter() {
+        public void visit(Node node) {
+            Tag tag = (Tag)node;
+            for (Attribute id : tag.attributes(new AttributeFilter() {
 
                 @Override
                 public boolean accepts(Attribute attribute) {
-                    return ID_ATTR_NAME.equalsIgnoreCase(attribute.name());
+                    return LexerUtils.equals(ID_ATTR_NAME, attribute.name(), true, true);
                 }
             })) {
                 processElements(id, CssElementType.ID, ids2files);
             }
-            for (Attribute id : node.getAttributes(new AstNode.AttributeFilter() {
+            for (Attribute id : tag.attributes(new AttributeFilter() {
 
                 @Override
                 public boolean accepts(Attribute attribute) {
-                    return CLASS_ATTR_NAME.equalsIgnoreCase(attribute.name());
+                    return LexerUtils.equals(CLASS_ATTR_NAME, attribute.name(), true, true);
                 }
             })) {
                 processElements(id, CssElementType.CLASS, classes2files);
@@ -156,7 +156,7 @@ public class HtmlCssHints {
 
         private void processElements(Attribute attribute, CssElementType elementType, Map<String, Collection<FileObject>> elements2files) {
             //all files containing the id declaration
-            Collection<FileObject> filesWithTheId = elements2files.get(attribute.unquotedValue());
+            Collection<FileObject> filesWithTheId = elements2files.get(NodeUtils.unquotedValue(attribute).toString());
 
             //all referred files with the id declaration
             Collection<FileObject> referredFilesWithTheId = new LinkedList<FileObject>();
@@ -177,8 +177,9 @@ public class HtmlCssHints {
     }
 
     private static OffsetRange getAttributeValueOffsetRange(Attribute attr, RuleContext context) {
-        int from = attr.unqotedValueOffset();
-        int to = from + attr.unquotedValue().length();
+        boolean quoted = NodeUtils.isValueQuoted(attr);
+        int from = attr.valueOffset() + (quoted ? 1 : 0);
+        int to = from + NodeUtils.unquotedValue(attr).length();
         return EmbeddingUtil.convertToDocumentOffsets(from, to, context.parserResult.getSnapshot());
     }
 }

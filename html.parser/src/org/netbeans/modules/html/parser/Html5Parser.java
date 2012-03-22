@@ -56,19 +56,18 @@ import java.util.regex.Pattern;
 import nu.validator.htmlparser.impl.ErrorReportingTokenizer;
 import nu.validator.htmlparser.impl.Tokenizer;
 import nu.validator.htmlparser.io.Driver;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeFactory;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.api.ParseException;
-import org.netbeans.editor.ext.html.parser.spi.DefaultHtmlParseResult;
-import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
-import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
-import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
-import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
-import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
-import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.ParseException;
+import org.netbeans.modules.html.editor.lib.api.DefaultHtmlParseResult;
+import org.netbeans.modules.html.editor.lib.api.HelpResolver;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import org.netbeans.modules.html.editor.lib.api.HtmlParseResult;
+import org.netbeans.modules.html.editor.lib.api.HtmlParser;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
+import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
+import org.netbeans.modules.html.editor.lib.api.model.NamedCharRef;
+import org.netbeans.modules.html.editor.lib.api.tree.Node;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.netbeans.modules.html.parser.model.NamedCharacterReference;
 import org.openide.util.Lookup;
@@ -96,7 +95,7 @@ public class Html5Parser implements HtmlParser {
         String code = maskTemplatingMarks(source.getSourceCode().toString());
         try {
             InputSource is = new InputSource(new StringReader(code));
-            final AstNodeTreeBuilder treeBuilder = new AstNodeTreeBuilder(AstNodeFactory.shared().createRootNode(0, code.length()));
+            final NodeTreeBuilder treeBuilder = new NodeTreeBuilder(NodeFactory.shared().createRootNode(0, code.length()));
             final Tokenizer tokenizer = new ErrorReportingTokenizer(treeBuilder);
 
             Driver driver = new Driver(tokenizer);
@@ -132,7 +131,7 @@ public class Html5Parser implements HtmlParser {
                 
             });
             driver.tokenize(is);
-            AstNode root = treeBuilder.getRoot();
+            Node root = treeBuilder.getRoot();
 
             return new Html5ParserResult(source, root, problems, preferedVersion);
 
@@ -155,7 +154,7 @@ public class Html5Parser implements HtmlParser {
             
             Logger.getAnonymousLogger().log(Level.INFO, msg.toString(), e);
             
-            return new Html5ParserResult(source, AstNodeFactory.shared().createRootNode(0, code.length()), 
+            return new Html5ParserResult(source, NodeFactory.shared().createRootNode(0, code.length()), 
                     Collections.<ProblemDescription>emptyList(), preferedVersion);
         }
     }
@@ -194,7 +193,7 @@ public class Html5Parser implements HtmlParser {
 
     private static class Html5ParserResult extends DefaultHtmlParseResult {
 
-        public Html5ParserResult(HtmlSource source, AstNode root, Collection<ProblemDescription> problems, HtmlVersion version) {
+        public Html5ParserResult(HtmlSource source, Node root, Collection<ProblemDescription> problems, HtmlVersion version) {
             super(source, root, problems, version);
         }
 
@@ -218,7 +217,7 @@ public class Html5Parser implements HtmlParser {
         }
 
         @Override
-        public Collection<HtmlTag> getPossibleOpenTags(AstNode afterNode) {
+        public Collection<HtmlTag> getPossibleOpenTags(Node afterNode) {
             HtmlTag tag = model().getTag(afterNode.getNameWithoutPrefix());
             if (tag == null) {
                 return Collections.emptyList();
@@ -244,10 +243,10 @@ public class Html5Parser implements HtmlParser {
         }
 
         @Override
-        public Map<HtmlTag, AstNode> getPossibleEndTags(AstNode node) {
+        public Map<HtmlTag, Node> getPossibleEndTags(Node node) {
             //Bug 197608 - Non-html tags offered as closing tags using code completion
             //XXX define of what type can be the node argument
-            if(node.type() != AstNode.NodeType.OPEN_TAG) {
+            if(node.type() != Node.NodeType.OPEN_TAG) {
                 node = node.parent();
                 if(node == null) {
                     return Collections.emptyMap();
@@ -260,7 +259,7 @@ public class Html5Parser implements HtmlParser {
                 return Collections.emptyMap();
             }
 
-           Map<HtmlTag, AstNode> possible = new LinkedHashMap<HtmlTag, AstNode> ();
+           Map<HtmlTag, Node> possible = new LinkedHashMap<HtmlTag, Node> ();
             //end tags
             do {
                 if(!node.isVirtual()) {

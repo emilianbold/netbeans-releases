@@ -49,24 +49,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.HtmlParsingResult;
-import org.netbeans.editor.ext.html.parser.api.ParseException;
-import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
-import org.netbeans.editor.ext.html.parser.spi.ParseResult;
-import org.netbeans.html.api.validation.ValidationException;
-import org.netbeans.html.api.validation.Validator;
+import org.netbeans.modules.html.editor.lib.api.HtmlParsingResult;
+import org.netbeans.modules.html.editor.lib.api.ParseException;
+import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
+import org.netbeans.modules.html.editor.lib.api.tree.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
+import org.netbeans.modules.html.editor.lib.api.ParseResult;
+import org.netbeans.modules.html.editor.lib.api.validation.ValidationException;
+import org.netbeans.modules.html.editor.lib.api.validation.Validator;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.html.api.validation.ValidationContext;
-import org.netbeans.html.api.validation.ValidationResult;
-import org.netbeans.html.api.validation.ValidatorService;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.validation.ValidationContext;
+import org.netbeans.modules.html.editor.lib.api.validation.ValidationResult;
+import org.netbeans.modules.html.editor.lib.api.validation.ValidatorService;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
+import org.netbeans.modules.html.editor.lib.api.tree.Node;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -128,7 +128,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
      * the postprocessing takes some time and is done lazily.
      */
     @Override
-    public AstNode root() {
+    public Node root() {
         try {
             return result.parseHtml().root();
         } catch (ParseException ex) {
@@ -138,7 +138,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
     }
 
     @Override
-    public AstNode rootOfUndeclaredTagsParseTree() {
+    public Node rootOfUndeclaredTagsParseTree() {
         try {
             return result.parseUndeclaredEmbeddedCode().root();
         } catch (ParseException ex) {
@@ -149,7 +149,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
 
     /** returns a parse tree for non-html content */
     @Override
-    public AstNode root(String namespace) {
+    public Node root(String namespace) {
         try {
             ParseResult pr = result.parseEmbeddedCode(namespace);
             assert pr != null : "Cannot get ParseResult for " + namespace; //NOI18N
@@ -162,8 +162,8 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
 
     /** returns a map of all namespaces to astnode roots.*/
     @Override
-    public Map<String, AstNode> roots() {
-        Map<String, AstNode> roots = new HashMap<String, AstNode>();
+    public Map<String, Node> roots() {
+        Map<String, Node> roots = new HashMap<String, Node>();
         for (String uri : getNamespaces().keySet()) {
             roots.put(uri, root(uri));
         }
@@ -183,18 +183,18 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
         return result.getDeclaredNamespaces();
     }
 
-    /** Returns a leaf most AstNode from the parse tree to which range the given
+    /** Returns a leaf most Node from the parse tree to which range the given
      * offset belongs.
      *
      * @param offset of the searched node
      */
-    public AstNode findLeafTag(int offset, boolean forward, boolean physicalNodesOnly ) {
+    public Node findLeafTag(int offset, boolean forward, boolean physicalNodesOnly ) {
         //first try to find the leaf in html content
-        AstNode mostLeaf = AstNodeUtils.findNode(root(), offset, forward, physicalNodesOnly);
+        Node mostLeaf = NodeUtils.findNode(root(), offset, forward, physicalNodesOnly);
         //now search the non html trees
         for (String uri : getNamespaces().keySet()) {
-            AstNode root = root(uri);
-            AstNode leaf = AstNodeUtils.findNode(root, offset, forward, physicalNodesOnly);
+            Node root = root(uri);
+            Node leaf = NodeUtils.findNode(root, offset, forward, physicalNodesOnly);
             if (leaf == null) {
                 continue;
             }
@@ -202,7 +202,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
                 mostLeaf = leaf;
             } else {
                 //they cannot overlap, just be nested, at least I think
-                if (leaf.logicalStartOffset() > mostLeaf.logicalStartOffset()) {
+                if (leaf.logicalRange()[0] > mostLeaf.logicalRange()[0]) {
                     mostLeaf = leaf;
                 }
             }
@@ -285,10 +285,10 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
 
     }
 
-    public static AstNode getBoundAstNode(Error e) {
+    public static Node getBoundNode(Error e) {
         if (e instanceof DefaultError) {
-            if (e.getParameters() != null && e.getParameters().length > 0 && e.getParameters()[0] instanceof AstNode) {
-                return (AstNode) e.getParameters()[0];
+            if (e.getParameters() != null && e.getParameters().length > 0 && e.getParameters()[0] instanceof Node) {
+                return (Node) e.getParameters()[0];
             }
         }
 

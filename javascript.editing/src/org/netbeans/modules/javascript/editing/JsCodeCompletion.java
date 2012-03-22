@@ -71,7 +71,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.parser.SyntaxElement;
+import org.netbeans.modules.html.editor.lib.plain.AbstractElement;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -807,10 +807,10 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     @Override
                     void run(ResultIterator resultIterator) throws Exception {
                         HtmlParserResult htmlResult = (HtmlParserResult) resultIterator.getParserResult();
-                        List<SyntaxElement> elementsList = htmlResult.getSyntaxAnalyzerResult().getElements().items();
+                        List<AbstractElement> elementsList = htmlResult.getSyntaxAnalyzerResult().getElements().items();
                         Set<String> classes = new HashSet<String>();
-                        for (SyntaxElement s : elementsList) {
-                            if (s.type() == SyntaxElement.TYPE_TAG) {
+                        for (AbstractElement s : elementsList) {
+                            if (s.type() == AbstractElement.TYPE_TAG) {
                                 String element = s.text().toString();
                                 int classIdx = element.indexOf("class=\""); // NOI18N
                                 if (classIdx != -1) {
@@ -848,10 +848,10 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     @Override
                     void run(ResultIterator resultIterator) throws Exception {
                         HtmlParserResult htmlResult = (HtmlParserResult) resultIterator.getParserResult();
-                        List<SyntaxElement> elementsList = htmlResult.getSyntaxAnalyzerResult().getElements().items();
+                        List<AbstractElement> elementsList = htmlResult.getSyntaxAnalyzerResult().getElements().items();
                         Set<String> tagNames = new HashSet<String>();
-                        for (SyntaxElement s : elementsList) {
-                            if (s.type() == SyntaxElement.TYPE_TAG) {
+                        for (AbstractElement s : elementsList) {
+                            if (s.type() == AbstractElement.TYPE_TAG) {
                                 String element = s.text().toString();
                                 int start = 1;
                                 int end = element.indexOf(' ');
@@ -906,17 +906,17 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                         
                     }
                     if (htmlResult != null) {
-                        Set<SyntaxElement.TagAttribute> elementIds = new HashSet<SyntaxElement.TagAttribute>();
-                        for (SyntaxElement element : htmlResult.getSyntaxAnalyzerResult().getElements().items()) {
-                            if (element.type() == SyntaxElement.TYPE_TAG) {
-                                SyntaxElement.TagAttribute attr = ((SyntaxElement.Tag) element).getAttribute("id"); //NOI18N
+                        Set<AbstractElement.TagAttribute> elementIds = new HashSet<AbstractElement.TagAttribute>();
+                        for (AbstractElement element : htmlResult.getSyntaxAnalyzerResult().getElements().items()) {
+                            if (element.type() == AbstractElement.TYPE_TAG) {
+                                AbstractElement.TagAttribute attr = ((AbstractElement.Tag) element).getAttribute("id"); //NOI18N
                                 if (attr != null) {
                                     elementIds.add(attr);
                                 }
                             }
                         }
                         String filename = request.fileObject.getNameExt();
-                        for (SyntaxElement.TagAttribute tag : elementIds) {
+                        for (AbstractElement.TagAttribute tag : elementIds) {
                             String elementId = tag.getValue().toString();
                             // Strip "'s surrounding value, if any
                             if (elementId.length() > 2 && elementId.startsWith("\"") && // NOI18N

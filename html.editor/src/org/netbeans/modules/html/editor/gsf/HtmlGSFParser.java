@@ -51,15 +51,15 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
-import org.netbeans.editor.ext.html.parser.spi.UndeclaredContentResolver;
+import org.netbeans.modules.html.editor.lib.api.tree.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
+import org.netbeans.modules.html.editor.lib.api.UndeclaredContentResolver;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.lib.api.tree.Node;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -158,20 +158,20 @@ public class HtmlGSFParser extends Parser {
     public static ElementHandle resolveHandle(ParserResult info, ElementHandle oldElementHandle) {
         if (oldElementHandle instanceof HtmlElementHandle) {
            HtmlElementHandle element = (HtmlElementHandle)oldElementHandle;
-            AstNode oldNode = element.node();
+            Node oldNode = element.node();
 
-            AstNode oldRoot = AstNodeUtils.getRoot(oldNode);
+            Node oldRoot = NodeUtils.getRoot(oldNode);
 
             HtmlParserResult newResult = (HtmlParserResult)info;
 
-            AstNode newRoot = newResult.root();
+            Node newRoot = newResult.root();
 
             if (newRoot == null) {
                 return null;
             }
 
             // Find newNode
-            AstNode newNode = find(oldRoot, oldNode, newRoot);
+            Node newNode = find(oldRoot, oldNode, newRoot);
 
             if (newNode != null) {
                 return new HtmlElementHandle(newNode, info.getSnapshot().getSource().getFileObject());
@@ -181,25 +181,25 @@ public class HtmlGSFParser extends Parser {
         return null;
     }
 
-    private static AstNode find(AstNode oldRoot, AstNode oldObject, AstNode newRoot) {
+    private static Node find(Node oldRoot, Node oldObject, Node newRoot) {
         // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
         if (oldRoot == oldObject) {
             // Found it!
             return newRoot;
         }
 
-        List<AstNode> oChildren = oldRoot.children();
-        List<AstNode> nChildren = newRoot.children();
+        List<Node> oChildren = new ArrayList<Node>(oldRoot.children());
+        List<Node> nChildren = new ArrayList<Node>(newRoot.children());
 
         for(int i = 0; i < oChildren.size(); i++) {
 
-            AstNode oCh = oChildren.get(i);
+            Node oCh = oChildren.get(i);
 
             if(i == nChildren.size()) {
                 //no more new children
                 return null;
             }
-            AstNode nCh = nChildren.get(i);
+            Node nCh = nChildren.get(i);
 
             if (oCh == oldObject) {
                 // Found it!
@@ -207,7 +207,7 @@ public class HtmlGSFParser extends Parser {
             }
 
             // Recurse
-            AstNode match = find(oCh, oldObject, nCh);
+            Node match = find(oCh, oldObject, nCh);
 
             if (match != null) {
                 return match;

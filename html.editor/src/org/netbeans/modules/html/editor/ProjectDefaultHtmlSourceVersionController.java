@@ -45,9 +45,9 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
-import org.netbeans.editor.ext.html.parser.spi.HtmlSourceVersionController;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
+import org.netbeans.modules.html.editor.lib.api.HtmlSourceVersionController;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 

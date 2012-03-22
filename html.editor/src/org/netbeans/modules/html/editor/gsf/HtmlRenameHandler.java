@@ -44,11 +44,11 @@ package org.netbeans.modules.html.editor.gsf;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.tree.Node;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -68,7 +68,7 @@ class HtmlRenameHandler implements InstantRenamer {
         }
 
         HtmlParserResult result = (HtmlParserResult) info;
-        AstNode node = result.findLeafTag(astCaretOffset, true, true);
+        Node node = result.findLeafTag(astCaretOffset, true, true);
 
         if(node == null) {
             return false;
@@ -77,10 +77,10 @@ class HtmlRenameHandler implements InstantRenamer {
         switch(node.type()) {
             case OPEN_TAG:
                 //enable only if the caret is in the tag name
-                int from = node.startOffset();
-                int to = node.startOffset() + 1 + node.name().length(); //"<" + "body" length
+                int from = node.from();
+                int to = node.to(); //"<" + "body" length
                 return astCaretOffset >= from && astCaretOffset <=to;
-            case ENDTAG:
+            case END_TAG:
                 return true;
         }
         
@@ -96,20 +96,20 @@ class HtmlRenameHandler implements InstantRenamer {
         }
 
         HtmlParserResult result = (HtmlParserResult) info;
-        AstNode node = result.findLeafTag(astCaretOffset, true, true);
+        Node node = result.findLeafTag(astCaretOffset, true, true);
 
         if (node != null) {
-            AstNode pair = node.getMatchingTag();
+            Node pair = node.matchingTag();
 
             if (pair != null) {
                 Set<OffsetRange> set = new HashSet<OffsetRange>();
-                AstNode open, close;
+                Node open, close;
                 switch (node.type()) {
                     case OPEN_TAG:
                         open = node;
                         close = pair;
                         break;
-                    case ENDTAG:
+                    case END_TAG:
                         open = pair;
                         close = node;
                         break;
@@ -119,11 +119,11 @@ class HtmlRenameHandler implements InstantRenamer {
 
                 Snapshot s = info.getSnapshot();
                 
-                set.add(new OffsetRange(s.getOriginalOffset(open.startOffset() + 1), 
-                        s.getOriginalOffset(open.startOffset() + 1 + open.name().length()))); //1 == "<".len
+                set.add(new OffsetRange(s.getOriginalOffset(open.from()) + 1, 
+                        s.getOriginalOffset(open.from() + 1 + open.nodeId().length()))); //1 == "<".len
                 
-                set.add(new OffsetRange(s.getOriginalOffset(close.startOffset() + 2), 
-                        s.getOriginalOffset(close.startOffset() + 2 + close.name().length()))); //2 == "</".len
+                set.add(new OffsetRange(s.getOriginalOffset(close.from() + 2), 
+                        s.getOriginalOffset(close.from() + 2 + close.nodeId().length()))); //2 == "</".len
 
                 return set;
             }

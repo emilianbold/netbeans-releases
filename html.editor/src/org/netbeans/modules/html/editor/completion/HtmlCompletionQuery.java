@@ -44,38 +44,32 @@
 package org.netbeans.modules.html.editor.completion;
 
 import java.util.Map.Entry;
+import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
-import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
-import org.netbeans.modules.html.editor.api.Utils;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
-import java.util.*;
-import java.util.Collections;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.html.parser.XmlSyntaxTreeBuilder;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
-import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.html.editor.HtmlPreferences;
+import org.netbeans.modules.html.editor.api.Utils;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.html.editor.lib.api.HtmlParseResult;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
+import org.netbeans.modules.html.editor.lib.api.model.NamedCharRef;
+import org.netbeans.modules.html.editor.lib.api.tree.*;
+import org.netbeans.modules.html.editor.lib.html4parser.XmlSyntaxTreeBuilder;
+import org.netbeans.modules.parsing.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -214,7 +208,7 @@ public class HtmlCompletionQuery extends UserTask {
         HtmlParseResult htmlResult;
         try {
             htmlResult = parserResult.getSyntaxAnalyzerResult().parseHtml();
-        } catch (org.netbeans.editor.ext.html.parser.api.ParseException ex) {
+        } catch (org.netbeans.modules.html.editor.lib.api.ParseException ex) {
             Exceptions.printStackTrace(ex);
             return null;
         }
@@ -310,8 +304,8 @@ public class HtmlCompletionQuery extends UserTask {
         int searchAstOffset = astOffset == snapshot.getText().length() ? astOffset - 1 : astOffset;
 
         //finds a leaf node for all the declared namespaces content including the default html content
-        AstNode node = null;
-        AstNode root = null;
+        Node node = null;
+        Node root = null;
         //html5 parse tree broken workaround:
         //In most cases when user edits the file the resulting parse tree
         //from the html5 parser is broken to such extent, that it is not possible
@@ -344,7 +338,7 @@ public class HtmlCompletionQuery extends UserTask {
                 //caused by an erroneous parse tree
                 useHtmlParseResult = false; 
             } else {
-                root = node.getRootNode();
+                root = NodeUtils.getRoot(node);
             }
         } 
         
@@ -355,7 +349,7 @@ public class HtmlCompletionQuery extends UserTask {
 //            System.err.println("Broken HTML5 parse tree, using the legacy SyntaxTreeBuilder!");
 //            root = SyntaxTreeBuilder.makeTree(htmlResult.source(), HtmlVersion.HTML40_TRANSATIONAL, parserResult.getSyntaxAnalyzerResult().getElements().items());
             root = XmlSyntaxTreeBuilder.makeUncheckedTree(htmlResult.source(), parserResult.getSyntaxAnalyzerResult().getElements().items());
-            node = AstNodeUtils.findNode(root, searchAstOffset, !backward, false);
+            node = NodeUtils.findNode(root, searchAstOffset, !backward, false);
             if(node == null) {
                 node = root;
             }            
@@ -365,13 +359,16 @@ public class HtmlCompletionQuery extends UserTask {
         assert root != null;
 
         //find a leaf node for the xml stuff
-        AstNode xmlLeafNode = findLeafTag(parserResult, searchAstOffset, !backward, false);
+        Node xmlLeafNode = findLeafTag(parserResult, searchAstOffset, !backward, false);
 
 
         //namespace is null for html content
-        String namespace = (String) root.getProperty(AstNode.NAMESPACE_PROPERTY);
-        boolean queryHtmlContent = namespace == null || namespace.equals(parserResult.getHtmlVersion().getDefaultNamespace());
+        String namespace = null;
+        if(root instanceof FeaturedNode) {
+            namespace = (String)((FeaturedNode)root).getProperty("namespace");
+        }
 
+        boolean queryHtmlContent = namespace == null || namespace.equals(parserResult.getHtmlVersion().getDefaultNamespace());
 
         /* Character reference finder */
         int ampIndex = preText.lastIndexOf('&'); //NOI18N
@@ -391,8 +388,10 @@ public class HtmlCompletionQuery extends UserTask {
             //an element being typed is parsed as normal element end then
             //returned as a leaf node for the position, which is clearly wrong
             //since we need its parent to be able to complete the typed element
-            if(node.getNameWithoutPrefix().equals(preText)) {
+            Tag tag = (Tag)node;
+            if(LexerUtils.equals(tag.unqualifiedName(), preText, false, false)) {
                 node = node.parent();
+                tag =  (Tag)node;
             }
 
             //complete open tags with prefix
@@ -403,7 +402,7 @@ public class HtmlCompletionQuery extends UserTask {
             result = new ArrayList<CompletionItem>();
 
             if (queryHtmlContent) {
-                Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleOpenTags(node);
+                Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleOpenTags(tag);
                 Collection<HtmlTag> allTags = filterHtmlElements(model.getAllTags(), preText);
                 Collection<HtmlTag> filteredByPrefix = filterHtmlElements(possibleOpenTags, preText);
                 result.addAll(translateHtmlTags(documentItemOffset - 1, filteredByPrefix, allTags));
@@ -419,10 +418,11 @@ public class HtmlCompletionQuery extends UserTask {
         } else if ((id != HTMLTokenId.BLOCK_COMMENT && preText.endsWith("<")) || 
                 (id == HTMLTokenId.TAG_OPEN_SYMBOL && "<".equals(item.text().toString()))) { // NOI18N
 
+            Tag tag = (Tag)node;
             //an element being typed is parsed as normal element end then
             //returned as a leaf node for the position, which is clearly wrong
             //since we need its parent to be able to complete the typed element
-            if(node.getNameWithoutPrefix().equals(preText)) {
+            if(LexerUtils.equals(tag.unqualifiedName(), preText, false, false)) {
                 node = node.parent();
             }
 
@@ -431,7 +431,7 @@ public class HtmlCompletionQuery extends UserTask {
             result = new ArrayList<CompletionItem>();
 
             if (queryHtmlContent) {
-                Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleOpenTags(node);
+                Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleOpenTags(tag);
                 Collection<HtmlTag> allTags = model.getAllTags();
                 result.addAll(translateHtmlTags(offset - 1, possibleOpenTags, allTags));
 
@@ -482,13 +482,18 @@ public class HtmlCompletionQuery extends UserTask {
             result.addAll(items);
             
             if(queryHtmlContent) {
-                if(node.type() == AstNode.NodeType.OPEN_TAG) {
+                if(node.type() == ElementType.OPEN_TAG) {
 
-                    HtmlTag tag = model.getTag(node.name());
+                    Tag tnode = (Tag)node;
+                    HtmlTag tag = model.getTag(tnode.name().toString());
                     if (tag != null) {
                         
                         Collection<HtmlTagAttribute> possible = filterAttributes(tag.getAttributes(), prefix);
-                        Collection<String> existingAttrsNames = node.getAttributeKeys();
+                        Collection<Attribute> existingAttrs = tnode.attributes();
+                        Collection<String> existingAttrsNames = new ArrayList<String>();
+                        for(Attribute attr : existingAttrs) {
+                            existingAttrsNames.add(attr.name().toString());
+                        }
 
                         String wordAtCursor = (item == null) ? null : item.text().toString();
                         // #BUGFIX 25261 because of being at the end of document the
@@ -526,8 +531,9 @@ public class HtmlCompletionQuery extends UserTask {
                 }
             }
 
-            if (node.type() == AstNode.NodeType.OPEN_TAG) {
-
+            if (node.type() == ElementType.OPEN_TAG) {
+                Tag tnode = (Tag)node;
+                
                 ts.move(itemOffset);
                 ts.moveNext();
                 Token argItem = ts.token();
@@ -543,7 +549,7 @@ public class HtmlCompletionQuery extends UserTask {
                     argName = argName.toLowerCase(Locale.ENGLISH);
                 }
 
-                HtmlTag tag = model.getTag(node.name());
+                HtmlTag tag = model.getTag(tnode.name().toString());
                 HtmlTagAttribute attribute = tag != null ? tag.getAttribute(argName) : null;
                 
                 //use set instead of list since the AttrValuesCompletion may return identical values as
@@ -555,7 +561,7 @@ public class HtmlCompletionQuery extends UserTask {
                     anchor = offset;
                     if (attribute != null) {
                         result.addAll(translateValues(anchor, attribute.getPossibleValues()));
-                        ValueCompletion<HtmlCompletionItem> valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
+                        ValueCompletion<HtmlCompletionItem> valuesCompletion = AttrValuesCompletion.getSupport(tnode.name().toString(), argName);
                         if (valuesCompletion != null) {
                             result.addAll(valuesCompletion.getItems(file, anchor, ""));
                         }
@@ -583,7 +589,7 @@ public class HtmlCompletionQuery extends UserTask {
 
                     if (attribute != null) {
                         result.addAll(translateValues(documentItemOffset, filter(attribute.getPossibleValues(), prefix), quotationChar));
-                        ValueCompletion<HtmlCompletionItem> valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
+                        ValueCompletion<HtmlCompletionItem> valuesCompletion = AttrValuesCompletion.getSupport(tnode.name().toString(), argName);
                         if (valuesCompletion != null) {
                             result.addAll(valuesCompletion.getItems(file, anchor, prefix));
                         }
@@ -603,35 +609,45 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private boolean usesLowerCase(HtmlParserResult result, int astOffset) {
-        //find first open tag for the given offset and check its name case
-        AstNode node = AstNodeUtils.getTagNode(result.root(), astOffset);
-        return node != null ? Character.isLowerCase(node.name().charAt(0)) : true;
+        //finds tag name case for the first document tag
+        for(Element e : result.getSyntaxAnalyzerResult().getElements().items()) {
+            switch(e.type()) {
+                case OPEN_TAG:
+                case END_TAG:
+                    TagElement te = (TagElement)e;
+                    char first = te.name().charAt(0);
+                    return Character.isLowerCase(first);
+            }
+        }
+        return true; //default
     }
 
-    public List<CompletionItem> getAutocompletedEndTag(AstNode node, AstNode undeclaredTagsLeafNode, int astOffset, int documentOffset, HtmlModel model) {
+    public List<CompletionItem> getAutocompletedEndTag(Node node, Node undeclaredTagsLeafNode, int astOffset, int documentOffset, HtmlModel model) {
         List<CompletionItem> result = getAutocompletedEndTag(node, astOffset, documentOffset, model);
         if(result == null) {
             result = getAutocompletedEndTag(undeclaredTagsLeafNode, astOffset, documentOffset, model);
         }
         return result == null ? Collections.<CompletionItem>emptyList() : result;
     }
-    public List<CompletionItem> getAutocompletedEndTag(AstNode node, int astOffset, int documentOffset, HtmlModel model) {
+    
+    public List<CompletionItem> getAutocompletedEndTag(Node node, int astOffset, int documentOffset, HtmlModel model) {
         //check for open tags only
         //the test node.endOffset() == astOffset is required since the given node
         //is the most leaf OPEN TAG node for the position. But if there is some
         //unresolved (no-DTD) node at the position it would autocomplete the open
         //tag: <div> <bla>| + ACC would complete </div>
-        if (node.type() == AstNode.NodeType.OPEN_TAG && node.endOffset() == astOffset) {
+        if (node.type() == ElementType.OPEN_TAG && node.to() == astOffset) {
+            Tag tnode = (Tag)node;
             //I do not check if the tag is closed already since
             //when more tags of the same type are nested,
             //the matches can be created so the current node
             //appear to be matched even if the user just typed it
 
             //test if the tag is an empty tag <div/> and whether the open tag has forbidden end tag
-            HtmlTag tag = model.getTag(node.name());
+            HtmlTag tag = model.getTag(tnode.name().toString());
             boolean hasForbiddenEndTag = tag != null && tag.isEmpty();
-            if (!node.isEmpty() && !hasForbiddenEndTag) {
-                return Collections.singletonList((CompletionItem) HtmlCompletionItem.createAutocompleteEndTag(node.name(), documentOffset));
+            if (!tnode.isEmpty() && !hasForbiddenEndTag) {
+                return Collections.singletonList((CompletionItem) HtmlCompletionItem.createAutocompleteEndTag(tnode.name().toString(), documentOffset));
             }
         }
         return null;
@@ -648,7 +664,7 @@ public class HtmlCompletionQuery extends UserTask {
         return result;
     }
 
-    private List<CompletionItem> getPossibleEndTags(HtmlParseResult htmlResult, AstNode leaf, AstNode undeclaredTagsLeafNode, int offset, String prefix) {
+    private List<CompletionItem> getPossibleEndTags(HtmlParseResult htmlResult, Node leaf, Node undeclaredTagsLeafNode, int offset, String prefix) {
         List<CompletionItem> items = new ArrayList<CompletionItem>();
         items.addAll(getPossibleEndTags(htmlResult, leaf, offset, prefix));
         items.addAll(getPossibleHtmlEndTagsForUndeclaredComponents(undeclaredTagsLeafNode, offset, prefix));
@@ -656,16 +672,16 @@ public class HtmlCompletionQuery extends UserTask {
         return items;
     }
 
-    private Collection<CompletionItem> getPossibleEndTags(HtmlParseResult htmlResult, AstNode leaf, int offset, String prefix) {
-        Map<HtmlTag, AstNode> possible = htmlResult.getPossibleEndTags(leaf);
+    private Collection<CompletionItem> getPossibleEndTags(HtmlParseResult htmlResult, Node leaf, int offset, String prefix) {
+        Map<HtmlTag, Node> possible = htmlResult.getPossibleEndTags((Tag)leaf);
         Collection<CompletionItem> items = new ArrayList<CompletionItem>();
-        for(Entry<HtmlTag, AstNode> entry : possible.entrySet()) {
+        for(Entry<HtmlTag, Node> entry : possible.entrySet()) {
             HtmlTag tag = entry.getKey();
-            AstNode node = entry.getValue();
+            Node node = entry.getValue();
             
             //distance from the caret position - lower number, higher precedence
             //this will ensure the two end tags list from html and undeclared content being properly ordered
-            int order = offset - (node != null ? node.startOffset() : 0);
+            int order = offset - (node != null ? node.from() : 0);
 
             String tagName = isXHtml ? tag.getName() : (lowerCase ? tag.getName().toLowerCase(Locale.ENGLISH) : tag.getName().toUpperCase(Locale.ENGLISH));
             if (LexerUtils.startsWith(tagName, prefix, true, false)) {
@@ -675,28 +691,29 @@ public class HtmlCompletionQuery extends UserTask {
         return items;
     }
 
-    private List<CompletionItem> getPossibleHtmlEndTagsForUndeclaredComponents(AstNode leaf, int offset, String prefix) {
+    private List<CompletionItem> getPossibleHtmlEndTagsForUndeclaredComponents(Node leaf, int offset, String prefix) {
         List<CompletionItem> items = new ArrayList<CompletionItem>();
 
         for (;;) {
-            if (leaf.type() == AstNode.NodeType.ROOT) {
+            if (leaf.type() == ElementType.ROOT) {
                 break;
             }
 
-            if (leaf.type() == AstNode.NodeType.OPEN_TAG) {
-                String tagName = isXHtml ? leaf.name() : (lowerCase ? leaf.name().toLowerCase(Locale.ENGLISH) : leaf.name().toUpperCase(Locale.ENGLISH));
+            if (leaf.type() == ElementType.OPEN_TAG) {
+                Tag tleaf = (Tag)leaf;
+                String tagName = isXHtml ? tleaf.name().toString() : (lowerCase ? leaf.name().toLowerCase(Locale.ENGLISH) : tleaf.name().toString().toUpperCase(Locale.ENGLISH));
                 if (tagName.startsWith(prefix.toLowerCase(Locale.ENGLISH))) {
                     //TODO - distinguish unmatched and matched tags in the completion!!!
                     //TODO - mark required and optional end tags somehow
 
                     //distance from the caret position - lower number, higher precedence
                     //this will ensure the two end tags list from html and undeclared content being properly ordered
-                    int order = offset - leaf.startOffset();
+                    int order = offset - leaf.from();
                     items.add(HtmlCompletionItem.createEndTag(tagName, offset - 2 - prefix.length(), tagName, order++, getEndTagType(leaf)));
                 }
 
                 //check if the tag needs to have a matching tag and if is matched already
-                if (leaf.needsToHaveMatchingTag() && leaf.getMatchingTag() == null) {
+                if (leaf.matchingTag() == null) {
                     //if not, any of its parent cannot be closed here
                     break;
                 }
@@ -708,7 +725,7 @@ public class HtmlCompletionQuery extends UserTask {
         return items;
     }
 
-    private HtmlCompletionItem.EndTag.Type getEndTagType(AstNode leaf) {
+    private HtmlCompletionItem.EndTag.Type getEndTagType(Node leaf) {
         if (leaf.getMatchingTag() != null) {
             //matched
             return leaf.needsToHaveMatchingTag() ? HtmlCompletionItem.EndTag.Type.REQUIRED_EXISTING : HtmlCompletionItem.EndTag.Type.OPTIONAL_EXISTING;
@@ -824,13 +841,13 @@ public class HtmlCompletionQuery extends UserTask {
         }
     }
     
-    public AstNode findLeafTag(HtmlParserResult result, int offset, boolean forward, boolean physicalNodesOnly ) {
+    public Node findLeafTag(HtmlParserResult result, int offset, boolean forward, boolean physicalNodesOnly ) {
         //first try to find the in the undeclared component tree
-        AstNode mostLeaf = AstNodeUtils.findNode(result.rootOfUndeclaredTagsParseTree(), offset, forward, physicalNodesOnly);
+        Node mostLeaf = NodeUtils.findNode(result.rootOfUndeclaredTagsParseTree(), offset, forward, physicalNodesOnly);
         //now search the non html trees
         for (String uri : result.getNamespaces().keySet()) {
-            AstNode root = result.root(uri);
-            AstNode leaf = AstNodeUtils.findNode(root, offset, forward, physicalNodesOnly);
+            Node root = result.root(uri);
+            Node leaf = NodeUtils.findNode(root, offset, forward, physicalNodesOnly);
             if (leaf == null) {
                 continue;
             }

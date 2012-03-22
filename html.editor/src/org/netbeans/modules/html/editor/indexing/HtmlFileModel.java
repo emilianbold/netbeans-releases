@@ -49,7 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
+import org.netbeans.modules.html.editor.lib.api.tree.NodeUtils;
 import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.html.editor.api.HtmlKit;
@@ -147,7 +147,7 @@ public class HtmlFileModel {
         //XXX this scans only core html parse tree, what about the other namespaces????
         AstNode root = parserResult.root();
         if(root != null) {
-            AstNodeUtils.visitChildren(root, new ReferencesSearch(), AstNode.NodeType.OPEN_TAG);
+            NodeUtils.visitChildren(root, new ReferencesSearch(), AstNode.NodeType.OPEN_TAG);
         } else {
             //completely broken source, no parser result
         }

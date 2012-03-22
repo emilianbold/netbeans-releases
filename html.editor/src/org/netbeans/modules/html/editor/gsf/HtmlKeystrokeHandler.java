@@ -56,8 +56,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
+import org.netbeans.modules.html.editor.lib.api.tree.NodeUtils;
 import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
@@ -65,6 +64,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.HtmlAutoCompletion;
 import org.netbeans.modules.html.editor.api.Utils;
+import org.netbeans.modules.html.editor.lib.api.tree.Node;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -201,16 +201,16 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         }
 
         Snapshot snapshot = result.getSnapshot();
-        Collection<AstNode> roots = new ArrayList<AstNode>(result.roots().values()); //all declared namespaces
+        Collection<Node> roots = new ArrayList<Node>(result.roots().values()); //all declared namespaces
         roots.add(result.rootOfUndeclaredTagsParseTree()); //undeclared content
         
-        for(AstNode root : roots) {
+        for(Node root : roots) {
             //find leaf at the position
-            AstNode node = AstNodeUtils.findNode(root, snapshot.getEmbeddedOffset(caretOffset), false, false);
+            Node node = NodeUtils.findNode(root, snapshot.getEmbeddedOffset(caretOffset), false, false);
             if(node != null) {
                 //go through the tree and add all parents with, eliminate duplicate nodes
                 do {
-                    int[] logicalRange = node.getLogicalRange();
+                    int[] logicalRange = node.logicalRange();
 
                     int from = snapshot.getOriginalOffset(logicalRange[0]);
                     int to = snapshot.getOriginalOffset(logicalRange[1]);

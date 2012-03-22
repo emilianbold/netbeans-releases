@@ -43,8 +43,8 @@
  */
 package org.netbeans.modules.html.editor;
 
-import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.modules.html.editor.lib.api.HtmlParseResult;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import java.util.Collections;
@@ -58,8 +58,10 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.tree.ElementType;
+import org.netbeans.modules.html.editor.lib.api.tree.Node;
+import org.netbeans.modules.html.editor.lib.api.tree.Tag;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -223,23 +225,23 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     int searchOffsetLocal = searchOffset;
                     while(searchOffsetLocal != context.getLimitOffset()) {
                         int searched = result.getSnapshot().getEmbeddedOffset(searchOffsetLocal);
-                        AstNode origin = result.findLeafTag(searched, !context.isSearchingBackward(), true);
+                        Node origin = result.findLeafTag(searched, !context.isSearchingBackward(), true);
                         if (origin != null) {
-                            if (origin.type() == AstNode.NodeType.OPEN_TAG ||
-                                    origin.type() == AstNode.NodeType.ENDTAG) {
+                            if (origin.type() == ElementType.OPEN_TAG ||
+                                    origin.type() == ElementType.END_TAG) {
 
                                 if (origin == null) {
                                     //offset between tags, no match
                                     ret[0] = null;
                                 } else {
-
-                                    AstNode match = origin.getMatchingTag();
+                                    Tag origin_tag = (Tag)origin;
+                                    Node match = origin_tag.matchingTag();
                                     if (match == null) {
                                         //no matched tag foud
-                                        HtmlTag tag = parseResult.model().getTag(origin.getNameWithoutPrefix().toLowerCase(Locale.ENGLISH));
+                                        HtmlTag tag = parseResult.model().getTag(origin_tag.unqualifiedName().toString().toLowerCase(Locale.ENGLISH));
                                         if(tag != null) {
-                                            if(origin.type() == AstNode.NodeType.OPEN_TAG && tag.hasOptionalEndTag() 
-                                                    || origin.type() == AstNode.NodeType.ENDTAG && tag.hasOptionalOpenTag()) {
+                                            if(origin.type() == ElementType.OPEN_TAG && tag.hasOptionalEndTag() 
+                                                    || origin.type() == ElementType.END_TAG && tag.hasOptionalOpenTag()) {
                                                 //valid
                                                 ret[0] = new int[]{searchOffsetLocal, searchOffsetLocal}; //match nothing, origin will be yellow  - workaround
                                                 return ;
@@ -250,27 +252,27 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                     } else {
                                         //match
 
-                                        if (match.type() == AstNode.NodeType.OPEN_TAG) {
+                                        if (match.type() == ElementType.OPEN_TAG) {
                                             //match the '<tagname' part
-                                            int f1 = match.startOffset();
-                                            int t1 = f1 + match.name().length() + 1; /* +1 == open tag symbol '<' length */
+                                            int f1 = match.from();
+                                            int t1 = f1 + match.nodeId().length() + 1; /* +1 == open tag symbol '<' length */
                                             //match the closing '>' symbol
-                                            int f2 = match.endOffset() - 1; // -1 == close tag symbol '>' length
-                                            int t2 = match.endOffset();
+                                            int f2 = match.to() - 1; // -1 == close tag symbol '>' length
+                                            int t2 = match.to();
 
                                             ret[0] = translate(new int[]{f1, t1, f2, t2}, result);
                                         } else {
-                                            ret[0] = translate(new int[]{match.startOffset(), match.endOffset()}, result);
+                                            ret[0] = translate(new int[]{match.from(), match.to()}, result);
                                         }
                                     }
                                 }
-                            } else if (origin.type() == AstNode.NodeType.COMMENT) {
-                                if (searched >= origin.startOffset() && searched <= origin.startOffset() + BLOCK_COMMENT_START.length()) {
+                            } else if (origin.type() == ElementType.COMMENT) {
+                                if (searched >= origin.from() && searched <= origin.from() + BLOCK_COMMENT_START.length()) {
                                     //complete end of comment
-                                    ret[0] = translate(new int[]{origin.endOffset() - BLOCK_COMMENT_END.length(), origin.endOffset()}, result);
-                                } else if (searched >= origin.endOffset() - BLOCK_COMMENT_END.length() && searched <= origin.endOffset()) {
+                                    ret[0] = translate(new int[]{origin.to() - BLOCK_COMMENT_END.length(), origin.to()}, result);
+                                } else if (searched >= origin.to() - BLOCK_COMMENT_END.length() && searched <= origin.to()) {
                                     //complete start of comment
-                                    ret[0] = translate(new int[]{origin.startOffset(), origin.startOffset() + BLOCK_COMMENT_START.length()}, result);
+                                    ret[0] = translate(new int[]{origin.from(), origin.from() + BLOCK_COMMENT_START.length()}, result);
                                 }
                             }
                         }

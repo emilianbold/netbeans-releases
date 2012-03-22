@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.html.parser.model;
 
-import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
+import org.netbeans.modules.html.editor.lib.api.model.NamedCharRef;
 
 /**
  *

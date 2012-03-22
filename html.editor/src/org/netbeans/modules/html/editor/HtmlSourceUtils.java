@@ -49,15 +49,14 @@ import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.tree.*;
 import org.netbeans.modules.html.editor.refactoring.ExtractInlinedStyleRefactoringPlugin;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
@@ -83,51 +82,54 @@ public class HtmlSourceUtils {
             //jsf hack - we need to put the generated <link/> or <style/> sections to the proper place,
             //which is <h:head> tag in case of JSF. Ideally there should be an SPI which the frameworks
             //would implement and which would provide a default places for such elements.
-            AstNode jsfHtmlLibRoot = result.root("http://java.sun.com/jsf/html"); //NOI18N
+            Node jsfHtmlLibRoot = result.root("http://java.sun.com/jsf/html"); //NOI18N
             if (jsfHtmlLibRoot != null) {
-                AstNodeUtils.visitChildren(jsfHtmlLibRoot, new AstNodeVisitor() {
+                NodeUtils.visitChildren(jsfHtmlLibRoot, new NodeVisitor() {
 
                     @Override
-                    public void visit(AstNode node) {
+                    public void visit(Node node) {
+                        Tag tag = (Tag)node;
                         //assume <h:head>
-                        if (node.name().endsWith("head")) { //NOI18N
+                        if (LexerUtils.equals("head",tag.unqualifiedName(), false, false)) { //NOI18N
                             //append the section as first head's child if there are
                             //no existing link attribute
-                            insertPositionRef.set(node.endOffset()); //end of the open tag offset
+                            insertPositionRef.set(node.to()); //end of the open tag offset
                             increaseIndent.set(true);
                         }
                     }
-                }, AstNode.NodeType.OPEN_TAG);
+                }, ElementType.OPEN_TAG);
 
             }
 
 
-            AstNode root = result.root();
-            AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+            Node root = result.root();
+            NodeUtils.visitChildren(root, new NodeVisitor() {
 
                 @Override
-                public void visit(AstNode node) {
-                    if("html".equalsIgnoreCase(node.name())) { //NOI18N
+                public void visit(Node node) {
+                    Tag tag = (Tag)node;
+                    CharSequence name = tag.name();
+                    if(LexerUtils.equals("html", name, true, true)) {
                         if(insertPositionRef.get() == -1) { //h:head already found?
                             //append the section as first html's child if there are
                             //no existing link attribute and head tag
-                            insertPositionRef.set(node.endOffset()); //end of the open tag offset
+                            insertPositionRef.set(node.to()); //end of the open tag offset
                             increaseIndent.set(true);
                         }
-                    } else if ("head".equalsIgnoreCase(node.name())) { //NOI18N
+                    } else if (LexerUtils.equals("head", name, true, true)) { //NOI18N
                         //append the section as first head's child if there are
                         //no existing link attribute
-                        insertPositionRef.set(node.endOffset()); //end of the open tag offset
+                        insertPositionRef.set(node.to()); //end of the open tag offset
                         increaseIndent.set(true);
-                    } else if ("link".equalsIgnoreCase(node.name())) {
+                    } else if (LexerUtils.equals("link", name, true, true)) {
                         //NOI18N
                         //existing link => append the new section after the last one
-                        insertPositionRef.set(node.getLogicalRange()[1]); //end of the end tag offset
+                        insertPositionRef.set(tag.logicalRange()[1]); //end of the end tag offset
                         increaseIndent.set(false);
-                        isLinkTagEmpty.set(node.isEmpty());
+                        isLinkTagEmpty.set(tag.isEmpty());
                     }
                 }
-            }, AstNode.NodeType.OPEN_TAG);
+            }, ElementType.OPEN_TAG);
             int embeddedInsertOffset = insertPositionRef.get();
             if (embeddedInsertOffset == -1) {
                 //TODO probably missing head tag? - generate? html tag may be missing as well
