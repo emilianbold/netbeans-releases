@@ -698,7 +698,6 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             
     private class PropertyRenderer extends DefaultOutlineCellRenderer {
         private final Outline outline;
-        private static final int VISIBLE_START_CHARS = 0;
         public PropertyRenderer(Outline outline) {
             this.outline = outline;
         }
@@ -709,12 +708,13 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             if((value instanceof Node.Property)) {
                 try {
                     String valueString = getDisplayValue((Node.Property) value);
-                    valueString = computeFitText(table, row, column, valueString);
-                    valueString = escapeForHTMLLabel(valueString); // XXX might clash with rendered filter matches
+                    valueString = HistoryUtils.computeFitText(table, row, column, valueString);
                     
                     Filter f = tc != null ? tc.getSelectedFilter() : null;
-                    if(f != null) {
+                    if(f != null && !(value instanceof HistoryRootNode.LoadNextNode.MessageProperty)) {
                         valueString = f.getRendererValue(valueString);
+                    } else {
+                        valueString = HistoryUtils.escapeForHTMLLabel(valueString); 
                     }
                     if(value instanceof RevisionNode.MessageProperty) {
                         String[] lines = valueString.split("\n"); // NOI18N
@@ -722,11 +722,11 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                             int[] spans = getHyperlinkSpans(lines[0]);
                             if (spans != null && spans.length >= 2) {
                                 StringBuilder sb = new StringBuilder();
-                                String line = addHyperlink(escapeForHTMLLabel(lines[0]), spans);
+                                String line = addHyperlink(HistoryUtils.escapeForHTMLLabel(lines[0]), spans);
                                 sb.append(line);
                                 for (int i = 1; i < lines.length; i++) {
                                     sb.append("\n"); // NOI18N
-                                    sb.append(escapeForHTMLLabel(lines[i]));
+                                    sb.append(HistoryUtils.escapeForHTMLLabel(lines[i]));
                                 }
                                 valueString = sb.toString();
                             }
@@ -763,7 +763,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         String getTooltip(Node.Property p) throws IllegalAccessException, InvocationTargetException {
             String tooltip = p.toString();
             if(tooltip != null && tooltip.contains("\n")) { // NOI18N
-                tooltip = escapeForHTMLLabel(tooltip);
+                tooltip = HistoryUtils.escapeForHTMLLabel(tooltip);
                 StringBuilder sb = new StringBuilder();
                 sb.append("<html>"); // NOI18N
                 StringTokenizer st = new StringTokenizer(tooltip, "\n"); // NOI18N
@@ -797,44 +797,6 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 if(i == spans.length) {
                     sb.append("</u></font>"); // NOI18N
                     sb.append(s.substring(end, s.length()));
-                }
-            }
-            return sb.toString();
-        }
-        
-        private String computeFitText(JTable table, int rowIdx, int columnIdx, String text) {
-            if(text == null) text = ""; // NOI18N
-            if (text.length() <= VISIBLE_START_CHARS + 3) return text;
-
-            FontMetrics fm = table.getFontMetrics(table.getFont());
-            int width = table.getCellRect(rowIdx, columnIdx, false).width;
-
-            String sufix = "...";                                                   // NOI18N
-            int sufixLength = fm.stringWidth(sufix + " ");
-            int desired = width - sufixLength;
-            if (desired <= 0) return text;
-
-            for (int i = 0; i <= text.length() - 1; i++) {
-                String prefix = text.substring(0, i);
-                int swidth = fm.stringWidth(prefix);
-                if (swidth >= desired) {
-                    return prefix.length() > 0 ? prefix + sufix: text;
-                }
-            }
-            return text;
-        }    
-        
-        public String escapeForHTMLLabel(String text) {
-            if(text == null) {
-                return "";                              // NOI18N
-            }
-            StringBuilder sb = new StringBuilder();
-            for (int i=0; i<text.length(); i++) {
-                char c = text.charAt(i);
-                switch (c) {
-                    case '<': sb.append("&lt;"); break; // NOI18N
-                    case '>': sb.append("&gt;"); break; // NOI18N
-                    default: sb.append(c);
                 }
             }
             return sb.toString();
