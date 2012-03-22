@@ -91,7 +91,7 @@ public class AskForUrlPanel extends JPanel {
         }
         if (urlComboBox.getItemCount() == 0) {
             // add default url
-            urlComboBox.addItem(defaultUrl);
+            urlComboBox.addItem(defaultUrl.toExternalForm());
         }
 
         urlComboBoxEditor = (JTextField) urlComboBox.getEditor().getEditorComponent();
