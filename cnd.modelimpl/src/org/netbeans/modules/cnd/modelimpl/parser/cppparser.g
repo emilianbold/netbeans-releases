@@ -2071,6 +2071,40 @@ qualified_id returns [String q = ""]
 	{q = qitem.toString(); #qualified_id = #(#[CSM_QUALIFIED_ID, q], #qualified_id);}
 	;
 
+unqualified_id returns [String q = ""]
+	{
+	    String so;
+	    StringBuilder qitem = new StringBuilder();
+	}
+	:
+	so =  scope_override { qitem.append(so); }
+	(  
+		id:IDENT	(options{warnWhenFollowAmbig = false;}:
+				 LESSTHAN template_argument_list GREATERTHAN)?
+		{qitem.append(id.getText());}
+		|  
+		LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
+				 LESSTHAN template_argument_list GREATERTHAN)?
+		{qitem.append("operator"); qitem.append("NYI");} // TODO: understand
+		|
+		LITERAL_OPERATOR STRING_LITERAL IDENT (options{warnWhenFollowAmbig = false;}:
+				 LESSTHAN template_argument_list GREATERTHAN)?
+		{qitem.append("operator"); qitem.append("NYI");} // TODO: understand
+		|
+		LITERAL_this  // DW 21/07/03 fix to pass test8.i
+		|
+		(LITERAL_true|LITERAL_false)	// DW 21/07/03 fix to pass test8.i
+                |
+                LITERAL_OPERATOR declaration_specifiers[false, false]
+                (ptr_operator)?
+                (options{warnWhenFollowAmbig = false;}:
+                    LESSTHAN template_parameter_list GREATERTHAN)?
+                {qitem.append("operator"); qitem.append("NYI");} // TODO: understand
+	)
+	{q = qitem.toString(); #unqualified_id = #(#[CSM_QUALIFIED_ID, q], #unqualified_id);}
+	;
+
+
 class_qualified_id returns [String q = ""]
 {
     String so;
@@ -2262,7 +2296,7 @@ conversion_function_decl_or_def returns [boolean definition = false]
                 (ptr_operator)*
                 (LESSTHAN template_parameter_list GREATERTHAN)?
 		LPAREN (parameter_list[false])? RPAREN	
-		(tq = cv_qualifier)?
+		(tq = cv_qualifier)*
 		(exception_specification)?
 		(	compound_statement { definition = true; }
 		|	SEMICOLON! //{end_of_stmt();}
@@ -3482,7 +3516,8 @@ using_declaration
 	:	u:LITERAL_using
 		(LITERAL_namespace qid = qualified_id	// Using-directive
 		    {#using_declaration = #[CSM_USING_DIRECTIVE, qid]; #using_declaration.addChild(#u);}
-		|qid = qualified_id				// Using-declaration
+		|
+                    qid = unqualified_id				// Using-declaration
 		    {#using_declaration = #[CSM_USING_DECLARATION, qid]; #using_declaration.addChild(#u);}
 		)
 		SEMICOLON! //{end_of_stmt();}
@@ -3629,7 +3664,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LESSTHAN
             |   LESSTHANOREQUALTO
             |   GREATERTHANOREQUALTO
-            |   QUESTIONMARK (expression)? COLON assignment_expression
+            |   QUESTIONMARK (expression | LITERAL_throw (assignment_expression)? )? COLON (assignment_expression | LITERAL_throw (options {greedy=true;}: assignment_expression)?)
             |   SHIFTLEFT 
             |   SHIFTRIGHT
             |   PLUS 
@@ -3730,8 +3765,40 @@ protected
 isGreaterthanInTheRestOfExpression
     :
         (lazy_expression[true, true])?
+        (options {greedy=true;}:	
+            ( ASSIGNEQUAL              
+            | TIMESEQUAL
+            | DIVIDEEQUAL
+            | MINUSEQUAL
+            | PLUSEQUAL
+            | MODEQUAL
+            | SHIFTLEFTEQUAL
+            | SHIFTRIGHTEQUAL
+            | BITWISEANDEQUAL
+            | BITWISEXOREQUAL
+            | BITWISEOREQUAL
+            )
+            (lazy_expression[true, true]
+            | array_initializer)
+        )*
         (   COMMA 
             lazy_expression[true, true]
+            (options {greedy=true;}:	
+                ( ASSIGNEQUAL              
+                | TIMESEQUAL
+                | DIVIDEEQUAL
+                | MINUSEQUAL
+                | PLUSEQUAL
+                | MODEQUAL
+                | SHIFTLEFTEQUAL
+                | SHIFTRIGHTEQUAL
+                | BITWISEANDEQUAL
+                | BITWISEXOREQUAL
+                | BITWISEOREQUAL
+                )
+                (lazy_expression[true, true]
+                | array_initializer)
+            )*
         )*
         GREATERTHAN
     ;
@@ -3842,7 +3909,7 @@ lazy_expression_predicate
     |   LESSTHAN
     |   LESSTHANOREQUALTO
     |   GREATERTHANOREQUALTO
-    |   QUESTIONMARK expression COLON assignment_expression
+    |   QUESTIONMARK (expression | LITERAL_throw (assignment_expression)?) COLON (assignment_expression | LITERAL_throw (options {greedy=true;}:assignment_expression)?)
     |   SHIFTLEFT 
     |   SHIFTRIGHT
     |   PLUS 
