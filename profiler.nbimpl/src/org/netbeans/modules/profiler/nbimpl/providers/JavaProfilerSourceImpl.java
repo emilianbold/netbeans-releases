@@ -60,6 +60,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -108,6 +110,7 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     private static final String[] APPLET_CLASSES = new String[]{"java.applet.Applet", "javax.swing.JApplet"}; // NOI18N
     private static final String[] TEST_CLASSES = new String[]{JUNIT_SUITE, JUNIT_TEST};
     private static final String[] TEST_ANNOTATIONS = new String[]{"org.junit.Test", "org.junit.runners.Suite", "org.testng.annotations.Test"}; // NOI18N
+    private static final Logger LOG = Logger.getLogger(JavaProfilerSourceImpl.class.getName());
     
     @Override
     public SourceClassInfo getEnclosingClass(FileObject fo, final int position) {
@@ -642,6 +645,10 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     private static boolean isJunit3TestSuite(FileObject fo) {
         final boolean[] rslt = new boolean[]{false};
         SourceGroup sg = SourceGroupModifier.createSourceGroup(FileOwnerQuery.getOwner(fo), JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST);
+        if (sg == null) {
+            LOG.log(Level.INFO, "Can not resolve source group for {0}", fo.getPath());
+            return false;
+        }
         if (FileUtil.getRelativePath(sg.getRootFolder(), fo) != null && // need to check for this first otherwise i will get IAE
             sg.contains(fo)) {
             JavaSource js = JavaSource.forFileObject(fo);
