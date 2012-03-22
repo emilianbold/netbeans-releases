@@ -77,7 +77,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
     }
 
     
-    private static class ChromeExtensionManager extends AbstractBrowserExtensionManager {
+    static class ChromeExtensionManager extends AbstractBrowserExtensionManager {
         
         private static final String LAST_USED = "\"last_used\":";               // NOI18N
         
@@ -270,7 +270,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             return null;
         }
         
-        private String[] getUserData(){
+        protected String[] getUserData(){
             if (Utilities.isWindows()) {
                 String localAppData = System.getenv("LOCALAPPDATA");                // NOI18N
                 return new String[]{ localAppData+"\\Google\\Chrome\\User Data"};   // NOI18N

@@ -40,14 +40,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.extbrowser.plugins;
+package org.netbeans.modules.extbrowser.plugins.chrome;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor.BrowserExtensionManager;
-import org.netbeans.modules.extbrowser.plugins.chrome.ChromeManagerAccessor;
-import org.netbeans.modules.extbrowser.plugins.chrome.ChromiumManagerAccessor;
-import org.netbeans.modules.extbrowser.plugins.firefox.FFManagerAccessor;
+import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor;
+import org.netbeans.modules.extbrowser.plugins.Utils;
+
+
+import org.openide.util.Utilities;
 
 
 
@@ -55,50 +54,26 @@ import org.netbeans.modules.extbrowser.plugins.firefox.FFManagerAccessor;
  * @author ads
  *
  */
-public final class ExtensionManager {
+public class ChromiumManagerAccessor implements ExtensionManagerAccessor {
 
-    private ExtensionManager(){
-    }
-    
-    public static boolean isInstalled( BrowserId id ){
-        if ( id == null ){
-            // TODO : show browser chooser
-        }
-        else {
-            ExtensionManagerAccessor accessor = ACCESSORS.get(id);
-            if ( accessor == null ){
-                return false;
-            }
-            BrowserExtensionManager manager = accessor.getManager();
-            return manager.isInstalled();
-        }
-        return false;
-    }
-    
-    /**
-     * @return true if extension is available
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor#getManager()
      */
-    public static boolean installExtension(  BrowserId id , PluginLoader loader ){
-        if ( id == null ){
-            // TODO : show browser chooser
-        }
-        else {
-            ExtensionManagerAccessor accessor = ACCESSORS.get(id);
-            if ( accessor == null ){
-                return false ;
-            }
-            BrowserExtensionManager manager = accessor.getManager();
-            return manager.install( loader );
-        }
-        return false;
+    @Override
+    public BrowserExtensionManager getManager() {
+        return new ChromiumExtensionManager();
     }
+
     
-    private static Map<BrowserId, ExtensionManagerAccessor> ACCESSORS = 
-        new HashMap<BrowserId, ExtensionManagerAccessor>();
-    
-    static {
-        ACCESSORS.put( BrowserId.FIREFOX, new FFManagerAccessor());
-        ACCESSORS.put( BrowserId.CHROME , new ChromeManagerAccessor());
-        ACCESSORS.put( BrowserId.CHROMIUM , new ChromiumManagerAccessor());
+    private static class ChromiumExtensionManager extends ChromeManagerAccessor.ChromeExtensionManager {
+        
+        protected String[] getUserData(){
+            if (Utilities.isUnix()) {
+                return Utils.getUserPaths("/.config/chromium");// NOI18N
+            } else {
+                throw new IllegalStateException("chromium runs in linux only");
+            }
+        }
+        
     }
 }
