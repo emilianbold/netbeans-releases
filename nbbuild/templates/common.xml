@@ -648,7 +648,7 @@ made subject to such option by the copyright holder.
                 <available classname="org.testng.annotations.Test" classpathref="test.@{test.type}.run.cp"/>
             </condition>
             <antcall target="-do-${test.runner}">
-                <param name="test.type" value="@{test.type}"/>
+                <param name="run.test.type" value="@{test.type}"/>
                 <param name="disable.apple.ui" value="@{disable.apple.ui}"/>
             </antcall>
         </sequential>
@@ -681,7 +681,7 @@ made subject to such option by the copyright holder.
                 <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
             </sequential>
         </macrodef>
-        <junit-impl test.type="${test.type}" />
+        <junit-impl test.type="${run.test.type}" />
     </target>
 
     <target name="-do-testng" depends="test-init">
@@ -707,7 +707,7 @@ made subject to such option by the copyright holder.
                 <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
             </sequential>
         </macrodef>
-        <testng-impl test.type="${test.type}"/>
+        <testng-impl test.type="${run.test.type}"/>
     </target>
 
     <target name="test-generate-html" depends="-build-dir-init">
