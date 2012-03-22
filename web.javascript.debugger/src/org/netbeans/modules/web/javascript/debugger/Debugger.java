@@ -76,7 +76,8 @@ import org.openide.util.NbBundle;
         + "Make sure the Chrome/Chromium runs with '--remote-debugging-port=9222' switch.\n"
         + "That can be achieved in many ways, for example you can configure the browser\n"
         + "via Tools->Options. Note that once the browser was started without the switch\n"
-        + "it will require browser restart to activate the remote debugging.",
+        + "it will require browser restart to activate the remote debugging. Sometimes\n"
+        + "browser gets into state that it refuses any connections - workaround is to restart it.",
     "BreakpointWasHit=Paused on breakpoint: {0}"
 })
 public class Debugger {
@@ -299,6 +300,7 @@ public class Debugger {
                     DebuggerEngineProvider.class)).getDestructor().killEngine();
             debuggerEngine = null;
             session = null;
+            javascriptVm = null;
             fireStateChange();
         }
     }
