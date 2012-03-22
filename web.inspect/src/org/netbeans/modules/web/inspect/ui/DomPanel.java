@@ -149,7 +149,7 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                         RP.post(new Runnable() {
                             @Override
                             public void run() {
-                                updateSelectionFromModel();
+                                updateSelectionFromModel(false);
                             }
                         });
                     }
@@ -243,7 +243,7 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (PageModel.PROP_SELECTED_ELEMENTS.equals(propName)) {
-                    updateSelectionFromModel();
+                    updateSelectionFromModel(true);
                 }
             }
         };
@@ -251,8 +251,11 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
 
     /**
      * Updates selection in this view from the model.
+     * 
+     * @param triggeredByModel determines whether this selection update
+     * was triggered by selection change in the model.
      */
-    private void updateSelectionFromModel() {
+    private void updateSelectionFromModel(boolean triggeredByModel) {
         Collection<ElementHandle> selection = pageModel.getSelectedElements();
         final List<Node> nodeSelection = new ArrayList<Node>();
         for (ElementHandle handle : selection) {
@@ -262,7 +265,16 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             }
             if (root instanceof ElementNode) {
                 ElementNode node = ((ElementNode)root).locate(handle);
-                if (node != null) {
+                if (node == null) {
+                    if (triggeredByModel) {
+                        // Selected node not found => try to refresh the view
+                        // from the model to get the missing node
+                        update(false);
+                        // No need to continue, selection will be updated
+                        // as a result of DOM tree update
+                        return;
+                    }
+                } else {
                     nodeSelection.add(node);
                 }
             }
