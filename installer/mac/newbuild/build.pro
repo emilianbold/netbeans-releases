@@ -142,6 +142,11 @@
     <property name="mysql_readme.name" value="NB_GF_MySQL_Bundle_Thirdparty_license_readme.txt"/>
 
     <!-- JDK Properties-->    
+    <property name="mpkg.prefix_nb_jdk" value=" with JDK"/> 
+    <property name="mpkg.version_jdk" value=" 7 Update 04"/> 
+    <property name="jdk.bundle.files.prefix" value="jdk-7u4"/>
+    <property name="jdk.bundle.files.suffix" value="nb-7_2"/>
+
     <property name="jdk_bits_location" value="${gf_builds_host}/java/re/jdk/7u4/promoted/all/b16/bundles/macosx-amd64/jdk-7u4-ea-bin-b16-macosx-x64-15_mar_2012.dmg"/>
 
 </project>

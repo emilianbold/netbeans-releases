@@ -108,10 +108,13 @@ Microsystems, Inc. All Rights Reserved.
         <property
            name="VerifyFile.classpath" 
            value="${basedir}/tools/classes"/>
+        <condition property="do.build.jdk">
+	     <equals arg1="${build.jdk7}" arg2="1"/>
+        </condition>
     </target>        
 
 
-    <target name="prepare-javame-sdk-zip">
+    <target name="prepare-javame-sdk-zip" unless="do.build.jdk">
         <mkdir dir="build"/> 
         <get src="${javame_sdk30_bits_location}"         dest="${common.name}${ml.suffix}-mobility-sdk.zip"/>
         <get src="${javame_sdk30_bits_update_location}"  dest="${common.name}${ml.suffix}-mobility-sdk-update.zip"/>
@@ -169,13 +172,12 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
         
         <condition property="clusters" value="${all.clusters}" else="${jdk-bundle.clusters}"> 
-            <equals arg1="${jdk-bundle.build}" arg2="0"/>
+            <equals arg1="${build.jdk7}" arg2="0"/>
         </condition>
         
     </target>
 
-    <!-- XXX:  small jdk-bundle <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters,prepare-javame-sdk-zip">-->
-    <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters">    
+    <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters,prepare-javame-sdk-zip">
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
             <exec executable="sh" failonerror="no">
@@ -255,7 +257,7 @@ Microsystems, Inc. All Rights Reserved.
             <equals arg1="${javafx.build}" arg2="0"/>
         </condition>
         <condition property="modules" value="${all.modules}" else="${jdk-bundle.modules}"> 
-            <equals arg1="${jdk-bundle.build}" arg2="0"/>
+            <equals arg1="${build.jdk7}" arg2="0"/>
         </condition>
     </target>    
 
@@ -332,7 +334,7 @@ Microsystems, Inc. All Rights Reserved.
             <equals arg1="${javafx.build}" arg2="0"/>
         </condition>
         <condition property="bundles" value="${all.bundles}" else="${jdk-bundle.bundles}"> 
-            <equals arg1="${jdk-bundle.build}" arg2="0"/>
+            <equals arg1="${build.jdk7}" arg2="0"/>
         </condition>
         
     </target>
@@ -352,8 +354,8 @@ Microsystems, Inc. All Rights Reserved.
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
-                 <property name="dmg.name" value="${dmg.prefix.name}${ml.suffix}${bundle.type}-macosx"/>  
-                 <property name="mpkg.name" value="${mpkg.name_nb}"/>
+                 <property name="dmg.name" value="${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx"/>
+                 <property name="mpkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_nb_jdk}"/>
                  <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
             </ant>     
         </for-each>         
@@ -605,6 +607,6 @@ Microsystems, Inc. All Rights Reserved.
           <arg value="-c"/>
           <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}'"/>
         </exec>  
-        <!-- XXX <delete dir="dist_dmg"/>-->
+        <delete dir="dist_dmg"/>
     </target>             
 </project>          
