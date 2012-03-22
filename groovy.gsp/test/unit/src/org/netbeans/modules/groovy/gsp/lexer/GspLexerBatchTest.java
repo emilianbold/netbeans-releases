@@ -164,6 +164,26 @@ public class GspLexerBatchTest extends TestCase {
         checkNext(sequence, GspTokenId.HTML, "</html>");
     }
 
+    public void test6() {
+        String text = "<tr>"
+                + "<td colspan=\"4\">"
+                + "<richui:portletView id=\"1\" slotStyle=\"width: 66%; height: 100%;\" playerStyle=\"width: 66%; height: 100%;\" >"
+                + "<h1>Tree View Here</h1>"
+                + "</richui:portletView>"
+                + "</td>"
+                + "</tr>";
+        TokenSequence<?> sequence = createTokenSequence(text);
+
+        checkNext(sequence, GspTokenId.HTML, "<tr>");
+        checkNext(sequence, GspTokenId.HTML, "<td colspan=\"4\">");
+        checkNext(sequence, GspTokenId.HTML, "<richui:portletView id=\"1\" slotStyle=\"width: 66%; height: 100%;\" playerStyle=\"width: 66%; height: 100%;\" >");
+        checkNext(sequence, GspTokenId.HTML, "<h1>");
+        checkNext(sequence, GspTokenId.HTML, "Tree View Here</h1>");
+        checkNext(sequence, GspTokenId.HTML, "</richui:portletView>");
+        checkNext(sequence, GspTokenId.HTML, "</td>");
+        checkNext(sequence, GspTokenId.HTML, "</tr>");
+    }
+
     public void testExclamation() {
         String text = "<p>a!</p>";
         TokenSequence<?> sequence = createTokenSequence(text);
