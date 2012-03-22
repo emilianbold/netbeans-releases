@@ -88,7 +88,7 @@ public final class MIMEResolverImpl {
     private static final int USER_DEFINED_MIME_RESOLVER_POSITION = 10;
 
     public static MIMEResolver forDescriptor(FileObject fo) throws IOException {
-        if (fo.getSize() == 0) {
+        if (fo.getSize() == 0 && !isUserDefined(fo)) {
             return create(fo);
         }
         return forDescriptor(fo, true);
@@ -135,7 +135,9 @@ public final class MIMEResolverImpl {
      * @return true if specified FileObject is user defined MIME resolver, false otherwise
      */
     public static boolean isUserDefined(FileObject mimeResolverFO) {
-        return mimeResolverFO.getAttribute(USER_DEFINED_MIME_RESOLVER) != null;
+        return 
+            mimeResolverFO.getAttribute(USER_DEFINED_MIME_RESOLVER) != null || 
+            mimeResolverFO.getName().equals(USER_DEFINED_MIME_RESOLVER);
     }
 
     /** Returns mapping of MIME type to set of extensions. It never returns null,
