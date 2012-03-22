@@ -149,6 +149,7 @@ final class JUnitOutputReader {
                       final AntSessionInfo sessionInfo,
                       Project project,
                       final Properties props) {
+        manager.setTestingFramework(Manager.JUNIT_TF);
         this.sessionType = sessionInfo.getSessionType();
         File antScript = FileUtil.normalizeFile(session.getOriginatingScript());
         this.timeOfSessionStart = sessionInfo.getTimeOfTestTaskStart();
