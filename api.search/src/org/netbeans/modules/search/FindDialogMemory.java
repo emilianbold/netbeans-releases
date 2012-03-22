@@ -219,11 +219,11 @@ public final class FindDialogMemory {
         pathSandboxContent = prefs.get(PROP_PATH_SANDBOX_CONTENT,
                 getText("PathPatternSandbox.textPane.text.default"));   //NOI18N
         resultsColumnWidths = prefs.get(PROP_RESULTS_COLUMN_WIDTHS,
-                "100:200:50:50:|0:");                                   //NOI18N
+                "100:-1:-1:-1:|0:");                                    //NOI18N
         resultsColumnWidthsDetails = prefs.get(PROP_RESULTS_COLUMN_WIDTHS_DETAILS,
-                "100:30:200:-1:50:|0:");                                //NOI18N
+                "100:-1:-1:-1:-1:|0:");                                 //NOI18N
         resultsColumnWidthsReplacing = prefs.get(PROP_RESULTS_COLUMN_WIDTHS_REPLACING,
-                "100:30:-1:-1:-1:|0:");                                 //NOI18N
+                "100:-1:-1:-1:-1:|0:");                                 //NOI18N
         resultsViewMode = prefs.get(PROP_RESULTS_VIEW_MODE, null);
         provider = prefs.get(PROP_PROVIDER, null);
         fileNamePatterns = new ArrayList<String>(maxFileNamePatternCount);

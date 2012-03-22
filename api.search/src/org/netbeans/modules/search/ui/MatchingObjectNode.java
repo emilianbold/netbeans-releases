@@ -138,6 +138,11 @@ public class MatchingObjectNode extends AbstractNode {
     }
 
     @Override
+    public String getShortDescription() {
+        return matchingObject.getFileObject().getPath();
+    }
+
+    @Override
     public Action getPreferredAction() {
         return new OpenNodeAction();
     }

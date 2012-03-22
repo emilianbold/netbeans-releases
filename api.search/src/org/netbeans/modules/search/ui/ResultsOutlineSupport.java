@@ -592,6 +592,10 @@ public class ResultsOutlineSupport {
                     toggleParentSelected(FolderTreeNode.this);
                 }
             });
+            if (!pathItem.isPathLeaf()) {
+                setShortDescription(
+                        pathItem.getFolder().getPrimaryFile().getPath());
+            }
         }
 
         @Override
