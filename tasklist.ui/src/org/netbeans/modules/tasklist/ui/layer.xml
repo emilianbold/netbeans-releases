@@ -38,12 +38,6 @@
                 </file>
             </folder>
         </folder>
-        <folder name="Groups">
-            <file name="TaskList.wsgrp" url="resources/TaskList.wsgrp"/>
-            <folder name="TaskList">
-                <file name="TaskListTopComponent.wstcgrp" url="resources/TaskListTopComponent.wstcgrp"/>
-            </folder>
-        </folder>
     </folder>    
 
     <folder name="TaskList">

@@ -79,7 +79,7 @@ public class CurrentEditorScanningScope extends TaskScanningScope
     
     /** Creates a new instance of CurrentEditorScope */
     public CurrentEditorScanningScope( String displayName, String description, Image icon ) {
-        super( displayName, description, icon, true );
+        super( displayName, description, icon );
         Map<String,String> labels = new HashMap<String,String>(1);
         labels.put( "StatusBarLabel", //NOI18N
                 NbBundle.getMessage(CurrentEditorScanningScope.class, "LBL_CurrentFileStatusMessage") ); //NOI18N
