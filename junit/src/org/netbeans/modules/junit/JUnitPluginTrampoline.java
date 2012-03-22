@@ -46,8 +46,10 @@ package org.netbeans.modules.junit;
 
 import java.util.Map;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
-import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
-import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
+//import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
+//import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.CreateTestParam;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.Location;
 import org.openide.filesystems.FileObject;
 
 /**
