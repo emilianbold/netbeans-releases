@@ -5,9 +5,11 @@
         <folder name="System">
             <file name="org-openide-actions-SaveAllAction.instance">
                 <attr name="asynchronous" boolvalue="true"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="org-openide-actions-SaveAction.instance">
                 <attr name="asynchronous" boolvalue="true"/>
+                <attr name="weight" intvalue="100"/>
             </file>
         </folder>
     </folder>
