@@ -98,8 +98,7 @@ public class ToggleBlockCommentAction extends BaseAction{
                 if (ts.token().id() != PHPTokenId.T_INLINE_HTML) {
                     boolean newLine = false;
                     while (ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_OPENTAG && !newLine) {
-                        if(ts.token().id() == PHPTokenId.WHITESPACE
-                                && ts.token().text().toString().contains("\n")) {
+                        if(isWhitespaceWithNewLine(ts)) {
                             newLine = true;
                         }
                     }
@@ -144,6 +143,10 @@ public class ToggleBlockCommentAction extends BaseAction{
             }
             action.actionPerformed(evt, target);
         }
+    }
+
+    private boolean isWhitespaceWithNewLine(final TokenSequence<PHPTokenId> ts) {
+        return ts.token().id() == PHPTokenId.WHITESPACE && ts.token().text().toString().contains("\n"); //NOI18N
     }
 
     private boolean forceDirection(boolean comment) {
