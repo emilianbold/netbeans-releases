@@ -591,7 +591,7 @@ public class CasualDiff {
                 }
                 else {
                     printer.print(newT.name);
-                    diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameMethod") + " " + oldT.name);
+                    diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameMethod",oldT.name));
                     localPointer = oldT.pos + oldT.name.length();
                 }
             } else {
@@ -692,7 +692,7 @@ public class CasualDiff {
         if (nameChanged(oldT.name, newT.name)) {
             copyTo(localPointer, oldT.pos);
             printer.print(newT.name);
-            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameVariable") + " " + oldT.name);
+            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameVariable",oldT.name));
             localPointer = oldT.pos + oldT.name.length();
         }
         if (newT.init != null && oldT.init != null) {
@@ -729,7 +729,7 @@ public class CasualDiff {
             if (nameChanged(oldT.name, newT.name)) {
                 copyTo(localPointer, oldT.pos);
                 printer.print(newT.name);
-                diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameEnumConstant") + " " + oldT.name);
+                diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameEnumConstant",oldT.name));
                 localPointer = oldT.pos + oldT.name.length();
             }
             JCNewClass oldInit = (JCNewClass) oldT.init;
@@ -770,7 +770,7 @@ public class CasualDiff {
                 printer.print(" ");
             }
             printer.print(newT.name);
-            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameVariable") + " " + oldT.name);
+            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameVariable",oldT.name));
             if (!isOldError) {
                 localPointer = oldT.pos + oldT.name.length();
             }
@@ -1690,7 +1690,7 @@ public class CasualDiff {
         }
         if (nameChanged(oldT.name, newT.name)) {
             printer.print(newT.name);
-            diffInfo.put(localPointer, NbBundle.getMessage(CasualDiff.class,"TXT_UpdateReferenceTo") + " " + oldT.name);
+            diffInfo.put(localPointer, NbBundle.getMessage(CasualDiff.class,"TXT_UpdateReferenceTo",oldT.name));
             localPointer = localPointer + oldT.name.length();
         }
         copyTo(localPointer, bounds[1]);
@@ -1705,7 +1705,7 @@ public class CasualDiff {
         if (nameChanged(oldT.name, newT.name)) {
             copyTo(bounds[0], oldT.pos);
             printer.print(newT.name);
-            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_UpdateReferenceTo") + " " + oldT.name);
+            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_UpdateReferenceTo",oldT.name));
         } else {
             copyTo(bounds[0], bounds[1]);
         }

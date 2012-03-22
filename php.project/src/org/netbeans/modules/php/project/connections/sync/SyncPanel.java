@@ -233,13 +233,13 @@ public final class SyncPanel extends JPanel {
         ((ViewCheckBox) viewWarningCheckBox).setFilter(new SyncItemFilter() {
             @Override
             public boolean accept(SyncItem syncItem) {
-                return syncItem.hasWarning();
+                return syncItem.validate().hasWarning();
             }
         });
         ((ViewCheckBox) viewErrorCheckBox).setFilter(new SyncItemFilter() {
             @Override
             public boolean accept(SyncItem syncItem) {
-                return syncItem.hasError();
+                return syncItem.validate().hasError();
             }
         });
     }
@@ -410,11 +410,12 @@ public final class SyncPanel extends JPanel {
         assert SwingUtilities.isEventDispatchThread();
         boolean warn = false;
         for (SyncItem syncItem : allItems) {
-            if (syncItem.hasError()) {
+            SyncItem.ValidationResult validationResult = syncItem.validate();
+            if (validationResult.hasError()) {
                 setError(Bundle.SyncPanel_error_operations());
                 return;
             }
-            if (syncItem.hasWarning()) {
+            if (validationResult.hasWarning()) {
                 warn = true;
             }
         }
@@ -458,7 +459,7 @@ public final class SyncPanel extends JPanel {
         assert SwingUtilities.isEventDispatchThread();
         SyncInfo syncInfo = new SyncInfo();
         for (SyncItem syncItem : allItems) {
-            if (syncItem.hasError()) {
+            if (syncItem.validate().hasError()) {
                 syncInfo.errors++;
             }
             switch (syncItem.getOperation()) {
@@ -733,10 +734,11 @@ public final class SyncPanel extends JPanel {
             assert SwingUtilities.isEventDispatchThread();
             SyncItem syncItem = items.get(rowIndex);
             if (columnIndex == 0) {
-                if (syncItem.hasError()) {
+                SyncItem.ValidationResult validationResult = syncItem.validate();
+                if (validationResult.hasError()) {
                     return ImageUtilities.loadImageIcon(ERROR_ICON_PATH, false);
                 }
-                if (syncItem.hasWarning()) {
+                if (validationResult.hasWarning()) {
                     return ImageUtilities.loadImageIcon(WARNING_ICON_PATH, false);
                 }
                 return null;
@@ -788,7 +790,7 @@ public final class SyncPanel extends JPanel {
             Icon icon = (Icon) value;
             JLabel rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             rendererComponent.setHorizontalAlignment(SwingConstants.CENTER);
-            rendererComponent.setToolTipText(displayedItems.get(row).getMessage());
+            rendererComponent.setToolTipText(displayedItems.get(row).validate().getMessage());
             rendererComponent.setText(null);
             rendererComponent.setIcon(icon);
             return rendererComponent;
