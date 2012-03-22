@@ -103,14 +103,73 @@ public class GspLexerBatchTest extends TestCase {
         checkNext(sequence, GspTokenId.DELIMITER, "${");
         checkNext(sequence, GspTokenId.GROOVY, "e.s");
         checkNext(sequence, GspTokenId.DELIMITER, "}");
-        checkNext(sequence, GspTokenId.HTML, "</div></html>");
+        checkNext(sequence, GspTokenId.HTML, "</div>");
+        checkNext(sequence, GspTokenId.HTML, "</html>");
+    }
+
+    public void test3() {
+        String text = 
+                "<html>"
+                + "<body>"
+                + "<g:if test=\"${something different}\">"
+                + "<h1>Sample line</h1>"
+                + "</g:if>"
+                + "</body>"
+                + "</html>";
+        TokenSequence<?> sequence = createTokenSequence(text);
+
+        checkNext(sequence, GspTokenId.HTML, "<html>");
+        checkNext(sequence, GspTokenId.HTML, "<body>");
+        checkNext(sequence, GspTokenId.GTAG, "<g:if test=\"");
+        checkNext(sequence, GspTokenId.DELIMITER, "${");
+        checkNext(sequence, GspTokenId.GROOVY_EXPR, "something different");
+        checkNext(sequence, GspTokenId.DELIMITER, "}");
+        checkNext(sequence, GspTokenId.GTAG, "\">");
+        checkNext(sequence, GspTokenId.HTML, "<h1>");
+        checkNext(sequence, GspTokenId.HTML, "Sample line</h1>");
+        checkNext(sequence, GspTokenId.GTAG, "</g:if>");
+        checkNext(sequence, GspTokenId.HTML, "</body>");
+        checkNext(sequence, GspTokenId.HTML, "</html>");
+    }
+
+    public void test4() {
+        String text = "<html>"
+                + "<body>"
+                + "<h1>Sample line</h1>"
+                + "</body>"
+                + "</html>";
+        TokenSequence<?> sequence = createTokenSequence(text);
+
+        checkNext(sequence, GspTokenId.HTML, "<html>");
+        checkNext(sequence, GspTokenId.HTML, "<body>");
+        checkNext(sequence, GspTokenId.HTML, "<h1>");
+        checkNext(sequence, GspTokenId.HTML, "Sample line</h1>");
+        checkNext(sequence, GspTokenId.HTML, "</body>");
+        checkNext(sequence, GspTokenId.HTML, "</html>");
+    }
+
+    public void test5() {
+        String text = "<html>"
+                + "<g:if test=\"\\${}\">"
+                + "</g:if>"
+                + "</html>";
+        TokenSequence<?> sequence = createTokenSequence(text);
+
+        checkNext(sequence, GspTokenId.HTML, "<html>");
+        checkNext(sequence, GspTokenId.GTAG, "<g:if test=\"");
+        checkNext(sequence, GspTokenId.DELIMITER, "\\${");
+        checkNext(sequence, GspTokenId.DELIMITER, "}");
+        checkNext(sequence, GspTokenId.GTAG, "\">");
+        checkNext(sequence, GspTokenId.GTAG, "</g:if>");
+        checkNext(sequence, GspTokenId.HTML, "</html>");
     }
 
     public void testExclamation() {
         String text = "<p>a!</p>";
         TokenSequence<?> sequence = createTokenSequence(text);
 
-        checkNext(sequence, GspTokenId.HTML, "<p>a!</p>");
+        checkNext(sequence, GspTokenId.HTML, "<p>");
+        checkNext(sequence, GspTokenId.HTML, "a!</p>");
     }
 
     public void testPercent() {
@@ -121,7 +180,8 @@ public class GspLexerBatchTest extends TestCase {
         checkNext(sequence, GspTokenId.DELIMITER, "${");
         checkNext(sequence, GspTokenId.GROOVY, "createLinkTo(dir:'')");
         checkNext(sequence, GspTokenId.DELIMITER, "}");
-        checkNext(sequence, GspTokenId.HTML, "\">Home</a>");
+        checkNext(sequence, GspTokenId.HTML, "\">");
+        checkNext(sequence, GspTokenId.HTML, "Home</a>");
     }
 
     public void testExpressionInValue() {
@@ -133,7 +193,8 @@ public class GspLexerBatchTest extends TestCase {
         checkNext(sequence, GspTokenId.DELIMITER, "<%@");
         checkNext(sequence, GspTokenId.GROOVY, " page import=\"org.grails.bookmarks.*\" ");
         checkNext(sequence, GspTokenId.DELIMITER, "%>");
-        checkNext(sequence, GspTokenId.HTML, "<style type=\"text/css\">.searchbar {width:97%;}</style>");
+        checkNext(sequence, GspTokenId.HTML, "<style type=\"text/css\">");
+        checkNext(sequence, GspTokenId.HTML, ".searchbar {width:97%;}</style>");
     }
 
     private TokenSequence createTokenSequence(String text) {

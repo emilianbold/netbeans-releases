@@ -80,13 +80,15 @@ public final class GspLexer implements Lexer<GspTokenId> {
         GSCRIPT,            // after '%{ ...'       expecting }
         GDIRECT,            // after '@{ ...'       expecting }
         GDECLAR,            // after '!{ ...'       expecting }
-        GSTART_TAG,         // after '<g: ...'      expecting /, > or $
+        GSTART_TAG,         // after '<g: ...'      expecting /, \, > or $
         GEND_TAG,           // after '</g: ...'     expecting >
         GINDEPENDENT_TAG,   // after '<g: ... /'    expecting >
+        GSTART_TAG_BACKSLASH,// after '<g: ... \'    expecting $
         GTAG_EXPR,          // after '<g: ... $'    expecting {
         GTAG_EXPR_PC,       // after '<g: ... ${'   expecting }
+        GTAG_BACKSLASH_EXPR,// after '<g: ... \$'   expecting {
 
-        ISA_LT,             // after '<'            expecting % or /
+        ISA_LT,             // after '<'            expecting %, g or /
         ISA_DL,             // after '$'            expecting {
         ISA_PC,             // after '%'            expecting {
         ISA_AT,             // after '@'            expecting {
@@ -159,6 +161,8 @@ public final class GspLexer implements Lexer<GspTokenId> {
                             case '%': state = LexerState.ISA_PC; break;
                             case '@': state = LexerState.ISA_AT; break;
                             case '!': state = LexerState.ISA_EX; break;
+                            // Only for HTML elements ending with '>'
+                            case '>': state = LexerState.INIT; return token(GspTokenId.HTML);
                         }
                     }
                     break;
@@ -511,6 +515,9 @@ public final class GspLexer implements Lexer<GspTokenId> {
                         case '/':
                             state = LexerState.GINDEPENDENT_TAG;
                             break;
+                        case '\\':
+                            state = LexerState.GSTART_TAG_BACKSLASH;
+                            break;
                         case '$':
                             state = LexerState.GTAG_EXPR;
                             break;
@@ -539,6 +546,29 @@ public final class GspLexer implements Lexer<GspTokenId> {
                             state = LexerState.GSTART_TAG;
                             break;
                     }
+                    break;
+                case GSTART_TAG_BACKSLASH: // after <g: ... \
+                    switch (actChar) {
+                        case '$':
+                            state = LexerState.GTAG_BACKSLASH_EXPR;
+                            break;
+                        default:
+                            state = LexerState.GSTART_TAG;
+                            break;
+                    }
+                    break;
+                case GTAG_BACKSLASH_EXPR: // after <g: ...\$
+                    switch (actChar) {
+                        case '{':
+                            if (input.readLength() == 3) {
+                                state = LexerState.GTAG_EXPR_PC;
+                                return token(GspTokenId.DELIMITER);
+                            } else {
+                                input.backup(3);
+                                state = LexerState.GSTART_TAG;
+                                return token(GspTokenId.GTAG);
+                            }
+                    }
                 case GTAG_EXPR: // after <g: ... $
                     switch (actChar) {
                         case '{':
@@ -555,7 +585,7 @@ public final class GspLexer implements Lexer<GspTokenId> {
                             break;
                     }
                     break;
-                case GTAG_EXPR_PC: // after <g: ... ${
+                case GTAG_EXPR_PC: // after <g: ... ${ or <g: .../${
                     switch(actChar) {
                         case '}':
                             if(input.readLength() == 1) {
