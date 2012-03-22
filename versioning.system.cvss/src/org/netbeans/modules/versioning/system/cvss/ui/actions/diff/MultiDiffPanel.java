@@ -646,7 +646,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             currentModelIndex = fileTable.getSelectedModelIndex();
         }
 
-        DiffController view = setups[currentModelIndex].getView();
+        DiffController view = currentModelIndex > -1 ? setups[currentModelIndex].getView() : null;
         if (view != null) {
             int currentDifferenceIndex = view.getDifferenceIndex();
             if (++currentDifferenceIndex >= view.getDifferenceCount()) {
