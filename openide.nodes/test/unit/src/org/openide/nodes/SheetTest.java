@@ -59,6 +59,13 @@ public class SheetTest extends NbTestCase {
     public SheetTest(String name) {
         super(name);
     }
+    
+    public void testSheetSetEquals() {
+        Sheet.Set s1 = new Sheet.Set();
+        Sheet.Set s2 = new Sheet.Set();
+        
+        assertTrue("Equal as they don't have a name", s1.equals(s2));
+    }
 
     public void testSheetEvents() {
 
