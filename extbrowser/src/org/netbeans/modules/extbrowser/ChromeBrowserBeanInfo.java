@@ -49,15 +49,17 @@ import java.beans.*;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-public class NetscapeBrowserBeanInfo extends SimpleBeanInfo {
+public class ChromeBrowserBeanInfo extends SimpleBeanInfo {
 
     public BeanDescriptor getBeanDescriptor() {
-        BeanDescriptor descr = new BeanDescriptor (NetscapeBrowser.class);
-        descr.setDisplayName (NbBundle.getMessage (NetscapeBrowserBeanInfo.class, "CTL_NetscapeBrowserName"));
-        descr.setShortDescription (NbBundle.getMessage (NetscapeBrowserBeanInfo.class, "HINT_NetscapeBrowserName"));
+        BeanDescriptor descr = new BeanDescriptor (ChromeBrowser.class);
+        descr.setDisplayName (NbBundle.getMessage (ChromeBrowserBeanInfo.class, 
+                "CTL_ChromeBrowserName"));              // NOI18N     
+        descr.setShortDescription (NbBundle.getMessage (ChromeBrowserBeanInfo.class, 
+                "HINT_ChromeBrowserName"));             // NOI18N
 
         descr.setValue ("helpID", "org.netbeans.modules.extbrowser.ExtWebBrowser");  // NOI18N //TODO
-	return descr;
+        return descr;
     }
 
     public PropertyDescriptor[] getPropertyDescriptors() {

@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFriendClass;
@@ -110,6 +111,9 @@ public final class FriendResolverImpl extends CsmFriendResolver {
                 if (containingClass != null && containingClass.equals(reference)) {
                     return true;
                 }
+                if (containingClass != null && isNestedClass(containingClass, reference)) {
+                    return true;
+                }
             } else if (CsmKindUtilities.isFriendMethod(friend)){
                 if (friendDecl.equals(friend)) {
                     return true;
@@ -127,6 +131,11 @@ public final class FriendResolverImpl extends CsmFriendResolver {
             }
         }
         return false;
+    }
+    
+    private static boolean isNestedClass(CsmClass inner, CsmClass outer) {
+        return inner != null && outer != null &&
+               CharSequenceUtilities.startsWith(inner.getQualifiedName(),outer.getQualifiedName());
     }
     
     /**

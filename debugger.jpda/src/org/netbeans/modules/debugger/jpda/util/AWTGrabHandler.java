@@ -318,9 +318,13 @@ class AWTGrabHandler {
             XToolkit = Class.forName("sun.awt.X11.XToolkit");                   // NOI18N
         } catch (ClassNotFoundException cnfex) {
             throw cnfex;
-        } catch (Exception ccex) {
+        } catch (ExceptionInInitializerError eie) {
             // We're not able to load the X11 toolkit class
             // See http://netbeans.org/bugzilla/show_bug.cgi?id=208751
+            return false;
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable ccex) {
             logger.log(Level.INFO, "Can not load sun.awt.X11.XToolkit class.", ccex);
             return false;
         }
