@@ -110,7 +110,7 @@ public abstract class AbstractTreeCustomizer extends JPanel implements Customize
             initializing = true;
             
             if (! (bean instanceof TreeObject))
-                throw new IllegalArgumentException (bean + Util.THIS.getString ("PROP__invalid_instance"));   //!!!
+                throw new IllegalArgumentException (Util.THIS.getString ("PROP__invalid_instance", bean)); // NOI18N
             
             treeObject = (TreeObject)bean;
             
