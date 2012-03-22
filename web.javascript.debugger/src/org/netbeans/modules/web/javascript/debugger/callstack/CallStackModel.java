@@ -108,9 +108,15 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
     }
 
     public void setStackTrace(List<? extends CallFrame> stackTrace) {
-        this.stackTrace = new AtomicReference<List<? extends CallFrame>>(new ArrayList<CallFrame>(stackTrace));
+        List<CallFrame> l = new ArrayList<CallFrame>();
+        this.stackTrace = new AtomicReference<List<? extends CallFrame>>(l);
+        for (CallFrame cf : stackTrace) {
+            if (cf.getScript() != null) {
+                l.add(cf);
+            }
+        }
         if (stackTrace.size() > 0) {
-            myCurrentStack = new AtomicReference<CallFrame>(stackTrace.get(0));
+            myCurrentStack = new AtomicReference<CallFrame>(l.get(0));
         } else {
             myCurrentStack = null;
         }
@@ -225,7 +231,7 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
     public Action[] getActions(Object node)
             throws UnknownTypeException {
         if (node instanceof CallFrame ) {
-            return new Action [] {GO_TO_SOURCE, COPY_TO_CLBD_ACTION};
+            return new Action [] {GO_TO_SOURCE/*, COPY_TO_CLBD_ACTION*/};
         }
         return new Action[]{};
         

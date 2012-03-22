@@ -1,0 +1,17 @@
+5C1A099F785B541A1B39905D0586638516EA72E9 lib.org.chromium.sdk.wipbackend.protocol_1_0.jar
+is patched version of jar from org.chromium.sdk-wipbackends-0.3.4-0.1.6.tar  which workarounds
+http://code.google.com/p/chromedevtools/issues/detail?id=66 as:
+
+Index: plugins/org.chromium.sdk.wipbackend.protocol_1_0/src/org/chromium/sdk/internal/websocket/AbstractWsConnection.java
+===================================================================
+--- plugins/org.chromium.sdk.wipbackend.protocol_1_0/src/org/chromium/sdk/internal/websocket/AbstractWsConnection.java	(revision 965)
++++ plugins/org.chromium.sdk.wipbackend.protocol_1_0/src/org/chromium/sdk/internal/websocket/AbstractWsConnection.java	(working copy)
+@@ -111,7 +111,7 @@
+           closeReason = runListenLoop(loggableReader);
+         } catch (IOException e) {
+           closeCause = e;
+-          LOGGER.log(Level.SEVERE, "Connection read failure", e);
++          LOGGER.log(Level.INFO, "Connection read failure", e);
+         } catch (InterruptedException e) {
+           closeCause = e;
+           closeReason = CloseReason.USER_REQUEST;

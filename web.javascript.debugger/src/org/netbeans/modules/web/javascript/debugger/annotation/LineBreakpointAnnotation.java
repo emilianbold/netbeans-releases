@@ -70,7 +70,7 @@ public final class LineBreakpointAnnotation extends BreakpointAnnotation {
     }
     
     public String getShortDescription() {
-        return MiscEditorUtil.getAnnotationTooltip(type);
+        return "";
     }
     
 

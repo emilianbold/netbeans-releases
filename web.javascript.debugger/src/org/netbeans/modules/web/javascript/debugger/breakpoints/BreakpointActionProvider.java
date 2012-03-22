@@ -63,7 +63,7 @@ import org.openide.util.WeakListeners;
  *
  */
 @ActionsProvider.Registration(actions={"toggleBreakpoint"}, 
-        activateForMIMETypes={MiscEditorUtil.JAVASCRIPT_MIME_TYPE/*, MiscEditorUtil.HTML_MIME_TYPE*/})
+        activateForMIMETypes={MiscEditorUtil.JAVASCRIPT_MIME_TYPE, MiscEditorUtil.HTML_MIME_TYPE})
 public class BreakpointActionProvider extends ActionsProviderSupport
         implements PropertyChangeListener 
 {
@@ -73,9 +73,9 @@ public class BreakpointActionProvider extends ActionsProviderSupport
         EditorContextDispatcher.getDefault().addPropertyChangeListener(
                 MiscEditorUtil.JAVASCRIPT_MIME_TYPE,
                 WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));
-        /*EditorContextDispatcher.getDefault().addPropertyChangeListener(
+        EditorContextDispatcher.getDefault().addPropertyChangeListener(
                 MiscEditorUtil.HTML_MIME_TYPE,
-                WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));*/
+                WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));
     }
 
     @Override

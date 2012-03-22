@@ -118,6 +118,14 @@ public final class BrowserDebugger {
        return IOProvider.getDefault().getIO(Bundle.DebuggingIOPane(), false); 
     }
     
+    public static void log(String s) {
+       getOutputLogger().getOut().println(s); 
+    }
+    
+    public static void logError(String s) {
+       getOutputLogger().getErr().println(s); 
+    }
+    
     /**
      * 
      */
