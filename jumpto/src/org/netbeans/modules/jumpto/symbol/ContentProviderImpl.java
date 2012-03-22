@@ -87,7 +87,6 @@ import org.openide.util.RequestProcessor;
 final class ContentProviderImpl implements GoToPanel.ContentProvider {
     
     private static final Logger LOG = Logger.getLogger(ContentProviderImpl.class.getName());
-    private static final ListModel EMPTY_LIST_MODEL = new DefaultListModel();
     private static final Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
     private static final RequestProcessor rp = new RequestProcessor (ContentProviderImpl.class);
         
@@ -138,14 +137,14 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         }
         
         if ( text == null ) {
-            panel.setModel(EMPTY_LIST_MODEL);
+            panel.setModel(new DefaultListModel());
             return;
         }
         final boolean isCaseSensitive = panel.isCaseSensitive();
         boolean exact = text.endsWith(" "); // NOI18N        
         text = text.trim();        
         if ( text.length() == 0) {
-            panel.setModel(EMPTY_LIST_MODEL);
+            panel.setModel(new DefaultListModel());
             return;
         }        
         int wildcard = containsWildCard(text);
