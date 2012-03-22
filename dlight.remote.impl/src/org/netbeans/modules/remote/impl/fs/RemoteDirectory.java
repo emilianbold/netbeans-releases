@@ -682,16 +682,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                                         entryCache.delete(); // TODO: We must just mark it as invalid instead of physically deleting cache file...
                                     }
                                 }
-                            } else if (!equals(newEntry.getLinkTarget(), oldEntry.getLinkTarget())) {
+                            } 
+                            if (!equals(newEntry.getLinkTarget(), oldEntry.getLinkTarget())) {
                                 changed = fire = true; // TODO: we forgot old link path, probably should be passed to change event 
                                 getFileSystem().getFactory().setLink(this, getPath() + '/' + newEntry.getName(), newEntry.getLinkTarget());
-                            } else if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
+                            } 
+                            if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
                                 changed = fire = true;
-                            } else if (!newEntry.isSameUser(oldEntry)) {
+                            } 
+                            if (!newEntry.isSameUser(oldEntry)) {
                                 changed = fire = true;
-                            } else if (!newEntry.isSameGroup(oldEntry)) {
+                            } 
+                            if (!newEntry.isSameGroup(oldEntry)) {
                                 changed = fire = true;
-                            } else if (!newEntry.isDirectory() && (newEntry.getSize() != oldEntry.getSize())) {
+                            } 
+                            if (!newEntry.isDirectory() && (newEntry.getSize() != oldEntry.getSize())) {
                                 changed = fire = true;// TODO: shouldn't it be the same as time stamp change?
                             }
                             if (fire) {
@@ -1000,16 +1005,22 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                                         entryCache.delete(); // TODO: We must just mark it as invalid instead of physically deleting cache file...
                                     }
                                 } 
-                            } else if (!equals(newEntry.getLinkTarget(), oldEntry.getLinkTarget())) {
+
+                            } 
+                            if (!equals(newEntry.getLinkTarget(), oldEntry.getLinkTarget())) {
                                 changed = fire = true; // TODO: we forgot old link path, probably should be passed to change event 
                                 getFileSystem().getFactory().setLink(this, getPath() + '/' + newEntry.getName(), newEntry.getLinkTarget());
-                            } else if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
+                            } 
+                            if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
                                 changed = fire = true;
-                            } else if (!newEntry.isSameUser(oldEntry)) {
+                            } 
+                            if (!newEntry.isSameUser(oldEntry)) {
                                 changed = fire = true;
-                            } else if (!newEntry.isSameGroup(oldEntry)) {
+                            } 
+                            if (!newEntry.isSameGroup(oldEntry)) {
                                 changed = fire = true;
-                            } else if (!newEntry.isDirectory() && (newEntry.getSize() != oldEntry.getSize())) {
+                            } 
+                            if (!newEntry.isDirectory() && (newEntry.getSize() != oldEntry.getSize())) {
                                 changed = fire = true;// TODO: shouldn't it be the same as time stamp change?
                             }
                             if (fire) {
