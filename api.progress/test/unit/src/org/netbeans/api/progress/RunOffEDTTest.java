@@ -45,10 +45,9 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 
 /**
@@ -217,6 +216,7 @@ public class RunOffEDTTest extends NbTestCase {
         assertEquals("Should run once", 1, r.runCount);
     }
 
+    @RandomlyFails
     public void testISEThrownIfCanceledOperationNotFinishedInTime() throws Exception {
         final R r = new R();
         r.l = new CountDownLatch(1);
