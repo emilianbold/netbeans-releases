@@ -2262,7 +2262,7 @@ conversion_function_decl_or_def returns [boolean definition = false]
                 (ptr_operator)*
                 (LESSTHAN template_parameter_list GREATERTHAN)?
 		LPAREN (parameter_list[false])? RPAREN	
-		(tq = cv_qualifier)?
+		(tq = cv_qualifier)*
 		(exception_specification)?
 		(	compound_statement { definition = true; }
 		|	SEMICOLON! //{end_of_stmt();}
@@ -3629,7 +3629,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LESSTHAN
             |   LESSTHANOREQUALTO
             |   GREATERTHANOREQUALTO
-            |   QUESTIONMARK (expression)? COLON assignment_expression
+            |   QUESTIONMARK (expression | LITERAL_throw (assignment_expression)? )? COLON (assignment_expression | LITERAL_throw (options {greedy=true;}: assignment_expression)?)
             |   SHIFTLEFT 
             |   SHIFTRIGHT
             |   PLUS 
@@ -3842,7 +3842,7 @@ lazy_expression_predicate
     |   LESSTHAN
     |   LESSTHANOREQUALTO
     |   GREATERTHANOREQUALTO
-    |   QUESTIONMARK expression COLON assignment_expression
+    |   QUESTIONMARK (expression | LITERAL_throw (assignment_expression)?) COLON (assignment_expression | LITERAL_throw (options {greedy=true;}:assignment_expression)?)
     |   SHIFTLEFT 
     |   SHIFTRIGHT
     |   PLUS 
