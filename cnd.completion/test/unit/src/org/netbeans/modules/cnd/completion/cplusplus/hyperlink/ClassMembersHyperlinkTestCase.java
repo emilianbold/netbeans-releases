@@ -1033,6 +1033,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 206220 - friend and nested class
         performTest("bug206220.cpp", 14, 17, "bug206220.cpp", 4, 5);
     }    
+
+    public void testBug206460() throws Exception {
+        // Bug 206460 - unresolved field of structure in case of typedef is based on forward decl and decl has the same name
+        performTest("bug206460.cpp", 11, 17, "bug206460.cpp", 4, 5);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 
