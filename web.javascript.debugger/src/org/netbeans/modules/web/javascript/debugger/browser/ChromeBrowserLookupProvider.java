@@ -53,7 +53,8 @@ public class ChromeBrowserLookupProvider implements BrowserLookupProvider {
 
     @Override
     public Lookup createBrowserLookup(ExternalBrowserDescriptor desc) {
-        if (desc.getBrowserFamily() != BrowserId.CHROME) {
+        if (desc.getBrowserFamily() != BrowserId.CHROME && 
+                desc.getBrowserFamily() != BrowserId.CHROMIUM) {
             return null;
         }
         return Lookups.fixed(new ChromeBrowserDebuggerImpl(desc));
