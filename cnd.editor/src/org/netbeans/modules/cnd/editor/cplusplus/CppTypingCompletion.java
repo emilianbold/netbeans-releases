@@ -118,7 +118,7 @@ public class CppTypingCompletion {
                                 || CppStringTokenId.PREFIX_u8R.fixedText().contentEquals(tokText)) {
                             // this is start of raw string, need to close it, otherwise it will continue
                             // till the end of document
-                            context.setText("\"()\"", 1);
+                            context.setText("\"()\"", 1); // NOI18N
                             rawStringTypingInfo = new ExtraText(dotPos + 1);
                         }
                     }
