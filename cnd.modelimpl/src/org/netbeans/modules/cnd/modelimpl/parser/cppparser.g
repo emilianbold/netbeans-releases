@@ -2517,10 +2517,19 @@ trailing_type
     :
         POINTERTO 
         (tq=cv_qualifier)*
-        ts=type_specifier[dsInvalid, false]
+        ts=trailing_type_specifier
         (options {greedy=true;} : ptr_operator)*
         (LSQUARE (constant_expression)? RSQUARE)*
     ;
+
+trailing_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
+{String id;}
+:   
+        ts = simple_type_specifier[false]
+    |   
+        (LITERAL_class|LITERAL_struct|LITERAL_union|LITERAL_enum|LITERAL_typename)
+        id = qualified_id
+;
 
 protected
 function_direct_declarator_2 [boolean definition, boolean symTabCheck] 
