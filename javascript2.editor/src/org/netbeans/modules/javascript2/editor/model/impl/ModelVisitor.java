@@ -620,6 +620,20 @@ public class ModelVisitor extends PathNodeVisitor {
         return super.visit(returnNode, onset);
     }
 
+    @Override
+    public Node visit(TernaryNode ternaryNode, boolean onset) {
+        if (onset) {
+            if (ternaryNode.rhs() instanceof IdentNode) {
+                addOccurence((IdentNode)ternaryNode.rhs());
+            }
+            if (ternaryNode.third() instanceof IdentNode) {
+                addOccurence((IdentNode)ternaryNode.third());
+            }
+        }
+        return super.visit(ternaryNode, onset);
+    }
+
+    
 
     @Override
     public Node visit(UnaryNode unaryNode, boolean onset) {
@@ -638,6 +652,10 @@ public class ModelVisitor extends PathNodeVisitor {
                         modelBuilder.getCurrentObject().addAssignment(type, start);
                     }
                     
+                }
+            } else {
+                if (unaryNode.rhs() instanceof IdentNode) {
+                    addOccurence((IdentNode)unaryNode.rhs());
                 }
             }
         }

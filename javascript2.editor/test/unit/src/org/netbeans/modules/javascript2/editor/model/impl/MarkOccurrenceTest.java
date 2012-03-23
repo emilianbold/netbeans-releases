@@ -158,7 +158,15 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testFunctionInGlobalSpace02() throws Exception {
         checkOccurrences("testfiles/model/functionInGlobal.js", "this.anotherFunct^ion();", true);
     }
-        
+     
+    public void testIssue209717_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue209717_01.js", "foobar = (typeof foo == \"undefined\") ? bar : f^oo;", true);
+    }
+
+    public void testIssue209717_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue209717_01.js", "foobar = (typeof foo == \"undefined\") ? b^ar : foo;", true);
+    }
+
     @Override
     protected void assertDescriptionMatches(FileObject fileObject,
             String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
