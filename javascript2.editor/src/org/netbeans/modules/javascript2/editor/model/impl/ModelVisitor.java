@@ -835,6 +835,10 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         if (property != null) {
             ((JsObjectImpl)property).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
+        } else {
+            // it's a new global variable?
+            IdentifierImpl name = ModelElementFactory.create(parserResult, iNode);
+            modelBuilder.getGlobal().addProperty(name.getName(), new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange(), false));
         }
     }
     

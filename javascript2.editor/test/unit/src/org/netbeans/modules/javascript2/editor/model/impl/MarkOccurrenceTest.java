@@ -166,6 +166,10 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue209717_02() throws Exception {
         checkOccurrences("testfiles/coloring/issue209717_01.js", "foobar = (typeof foo == \"undefined\") ? b^ar : foo;", true);
     }
+    
+    public void testIssue209717_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue209717_02.js", "foobar = (typeof foo^22 == \"undefined\") ? bar : foo;", true);
+    }
 
     @Override
     protected void assertDescriptionMatches(FileObject fileObject,
