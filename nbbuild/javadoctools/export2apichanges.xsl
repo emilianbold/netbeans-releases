@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -75,7 +75,7 @@ made subject to such option by the copyright holder.
 
             <center>
                 <h1>NetBeans API Changes since Last Release</h1>
-                <h3>Version 7.1.1</h3>
+                <h3>Version 7.1.2</h3>
                 <xsl:if test="$date" >
                     <xsl:value-of select="$date" />
                     <p/>
@@ -115,8 +115,9 @@ made subject to such option by the copyright holder.
                 <a href="http://bits.netbeans.org/6.9/javadoc/apichanges.html">release 6.9</a>,
                 <a href="http://bits.netbeans.org/6.9.1/javadoc/apichanges.html">release 6.9.1</a>,
                 <a href="http://bits.netbeans.org/7.0/javadoc/apichanges.html">release 7.0</a>, 
-                <a href="http://bits.netbeans.org/7.0.1/javadoc/apichanges.html">release 7.0.1</a>, and
-                <a href="http://bits.netbeans.org/7.1/javadoc/apichanges.html">release 7.1</a>.
+                <a href="http://bits.netbeans.org/7.0.1/javadoc/apichanges.html">release 7.0.1</a>,
+                <a href="http://bits.netbeans.org/7.1/javadoc/apichanges.html">release 7.1</a>, and
+                <a href="http://bits.netbeans.org/7.1.1/javadoc/apichanges.html">release 7.1.1</a>.
             <xsl:call-template name="do-the-table" />
             </body>
             </html>
