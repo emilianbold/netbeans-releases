@@ -88,12 +88,12 @@ public class DeleteAction extends NodeAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(DeleteAction.class, "LBL_DeleteAction");
+        return NbBundle.getMessage(DeleteAction.class, "LBL_DeleteAction"); // NOI18N
     }
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(DeleteAction.class);
+        return new HelpCtx("org.netbeans.modules.localhistory.ui.view.DeleteAction"); // NOI18N
     }    
     
 }

@@ -64,7 +64,7 @@ public class RevertFileAction extends NodeAction {
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(getClass());
+        return new HelpCtx("org.netbeans.modules.localhistory.ui.view.RevertFileAction"); // NOI18N
     }  
     
     @Override
@@ -100,6 +100,6 @@ public class RevertFileAction extends NodeAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(RevertFileAction.class, "LBL_RevertFileAction");
+        return NbBundle.getMessage(RevertFileAction.class, "LBL_RevertFileAction"); // NOI18N
     }      
 }
