@@ -147,7 +147,7 @@
     <property name="jdk.bundle.files.prefix" value="jdk-7u4"/>
     <property name="jdk.bundle.files.suffix" value="nb-7_2"/>
 
-    <property name="jdk_bits_location" value="${gf_builds_host}/java/re/jdk/7u4/promoted/all/b16/bundles/macosx-amd64/jdk-7u4-ea-bin-b16-macosx-x64-15_mar_2012.dmg"/>
+        <property name="jdk_bits_location" value="${gf_builds_host}/java/re/jdk/7u4/promoted/all/b17/bundles/macosx-x64/jdk-7u4-ea-bin-b17-macosx-x64-22_mar_2012.dmg"/>
     <property name="jdk.package.name" value="JDK\ 7\ Update\ 04"/>
 
 </project>

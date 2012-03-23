@@ -608,6 +608,6 @@ Microsystems, Inc. All Rights Reserved.
           <arg value="-c"/>
           <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}'"/>
         </exec>  
-        <delete dir="dist_dmg"/>
+        <!-- XXX <delete dir="dist_dmg"/>-->
     </target>             
 </project>          

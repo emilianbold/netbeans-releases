@@ -2,7 +2,7 @@
 <installer-gui-script minSpecVersion="1.0">
     <title>netbeans-Title</title>
     <welcome file="Welcome.html"></welcome>
-    <license file="License.txt"></license>
+    <!--<license file="License.txt"></license>-->
     <background file="background.tif" scaling="none" alignment="topleft"></background>
     <options allow-external-scripts="no" customize="never" rootVolumeOnly="false" hostArchitectures="i386"></options>
     <installation-check script="checkMemsize()"></installation-check>
@@ -44,38 +44,13 @@ function volumeCheckTiger() {
 function checkSystemversion() {
 	var result = false;
 	var version;	
-	try {
-		version = my.target.systemVersion.ProductVersion;
-		if(version == 'undefined') {
-			result = ( -1 != system.compareVersions(system.version.ProductVersion, '10.5'));
-		} else {
-			result = ( -1 != system.compareVersions(version, '10.5'));
-		}
-	
-	} catch (e) {}
-	
-	if(!result) {
-		my.result.type = 'Fatal';
-		my.result.title = system.localizedStringWithFormat('ERR_INVALID_VERSION_TITLE');
-		my.result.message = system.localizedStringWithFormat('ERR_INVALID_VERSION_MSG');
-	} else {
-		try {
-                    result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6') == true;
-		} catch (e) {}
-		if(!result) {
-		    try {
-                        result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0') == true;
-		    } catch (e) {}
-		}
-
-		if(!result) {
-			my.result.type = 'Fatal';
-			my.result.title = system.localizedStringWithFormat('ERR_NO_JAVA_TITLE');
-			my.result.message = system.localizedStringWithFormat('ERR_NO_JAVA_MSG');
-		}
+        if(!(/* >= */ system.compareVersions(system.version.ProductVersion, '10.7.0') >= 0)) {
+            my.result.title = 'OS X Lion required';
+            my.result.message = 'This Installer is supported only on OS X Lion (10.7.0)';
+            my.result.type = 'Fatal';
+            return false;
         }
-
-	return result;
+	return true;
 }
 /* js:pkmk:end */
 </script>
