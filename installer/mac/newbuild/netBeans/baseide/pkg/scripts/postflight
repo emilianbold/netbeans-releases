@@ -37,6 +37,9 @@ jdk_home=`"$dirname"/get_current_jdk.sh`
 
 "$dirname"/add_mysql.sh "$NETBEANS_INSTALL_DIR" "$MYSQL_INSTALL_DIR"
 
+if [ -f "$dirname"/set_jdk_home.sh ];
+    "$dirname"/set_jdk_home.sh "$NETBEANS_INSTALL_DIR" "$DEFAULT_JDK7_HOME"
+
 cd "$NETBEANS_INSTALL_DIR"
 cd Contents/Resources/NetBeans*/etc
 if [ -f netbeans.conf ]

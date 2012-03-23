@@ -354,11 +354,11 @@ Microsystems, Inc. All Rights Reserved.
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
-                 <property name="dmg.name" value="${jdk.output.dir}/${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx"/>
+                 <property name="dmg.name" value="${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx"/>
                  <property name="mpkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_jdk}"/>
                  <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
             </ant>     
-        </for-each>         
+        </for-each>
         <delete file="${basedir}/build/sizes.pro"/>
     </target>     
             
@@ -606,7 +606,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <exec executable="sh" failonerror="yes">
           <arg value="-c"/>
-          <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}'"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}' '${output.dir}'"/>
         </exec>  
         <!-- XXX <delete dir="dist_dmg"/>-->
     </target>             
