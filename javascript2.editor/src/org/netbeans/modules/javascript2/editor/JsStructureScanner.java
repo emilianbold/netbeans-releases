@@ -47,6 +47,7 @@ import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -290,8 +291,10 @@ public class JsStructureScanner implements StructureScanner {
         
     }
     
+    private static  ImageIcon priviligedIcon = null;
+    
     private class JsFunctionStructureItem extends JsStructureItem {
-
+        
         public JsFunctionStructureItem(JsFunction elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
             super(elementHandle, children, "fn", parserResult); //NOI18N
         }
@@ -334,6 +337,19 @@ public class JsStructureScanner implements StructureScanner {
         public String getName() {
             return getFunctionScope().getDeclarationName().getName();
         }
+
+        @Override
+        public ImageIcon getCustomIcon() {
+            if (getModifiers().contains(Modifier.PROTECTED)) {
+                if(priviligedIcon == null) {
+                    priviligedIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodPriviliged.png")); //NOI18N
+                }
+                return priviligedIcon;
+            }
+            return super.getCustomIcon();
+        }
+        
+        
     }
 
     private class JsObjectStructureItem extends JsStructureItem {
