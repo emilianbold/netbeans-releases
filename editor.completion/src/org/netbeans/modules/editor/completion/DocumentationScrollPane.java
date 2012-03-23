@@ -146,7 +146,9 @@ public class DocumentationScrollPane extends JScrollPane {
     
     public void setData(CompletionDocumentation doc) {
         setDocumentation(doc);
-        addToHistory(doc);
+        if (doc != null) {
+            addToHistory(doc);
+        }
     }
     
     private ImageIcon resolveIcon(String res){
@@ -225,29 +227,31 @@ public class DocumentationScrollPane extends JScrollPane {
     
     private synchronized void setDocumentation(CompletionDocumentation doc) {
         currentDocumentation = doc;
-        String text = currentDocumentation.getText();
-        URL url = currentDocumentation.getURL();
-        if (text != null){
-            Document document = view.getDocument();
-            document.putProperty(Document.StreamDescriptionProperty, null);
-            if (url!=null){
-                // fix of issue #58658
-                if (document instanceof HTMLDocument){
-                    ((HTMLDocument)document).setBase(url);
+        if (currentDocumentation != null) {
+            String text = currentDocumentation.getText();
+            URL url = currentDocumentation.getURL();
+            if (text != null){
+                Document document = view.getDocument();
+                document.putProperty(Document.StreamDescriptionProperty, null);
+                if (url!=null){
+                    // fix of issue #58658
+                    if (document instanceof HTMLDocument){
+                        ((HTMLDocument)document).setBase(url);
+                    }
+                }
+                view.setContent(text, null);
+            } else if (url != null){
+                try{
+                    view.setContent("", null); //NOI18N
+                    view.getDocument().putProperty("javax.swing.JEditorPane.postdata", ""); //NOI18N
+                    view.setPage(url);
+                }catch(IOException ioe){
+                    StatusDisplayer.getDefault().setStatusText(ioe.toString());
                 }
             }
-            view.setContent(text, null);
-        } else if (url != null){
-            try{
-                view.setContent("", null); //NOI18N
-                view.getDocument().putProperty("javax.swing.JEditorPane.postdata", ""); //NOI18N
-                view.setPage(url);
-            }catch(IOException ioe){
-                StatusDisplayer.getDefault().setStatusText(ioe.toString());
-            }
+            bShowWeb.setEnabled(url != null);
+            bGoToSource.setEnabled(currentDocumentation.getGotoSourceAction() != null);
         }
-        bShowWeb.setEnabled(url != null);
-        bGoToSource.setEnabled(currentDocumentation.getGotoSourceAction() != null);
     }
     
     private synchronized void addToHistory(CompletionDocumentation doc) {
@@ -290,15 +294,21 @@ public class DocumentationScrollPane extends JScrollPane {
     }
 
     private void openInExternalBrowser(){
-        URL url = currentDocumentation.getURL();
-        if (url != null)
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        CompletionDocumentation cd = currentDocumentation;
+        if (cd != null) {
+            URL url = cd.getURL();
+            if (url != null)
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        }
     }
     
     private void goToSource() {
-        Action action = currentDocumentation.getGotoSourceAction();
-        if (action != null)
-            action.actionPerformed(new ActionEvent(currentDocumentation, 0, null));        
+        CompletionDocumentation cd = currentDocumentation;
+        if (cd != null) {
+            Action action = cd.getGotoSourceAction();
+            if (action != null)
+                action.actionPerformed(new ActionEvent(cd, 0, null));
+        }
     }
     
     private void copy() {
@@ -450,13 +460,16 @@ public class DocumentationScrollPane extends JScrollPane {
                 if (desc != null) {
                     RP.post(new Runnable() {
                         public @Override void run() {
-                            final CompletionDocumentation doc = currentDocumentation.resolveLink(desc);
-                            if (doc != null) {
-                                EventQueue.invokeLater(new Runnable() {
-                                    public @Override void run() {
-                                        setData(doc);
-                                    }
-                                });
+                            CompletionDocumentation cd = currentDocumentation;
+                            if (cd != null) {
+                                final CompletionDocumentation doc = cd.resolveLink(desc);
+                                if (doc != null) {
+                                    EventQueue.invokeLater(new Runnable() {
+                                        public @Override void run() {
+                                            setData(doc);
+                                        }
+                                    });
+                                }
                             }
                         }
                     });
