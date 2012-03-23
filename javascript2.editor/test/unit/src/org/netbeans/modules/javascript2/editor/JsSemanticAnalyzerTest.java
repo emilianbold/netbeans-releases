@@ -68,7 +68,19 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/model/getterSettterInObjectLiteral.js");
     }
     
+    public void testIssue209717_01() throws Exception {
+        checkSemantic("testfiles/coloring/issue209717_01.js");
+    }
+    
     public void testIssue209717_02() throws Exception {
         checkSemantic("testfiles/coloring/issue209717_02.js");
+    }
+    
+    public void testIssue209717_03() throws Exception {
+        checkSemantic("testfiles/coloring/issue209717_03.js");
+    }
+    
+    public void testIssue209717_04() throws Exception {
+        checkSemantic("testfiles/coloring/issue209717_04.js");
     }
 }

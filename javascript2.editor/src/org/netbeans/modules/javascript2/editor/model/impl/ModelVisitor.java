@@ -213,11 +213,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     boolean hasParent = parent.getProperty(newVarName) != null ;
                     boolean hasGrandParent = parent.getJSKind() == JsElement.Kind.METHOD && parent.getParent().getProperty(newVarName) != null;
                     if (!hasParent && !hasGrandParent && modelBuilder.getGlobal().getProperty(newVarName) == null) {
-                        // variable was not found -> it's not declared and it has to be
-                        // added to the global scope (filescope) as implicit variable
-                        JsObjectImpl variable = new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange());
-                        variable.setDeclared(false);
-                        modelBuilder.getGlobal().addProperty(newVarName, variable);
+                        addOccurence(ident);
                     } else {
                         JsObject lhs = hasParent ? parent.getProperty(newVarName) : hasGrandParent ? parent.getParent().getProperty(newVarName) : null;
                         if (lhs != null) {
@@ -229,6 +225,8 @@ public class ModelVisitor extends PathNodeVisitor {
                                 modelBuilder.reset();
                                 return null;
                             }
+                        } else {
+                            addOccurence(ident);
                         }
                     }
                 }
