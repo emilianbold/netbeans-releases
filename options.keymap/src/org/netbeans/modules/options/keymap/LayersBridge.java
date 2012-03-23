@@ -315,6 +315,12 @@ public class LayersBridge extends KeymapManager {
             GlobalAction action = createAction (dataObject);
             if (action == null) continue;
             String shortcut = dataObject.getName ();
+            
+            LOG.log(Level.FINEST, "Action {0}: {1}, by {2}", new Object[] {
+                action.getDisplayName(),
+                shortcut,
+                dataObject.getPrimaryFile().getPath()
+            });
             Set<String> s = keymap.get (action);
             if (s == null) {
                 s = new HashSet<String> ();
