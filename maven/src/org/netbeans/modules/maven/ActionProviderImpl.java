@@ -141,6 +141,7 @@ public class ActionProviderImpl implements ActionProvider {
     };
     
     Lookup.Result<? extends MavenActionsProvider> result;
+    private RequestProcessor RP = new RequestProcessor(ActionProviderImpl.class.getName(), 3);
 
     public ActionProviderImpl(Project proj) {
         this.proj = proj;
@@ -210,7 +211,7 @@ public class ActionProviderImpl implements ActionProvider {
         }
 
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     invokeAction(action, lookup);
@@ -454,7 +455,7 @@ public class ActionProviderImpl implements ActionProvider {
 
             menu.add(loading);
             /*using lazy construction strategy*/
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
