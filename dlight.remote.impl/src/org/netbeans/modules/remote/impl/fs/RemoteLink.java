@@ -98,8 +98,7 @@ public final class RemoteLink extends RemoteLinkBase {
         if (delegate != null && delegate.isFolder()) {
             for (RemoteFileObject child: delegate.getChildren()) {
                 String childAbsPath = getPath() + '/' + child.getNameExt();
-                RemoteLinkChild rlc = getFileSystem().getFactory().createRemoteLinkChild(this, childAbsPath, child.getImplementor());
-                rlc.initListeners();
+                getFileSystem().getFactory().createRemoteLinkChild(this, childAbsPath, child.getImplementor());
             }
         }
     }

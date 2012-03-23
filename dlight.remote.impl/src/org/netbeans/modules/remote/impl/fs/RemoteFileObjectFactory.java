@@ -279,6 +279,9 @@ public class RemoteFileObjectFactory {
                     // recreate
                     fo = new RemoteLinkChild(ownerFileObject, fileSystem, env, parent, remotePath, delegate);
                     result = putIfAbsent(remotePath, fo);
+                    if (result == fo) {
+                        ((RemoteLinkChild) result).initListeners(); // fo.initListeners() is quite the same :)
+                    }
                     // TODO: is it possible that somebody has just placed another one? of different kind?
                 }
             }

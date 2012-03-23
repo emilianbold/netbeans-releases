@@ -104,7 +104,6 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
             childAbsPath = RemoteFileSystemUtils.normalize(getPath() + '/' + relativePath);
         }
         RemoteLinkChild result = getFileSystem().getFactory().createRemoteLinkChild(this, childAbsPath, fo.getImplementor());
-        result.initListeners();
         return result.getOwnerFileObject();
     }
 
