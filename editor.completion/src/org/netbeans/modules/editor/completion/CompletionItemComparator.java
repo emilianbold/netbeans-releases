@@ -78,7 +78,7 @@ public class CompletionItemComparator implements Comparator<CompletionItem> {
         if (i1 == i2)
             return 0;
         if (byPriority) {
-            int importanceDiff = i1.getSortPriority() - i2.getSortPriority();
+            int importanceDiff = compareIntegers(i1.getSortPriority(), i2.getSortPriority());
             if (importanceDiff != 0)
                 return importanceDiff;
             int alphabeticalDiff = compareText(i1.getSortText(), i2.getSortText());
@@ -87,9 +87,13 @@ public class CompletionItemComparator implements Comparator<CompletionItem> {
             int alphabeticalDiff = compareText(i1.getSortText(), i2.getSortText());
             if (alphabeticalDiff != 0)
                 return alphabeticalDiff;
-            int importanceDiff = i1.getSortPriority() - i2.getSortPriority();
+            int importanceDiff = compareIntegers(i1.getSortPriority(), i2.getSortPriority());
             return importanceDiff;
         }
+    }
+    
+    private static int compareIntegers(int x, int y) {
+        return (x < y) ? -1 : ((x == y) ? 0 : 1);
     }
     
     private static int compareText(CharSequence text1, CharSequence text2) {

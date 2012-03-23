@@ -90,7 +90,7 @@ public final class IndexResult {
         if (cachedUrl == null) {
             URL url = null;
             try {
-                url = Util.resolveUrl(root, spi.getPrimaryKey());
+                url = Util.resolveUrl(root, spi.getPrimaryKey(), false);
             } catch (MalformedURLException ex) {
                 LOG.log(Level.WARNING, null, ex);
             }

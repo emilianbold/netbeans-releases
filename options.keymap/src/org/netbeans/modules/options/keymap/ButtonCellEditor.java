@@ -48,6 +48,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EventObject;
 import java.util.Set;
 import javax.swing.DefaultCellEditor;
@@ -134,26 +135,25 @@ public class ButtonCellEditor extends DefaultCellEditor {
         ShortcutAction sca = (ShortcutAction) action;
         Set<ShortcutAction> conflictingAction = model.findActionForShortcutPrefix(s);
         conflictingAction.remove(sca); //remove the original action
+        
+        Collection<ShortcutAction> sameScopeActions = model.filterSameScope(conflictingAction, sca);
+        
         if (!conflictingAction.isEmpty()) {
             //there is a conflicting action, show err dialog
-            Object overrride = overrride(conflictingAction);
+            Object overrride = overrride(conflictingAction, sameScopeActions);
             if (overrride.equals(DialogDescriptor.YES_OPTION)) {
                 for (ShortcutAction sa : conflictingAction) {
                     removeConflictingShortcut(sa, s); //remove all conflicting shortcuts
                 }
                 getComponent().requestFocus();
                 //proceed with override
-                } else if (overrride.equals(DialogDescriptor.NO_OPTION)) {
-                JComponent comp = (JComponent) getComponent();
-                comp.setBorder(new LineBorder(Color.red));
-                comp.requestFocus();
-                return false;
-            } else {
+            } else if (overrride == DialogDescriptor.CANCEL_OPTION) {
                 cell.getTextField().setText(orig);
                 fireEditingCanceled();
                 setBorderEmpty();
                 return true;
             }
+            // NO_OPTION fallls through and adds additional shortcut.
         }
         cell.getTextField().removeActionListener(delegate);
         cell.getTextField().removeKeyListener(escapeAdapter);
@@ -208,23 +208,35 @@ public class ButtonCellEditor extends DefaultCellEditor {
      * @param displayName name of conflicting action
      * @return dialog result
      */
-    private Object overrride(Set<ShortcutAction> conflictingActions) {
+    private Object overrride(Set<ShortcutAction> conflictingActions, Collection<ShortcutAction> sameScope) {
         StringBuffer conflictingActionList = new StringBuffer();
+
         for (ShortcutAction sa : conflictingActions) {
-            conflictingActionList.append(" '").append (sa.getDisplayName()).append ("'<br>"); //NOI18N
+            conflictingActionList.append("<li>'").append (sa.getDisplayName()).append ("'</li>"); //NOI18N
         }
+        
         JPanel innerPane = new JPanel();
-        innerPane.add(new JLabel(NbBundle.getMessage(ButtonCellEditor.class, "Override_Shortcut", conflictingActionList))); //NOI18N
+        
+        innerPane.add(new JLabel(NbBundle.getMessage(ButtonCellEditor.class, 
+                sameScope.isEmpty() ? "Override_Shortcut2" : "Override_Shortcut", 
+                conflictingActionList))); //NOI18N
         DialogDescriptor descriptor = new DialogDescriptor(
                 innerPane,
                 NbBundle.getMessage(ButtonCellEditor.class, "Conflicting_Shortcut_Dialog"),
                 true,
-                DialogDescriptor.YES_NO_CANCEL_OPTION,
+                sameScope.isEmpty() ? 
+                    DialogDescriptor.YES_NO_CANCEL_OPTION :
+                    DialogDescriptor.YES_NO_OPTION,
                 null,
                 null); //NOI18N
         
         DialogDisplayer.getDefault().notify(descriptor);
-        return descriptor.getValue();
+        Object o = descriptor.getValue();
+        if (!sameScope.isEmpty() && o == DialogDescriptor.NO_OPTION) {
+            return DialogDescriptor.CANCEL_OPTION;
+        } else {
+            return o;
+    }
     }
 
     private void setBorderEmpty() {

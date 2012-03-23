@@ -198,7 +198,7 @@ public final class WaitScanFinishedCompletionProvider implements CompletionProvi
 
         @Override
         public int getSortPriority() {
-            return 100000;
+            return Integer.MAX_VALUE;
         }
 
         @Override
