@@ -35,26 +35,23 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
 import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter;
 import org.netbeans.modules.cnd.editor.indent.CppIndentFactory;
 import org.netbeans.modules.cnd.editor.indent.CppIndentTask;
-import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.util.Exceptions;
 
 /**
- *
+ * base class to run tests around editor. Like typing, formatting, indenting
  * @author Alexander Simon
+ * @author Vladimir Voskresensky
  */
 public class EditorBase extends BaseDocumentUnitTestCase {
     private boolean isCPP = true;
@@ -71,29 +68,42 @@ public class EditorBase extends BaseDocumentUnitTestCase {
             return new CKit();
         }
     }
-    private MimePath mimePath1;
-    private MimePath mimePath2;
-    private MimePath mimePath3;
-    private MimePath mimePath4;
-    private MimePath mimePath5;
+    private MimePath mimePathCpp;
+    private MimePath[] embeddingsPathCpp = new MimePath[4];
+    private MimePath mimePathHeader;
+    private MimePath[] embeddingsPathHeader = new MimePath[4];
+    private MimePath mimePathC;
+    private MimePath[] embeddingsPathC = new MimePath[4];
+    private MimePath mimePathFortran;
+    private MimePath mimePathAsm;
 
     @Override
     protected void setUpMime() {
-        mimePath1 = MimePath.parse(MIMENames.CPLUSPLUS_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath1, new CCKit(), new Reformatter.Factory(), new CppIndentFactory(),
-                new CppDTIFactory(), new CppTBIFactory(), new CppTTIFactory());
-        mimePath2 = MimePath.parse(MIMENames.HEADER_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath2, new HKit(), new Reformatter.Factory(), new CppIndentFactory(),
-                new CppDTIFactory(), new CppTBIFactory(), new CppTTIFactory());
-        mimePath3 = MimePath.parse(MIMENames.C_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath3, new CKit(), new Reformatter.Factory(), new CppIndentFactory(),
-                new CppDTIFactory(), new CppTBIFactory(), new CppTTIFactory());
-        mimePath4 = MimePath.parse(MIMENames.FORTRAN_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath4, new FKit(), new FortranReformatter.Factory());
-        mimePath5 = MimePath.parse(MIMENames.ASM_MIME_TYPE);
+        mimePathCpp = MimePath.parse(MIMENames.CPLUSPLUS_MIME_TYPE);
+        setUpWithEmbeddings(mimePathCpp, embeddingsPathCpp, new CCKit());
+        mimePathHeader = MimePath.parse(MIMENames.HEADER_MIME_TYPE);
+        setUpWithEmbeddings(mimePathHeader, embeddingsPathHeader, new HKit());
+        mimePathC = MimePath.parse(MIMENames.C_MIME_TYPE);
+        setUpWithEmbeddings(mimePathC, embeddingsPathC, new CKit());
+        mimePathFortran = MimePath.parse(MIMENames.FORTRAN_MIME_TYPE);
+        MockMimeLookup.setInstances(mimePathFortran, new FKit(), new FortranReformatter.Factory());
+        mimePathAsm = MimePath.parse(MIMENames.ASM_MIME_TYPE);
         // TODO: add needed dependency in all dependant test cases to use real asm editor kit
         //MockMimeLookup.setInstances(mimePath5, new AsmEditorKit());
-        MockMimeLookup.setInstances(mimePath5, new AsmStub());
+        MockMimeLookup.setInstances(mimePathAsm, new AsmStub());
+    }
+
+    private void setUpWithEmbeddings(MimePath mimePath, MimePath[] embeddings, NbEditorKit kit) {
+        MockMimeLookup.setInstances(mimePath, kit, new Reformatter.Factory(), new CppIndentFactory(),
+                new CppDTIFactory(), new CppTBIFactory(), new CppTTIFactory());
+        embeddings[0] = MimePath.get(mimePath, MIMENames.DOXYGEN_MIME_TYPE);
+        embeddings[1] = MimePath.get(mimePath, MIMENames.STRING_DOUBLE_MIME_TYPE);
+        embeddings[2] = MimePath.get(mimePath, MIMENames.STRING_SINGLE_MIME_TYPE);
+        embeddings[3] = MimePath.get(mimePath, MIMENames.PREPROC_MIME_TYPE);
+        for (MimePath embMP : embeddings) {
+            MockMimeLookup.setInstances(embMP, kit, new Reformatter.Factory(), new CppIndentFactory(),
+                    new CppDTIFactory(), new CppTBIFactory(), new CppTTIFactory());
+        }
     }
 
     private static final class AsmStub extends NbEditorKit {
@@ -142,44 +152,6 @@ public class EditorBase extends BaseDocumentUnitTestCase {
     }
 
     /**
-     * Perform new-line insertion followed by indenting of the new line
-     * by the formatter.
-     * The caret position should be marked in the document text by '|'.
-     */
-    protected final void indentNewLine() {
-        try {
-            int offset = getCaretOffset();
-            getDocument().insertString(offset, "\n", null); // NOI18N
-//            Indent indent = Indent.get(getDocument());
-//            indent.lock();
-//            try {
-//                indent.reindent(offset-1);
-//            } finally {
-//                indent.unlock();
-//            }
-            CppIndentTask task = new CppIndentTask(getDocument());
-            task.reindent(offset+1);
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    /**
-     * Perform new-line insertion followed by indenting of the new line
-     * by the formatter.
-     * The caret position should be marked in the document text by '|'.
-     */
-    protected final void indentLine() {
-        try {
-            int offset = getCaretOffset();
-            CppIndentTask task = new CppIndentTask(getDocument());
-            task.reindent(offset);
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    /**
      * Perform reformatting of the whole document's text.
      */
     protected void reformat() {
@@ -203,68 +175,9 @@ public class EditorBase extends BaseDocumentUnitTestCase {
 
     // ------- help methods -------------
 
-    protected final void typeChar(char ch, boolean indentNewLine) throws Exception {
-        int pos = getCaretOffset();
-        getDocument ().insertString(pos, String.valueOf(ch), null);
-        if (HotCharIndent.INSTANCE.getKeywordBasedReformatBlock(getDocument(), pos, ""+ch)) {
-            indentLine();
-            indentNewLine = false;
-        }
-        BracketCompletion.charInserted(getDocument(), pos, getCaret(), ch, false);
-        if (indentNewLine) {
-            indentNewLine();
-        }
-    }
-
-    protected final void typeQuoteChar(char ch) throws Exception {
-        typeChar(ch, false);
-    }
-
-    protected final boolean isSkipRightParen() {
-        return isSkipRightBracketOrParen(true);
-    }
-
-    protected final boolean isSkipRightBracketOrParen(boolean parenthesis) {
-        CppTokenId bracketTokenId = parenthesis
-        ? CppTokenId.RPAREN
-        : CppTokenId.RBRACKET;
-
-        try {
-            return BracketCompletion.isSkipClosingBracket(getDocument(),
-            getCaretOffset(), bracketTokenId);
-        } catch (BadLocationException e) {
-            e.printStackTrace(getLog());
-            fail();
-            return false; // should never be reached
-        }
-    }
-
-    protected final boolean isAddRightBrace() {
-        try {
-            return BracketCompletion.isAddRightBrace(getDocument(), getCaretOffset());
-        } catch (BadLocationException e) {
-            e.printStackTrace(getLog());
-            fail();
-            return false; // should never be reached
-        }
-    }
-
-    protected final void breakLine() {
-        DocumentUtilities.setTypingModification(getDocument(), true);
-        Indent indent = Indent.get(getDocument());
-        indent.lock();
-        try {
-            Object doWork = CppTBIFactory.doWork(getDocument(), getCaret().getDot(), getCaret(), null);
-            //CCKit.CCInsertBreakAction action = new CCKit.CCInsertBreakAction();
-            //Object out = action.beforeBreak(null, getDocument(), getCaret());
-            indentNewLine();
-            if (doWork instanceof Integer) {
-                getCaret().setDot(getCaret().getDot()+1);
-                //action.afterBreak(null, getDocument(), getCaret(), out);
-            }
-        } finally {
-            indent.unlock();
-            DocumentUtilities.setTypingModification(getDocument(), false);
-        }
+    protected void typeCharactersInText(String origTextWithPipe, String typedText, String resultTextWithPipe) {
+        Context context = new Context(getEditorKit(), origTextWithPipe);
+        context.typeText(typedText);
+        context.assertDocumentTextEquals(resultTextWithPipe);
     }
 }

@@ -33,8 +33,6 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
-import org.netbeans.modules.editor.indent.api.Indent;
-import org.openide.util.Exceptions;
 
 /**
  * Class was taken from java
@@ -47,51 +45,54 @@ public class BracketCompletionTestCase extends EditorBase  {
     public BracketCompletionTestCase(String testMethodName) {
         super(testMethodName);
     }
-    
+
     // ------- Tests for completion of right parenthesis ')' -------------
     
     public void testRightParenSimpleMethodCall() {
         setDefaultsOptions();
-        setLoadDocumentText("m()|)");
-        assertTrue(isSkipRightParen());
+        typeCharactersInText("m()|)", ")", "m())|");
     }
     
     public void testRightParenSwingInvokeLaterRunnable() {
         setDefaultsOptions();
-        setLoadDocumentText("SwingUtilities.invokeLater(new Runnable()|))");
-        assertTrue(isSkipRightParen());
+        typeCharactersInText(
+                "SwingUtilities.invokeLater(new Runnable()|))",
+                ")",
+                "SwingUtilities.invokeLater(new Runnable())|)");
     }
 
     public void testRightParenSwingInvokeLaterRunnableRun() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "SwingUtilities.invokeLater(new Runnable() {\n"
           + "    public void run()|)\n"
-          + "})"  
-            
+          + "})",
+          ")",
+            "SwingUtilities.invokeLater(new Runnable() {\n"
+          + "    public void run())|\n"
+          + "})"
         );
-        assertTrue(isSkipRightParen());
     }
     
     public void testRightParenIfMethodCall() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             " if (a()|) + 5 > 6) {\n"
+          + " }",
+          ")",
+            " if (a())| + 5 > 6) {\n"
           + " }"
         );
-        assertTrue(isSkipRightParen());
     }
 
     public void testRightParenNoSkipNonBracketChar() {
         setDefaultsOptions();
-        setLoadDocumentText("m()| ");
-        assertFalse(isSkipRightParen());
+        typeCharactersInText("m()| ", ")", "m())| ");
     }
 
     public void testRightParenNoSkipDocEnd() {
         setDefaultsOptions();
-        setLoadDocumentText("m()|");
-        assertFalse(isSkipRightParen());
+        typeCharactersInText("m()|", ")", "m())|");
     }
 
     
@@ -99,567 +100,420 @@ public class BracketCompletionTestCase extends EditorBase  {
     
     public void testAddRightBraceIfLeftBrace() {
         setDefaultsOptions();
-        setLoadDocumentText("if (true) {|");
-        assertTrue(isAddRightBrace());
+        typeCharactersInText("if (true) {|", "\n", "if (true) {\n    |\n}");
     }
 
     public void testAddRightBraceIfLeftBraceWhiteSpace() {
         setDefaultsOptions();
-        setLoadDocumentText("if (true) { \t|\n");
-        assertTrue(isAddRightBrace());
+        typeCharactersInText("if (true) { \t|\n",
+                "\n",
+                  "if (true) { \t\n"
+                + "    |\n"
+                + "}\n");
     }
     
     public void testAddRightBraceIfLeftBraceLineComment() {
         setDefaultsOptions();
-        setLoadDocumentText("if (true) { // line-comment|\n");
-        assertTrue(isAddRightBrace());
+        typeCharactersInText("if (true) { // line-comment|\n",
+                "\n",
+                "if (true) { // line-comment\n"
+                + "    |\n"
+                + "}\n");
     }
 
     public void testAddRightBraceIfLeftBraceBlockComment() {
         setDefaultsOptions();
-        setLoadDocumentText("if (true) { /* block-comment */|\n");
-        assertTrue(isAddRightBrace());
+        typeCharactersInText("if (true) { /* block-comment */|\n",
+                "\n",
+                "if (true) { /* block-comment */\n"
+                + "    |\n"
+                + "}\n");
     }
 
     public void testAddRightBraceIfLeftBraceAlreadyPresent() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "if (true) {|\n"
+          + "}",
+            "\n",
+            "if (true) {\n" +
+            "    |\n"
           + "}"
         );
-        assertFalse(isAddRightBrace());
     }
 
     public void testAddRightBraceCaretInComment() {
         setDefaultsOptions();
-        setLoadDocumentText(
-            "if (true) { /* in-block-comment |\n"
+        typeCharactersInText(
+            "if (true) { /* in-block-comment |\n",
+            "\n",
+            "if (true) { /* in-block-comment \n"
+          + "             * |\n"
         );
-        assertFalse(isAddRightBrace());
     }
     
     public void testSimpleAdditionOfOpeningParenthesisAfterWhile () throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "while |"
-        );
-        typeChar('(', false);
-        assertDocumentTextAndCaret ("Even a closing ')' should be added", 
+        typeCharactersInText(
+            "while |",
+            "(",
             "while (|)"
         );
     }
 
-    
-    // ------- Tests for completion of quote (") -------------    
+
+    // ------- Tests for completion of quote (") -------------
     public void testSimpleQuoteInEmptyDoc () throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "|"
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Simple Quote In Empty Doc", 
-            "\"|\""
-        );
+        typeCharactersInText("|", "\"", "\"|\"");
     }
 
     public void testSimpleQuoteAtBeginingOfDoc () throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "|  "
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Simple Quote At Begining Of Doc", 
-            "\"|\"  "
-        );
+        typeCharactersInText("|  ", "\"", "\"|\"  ");
     }
 
     public void testSimpleQuoteAtEndOfDoc () throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "  |"
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Simple Quote At End Of Doc", 
-            "  \"|\""
-        );
+        typeCharactersInText("  |", "\"", "  \"|\"");
     }
     
     public void testSimpleQuoteInWhiteSpaceArea () throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "  |  "
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Simple Quote In White Space Area", 
-            "  \"|\"  "
-        );
+        typeCharactersInText("  |  ", "\"", "  \"|\"  ");
     }
     
     public void testQuoteAtEOL () throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "  |\n"
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote At EOL", 
-            "  \"|\"\n"
-        );
+        typeCharactersInText("  |\n", "\"", "  \"|\"\n");
     }
     
-    public void testQuoteWithUnterminatedStringLiteral () throws Exception {
+    public void testQuoteWithUnterminatedStringLiteral() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "  \"unterminated string| \n"
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote With Unterminated String Literal", 
-            "  \"unterminated string\"| \n"
-        );
-    }
-    
-    public void testQuoteAtEOLWithUnterminatedStringLiteral () throws Exception {
-        setDefaultsOptions();
-        setLoadDocumentText (
-            "  \"unterminated string |\n"
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote At EOL With Unterminated String Literal", 
-            "  \"unterminated string \"|\n"
-        );
+        typeCharactersInText(
+                "  \"unterminated string| \n", "\"",
+                "  \"unterminated string\"| \n");
     }
 
-    public void testQuoteInsideStringLiteral () throws Exception {
+    public void testQuoteAtEOLWithUnterminatedStringLiteral() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "  \"stri|ng literal\" "
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote Inside String Literal", 
-            "  \"stri\"|ng literal\" "
-        );
+        typeCharactersInText(
+                "  \"unterminated string |\n", "\"",
+                "  \"unterminated string \"|\n");
     }
 
-    public void testQuoteInsideEmptyParentheses () throws Exception {
+    public void testQuoteInsideStringLiteral() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            " printf(|) "
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote Inside Empty Parentheses", 
-            " printf(\"|\") "
-        );
+        typeCharactersInText(
+                "  \"stri|ng literal\" ", "\"",
+                "  \"stri\"|ng literal\" ");
     }
 
-    public void testQuoteInsideNonEmptyParentheses () throws Exception {
+    public void testQuoteInsideEmptyParentheses() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            " printf(|some text) "
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote Inside Non Empty Parentheses", 
-            " printf(\"|some text) "
-        );
-    }
-    
-    public void testQuoteInsideNonEmptyParenthesesBeforeClosingParentheses () throws Exception {
-        setDefaultsOptions();
-        setLoadDocumentText (
-            " printf(i+|) "
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote Inside Non Empty Parentheses Before Closing Parentheses", 
-            " printf(i+\"|\") "
-        );
-    }
-    
-    public void testQuoteInsideNonEmptyParenthesesBeforeClosingParenthesesAndUnterminatedStringLiteral () throws Exception {
-        setDefaultsOptions();
-        setLoadDocumentText (
-            " printf(\"unterminated string literal |); "
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote Inside Non Empty Parentheses Before Closing Parentheses And Unterminated String Literal", 
-            " printf(\"unterminated string literal \"|); "
-        );
+        typeCharactersInText(
+                " printf(|) ", "\"",
+                " printf(\"|\") ");
     }
 
-    public void testQuoteBeforePlus () throws Exception {
+    public void testQuoteInsideNonEmptyParentheses() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            " printf(|+\"string literal\"); "
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote Before Plus", 
-            " printf(\"|\"+\"string literal\"); "
-        );
+        typeCharactersInText(
+                " printf(|some text) ", "\"",
+                " printf(\"|some text) ");
     }
 
-    public void testQuoteBeforeComma () throws Exception {
+    public void testQuoteInsideNonEmptyParenthesesBeforeClosingParentheses() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "String s[] = new String[]{|,\"two\"};"
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote Before Comma", 
-            "String s[] = new String[]{\"|\",\"two\"};"
-        );
+        typeCharactersInText(
+                " printf(i+|) ", "\"",
+                " printf(i+\"|\") ");
     }
 
-    public void testQuoteBeforeBrace () throws Exception {
+    public void testQuoteInsideNonEmptyParenthesesBeforeClosingParenthesesAndUnterminatedStringLiteral() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "String s[] = new String[]{\"one\",|};"
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote Before Brace", 
-            "String s[] = new String[]{\"one\",\"|\"};"
-        );
+        typeCharactersInText(
+                " printf(\"unterminated string literal |); ", "\"",
+                " printf(\"unterminated string literal \"|); ");
+    }
+
+    public void testQuoteBeforePlus() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                " printf(|+\"string literal\"); ", "\"",
+                " printf(\"|\"+\"string literal\"); ");
+    }
+
+    public void testQuoteBeforeComma() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                "String s[] = new String[]{|,\"two\"};", "\"",
+                "String s[] = new String[]{\"|\",\"two\"};");
+    }
+
+    public void testQuoteBeforeBrace() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                "String s[] = new String[]{\"one\",|};", "\"",
+                "String s[] = new String[]{\"one\",\"|\"};");
     }
 
     public void testQuoteBeforeSemicolon() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "String s = \"\" + |;"
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote Before Semicolon", 
-            "String s = \"\" + \"|\";"
-        );
+        typeCharactersInText(
+                "String s = \"\" + |;", "\"",
+                "String s = \"\" + \"|\";");
     }
 
     public void testQuoteBeforeSemicolonWithWhitespace() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "String s = \"\" +| ;"
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote Before Semicolon With Whitespace", 
-            "String s = \"\" +\"|\" ;"
-        );
+        typeCharactersInText(
+                "String s = \"\" +| ;", "\"",
+                "String s = \"\" +\"|\" ;");
     }
 
     public void testQuoteAfterEscapeSequence() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "\\|"
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote Before Semicolon With Whitespace", 
-            "\\\"|"
-        );
+        typeCharactersInText(
+                "\\|", "\"",
+                "\\\"|");
     }
-    
-    /** issue #69524 */
+
+    /**
+     * issue #69524
+     */
     public void testQuoteEaten() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "|"
-        );
-        typeQuoteChar('"');
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote Eaten", 
-            "\"\"|"
-        );
-    }    
+        typeCharactersInText(
+                "|",
+                "\"\"",
+                "\"\"|");
+    }
 
-    /** issue #69935 */
+    /**
+     * issue #69935
+     */
     public void testQuoteInsideComments() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "/** |\n */"
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote Inside Comments", 
-            "/** \"|\n */"
-        );
-    }    
-    
-    /** issue #71880 */
+        typeCharactersInText(
+                "/** |\n */",
+                "\"",
+                "/** \"|\n */");
+    }
+
+    /**
+     * issue #71880
+     */
     public void testQuoteAtTheEndOfLineCommentLine() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "// test line comment |\n"
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("Quote At The End Of Line Comment Line", 
-            "// test line comment \"|\n"
-        );
-    }    
-    
-    
+        typeCharactersInText(
+                "// test line comment |\n", "\"",
+                "// test line comment \"|\n");
+    }
+
     // ------- Tests for completion of single quote (') -------------        
-    
-    public void testSingleQuoteInEmptyDoc () throws Exception {
+    public void testSingleQuoteInEmptyDoc() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "|"
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote In Empty Doc", 
-            "'|'"
-        );
+        typeCharactersInText(
+                "|",
+                "'",
+                "'|'");
     }
 
-    public void testSingleQuoteAtBeginingOfDoc () throws Exception {
+    public void testSingleQuoteAtBeginingOfDoc() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "|  "
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote At Begining Of Doc", 
-            "'|'  "
-        );
+        typeCharactersInText(
+                "|  ",
+                "'",
+                "'|'  ");
     }
 
-    public void testSingleQuoteAtEndOfDoc () throws Exception {
+    public void testSingleQuoteAtEndOfDoc() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "  |"
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote At End Of Doc", 
-            "  '|'"
-        );
-    }
-    
-    public void testSingleQuoteInWhiteSpaceArea () throws Exception {
-        setDefaultsOptions();
-        setLoadDocumentText (
-            "  |  "
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote In White Space Area", 
-            "  '|'  "
-        );
-    }
-    
-    public void testSingleQuoteAtEOL () throws Exception {
-        setDefaultsOptions();
-        setLoadDocumentText (
-            "  |\n"
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote At EOL", 
-            "  '|'\n"
-        );
-    }
-    
-    public void testSingleQuoteWithUnterminatedCharLiteral () throws Exception {
-        setDefaultsOptions();
-        setLoadDocumentText (
-            "  '| \n"
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote With Unterminated Char Literal", 
-            "  ''| \n"
-        );
-    }
-    
-    public void testSingleQuoteAtEOLWithUnterminatedCharLiteral () throws Exception {
-        setDefaultsOptions();
-        setLoadDocumentText (
-            "  ' |\n"
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote At EOL With Unterminated Char Literal", 
-            "  ' '|\n"
-        );
+        typeCharactersInText(
+                "  |",
+                "'",
+                "  '|'");
     }
 
-    public void testSingleQuoteInsideCharLiteral () throws Exception {
+    public void testSingleQuoteInWhiteSpaceArea() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "  '| ' "
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote Inside Char Literal", 
-            "  ''| ' "
-        );
+        typeCharactersInText(
+                "  |  ",
+                "'",
+                "  '|'  ");
     }
 
-    public void testSingleQuoteInsideEmptyParentheses () throws Exception {
+    public void testSingleQuoteAtEOL() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            " printf(|) "
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote Inside Empty Parentheses", 
-            " printf('|') "
-        );
+        typeCharactersInText(
+                "  |\n",
+                "'",
+                "  '|'\n");
     }
 
-    public void testSingleQuoteInsideNonEmptyParentheses () throws Exception {
+    public void testSingleQuoteWithUnterminatedCharLiteral() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            " printf(|some text) "
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote Inside Non Empty Parentheses", 
-            " printf('|some text) "
-        );
-    }
-    
-    public void testSingleQuoteInsideNonEmptyParenthesesBeforeClosingParentheses () throws Exception {
-        setDefaultsOptions();
-        setLoadDocumentText (
-            " printf(i+|) "
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote Inside Non Empty Parentheses Before Closing Parentheses", 
-            " printf(i+'|') "
-        );
-    }
-    
-    public void testSingleQuoteInsideNonEmptyParenthesesBeforeClosingParenthesesAndUnterminatedCharLiteral () throws Exception {
-        setDefaultsOptions();
-        setLoadDocumentText (
-            " printf(' |); "
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote Inside Non Empty Parentheses Before Closing Parentheses And Unterminated Char Literal", 
-            " printf(' '|); "
-        );
+        typeCharactersInText(
+                "  '| \n",
+                "'",
+                "  ''| \n");
     }
 
-    public void testSingleQuoteBeforePlus () throws Exception {
+    public void testSingleQuoteAtEOLWithUnterminatedCharLiteral() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            " printf(|+\"string literal\"); "
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote Before Plus", 
-            " printf('|'+\"string literal\"); "
-        );
+        typeCharactersInText(
+                "  ' |\n",
+                "'",
+                "  ' '|\n");
     }
 
-    public void testSingleQuoteBeforeComma () throws Exception {
+    public void testSingleQuoteInsideCharLiteral() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "String s[] = new String[]{|,\"two\"};"
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote Before Comma", 
-            "String s[] = new String[]{'|',\"two\"};"
-        );
+        typeCharactersInText(
+                "  '| ' ",
+                "'",
+                "  ''| ' ");
     }
 
-    public void testSingleQuoteBeforeBrace () throws Exception {
+    public void testSingleQuoteInsideEmptyParentheses() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "String s[] = new String[]{\"one\",|};"
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote Before Brace", 
-            "String s[] = new String[]{\"one\",'|'};"
-        );
+        typeCharactersInText(
+                " printf(|) ",
+                "'",
+                " printf('|') ");
+    }
+
+    public void testSingleQuoteInsideNonEmptyParentheses() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                " printf(|some text) ",
+                "'",
+                " printf('|some text) ");
+    }
+
+    public void testSingleQuoteInsideNonEmptyParenthesesBeforeClosingParentheses() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                " printf(i+|) ",
+                "'",
+                " printf(i+'|') ");
+    }
+
+    public void testSingleQuoteInsideNonEmptyParenthesesBeforeClosingParenthesesAndUnterminatedCharLiteral() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                " printf(' |); ",
+                "'",
+                " printf(' '|); ");
+    }
+
+    public void testSingleQuoteBeforePlus() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                " printf(|+\"string literal\"); ",
+                "'",
+                " printf('|'+\"string literal\"); ");
+    }
+
+    public void testSingleQuoteBeforeComma() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                "String s[] = new String[]{|,\"two\"};",
+                "'",
+                "String s[] = new String[]{'|',\"two\"};");
+    }
+
+    public void testSingleQuoteBeforeBrace() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                "String s[] = new String[]{\"one\",|};",
+                "'",
+                "String s[] = new String[]{\"one\",'|'};");
     }
 
     public void testSingleQuoteBeforeSemicolon() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "String s = \"\" + |;"
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote Before Semicolon", 
-            "String s = \"\" + '|';"
-        );
+        typeCharactersInText(
+                "String s = \"\" + |;",
+                "'",
+                "String s = \"\" + '|';");
     }
 
     public void testsingleQuoteBeforeSemicolonWithWhitespace() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "String s = \"\" +| ;"
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote Before Semicolon With Whitespace", 
-            "String s = \"\" +'|' ;"
-        );
+        typeCharactersInText(
+                "String s = \"\" +| ;",
+                "'",
+                "String s = \"\" +'|' ;");
     }
 
     public void testSingleQuoteAfterEscapeSequence() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "\\|"
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote Before Semicolon With Whitespace", 
-            "\\'|"
-        );
+        typeCharactersInText(
+                "\\|",
+                "'",
+                "\\'|");
     }
-    
-    /** issue #69524 */
+
+    /**
+     * issue #69524
+     */
     public void testSingleQuoteEaten() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "|"
-        );
-        typeQuoteChar('\'');
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote Eaten", 
-            "''|"
-        );
-    }    
-    
-    /** issue #69935 */
+        typeCharactersInText(
+                "|", "''",
+                "''|");
+    }
+
+    /**
+     * issue #69935
+     */
     public void testSingleQuoteInsideComments() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "/* |\n */"
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote Inside Comments", 
-            "/* \'|\n */"
-        );
-    }    
+        typeCharactersInText(
+                "/* |\n */",
+                "'",
+                "/* \'|\n */");
+    }
 
-    /** issue #71880 */
+    /**
+     * issue #71880
+     */
     public void testSingleQuoteAtTheEndOfLineCommentLine() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "// test line comment |\n"
-        );
-        typeQuoteChar('\'');
-        assertDocumentTextAndCaret ("Single Quote At The End Of Line Comment Line", 
-            "// test line comment \'|\n"
-        );
-    }    
+        typeCharactersInText(
+                "// test line comment |\n",
+                "'",
+                "// test line comment \'|\n");
+    }
 
     public void testSystemInclude() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "#include |\n"
-        );
-        typeQuoteChar('<');
-        assertDocumentTextAndCaret ("System Include", 
-            "#include <|>\n"
-        );
+        typeCharactersInText(
+                "#include |\n",
+                "<",
+                "#include <|>\n");
     }
 
     public void testUserInclude() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "#include |\n"
-        );
-        typeQuoteChar('"');
-        assertDocumentTextAndCaret ("User Include", 
-            "#include \"|\"\n"
-        );
+        typeCharactersInText(
+                "#include |\n", "\"",
+                "#include \"|\"\n");
     }
 
     public void testArray() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
-            "int a|\n"
-        );
-        typeQuoteChar('[');
-        assertDocumentTextAndCaret ("Array", 
-            "int a[|]\n"
-        );
+        typeCharactersInText(
+                "int a|\n",
+                "[",
+                "int a[|]\n");
     }
     
     public void testRightBracePreprocessor() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "void foo(){\n" +
             "#if A\n" +
             "    if (a){\n" +
@@ -667,14 +521,23 @@ public class BracketCompletionTestCase extends EditorBase  {
             "    if (b){|\n" +
             "#endif\n" +
             "    }\n" +
-            "}"
+            "}",
+            "\n",
+              "void foo(){\n"
+            + "#if A\n"
+            + "    if (a){\n"
+            + "#else\n"
+            + "    if (b){\n"
+            + "        |\n"
+            + "#endif\n"
+            + "    }\n"
+            + "}"
         );
-        assertFalse(isAddRightBrace());
     }
 
     public void testRightBracePreprocessor2() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "void foo(){\n" +
             "#if A\n" +
             "    if (a){|\n" +
@@ -682,14 +545,23 @@ public class BracketCompletionTestCase extends EditorBase  {
             "    if (b){\n" +
             "#endif\n" +
             "    }\n" +
+            "}",
+            "\n",
+            "void foo(){\n" +
+            "#if A\n" +
+            "    if (a){\n" +
+            "        |\n" +
+            "#else\n" +
+            "    if (b){\n" +
+            "#endif\n" +
+            "    }\n" +
             "}"
         );
-        assertFalse(isAddRightBrace());
     }
 
     public void testRightBracePreprocessor3() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "void foo(){\n" +
             "#if A\n" +
             "    if (a){|\n" +
@@ -697,14 +569,24 @@ public class BracketCompletionTestCase extends EditorBase  {
             "    if (b){\n" +
             "#endif\n" +
             "//    }\n" +
+            "}",
+            "\n",
+            "void foo(){\n" +
+            "#if A\n" +
+            "    if (a){\n" +
+            "        |\n" +
+            "    }\n" +
+            "#else\n" +
+            "    if (b){\n" +
+            "#endif\n" +
+            "//    }\n" +
             "}"
         );
-        assertTrue(isAddRightBrace());
     }
 
     public void testRightBracePreprocessor4() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "void foo(){\n" +
             "#if A\n" +
             "    if (a){\n" +
@@ -713,21 +595,38 @@ public class BracketCompletionTestCase extends EditorBase  {
             "#endif\n" +
             "    if (b){|\n" +
             "    }\n" +
+            "}",
+            "\n",
+            "void foo(){\n" +
+            "#if A\n" +
+            "    if (a){\n" +
+            "#else\n" +
+            "    if (b){\n" +
+            "#endif\n" +
+            "    if (b){\n" +
+            "        |\n" +
+            "    }\n" +
+            "    }\n" +
             "}"
         );
-        assertTrue(isAddRightBrace());
     }
 
     public void testRightBracePreprocessor5() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "void foo(){\n" +
             "#define PAREN {\n" +
             "    if (b){|\n" +
             "    }\n" +
+            "}",
+            "\n",
+            "void foo(){\n" +
+            "#define PAREN {\n" +
+            "    if (b){\n" +
+            "        |\n" +
+            "    }\n" +
             "}"
         );
-        assertFalse(isAddRightBrace());
     }
     
     public void testIZ102091() throws Exception {
@@ -735,12 +634,10 @@ public class BracketCompletionTestCase extends EditorBase  {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
-        setLoadDocumentText (
+        typeCharactersInText (
             "if(i)\n"+
-            "    |"
-        );
-        typeChar('{', true);
-        assertDocumentTextAndCaret ("IZ102091\n", 
+            "    |", 
+            "{", 
             "if(i)\n"+
             "{|"
         );
@@ -748,13 +645,11 @@ public class BracketCompletionTestCase extends EditorBase  {
     
     public void testColonAfterPublic() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText (
+        typeCharactersInText(
             "class A{\n" +
             "    public|\n" +
-            "}\n"
-        );
-        typeChar(':', true);
-        assertDocumentText("Colon After Public", 
+            "}\n",
+            ":", // "Colon After Public"
             "class A{\n" +
             "public:\n" +
             "}\n"
@@ -763,12 +658,10 @@ public class BracketCompletionTestCase extends EditorBase  {
     
     public void testIdentFunctionName()  throws Exception {
         setDefaultsOptions("GNU");
-        setLoadDocumentText(
+        typeCharactersInText(
             "tree\n" +
-            "        |"
-            );
-        typeChar('d',true);
-        assertDocumentTextAndCaret("Incorrect identing of main",
+            "        |",
+            "d", // Incorrect identing of main",
             "tree\n" +
             "d|"
             );
@@ -778,81 +671,73 @@ public class BracketCompletionTestCase extends EditorBase  {
     
     public void testBreakLineInString1() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "char* a = \"|\"");
-        breakLine();
-        assertDocumentTextAndCaret("Incorrect identing of main",
+        typeCharactersInText(
+                "char* a = \"|\"",
+                "\n", // "Incorrect identing of main",
                 "char* a = \"\"\n" +
                 "\"|\"");
     }    
 
     public void testBreakLineInString2() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "           char* a = \"\\|\"");
-        breakLine();
-        assertDocumentTextAndCaret("Incorrect identing of main",
+        typeCharactersInText(
+                "           char* a = \"\\|\"",
+                "\n",
                 "           char* a = \"\\\n" +
                 "|\"");
     }     
 
     public void testBreakLineInString2_1() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "           char* a = \"\\\\|\"");
-        breakLine();
         // TODO: second line should be in the first column after fixing bug in indentation
-        assertDocumentTextAndCaret("Incorrect identing of main",
+        typeCharactersInText(
+                "           char* a = \"\\\\|\"",
+                "\n",
                 "           char* a = \"\\\\\"\n" +
                 "           \"|\"");
     }
 
     public void testBreakLineInString3() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "             char* a = \"\\|");
-        breakLine();
-        assertDocumentTextAndCaret("Incorrect identing of main",
+        typeCharactersInText(
+                "             char* a = \"\\|",
+                "\n",
                 "             char* a = \"\\\n" +
                 "|");
     }    
 
     public void testBreakLineInString31() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "             char* a = \"\\|\n");
-        breakLine();
-        assertDocumentTextAndCaret("Incorrect identing of main",
+        typeCharactersInText(
+                "             char* a = \"\\|\n",
+                "\n",
                 "             char* a = \"\\\n" +
                 "|\n");
     }
 
     public void testBreakLineInString4() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "             char* a = \"\\|\"");
-        breakLine();
-        assertDocumentTextAndCaret("Incorrect identing of main",
+        typeCharactersInText(
+                "             char* a = \"\\|\"",
+                "\n",
                 "             char* a = \"\\\n" +
                 "|\"");
     }
 
     public void testBreakLineInString41() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "             char* a = \"\\|\"\n");
-        breakLine();
-        assertDocumentTextAndCaret("Incorrect identing of main",
+        typeCharactersInText(
+                "             char* a = \"\\|\"\n",
+                "\n",
                 "             char* a = \"\\\n" +
                 "|\"\n");
     }
 
     public void testBreakLineAfterLCurly() {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "void foo() {|");
-        breakLine();
-        assertDocumentTextAndCaret("Incorrect identing of main",
+        typeCharactersInText(
+                "void foo() {|",
+                "\n",
                 "void foo() {\n" +
                 "    |\n" +
                 "}");
@@ -860,12 +745,11 @@ public class BracketCompletionTestCase extends EditorBase  {
     
     public void testBreakLineAfterLCurly2() {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "struct A {|");
-        breakLine();
-        assertDocumentTextAndCaret("Incorrect identing of main",
+        typeCharactersInText(
+                "struct A {|",
+                "\n",
                 "struct A {\n" +
                 "    |\n" +
                 "};");
-    }    
+    }
 }
