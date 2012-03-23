@@ -41,12 +41,15 @@
  */
 package org.netbeans.modules.html.editor.lib.html4parser;
 
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.TagElement;
 import java.util.*;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
-import org.netbeans.modules.html.editor.lib.api.tree.*;
 import org.netbeans.modules.html.editor.lib.dtd.DTD;
 import org.netbeans.modules.html.editor.lib.dtd.DTD.Element;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -89,7 +92,7 @@ public class SyntaxTreeBuilder {
     private static final Context context = new Context();
     //XXX <<<
 
-    public static Node makeTree(HtmlSource source, HtmlVersion version, Collection<org.netbeans.modules.html.editor.lib.api.tree.Element> elements) {
+    public static Node makeTree(HtmlSource source, HtmlVersion version, Collection<org.netbeans.modules.html.editor.lib.api.elements.Element> elements) {
         DTD dtd = version.getDTD();
 
         assert elements != null;
@@ -103,7 +106,7 @@ public class SyntaxTreeBuilder {
         LinkedList<AstNode> stack = new LinkedList<AstNode>();
         stack.add(rootNode);
 
-        for (org.netbeans.modules.html.editor.lib.api.tree.Element element : elements) {
+        for (org.netbeans.modules.html.editor.lib.api.elements.Element element : elements) {
 
             if (element.type() == ElementType.OPEN_TAG) { //open tag
 
@@ -116,12 +119,8 @@ public class SyntaxTreeBuilder {
                 Element currentNodeDtdElement = dtd.getElement(tagName.toString());
 
                 if (currentNodeDtdElement == null) {
-                    //TODO: keep the unknown nodes in a separate tree under the
-                    //parser result so features like tag matching can work but
-                    //the pure HTML tree is not affected
-
                     //no DTD tag, just mark as unknown and add it as a child of current stack's top node
-                    AstNode unknownTagNode = new AstNode(tagName, ElementType.UNKNOWN_TAG,
+                    AstNode unknownTagNode = new AstNode(tagName, ElementType.OPEN_TAG,
                             tagElement.from(), tagElement.to(), tagElement.isEmpty());
 
                     copyProblemsFromElementToNode(element, unknownTagNode);
@@ -481,7 +480,7 @@ public class SyntaxTreeBuilder {
         return rootNode;
     }
 
-    private static void copyProblemsFromElementToNode(org.netbeans.modules.html.editor.lib.api.tree.Element element, AstNode node) {
+    private static void copyProblemsFromElementToNode(org.netbeans.modules.html.editor.lib.api.elements.Element element, AstNode node) {
         Collection<ProblemDescription> problems = element.problems();
         if(problems == null) {
             return ;

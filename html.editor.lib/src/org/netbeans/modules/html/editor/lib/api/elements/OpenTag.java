@@ -39,20 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.tree;
+package org.netbeans.modules.html.editor.lib.api.elements;
+
+import java.util.Collection;
 
 /**
  *
  * @author marekfukala
  */
-public interface Declaration extends Element {
-
-    public CharSequence publicId();
-
-    public CharSequence systemId();
-
-    public CharSequence declarationName();
-
-    public CharSequence rootElementName();
+public interface OpenTag extends NamedElement {
+    
+    public Collection<Attribute> attributes();
+    
+    public Collection<Attribute> attributes(AttributeFilter filter);
+    
+    public Attribute getAttribute(String name);
+    
+    public boolean isEmpty();
+    
+    public EndTag matchingTag();
+    
+    public int[] logicalRange();
     
 }

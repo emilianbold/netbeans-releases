@@ -41,9 +41,15 @@
  */
 package org.netbeans.modules.html.editor.lib.html4parser;
 
+import org.netbeans.modules.html.editor.lib.api.elements.NodeFilter;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.AttributeFilter;
+import org.netbeans.modules.html.editor.lib.api.elements.FeaturedNode;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.TreePath;
 import java.util.*;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.tree.*;
 import org.netbeans.modules.html.editor.lib.dtd.DTD;
 import org.netbeans.modules.html.editor.lib.dtd.DTD.Content;
 import org.netbeans.modules.html.editor.lib.dtd.DTD.ContentModel;

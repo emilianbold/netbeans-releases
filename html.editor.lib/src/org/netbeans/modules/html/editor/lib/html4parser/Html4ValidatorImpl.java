@@ -48,14 +48,14 @@ import java.util.List;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.html.editor.lib.api.tree.ElementType;
-import org.netbeans.modules.html.editor.lib.api.tree.Node;
-import org.netbeans.modules.html.editor.lib.api.tree.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.ParseException;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
-import org.netbeans.modules.html.editor.lib.api.tree.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.NodeVisitor;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationContext;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationException;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationResult;
@@ -92,8 +92,8 @@ public class Html4ValidatorImpl implements Validator {
             @Override
             public void visit(Node node) {
                 if (node.type() == ElementType.OPEN_TAG
-                        || node.type() == ElementType.END_TAG
-                        || node.type() == ElementType.UNKNOWN_TAG) {
+                        || node.type() == ElementType.END_TAG) {
+//                        || node.type() == ElementType.UNKNOWN_TAG) { 
 
                     for (ProblemDescription desc : node.problems()) {
                         if (desc.getType() < ProblemDescription.WARNING) {

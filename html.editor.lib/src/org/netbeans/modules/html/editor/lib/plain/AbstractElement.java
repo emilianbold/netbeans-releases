@@ -51,7 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.tree.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 
 /**
  * 

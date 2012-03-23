@@ -39,7 +39,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.tree;
+package org.netbeans.modules.html.editor.lib.api.elements;
 
 import java.util.ArrayList;
 import java.util.List;

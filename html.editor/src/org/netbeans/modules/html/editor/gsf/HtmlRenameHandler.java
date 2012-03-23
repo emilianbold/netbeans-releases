@@ -48,7 +48,7 @@ import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.html.editor.lib.api.tree.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**

@@ -43,14 +43,14 @@ package org.netbeans.modules.html.editor.gsf;
 
 import java.util.Collections;
 import java.util.Set;
-import org.netbeans.modules.html.editor.lib.api.tree.TreePath;
+import org.netbeans.modules.html.editor.lib.api.elements.TreePath;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.html.editor.lib.api.tree.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.openide.filesystems.FileObject;
 
 /**

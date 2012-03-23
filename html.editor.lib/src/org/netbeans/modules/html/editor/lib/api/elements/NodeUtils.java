@@ -39,10 +39,10 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.tree;
+package org.netbeans.modules.html.editor.lib.api.elements;
 
 import java.util.*;
-import org.netbeans.modules.html.editor.lib.api.tree.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
@@ -133,8 +133,8 @@ public class NodeUtils {
         switch (node.type()) {
             case OPEN_TAG:
             case END_TAG:
-            case TAG:
-            case UNKNOWN_TAG:
+//            case TAG:
+//            case UNKNOWN_TAG:
                 Tag t = (Tag) node;
                 lf = t.logicalRange()[0];
                 lt = t.logicalRange()[1];

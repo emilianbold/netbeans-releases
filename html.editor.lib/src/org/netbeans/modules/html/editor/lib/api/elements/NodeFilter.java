@@ -39,16 +39,14 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.tree;
-
-import java.util.Collection;
+package org.netbeans.modules.html.editor.lib.api.elements;
 
 /**
  *
  * @author marekfukala
  */
-public interface Tag extends TagElement, Node {
-    
-    
+public interface NodeFilter {
+
+    public boolean accepts(Node node);
     
 }

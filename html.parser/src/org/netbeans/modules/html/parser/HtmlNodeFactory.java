@@ -43,8 +43,8 @@
 package org.netbeans.modules.html.parser;
 
 import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.modules.html.editor.lib.api.tree.Node;
-import org.netbeans.modules.html.editor.lib.api.tree.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 
 /**
  *

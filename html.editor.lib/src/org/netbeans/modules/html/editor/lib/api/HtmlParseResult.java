@@ -44,10 +44,10 @@ package org.netbeans.modules.html.editor.lib.api;
 
 import java.util.Collection;
 import java.util.Map;
-import org.netbeans.modules.html.editor.lib.api.tree.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
-import org.netbeans.modules.html.editor.lib.api.tree.Tag;
+import org.netbeans.modules.html.editor.lib.api.elements.Tag;
 
 /**
  *

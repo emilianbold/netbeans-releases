@@ -57,11 +57,11 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.junit.MockServices;
-import org.netbeans.modules.html.editor.lib.api.tree.Attribute;
-import org.netbeans.modules.html.editor.lib.api.tree.Declaration;
-import org.netbeans.modules.html.editor.lib.api.tree.Element;
-import org.netbeans.modules.html.editor.lib.api.tree.ElementType;
-import org.netbeans.modules.html.editor.lib.api.tree.TagElement;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.TagElement;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 
 /**

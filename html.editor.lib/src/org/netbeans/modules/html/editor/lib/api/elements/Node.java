@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -26,7 +26,7 @@
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
+ * "[Contributor] elects to include this software in this distributigon
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
  * single choice of license, a recipient has the option to distribute
  * your version of this file under either the CDDL, the GPL Version 2 or
@@ -37,16 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.tree;
+package org.netbeans.modules.html.editor.lib.api.elements;
+
+import java.util.Collection;
+
 
 /**
- *
+ * Generic parse tree node.
+ * 
  * @author marekfukala
  */
-public interface NodeFilter {
-
-    public boolean accepts(Node node);
+public interface Node extends Element {
     
+    public Collection<Node> children();
+    
+    public Node parent();
+ 
 }

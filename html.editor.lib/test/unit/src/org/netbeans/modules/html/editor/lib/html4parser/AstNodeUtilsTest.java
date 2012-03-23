@@ -46,11 +46,11 @@ import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.html.editor.lib.api.*;
-import org.netbeans.modules.html.editor.lib.api.tree.ElementType;
-import org.netbeans.modules.html.editor.lib.api.tree.Node;
-import org.netbeans.modules.html.editor.lib.api.tree.NodeFilter;
-import org.netbeans.modules.html.editor.lib.api.tree.NodeUtils;
-import org.netbeans.modules.html.editor.lib.api.tree.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.NodeFilter;
+import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.NodeVisitor;
 import org.netbeans.modules.html.editor.lib.dtd.DTD;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 

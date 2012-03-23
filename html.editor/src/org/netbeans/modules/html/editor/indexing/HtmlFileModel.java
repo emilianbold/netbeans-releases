@@ -41,6 +41,13 @@
  */
 package org.netbeans.modules.html.editor.indexing;
 
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.TreePath;
+import org.netbeans.modules.html.editor.lib.api.elements.Tag;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +59,6 @@ import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.completion.AttrValuesCompletion;
-import org.netbeans.modules.html.editor.lib.api.tree.*;
 import org.netbeans.modules.parsing.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.LexerUtils;

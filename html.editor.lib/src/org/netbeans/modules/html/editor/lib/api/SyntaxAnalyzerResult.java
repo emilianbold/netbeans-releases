@@ -41,6 +41,12 @@
  */
 package org.netbeans.modules.html.editor.lib.api;
 
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
+import org.netbeans.modules.html.editor.lib.api.elements.TagElement;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.html.editor.lib.EmptyResult;
@@ -48,7 +54,6 @@ import org.netbeans.modules.html.editor.lib.HtmlSourceVersionQuery;
 import org.netbeans.modules.html.editor.lib.html4parser.AstNode;
 import org.netbeans.modules.html.editor.lib.html4parser.XmlSyntaxTreeBuilder;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
-import org.netbeans.modules.html.editor.lib.api.tree.*;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;

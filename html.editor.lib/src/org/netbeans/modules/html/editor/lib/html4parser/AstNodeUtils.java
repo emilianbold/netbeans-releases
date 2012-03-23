@@ -42,10 +42,10 @@
 package org.netbeans.modules.html.editor.lib.html4parser;
 
 import java.util.*;
-import org.netbeans.modules.html.editor.lib.api.tree.ElementType;
-import org.netbeans.modules.html.editor.lib.api.tree.Node;
-import org.netbeans.modules.html.editor.lib.api.tree.NodeFilter;
-import org.netbeans.modules.html.editor.lib.api.tree.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.NodeFilter;
+import org.netbeans.modules.html.editor.lib.api.elements.NodeVisitor;
 import org.netbeans.modules.html.editor.lib.dtd.DTD;
 
 /**

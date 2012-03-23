@@ -39,14 +39,71 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.tree;
+package org.netbeans.modules.html.editor.lib.api.elements;
 
 /**
+ * A representation of html source code elements types.
+ * 
+ * Used for both plain view and tree view.
  *
  * @author marekfukala
  */
-public interface FeaturedNode extends Node {
+public enum ElementType {
+
+    /**
+     * Root element of each parse tree. 
+     * 
+     * Element may contain subelements.
+     */
+    ROOT,
+
+    /**
+     * Html code comment element. 
+     * 
+     * Represents a leaf element (no subelements).
+     */
+    COMMENT,
     
-    public Object getProperty(String propertyName);
+    /**
+     * Html declaration (<!doctype ...> for example).
+     * 
+     * Represents a leaf element (no subelements).
+     */
+    DECLARATION,
     
+    /**
+     * Html text.
+     * 
+     * Represents a leaf element (no subelements).
+     */
+    TEXT,
+    
+    /**
+     * Html entity reference (&nbsp).
+     * 
+     * Represents a leaf element (no subelements).
+     */
+    ENTITY_REFERENCE,
+    
+    /**
+     * A syntax error in the html source code.
+     * 
+     * Represents a leaf element (no subelements).
+     */
+    ERROR,
+    
+    /**
+     * Html or xml open tag (<div>, <jsp:useBean>).
+     * 
+     * Element may contain subelements.
+     */
+    OPEN_TAG, 
+    
+    /**
+     * Html or xml end tag (</div>, </jsp:useBean>).
+     * 
+     * Represents a leaf element (no subelements).
+     */
+    END_TAG
+
 }

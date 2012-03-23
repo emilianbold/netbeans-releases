@@ -39,14 +39,20 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.tree;
+package org.netbeans.modules.html.editor.lib.api.elements;
 
 /**
  *
  * @author marekfukala
  */
-public interface NodeVisitor {
-    
-    public void visit(Node node);
+public interface Declaration extends Element {
+
+    public CharSequence publicId();
+
+    public CharSequence systemId();
+
+    public CharSequence declarationName();
+
+    public CharSequence rootElementName();
     
 }

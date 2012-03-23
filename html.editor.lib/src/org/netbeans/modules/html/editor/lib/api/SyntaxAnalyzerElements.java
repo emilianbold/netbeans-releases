@@ -43,7 +43,7 @@
 package org.netbeans.modules.html.editor.lib.api;
 
 import java.util.Collection;
-import org.netbeans.modules.html.editor.lib.api.tree.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 
 /**
  *

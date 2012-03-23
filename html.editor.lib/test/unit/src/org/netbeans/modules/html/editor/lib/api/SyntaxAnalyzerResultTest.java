@@ -46,9 +46,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.html.editor.lib.EmptyResult;
-import org.netbeans.modules.html.editor.lib.api.tree.Declaration;
-import org.netbeans.modules.html.editor.lib.api.tree.Node;
-import org.netbeans.modules.html.editor.lib.api.tree.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
 import org.netbeans.modules.html.editor.lib.plain.AbstractElement;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 

@@ -39,14 +39,14 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.tree;
+package org.netbeans.modules.html.editor.lib.api.elements;
 
 /**
  *
  * @author marekfukala
  */
-public interface AttributeFilter {
-
-    public boolean accepts(Attribute attribute);
+public interface NodeVisitor {
+    
+    public void visit(Node node);
     
 }

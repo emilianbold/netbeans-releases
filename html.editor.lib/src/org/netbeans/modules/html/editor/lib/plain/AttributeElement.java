@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.html.editor.lib.plain;
 
-import org.netbeans.modules.html.editor.lib.api.tree.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 
 /**
  *

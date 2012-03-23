@@ -39,20 +39,33 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.tree;
+package org.netbeans.modules.html.editor.lib.api.elements;
 
 /**
  *
  * @author marekfukala
  */
-public interface Attribute {
-    
-    public int nameOffset();
-    
+public interface NamedElement extends Element {
+
+    /**
+     * Name of the element possibly with a namespace prefix
+     *
+     * "ns:tag" for "<ns:tag ...>"
+     */
     public CharSequence name();
-    
-    public int valueOffset();
-    
-    public CharSequence value();
+
+    /**
+     * Namespace prefix
+     *
+     * "ns" for "<ns:tag ...>"
+     */
+    public CharSequence namespacePrefix();
+
+    /**
+     * Name of the element without namespace prefix
+     *
+     * "tag" for "<ns:tag ...>"
+     */
+    public CharSequence unqualifiedName();
     
 }

@@ -39,43 +39,14 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.tree;
-
-import java.util.Collection;
+package org.netbeans.modules.html.editor.lib.api.elements;
 
 /**
  *
  * @author marekfukala
  */
-public interface TagElement extends Element {
+public interface FeaturedNode extends Node {
     
-     /**
-     * Name of the tag possibly with a namespace prefix
-     * 
-     * "ns:tag" for "<ns:tag ...>" 
-     */
-    public CharSequence name();
-    
-    /**
-     * Namespace prefix
-     * 
-     * "ns" for "<ns:tag ...>" 
-     */
-    public CharSequence namespacePrefix();
-    
-    /**
-     * Name of the tag without namespace prefix
-     * 
-     * "tag" for "<ns:tag ...>" 
-     */
-    public CharSequence unqualifiedName();
-    
-    public Collection<Attribute> attributes();
-    
-    public Collection<Attribute> attributes(AttributeFilter filter);
-    
-    public Attribute getAttribute(String name);
-    
-    public boolean isEmpty();
+    public Object getProperty(String propertyName);
     
 }

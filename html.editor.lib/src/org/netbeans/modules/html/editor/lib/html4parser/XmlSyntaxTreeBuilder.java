@@ -45,9 +45,9 @@ package org.netbeans.modules.html.editor.lib.html4parser;
 import java.util.Collection;
 import java.util.LinkedList;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.html.editor.lib.api.tree.Element;
-import org.netbeans.modules.html.editor.lib.api.tree.ElementType;
-import org.netbeans.modules.html.editor.lib.api.tree.TagElement;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.TagElement;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**

@@ -52,7 +52,7 @@ import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.modules.html.editor.lib.api.tree.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.ParseException;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;

@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.html.editor.lib.plain;
 
-import org.netbeans.modules.html.editor.lib.api.tree.Declaration;
-import org.netbeans.modules.html.editor.lib.api.tree.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 
 /**
  * Declaration models SGML declaration with emphasis on &lt;!DOCTYPE

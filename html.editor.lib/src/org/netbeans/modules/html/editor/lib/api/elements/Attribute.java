@@ -39,26 +39,20 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.tree;
-
-import java.util.Collection;
-import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
+package org.netbeans.modules.html.editor.lib.api.elements;
 
 /**
  *
  * @author marekfukala
  */
-public interface Element {
+public interface Attribute {
     
-    public int from();
-
-    public int to();
+    public int nameOffset();
     
-    public ElementType type();
+    public CharSequence name();
     
-    public CharSequence image();
-
-    public Collection<ProblemDescription> problems();
+    public int valueOffset();
     
+    public CharSequence value();
     
 }

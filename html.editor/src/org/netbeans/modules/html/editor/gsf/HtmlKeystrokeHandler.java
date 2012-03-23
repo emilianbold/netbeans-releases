@@ -56,7 +56,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.html.editor.lib.api.tree.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
 import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
@@ -64,7 +64,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.HtmlAutoCompletion;
 import org.netbeans.modules.html.editor.api.Utils;
-import org.netbeans.modules.html.editor.lib.api.tree.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**

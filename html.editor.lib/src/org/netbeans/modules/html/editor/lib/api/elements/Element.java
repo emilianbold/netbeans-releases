@@ -39,31 +39,27 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.tree;
+package org.netbeans.modules.html.editor.lib.api.elements;
+
+import java.util.Collection;
+import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 
 /**
  *
  * @author marekfukala
  */
-public enum ElementType {
+public interface Element {
+    
+    public int from();
 
-    ROOT,
+    public int to();
+    
+    public ElementType type();
+    
+    public CharSequence image();
 
-    COMMENT,
+    public CharSequence id();
     
-    DECLARATION,
+    public Collection<ProblemDescription> problems();
     
-    TEXT,
-    
-    ENTITY_REFERENCE,
-    
-    ERROR,
-    
-    //what to do with these?!?!?!?!?
-    UNKNOWN_TAG,
-    TAG, 
-    UNMATCHED_TAG, 
-    OPEN_TAG, 
-    END_TAG, ;
-
 }

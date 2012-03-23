@@ -52,7 +52,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.lib.api.HtmlParsingResult;
 import org.netbeans.modules.html.editor.lib.api.ParseException;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.tree.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.html.editor.lib.api.ParseResult;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationException;
@@ -66,7 +66,7 @@ import org.netbeans.modules.html.editor.lib.api.validation.ValidationContext;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationResult;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidatorService;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
-import org.netbeans.modules.html.editor.lib.api.tree.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 

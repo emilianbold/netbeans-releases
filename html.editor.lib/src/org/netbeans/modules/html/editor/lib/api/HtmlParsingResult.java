@@ -43,7 +43,7 @@
 package org.netbeans.modules.html.editor.lib.api;
 
 import java.util.Map;
-import org.netbeans.modules.html.editor.lib.api.tree.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
 
 /**
  * Its supposed to be implemented by a parsing.api parser result for html code.

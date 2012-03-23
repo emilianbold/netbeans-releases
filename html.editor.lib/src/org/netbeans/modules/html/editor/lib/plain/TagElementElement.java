@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.html.editor.lib.plain;
 
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.TagElement;
+import org.netbeans.modules.html.editor.lib.api.elements.AttributeFilter;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import java.util.*;
-import org.netbeans.modules.html.editor.lib.api.tree.*;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.CharSequences;
 

@@ -39,88 +39,14 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Map;
-import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.FeaturedNode;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
+package org.netbeans.modules.html.editor.lib.api.elements;
 
 /**
  *
  * @author marekfukala
  */
-public class RootNode implements FeaturedNode {
+public interface AttributeFilter {
 
-    private CharSequence source;
-    private Collection<Node> children;
-
-    public RootNode(CharSequence source) {
-        this(source, new LinkedList<Node>());
-    }
-
-    public RootNode(CharSequence source, Collection<Node> children) {
-        this.source = source;
-        this.children = children;
-    }
-    
-    @Override
-    public Collection<Node> children() {
-        return children;
-    }
-
-    @Override
-    public Node parent() {
-        return null;
-    }
-
-    @Override
-    public CharSequence nodeId() {
-        return type().name();
-    }
-
-    @Override
-    public int from() {
-        return 0;
-    }
-
-    @Override
-    public int to() {
-        return source.length();
-    }
-
-    @Override
-    public ElementType type() {
-        return ElementType.ROOT;
-    }
-
-    @Override
-    public CharSequence image() {
-        return source;
-    }
-
-    @Override
-    public Collection<ProblemDescription> problems() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public int[] logicalRange() {
-        return new int[] {from(), to()};    
-    }
-
-    @Override
-    public Node matchingTag() {
-        return null;
-    }
-
-    @Override
-    public Object getProperty(String propertyName) {
-        return null;
-    }
+    public boolean accepts(Attribute attribute);
     
 }

@@ -52,8 +52,8 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.html.editor.lib.api.tree.Attribute;
-import org.netbeans.modules.html.editor.lib.api.tree.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.plain.*;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
