@@ -821,6 +821,10 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     private void addOccurence(IdentNode iNode) {
+        if ("this".equals(iNode.getName())) {
+            // don't process this node.
+            return;
+        }
         DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
         JsObject property = null;
         while (scope != null && property == null) {
