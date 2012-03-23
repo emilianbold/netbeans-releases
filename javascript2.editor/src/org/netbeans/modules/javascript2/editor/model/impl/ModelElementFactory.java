@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -84,7 +85,16 @@ class ModelElementFactory {
             result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationScope(),
                     inObject, fqName.get(fqName.size() - 1), parameters, ModelUtils.documentOffsetRange(parserResult, start, end));
         }
+        String propertyName = result.getDeclarationName().getName();
+        JsObject property = parentObject.getProperty(propertyName); // the already existing property
+        
         parentObject.addProperty(result.getDeclarationName().getName(), result);
+        if (property != null) {
+            result.addOccurrence(property.getDeclarationName().getOffsetRange());
+            for(Occurrence occurrence : property.getOccurrences()) {
+                result.addOccurrence(occurrence.getOffsetRange());
+            }
+        }
         return result;
     }
     

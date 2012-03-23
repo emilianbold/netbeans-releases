@@ -131,7 +131,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         if (!(previous instanceof BinaryNode && ((BinaryNode)previous).rhs() instanceof ReferenceNode)) {
                             current = current.getParent();
                         }
-                    }
+                    } 
                     fromAN = (JsObjectImpl)current;
                     
                 }

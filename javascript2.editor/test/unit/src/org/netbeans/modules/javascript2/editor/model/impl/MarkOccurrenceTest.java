@@ -178,6 +178,10 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue209717_05() throws Exception {
         checkOccurrences("testfiles/coloring/issue209717_04.js", "fo^o22 = \"fasfdas\";", true);
     }
+    
+    public void testIssue209941_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue209941.js", "this.globalNot^ify();", true);
+    }
 
     @Override
     protected void assertDescriptionMatches(FileObject fileObject,
