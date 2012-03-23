@@ -213,11 +213,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     boolean hasParent = parent.getProperty(newVarName) != null ;
                     boolean hasGrandParent = parent.getJSKind() == JsElement.Kind.METHOD && parent.getParent().getProperty(newVarName) != null;
                     if (!hasParent && !hasGrandParent && modelBuilder.getGlobal().getProperty(newVarName) == null) {
-                        // variable was not found -> it's not declared and it has to be
-                        // added to the global scope (filescope) as implicit variable
-                        JsObjectImpl variable = new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange());
-                        variable.setDeclared(false);
-                        modelBuilder.getGlobal().addProperty(newVarName, variable);
+                        addOccurence(ident);
                     } else {
                         JsObject lhs = hasParent ? parent.getProperty(newVarName) : hasGrandParent ? parent.getParent().getProperty(newVarName) : null;
                         if (lhs != null) {
@@ -229,6 +225,8 @@ public class ModelVisitor extends PathNodeVisitor {
                                 modelBuilder.reset();
                                 return null;
                             }
+                        } else {
+                            addOccurence(ident);
                         }
                     }
                 }
@@ -620,6 +618,20 @@ public class ModelVisitor extends PathNodeVisitor {
         return super.visit(returnNode, onset);
     }
 
+    @Override
+    public Node visit(TernaryNode ternaryNode, boolean onset) {
+        if (onset) {
+            if (ternaryNode.rhs() instanceof IdentNode) {
+                addOccurence((IdentNode)ternaryNode.rhs());
+            }
+            if (ternaryNode.third() instanceof IdentNode) {
+                addOccurence((IdentNode)ternaryNode.third());
+            }
+        }
+        return super.visit(ternaryNode, onset);
+    }
+
+    
 
     @Override
     public Node visit(UnaryNode unaryNode, boolean onset) {
@@ -638,6 +650,10 @@ public class ModelVisitor extends PathNodeVisitor {
                         modelBuilder.getCurrentObject().addAssignment(type, start);
                     }
                     
+                }
+            } else {
+                if (unaryNode.rhs() instanceof IdentNode) {
+                    addOccurence((IdentNode)unaryNode.rhs());
                 }
             }
         }
@@ -805,6 +821,10 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     private void addOccurence(IdentNode iNode) {
+        if ("this".equals(iNode.getName())) {
+            // don't process this node.
+            return;
+        }
         DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
         JsObject property = null;
         while (scope != null && property == null) {
@@ -817,6 +837,10 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         if (property != null) {
             ((JsObjectImpl)property).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
+        } else {
+            // it's a new global variable?
+            IdentifierImpl name = ModelElementFactory.create(parserResult, iNode);
+            modelBuilder.getGlobal().addProperty(name.getName(), new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange(), false));
         }
     }
     

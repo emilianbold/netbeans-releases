@@ -310,7 +310,7 @@ public class ModelTest extends JsTestBase {
         assertNotNull(model);
         
         JsObject  global = model.getGlobalObject();
-        assertEquals(3, global.getProperties().size());
+        assertEquals(4, global.getProperties().size());
         
         JsObject object = global.getProperty("Kolo");
         assertEquals(JsElement.Kind.CONSTRUCTOR, object.getJSKind());
@@ -363,7 +363,7 @@ public class ModelTest extends JsTestBase {
         
         JsObject  object = model.getGlobalObject();
         // TODO this is wrong, needs to be handled parameters
-        assertEquals(1, object.getProperties().size());
+        assertEquals(3, object.getProperties().size());
         
         object = object.getProperty("$function");
         assertEquals(true, object.isDeclared());
