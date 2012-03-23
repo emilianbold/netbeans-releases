@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -481,6 +481,16 @@ made subject to such option by the copyright holder.
         <code> java.net.Authenticator</code>. Just brand 
         <code>org.netbeans.core.Bundle</code>
         to say <code>USE_Authentication=false</code>
+   </api>
+   <api name='StaticNonProxyHosts' 
+        category='devel'
+        type='export'
+        group='branding'>
+        Some applications may want to proxy connections to 
+        localhost (which by default uses direct connection in NetBeans Platform).
+        One can change the default by branding
+        <code>org.netbeans.core.Bundle</code>
+        specify something else than <code>StaticNonProxyHosts=localhost|127.0.0.1</code>.
    </api>
   </p>
  </answer>

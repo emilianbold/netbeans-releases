@@ -78,14 +78,14 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
     private LinkButton btnChanged;
     private LinkButton btnTotal;
 
-    public QueryNode(Query query, TreeListNode parent) {
+    public QueryNode(Query query, TreeListNode parent, boolean refresh) {
         super(true, parent, query.getDisplayName());
         this.query = query;
         labels = new ArrayList<TreeLabel>();
         buttons = new ArrayList<LinkButton>();
         updateNodes();
         query.addPropertyChangeListener(this);
-        refresh = query.getIssues().isEmpty();
+        this.refresh = refresh;
     }
 
     private void updateNodes() {
@@ -106,6 +106,9 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
     protected void dispose() {
         super.dispose();
         query.removePropertyChangeListener(this);
+        for (TaskNode taskNode : getFilteredTaskNodes()) {
+            taskNode.getTask().addPropertyChangeListener(this);
+        }
     }
 
     @Override
@@ -121,6 +124,9 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
     protected List<TreeListNode> createChildren() {
         List<TaskNode> children = getFilteredTaskNodes();
         Collections.sort(children);
+        for (TaskNode taskNode : children) {
+            taskNode.getTask().addPropertyChangeListener(this);
+        }
         return new ArrayList<TreeListNode>(children);
     }
 
@@ -187,14 +193,18 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
-            updateContent();
+            updateContent(true);
+        } else if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)){
+            updateContent(false);
         }
     }
 
-    private void updateContent() {
+    private void updateContent(boolean refreshChildren) {
         updateCounts();
         fireContentChanged();
-        refreshChildren();
+        if (refreshChildren) {
+            refreshChildren();
+        }
     }
 
     private void updateCounts() {

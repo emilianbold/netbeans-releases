@@ -49,6 +49,7 @@ import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
@@ -80,7 +81,10 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
 // ----------------   Environment.Provider ----------------------------    
     
     public Lookup getEnvironment(DataObject obj) {
-
+        if (!FileUtil.isParentOf(
+                    FileUtil.getConfigRoot(), obj.getPrimaryFile())) {
+            return Lookup.EMPTY;
+        }
         PaletteItemNodeFactory nodeFactory = new PaletteItemNodeFactory((XMLDataObject)obj);
         return nodeFactory.getLookup();
     }

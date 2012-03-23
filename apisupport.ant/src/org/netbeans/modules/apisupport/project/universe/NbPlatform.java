@@ -767,7 +767,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     public Set<ModuleEntry> getModules() {
         if (nbdestdir.isDirectory()) {
             try {
-                return ModuleList.findOrCreateModuleListFromBinaries(nbdestdir).getAllEntries();
+                return getModuleList().getAllEntries();
             } catch (IOException x) {
                 LOG.log(Level.INFO, null, x);
             }
@@ -783,7 +783,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     public @CheckForNull ModuleEntry getModule(String cnb) {
         if (nbdestdir.isDirectory()) {
             try {
-                return ModuleList.findOrCreateModuleListFromBinaries(nbdestdir).getEntry(cnb);
+                return getModuleList().getEntry(cnb);
             } catch (IOException x) {
                 LOG.log(Level.INFO, null, x);
             }
@@ -793,6 +793,19 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         return null;
     }
     
+    private ModuleList getModuleList() throws IOException {
+        if (nbdestdir.getName().equals("netbeans")) { // #206805
+            File nbbuild = nbdestdir.getParentFile();
+            if (nbbuild != null && nbbuild.getName().equals("nbbuild")) {
+                File root = nbbuild.getParentFile();
+                if (root != null) {
+                    return ModuleList.findOrCreateModuleListFromNetBeansOrgSources(root);
+                }
+            }
+        }
+        return ModuleList.findOrCreateModuleListFromBinaries(nbdestdir);
+    }
+
     private static File findCoreJar(File destdir) {
         File[] subdirs = destdir.listFiles();
         if (subdirs != null) {

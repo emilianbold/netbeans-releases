@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -90,7 +90,7 @@ public class NonProxyHostsTest extends NbTestCase {
         System.setProperty ("netbeans.system_socks_proxy", SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
         System.setProperty ("netbeans.system_http_non_proxy_hosts", "*.other.org");
         System.setProperty ("http.nonProxyHosts", "*.netbeans.org");
-        ProxySelector.setDefault (new NbProxySelector ());
+        NbProxySelector.register();
         selector = ProxySelector.getDefault ();
         proxyPreferences  = NbPreferences.root ().node ("/org/netbeans/core");
         proxyPreferences.addPreferenceChangeListener (new PreferenceChangeListener () {

@@ -122,7 +122,7 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         waitNoEvent(1000);
 
         runNoBlockPopupOverNode("Refactor|Move...", node); // NOI18N
-
+        waitNoEvent(3000);
         JDialogOperator dialog = new JDialogOperator("Move"); // NOI18N
         JComboBoxOperator combo = new JComboBoxOperator(dialog, 2);
         combo.selectItem( getTestPackageName() + PACKAGE_NAME);

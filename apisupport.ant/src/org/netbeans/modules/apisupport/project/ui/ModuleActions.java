@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
@@ -85,6 +86,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -100,6 +102,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -108,6 +111,7 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.lookup.Lookups;
 
 public final class ModuleActions implements ActionProvider, ExecProject {
@@ -367,8 +371,26 @@ public final class ModuleActions implements ActionProvider, ExecProject {
             return;
         }
 
+        // XXX prefer to call just if and when actually starting target, but that is hard to calculate here
+        final ActionProgress listener = ActionProgress.start(context);
         Runnable runnable = new Runnable() {
-            public void run() {
+            ExecutorTask task;
+            @Override public void run() {
+                try {
+                    doRun();
+                } finally {
+                    if (task != null) {
+                        task.addTaskListener(new TaskListener() {
+                            @Override public void taskFinished(Task _) {
+                                listener.finished(task.result() == 0);
+                            }
+                        });
+                    } else {
+                        listener.finished(false);
+                    }
+                }
+            }
+            void doRun() {
                 Properties p = new Properties();
                 String[] targetNames;
                 if (command.equals(COMMAND_COMPILE_SINGLE)) {
@@ -402,7 +424,9 @@ public final class ModuleActions implements ActionProvider, ExecProject {
 //            if (    Boolean.parseBoolean(enableQuickTest)
 //                 && "unit".equals(testSources.testType) // NOI18N
 //                 && !hasTestUnitDataDir()) { // NOI18N
-//                if (bypassAntBuildScript(command, testSources.sources)) {
+//                AtomicReference<ExecutorTask> _task = new AtomicReference<ExecutorTask>();
+//                if (bypassAntBuildScript(command, testSources.sources, _task)) {
+//                    task = _task.get();
 //                    return ;
 //                }
 //            }
@@ -472,6 +496,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     }
                 }
                 try {
+                    task =
                     ActionUtils.runTarget(findBuildXml(project), targetNames, p);
                 } catch (IOException e) {
                     Util.err.notify(e);
@@ -619,7 +644,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         return new String[] {"debug-test-single-nb"}; // NOI18N
     }
     
-    private boolean bypassAntBuildScript(String command, FileObject[] files) throws IllegalArgumentException {
+    private boolean bypassAntBuildScript(String command, FileObject[] files, AtomicReference<ExecutorTask> task) throws IllegalArgumentException {
         FileObject toRun = null;
 
         if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
@@ -638,7 +663,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
 
                 properties.put(JavaRunner.PROP_EXECUTE_FILE, toRun);
 
-                JavaRunner.execute(commandToExecute, properties);
+                task.set(JavaRunner.execute(commandToExecute, properties));
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

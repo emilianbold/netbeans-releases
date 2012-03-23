@@ -210,6 +210,14 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
 
         boolean finished = executed; // TODO how to tip true for non-executed?
         Iterator it = keys.iterator();
+        if (!it.hasNext()) {
+            // if for some reason the queue is empty, let's finish the progress
+            if (executed && queues.isEmpty() && progressHandle != null) {
+                progressHandle.finish();
+                progressHandle = null;
+            }
+            log("End - " + name);
+        }
         while (it.hasNext()) {
             Object key = it.next();
 

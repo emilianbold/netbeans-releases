@@ -37,62 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.qa.form.suites;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.qa.form.ExtJellyTestCase;
-import org.netbeans.qa.form.OpenTempl_defaultPackTest;
-import org.netbeans.qa.form.actions.actionsTest;
-import org.netbeans.qa.form.beans.AddAndRemoveBeansTest;
-import org.netbeans.qa.form.beans.AddBeanFormsTest;
-import org.netbeans.qa.form.undoredo.BaseTest;
-import org.netbeans.qa.form.visualDevelopment.AddComponents_SWING;
+package org.netbeans.modules.versioning.system.cvss;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataLoader;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
+ * Prevents refactoring from creating DataObjects for CVS folders and
+ * therefore touching (copying/moving) them.
  *
- * @author Pavel Pribyl
- * 
+ * @author Tomas Stupka
  */
-public class StableSuite extends TestCase {
+public class CvsMetadataFolderLoader extends DataLoader {
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(StableSuite.class)
-
-                .addTest(OpenTempl_defaultPackTest.class,
-                "testApplet", "testDialog", "testFrame", "testInter", "testAppl", "testMidi", "testPanel", "testBean")
-
-                .addTest(AddAndRemoveBeansTest.class,
-                "testAddingBeans",
-                "testRemovingBeans")
-
-//                .addTest (AddBeanFormsTest.class,
-//                "testCompileBeanClasses",
-//                "testAddingBeanFormWithVisualBeanSuperclass",
-//                "testAddingBeanFormWithNonVisualBeanSuperclass")
-                
-                .addTest(actionsTest.class,
-                "testDummy",
-                "testDuplicate",
-                "testEditContainer",
-                "testResizing",
-                "testBeans")
-
-                .addTest(BaseTest.class,
-                "testScenario")
-
-                .addTest(AddComponents_SWING.class,
-                "testAddAndCompile")
-
-                .clusters(".*").enableModules(".*") 
-                );
+    public CvsMetadataFolderLoader() {
+        super(DataFolder.class.getName());
     }
 
-    public void testEmpty() {
-        //Empty test. Just to be able to use StableSuite.class for createConfiguration method
+    @Override
+    protected DataObject handleFindDataObject(FileObject fo, RecognizedFiles recognized) throws IOException {
+        if(!fo.isFolder() || !"CVS".equals(fo.getName())) { //NOI18N
+            return null;
+        }
+
+        File f = FileUtil.toFile(fo);
+        if(f == null || f.getParentFile() == null) {
+            return null;
+        }
+        
+        if(Utils.isPartOfCVSMetadata(f) && Utils.containsMetadata(f.getParentFile())) {
+            IOException e = new IOException("Do not create DO for CVS metadata: " + f); //NOI18N
+            Exceptions.attachSeverity(e, Level.FINE);
+            throw e;
+        }
+        return null;
     }
 }
