@@ -48,7 +48,7 @@ import java.util.Map;
 import org.netbeans.modules.html.editor.lib.EmptyResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.plain.AbstractElement;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 
@@ -238,14 +238,14 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         assertNotNull(froot);
 
         assertEquals(2, froot.children().size());
-        assertNotNull(NodeUtils.query(froot, "ui:composition"));
-        assertNotNull(NodeUtils.query(froot, "ui:composition/ui:define"));
+        assertNotNull(ElementUtils.query(froot, "ui:composition"));
+        assertNotNull(ElementUtils.query(froot, "ui:composition/ui:define"));
 
         Node root = result.parseHtml().root();
         assertNotNull(root);
         assertEquals(2, root.children().size());
-        assertNotNull(NodeUtils.query(root, "html"));
-        assertNotNull(NodeUtils.query(root, "html/div"));
+        assertNotNull(ElementUtils.query(root, "html"));
+        assertNotNull(ElementUtils.query(root, "html/div"));
 
     }
 
@@ -262,8 +262,8 @@ public class SyntaxAnalyzerResultTest extends TestBase {
 
         assertNotNull(froot);
         assertEquals(2, froot.children().size());
-        assertNotNull(NodeUtils.query(froot, "x:out"));
-        assertNotNull(NodeUtils.query(froot, "x:out/x:in"));
+        assertNotNull(ElementUtils.query(froot, "x:out"));
+        assertNotNull(ElementUtils.query(froot, "x:out/x:in"));
 
     }
 
@@ -317,13 +317,13 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         //fall to the "unknown content" category
         Node undeclaredContentRoot = result.parseUndeclaredEmbeddedCode().root();
         assertEquals(1, undeclaredContentRoot.children().size());
-        assertNotNull(NodeUtils.query(undeclaredContentRoot, "y:notmine"));
+        assertNotNull(ElementUtils.query(undeclaredContentRoot, "y:notmine"));
         
         ParseResult presult = result.parseEmbeddedCode("my_ns");
         Node my_ns_root = presult.root();
         assertNotNull(my_ns_root);
         
-        assertNotNull(NodeUtils.query(my_ns_root, "x:mytag"));
+        assertNotNull(ElementUtils.query(my_ns_root, "x:mytag"));
 
     }
 

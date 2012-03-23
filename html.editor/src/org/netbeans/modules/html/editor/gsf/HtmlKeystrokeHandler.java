@@ -56,7 +56,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
@@ -206,7 +206,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         
         for(Node root : roots) {
             //find leaf at the position
-            Node node = NodeUtils.findNode(root, snapshot.getEmbeddedOffset(caretOffset), false, false);
+            Node node = ElementUtils.findElement(root, snapshot.getEmbeddedOffset(caretOffset), false, false);
             if(node != null) {
                 //go through the tree and add all parents with, eliminate duplicate nodes
                 do {

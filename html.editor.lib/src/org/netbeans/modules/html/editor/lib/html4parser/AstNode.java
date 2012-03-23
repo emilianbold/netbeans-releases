@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.html.editor.lib.html4parser;
 
-import org.netbeans.modules.html.editor.lib.api.elements.NodeFilter;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementFilter;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.AttributeFilter;
 import org.netbeans.modules.html.editor.lib.api.elements.FeaturedNode;
@@ -509,7 +509,7 @@ public class AstNode implements FeaturedNode {
         return children == null ? Collections.EMPTY_LIST : children;
     }
 
-    public List<Node> children(NodeFilter filter) {
+    public List<Node> children(ElementFilter filter) {
         List<Node> filtered = new ArrayList<Node>(children().size());
         for (Node child : children()) {
             if (filter.accepts(child)) {

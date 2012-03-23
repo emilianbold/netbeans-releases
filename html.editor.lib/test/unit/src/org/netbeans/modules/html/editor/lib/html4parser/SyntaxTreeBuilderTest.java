@@ -52,8 +52,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.html.editor.lib.api.*;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 import org.openide.filesystems.FileObject;
 
@@ -523,7 +523,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
         AstNode root = (AstNode)result.parseHtml().root();
 
         StringBuffer output = new StringBuffer();
-        NodeUtils.dumpTree(root, output);
+        ElementUtils.dumpTree(root, output);
         assertDescriptionMatches(source, output.toString(), false, ".pass", true);
     }
 
@@ -543,7 +543,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
     }
 
     private void assertLogicalRange(AstNode base, String pathToTheNode, int logicalStart, int logicalEnd) {
-        AstNode node = (AstNode)NodeUtils.query(base, pathToTheNode);
+        AstNode node = (AstNode)ElementUtils.query(base, pathToTheNode);
         assertNotNull("Node " + pathToTheNode + " couldn't be found!", node);
 
         //probably not correct assumption, but ok for testing
@@ -571,7 +571,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
         final int[] errors = new int[1];
         errors[0] = 0;
         final List<ProblemDescription> errorslist = new ArrayList<ProblemDescription>();
-        NodeVisitor visitor = new NodeVisitor() {
+        ElementVisitor visitor = new ElementVisitor() {
             public void visit(Node node) {
                 for(ProblemDescription d : node.problems()) {
                     errorslist.add(d);
@@ -579,7 +579,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
                 }
             }
         };
-        NodeUtils.visitChildren(root, visitor);
+        ElementUtils.visitChildren(root, visitor);
 
         assertEquals("Unexpected number of errors, current errors: " + errorsAsString(errorslist) ,expectedErrorsNumber, errors[0]);
 
@@ -596,7 +596,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
 //        AstNodeUtils.dumpTree(root);
 
         final Iterator<ProblemDescription> errorsItr = Arrays.asList(expectedErrors).listIterator();
-        NodeVisitor visitor = new NodeVisitor() {
+        ElementVisitor visitor = new ElementVisitor() {
             public void visit(Node node) {
                 for(ProblemDescription d : node.problems()) {
                     assertTrue("Unexpected error description: " + d.dump(code), errorsItr.hasNext());
@@ -605,7 +605,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
             }
         };
 
-        NodeUtils.visitChildren(root, visitor);
+        ElementUtils.visitChildren(root, visitor);
 
         List<ProblemDescription> missing = new ArrayList<ProblemDescription>();
         while(errorsItr.hasNext()) {

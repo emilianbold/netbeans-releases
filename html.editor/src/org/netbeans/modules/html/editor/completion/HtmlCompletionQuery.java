@@ -50,7 +50,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.TagElement;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.logging.Logger;
@@ -345,7 +345,7 @@ public class HtmlCompletionQuery extends UserTask {
                 //caused by an erroneous parse tree
                 useHtmlParseResult = false; 
             } else {
-                root = NodeUtils.getRoot(node);
+                root = ElementUtils.getRoot(node);
             }
         } 
         
@@ -357,7 +357,7 @@ public class HtmlCompletionQuery extends UserTask {
 //            root = SyntaxTreeBuilder.makeTree(htmlResult.source(), HtmlVersion.HTML40_TRANSATIONAL, parserResult.getSyntaxAnalyzerResult().getElements().items());
             ParseResult plain = parserResult.getSyntaxAnalyzerResult().parsePlain();
             root = plain.root();
-            node = NodeUtils.findNode(root, searchAstOffset, !backward, false);
+            node = ElementUtils.findElement(root, searchAstOffset, !backward, false);
             if(node == null) {
                 node = root;
             }            
@@ -868,11 +868,11 @@ public class HtmlCompletionQuery extends UserTask {
     
     public Node findLeafTag(HtmlParserResult result, int offset, boolean forward, boolean physicalNodesOnly ) {
         //first try to find the in the undeclared component tree
-        Node mostLeaf = NodeUtils.findNode(result.rootOfUndeclaredTagsParseTree(), offset, forward, physicalNodesOnly);
+        Node mostLeaf = ElementUtils.findElement(result.rootOfUndeclaredTagsParseTree(), offset, forward, physicalNodesOnly);
         //now search the non html trees
         for (String uri : result.getNamespaces().keySet()) {
             Node root = result.root(uri);
-            Node leaf = NodeUtils.findNode(root, offset, forward, physicalNodesOnly);
+            Node leaf = ElementUtils.findElement(root, offset, forward, physicalNodesOnly);
             if (leaf == null) {
                 continue;
             }

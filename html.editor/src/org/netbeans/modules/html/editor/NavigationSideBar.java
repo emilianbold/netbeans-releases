@@ -67,7 +67,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.SideBarFactory;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.HtmlCaretAwareSourceTask.Source;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
@@ -147,12 +147,12 @@ public class NavigationSideBar extends JPanel implements Accessible {
         List<Node> nodesInPath = new ArrayList<Node>();
         int astOffset = info.getSnapshot().getEmbeddedOffset(caretPosition);
         for (Node root : allRoots) {
-            Node leaf = NodeUtils.findNode(root, astOffset, false, false);
+            Node leaf = ElementUtils.findElement(root, astOffset, false, false);
             if (leaf != null) {
                 //add all nodes in the leaf's path to the root
                 TreePath treePath = new TreePath(null, leaf);
                 for (Node node : treePath.path()) { //really brilliant wording!!!!
-                    if (node.type() == ElementType.OPEN_TAG && !NodeUtils.isVirtualNode(node)) {
+                    if (node.type() == ElementType.OPEN_TAG && !ElementUtils.isVirtualNode(node)) {
                         nodesInPath.add(node);
                     }
                 }

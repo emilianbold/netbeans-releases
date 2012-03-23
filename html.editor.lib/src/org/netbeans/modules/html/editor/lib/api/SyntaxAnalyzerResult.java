@@ -45,7 +45,6 @@ import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
-import org.netbeans.modules.html.editor.lib.api.elements.TagElement;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;

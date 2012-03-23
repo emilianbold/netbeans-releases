@@ -45,7 +45,7 @@ import java.util.*;
 import org.netbeans.modules.html.editor.lib.api.*;
 import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.elements.Tag;
 import org.netbeans.modules.html.editor.lib.dtd.DTD;
 import org.netbeans.modules.html.editor.lib.dtd.DTD.Element;

@@ -52,7 +52,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.lib.api.HtmlParsingResult;
 import org.netbeans.modules.html.editor.lib.api.ParseException;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.html.editor.lib.api.ParseResult;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationException;
@@ -190,11 +190,11 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
      */
     public Node findLeafTag(int offset, boolean forward, boolean physicalNodesOnly ) {
         //first try to find the leaf in html content
-        Node mostLeaf = NodeUtils.findNode(root(), offset, forward, physicalNodesOnly);
+        Node mostLeaf = ElementUtils.findElement(root(), offset, forward, physicalNodesOnly);
         //now search the non html trees
         for (String uri : getNamespaces().keySet()) {
             Node root = root(uri);
-            Node leaf = NodeUtils.findNode(root, offset, forward, physicalNodesOnly);
+            Node leaf = ElementUtils.findElement(root, offset, forward, physicalNodesOnly);
             if (leaf == null) {
                 continue;
             }

@@ -50,12 +50,12 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.ParseException;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationContext;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationException;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationResult;
@@ -87,7 +87,7 @@ public class Html4ValidatorImpl implements Validator {
         private List<ProblemDescription> extractErrorsFromAST(SyntaxAnalyzerResult result) throws ParseException {
         final List<ProblemDescription> _errors = new ArrayList<ProblemDescription>();
 
-        NodeVisitor errorsCollector = new NodeVisitor() {
+        ElementVisitor errorsCollector = new ElementVisitor() {
 
             @Override
             public void visit(Node node) {
@@ -115,7 +115,7 @@ public class Html4ValidatorImpl implements Validator {
             }
         };
 
-        NodeUtils.visitChildren(result.parseHtml().root(), errorsCollector);
+        ElementUtils.visitChildren(result.parseHtml().root(), errorsCollector);
 
         return _errors;
     }

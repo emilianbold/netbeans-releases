@@ -48,9 +48,9 @@ import junit.framework.TestSuite;
 import org.netbeans.modules.html.editor.lib.api.*;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeFilter;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementFilter;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.dtd.DTD;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 
@@ -96,7 +96,7 @@ public class AstNodeUtilsTest extends TestBase {
         AstNode p = AstNodeUtils.query(root, "p");
         assertNotNull(p);
 
-        NodeFilter filter = new NodeFilter() {
+        ElementFilter filter = new ElementFilter() {
             @Override
             public boolean accepts(Node node) {
                 return node.type() == ElementType.OPEN_TAG;
@@ -200,7 +200,7 @@ public class AstNodeUtilsTest extends TestBase {
 //        AstAstNodeUtils.dumpTree(root);
 
         final int nodes[] = new int[1];
-        NodeUtils.visitChildren(root, new NodeVisitor() {
+        ElementUtils.visitChildren(root, new ElementVisitor() {
             @Override
             public void visit(Node node) {
                 nodes[0]++;

@@ -57,8 +57,8 @@ import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.AttributeFilter;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.api.elements.Tag;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -84,13 +84,13 @@ public class HtmlCssHints {
             return;
         }
         try {
-            NodeUtils.visitChildren(result.root(), new HintsNodeVisitor(context, file, project, hints), ElementType.OPEN_TAG);
+            ElementUtils.visitChildren(result.root(), new HintsNodeVisitor(context, file, project, hints), ElementType.OPEN_TAG);
         } catch (IOException ex) {
             //no-op
         }
     }
 
-    private static class HintsNodeVisitor implements NodeVisitor {
+    private static class HintsNodeVisitor implements ElementVisitor {
 
         private final RuleContext context;
         private final List<Hint> hints;
@@ -156,7 +156,7 @@ public class HtmlCssHints {
 
         private void processElements(Attribute attribute, CssElementType elementType, Map<String, Collection<FileObject>> elements2files) {
             //all files containing the id declaration
-            Collection<FileObject> filesWithTheId = elements2files.get(NodeUtils.unquotedValue(attribute).toString());
+            Collection<FileObject> filesWithTheId = elements2files.get(ElementUtils.unquotedValue(attribute).toString());
 
             //all referred files with the id declaration
             Collection<FileObject> referredFilesWithTheId = new LinkedList<FileObject>();
@@ -177,9 +177,9 @@ public class HtmlCssHints {
     }
 
     private static OffsetRange getAttributeValueOffsetRange(Attribute attr, RuleContext context) {
-        boolean quoted = NodeUtils.isValueQuoted(attr);
+        boolean quoted = ElementUtils.isValueQuoted(attr);
         int from = attr.valueOffset() + (quoted ? 1 : 0);
-        int to = from + NodeUtils.unquotedValue(attr).length();
+        int to = from + ElementUtils.unquotedValue(attr).length();
         return EmbeddingUtil.convertToDocumentOffsets(from, to, context.parserResult.getSnapshot());
     }
 }

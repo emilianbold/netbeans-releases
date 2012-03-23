@@ -44,8 +44,8 @@ package org.netbeans.modules.html.editor;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.Tag;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeVisitor;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -88,7 +88,7 @@ public class HtmlSourceUtils {
             //would implement and which would provide a default places for such elements.
             Node jsfHtmlLibRoot = result.root("http://java.sun.com/jsf/html"); //NOI18N
             if (jsfHtmlLibRoot != null) {
-                NodeUtils.visitChildren(jsfHtmlLibRoot, new NodeVisitor() {
+                ElementUtils.visitChildren(jsfHtmlLibRoot, new ElementVisitor() {
 
                     @Override
                     public void visit(Node node) {
@@ -107,7 +107,7 @@ public class HtmlSourceUtils {
 
 
             Node root = result.root();
-            NodeUtils.visitChildren(root, new NodeVisitor() {
+            ElementUtils.visitChildren(root, new ElementVisitor() {
 
                 @Override
                 public void visit(Node node) {

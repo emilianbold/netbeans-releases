@@ -55,7 +55,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
@@ -68,7 +68,7 @@ import org.netbeans.modules.html.editor.HtmlSourceUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.api.elements.Tag;
 import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
 import org.netbeans.modules.html.editor.refactoring.api.SelectorType;
@@ -189,7 +189,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
             //would implement and which would provide a default places for such elements.
             Node jsfHtmlLibRoot = result.root("http://java.sun.com/jsf/html"); //NOI18N
             if (jsfHtmlLibRoot != null) {
-                NodeUtils.visitChildren(jsfHtmlLibRoot, new NodeVisitor() {
+                ElementUtils.visitChildren(jsfHtmlLibRoot, new ElementVisitor() {
                     @Override
                     public void visit(Node node) {
                         //assume <h:head>
@@ -206,7 +206,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
             }
 
             Node root = result.root();
-            NodeUtils.visitChildren(root, new NodeVisitor() {
+            ElementUtils.visitChildren(root, new ElementVisitor() {
                 @Override
                 public void visit(Node node) {
                     Tag t = (Tag) node;

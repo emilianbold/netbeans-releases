@@ -50,30 +50,30 @@ import java.util.List;
  */
 public class TreePath {
 
-    private Node first,  last;
+    private Element first,  last;
     
-    public TreePath(Node last) {
+    public TreePath(Element last) {
         this(null, last);
     }
     
     /** @param first may be null; in such case a path from the root is created */
-    public TreePath(Node first, Node last) {
+    public TreePath(Element first, Element last) {
         this.first = first;
         this.last = last;
     }
 
-    public Node first() {
+    public Element first() {
         return first;
     }
     
-    public Node last() {
+    public Element last() {
         return last;
     }
      
     /** returns a list of nodes from the first node to the last node including the boundaries. */
-    public List<Node> path() {
-        List<Node> path = new  ArrayList<Node>();
-        Node node = last;
+    public List<Element> path() {
+        List<Element> path = new  ArrayList<Element>();
+        Element node = last;
         while (node != null) {
             path.add(node);
             if(node == first) {
@@ -87,10 +87,10 @@ public class TreePath {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for(Node node : path()) {
+        for(Element node : path()) {
             Node parent = node.parent();
             int myIndex = parent == null ? 0 : indexInSimilarNodes(node.parent(), node);
-            sb.append(node.nodeId()).append("[").append(node.type()).append("]( ").append(myIndex).append(")/");
+            sb.append(node.id()).append("[").append(node.type()).append("]( ").append(myIndex).append(")/");
         }
         return sb.toString();
     }
@@ -102,16 +102,16 @@ public class TreePath {
         }
         TreePath path = (TreePath)o;
         
-        List<Node> p1 = path();
-        List<Node> p2 = path.path();
+        List<Element> p1 = path();
+        List<Element> p2 = path.path();
         
         if(p1.size() != p2.size()) {
             return false;
         }
         
         for(int i = 0; i < p1.size(); i++) {
-            Node n1 = p1.get(i);
-            Node n2 = p2.get(i);
+            Element n1 = p1.get(i);
+            Element n2 = p2.get(i);
             
             Node n1Parent = n1.parent();
             Node n2Parent = n2.parent();
@@ -138,14 +138,14 @@ public class TreePath {
         return true;
     }
 
-    private String getSignature(Node node) {
-        return new StringBuilder().append(node.nodeId()).append("[").append(node.type()).append("]").toString();
+    private String getSignature(Element node) {
+        return new StringBuilder().append(node.id()).append("[").append(node.type()).append("]").toString();
     }
     
-    private static int indexInSimilarNodes(Node parent, Node node) {
+    private static int indexInSimilarNodes(Node parent, Element node) {
         int index = -1;
-        for(Node child : parent.children()) {
-            if(node.nodeId().equals(child.nodeId()) && node.type() == child.type()) {
+        for(Element child : parent.children()) {
+            if(node.id().equals(child.id()) && node.type() == child.type()) {
                 index++;
             }
             if(child == node) {

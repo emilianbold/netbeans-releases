@@ -62,4 +62,7 @@ public interface Element {
     
     public Collection<ProblemDescription> problems();
     
+    //doesn't make much sense for the plain view, but for the sake of simplicity lets put it here
+    public Node parent();
+    
 }

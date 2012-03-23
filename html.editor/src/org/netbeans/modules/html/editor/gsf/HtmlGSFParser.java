@@ -51,7 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
@@ -160,7 +160,7 @@ public class HtmlGSFParser extends Parser {
            HtmlElementHandle element = (HtmlElementHandle)oldElementHandle;
             Node oldNode = element.node();
 
-            Node oldRoot = NodeUtils.getRoot(oldNode);
+            Node oldRoot = ElementUtils.getRoot(oldNode);
 
             HtmlParserResult newResult = (HtmlParserResult)info;
 

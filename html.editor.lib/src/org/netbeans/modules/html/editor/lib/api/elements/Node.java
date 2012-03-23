@@ -45,14 +45,13 @@ import java.util.Collection;
 
 
 /**
- * Generic parse tree node.
  * 
  * @author marekfukala
  */
 public interface Node extends Element {
     
-    public Collection<Node> children();
+    public Collection<Element> children();
     
-    public Node parent();
- 
+    public Collection<Element> children(ElementType type);
+    
 }

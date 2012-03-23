@@ -45,8 +45,8 @@ package org.netbeans.modules.html.editor.lib.api.elements;
  *
  * @author marekfukala
  */
-public interface NodeFilter {
-
-    public boolean accepts(Node node);
+public interface ElementVisitor {
+    
+    public void visit(Element node);
     
 }

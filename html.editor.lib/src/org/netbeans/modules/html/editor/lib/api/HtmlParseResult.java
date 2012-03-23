@@ -47,7 +47,6 @@ import java.util.Map;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
-import org.netbeans.modules.html.editor.lib.api.elements.Tag;
 
 /**
  *
@@ -62,12 +61,12 @@ public interface HtmlParseResult extends ParseResult {
     /**
      * @return collection of possible open tags in the context
      */
-    public Collection<HtmlTag> getPossibleOpenTags(Tag context);
+    public Collection<HtmlTag> getPossibleOpenTags(Node context);
     
     /**
      * @return map of possible html tag to existing matching open tag node 
      * or null if the end tag doesn't have to have an open tag
      */
-    public Map<HtmlTag, Node> getPossibleEndTags(Tag context);
+    public Map<HtmlTag, Node> getPossibleEndTags(Node context);
 
 }

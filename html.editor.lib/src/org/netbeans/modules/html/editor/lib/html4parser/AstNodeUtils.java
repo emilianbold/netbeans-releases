@@ -44,8 +44,8 @@ package org.netbeans.modules.html.editor.lib.html4parser;
 import java.util.*;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeFilter;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementFilter;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.dtd.DTD;
 
 /**
@@ -414,7 +414,7 @@ public class AstNodeUtils {
     }
 
     /** finds closest physical preceeding node to the offset */
-    public static AstNode getClosestNodeBackward(AstNode context, int offset, NodeFilter filter) {
+    public static AstNode getClosestNodeBackward(AstNode context, int offset, ElementFilter filter) {
         for (Node child : context.children(filter)) {
             if (child.from() >= offset) {
                  return context;

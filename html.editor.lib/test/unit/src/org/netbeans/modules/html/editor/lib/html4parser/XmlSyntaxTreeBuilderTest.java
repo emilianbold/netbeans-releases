@@ -47,7 +47,7 @@ import org.netbeans.modules.html.editor.lib.api.ParseException;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerElements;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 
 /**
@@ -65,7 +65,7 @@ public class XmlSyntaxTreeBuilderTest extends TestBase {
         String code = "<div></di";
         AstNode root = parse(code);
 
-        Node div = NodeUtils.query(root, "div"); 
+        Node div = ElementUtils.query(root, "div"); 
         assertNotNull(div);
 //        AstNodeUtils.dumpTree(root);
     }

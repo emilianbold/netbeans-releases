@@ -41,19 +41,21 @@
  */
 package org.netbeans.modules.html.editor.lib.api.elements;
 
-import java.util.*;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.StringTokenizer;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
  * @author marek
  */
-public class NodeUtils {
+public class ElementUtils {
 
-    private static final String INDENT = "   ";
+    private static final String INDENT = "   "; //NOI18N
 
-    private NodeUtils() {
+    private ElementUtils() {
     }
 
     public static CharSequence unquotedValue(Attribute attribute) {
@@ -79,16 +81,16 @@ public class NodeUtils {
      * @param physicalNodeOnly if true the found descendant will be returned
      * only if the offset falls to its physical boundaries.
      */
-    public static Node findNode(Node node, int offset, boolean forward, boolean physicalNodeOnly) {
+    public static Element findElement(Node node, int offset, boolean forward, boolean physicalNodeOnly) {
         if (physicalNodeOnly) {
-            return findNodeByPhysicalRange(node, offset, forward);
+            return findByPhysicalRange(node, offset, forward);
         } else {
-            return findNodeByLogicalRange(node, offset, forward);
+            return findByLogicalRange(node, offset, forward);
         }
     }
 
-    private static Node findNodeByPhysicalRange(Node node, int offset, boolean forward) {
-        for (Node child : node.children()) {
+    private static Element findByPhysicalRange(Node node, int offset, boolean forward) {
+        for (Element child : node.children()) {
             Node achild = (Node) child;
             if (matchesNodeRange(achild, offset, forward, true)) {
                 return achild;
@@ -97,7 +99,7 @@ public class NodeUtils {
                 return null;
             } else {
                 //lets try this branch
-                Node candidate = findNodeByPhysicalRange(achild, offset, forward);
+                Element candidate = findByPhysicalRange(achild, offset, forward);
                 if (candidate != null) {
                     return candidate;
                 }
@@ -110,19 +112,19 @@ public class NodeUtils {
         return node.from() == -1 && node.to() == -1;
     }
 
-    private static Node findNodeByLogicalRange(Node node, int offset, boolean forward) {
-        for (Node child : node.children()) {
+    private static Element findByLogicalRange(Node node, int offset, boolean forward) {
+        for (Element child : node.children()) {
             Node achild = (Node) child;
             if (isVirtualNode(achild)) {
                 //we need to recurse into every virtual branch blindly hoping there might by some
                 //real nodes fulfilling our constrains
-                Node n = findNodeByLogicalRange(achild, offset, forward);
+                Element n = findByLogicalRange(achild, offset, forward);
                 if (n != null) {
                     return n;
                 }
             }
             if (matchesNodeRange(achild, offset, forward, false)) {
-                return findNodeByLogicalRange(achild, offset, forward);
+                return findByLogicalRange(achild, offset, forward);
             }
         }
         return isVirtualNode(node) ? null : node;
@@ -132,10 +134,8 @@ public class NodeUtils {
         int lf, lt;
         switch (node.type()) {
             case OPEN_TAG:
-            case END_TAG:
-//            case TAG:
-//            case UNKNOWN_TAG:
-                Tag t = (Tag) node;
+//            case END_TAG:
+                OpenTag t = (OpenTag) node;
                 lf = t.logicalRange()[0];
                 lt = t.logicalRange()[1];
                 break;
@@ -159,36 +159,39 @@ public class NodeUtils {
         return false;
     }
 
-    public static String dumpTree(Node node) {
+    public static String dumpTree(Element node) {
         return dumpTree(node, (CharSequence) null);
     }
 
-    public static String dumpTree(Node node, CharSequence source) {
+    public static String dumpTree(Element node, CharSequence source) {
         StringBuffer buf = new StringBuffer();
         dumpTree(node, buf, source);
         System.out.println(buf.toString());
         return buf.toString();
     }
 
-    public static void dumpTree(Node node, StringBuffer buf) {
+    public static void dumpTree(Element node, StringBuffer buf) {
         dumpTree(node, buf, null);
     }
 
-    public static void dumpTree(Node node, StringBuffer buf, CharSequence source) {
+    public static void dumpTree(Element node, StringBuffer buf, CharSequence source) {
         dump(node, "", buf, source);
     }
 
-    private static void dump(Node node, String prefix, StringBuffer buf, CharSequence source) {
+    private static void dump(Element element, String prefix, StringBuffer buf, CharSequence source) {
         buf.append(prefix);
-        buf.append(node.toString());
-        if (source != null && node.from() != -1 && node.to() != -1) {
+        buf.append(element.toString());
+        if (source != null && element.from() != -1 && element.to() != -1) {
             buf.append(" (");
-            buf.append(source.subSequence(node.from(), node.to()));
+            buf.append(source.subSequence(element.from(), element.to()));
             buf.append(")");
         }
         buf.append('\n');
-        for (Node child : node.children()) {
-            dump(child, prefix + INDENT, buf, source);
+        if(element instanceof Node) {
+            Node node = (Node)element;
+            for (Element child : node.children()) {
+                dump(child, prefix + INDENT, buf, source);
+            }
         }
     }
 
@@ -206,7 +209,7 @@ public class NodeUtils {
      * Returns a list of all ancestors of the given node matching the filter.
      * Closest ancestors are at the beginning of the list.
      */
-    public static List<Node> getAncestors(Node node, NodeFilter filter) {
+    public static List<Node> getAncestors(Node node, ElementFilter filter) {
         List<Node> matching = new ArrayList<Node>();
         Node n = node;
         do {
@@ -220,14 +223,19 @@ public class NodeUtils {
         return matching;
     }
 
-    public static List<Node> getChildrenRecursivelly(Node node, NodeFilter filter, boolean recurseOnlyMatching) {
-        List<Node> matching = new ArrayList<Node>();
-        getChildrenRecursivelly(matching, node, filter, recurseOnlyMatching);
+    public static List<Element> getChildrenRecursivelly(Element element, ElementFilter filter, boolean recurseOnlyMatching) {
+        List<Element> matching = new ArrayList<Element>();
+        getChildrenRecursivelly(matching, element, filter, recurseOnlyMatching);
         return matching;
     }
 
-    private static void getChildrenRecursivelly(List<Node> found, Node node, NodeFilter filter, boolean recurseOnlyMatching) {
-        for (Node child : node.children()) {
+    private static void getChildrenRecursivelly(List<Element> found, Element element, ElementFilter filter, boolean recurseOnlyMatching) {
+        if(!(element instanceof Node)) {
+            return ;
+        }
+        
+        Node node = (Node)element;
+        for (Element child : node.children()) {
             if (filter.accepts(child)) {
                 found.add(child);
                 getChildrenRecursivelly(found, child, filter, recurseOnlyMatching);
@@ -239,7 +247,7 @@ public class NodeUtils {
         }
     }
 
-    public static Node query(Node base, String path) {
+    public static Element query(Node base, String path) {
         return query(base, path, false);
     }
 
@@ -249,7 +257,7 @@ public class NodeUtils {
      *
      * note: queries OPEN TAGS ONLY!
      */
-    public static Node query(Node base, String path, boolean caseInsensitive) {
+    public static Element query(Node base, String path, boolean caseInsensitive) {
         StringTokenizer st = new StringTokenizer(path, "/");
         Node found = base;
         while (st.hasMoreTokens()) {
@@ -264,12 +272,11 @@ public class NodeUtils {
             int index = Integer.parseInt(sindex);
 
             int count = 0;
-            Node foundLocal = null;
-            for (Node child : found.children()) {
-                Node achild = (Node) child;
-                String nodeId = child.nodeId().toString();
-                if (child.type() == ElementType.OPEN_TAG && (caseInsensitive ? nodeId = nodeId.toLowerCase(Locale.ENGLISH) : nodeId).equals(nodeName) && count++ == index) {
-                    foundLocal = achild;
+            OpenTag foundLocal = null;
+            for (Element child : found.children(ElementType.OPEN_TAG)) {
+                OpenTag openTag = (OpenTag) child;
+                if(LexerUtils.equals(openTag.name(), nodeName, caseInsensitive, false) && count++ == index) {
+                    foundLocal = openTag;
                     break;
                 }
             }
@@ -278,7 +285,8 @@ public class NodeUtils {
 
                 if (!st.hasMoreTokens()) {
                     //last token, we may return
-                    assert LexerUtils.equals(found.nodeId(), nodeName, false, false);
+                    OpenTag openTag = (OpenTag)found;
+                    assert LexerUtils.equals(openTag.name(), nodeName, false, false);
                     return found;
                 }
 
@@ -303,8 +311,12 @@ public class NodeUtils {
         return false;
     }
 
-    public static void visitChildren(Node node, NodeVisitor visitor, ElementType nodeType) {
-        for (Node n : node.children()) {
+    public static void visitChildren(Element element, ElementVisitor visitor, ElementType nodeType) {
+        if(!(element instanceof Node)) {
+            return ;
+        }
+        Node node = (Node)element;
+        for (Element n : node.children()) {
             if (nodeType == null || n.type() == nodeType) {
                 visitor.visit(n);
             }
@@ -312,11 +324,11 @@ public class NodeUtils {
         }
     }
 
-    public static void visitChildren(Node node, NodeVisitor visitor) {
+    public static void visitChildren(Node node, ElementVisitor visitor) {
         visitChildren(node, visitor, null);
     }
 
-    public static void visitAncestors(Node node, NodeVisitor visitor) {
+    public static void visitAncestors(Element node, ElementVisitor visitor) {
         Node parent = (Node) node.parent();
         if (parent != null) {
             visitor.visit(parent);

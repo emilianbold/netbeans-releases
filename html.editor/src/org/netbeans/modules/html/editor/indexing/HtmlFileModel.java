@@ -45,9 +45,9 @@ import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.TreePath;
 import org.netbeans.modules.html.editor.lib.api.elements.Tag;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -147,7 +147,7 @@ public class HtmlFileModel {
         //XXX this scans only core html parse tree, what about the other namespaces????
         Node root = parserResult.root();
         if(root != null) {
-            NodeUtils.visitChildren(root, new ReferencesSearch(), ElementType.OPEN_TAG);
+            ElementUtils.visitChildren(root, new ReferencesSearch(), ElementType.OPEN_TAG);
         } else {
             //completely broken source, no parser result
         }
@@ -192,7 +192,7 @@ public class HtmlFileModel {
         return new HtmlLinkEntry(getFileObject(), name, range, documentRange, tagName, attributeName);
     }
 
-    public class ReferencesSearch implements NodeVisitor {
+    public class ReferencesSearch implements ElementVisitor {
 
         @Override
         public void visit(Node node) {
@@ -206,8 +206,8 @@ public class HtmlFileModel {
                     ValueCompletion<HtmlCompletionItem> avc = completions.get(attr.name().toString());
                     if(AttrValuesCompletion.FILE_NAME_SUPPORT == avc) {
                         //found file reference
-                        CharSequence unquotedValue = NodeUtils.unquotedValue(attr);
-                        boolean isQuoted = NodeUtils.isValueQuoted(attr);
+                        CharSequence unquotedValue = ElementUtils.unquotedValue(attr);
+                        boolean isQuoted = ElementUtils.isValueQuoted(attr);
                         int offset = attr.valueOffset() + (isQuoted ? 1 : 0);
                         
                         getReferencesCollectionInstance().add(

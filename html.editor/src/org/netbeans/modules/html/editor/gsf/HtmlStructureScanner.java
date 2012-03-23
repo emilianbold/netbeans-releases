@@ -44,8 +44,8 @@ package org.netbeans.modules.html.editor.gsf;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Tag;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeUtils;
-import org.netbeans.modules.html.editor.lib.api.elements.NodeVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import java.util.*;
 import java.util.logging.Level;
@@ -113,7 +113,7 @@ public class HtmlStructureScanner implements StructureScanner {
         final List<OffsetRange> tags = new ArrayList<OffsetRange>();
         final List<OffsetRange> comments = new ArrayList<OffsetRange>();
 
-        NodeVisitor foldsSearch = new NodeVisitor() {
+        ElementVisitor foldsSearch = new ElementVisitor() {
             @Override
             public void visit(Node node) {
                 if (node.type() == ElementType.OPEN_TAG
@@ -160,7 +160,7 @@ public class HtmlStructureScanner implements StructureScanner {
         try {
             Collection<Node> roots = ((HtmlParserResult) info).roots().values();
             for (Node root : roots) {
-                NodeUtils.visitChildren(root, foldsSearch);
+                ElementUtils.visitChildren(root, foldsSearch);
             }
         } finally {
             doc.readUnlock();
@@ -241,7 +241,7 @@ public class HtmlStructureScanner implements StructureScanner {
             if (attr == null) {
                 return null;
             }
-            return NodeUtils.unquotedValue(attr).toString();
+            return ElementUtils.unquotedValue(attr).toString();
         }
 
         @Override
@@ -344,7 +344,7 @@ public class HtmlStructureScanner implements StructureScanner {
         List<Node> items = new LinkedList<Node>();
         for (Node child : node.children()) {
             if (child.type() == ElementType.OPEN_TAG) {
-                if (!NodeUtils.isVirtualNode(child)) {
+                if (!ElementUtils.isVirtualNode(child)) {
                     items.add(child);
                 } else {
                     items.addAll(gatherNonVirtualChildren(child));
