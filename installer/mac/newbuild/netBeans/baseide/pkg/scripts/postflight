@@ -39,6 +39,7 @@ jdk_home=`"$dirname"/get_current_jdk.sh`
 
 if [ -f "$dirname"/set_jdk_home.sh ];
     "$dirname"/set_jdk_home.sh "$NETBEANS_INSTALL_DIR" "$DEFAULT_JDK7_HOME"
+fi
 
 cd "$NETBEANS_INSTALL_DIR"
 cd Contents/Resources/NetBeans*/etc
