@@ -15,6 +15,8 @@ namespace Test204925_05_C {
     }
 }
 
-$test = new \Test204925_05_C\Test204925_05_B();
-$test->bar()->
+namespace {
+    $test = new \Test204925_05_C\Test204925_05_B();
+    $test->bar()->
+}
 ?>
