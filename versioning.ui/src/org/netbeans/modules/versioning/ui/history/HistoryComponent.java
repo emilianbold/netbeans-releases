@@ -84,6 +84,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Property;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -652,6 +653,11 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }       
     private class ByUserFilter extends Filter {
         @Override
+        public boolean filtersProperty(Property property) {
+            return property instanceof RevisionNode.UserProperty;
+        }
+                
+        @Override
         public boolean accept(Object value) {
             if(HistoryRootNode.isLoadNext(value) || HistoryRootNode.isWait(value)) return true;
             
@@ -675,6 +681,12 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         }        
     }           
     private class ByMsgFilter extends Filter {
+
+        @Override
+        public boolean filtersProperty(Property property) {
+            return property instanceof RevisionNode.MessageProperty;
+        }
+        
         @Override
         public boolean accept(Object value) {
             if(HistoryRootNode.isLoadNext(value) || HistoryRootNode.isWait(value)) return true;
