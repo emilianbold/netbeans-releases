@@ -14,15 +14,15 @@ export OUTPUT_DIR
 #MAC_PATH=
 
 if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
-   ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer $MAC_PATH/reglib/src
+   ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
        echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't remove old scripts"
        exit $ERROR_CODE;
    fi
-   ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/installer $MAC_PATH/reglib/src
+   ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/installer
    cd $NB_ALL
-   gtar c installer/mac reglib/src | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x )"
+   gtar c installer/mac | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x )"
 
    if [ 1 -eq $ML_BUILD ] ; then
        cd $NB_ALL/l10n
@@ -54,11 +54,8 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
 # Run new builds
    sh $NB_ALL/installer/mac/newbuild/init.sh | ssh $NATIVE_MAC_MACHINE "cat > $MAC_PATH/installer/mac/newbuild/build-private.sh"
    ssh $NATIVE_MAC_MACHINE chmod a+x $MAC_PATH/installer/mac/newbuild/build.sh
-#   if [ 1 -eq $ML_BUILD ] ; then
-#       ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH/zip-ml/moduleclusters $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD > $MAC_LOG_NEW 2>&1 &  
-#       mv $MAC_PATH/installer/mac/newbuild/dist/* $MAC_PATH/dist_ml 
-#   fi
-   ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $JDK_BUNDLE $ML_BUILD $LOCALES > $MAC_LOG_NEW 2>&1 &
+
+   ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD $LOCALES > $MAC_LOG_NEW 2>&1 &
 
 fi
 
@@ -99,8 +96,6 @@ rmdir $OUTPUT_DIR
 
 #Check if Mac installer was OK, 10 "BUILD SUCCESSFUL" messages should be in Mac log
 if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
-#    IS_MAC_FAILED=`cat $MAC_LOG | grep "BUILD FAILED" | wc -l | tr " " "\n" | grep -v '^$'`
-#    IS_MAC_CONNECT=`cat $MAC_LOG | grep "Connection timed out" | wc -l | tr " " "\n" | grep -v '^$'`
 
     IS_NEW_MAC_FAILED=`cat $MAC_LOG_NEW | grep "BUILD FAILED" | wc -l | tr " " "\n" | grep -v '^$'`
     IS_NEW_MAC_CONNECT=`cat $MAC_LOG_NEW | grep "Connection timed out" | wc -l | tr " " "\n" | grep -v '^$'`
@@ -108,21 +103,14 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
     if [ $IS_NEW_MAC_FAILED -eq 0 ] && [ $IS_NEW_MAC_CONNECT -eq 0 ]; then
         #copy the bits back
         mkdir -p $DIST/bundles
-        #scp $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/dist/* $DIST/bundles        
-        #ERROR_CODE=$?
-        #if [ $ERROR_CODE != 0 ]; then
-        #    echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
-        #    exit $ERROR_CODE;
-        #fi    
-        scp $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist_en/* $DIST/bundles
+        scp -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist_en/* $DIST/bundles
         ERROR_CODE=$?
         if [ $ERROR_CODE != 0 ]; then
             echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
             exit $ERROR_CODE;
         fi
 	if [ 1 -eq $ML_BUILD ] ; then
-		#scp $NATIVE_MAC_MACHINE:$MAC_PATH/dist/* $DIST/ml/bundles
-		scp $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist/* $DIST/ml/bundles
+		scp -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist/* $DIST/ml/bundles
                 ERROR_CODE=$?
                 if [ $ERROR_CODE != 0 ]; then
                     echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get ml installers"
