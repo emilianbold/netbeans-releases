@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -71,6 +70,8 @@ import org.openide.filesystems.FileUtil;
  * @author Alexey Vladykin
  */
 public class QmakeProjectWriter {
+    
+    private static final String PKGCONFIG_BINARY = "pkg-config";   // NOI18N
 
     /*
      * Project file name is constructed as prefix + confName + suffix.
@@ -89,6 +90,7 @@ public class QmakeProjectWriter {
         TARGET,
         VERSION,
         CONFIG,
+        PKGCONFIG,
         QT,
         SOURCES,
         HEADERS,
@@ -182,6 +184,7 @@ public class QmakeProjectWriter {
         // app_bundle and lib_bundle get enabled on MacOS -- explicitly disable as well
         write(bw, Variable.CONFIG, Operation.SUB, "debug_and_release app_bundle lib_bundle"); // NOI18N
         write(bw, Variable.CONFIG, Operation.ADD, getConfig());
+        write(bw, Variable.PKGCONFIG, Operation.ADD, getPkgConfig());
         write(bw, Variable.QT, Operation.SET, configuration.getQmakeConfiguration().getEnabledModules());
 
         Item[] items = projectDescriptor.getProjectItems();
@@ -287,10 +290,39 @@ public class QmakeProjectWriter {
                 list.add("staticlib"); // NOI18N
                 break;
         }
+        if (isPkgConfigUsed()) {
+            list.add("link_pkgconfig"); // NOI18N
+        }        
         list.add(configuration.getQmakeConfiguration().getBuildMode().getOption());
         return list;
     }
 
+    private boolean isPkgConfigUsed() {
+        for (LibraryItem lib : configuration.getLinkerConfiguration().getLibrariesConfiguration().getValue()) {
+            if (lib.getType() == LibraryItem.OPTION_ITEM) {
+                LibraryItem.OptionItem option = (LibraryItem.OptionItem) lib;
+                if (option.getLibraryOption().contains(PKGCONFIG_BINARY)) {
+                    return true;
+                }
+            }
+        }    
+        return false;
+    }
+    
+    private List<String> getPkgConfig() {
+        List<LibraryItem> libraries = configuration.getLinkerConfiguration().getLibrariesConfiguration().getValue();
+        List<String> list = new ArrayList<String>(libraries.size());
+        for (LibraryItem lib : libraries) {
+            if (lib.getType() == LibraryItem.OPTION_ITEM) {
+                LibraryItem.OptionItem option = (LibraryItem.OptionItem) lib;
+                if (option.getLibraryOption().contains(PKGCONFIG_BINARY)) {
+                    list.add(option.getLibraryOption().replaceAll("`", "").replace(PKGCONFIG_BINARY, "").replace("--libs", "").trim()); // NOI18N
+                }
+            }
+        }            
+        return list;
+    }    
+    
     private String getLibs() {
         StringBuilder buf = new StringBuilder();
         CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
@@ -327,8 +359,12 @@ public class QmakeProjectWriter {
                     return libFileToOptionsString(item.getPath());
                 case LibraryItem.LIB_ITEM:
                 case LibraryItem.STD_LIB_ITEM:
-                case LibraryItem.OPTION_ITEM:
                     return item.getOption(null);
+                case LibraryItem.OPTION_ITEM:
+                    LibraryItem.OptionItem option = (LibraryItem.OptionItem) item;
+                    if (!option.getLibraryOption().contains(PKGCONFIG_BINARY)) {
+                        return item.getOption(null);
+                    }                    
                 default:
                     return ""; // NOI18N
             }
