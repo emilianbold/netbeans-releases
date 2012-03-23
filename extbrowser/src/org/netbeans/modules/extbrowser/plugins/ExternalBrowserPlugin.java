@@ -113,7 +113,16 @@ public final class ExternalBrowserPlugin {
      * browser requests.
      */
     public void register(URL url, ExtBrowserImpl browserImpl) {
-        awaitingBrowserResponse.put(url.toExternalForm(), browserImpl);
+        awaitingBrowserResponse.put(urlToString(url), browserImpl);
+    }
+    
+    private String urlToString(URL url) {
+        try {
+            // try to 'normalize' the URL
+            return url.toURI().toASCIIString();
+        } catch (URISyntaxException ex) {
+            return url.toExternalForm();
+        }
     }
 
     /**
@@ -227,14 +236,20 @@ public final class ExternalBrowserPlugin {
             } catch (MalformedURLException ex) {
                 LOG.log(Level.WARNING, "cannot parse URL: {0}", url); // NOI18N
             }
-            ExtBrowserImpl browserImpl = (u == null) ? null : awaitingBrowserResponse.remove(u.toExternalForm());
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "processing URL: {0}", (u == null) ? null : urlToString(u)); // NOI18N
+                for (String awaiting : awaitingBrowserResponse.keySet()) {
+                    LOG.log(Level.FINE, "awaiting URL: {0}", awaiting);  // NOI18N
+                }
+            }
+            ExtBrowserImpl browserImpl = (u == null) ? null : awaitingBrowserResponse.remove(urlToString(u));
             
             // XXX: workaround: when Web Project is run it is started as "http:/localhost/aa" but browser URL is
             // "http:/localhost/aa/"
             if (browserImpl == null && url.endsWith("/")) { // NOI18N
                 try {
                     u = new URL(url.substring(0, url.length()-1));
-                    browserImpl = awaitingBrowserResponse.remove(u.toExternalForm());
+                    browserImpl = awaitingBrowserResponse.remove(urlToString(u));
                 } catch (MalformedURLException ex) {
                     LOG.log(Level.WARNING, "cannot parse URL: {0}", url);   // NOI18N
                 }
@@ -245,7 +260,7 @@ public final class ExternalBrowserPlugin {
             {
                 try {
                     u = new URL(u.getProtocol(), "", u.getPort(), u.getFile()); // NOI18N
-                    browserImpl = awaitingBrowserResponse.remove(u.toExternalForm());
+                    browserImpl = awaitingBrowserResponse.remove(urlToString(u));
                 } catch (MalformedURLException ex) {
                     LOG.log(Level.WARNING, "cannot parse URL: {0}", url);// NOI18N
                 }

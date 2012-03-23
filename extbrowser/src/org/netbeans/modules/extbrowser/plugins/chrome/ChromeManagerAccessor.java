@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -271,9 +272,27 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         }
         
         protected String[] getUserData(){
+            // see http://www.chromium.org/user-experience/user-data-directory
+            // TODO - this will not work for Chromium on Windows and Mac
             if (Utilities.isWindows()) {
+                ArrayList<String> result = new ArrayList<String>();
                 String localAppData = System.getenv("LOCALAPPDATA");                // NOI18N
-                return new String[]{ localAppData+"\\Google\\Chrome\\User Data"};   // NOI18N
+                if (localAppData != null) {
+                    result.add(localAppData+"\\Google\\Chrome\\User Data");
+                }
+                String appData = System.getenv("APPDATA");                // NOI18N
+                if (appData != null) {
+                    // we are in C:\Documents and Settings\<username>\Application Data\ on XP
+                    File f = new File(appData);
+                    if (f.exists()) {
+                        String fName = f.getName();
+                        f = new File(f.getParentFile(),"Local Settings");
+                        f = new File(f, fName);
+                        if (f.exists())
+                            result.add(f.getPath()+"\\Google\\Chrome\\User Data");
+                    }
+                }
+                return result.toArray(new String[result.size()]);
             } 
             else if (Utilities.isMac()) {
                 return Utils.getUserPaths("/Library/Application Support/Google/Chrome");// NOI18N
