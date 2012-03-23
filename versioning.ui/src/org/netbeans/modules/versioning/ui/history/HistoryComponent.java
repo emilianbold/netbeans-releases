@@ -342,6 +342,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         getToolbar().containsLabel.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
         getToolbar().containsField.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
         masterView.setFilter(getSelectedFilter());
+        getToolbar().containsField.setText(""); // NOI18N
         getToolbar().containsField.requestFocus();
     }
 
