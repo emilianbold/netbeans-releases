@@ -167,9 +167,21 @@ public final class NamedServiceProcessor extends AbstractServiceProviderProcesso
                             );
                         }
                     }
-                    if (cnt == 0) {
-                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Not right subclass!", e);
+                }
+                if (cnt == 0) {
+                    StringBuilder sb = new StringBuilder();
+                    String prefix = "The type does not ";
+                    for (Class<?> type : nsd.serviceType()) {
+                        sb.append(prefix);
+                        if (type.isInterface()) {
+                            sb.append("implement ").append(type.getCanonicalName());
+                        } else {
+                            sb.append("subclass ").append(type.getCanonicalName());
+                        }
+                        prefix = ", neither it does ";
                     }
+                    sb.append('.');
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, sb.toString(), e);
                 }
             }
         }

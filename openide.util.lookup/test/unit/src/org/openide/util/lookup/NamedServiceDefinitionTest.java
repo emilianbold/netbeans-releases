@@ -112,6 +112,26 @@ public class NamedServiceDefinitionTest extends NbTestCase {
         assertEquals("Our runnable was executed again", "true", System.getProperty("executed"));
     }
     
+    public void testDoesNotImplementInterfaces() throws Exception {
+        System.setProperty("executed", "false");
+        String content = "import org.openide.util.lookup.NamedServiceDefinitionTest.RunTestReg;\n"
+            + "@RunTestReg(position=10,when=\"now\")\n"
+            + "public class Test {\n"
+            + "  public void run() { System.setProperty(\"executed\", \"true\"); }\n"
+            + "}\n";
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.Test", content);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        assertFalse("Compilation fails",
+            AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os)
+        );
+        String err = new String(os.toByteArray(), "UTF-8");
+        if (err.indexOf("java.lang.Runnable") == -1) {
+            fail("The error messages should say something about interface Runnable\n" + err);
+        }
+        if (err.indexOf("Callable") == -1) {
+            fail("The error messages should say something about interface Callable\n" + err);
+        }
+    }
     
     public void testMissingPathAttribute() throws Exception {
         String content = "import org.openide.util.lookup.NamedServiceDefinition;\n"
