@@ -142,6 +142,9 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
                     case INTERFACE_CONTEXT_KEYWORDS:
                         accept = true;
                         break;
+                    case HTML:
+                        accept = true;
+                        break;
                 }
             }
         }

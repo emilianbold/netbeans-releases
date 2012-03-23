@@ -956,6 +956,10 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         return ch == '"' || ch == '\'';
     }
 
+    private boolean isQuote(final Token<?extends PHPTokenId> token) {
+        return isQuote(token.text().charAt(0));
+    }
+
     private boolean doNotAutoComplete(final BaseDocument baseDocument, final char ch) {
         return (!isInsertMatchingEnabled(baseDocument) && isBracket(ch)) || (isQuote(ch) && !OptionsUtils.autoCompletionSmartQuotes());
     }
@@ -1157,6 +1161,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 caret.setDot(caretOffset + 1);
                 return true;
             } else {
+                caret.setDot(caretOffset);
                 return false;
             }
         }
@@ -1838,8 +1843,8 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(doc, dotPos, sectionEnd);
                 if (firstNonWhiteFwd != -1) {
                     char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
-                    insert = chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N
-                             chr == ';' || chr == ']' || chr == '.'; //NOI18N
+                    insert = (chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N
+                             chr == ';' || chr == ']' || chr == '.') && !isStringToken(previousToken) && !isQuote(token); //NOI18N
                 }
             }
 

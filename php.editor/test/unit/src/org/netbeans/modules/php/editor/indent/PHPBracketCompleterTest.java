@@ -387,6 +387,34 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         insertChar("x = '\\'^", '\'', "x = '\\''^");
     }
 
+    public void testIssue209867_01() throws Exception {
+        insertChar("$x = 'this is (long'^) string';", '\'', "$x = 'this is (long''^) string';");
+    }
+
+    public void testIssue209867_02() throws Exception {
+        insertChar("$x = 'this is long'^ string';", '\'', "$x = 'this is long''^ string';");
+    }
+
+    public void testIssue209867_03() throws Exception {
+        insertChar("$x = 'this is long^ string';", '\'', "$x = 'this is long'^ string';");
+    }
+
+    public void testIssue209867_04() throws Exception {
+        insertChar("if ($x == ^) {}", '\'', "if ($x == '^') {}");
+    }
+
+    public void testIssue209867_05() throws Exception {
+        insertChar("if ($x == '^) {}", '\'', "if ($x == ''^) {}");
+    }
+
+    public void testIssue209867_06() throws Exception {
+        insertChar("$x = 'this is long string' . $foo . ^;", '\'', "$x = 'this is long string' . $foo . '^';");
+    }
+
+    public void testIssue209867_07() throws Exception {
+        insertChar("$x = 'this is long string'^;", '\'', "$x = 'this is long string''^;");
+    }
+
     public void testDoubleQuotes1() throws Exception {
         insertChar("x = ^", '"', "x = \"^\"");
     }

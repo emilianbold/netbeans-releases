@@ -103,11 +103,29 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         init();
     }
 
-    @NbBundle.Messages("ApiGenPanel.info.csv=Comma (\",\") separated values.")
+    @NbBundle.Messages({
+        "ApiGenPanel.internal.toolTip=Generate documentation for elements marked as internal and display internal documentation parts.",
+        "ApiGenPanel.php.toolTip=Generate documentation for PHP internal classes.",
+        "ApiGenPanel.tree.toolTip=Generate tree view of classes, interfaces, traits and exceptions.",
+        "ApiGenPanel.deprecated.toolTip=Generate documentation for deprecated elements.",
+        "ApiGenPanel.todo.toolTip=Generate documentation of tasks.",
+        "ApiGenPanel.download.toolTip=Add a link to download documentation as a ZIP archive.",
+        "ApiGenPanel.sourceCode.toolTip=Generate highlighted source code files.",
+        "ApiGenPanel.info.csv=Comma (\",\") separated values."
+    })
     private void init() {
         // info
         charsetsInfoLabel.setText(Bundle.ApiGenPanel_info_csv());
         excludesInfoLabel.setText(Bundle.ApiGenPanel_info_csv());
+
+        // tool tips
+        internalCheckBox.setToolTipText(Bundle.ApiGenPanel_internal_toolTip());
+        phpCheckBox.setToolTipText(Bundle.ApiGenPanel_php_toolTip());
+        treeCheckBox.setToolTipText(Bundle.ApiGenPanel_tree_toolTip());
+        deprecatedCheckBox.setToolTipText(Bundle.ApiGenPanel_deprecated_toolTip());
+        todoCheckBox.setToolTipText(Bundle.ApiGenPanel_todo_toolTip());
+        downloadCheckBox.setToolTipText(Bundle.ApiGenPanel_download_toolTip());
+        sourceCodeCheckBox.setToolTipText(Bundle.ApiGenPanel_sourceCode_toolTip());
 
         // values
         targetTextField.setText(ApiGenPreferences.getTarget(phpModule, false));
