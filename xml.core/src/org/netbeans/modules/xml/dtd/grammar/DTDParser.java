@@ -136,7 +136,9 @@ public class DTDParser {
         }
 
         DTDGrammar dtdGrammar = handler.getDTDGrammar();
-        dtdGrammar.setResolvedEntities(res.getResolvedSystemIds());
+        dtdGrammar.setResolvedEntities(
+                res == null ? Collections.EMPTY_LIST : res.getResolvedSystemIds()
+        );
         return dtdGrammar;
     }
         
