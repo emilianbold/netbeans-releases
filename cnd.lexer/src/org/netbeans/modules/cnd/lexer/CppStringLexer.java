@@ -66,7 +66,9 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
     private static final int OTHER  = 1;
     private static final int PREFIX  = 2;
     private static final int START_DELIMETER  = 3;
-    private static final int AFTER_END_DELIMETER  = 4;
+    private static final int AFTER_START_DELIMETER  = 4;
+    private static final int END_DELIMETER  = 5;
+    private static final int AFTER_END_DELIMETER  = 6;
 
     private static final int EOF = LexerInput.EOF;
 
@@ -132,7 +134,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
         if (rawString) {
             if (this.state == INIT) {
                 return null;
-            } else if (this.state == PREFIX) {
+            } else if (this.state == PREFIX || this.state == START_DELIMETER) {
                 return Integer.valueOf(state);
             } else if (this.rawDelimeter != null && this.state == OTHER) {
                 return this.rawDelimeter;
@@ -181,15 +183,40 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                 }
                 if (ch == '(') {
                     rawDelimeter = delim.toString();
-                    return token(CppStringTokenId.START_DELIMETER);
+                    if (rawDelimeter.length() > 0) {
+                        input.backup(1);
+                        state = AFTER_START_DELIMETER;
+                        return token(CppStringTokenId.START_DELIMETER);
+                    } else {
+                        return token(CppStringTokenId.START_DELIMETER_PAREN);
+                    }
                 } else if (delim.length() > 0) {
                     input.backup(delim.length());
                     ch = read();
+                }
+            } else if (startState == END_DELIMETER) {
+                int read = input.read();
+                for (int i = 0; i < rawDelimeter.length(); i++) {
+                    assert (read == rawDelimeter.charAt(i));
+                    read = input.read();
+                }
+                assert read == '"';
+                if (rawDelimeter.length() > 0) {
+                    input.backup(1);
+                    state = AFTER_END_DELIMETER;
+                    return token(CppStringTokenId.END_DELIMETER);
+                } else {
+                    return token(CppStringTokenId.LAST_QUOTE);
                 }
             } else {
                 ch = read();
             }
             switch (ch) {
+                case '(':
+                    if (rawString && startState == AFTER_START_DELIMETER) {
+                        return token(CppStringTokenId.START_DELIMETER_PAREN);
+                    }
+                    break;
                 case ')':
                     if (rawString && startState == OTHER && rawDelimeter != null) {
                         if (input.readLength() > 1) {
@@ -198,20 +225,26 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                             return token(CppStringTokenId.TEXT);
                         }
                         // try to find end delimeter of raw string
+                        int backup = 1;
                         int read = input.read();
                         boolean ok = true;
                         for (int i = 0; i < rawDelimeter.length(); i++) {
                             if (read == rawDelimeter.charAt(i)) {
                                 read = input.read();
+                                backup++;
                             } else {
                                 ok = false;
                                 break;
                             }
                         }
-                        if (read == '"' && ok) {
-                            input.backup(1);
-                            state = AFTER_END_DELIMETER;
-                            return token(CppStringTokenId.END_DELIMETER);
+                        if (read == '"') {
+                            if (ok) {
+                                input.backup(backup);
+                                state = END_DELIMETER;
+                                return token(CppStringTokenId.END_DELIMETER_PAREN);
+                            } else {
+                                return token(CppStringTokenId.TEXT);
+                            }
                         }
                         if (read == EOF) {
                             return token(CppStringTokenId.TEXT, null, PartType.START);

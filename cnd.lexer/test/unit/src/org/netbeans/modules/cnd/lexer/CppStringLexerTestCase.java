@@ -115,14 +115,16 @@ public class CppStringLexerTestCase extends NbTestCase {
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.PREFIX_uR, "uR");
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.FIRST_QUOTE, "\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.START_DELIMETER, "*(");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.START_DELIMETER, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.START_DELIMETER_PAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.TEXT, "This is a ");
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.DOUBLE_QUOTE, "\"");
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.TEXT, "raw UTF-16");
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.DOUBLE_QUOTE, "\"");
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.TEXT, " string.");
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.TEXT, ")*");
-        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.END_DELIMETER, ")*");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.END_DELIMETER_PAREN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.END_DELIMETER, "*");
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.LAST_QUOTE, "\"");
 
         assertFalse("No more tokens", ts.moveNext());
