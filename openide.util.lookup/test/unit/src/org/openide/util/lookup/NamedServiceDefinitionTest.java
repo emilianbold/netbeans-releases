@@ -129,6 +129,23 @@ public class NamedServiceDefinitionTest extends NbTestCase {
             fail("The error messages should say something about missing @when\n" + err);
         }
     }
+
+    public void testNonStringPathAttribute() throws Exception {
+        String content = "import org.openide.util.lookup.NamedServiceDefinition;\n"
+            + "@NamedServiceDefinition(path=\"runtest/@when()/below\",serviceType=Runnable.class)\n"
+            + "public @interface Test {\n"
+            + "  int when();"
+            + "}\n";
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.Test", content);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        assertFalse("Compilation fails",
+            AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os)
+        );
+        String err = new String(os.toByteArray(), "UTF-8");
+        if (err.indexOf("@when()") == -1) {
+            fail("The error messages should say something about missing @when\n" + err);
+        }
+    }
     
     @NamedServiceDefinition(
         path="runtest/@when()/below",

@@ -61,6 +61,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import org.openide.util.lookup.NamedServiceDefinition;
@@ -86,13 +87,34 @@ public final class NamedServiceProcessor extends AbstractServiceProviderProcesso
             NamedServiceDefinition nsd = e.getAnnotation(NamedServiceDefinition.class);
             Matcher m = reference.matcher(nsd.path());
             while (m.find()) {
-                if (findAttribute(e, m.group(1)) == null) {
+                final ExecutableElement attr = findAttribute(e, m.group(1));
+                if (attr == null) {
                     processingEnv.getMessager().printMessage(
                         Diagnostic.Kind.ERROR, 
-                        "The path attribute contains " + m.group(0) + " reference, but there is no attribute named " + m.group(1), 
+                        "The path attribute contains " + 
+                        m.group(0) + 
+                        " reference, but there is no attribute named " + 
+                        m.group(1), 
                         e
                     );
+                    continue;
                 }
+                final TypeMirror toCheck = attr.getReturnType();
+                TypeMirror stringType = processingEnv.getElementUtils().getTypeElement("java.lang.String").asType(); // NOI18N
+                if (processingEnv.getTypeUtils().isAssignable(toCheck, stringType)) {
+                    continue;
+                }
+                ArrayType arrStringType = processingEnv.getTypeUtils().getArrayType(stringType);
+                if (processingEnv.getTypeUtils().isAssignable(toCheck, arrStringType)) {
+                    continue;
+                }
+                processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.ERROR,
+                        "The path attribute contains " + m.group(0) + 
+                        " reference, but attribute " + m.group(1) + 
+                        " does not return String or String[]", 
+                        e
+                );
             }
             register(e, PATH);
         }
