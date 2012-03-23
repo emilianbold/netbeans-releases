@@ -72,6 +72,7 @@ public class MergeTestHidden extends AbstractCommandTestCase {
         SVNRevision r2 = getRevision(file);
         
         ISVNClientAdapter c = getNbClient();
+        // used to fail with svnkit: http://issues.tmatesoft.com/issue/SVNKIT-229
         c.merge(getFileUrl(file), r2, getFileUrl(file), r1, file, false, false);
         assertTrue(file.exists());
         assertEquals("1", read(file));

@@ -57,6 +57,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -161,7 +162,7 @@ public final class DeployOnSaveUtils {
      * @param classesPropertyName
      * @since 1.30
      */
-    public static void performCleanup(Project project, PropertyEvaluator evaluator,
+    public static void performCleanup(final Project project, PropertyEvaluator evaluator,
             UpdateHelper updateHelper, String classesPropertyName, boolean forceCleanup) {
 
         // Delete COS mark
@@ -180,7 +181,11 @@ public final class DeployOnSaveUtils {
         if (mark != null || forceCleanup) {
             final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
             assert ap != null;
-            ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
+            Mutex.EVENT.writeAccess(new Runnable() {
+                @Override public void run() {
+                    ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
+                }
+            });
         }
     }
 

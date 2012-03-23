@@ -46,13 +46,13 @@
 package org.openide.text;
 import java.io.StringWriter;
 import java.util.logging.Handler;
-import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.*;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 
 /**
@@ -60,6 +60,7 @@ import org.openide.util.Lookup;
  * while it is working on it and a deadlock occurs.
  * @author  Petr Nejedly, Jaroslav Tulach
  */
+@RandomlyFails // NB-Core-Build #8023: Waiting 10s for AWT and nothing! Exiting to prevent deadlock [2x]
 public class DocumentCannotBeClosedWhenAWTBlockedTest extends NbTestCase implements CloneableEditorSupport.Env {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");

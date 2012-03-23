@@ -283,8 +283,8 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
             }
             
         }
-        
-        msm.clearSelectedPath();
+        if( path.length > 0 )
+            msm.clearSelectedPath();
     }
     
     

@@ -306,6 +306,7 @@ public final class BuildImplTest extends NbTestCase {
         // XXX test alternate src/test dirs
     }
 
+    @RandomlyFails // NB-Core-Build #8012: in writeFile, RefersToExcluded1b.java is "not valid" (should convert to java.io.File)
     public void testIncludesExcludes() throws Exception {
         AntProjectHelper aph = setupProject(12, true);
         EditableProperties ep = aph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);

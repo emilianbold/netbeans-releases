@@ -45,43 +45,19 @@ package org.netbeans.modules.maven.indexer;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.MultiTermQuery;
-import org.apache.lucene.search.PrefixQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.*;
+import org.apache.lucene.store.SimpleFSDirectory;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.index.ArtifactAvailablility;
-import org.apache.maven.index.ArtifactContext;
-import org.apache.maven.index.ArtifactContextProducer;
-import org.apache.maven.index.ArtifactInfo;
-import org.apache.maven.index.FlatSearchRequest;
-import org.apache.maven.index.FlatSearchResponse;
-import org.apache.maven.index.GroupedSearchRequest;
-import org.apache.maven.index.GroupedSearchResponse;
-import org.apache.maven.index.MAVEN;
-import org.apache.maven.index.NexusIndexer;
-import org.apache.maven.index.SearchEngine;
+import org.apache.maven.index.*;
 import org.apache.maven.index.artifact.ArtifactPackagingMapper;
 import org.apache.maven.index.context.IndexCreator;
 import org.apache.maven.index.context.IndexingContext;
@@ -112,34 +88,27 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.QueryField;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.*;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
-import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
-import org.netbeans.modules.maven.indexer.spi.BaseQueries;
-import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
-import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery;
-import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
-import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
-import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
-import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
-import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
+import org.netbeans.modules.maven.indexer.spi.*;
 import org.openide.modules.Places;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.*;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.util.repository.DefaultMirrorSelector;
 
-@ServiceProvider(service=RepositoryIndexerImplementation.class)
+@ServiceProviders({
+    @ServiceProvider(service=RepositoryIndexerImplementation.class),
+    @ServiceProvider(service=BaseQueries.class),
+    @ServiceProvider(service=ChecksumQueries.class),
+    @ServiceProvider(service=ArchetypeQueries.class),
+    @ServiceProvider(service=DependencyInfoQueries.class),
+    @ServiceProvider(service=ClassesQuery.class),
+    @ServiceProvider(service=ClassUsageQuery.class),
+    @ServiceProvider(service=GenericFindQuery.class),
+    @ServiceProvider(service=ContextLoadedQuery.class)
+})
 public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementation,
         BaseQueries, ChecksumQueries, ArchetypeQueries, DependencyInfoQueries,
         ClassesQuery, ClassUsageQuery, GenericFindQuery, ContextLoadedQuery {
@@ -174,17 +143,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
     }
     
-    private Lookup lookup;
-
     static final int MAX_RESULT_COUNT = 512;
 
     public NexusRepositoryIndexerImpl() {
-        lookup = Lookups.singleton(this);
-    }
-
-    @Override
-    public Lookup getCapabilityLookup() {
-        return lookup;
     }
 
     private void initIndexer () {
@@ -253,10 +214,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
             LOGGER.log(Level.FINE, "Loading Context: {0}", info.getId());
                 File loc = new File(getDefaultIndexLocation(), info.getId()); // index folder
-                if (!loc.exists() || loc.listFiles().length <= 0) {
-                    //TODO this condition is not enough..
+                try {
+                    if (!loc.exists() || !new File(loc, "timestamp").exists() || !IndexReader.indexExists(new SimpleFSDirectory(loc))) {
+                        index = true;
+                        LOGGER.log(Level.FINER, "Index Not Available: {0} at: {1}", new Object[] {info.getId(), loc.getAbsolutePath()});
+                    }
+                } catch (IOException ex) {
                     index = true;
-                    LOGGER.log(Level.FINER, "Index Not Available: {0} at: {1}", new Object[] {info.getId(), loc.getAbsolutePath()});
+                    LOGGER.log(Level.FINER, "Index Not Available: " + info.getId() + " at: " + loc.getAbsolutePath(), ex);
                 }
 
                 List<IndexCreator> creators = new ArrayList<IndexCreator>();
@@ -604,7 +569,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 public @Override Void run() throws Exception {
                     boolean index = loadIndexingContext2(repo);
                     if (index) {
-                        NexusRepositoryIndexerImpl.this.indexLoadedRepo(repo, true);
+                        try {
+                            NexusRepositoryIndexerImpl.this.indexLoadedRepo(repo, true);
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.INFO, "could not (re-)index " + repo.getId(), ex);
+                            return null;
+                        }    
                     }
                     Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
@@ -654,7 +624,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 public @Override Void run() throws Exception {
                     boolean index = loadIndexingContext2(repo);
                     if (index) {
-                        indexLoadedRepo(repo, true); //TODO do we care here?
+                        try {
+                            indexLoadedRepo(repo, true); //TODO do we care here?
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.INFO, "could not (re-)index " + repo.getId(), ex);
+                            return null;
+                        }
                     }
                     Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
@@ -832,6 +807,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 infos.addAll(convertToNBVersionInfo(response.getResults()));
             }
         }, skipAction);
+        Collections.sort(infos);
         result.getResults().addAll(infos);
         return result;
     }
@@ -888,6 +864,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction);
+        Collections.sort(infos);
         result.getResults().addAll(infos);
         return result;
     }
@@ -917,6 +894,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction);
+        Collections.sort(infos);
         result.getResults().addAll(infos);
         return result;
     }
@@ -1004,6 +982,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction);
+        Collections.sort(infos);
         result.getResults().addAll(infos);
         return result;
     }
@@ -1035,6 +1014,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction);
+        Collections.sort(infos);
         result.getResults().addAll(infos);
         return result;
     }
@@ -1187,6 +1167,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction);
+        Collections.sort(infos);
         result.getResults().addAll(infos);
         return result;
     }
@@ -1196,18 +1177,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>(repos.size());
         for (final RepositoryInfo repo : repos) {
             File loc = new File(getDefaultIndexLocation(), repo.getId()); // index folder
-            if (loc.exists()) {
-                File timestamp = new File(loc, "timestamp"); //NOI18N
-                if (timestamp.exists()) {
+            try {
+                if (loc.exists() && new File(loc, "timestamp").exists() && IndexReader.indexExists(new SimpleFSDirectory(loc))) {
                     toRet.add(repo);
                 }
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINER, "Index Not Available: " +repo.getId() + " at: " + loc.getAbsolutePath(), ex);
             }
         }
         return toRet;
-    }
-
-    private boolean isLoaded(final RepositoryInfo repo) {
-        return !getLoaded(Collections.singletonList(repo)).isEmpty();
     }
 
     private String toNexusField(String field) {

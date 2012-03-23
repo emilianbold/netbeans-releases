@@ -676,7 +676,7 @@ public class AstNode {
         b.append('}');
 
         //attched messages
-        for (ProblemDescription d : getDescriptions_property()) {
+        for (ProblemDescription d : getDescriptions()) {
             b.append(d.getKey());
             b.append(' ');
         }
@@ -691,7 +691,7 @@ public class AstNode {
             b.deleteCharAt(b.length() - 1);
         }
 
-        if (!getDescriptions_property().isEmpty()) {
+        if (!getDescriptions().isEmpty()) {
             b.append("; issues:");
             for (ProblemDescription d : getDescriptions_property()) {
                 b.append(d);

@@ -342,6 +342,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("instanceOfExpression");
     }
 
+    public void testIssue170712() throws Exception {
+        performTest("php53/issue170712");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

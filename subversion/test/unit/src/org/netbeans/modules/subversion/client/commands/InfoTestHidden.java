@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -122,7 +123,8 @@ public class InfoTestHidden extends AbstractCommandTestCase {
 
         assertNotNull(e1);
         assertNotNull(e2);
-        assertTrue(e2.getMessage().indexOf(e1.getMessage()) > -1);
+        assertTrue(SvnClientExceptionHandler.isWrongUrl(e1.getMessage()));
+        assertTrue(SvnClientExceptionHandler.isWrongUrl(e2.getMessage()));
     }
 
     public void testInfoNotManaged() throws Exception {
@@ -408,7 +410,8 @@ public class InfoTestHidden extends AbstractCommandTestCase {
 
         assertNotNull(e1);
         assertNotNull(e2);
-        assertTrue(e2.getMessage().indexOf(e1.getMessage()) > -1);
+        assertTrue(SvnClientExceptionHandler.isWrongUrl(e1.getMessage()));
+        assertTrue(SvnClientExceptionHandler.isWrongUrl(e2.getMessage()));
     }
 
 }

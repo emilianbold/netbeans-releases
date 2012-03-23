@@ -48,11 +48,11 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-@OptionsPanelController.SubRegistration(location = "Advanced",
-displayName = "#AdvancedOption_DisplayName_FindBugs",
-keywords = "#AdvancedOption_Keywords_FindBugs",
-keywordsCategory = "Advanced/FindBugs")
-@org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_FindBugs=FindBugs", "AdvancedOption_Keywords_FindBugs=findbugs,java"})
+//@OptionsPanelController.SubRegistration(location = "Advanced",
+//displayName = "#AdvancedOption_DisplayName_FindBugs",
+//keywords = "#AdvancedOption_Keywords_FindBugs",
+//keywordsCategory = "Advanced/FindBugs")
+//@org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_FindBugs=FindBugs", "AdvancedOption_Keywords_FindBugs=findbugs,java"})
 public final class FindBugsOptionsPanelController extends OptionsPanelController {
 
     private FindBugsPanel panel;

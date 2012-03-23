@@ -61,7 +61,7 @@ public class CategoryEntry {
         return categoryName;
     }
 
-    public List<TaskEntry> getTasks() {
+    public List<TaskEntry> getTaskEntries() {
         return tasks;
     }
 }

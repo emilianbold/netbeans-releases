@@ -84,7 +84,8 @@ public class LineBreakpointsTest extends DebuggerTestCase {
         "testLineBreakpointFunctionalityInSecondaryClass",
         "testConditionalLineBreakpointFunctionality",
         "testLineBreakpointActions",
-        "testLineBreakpointsValidation"
+        "testLineBreakpointsValidation",
+        "testLineBreakpointsAdjustment"
     };
 
     private Node beanNode;
@@ -283,7 +284,7 @@ public class LineBreakpointsTest extends DebuggerTestCase {
         NbDialogOperator dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
 
         String nothread = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_CB_Actions_Panel_Suspend_None");
-        new JComboBoxOperator(dialog, 1).selectItem(nothread);
+        new JComboBoxOperator(dialog, 2).selectItem(nothread);
         String breakpointHitText = "Line breakpoint hit on {className}:{lineNumber}"; //noi18n
         new JTextFieldOperator(dialog, 4).setText(breakpointHitText);
         dialog.ok();
@@ -293,24 +294,39 @@ public class LineBreakpointsTest extends DebuggerTestCase {
     }
 
     public void testLineBreakpointsValidation() throws Throwable {        
-        int[] prelines = new int[]{33, 34, 37, 43, 49};
+        int[] invalidBreakpoints = new int[]{33, 34, 37, 43, 49, 72, 83, 95, 96, 125, 143};
         EditorOperator eo = new EditorOperator("MemoryView.java");
-        //start debugging
-        Utilities.startDebugger();
-        Utilities.waitStatusText(Utilities.runningStatusBarText);
-        //toggle breakpoints
-        for (int i = 0; i < prelines.length; i++) {
-            Utilities.toggleBreakpoint(eo, prelines[i]);
-            Utilities.waitStatusText("Invalid LineBreakpoint MemoryView.java : " + prelines[i]);
-        }
-        int[] debuglines = new int[]{72, 81, 83, 95, 96, 105, 108, 125, 153};
-        //toggle breakpoints
-        for (int i = 0; i < debuglines.length; i++) {
-            Utilities.toggleBreakpoint(eo, debuglines[i]);
-            Utilities.waitStatusText("Invalid LineBreakpoint MemoryView.java : " + debuglines[i]);
+
+        //try to toggle invalid line breakpoints
+        for (int i = 0; i < invalidBreakpoints.length; i++) {
+            Thread.sleep(5000);
+            Utilities.toggleInvalidBreakpoint(eo, invalidBreakpoints[i]);
+            Utilities.waitStatusText("A breakpoint cannot be set at this location.");
         }
     }
-
+    
+    public void testLineBreakpointsAdjustment() throws Throwable {
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        //toggle non-breakable line breakpoint
+        Utilities.toggleInvalidBreakpoint(eo, 108);
+        Utilities.waitStatusText("Non-breakable location selected, breakpoint position adjusted.");
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+        assertEquals("Line MemoryView.java:104", jTableOperator.getValueAt(0, 0).toString());
+        Utilities.deleteAllBreakpoints();
+        
+        //toggle line breakpoints to be adjusted
+        Utilities.toggleInvalidBreakpoint(eo, 81);
+        Utilities.toggleInvalidBreakpoint(eo, 105);
+        assertTrue(jTableOperator.getValueAt(0, 0).toString().endsWith("81"));
+        assertTrue(jTableOperator.getValueAt(1, 0).toString().endsWith("105"));
+        
+        Utilities.startDebugger();
+        //check that both breakpoints were moved to nearest breakable locations
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
+        Utilities.checkConsoleForText("LineBreakpoint MemoryView.java : 104 successfully submitted.", 2);
+        Utilities.checkConsoleForText("LineBreakpoint MemoryView.java : 80 successfully submitted.", 3);
+    }
 
     protected void setBreakpointType(NbDialogOperator dialog, String type) {
         new JComboBoxOperator(dialog, 0).selectItem("Java");

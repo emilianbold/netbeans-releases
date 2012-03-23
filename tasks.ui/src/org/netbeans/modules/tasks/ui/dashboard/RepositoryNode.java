@@ -79,10 +79,13 @@ public class RepositoryNode extends AbstractRepositoryNode implements PropertyCh
 
     public RepositoryNode(Repository repository) {
         super(true, repository);
-        if (iconClose == null) {
-            iconClose = ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/close.png", true); //NOI18N
-            iconCloseOver = ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/close_over.png", true); //NOI18N
-        }
+        loadIcons();
+        repository.addPropertyChangeListener(this);
+    }
+
+    public RepositoryNode(Repository repository, boolean loaded) {
+        super(true, repository, loaded);
+        loadIcons();
         repository.addPropertyChangeListener(this);
     }
 
@@ -175,5 +178,12 @@ public class RepositoryNode extends AbstractRepositoryNode implements PropertyCh
         updateNodes();
         fireContentChanged();
         refreshChildren();
+    }
+
+    private void loadIcons() {
+        if (iconClose == null) {
+            iconClose = ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/close.png", true); //NOI18N
+            iconCloseOver = ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/close_over.png", true); //NOI18N
+        }
     }
 }

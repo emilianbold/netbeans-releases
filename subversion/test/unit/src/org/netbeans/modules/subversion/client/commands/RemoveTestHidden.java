@@ -113,7 +113,7 @@ public class RemoveTestHidden extends AbstractCommandTestCase {
         ISVNClientAdapter c = getNbClient();
         c.remove(new File[] {folder}, true);
 
-        assertTrue(folder.exists());
+        assertFalse(folder.exists());
         assertStatus(SVNStatusKind.DELETED, folder);   
         assertNotifiedFiles(new File[] {folder});        
     }            
@@ -148,7 +148,7 @@ public class RemoveTestHidden extends AbstractCommandTestCase {
         ISVNClientAdapter c = getNbClient();
         c.remove(new File[] {folder}, true);
 
-        assertTrue(folder.exists());
+        assertFalse(folder.exists());
         assertFalse(file1.exists());
         assertFalse(file2.exists());
         assertStatus(SVNStatusKind.DELETED, folder);        

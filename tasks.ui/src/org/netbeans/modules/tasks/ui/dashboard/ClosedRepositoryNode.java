@@ -72,10 +72,12 @@ public class ClosedRepositoryNode extends AbstractRepositoryNode {
 
     public ClosedRepositoryNode(Repository repository) {
         super(false, repository);
-        if (iconOpen == null) {
-            iconOpen = ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/open.png", true); //NOI18N
-            iconOpenOver = ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/open_over.png", true); //NOI18N
-        }
+        loadIcons();
+    }
+
+    public ClosedRepositoryNode(Repository repository, boolean loaded) {
+        super(false, repository, loaded);
+        loadIcons();
     }
 
     @Override
@@ -113,5 +115,12 @@ public class ClosedRepositoryNode extends AbstractRepositoryNode {
             repositoryAction = new OpenRepositoryNodeAction(this);
         }
         return repositoryAction;
+    }
+
+    private void loadIcons() {
+        if (iconOpen == null) {
+            iconOpen = ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/open.png", true); //NOI18N
+            iconOpenOver = ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/open_over.png", true); //NOI18N
+        }
     }
 }
