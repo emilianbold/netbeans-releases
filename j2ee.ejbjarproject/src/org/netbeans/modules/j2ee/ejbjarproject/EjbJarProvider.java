@@ -260,7 +260,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
         EjbJarProjectProperties.setServerInstance(project, helper, serverInstanceID);
     }
     
-    public Iterator getArchiveContents() throws java.io.IOException {
+    public Iterator<J2eeModule.RootedEntry> getArchiveContents() throws java.io.IOException {
         FileObject content = getContentDirectory();
         content.refresh();
         return new IT(content);
@@ -525,7 +525,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
         }
     }
 
-    private static class IT implements Iterator {
+    private static class IT implements Iterator<J2eeModule.RootedEntry> {
         java.util.Enumeration ch;
         FileObject root;
         
@@ -538,7 +538,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
             return ch.hasMoreElements();
         }
         
-        public Object next() {
+        public J2eeModule.RootedEntry next() {
             FileObject f = (FileObject) ch.nextElement();
             return new FSRootRE(root, f);
         }

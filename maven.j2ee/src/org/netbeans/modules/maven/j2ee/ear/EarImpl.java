@@ -830,7 +830,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
             return module.getArchive();
         }
 
-        public Iterator getArchiveContents() throws IOException {
+        public Iterator<J2eeModule.RootedEntry> getArchiveContents() throws IOException {
             return module.getArchiveContents();
         }
 
