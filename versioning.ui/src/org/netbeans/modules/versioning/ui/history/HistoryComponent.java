@@ -125,6 +125,19 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         activatedNodesContent = new InstanceContent();
     }
     
+    public HistoryComponent(File... files) {
+        this();
+        
+        VCSFileProxy[] proxies = new VCSFileProxy[files.length];
+        for (int i = 0; i < proxies.length; i++) {
+            proxies[i] = VCSFileProxy.createFileProxy(files[i]);
+        }
+        this.files = proxies;
+        VersioningSystem vs = files.length > 0 ? Utils.getOwner(proxies[0]) : null;
+        History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{proxies[0], vs != null ? vs.getDisplayName() : null});
+        init(vs, true, proxies);
+    }
+    
     public HistoryComponent(Lookup context) {
         this();
         DataObject dataObject = context.lookup(DataObject.class);
@@ -140,18 +153,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         files = filesList.toArray(new VCSFileProxy[filesList.size()]);
         VersioningSystem vs = files.length > 0 ? Utils.getOwner(files[0]) : null;
         History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{files[0], vs != null ? vs.getDisplayName() : null});
-        init(vs, files);    
-    }
-    
-    public void setFiles(File... files) {   
-        VCSFileProxy[] proxies = new VCSFileProxy[files.length];
-        for (int i = 0; i < proxies.length; i++) {
-            proxies[i] = VCSFileProxy.createFileProxy(files[i]);
-        }
-        this.files = proxies;
-        VersioningSystem vs = files.length > 0 ? Utils.getOwner(proxies[0]) : null;
-        History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{proxies[0], vs != null ? vs.getDisplayName() : null});
-        init(vs, true, proxies);
+        init(vs, false, files);    
     }
     
     private Collection<VCSFileProxy> toFileCollection(Collection<? extends FileObject> fileObjects) {
@@ -163,10 +165,6 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         return ret;
     }        
 
-    private void init(VersioningSystem vs, final VCSFileProxy... files) {   
-        init(vs, false, files);
-    }
-    
     private void init(VersioningSystem vs, boolean refresh, final VCSFileProxy... files) {   
         this.versioningSystem = vs;
         if(toolBar == null) {
