@@ -807,6 +807,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 infos.addAll(convertToNBVersionInfo(response.getResults()));
             }
         }, skipAction);
+        Collections.sort(infos);
         result.getResults().addAll(infos);
         return result;
     }
@@ -863,6 +864,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction);
+        Collections.sort(infos);
         result.getResults().addAll(infos);
         return result;
     }
@@ -892,6 +894,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction);
+        Collections.sort(infos);
         result.getResults().addAll(infos);
         return result;
     }
@@ -979,6 +982,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction);
+        Collections.sort(infos);
         result.getResults().addAll(infos);
         return result;
     }
@@ -1010,6 +1014,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction);
+        Collections.sort(infos);
         result.getResults().addAll(infos);
         return result;
     }
@@ -1162,6 +1167,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }, skipAction);
+        Collections.sort(infos);
         result.getResults().addAll(infos);
         return result;
     }
