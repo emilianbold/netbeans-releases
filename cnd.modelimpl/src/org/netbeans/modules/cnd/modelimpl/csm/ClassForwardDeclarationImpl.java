@@ -246,14 +246,11 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         Resolver currentResolver = ResolverFactory.getCurrentResolver();
         CsmObject result = lastResult;
         if (needRecount(newParseCount, currentResolver)) {
-            result = ((ProjectBase) getContainingFile().getProject()).findClassifier(name);
-            if(result == null) {
-                Resolver aResolver = ResolverFactory.createResolver(this);
-                try {
-                    result = aResolver.resolve(nameParts, Resolver.CLASS);
-                } finally {
-                    ResolverFactory.releaseResolver(aResolver);
-                }
+            Resolver aResolver = ResolverFactory.createResolver(this);
+            try {
+                result = aResolver.resolve(nameParts, Resolver.CLASS);
+            } finally {
+                ResolverFactory.releaseResolver(aResolver);
             }
             if (result == null || ForwardClass.isForwardClass((CsmDeclaration)result) || CsmKindUtilities.isClassForwardDeclaration(result)) {
                 Resolver aResolver2 = ResolverFactory.createResolver(this);
@@ -267,6 +264,9 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
                 } finally {
                     ResolverFactory.releaseResolver(aResolver2);
                 }
+            }
+            if(result == null || CsmKindUtilities.isTypedef(result)) {
+                result = ((ProjectBase) getContainingFile().getProject()).findClassifier(name);
             }
             if (result == null) {
                 result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(nameParts, getContainingFile(), getStartOffset());
