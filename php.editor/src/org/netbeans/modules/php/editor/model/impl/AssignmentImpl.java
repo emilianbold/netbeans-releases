@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.openide.util.Union2;
@@ -76,7 +77,15 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
         super(scope, container.getName(), container.getFile(), nameRange, container.getPhpElementKind());
         this.container = container;
-        this.typeName = Union2.<String, Collection<? extends TypeScope>>createFirst(typeName);
+        String modifiedTypeName = typeName;
+        if (typeName != null && !typeName.contains("@")) { //NOI18N
+            QualifiedName qualifiedName = QualifiedName.create(typeName);
+            QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(qualifiedName, nameRange.getStart(), scope);
+            if (qualifiedName.getSegments().size() != fullyQualifiedName.getSegments().size()) {
+                modifiedTypeName = fullyQualifiedName.toString();
+            }
+        }
+        this.typeName = Union2.<String, Collection<? extends TypeScope>>createFirst(modifiedTypeName);
         this.scopeRange = scopeRange;
     }
 
