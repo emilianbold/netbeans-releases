@@ -626,7 +626,9 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         group.addBarrier(new Runnable() {
             @Override
             public void run() {
-                if (!group.isFailed()) {
+                if (group.isFailed()) {
+                    executed();
+                } else {
                     refreshTask.schedule(0);
                 }
             }
