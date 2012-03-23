@@ -57,7 +57,7 @@ public interface ExtensionManagerAccessor {
         implements BrowserExtensionManager 
     {
         protected static final String PLUGIN_MODULE_NAME = 
-            "org.netbeans.modules.web.plugins";             // NOI18N
+            "org.netbeans.modules.extbrowser";             // NOI18N
         
         protected abstract String getCurrentPluginVersion();
         
