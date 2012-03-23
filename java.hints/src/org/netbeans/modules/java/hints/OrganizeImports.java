@@ -47,6 +47,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+import javax.tools.Diagnostic;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -74,18 +75,17 @@ import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
-import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.TriggerTreeKind;
-import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -95,6 +95,8 @@ import org.openide.util.NbBundle;
  */
 @Hint(displayName = "#DN_org.netbeans.modules.java.hints.OrganizeImports", description = "#DESC_org.netbeans.modules.java.hints.OrganizeImports", category = "imports")
 public class OrganizeImports {
+    
+    private static final String ERROR_CODE = "compiler.err.expected"; // NOI18N
 
     @TriggerTreeKind(Kind.COMPILATION_UNIT)
     public static ErrorDescription checkImports(final HintContext context) {
@@ -128,10 +130,22 @@ public class OrganizeImports {
         return null;
     }
 
-
     private static void doOrganizeImports(WorkingCopy copy) throws IllegalStateException {
         CompilationUnitTree cu = copy.getCompilationUnit();
-        if (!cu.getImports().isEmpty()) {
+        List<? extends ImportTree> imports = cu.getImports();
+        if (!imports.isEmpty()) {
+            List<Diagnostic> diags = copy.getDiagnostics();
+            if (!diags.isEmpty()) {
+                SourcePositions sp = copy.getTrees().getSourcePositions();
+                long startPos = sp.getStartPosition(cu, imports.get(0));
+                long endPos = sp.getEndPosition(cu, imports.get(imports.size() - 1));
+                for (Diagnostic d : diags) {
+                    if (startPos <= d.getPosition() && d.getPosition() <= endPos) {
+                        if (ERROR_CODE.contentEquals(d.getCode()))
+                            return;
+                    }
+                }
+            }
             final CodeStyle cs = CodeStyle.getDefault(copy.getFileObject());
             Set<Element> starImports = cs.countForUsingStarImport() == Integer.MAX_VALUE ? new HashSet<Element>() : null;
             Set<Element> staticStarImports = cs.countForUsingStaticStarImport() == Integer.MAX_VALUE ? new HashSet<Element>() : null;
