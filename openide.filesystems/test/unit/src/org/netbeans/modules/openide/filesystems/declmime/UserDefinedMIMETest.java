@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.openide.filesystems.declmime;
 
-package org.netbeans.modules.remote.impl.fs;
+import java.io.OutputStream;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class FormatException extends Exception {
-    private final boolean expexted;
+public class UserDefinedMIMETest extends NbTestCase {
 
-    public FormatException(String text, boolean expected) {
-        super(text);
-        this.expexted = expected;
+    public UserDefinedMIMETest(String name) {
+        super(name);
     }
-
-    public FormatException(String string, Throwable thrwbl) {
-        super(string, thrwbl);
-        expexted = false;
+    
+    public void testDefineAFileAndCheckType() throws Exception {
+        FileObject type = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/type.inc");
+        assertEquals("At first unknown", "content/unknown", type.getMIMEType());
+        
+        FileObject mimeRoot = FileUtil.getConfigFile("Services/MIMEResolver/");
+        assertNotNull("Mime root found", mimeRoot);
+        
+        
+        String txt = "<?xml version='1.0' encoding='UTF-8'?>\n"
+            + "<!DOCTYPE MIME-resolver PUBLIC '-//NetBeans//DTD MIME Resolver 1.1//EN' 'http://www.netbeans.org/dtds/mime-resolver-1_1.dtd'>\n"
+            + "<MIME-resolver>\n"
+            + "  <file>\n"
+            + "    <ext name='XXX'/>\n"
+            + "    <ext name='inc'/>\n"
+            + "    <resolver mime='text/x-h'/>\n"
+            + "</file>\n"
+            + "</MIME-resolver>\n";
+        
+        FileObject udmr = FileUtil.createData(mimeRoot, "user-defined-mime-resolver.xml");
+        
+        assertEquals("Still unknown", "content/unknown", type.getMIMEType());
+        
+        
+        OutputStream os = udmr.getOutputStream();
+        os.write(txt.getBytes("UTF-8"));
+        os.close();
+        udmr.setAttribute("position", 555);
+        udmr.setAttribute("user-defined-mime-resolver", Boolean.TRUE);
+        
+        assertEquals("Recognized well at the end", "text/x-h", type.getMIMEType());
     }
-
-    public boolean isExpexted() {
-        return expexted;
-    }
-
 }
