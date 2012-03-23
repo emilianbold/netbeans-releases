@@ -57,7 +57,7 @@ import org.netbeans.editor.SideBarFactory;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.NbEditorKit;
 
-@MimeRegistration(mimeType = SearchNbEditorKit.SEARCHBAR_MIMETYPE, service = EditorKit.class, position = 1)
+@MimeRegistration(mimeType = SearchNbEditorKit.SEARCHBAR_MIMETYPE, service = EditorKit.class)
 public class SearchNbEditorKit extends NbEditorKit {
 
     public static final String INCREMENTAL_SEARCH_FORWARD = "incremental-search-forward";
