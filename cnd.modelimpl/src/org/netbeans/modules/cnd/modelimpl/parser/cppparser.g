@@ -1009,7 +1009,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             |   cv_qualifier
             |   LITERAL_typedef
             )*
-            LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
+            LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
         ) =>
         {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)?
@@ -2517,10 +2517,19 @@ trailing_type
     :
         POINTERTO 
         (tq=cv_qualifier)*
-        ts=type_specifier[dsInvalid, false]
+        ts=trailing_type_specifier
         (options {greedy=true;} : ptr_operator)*
         (LSQUARE (constant_expression)? RSQUARE)*
     ;
+
+trailing_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
+{String id;}
+:   
+        ts = simple_type_specifier[false]
+    |   
+        (LITERAL_class|LITERAL_struct|LITERAL_union|LITERAL_enum|LITERAL_typename)
+        id = qualified_id
+;
 
 protected
 function_direct_declarator_2 [boolean definition, boolean symTabCheck] 
