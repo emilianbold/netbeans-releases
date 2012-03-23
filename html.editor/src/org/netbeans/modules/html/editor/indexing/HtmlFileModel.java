@@ -47,21 +47,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
-import org.netbeans.modules.html.editor.lib.api.tree.NodeUtils;
-import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.completion.AttrValuesCompletion;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.html.editor.lib.api.tree.*;
+import org.netbeans.modules.parsing.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.ValueCompletion;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
@@ -145,9 +139,9 @@ public class HtmlFileModel {
 
     private void init() {
         //XXX this scans only core html parse tree, what about the other namespaces????
-        AstNode root = parserResult.root();
+        Node root = parserResult.root();
         if(root != null) {
-            NodeUtils.visitChildren(root, new ReferencesSearch(), AstNode.NodeType.OPEN_TAG);
+            NodeUtils.visitChildren(root, new ReferencesSearch(), ElementType.OPEN_TAG);
         } else {
             //completely broken source, no parser result
         }
@@ -192,43 +186,48 @@ public class HtmlFileModel {
         return new HtmlLinkEntry(getFileObject(), name, range, documentRange, tagName, attributeName);
     }
 
-    public class ReferencesSearch implements AstNodeVisitor {
+    public class ReferencesSearch implements NodeVisitor {
 
         @Override
-        public void visit(AstNode node) {
+        public void visit(Node node) {
+            Tag tnode = (Tag)node;
             //XXX This is HTML specific - USE TagMetadata!!!
             //TODO this is a funny way how to figure out if the attribute contains
             //a file reference or not. The code needs to be generified later.
-            Map<String, ValueCompletion<HtmlCompletionItem>> completions = AttrValuesCompletion.getSupportsForTag(node.name());
+            Map<String, ValueCompletion<HtmlCompletionItem>> completions = AttrValuesCompletion.getSupportsForTag(tnode.name().toString());
             if(completions != null) {
-                for(Attribute attr : node.getAttributes()) {
-                    ValueCompletion<HtmlCompletionItem> avc = completions.get(attr.name());
+                for(Attribute attr : tnode.attributes()) {
+                    ValueCompletion<HtmlCompletionItem> avc = completions.get(attr.name().toString());
                     if(AttrValuesCompletion.FILE_NAME_SUPPORT == avc) {
                         //found file reference
+                        CharSequence unquotedValue = NodeUtils.unquotedValue(attr);
+                        boolean isQuoted = NodeUtils.isValueQuoted(attr);
+                        int offset = attr.valueOffset() + (isQuoted ? 1 : 0);
+                        
                         getReferencesCollectionInstance().add(
-                                createFileReferenceEntry(attr.unquotedValue(),
-                                new OffsetRange(attr.unqotedValueOffset(),
-                                attr.unqotedValueOffset() + attr.unquotedValue().length()),
-                                node.name(),
-                                attr.name()));
+                                createFileReferenceEntry(unquotedValue.toString(),
+                                new OffsetRange(offset,
+                                offset + unquotedValue.length()),
+                                tnode.name().toString(),
+                                attr.name().toString()));
                     }
                 }
             }
 
             //check if the tag can contain css code
-            if(STYLE_TAG_NAME.equalsIgnoreCase(node.name())) { //NOI18N
+            if(LexerUtils.equals(STYLE_TAG_NAME, tnode.name(), true, true)) { //NOI18N
                 //XXX maybe we should also check the type attribute for text/css mimetype
-                if(!node.isEmpty()) {
-                    int from = node.endOffset();
+                if(!tnode.isEmpty()) {
+                    int from = node.to();
                     if(from != -1) {
-                        AstNode closeTag = node.getMatchingTag();
+                        Node closeTag = node.matchingTag();
                         if(closeTag != null) {
-                            int to = closeTag.startOffset();
+                            int to = closeTag.from();
                             getEmbeddedCssSectionsCollectionInstance().add(new OffsetRange(from, to));
                         }
                     } else {
                         //that's odd since the end offset of the tag should be always set
-                        LOGGER.log(Level.INFO, "The end offset of the node {0} is not set! Please report the exception and attach the {1} to the issue.", new Object[]{node.path().toString(), FileUtil.getFileDisplayName(HtmlFileModel.this.getFileObject())}); //NOI18N
+                        LOGGER.log(Level.INFO, "The end offset of the node {0} is not set! Please report the exception and attach the {1} to the issue.", new Object[]{new TreePath(node).path().toString(), FileUtil.getFileDisplayName(HtmlFileModel.this.getFileObject())}); //NOI18N
                     }
                 }
             }

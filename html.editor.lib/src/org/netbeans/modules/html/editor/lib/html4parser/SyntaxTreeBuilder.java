@@ -107,7 +107,7 @@ public class SyntaxTreeBuilder {
 
             if (element.type() == ElementType.OPEN_TAG) { //open tag
 
-                Tag tagElement = (Tag) element;
+                TagElement tagElement = (TagElement) element;
                 CharSequence tagName = tagElement.name();
 
                 AstNode lNode = stack.getLast();

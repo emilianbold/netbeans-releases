@@ -188,7 +188,7 @@ public class SyntaxAnalyzerResult {
         LocalSourceContext context = createLocalContext(new TagsFilter() {
 
             @Override
-            public boolean accepts(Tag tag, CharSequence prefix) {
+            public boolean accepts(TagElement tag, CharSequence prefix) {
                 if (prefix == null) {
                     return true; //default namespace, should be html in most cases
                 }
@@ -239,7 +239,7 @@ public class SyntaxAnalyzerResult {
         LocalSourceContext context = createLocalContext(new TagsFilter() {
 
             @Override
-            public boolean accepts(Tag tag, CharSequence prefix) {
+            public boolean accepts(TagElement tag, CharSequence prefix) {
                 return prefix != null && prefixes.contains(prefix.toString());
             }
         });
@@ -257,6 +257,16 @@ public class SyntaxAnalyzerResult {
         return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
 
     }
+    
+    /**
+     * Parse the content as a plain xml-like tree.
+     * Any validity checks are not done, just the tag elements are transformed
+     * to the tree structure.
+     */
+    public ParseResult parsePlain() {
+        AstNode root = XmlSyntaxTreeBuilder.makeUncheckedTree(analyzer.source(), getElements().items());
+        return new DefaultParseResult(analyzer.source(), root, Collections.<ProblemDescription>emptyList());
+    }
 
     public ParseResult parseUndeclaredEmbeddedCode() throws ParseException {
         if(undeclaredEmbeddedCodeParseResult == null) {
@@ -270,7 +280,7 @@ public class SyntaxAnalyzerResult {
         LocalSourceContext context = createLocalContext(new TagsFilter() {
 
             @Override
-            public boolean accepts(Tag tag, CharSequence prefix) {
+            public boolean accepts(TagElement tag, CharSequence prefix) {
                 return prefix != null && !prefixes.contains(prefix.toString());
             }
         });
@@ -302,7 +312,7 @@ public class SyntaxAnalyzerResult {
 
         for (Element e : getElements().items()) {
             if (e.type() == ElementType.OPEN_TAG || e.type() == ElementType.END_TAG) {
-                Tag tag = (Tag) e;
+                TagElement tag = (TagElement) e;
                 CharSequence tagNamePrefix = tag.namespacePrefix();
 
                 if (filter.accepts(tag, tagNamePrefix)) {
@@ -432,7 +442,12 @@ public class SyntaxAnalyzerResult {
 //    }
 
     public String getPublicID() {
-        return getDoctypeDeclaration() != null ? getDoctypeDeclaration().publicId().toString() : null;
+        Declaration decl = getDoctypeDeclaration();
+        if(decl == null) {
+            return null;
+        }
+        CharSequence pid = getDoctypeDeclaration().publicId();
+        return pid == null ? null : pid.toString();
     }
 
     public synchronized Declaration getDoctypeDeclaration() {
@@ -598,7 +613,7 @@ public class SyntaxAnalyzerResult {
 
     private static interface TagsFilter {
 
-        public boolean accepts(Tag tag, CharSequence prefix);
+        public boolean accepts(TagElement tag, CharSequence prefix);
     }
 
     private static class IgnoredArea {
