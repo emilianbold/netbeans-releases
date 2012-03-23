@@ -277,6 +277,10 @@ public final class RemoteFileObject extends FileObject implements Serializable {
         getImplementor().refresh();
     }
 
+    /*package*/ void nonRecursiveRefresh() {
+        getImplementor().nonRecursiveRefresh();
+    }
+
     @Override
     public void refresh(boolean expected) {
         getImplementor().refresh(expected);
