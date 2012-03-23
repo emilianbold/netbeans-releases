@@ -120,6 +120,11 @@ public class ResolvedTestHidden extends AbstractCommandTestCase {
         
         assertStatus(SVNStatusKind.NORMAL, file1);
         
-        assertNotifiedFiles(file1); 
+        if (isSvnkit()) {
+            // svnkit does not notify about resolved files
+            assertNotifiedFiles();
+        } else {
+            assertNotifiedFiles(file1);
+        }
     }        
 }

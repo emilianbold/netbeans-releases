@@ -42,6 +42,7 @@
 package org.netbeans.modules.cloud.amazon;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cloud.amazon.serverplugin.AmazonJ2EEInstance;
@@ -345,9 +346,17 @@ public class AmazonInstance {
             UpdateEnvironmentRequest updateReq = new UpdateEnvironmentRequest().
                     withEnvironmentId(environmentId).
                     withVersionLabel(/*verDesc.getVersionLabel()*/label);
-            UpdateEnvironmentResult result = client.updateEnvironment(updateReq);
-            url[0] = "http://"+result.getEndpointURL(); // NOI18N
-            LOG.log(Level.INFO, "environment updated "+result); // NOI18N
+            try {
+                UpdateEnvironmentResult result = client.updateEnvironment(updateReq);
+                url[0] = "http://"+result.getEndpointURL(); // NOI18N
+                LOG.log(Level.INFO, "environment updated "+result); // NOI18N
+            } catch (AmazonServiceException as) {
+                LOG.log(Level.INFO, "environment update failed", as); // NOI18N
+                if (po != null) {
+                    po.updateDepoymentStage(as.toString());
+                }
+                return DeploymentStatus.FAILED;
+            }
 
             if (po != null) {
                 po.updateDepoymentStage(NbBundle.getMessage(AmazonInstance.class, "MSG_DEPLOY_REDEPLOY"));

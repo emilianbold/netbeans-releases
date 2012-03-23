@@ -838,41 +838,21 @@ is divided into following sections:
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
-                        <pathconvert pathsep="${{line.separator}}" property="testng.testincludes">
-                            <path>
-                                <filelist dir="${{build.test.classes.dir}}" files="@{{testincludes}}"/>
-                            </path>
-                            <chainedmapper>
-                                <globmapper from="*.java" to="*.class"/>
-                                <globmapper from="${{basedir}}/${{build.test.classes.dir}}/*" to="*"/>                    
-                            </chainedmapper>
-                        </pathconvert>
-                        <pathconvert pathsep="${{line.separator}}" property="testng.excludes">
-                            <path>
-                                <filelist dir="${{build.test.classes.dir}}" files="@{{excludes}}"/>
-                                <filelist dir="${{build.test.classes.dir}}" files="${{excludes}}"/>
-                            </path>
-                            <chainedmapper>
-                                <globmapper from="*.java" to="*.class"/>
-                                <globmapper from="${{basedir}}/${{build.test.classes.dir}}/*" to="*"/>
-                            </chainedmapper>
-                        </pathconvert>
-                        <pathconvert pathsep="${{line.separator}}" property="testng.includes">
-                            <path>
-                                <filelist dir="${{build.test.classes.dir}}" files="@{{includes}}"/>
-                            </path>
-                            <chainedmapper>
-                                <globmapper from="*.java" to="*.class"/>
-                                <globmapper from="${{basedir}}/${{build.test.classes.dir}}/*" to="*"/>
-                            </chainedmapper>
-                        </pathconvert>
                         <condition property="testng.methods.arg" value="@{{testincludes}}.@{{testmethods}}" else="">
                             <isset property="test.method"/>
                         </condition>
+                        <union id="test.set">
+                            <xsl:call-template name="createFilesets">
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
+                                <xsl:with-param name="includes">@{includes}</xsl:with-param>
+                                <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
+                                <xsl:with-param name="excludes">@{excludes},**/*.xml</xsl:with-param>
+                            </xsl:call-template>
+                        </union>
                         <taskdef name="testng" classname="org.testng.TestNGAntTask" classpath="${{run.test.classpath}}"/>
                         <testng>
                             <xsl:attribute name="mode">${testng.mode}</xsl:attribute>
-                            <xsl:attribute name="enableAssert">true</xsl:attribute>
+                            <xsl:attribute name="classfilesetref">test.set</xsl:attribute>
                             <xsl:attribute name="workingDir">${work.dir}</xsl:attribute> <!-- #47474: match <java> --> 
                             <xsl:attribute name="failureProperty">tests.failed</xsl:attribute>
                             <xsl:attribute name="methods">${testng.methods.arg}</xsl:attribute>
@@ -882,9 +862,6 @@ is divided into following sections:
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
-                            <classfileset dir="${{build.test.classes.dir}}" excludes="${{testng.excludes}}" includes="${{testng.includes}}">
-                                <filename name="${{testng.testincludes}}"/>
-                            </classfileset>
                             <xmlfileset dir="${{build.test.classes.dir}}" includes="@{{testincludes}}"/>
                             <propertyset>
                                 <propertyref prefix="test-sys-prop."/>

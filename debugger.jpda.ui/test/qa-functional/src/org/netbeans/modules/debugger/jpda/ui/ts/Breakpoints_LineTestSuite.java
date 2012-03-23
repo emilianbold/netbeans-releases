@@ -80,8 +80,8 @@ public class Breakpoints_LineTestSuite extends JellyTestCase {
                     "testLineBreakpointFunctionalityInSecondaryClass",
                     "testConditionalLineBreakpointFunctionality",
                     "testLineBreakpointActions",
-                    "testLineBreakpointsValidation"
-                    
+                    "testLineBreakpointsValidation",
+                    "testLineBreakpointsAdjustment"
                 )
             .enableModules(".*").clusters(".*"));
 //        }

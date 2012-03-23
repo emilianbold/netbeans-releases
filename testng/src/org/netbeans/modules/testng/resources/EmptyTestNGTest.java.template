@@ -34,13 +34,13 @@ public class ${name} {
 
 <#if classSetUp!false>
     @BeforeClass
-    public static void setUpClass() {
+    public void setUpClass() {
     }
 
 </#if>
 <#if classTearDown!false>
     @AfterClass
-    public static void tearDownClass() {
+    public void tearDownClass() {
     }
 
 </#if>

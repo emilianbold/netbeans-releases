@@ -319,7 +319,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
     @Override
     public boolean isRestSupportOn() {
-        return true;
+        return getProjectProperty(PROP_REST_CONFIG_TYPE) != null;
     }
     
     @Override

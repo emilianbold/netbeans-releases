@@ -861,7 +861,12 @@ public class FileStatusCache {
         } catch (SVNClientException e) {
             // no or damaged entries
             //LOG.getDefault().annotate(e, "Can not status " + dir.getAbsolutePath() + ", guessing it...");  // NOI18N
-            SvnClientExceptionHandler.notifyException(e, false, false);
+            if (!SvnClientExceptionHandler.isUnversionedResource(e.getMessage())
+                    && !WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
+                // missing or damaged entries
+                // or ignored file
+                SvnClientExceptionHandler.notifyException(e, false, false);
+            }
         }
 
         if (entries == null) {

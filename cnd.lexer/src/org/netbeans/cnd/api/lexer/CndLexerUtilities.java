@@ -728,6 +728,7 @@ public final class CndLexerUtilities {
             CppTokenId.OVERRIDE, // c++11
             CppTokenId.CONSTEXPR, // c++11
             CppTokenId.DECLTYPE, // c++11
+            CppTokenId.__DECLTYPE, // c++11
             CppTokenId.NULLPTR, // c++11
             CppTokenId.THREAD_LOCAL, // c++11
             CppTokenId.STATIC_ASSERT, // c++11
@@ -770,6 +771,7 @@ public final class CndLexerUtilities {
             CppTokenId._INLINE,
             CppTokenId.__INLINE,
             CppTokenId.__INLINE__,
+            CppTokenId.__FORCEINLINE,            
             CppTokenId.__REAL__,
             CppTokenId.__RESTRICT,
             CppTokenId.__SIGNED,
@@ -803,11 +805,14 @@ public final class CndLexerUtilities {
             CppTokenId.__UNSIGNED__,
             CppTokenId._CDECL,
             CppTokenId.__CDECL,
+            CppTokenId.__CLRCALL,
+            CppTokenId.__COMPLEX,
             CppTokenId._DECLSPEC,
             CppTokenId.__DECLSPEC,
             CppTokenId.__EXTENSION__,
             CppTokenId._FAR,
             CppTokenId.__FAR,
+            CppTokenId.__FINALLY,
             CppTokenId._INT64,
             CppTokenId.__INT64,
             CppTokenId.__INTERRUPT,
@@ -815,6 +820,7 @@ public final class CndLexerUtilities {
             CppTokenId.__NEAR,
             CppTokenId._STDCALL,
             CppTokenId.__STDCALL,
+            CppTokenId.__TRY,
             CppTokenId.__W64,};
         addToFilter(ids, filterToModify);
     }

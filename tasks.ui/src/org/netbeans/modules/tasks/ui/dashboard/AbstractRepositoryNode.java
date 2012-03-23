@@ -59,10 +59,19 @@ public abstract class AbstractRepositoryNode extends TreeListNode implements Com
     private final Repository repository;
     private List<QueryNode> queryNodes;
     private List<QueryNode> filteredQueryNodes;
+    private boolean loaded;
+
+    public AbstractRepositoryNode(boolean expandable, Repository repository, boolean loaded) {
+        super(expandable, null);
+        this.repository = repository;
+        this.loaded = loaded;
+        updateNodes();
+    }
 
     public AbstractRepositoryNode(boolean expandable, Repository repository) {
         super(expandable, null);
         this.repository = repository;
+        this.loaded = true;
         updateNodes();
     }
 
@@ -71,7 +80,7 @@ public abstract class AbstractRepositoryNode extends TreeListNode implements Com
         queryNodes = new ArrayList<QueryNode>();
         filteredQueryNodes = new ArrayList<QueryNode>();
         for (Query query : repository.getQueries()) {
-            QueryNode queryNode = new QueryNode(query, this);
+            QueryNode queryNode = new QueryNode(query, this, !loaded);
             queryNodes.add(queryNode);
             if (appliedFilters.isEmpty() || !queryNode.getFilteredTaskNodes().isEmpty()) {
                 filteredQueryNodes.add(queryNode);
@@ -140,5 +149,13 @@ public abstract class AbstractRepositoryNode extends TreeListNode implements Com
     @Override
     public String toString() {
         return repository.getDisplayName();
+    }
+
+    public boolean isLoaded() {
+        return loaded;
+    }
+
+    public void setLoaded(boolean loaded) {
+        this.loaded = loaded;
     }
 }

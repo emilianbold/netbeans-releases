@@ -156,7 +156,7 @@ public class MissingClientPanel extends javax.swing.JPanel {
                     .addComponent(browseButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tipLabel)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
         downloadRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.downloadRadioButton.AccessibleContext.accessibleName")); // NOI18N

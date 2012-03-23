@@ -89,7 +89,7 @@ public class MainProjectScanningScope extends TaskScanningScope
     private Timer refreshTimer;
     
     private MainProjectScanningScope( String displayName, String description, Image icon ) {
-        super( displayName, description, icon );
+        super( displayName, description, icon, true );
         extractLabelsFromProject(null, scopeLabels);
         lookupContent.add(scopeLabels);
     }

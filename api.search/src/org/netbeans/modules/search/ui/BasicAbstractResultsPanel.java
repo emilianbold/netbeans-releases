@@ -50,10 +50,12 @@ import java.beans.PropertyVetoException;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.AbstractButton;
+import javax.swing.ActionMap;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.BasicSearchCriteria;
+import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.Manager;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.PrintDetailsTask;
@@ -93,6 +95,8 @@ public abstract class BasicAbstractResultsPanel
             "org/netbeans/modules/search/res/logical_view.png";         //NOI18N
     private static final String FOLDER_VIEW_ICON =
             "org/netbeans/modules/search/res/file_view.png";            //NOI18N
+    private static final String MODE_FLAT = "flat";                     //NOI18N
+    private static final String MODE_TREE = "tree";                     //NOI18N
     protected ResultModel resultModel;
     private JButton nextButton;
     private JButton prevButton;
@@ -117,7 +121,12 @@ public abstract class BasicAbstractResultsPanel
         getExplorerManager().setRootContext(
                 resultsOutlineSupport.getRootNode());
         initSelectionListeners();
+        initActions();
         initResultNodeAdditionListener();
+        if (MODE_TREE.equals(
+                FindDialogMemory.getDefault().getResultsViewMode())) {
+            resultsOutlineSupport.setFolderTreeMode();
+        }
     }
 
     private void initSelectionListeners() {
@@ -133,6 +142,12 @@ public abstract class BasicAbstractResultsPanel
                 });
     }
 
+    private void initActions() {
+        ActionMap map = getActionMap();
+
+        map.put("jumpNext", new PrevNextAction(1));                    // NOI18N
+        map.put("jumpPrev", new PrevNextAction(-1));                   // NOI18N
+    }
     public void update() {
         if (details && expandButton != null && !expandButton.isEnabled()) {
             expandButton.setEnabled(resultModel.size() > 0);
@@ -157,6 +172,7 @@ public abstract class BasicAbstractResultsPanel
 
     @Override
     protected AbstractButton[] createButtons() {
+        final FindDialogMemory memory = FindDialogMemory.getDefault();
         toggleViewButton = new JToggleButton();
         toggleViewButton.setEnabled(true);
         toggleViewButton.setIcon(ImageUtilities.loadImageIcon(FOLDER_VIEW_ICON,
@@ -165,14 +181,17 @@ public abstract class BasicAbstractResultsPanel
                 FLAT_VIEW_ICON, true));
         toggleViewButton.setToolTipText(UiUtils.getText(
                 "TEXT_BUTTON_TOGGLE_VIEW"));                            //NOI18N
-        toggleViewButton.setSelected(false);
+        toggleViewButton.setSelected(
+                MODE_TREE.equals(memory.getResultsViewMode()));
         toggleViewButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (toggleViewButton.isSelected()) {
                     resultsOutlineSupport.setFolderTreeMode();
+                    memory.setResultsViewMode(MODE_TREE);
                 } else {
                     resultsOutlineSupport.setFlatMode();
+                    memory.setResultsViewMode(MODE_FLAT);
                 }
                 try {
                     getExplorerManager().setSelectedNodes(new Node[]{
@@ -588,5 +607,18 @@ public abstract class BasicAbstractResultsPanel
             removeChildAdditionListener(n);
         }
         removedNode.removeNodeListener(resultsNodeAdditionListener);
+    }
+
+    private final class PrevNextAction extends javax.swing.AbstractAction {
+
+        private int direction;
+
+        public PrevNextAction(int direction) {
+            this.direction = direction;
+        }
+
+        public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
+            shift(direction);
+        }
     }
 }

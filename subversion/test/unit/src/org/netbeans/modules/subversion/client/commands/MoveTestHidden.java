@@ -210,7 +210,12 @@ public class MoveTestHidden extends AbstractCommandTestCase {
 
         assertTrue(filemove.exists());
         assertStatus(SVNStatusKind.ADDED, filemove);
-        assertNotifiedFiles(new File[] {file, filemove});                
+        if (isSvnkit()) {
+            // no notification about target, instead "Copying    target_path" comes into logMessage()
+            assertNotifiedFiles(new File[] {file});
+        } else {
+            assertNotifiedFiles(new File[] {file, filemove});
+        }
     }        
     
 }

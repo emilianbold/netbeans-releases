@@ -59,9 +59,9 @@ import org.openide.modules.Places;
  *
  * @author jpeska
  */
-public class CategoryStorage {
+public class DashboardStorage {
 
-    private static CategoryStorage instance;
+    private static DashboardStorage instance;
     private static final String STORAGE_FILE = "storage";              // NOI18N
     private static final String CLOSED_CAT_FILE = "closedCategories";              // NOI18N
     private static final String CLOSED_REPO_FILE = "closedRepositories";              // NOI18N
@@ -71,12 +71,12 @@ public class CategoryStorage {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.tasks.ui.cache.CategoryStorage"); // NOI18N
     private File storageFolder;
 
-    private CategoryStorage() {
+    private DashboardStorage() {
     }
 
-    public static CategoryStorage getInstance() {
+    public static DashboardStorage getInstance() {
         if (instance == null) {
-            instance = new CategoryStorage();
+            instance = new DashboardStorage();
             instance.initStorage();
         }
         return instance;
@@ -88,19 +88,19 @@ public class CategoryStorage {
         writeStorage();
     }
 
-    void storeClosedCategories(List<String> closedCategoryNames) throws IOException {
+    public void storeClosedCategories(List<String> closedCategoryNames) {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the category storage in awt"; // NOI18N
         File closedCategoryFile = new File(getStorageFolder(storageFolder), CLOSED_CAT_FILE);
         storeClosedEntries(closedCategoryFile, closedCategoryNames);
     }
 
-    void storeClosedRepositories(List<String> closedCategoryIds) throws IOException {
+    public void storeClosedRepositories(List<String> closedCategoryIds) {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the category storage in awt"; // NOI18N
         File closedRepositoryFile = new File(getStorageFolder(storageFolder), CLOSED_REPO_FILE);
         storeClosedEntries(closedRepositoryFile, closedCategoryIds);
     }
 
-    private void storeClosedEntries(File file, List<String> closedEntries) throws IOException {
+    private void storeClosedEntries(File file, List<String> closedEntries) {
         LOG.log(Level.FINE, "start storing closed entries"); // NOI18N
         FileLock lock = null;
         DataOutputStream dos = null;
@@ -115,7 +115,6 @@ public class CategoryStorage {
             }
         } catch (IOException ex) {
             LOG.log(Level.WARNING, null, ex);
-            throw new IOException(ex);
         } finally {
             LOG.log(Level.FINE, "finished storing closed entries"); // NOI18N
             if (dos != null) {
@@ -130,19 +129,19 @@ public class CategoryStorage {
         }
     }
 
-    List<String> readClosedCategories() throws IOException {
+    public List<String> readClosedCategories() {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the category storage in awt"; // NOI18N
         File closedCategoryFile = new File(getStorageFolder(storageFolder), CLOSED_CAT_FILE);
         return readClosedEntries(closedCategoryFile);
     }
 
-    List<String> readClosedRepositories() throws IOException {
+    public List<String> readClosedRepositories() {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the category storage in awt"; // NOI18N
         File closedRepositoryFile = new File(getStorageFolder(storageFolder), CLOSED_REPO_FILE);
         return readClosedEntries(closedRepositoryFile);
     }
 
-    private List<String> readClosedEntries(File file) throws IOException {
+    private List<String> readClosedEntries(File file) {
         LOG.log(Level.FINE, "start reading closed entries"); // NOI18N
         DataInputStream dis = null;
         FileLock lock = null;
@@ -154,7 +153,7 @@ public class CategoryStorage {
             }
         } catch (IOException ex) {
             LOG.log(Level.WARNING, null, ex);
-            throw new IOException(ex);
+            return Collections.emptyList();
         } finally {
             LOG.log(Level.FINE, "finished reading closed entries"); // NOI18N
             if (dis != null) {
@@ -186,7 +185,7 @@ public class CategoryStorage {
         return entries;
     }
 
-    void storeCategory(String categoryName, List<TaskEntry> tasks) throws IOException {
+    public void storeCategory(String categoryName, List<TaskEntry> tasks) {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the category storage in awt"; // NOI18N
         LOG.log(Level.FINE, "start storing category {0}", categoryName); // NOI18N
         FileLock lock = null;
@@ -204,7 +203,6 @@ public class CategoryStorage {
             }
         } catch (IOException ex) {
             LOG.log(Level.WARNING, null, ex);
-            throw new IOException(ex);
         } finally {
             LOG.log(Level.FINE, "finished storing category {0}", categoryName); // NOI18N
             if (dos != null) {
@@ -219,7 +217,49 @@ public class CategoryStorage {
         }
     }
 
-    List<CategoryEntry> readCategories() throws IOException {
+    public boolean renameCategory(String oldName, String newName) {
+        assert !SwingUtilities.isEventDispatchThread() : "should not access the category storage in awt"; // NOI18N
+        LOG.log(Level.FINE, "start renaming category from {0} to {1}", new Object[] {oldName, newName}); // NOI18N
+        FileLock lock = null;
+        try {
+            File categoryFile = getCategoryFile(getStorageFolder(storageFolder), oldName);
+            lock = FileLocks.getLock(categoryFile);
+            synchronized (lock) {
+                return categoryFile.renameTo(getCategoryFile(storageFolder, newName));
+            }
+        } catch (SecurityException ex) {
+            LOG.log(Level.WARNING, "Not able to delete category file", ex); // NOI18N
+            return false;
+        } finally {
+            LOG.log(Level.FINE, "finished renaming category from {0} to {1}", new Object[] {oldName, newName}); // NOI18N
+            if (lock != null) {
+                lock.release();
+            }
+        }
+    }
+
+    public boolean deleteCategory(String categoryName) {
+        assert !SwingUtilities.isEventDispatchThread() : "should not access the category storage in awt"; // NOI18N
+        LOG.log(Level.FINE, "start deleting category {0}", categoryName); // NOI18N
+        FileLock lock = null;
+        try {
+            File categoryFile = getCategoryFile(getStorageFolder(storageFolder), categoryName);
+            lock = FileLocks.getLock(categoryFile);
+            synchronized (lock) {
+                return categoryFile.delete();
+            }
+        } catch (SecurityException ex) {
+            LOG.log(Level.WARNING, "Not able to delete category file", ex); // NOI18N
+            return false;
+        } finally {
+            LOG.log(Level.FINE, "finished deleting category {0}", categoryName); // NOI18N
+            if (lock != null) {
+                lock.release();
+            }
+        }
+    }
+
+    public List<CategoryEntry> readCategories() {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the category storage in awt"; // NOI18N
         List<CategoryEntry> categories = new ArrayList<CategoryEntry>();
         File[] files = getStorageFolder(storageFolder).listFiles(new FilenameFilter() {
@@ -231,14 +271,18 @@ public class CategoryStorage {
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             String categoryName = file.getName().replace(CATEGORY_SUFIX, "");
-            CategoryEntry categoryEntry = new CategoryEntry(categoryName, readCategory(categoryName));
+            List<TaskEntry> taskEntries = readCategory(categoryName);
+            if (taskEntries == null) {
+                continue;
+            }
+            CategoryEntry categoryEntry = new CategoryEntry(categoryName, taskEntries);
             categories.add(categoryEntry);
         }
 
         return categories;
     }
 
-    List<TaskEntry> readCategory(String categoryName) throws IOException {
+    public List<TaskEntry> readCategory(String categoryName) {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the category storage in awt"; // NOI18N
         LOG.log(Level.FINE, "start reading category {0}", categoryName); // NOI18N
 
@@ -246,6 +290,9 @@ public class CategoryStorage {
         FileLock lock = null;
         try {
             File categoryFile = getCategoryFile(getStorageFolder(storageFolder), categoryName);
+            if (!categoryFile.exists()) {
+                return null;
+            }
             lock = FileLocks.getLock(categoryFile);
             synchronized (lock) {
                 dis = getCategoryInputStream(categoryFile);
@@ -253,7 +300,7 @@ public class CategoryStorage {
             }
         } catch (IOException ex) {
             LOG.log(Level.WARNING, null, ex);
-            throw new IOException(ex);
+            return null;
         } finally {
             LOG.log(Level.FINE, "finished reading category {0}", categoryName); // NOI18N
             if (dis != null) {

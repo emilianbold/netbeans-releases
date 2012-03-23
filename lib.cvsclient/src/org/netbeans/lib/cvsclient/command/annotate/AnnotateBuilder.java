@@ -44,6 +44,8 @@
 package org.netbeans.lib.cvsclient.command.annotate;
 
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.lib.cvsclient.command.*;
 import org.netbeans.lib.cvsclient.event.*;
@@ -147,7 +149,13 @@ public class AnnotateBuilder implements Builder {
         if (indexOpeningBracket > 0 && indexClosingBracket > indexOpeningBracket) {
             String revision = line.substring(0, indexOpeningBracket).trim();
             String userDate = line.substring(indexOpeningBracket + 1, indexClosingBracket);
-            String contents = line.substring(indexClosingBracket + 3);
+            String contents;
+            if (line.length() < indexClosingBracket + 3) {
+                contents = "";
+                Logger.getLogger(AnnotateBuilder.class.getName()).log(Level.WARNING, "processLine: line: {0}", line); //NOI18N
+            } else {
+                contents = line.substring(indexClosingBracket + 3);
+            }
             int lastSpace = userDate.lastIndexOf(' ');
             String user = userDate;
             String date = userDate;

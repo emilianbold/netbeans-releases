@@ -89,16 +89,19 @@ public class ToggleBlockCommentAction extends BaseAction{
                 target.getToolkit().beep();
                 return;
             }
-            int offset = Utilities.isSelectionShowing(target) ? target.getSelectionStart() : target.getCaretPosition();
+            int caretOffset = Utilities.isSelectionShowing(target) ? target.getSelectionStart() : target.getCaretPosition();
             final BaseDocument doc = (BaseDocument) target.getDocument();
-            TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
+            TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
             if (ts != null) {
-                ts.move(offset);
+                ts.move(caretOffset);
                 ts.moveNext();
                 if (ts.token().id() != PHPTokenId.T_INLINE_HTML) {
                     boolean newLine = false;
-                    while (ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_OPENTAG && !newLine) {
-                        if(isWhitespaceWithNewLine(ts)) {
+                    if (isNewLineBeforeCaretOffset(ts, caretOffset)) {
+                        newLine = true;
+                    }
+                    while (!newLine && ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_OPENTAG) {
+                        if(isNewLineBeforeCaretOffset(ts, caretOffset)) {
                             newLine = true;
                         }
                     }
@@ -145,8 +148,14 @@ public class ToggleBlockCommentAction extends BaseAction{
         }
     }
 
-    private boolean isWhitespaceWithNewLine(final TokenSequence<PHPTokenId> ts) {
-        return ts.token().id() == PHPTokenId.WHITESPACE && ts.token().text().toString().contains("\n"); //NOI18N
+    private boolean isNewLineBeforeCaretOffset(final TokenSequence<PHPTokenId> ts, final int caretOffset) {
+        boolean result = false;
+        int indexOfNewLine = ts.token().text().toString().indexOf("\n"); //NOI18N
+        if (indexOfNewLine != -1) {
+            int absoluteIndexOfNewLine = ts.offset() + indexOfNewLine;
+            result = caretOffset > absoluteIndexOfNewLine;
+        }
+        return result;
     }
 
     private boolean forceDirection(boolean comment) {

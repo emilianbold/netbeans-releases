@@ -52,23 +52,10 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.testng</package>
                 <package>org.testng.annotations</package>
-                <package>org.testng.collections</package>
-                <package>org.testng.internal</package>
-                <package>org.testng.internal.annotations</package>
-                <package>org.testng.internal.invokers</package>
-                <package>org.testng.internal.junit</package>
-                <package>org.testng.internal.remote</package>
-                <package>org.testng.internal.thread</package>
-                <package>org.testng.internal.thread.graph</package>
-                <package>org.testng.junit</package>
-                <package>org.testng.log</package>
-                <package>org.testng.log4testng</package>
-                <package>org.testng.mustache</package>
                 <package>org.testng.remote</package>
                 <package>org.testng.remote.adapter</package>
                 <package>org.testng.remote.strprotocol</package>
                 <package>org.testng.reporters</package>
-                <package>org.testng.reporters.jq</package>
                 <package>org.testng.reporters.util</package>
                 <package>org.testng.util</package>
                 <package>org.testng.xml</package>

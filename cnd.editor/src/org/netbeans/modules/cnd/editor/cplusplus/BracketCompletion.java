@@ -622,7 +622,8 @@ public class BracketCompletion {
         if (isEscapeSequence(doc, dotPos)) {
             return;
         }
-        CppTokenId[] tokenIds = theBracket == '\"' ? new CppTokenId[]{CppTokenId.STRING_LITERAL, CppTokenId.PREPROCESSOR_USER_INCLUDE}
+        CppTokenId[] tokenIds = theBracket == '\"' ? 
+                  new CppTokenId[]{CppTokenId.STRING_LITERAL, CppTokenId.RAW_STRING_LITERAL, CppTokenId.PREPROCESSOR_USER_INCLUDE}
                 : new CppTokenId[]{CppTokenId.CHAR_LITERAL};
         if ((posWithinQuotes(doc, dotPos + 1, theBracket, tokenIds) && isCompletablePosition(doc, dotPos + 1)) &&
                 (isUnclosedStringAtLineEnd(doc, dotPos + 1, tokenIds) &&

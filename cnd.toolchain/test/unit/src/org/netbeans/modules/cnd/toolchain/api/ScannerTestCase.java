@@ -280,6 +280,44 @@ public class ScannerTestCase extends NbTestCase {
         assertTrue(find);
     }
 
+    public void testSUNpatterns_03() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+	ScannerDescriptor scanner = toolchain.getScanner();
+      	String s = "\"main.cpp\", 行 13: 警告: #warning 日本.";
+        boolean find = false;
+        for(ScannerPattern p : scanner.getPatterns()) {
+            Pattern pattern = Pattern.compile(p.getPattern());
+            Matcher m = pattern.matcher(s);
+	    if (m.matches()){
+                find = true;
+                assertTrue(m.group(1).equals("main.cpp"));
+                assertTrue(m.group(2).equals("13"));
+                assertEquals("error", p.getSeverity());
+                break;
+            }
+        }
+        assertTrue(find);
+    }
+
+    public void testSUNpatterns_04() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+	ScannerDescriptor scanner = toolchain.getScanner();
+      	String s = "\"main.cpp\", 行 14: エラー: #error 日本.";
+        boolean find = false;
+        for(ScannerPattern p : scanner.getPatterns()) {
+            Pattern pattern = Pattern.compile(p.getPattern());
+            Matcher m = pattern.matcher(s);
+	    if (m.matches()){
+                find = true;
+                assertTrue(m.group(1).equals("main.cpp"));
+                assertTrue(m.group(2).equals("14"));
+                assertEquals("error", p.getSeverity());
+                break;
+            }
+        }
+        assertTrue(find);
+    }
+
 
     public void testMSVCpatterns() throws Exception {
 	String s = "../../../hbver.c(308) : error C2039: 'wProductType' : is not a member of";

@@ -57,6 +57,7 @@ import org.netbeans.spi.search.provider.SearchProvider;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.openide.explorer.ExplorerManager;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -203,17 +204,13 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     }
 
     public void searchFinished() {
-        if (!EventQueue.isDispatchThread()) {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    searchFinished();
-                }
-            });
-            return;
-        }
-        btnModifySearch.setEnabled(true);
-        btnStop.setEnabled(false);
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override
+            public void run() {
+                btnModifySearch.setEnabled(true);
+                btnStop.setEnabled(false);
+            }
+        });
     }
 
     protected void modifyCriteria() {

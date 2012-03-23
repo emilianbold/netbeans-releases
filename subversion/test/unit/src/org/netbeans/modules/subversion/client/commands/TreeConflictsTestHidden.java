@@ -45,11 +45,8 @@ package org.netbeans.modules.subversion.client.commands;
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import org.netbeans.modules.subversion.FileInformation;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.tigris.subversion.svnclientadapter.*;
+import org.tigris.subversion.svnclientadapter.utils.Depth;
 
 /**
  *
@@ -87,14 +84,12 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         f2 = new File(folder2, "file");
         fcopy2 = new File(folder2, "filecopy");
     }
-//
+
     public void testStatusLocalEditIncomingDeleteAcceptRemote () throws Exception {
         ISVNClientAdapter c = getNbClient();
         prepareTestStatusLocalEditIncomingDelete(c);
 
-        remove(f2);
-        assertStatus(f2, true, SVNStatusKind.MISSING);
-        c.resolved(f2);
+        c.remove(new File[] { f2 }, true);
         assertStatus(f2, false, SVNStatusKind.UNVERSIONED);
         assertFalse(f2.exists());
     }
@@ -119,10 +114,10 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         write(f2, "change");
         assertFalse(fcopy2.exists());
         
-        update(wc2);
+        c.update(wc2, SVNRevision.HEAD, true);
         assertStatus(f2, true, SVNStatusKind.ADDED);
         assertTrue(fcopy2.exists());
-        assertStatus(fcopy2, false, SVNStatusKind.MODIFIED);
+        assertStatus(fcopy2, false, SVNStatusKind.NORMAL);
     }
 
     public void testStatusLocalDeleteIncomingEditAcceptLocal () throws Exception {
@@ -155,7 +150,7 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         c.move(f2, fcopy2, true);
         assertTrue(fcopy2.exists());
 
-        update(wc2);
+        c.update(wc2, SVNRevision.HEAD, true);
         assertStatus(f2, true, SVNStatusKind.DELETED);
         assertTrue(fcopy2.exists());
         assertStatus(fcopy2, false, SVNStatusKind.ADDED);
@@ -176,18 +171,18 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         assertFalse(f2.exists());
         assertTrue(fcopy2.exists());
 
-        update(wc2);
-        assertStatus(f2, true, SVNStatusKind.MISSING);
-        assertStatus(fcopy2, true, SVNStatusKind.ADDED);
+        c.update(wc2, SVNRevision.HEAD, true);
+        assertStatus(fcopy2, true, SVNStatusKind.REPLACED);
+        assertStatus(f2, true, isCommandLine() ? SVNStatusKind.MISSING : SVNStatusKind.NONE);
 
         c.resolved(f2);
         assertStatus(f2, false, SVNStatusKind.UNVERSIONED);
         assertFalse(f2.exists());
         c.resolved(fcopy2);
         assertTrue(fcopy2.exists());
-        assertStatus(fcopy2, false, SVNStatusKind.ADDED);
+        assertStatus(fcopy2, false, SVNStatusKind.REPLACED);
         c.revert(fcopy2, true);
-        assertStatus(fcopy2, false, SVNStatusKind.UNVERSIONED);
+        assertStatus(fcopy2, false, SVNStatusKind.NORMAL);
         update(fcopy2);
         assertTrue(fcopy2.exists());
         assertStatus(fcopy2, false, SVNStatusKind.NORMAL);
@@ -201,7 +196,7 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         assertFalse(st2.hasTreeConflict());
         File folderCopy1 = new File(folder1.getParent(), "folderCopy");
         c.move(folder1, folderCopy1, true);
-        assertTrue(folder1.exists());
+        assertFalse(folder1.exists());
         assertTrue(folderCopy1.exists());
         commit(wc1);
         assertFalse(folder1.exists());
@@ -209,23 +204,23 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
 
         File folderCopy2 = new File(folder2.getParent(), "folderCopy");
         c.move(folder2, folderCopy2, true);
-        assertTrue(folder2.exists());
-        assertTrue(folderCopy2.exists());
-
-        update(wc2);
         assertFalse(folder2.exists());
         assertTrue(folderCopy2.exists());
-        assertStatus(folder2, true, SVNStatusKind.MISSING);
-        assertStatus(folderCopy2, true, SVNStatusKind.ADDED);
+
+        c.update(wc2, SVNRevision.HEAD, true);
+        assertFalse(folder2.exists());
+        assertTrue(folderCopy2.exists());
+        assertStatus(folderCopy2, true, SVNStatusKind.REPLACED);
+        assertStatus(folder2, true, isCommandLine() ? SVNStatusKind.MISSING : SVNStatusKind.NONE);
 
         c.resolved(folder2);
         assertStatus(folder2, false, SVNStatusKind.UNVERSIONED);
         assertFalse(folder2.exists());
         c.resolved(folderCopy2);
         assertTrue(folderCopy2.exists());
-        assertStatus(folderCopy2, false, SVNStatusKind.ADDED);
+        assertStatus(folderCopy2, false, SVNStatusKind.REPLACED);
         c.revert(folderCopy2, true);
-        assertStatus(folderCopy2, false, SVNStatusKind.UNVERSIONED);
+        assertStatus(folderCopy2, false, SVNStatusKind.NORMAL);
         update(folderCopy2);
         assertTrue(folderCopy2.exists());
         assertStatus(folderCopy2, false, SVNStatusKind.NORMAL);
@@ -235,7 +230,12 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         ISVNClientAdapter c = getNbClient();
         ISVNStatus st = c.getSingleStatus(f);
         assert hasConflicts == st.hasTreeConflict();
-        assert hasConflicts == (st.getConflictDescriptor() != null);
+        if (isCommandLine()) {
+            // not implemented in cli for 1.7
+            assert st.getConflictDescriptor() == null;
+        } else {
+            assert hasConflicts == (st.getConflictDescriptor() != null);
+        }
         assertEquals(svnStatus, st.getTextStatus());
         ISVNStatus[] sts = c.getStatus(new File[] {f});
         assertStatus(f, hasConflicts, false, sts, svnStatus);
@@ -257,8 +257,13 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
                 if (st.hasTreeConflict() != hasConflicts) {
                     fail("hasConflicts !== status.hasTreeConflicts");
                 }
-                if (testConflictDescriptor && hasConflicts == (st.getConflictDescriptor() == null)) {
-                    fail("hasConflicts === (status.getConflictDescriptor() == null)");
+                if (testConflictDescriptor) {
+                    if (isCommandLine()) {
+                        // not implemented in cli for 1.7
+                        assert st.getConflictDescriptor() == null;
+                    } else if (hasConflicts == (st.getConflictDescriptor() == null)) {
+                        fail("hasConflicts === (status.getConflictDescriptor() == null)");
+                    }
                 }
                 return;
             }

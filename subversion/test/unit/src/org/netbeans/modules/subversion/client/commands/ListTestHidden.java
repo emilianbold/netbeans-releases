@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -104,7 +105,8 @@ public class ListTestHidden extends AbstractCommandTestCase {
         }
         assertNotNull(e1);
         assertNotNull(e2);
-        assertTrue(e2.getMessage().indexOf(e1.getMessage()) > -1);
+        assertTrue(SvnClientExceptionHandler.isWrongUrl(e1.getMessage()));
+        assertTrue(SvnClientExceptionHandler.isWrongUrl(e2.getMessage()));
     }
     
     public void testListNoFile() throws Exception {                                

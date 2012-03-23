@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.qa.form.suites;
+package org.netbeans.modules.php.editor;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.qa.form.ExtJellyTestCase;
-import org.netbeans.qa.form.OpenTempl_defaultPackTest;
-import org.netbeans.qa.form.actions.actionsTest;
-import org.netbeans.qa.form.beans.AddAndRemoveBeansTest;
-import org.netbeans.qa.form.beans.AddBeanFormsTest;
-import org.netbeans.qa.form.undoredo.BaseTest;
-import org.netbeans.qa.form.visualDevelopment.AddComponents_SWING;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Pavel Pribyl
- * 
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class StableSuite extends TestCase {
+public class PHPCodeCompletion208825Test extends PHPTestBase {
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(StableSuite.class)
-
-                .addTest(OpenTempl_defaultPackTest.class,
-                "testApplet", "testDialog", "testFrame", "testInter", "testAppl", "testMidi", "testPanel", "testBean")
-
-                .addTest(AddAndRemoveBeansTest.class,
-                "testAddingBeans",
-                "testRemovingBeans")
-
-//                .addTest (AddBeanFormsTest.class,
-//                "testCompileBeanClasses",
-//                "testAddingBeanFormWithVisualBeanSuperclass",
-//                "testAddingBeanFormWithNonVisualBeanSuperclass")
-                
-                .addTest(actionsTest.class,
-                "testDummy",
-                "testDuplicate",
-                "testEditContainer",
-                "testResizing",
-                "testBeans")
-
-                .addTest(BaseTest.class,
-                "testScenario")
-
-                .addTest(AddComponents_SWING.class,
-                "testAddAndCompile")
-
-                .clusters(".*").enableModules(".*") 
-                );
+    public PHPCodeCompletion208825Test(String testName) {
+        super(testName);
     }
 
-    public void testEmpty() {
-        //Empty test. Just to be able to use StableSuite.class for createConfiguration method
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test208825/test208825.php", "$t1_1->^test();", false);
     }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test208825/"))
+            })
+        );
+    }
+
 }
