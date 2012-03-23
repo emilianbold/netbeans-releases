@@ -46,6 +46,28 @@ public class BracketCompletionTestCase extends EditorBase  {
         super(testMethodName);
     }
 
+    // ------- Tests for raw strings -------------
+    public void testSimpleQuoteInRawString() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText("R|", "\"", "R\"|()\"");
+    }
+
+    public void testLeftParenInRawStringStartDelim() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText("  R\"|()\"", "(", "  R\"(|)\"");
+    }
+
+    public void testQuoteInRawStringEndDelim() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(" R\"delim()delim|\"  ", "\"", " R\"delim()delim\"|  ");
+    }
+
+//    public void testTypeInRawStringStartDelim() throws Exception {
+//        setDefaultsOptions();
+//        typeCharactersInText("    R\"del|im()delim\"  ", "U", "    R\"delU|im()delUim\"  ");
+//        typeCharactersInText("    R\"del|im()delim\"  ", "UU", "   R\"delUU|im()delUUim\"  ");
+//    }
+
     // ------- Tests for completion of right parenthesis ')' -------------
     
     public void testRightParenSimpleMethodCall() {
@@ -160,7 +182,6 @@ public class BracketCompletionTestCase extends EditorBase  {
             "while (|)"
         );
     }
-
 
     // ------- Tests for completion of quote (") -------------
     public void testSimpleQuoteInEmptyDoc () throws Exception {

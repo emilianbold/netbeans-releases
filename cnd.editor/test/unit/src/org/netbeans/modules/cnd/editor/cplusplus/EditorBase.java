@@ -39,14 +39,12 @@ import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
 import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter;
 import org.netbeans.modules.cnd.editor.indent.CppIndentFactory;
-import org.netbeans.modules.cnd.editor.indent.CppIndentTask;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.openide.util.Exceptions;
 
 /**
  * base class to run tests around editor. Like typing, formatting, indenting
@@ -174,7 +172,15 @@ public class EditorBase extends BaseDocumentUnitTestCase {
     }
 
     // ------- help methods -------------
-
+    /**
+    *
+    * @param origTextWithPipe original text where "|" means caret position
+    * @param typedText any text to type in editor character by character. There are special characters supported:
+    * '\n' - insert new line
+    * '\f' - delete
+    * '\b' - backspace
+    * @param resultTextWithPipe expected text where "|" means caret position
+    */
     protected void typeCharactersInText(String origTextWithPipe, String typedText, String resultTextWithPipe) {
         Context context = new Context(getEditorKit(), origTextWithPipe);
         context.typeText(typedText);
