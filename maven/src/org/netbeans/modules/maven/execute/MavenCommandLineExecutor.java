@@ -50,7 +50,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -120,6 +119,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     /**
      * not to be called directrly.. use execute();
      */
+    @Override
     public void run() {
         synchronized (SEMAPHORE) {
             if (task == null) {
@@ -140,7 +140,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         ExecutionContext exCon = ActionToGoalUtils.ACCESSOR.createContext(ioput, handle);
         // check the prerequisites
         if (clonedConfig.getProject() != null) {
-            Lookup.Result<LateBoundPrerequisitesChecker> result = clonedConfig.getProject().getLookup().lookup(new Lookup.Template<LateBoundPrerequisitesChecker>(LateBoundPrerequisitesChecker.class));
+            Lookup.Result<LateBoundPrerequisitesChecker> result = clonedConfig.getProject().getLookup().lookupResult(LateBoundPrerequisitesChecker.class);
             for (LateBoundPrerequisitesChecker elem : result.allInstances()) {
                 if (!elem.checkRunConfig(clonedConfig, exCon)) {
                     return;
@@ -206,7 +206,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             try { //defend against badly written extensions..
                 out.buildFinished();
                 if (clonedConfig.getProject() != null) {
-                    Lookup.Result<ExecutionResultChecker> result = clonedConfig.getProject().getLookup().lookup(new Lookup.Template<ExecutionResultChecker>(ExecutionResultChecker.class));
+                    Lookup.Result<ExecutionResultChecker> result = clonedConfig.getProject().getLookup().lookupResult(ExecutionResultChecker.class);
                     for (ExecutionResultChecker elem : result.allInstances()) {
                         elem.executionResult(clonedConfig, exCon, executionresult);
                     }
@@ -222,6 +222,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 actionStatesAtFinish(out.firstFailure != null ? new FindByName(out.firstFailure) : null);
                 markFreeTab();
                 RP.post(new Runnable() { //#103460
+                    @Override
                     public void run() {
                         if (clonedConfig.getProject() != null) {
                             NbMavenProject.fireMavenProjectReload(clonedConfig.getProject());
@@ -240,6 +241,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         ExternalProcessSupport.destroy(prcs, env);
     }
     
+    @Override
     public boolean cancel() {
         if (preProcess != null) {
             kill(preProcess, preProcessUUID);
@@ -275,7 +277,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         String quote = "\"";
         // the command line parameters with space in them need to be quoted and escaped to arrive
         // correctly to the java runtime on windows
-        String escaped = "\\" + quote;
+        String escaped = "\\" + quote;        
         for (Map.Entry<? extends String,? extends String> entry : config.getProperties().entrySet()) {
             if (!entry.getKey().startsWith(ENV_PREFIX)) {
                 //skip envs, these get filled in later.
@@ -343,7 +345,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 }
 
             } catch (Exception ex1) {
-                Logger.getLogger(MavenSettings.class.getName()).fine("Error parsing global options:" + opts);
+                Logger.getLogger(MavenSettings.class.getName()).log(Level.FINE, "Error parsing global options:{0}", opts);
             }
 
         }
@@ -382,7 +384,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 //TODO somehow use the config.getMavenProject() call rather than looking up the
                 // ActiveJ2SEPlatformProvider from lookup. The loaded project can be different from the executed one.
                 ActiveJ2SEPlatformProvider javaprov = clonedConfig.getProject().getLookup().lookup(ActiveJ2SEPlatformProvider.class);
-                File path = null;
+                File path;
                 FileObject java = javaprov.getJavaPlatform().findTool("java"); //NOI18N
                 if (java != null) {
                     Collection<FileObject> objs = javaprov.getJavaPlatform().getInstallFolders();
@@ -423,15 +425,21 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         for (Map.Entry<String, String> entry : envMap.entrySet()) {
             String env = entry.getKey();
             String val = entry.getValue();
+            if ("M2_HOME".equals(env.toUpperCase(Locale.ENGLISH))) {
+                continue;// #191374: would prevent bin/mvn from using selected installation
+            }
             // TODO: do we really put *all* the env vars there? maybe filter, M2_HOME and JDK_HOME?
             builder.environment().put(env, val);
             display.append(Utilities.escapeParameters(new String[] {env + "=" + val})).append(' '); // NOI18N
         }
-        for (Iterator<Map.Entry<String, String>> it = builder.environment().entrySet().iterator(); it.hasNext(); ) {
-            if ("M2_HOME".equals(it.next().getKey().toUpperCase(Locale.ENGLISH))) { // NOI18N
-                it.remove(); // #191374: would prevent bin/mvn from using selected installation
-            }
+       
+        //#195039
+        builder.environment().put("M2_HOME", mavenHome.getAbsolutePath());
+        if (!mavenHome.equals(EmbedderFactory.getDefaultMavenHome())) {
+            //only relevant display when using the non-default maven installation.
+            display.append(Utilities.escapeParameters(new String[] {"M2_HOME=" + mavenHome.getAbsolutePath()})).append(' '); // NOI18N
         }
+        
         List<String> command = builder.command();
         display.append(Utilities.escapeParameters(command.toArray(new String[command.size()])));
         printGray(ioput, display.toString());
@@ -459,8 +467,11 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             ioput.getErr().println("Cannot execute the mvn.bat executable directly due to wrong access rights, switching to execution via 'cmd.exe /c mvn.bat'."); //NOI18N - in maven output
             try {
                 ioput.getErr().println("  See issue http://www.netbeans.org/issues/show_bug.cgi?id=153101 for details.", new OutputListener() {                    //NOI18N - in maven output
+                    @Override
                     public void outputLineSelected(OutputEvent ev) {}
+                    @Override
                     public void outputLineCleared(OutputEvent ev) {}
+                    @Override
                     public void outputLineAction(OutputEvent ev) {
                         try {
                             HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://www.netbeans.org/issues/show_bug.cgi?id=153101")); //NOI18N - in maven output
@@ -475,6 +486,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             ioput.getErr().println("  This message will show on the next start of the IDE again, to skip it, add -J-Dmaven.run.cmd=true to your etc/netbeans.conf file in your NetBeans installation."); //NOI18N - in maven output
             ioput.getErr().println("The detailed exception output is printed to the IDE's log file."); //NOI18N - in maven output
             RP.post(new Runnable() {
+                @Override
                 public void run() {
                     RunConfig newConfig = new BeanRunConfig(config);
                     RunUtils.executeMaven(newConfig);

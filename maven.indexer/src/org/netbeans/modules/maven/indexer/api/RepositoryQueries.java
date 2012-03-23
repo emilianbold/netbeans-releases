@@ -55,14 +55,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
-import org.netbeans.modules.maven.indexer.spi.BaseQueries;
-import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
-import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery;
-import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
-import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
-import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
-import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
+import org.netbeans.modules.maven.indexer.spi.*;
+import org.openide.util.Lookup;
 
 /**
  * Searches Maven repositories in various ways.
@@ -131,7 +125,7 @@ public final class RepositoryQueries {
     
     
     private static @NonNull BaseQueries findBaseQueries() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(BaseQueries.class);
+        return Lookup.getDefault().lookup(BaseQueries.class);
     }
 
     /**
@@ -196,7 +190,7 @@ public final class RepositoryQueries {
 
     
     private static @NonNull DependencyInfoQueries findDIQ() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(DependencyInfoQueries.class);
+        return Lookup.getDefault().lookup(DependencyInfoQueries.class);
     }
     
     /**
@@ -267,7 +261,7 @@ public final class RepositoryQueries {
     }
     
     private static ChecksumQueries findChecksumQueries() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ChecksumQueries.class);
+        return Lookup.getDefault().lookup(ChecksumQueries.class);
     }    
 
     private static Result<NBVersionInfo> findBySHA1(String sha1, @NullAllowed List<RepositoryInfo> repos) {
@@ -281,7 +275,7 @@ public final class RepositoryQueries {
     }
     
     private static @NonNull ClassesQuery findClassesQueries() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ClassesQuery.class);
+        return Lookup.getDefault().lookup(ClassesQuery.class);
     }    
     /**
      * 
@@ -336,7 +330,7 @@ public final class RepositoryQueries {
     }
     
     private static @NonNull ClassUsageQuery findClassUsageQuery() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ClassUsageQuery.class);        
+        return Lookup.getDefault().lookup(ClassUsageQuery.class);
     }
 
     /**
@@ -353,7 +347,7 @@ public final class RepositoryQueries {
 
     
     private static @NonNull ArchetypeQueries findArchetypeQueries() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ArchetypeQueries.class);
+        return Lookup.getDefault().lookup(ArchetypeQueries.class);
     }
     
     /**
@@ -394,7 +388,7 @@ public final class RepositoryQueries {
 
 
     private static @NonNull GenericFindQuery findFindQuery() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(GenericFindQuery.class);
+        return Lookup.getDefault().lookup(GenericFindQuery.class);
     }
     
     /**
@@ -450,7 +444,8 @@ public final class RepositoryQueries {
     
     public static @NonNull List<RepositoryInfo> getLoadedContexts() {
         List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
-        ContextLoadedQuery clq = RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ContextLoadedQuery.class);
+        ContextLoadedQuery clq = Lookup.getDefault().lookup(ContextLoadedQuery.class);
+        assert clq != null;
         toRet.addAll(clq.getLoaded(RepositoryPreferences.getInstance().getRepositoryInfos()));
         return toRet;
     }

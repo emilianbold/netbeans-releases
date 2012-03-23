@@ -92,7 +92,6 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         props.put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, instanceID, false);
         props.put(MavenJavaEEConstants.HINT_J2EE_VERSION, j2eeVersion, false);
-        props.put(Constants.HINT_COMPILE_ON_SAVE, "all", true); //NOI18N
     }
     
     protected void saveServerToPom(Project project) {

@@ -1,0 +1,11 @@
+org.netbeans.spi.project.ui.templates.support.Templates.setDefinesMainProject($wiz, $main)
+=>
+;;
+
+org.netbeans.spi.project.ui.templates.support.Templates.createSimpleTargetChooser($prj, $fldrs)
+=>
+org.netbeans.spi.project.ui.templates.support.Templates.buildSimpleTargetChooser($prj, $fldrs).create();;
+
+org.netbeans.spi.project.ui.templates.support.Templates.createSimpleTargetChooser($prj, $fldrs, $pnl)
+=>
+org.netbeans.spi.project.ui.templates.support.Templates.buildSimpleTargetChooser($prj, $fldrs).bottomPanel($pnl).create();;

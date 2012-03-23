@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,27 +44,14 @@
 
 package org.netbeans.core;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.net.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.NetworkSettings;
-import org.openide.util.Parameters;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -352,14 +339,36 @@ public class ProxySettings {
         return getModifiedNonProxyHosts (getSystemNonProxyHosts ());
     }
 
+  
+    private static String concatProxies(String... proxies) {
+        StringBuilder sb = new StringBuilder();
+        for (String n : proxies) {
+            if (n == null) {
+                continue;
+            }
+            n = n.trim();
+            if (n.isEmpty()) {
+                continue;
+            }
+            if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '|') {
+                if (!n.startsWith("|")) {
+                    sb.append('|');
+                }
+            }
+            sb.append(n);
+        }
+        return sb.toString();
+    }
+
     private static String getModifiedNonProxyHosts (String systemPreset) {
         String fromSystem = systemPreset.replaceAll (";", "|").replaceAll (",", "|"); //NOI18N
         String fromUser = getPresetNonProxyHosts () == null ? "" : getPresetNonProxyHosts ().replaceAll (";", "|").replaceAll (",", "|"); //NOI18N
         if (Utilities.isWindows ()) {
             fromSystem = addReguralToNonProxyHosts (fromSystem);
         }
-        String nonProxy = fromUser + (fromUser.length () == 0 ? "" : "|") + fromSystem + (fromSystem.length () == 0 ? "" : "|") + "localhost|127.0.0.1"; // NOI18N
-        String localhost = ""; // NOI18N
+        final String staticNonProxyHosts = NbBundle.getMessage(ProxySettings.class, "StaticNonProxyHosts"); // NOI18N
+        String nonProxy = concatProxies(fromUser, fromSystem, staticNonProxyHosts); // NOI18N
+        String localhost;
         try {
             localhost = InetAddress.getLocalHost().getHostName();
             if (!"localhost".equals(localhost)) { // NOI18N

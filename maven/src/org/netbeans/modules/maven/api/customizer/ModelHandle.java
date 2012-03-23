@@ -43,7 +43,6 @@
 package org.netbeans.modules.maven.api.customizer;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +56,6 @@ import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.ProjectConfiguration;
-import org.openide.util.NbBundle;
 
 /**
  * ModelHandle instance is passed down to customizer panel providers in the context lookup.
@@ -65,13 +63,13 @@ import org.openide.util.NbBundle;
  * @author Milos Kleint (mkleint@codehaus.org)
  */
 public final class ModelHandle {
-    public static final String PANEL_RUN = "RUN"; //NOI18N
-    public static final String PANEL_BASIC = "BASIC"; //NOI18N
-    public static final String PANEL_CONFIGURATION = "CONFIGURATION"; //NOI18N
-    public static final String PANEL_MAPPING = "MAPPING"; //NOI18N
-    public static final String PANEL_LIBRARIES = "LIBRARIES"; //NOI18N
-    public static final String PANEL_SOURCES = "SOURCES"; //NOI18N
-    public static final String PANEL_COMPILE = "COMPILE"; //NOI18N
+    public static final String PANEL_RUN = ModelHandle2.PANEL_RUN;
+    public static final String PANEL_BASIC = ModelHandle2.PANEL_BASIC;
+    public static final String PANEL_CONFIGURATION = ModelHandle2.PANEL_CONFIGURATION;
+    public static final String PANEL_MAPPING = ModelHandle2.PANEL_MAPPING;
+    public static final String PANEL_LIBRARIES = ModelHandle2.PANEL_LIBRARIES;
+    public static final String PANEL_SOURCES = ModelHandle2.PANEL_SOURCES;
+    public static final String PANEL_COMPILE = ModelHandle2.PANEL_COMPILE;
     
     private final MavenProjectPropsImpl auxiliaryProps;
     private final POMModel model;

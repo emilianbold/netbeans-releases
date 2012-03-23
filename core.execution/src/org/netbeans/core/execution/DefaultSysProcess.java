@@ -90,7 +90,8 @@ final class DefaultSysProcess extends ExecutorTask {
                 runClassThread.waitForEnd(3000);
             }
         } catch (InterruptedException e) {
-            Logger.getLogger(DefaultSysProcess.class.getName()).log(Level.WARNING, null, e);
+            // XXX #209652: thrown consistently when Maven processes finish running; why?
+            Logger.getLogger(DefaultSysProcess.class.getName()).log(Level.FINE, null, e);
         } finally {
             group.setRunClassThread(null);
         }

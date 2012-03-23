@@ -143,33 +143,8 @@ public class RollbackAction extends ContextAction {
                         }else{
                             logger.output(list.get(0));
                             if (HgCommand.hasHistory(root)) {
-                                descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(RollbackAction.class, "MSG_ROLLBACK_CONFIRM_UPDATE_QUERY")); // NOI18N
-                                descriptor.setTitle(NbBundle.getMessage(RollbackAction.class, "MSG_ROLLBACK_CONFIRM")); // NOI18N
-                                descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
-                                descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
-                                res = DialogDisplayer.getDefault().notify(descriptor);
-                                if (res == NotifyDescriptor.YES_OPTION) {
-                                    logger.output(
-                                            NbBundle.getMessage(RollbackAction.class,
-                                            "MSG_ROLLBACK_FORCE_UPDATE", root.getAbsolutePath())); // NOI18N
-                                    list = HgCommand.doUpdateAll(root, true, null);
-
-                                    HgUtils.notifyUpdatedFiles(root, list);
-                                    FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-                                    // XXX containsFileOfStatus would be better (do not test exclusions from commit)
-                                    if(cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT).length != 0){
-                                        ConflictResolvedAction.resolved(ctx);                                       
-                                    }
-                                    HgUtils.forceStatusRefreshProject(ctx);
-                                    Mercurial.getInstance().changesetChanged(root);
-
-                                    if (list != null && !list.isEmpty()){
-                                        logger.output(list);
-                                    }
-                                } else {
-                                    HgUtils.forceStatusRefreshProject(ctx);
-                                    Mercurial.getInstance().changesetChanged(root);
-                                }
+                                HgUtils.forceStatusRefreshProject(ctx);
+                                Mercurial.getInstance().changesetChanged(root);
                             } else {
                                 JOptionPane.showMessageDialog(null,
                                         NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_MESSAGE_NOHISTORY") ,  // NOI18N

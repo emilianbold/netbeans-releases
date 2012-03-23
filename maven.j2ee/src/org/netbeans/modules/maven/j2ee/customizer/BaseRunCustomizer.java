@@ -147,7 +147,7 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
     
     private void updateDoSEnablement(JCheckBox dosCheckBox, JLabel dosDescription) {
         String cos = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
-        boolean enabled = cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos)); // NOI18N
+        boolean enabled = cos == null || "all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos); // NOI18N
         dosCheckBox.setEnabled(enabled);
         dosDescription.setEnabled(enabled);
     }
