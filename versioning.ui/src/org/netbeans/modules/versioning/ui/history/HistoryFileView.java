@@ -761,6 +761,10 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         }
         
         String getTooltip(Node.Property p) throws IllegalAccessException, InvocationTargetException {
+            Object value = p.getValue();
+            if(value instanceof TableEntry) {
+                return ((TableEntry) value).getTooltip();
+            }
             String tooltip = p.toString();
             if(tooltip != null && tooltip.contains("\n")) { // NOI18N
                 tooltip = HistoryUtils.escapeForHTMLLabel(tooltip);
