@@ -482,6 +482,9 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                     break;
                 }
                 case BODY: {
+                    if (read == EOF) {
+                        return PartType.START;
+                    }
                     if (read == ')') {
                         state = RawStringLexingState.POSTFIX_DELIMETER;
                     }
