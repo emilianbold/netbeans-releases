@@ -146,6 +146,39 @@ public class NamedServiceDefinitionTest extends NbTestCase {
             fail("The error messages should say something about missing @when\n" + err);
         }
     }
+
+    public void testNonExistentPositionAttribute() throws Exception {
+        String content = "import org.openide.util.lookup.NamedServiceDefinition;\n"
+            + "@NamedServiceDefinition(path=\"fixed\",serviceType=Runnable.class,position=\"where\")\n"
+            + "public @interface Test {\n"
+            + "  int when();"
+            + "}\n";
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.Test", content);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        assertFalse("Compilation fails",
+            AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os)
+        );
+        String err = new String(os.toByteArray(), "UTF-8");
+        if (err.indexOf("where") == -1) {
+            fail("The error messages should say something about missing where\n" + err);
+        }
+    }
+    public void testNonIntegerPositionAttribute() throws Exception {
+        String content = "import org.openide.util.lookup.NamedServiceDefinition;\n"
+            + "@NamedServiceDefinition(path=\"fixed\",serviceType=Runnable.class,position=\"where\")\n"
+            + "public @interface Test {\n"
+            + "  Class<?> where();"
+            + "}\n";
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.Test", content);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        assertFalse("Compilation fails",
+            AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os)
+        );
+        String err = new String(os.toByteArray(), "UTF-8");
+        if (err.indexOf("where") == -1) {
+            fail("The error messages should say something about missing where\n" + err);
+        }
+    }
     
     @NamedServiceDefinition(
         path="runtest/@when()/below",

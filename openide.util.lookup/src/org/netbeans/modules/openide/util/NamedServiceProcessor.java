@@ -62,6 +62,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import org.openide.util.lookup.NamedServiceDefinition;
@@ -91,10 +92,10 @@ public final class NamedServiceProcessor extends AbstractServiceProviderProcesso
                 if (attr == null) {
                     processingEnv.getMessager().printMessage(
                         Diagnostic.Kind.ERROR, 
-                        "The path attribute contains " + 
+                        "The path attribute contains '" + 
                         m.group(0) + 
-                        " reference, but there is no attribute named " + 
-                        m.group(1), 
+                        "' reference, but there is no attribute named '" + 
+                        m.group(1) + "'", 
                         e
                     );
                     continue;
@@ -110,11 +111,34 @@ public final class NamedServiceProcessor extends AbstractServiceProviderProcesso
                 }
                 processingEnv.getMessager().printMessage(
                     Diagnostic.Kind.ERROR,
-                        "The path attribute contains " + m.group(0) + 
-                        " reference, but attribute " + m.group(1) + 
-                        " does not return String or String[]", 
+                        "The path attribute contains '" + m.group(0) + 
+                        "' reference, but attribute '" + m.group(1) + 
+                        "' does not return String or String[]", 
                         e
                 );
+            }
+            if (!nsd.position().equals("-")) {
+                ExecutableElement attr = findAttribute(e, nsd.position());
+                if (attr == null) {
+                    processingEnv.getMessager().printMessage(
+                        Diagnostic.Kind.ERROR,
+                        "The position attribute contains '"
+                        + nsd.position() + "' but no such attribute found.",
+                        e
+                    );
+                } else {
+                    if (!processingEnv.getTypeUtils().isSameType(
+                        processingEnv.getTypeUtils().getPrimitiveType(TypeKind.INT),
+                        attr.getReturnType()
+                    )) {
+                        processingEnv.getMessager().printMessage(
+                            Diagnostic.Kind.ERROR,
+                            "The position attribute contains '"
+                            + nsd.position() + "' but the attribute does not return int.",
+                            e
+                        );
+                    }
+                }
             }
             register(e, PATH);
         }
