@@ -176,6 +176,14 @@ public final class FoldHierarchyTransactionImpl {
     public FoldHierarchyTransaction getTransaction() {
         return transaction;
     }
+    
+    void cancelled() {
+        checkNotCommitted();
+        LOG.log(Level.WARNING, "Fold transaction not committed at unlock");
+        // just reused the flag, only checked in checkNotCommitted
+        committed = true;
+        execution.clearActiveTransaction();
+    }
 
     /**
      * Commit this active transaction.
@@ -458,6 +466,7 @@ public final class FoldHierarchyTransactionImpl {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("removeFold: " + fold + '\n');
         }
+        checkNotCommitted();
 
         Fold parent = fold.getParent();
         if (parent != null) { // present in hierarchy
@@ -530,6 +539,7 @@ public final class FoldHierarchyTransactionImpl {
         if (getOperation(fold).isReleased()) {
             throw new IllegalStateException("The manager has been already released");
         }
+        checkNotCommitted();
 
         return addFold(fold, null, 0);
     }

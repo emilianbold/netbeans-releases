@@ -134,6 +134,7 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
 
         public KeyMapsReader(FileObject f, String mimePath) {
             super(f, mimePath);
+            LOG.log(Level.FINEST, "Processing file: {0}", f.getPath());
         }
         
         public Map<Collection<KeyStroke>, MultiKeyBinding> getAdded() {

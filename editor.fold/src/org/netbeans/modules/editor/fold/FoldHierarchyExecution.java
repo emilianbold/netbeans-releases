@@ -55,6 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -269,6 +270,9 @@ public final class FoldHierarchyExecution implements DocumentListener {
      * be used together with {@link #lock()} in <code>try..finally</code> block.
      */
     public void unlock() {
+        if (activeTransaction != null) {
+            activeTransaction.cancelled();
+        }
         mutex.unlock();
     }
     
