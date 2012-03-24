@@ -51,6 +51,7 @@ import org.netbeans.spi.project.SingleMethod;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -86,7 +87,7 @@ public abstract class TestMethodDebuggerProvider {
             caret = -1;
         }
 
-        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+        Mutex.EVENT.writeAccess(new Runnable() {
 
             @Override
             public void run() {
@@ -97,14 +98,13 @@ public abstract class TestMethodDebuggerProvider {
                 if (sm != null) {
                     ActionProvider ap = TestMethodRunnerProvider.getActionProvider(sm.getFile());
                     if (ap != null) {
-                        if(Arrays.asList(ap.getSupportedActions()).contains(command) && ap.isActionEnabled(command, Lookups.singleton(sm))) {
+                        if (Arrays.asList(ap.getSupportedActions()).contains(command) && ap.isActionEnabled(command, Lookups.singleton(sm))) {
                             ap.invokeAction(command, Lookups.singleton(sm));
                         }
                     }
                 }
             }
-        },
-        NbBundle.getMessage(TestMethodDebuggerProvider.class, "LBL_Action_RunTestMethod"), new AtomicBoolean(), false);
+        });
     }
     
 }
