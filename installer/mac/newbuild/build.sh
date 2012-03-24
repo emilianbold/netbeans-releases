@@ -20,25 +20,24 @@
 set -x -e 
 
 if [ -z "$1" ] || [ -z "$2" ]|| [ -z "$3" ] || [ -z "$4" ]; then
-    echo "usage: $0 zipdir prefix buildnumber javafx_build ml_build [nb_locales]"
+    echo "usage: $0 zipdir prefix buildnumber ml_build [nb_locales]"
     echo ""
     echo "zipdir is the dir which contains the zip/modulclusters and zip-ml/moduleclusters"
-    echo "prefix-buildnumber is the distro filename prefix, e.g. netbeans-hudson-trunk-2464"
-    echo "javafx_build is 1 if fx builds are required and 0 if not"
-    echo "ml_build is 1 if ml builds are required and 0 if not"  
-    echo "nb_locales is the string with the list of locales (for ml builds)"  
+    echo "prefix is the distro filename prefix, e.g. netbeans-hudson-trunk in netbeans-hudson-trunk-2464"
+    echo "buildnumber is the distro buildnumber, e.g. 2464 in netbeans-hudson-trunk-2464"
+    echo "ml_build is 1 if ml builds are required and 0 if not"
+    echo "nb_locales is the string with the list of locales (for ml builds)"
     exit 1
 fi
 
 work_dir=$1
 prefix=$2
 buildnumber=$3
-fx_build=$4
-ml_build=$5
-if [ -n "$6" ] ; then
-  nb_locales="$6"
+ml_build=$4
+if [ -n "$5" ] ; then
+  nb_locales="$5"
 fi
-  
+
 basename=`dirname "$0"`
 . "$basename"/build-private.sh
 
@@ -46,12 +45,18 @@ cd "$basename"
 chmod -R a+x *.sh
 
 commonname=$work_dir/zip/moduleclusters/$prefix-$buildnumber 
-ant -f $basename/build.xml build-all-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='false' -Djavafx.build=$fx_build -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
+if [ 0 -eq $BUILD_NBJDK7 ] ; then
+    target="build-all-dmg"
+else
+    target="build-jdk-bundle-dmg"
+fi
+
+ant -f $basename/build.xml $target -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='false' -Dbuild.jdk7=$BUILD_NBJDK7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
 
 rm -rf "$basename"/dist_en
 mv -f "$basename"/dist "$basename"/dist_en
 
 if [ 1 -eq $ml_build ] ; then
 commonname_ml=$work_dir/zip-ml/moduleclusters/$prefix-$buildnumber
-ant -f $basename/build.xml build-all-dmg -Dnb.locales=$nb_locales -Dcommon.name=$commonname_ml -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='true' -Djavafx.build=$fx_build -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
+ant -f $basename/build.xml $target -Dnb.locales=$nb_locales -Dcommon.name=$commonname_ml -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='true' -Dbuild.jdk7=$BUILD_NBJDK7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
 fi
