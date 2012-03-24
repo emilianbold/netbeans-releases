@@ -275,10 +275,9 @@ public final class JavaDataLoader extends UniFileLoader {
         
         @Override
         public FileObject createFromTemplate(FileObject f, String name) throws IOException {
-            Logger.getLogger(JavaDataLoader.class.getName()).warning(
-                    "Please replace template " + this.getFile().toString() + //NOI18N
-                    " with the new scripting support. See " + //NOI18N
-                    "http://www.netbeans.org/download/dev/javadoc/org-openide-loaders/apichanges.html#scripting"); //NOI18N
+            if (getFile().getAttribute(/* ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR */"javax.script.ScriptEngine") == null) {
+                Logger.getLogger(JavaDataLoader.class.getName()).log(Level.WARNING, "Please replace template {0} with the new scripting support. See http://bits.netbeans.org/7.1/javadoc/org-openide-loaders/apichanges.html#scripting", getFile().getPath());
+            }
             if (name == null) {
                 // special case: name is null (unspecified or from one-parameter createFromTemplate)
                 name = FileUtil.findFreeFileName(f, f.getName(), "java"); // NOI18N
