@@ -56,13 +56,14 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.openide.util.RequestProcessor;
 
 public class MakeProjectConfigurationProvider implements ProjectConfigurationProvider<Configuration>, PropertyChangeListener {
 
     private final Project project;
     private ConfigurationDescriptorProvider projectDescriptorProvider;
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    public static final boolean ASYNC_LOAD = Boolean.getBoolean("cnd.async.root"); // NOI18N
+    private final RequestProcessor RP = new RequestProcessor("Make configuration provider RP", 1); // NOI18N
 
     public MakeProjectConfigurationProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider, PropertyChangeListener info) {
         this.project = project;
@@ -72,24 +73,35 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
 
     @Override
     public Collection<Configuration> getConfigurations() {
-        if (projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD) == null) {
+        if (!projectDescriptorProvider.gotDescriptor()) {
             return Collections.<Configuration>emptySet();
         }
-        return projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD).getConfs().getConfigurations();
+        MakeConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+        if (configurationDescriptor == null) {
+            return Collections.<Configuration>emptySet();
+        }
+        return configurationDescriptor.getConfs().getConfigurations();
     }
 
     @Override
     public Configuration getActiveConfiguration() {
-        if (projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD) == null) {
+        if (!projectDescriptorProvider.gotDescriptor()) {
             return null;
         }
-        return projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD).getConfs().getActive();
+        MakeConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+        if (configurationDescriptor == null) {
+            return null;
+        }
+        return configurationDescriptor.getConfs().getActive();
     }
 
     @Override
     public void setActiveConfiguration(Configuration configuration) throws IllegalArgumentException, IOException {
-        if (configuration instanceof Configuration && projectDescriptorProvider != null && projectDescriptorProvider.getConfigurationDescriptor() != null) {
-            projectDescriptorProvider.getConfigurationDescriptor().getConfs().setActive(configuration);
+        if (configuration instanceof Configuration && projectDescriptorProvider != null && projectDescriptorProvider.gotDescriptor()) {
+            MakeConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+            if (configurationDescriptor != null) {
+                configurationDescriptor.getConfs().setActive(configuration);
+            }
         }
     }
 
@@ -97,24 +109,39 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
     public void addPropertyChangeListener(PropertyChangeListener lst) {
         pcs.addPropertyChangeListener(lst);
         if (projectDescriptorProvider != null) {
-            MakeConfigurationDescriptor makeConfigurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD);
-            if (makeConfigurationDescriptor != null && makeConfigurationDescriptor.getState() != State.BROKEN) {  // IZ 122372 // IZ 182321
-                makeConfigurationDescriptor.getConfs().addPropertyChangeListener(this);
-            }
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    if (projectDescriptorProvider != null) {
+                        MakeConfigurationDescriptor makeConfigurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+                        if (makeConfigurationDescriptor != null && makeConfigurationDescriptor.getState() != State.BROKEN) {  // IZ 122372 // IZ 182321
+                            makeConfigurationDescriptor.getConfs().addPropertyChangeListener(MakeProjectConfigurationProvider.this);
+                            pcs.firePropertyChange(PROP_CONFIGURATIONS, null, getConfigurations());
+                            pcs.firePropertyChange(PROP_CONFIGURATION_ACTIVE, null, getActiveConfiguration());
+                        }
+                    }
+                }
+            });
         }
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener lst) {
         pcs.removePropertyChangeListener(lst);
-        if (projectDescriptorProvider != null && projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD) != null) {
-            projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD).getConfs().removePropertyChangeListener(this);
+        if (projectDescriptorProvider != null && projectDescriptorProvider.gotDescriptor()) {
+            if (projectDescriptorProvider != null) {
+                MakeConfigurationDescriptor makeConfigurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+                if (makeConfigurationDescriptor != null && makeConfigurationDescriptor.getState() != State.BROKEN) {  // IZ 122372 // IZ 182321
+                    makeConfigurationDescriptor.getConfs().addPropertyChangeListener(MakeProjectConfigurationProvider.this);
+                }
+            }
         }
     }
 
     @Override
     public boolean hasCustomizer() {
-        if (projectDescriptorProvider != null && projectDescriptorProvider.getConfigurationDescriptor() != null) {
+        if (projectDescriptorProvider != null && projectDescriptorProvider.gotDescriptor() && projectDescriptorProvider.getConfigurationDescriptor() != null) {
             return true;
         }
         else {

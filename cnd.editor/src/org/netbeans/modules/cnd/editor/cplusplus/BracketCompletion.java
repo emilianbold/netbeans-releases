@@ -674,7 +674,7 @@ public class BracketCompletion {
     /**
      * Returns true if bracket completion is enabled in options.
      */
-    private static boolean completionSettingEnabled(Document doc) {
+    static boolean completionSettingEnabled(Document doc) {
         Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
         return prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, true);
     }

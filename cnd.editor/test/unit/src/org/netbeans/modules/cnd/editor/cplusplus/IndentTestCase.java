@@ -51,13 +51,11 @@ public class IndentTestCase extends EditorBase {
     
     public void testJavadocEnterNothingAfterCaret() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                 "/**\n"
                 + " * text|\n"
-                + " */\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                + " */\n", // "Incorrect new-line indent",
+                "\n",
                 "/**\n"
                 + " * text\n"
                 + " * |\n"
@@ -68,13 +66,11 @@ public class IndentTestCase extends EditorBase {
     
     public void testJavadocEnterTextAfterCaret() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                 "/**\n"
                 + " * break|text\n"
-                + " */\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                + " */\n", // "Incorrect new-line indent",
+                "\n",
                 "/**\n"
                 + " * break\n"
                 + " * |text\n"
@@ -85,12 +81,10 @@ public class IndentTestCase extends EditorBase {
     
     public void testJavadocEnterStarAfterCaret() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                 "/**\n"
-                + " * text|*/\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                + " * text|*/\n", // "Incorrect new-line indent",
+                "\n",
                 "/**\n"
                 + " * text\n"
                 + " |*/\n"
@@ -100,28 +94,24 @@ public class IndentTestCase extends EditorBase {
 
     public void testJavadocStarTyping() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                 "/**\n" +
                 "|\n" +
-                " */\n"
-                );
-        typeChar('h', true);
-        assertDocumentTextAndCaret("Incorrect line indent",
+                " */\n",
+                "h",
                 "/**\n"
-                + " h|\n"
+                + " * h|\n"
                 + " */\n"
                 );
     }
     
     public void testEnterInMultiLineSystemOutPrintln() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                 "void m() {\n"
                 + "    printf(|\n"
-                + "\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                + "\n", // "Incorrect new-line indent",
+                "\n",
                 "void m() {\n"
                 + "    printf(\n"
                 + "            |\n"
@@ -132,14 +122,12 @@ public class IndentTestCase extends EditorBase {
     
     public void testEnterInMultiLineSystemOutPrintlnLineThree() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                 "void m() {\n"
                 + "    printf(\n"
                 + "            \"haf\"|\n"
-                + "\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                + "\n", // "Incorrect new-line indent",
+                "\n",
                 "void m() {\n"
                 + "    printf(\n"
                 + "            \"haf\"\n"
@@ -151,14 +139,12 @@ public class IndentTestCase extends EditorBase {
     
     public void testEnterInMultiLineSystemOutPrintlnAfterSemiColon() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                 "void m() {\n"
                 + "    printf(\n"
                 + "            \"haf\");|\n"
-                + "\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                + "\n", // "Incorrect new-line indent",
+                "\n",
                 "void m() {\n"
                 + "    printf(\n"
                 + "            \"haf\");\n"
@@ -169,7 +155,7 @@ public class IndentTestCase extends EditorBase {
     }
     
 //    public void testEnterInMultiLineClassDeclaration() {
-//        setLoadDocumentText(
+//        typeCharactersInText(
 //                "public class C\n"
 //                + "        : Runnable\n {|\n"
 //                + "}\n"
@@ -186,11 +172,9 @@ public class IndentTestCase extends EditorBase {
     
     public void testEnterAfterIf() {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "if (true)|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+        typeCharactersInText(
+                "if (true)|\n", // "Incorrect new-line indent",
+                "\n",
                 "if (true)\n"
                 + "    |\n"
                 );
@@ -201,11 +185,9 @@ public class IndentTestCase extends EditorBase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        setLoadDocumentText(
-                "if (true)|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+        typeCharactersInText(
+                "if (true)|\n", // "Incorrect new-line indent",
+                "\n",
                 "if (true)\n"
                 + "  |\n"
                 );
@@ -216,13 +198,11 @@ public class IndentTestCase extends EditorBase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        setLoadDocumentText(
+        typeCharactersInText(
                 "if (true)\n" +
                 "  {|\n" +
-                "  }\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                "  }\n", // "Incorrect new-line indent",
+                "\n",
                 "if (true)\n" +
                 "  {\n" +
                 "    |\n" +
@@ -238,16 +218,14 @@ public class IndentTestCase extends EditorBase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        setLoadDocumentText(
+        typeCharactersInText(
                 "int foo()\n" +
                 "{\n" +
                 "  if (true)\n" +
                 "    {|\n" +
                 "    }\n" +
-                "}\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                "}\n", // "Incorrect new-line indent",
+                "\n",
                 "int foo()\n" +
                 "{\n" +
                 "  if (true)\n" +
@@ -260,11 +238,9 @@ public class IndentTestCase extends EditorBase {
     
     public void testEnterAfterFor() {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "for (int i = 0; i < 10; i++)|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+        typeCharactersInText(
+                "for (int i = 0; i < 10; i++)|\n", // "Incorrect new-line indent",
+                "\n",
                 "for (int i = 0; i < 10; i++)\n"
                 + "    |\n"
                 );
@@ -275,11 +251,9 @@ public class IndentTestCase extends EditorBase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        setLoadDocumentText(
-                "for (int i = 0; i < 10; i++)|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+        typeCharactersInText(
+                "for (int i = 0; i < 10; i++)|\n", // "Incorrect new-line indent",
+                "\n",
                 "for (int i = 0; i < 10; i++)\n"
                 + "  |\n"
                 );
@@ -287,11 +261,9 @@ public class IndentTestCase extends EditorBase {
     
     public void testEnterAfterWhile() {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "while (true)|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+        typeCharactersInText(
+                "while (true)|\n", // "Incorrect new-line indent",
+                "\n",
                 "while (true)\n"
                 + "    |\n"
                 );
@@ -302,11 +274,9 @@ public class IndentTestCase extends EditorBase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        setLoadDocumentText(
-                "while (true)|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+        typeCharactersInText(
+                "while (true)|\n", // "Incorrect new-line indent",
+                "\n",
                 "while (true)\n" +
                 "  |\n"
                 );
@@ -314,11 +284,9 @@ public class IndentTestCase extends EditorBase {
 
     public void testEnterAfterDo() {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "do|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+        typeCharactersInText(
+                "do|\n", // "Incorrect new-line indent",
+                "\n",
                 "do\n"
                 + "    |\n"
                 );
@@ -329,11 +297,9 @@ public class IndentTestCase extends EditorBase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        setLoadDocumentText(
-                "do|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+        typeCharactersInText(
+                "do|\n", // "Incorrect new-line indent",
+                "\n",
                 "do\n" +
                 "  |\n"
                 );
@@ -341,12 +307,10 @@ public class IndentTestCase extends EditorBase {
 
     public void testEnterAfterIfStmt() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                 "if (true)\n"
-                + "    stmt;|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                + "    stmt;|\n", // "Incorrect new-line indent",
+                "\n",
                 "if (true)\n"
                 + "    stmt;\n"
                 + "|\n"
@@ -358,12 +322,10 @@ public class IndentTestCase extends EditorBase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        setLoadDocumentText(
+        typeCharactersInText(
                 "if (true)\n"
-                + "  stmt;|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                + "  stmt;|\n", // "Incorrect new-line indent",
+                "\n",
                 "if (true)\n"
                 + "  stmt;\n"
                 + "|\n"
@@ -372,13 +334,11 @@ public class IndentTestCase extends EditorBase {
 
     public void testEnterAfterIfElse() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                 "if (true)\n"
                 + "    stmt;\n"
-                + "else|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                + "else|\n", // "Incorrect new-line indent",
+                "\n",
                 "if (true)\n"
                 + "    stmt;\n"
                 + "else\n"
@@ -391,13 +351,11 @@ public class IndentTestCase extends EditorBase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        setLoadDocumentText(
+        typeCharactersInText(
                 "if (true)\n"
                 + "  stmt;\n"
-                + "else|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                + "else|\n", // "Incorrect new-line indent",
+                "\n",
                 "if (true)\n"
                 + "  stmt;\n"
                 + "else\n"
@@ -407,14 +365,12 @@ public class IndentTestCase extends EditorBase {
     
     public void testEnterAfterIfElseStmt() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                 "if (true)\n"
                 + "    stmt;\n"
                 + "else\n"
-                + "    stmt;|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                + "    stmt;|\n", // "Incorrect new-line indent",
+                "\n",
                 "if (true)\n"
                 + "    stmt;\n"
                 + "else\n"
@@ -425,11 +381,9 @@ public class IndentTestCase extends EditorBase {
     
     public void testEnterAfterIfMultiLine() {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "if (1 < 5|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+        typeCharactersInText(
+                "if (1 < 5|\n", // "Incorrect new-line indent",
+                "\n",
                 "if (1 < 5\n"
                 + "        |\n"
                 );
@@ -437,11 +391,9 @@ public class IndentTestCase extends EditorBase {
     
     public void testEnterAfterIfMultiLine2() {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "if (1 < 5|)\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+        typeCharactersInText(
+                "if (1 < 5|)\n", // "Incorrect new-line indent",
+                "\n",
                 "if (1 < 5\n"
                 + "        |)\n"
                 );
@@ -453,7 +405,7 @@ public class IndentTestCase extends EditorBase {
      */
     public void testIdentUnbalancedBraces() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "void foo() {\n" +
             "#if A\n" +
             "    if (0) {\n" +
@@ -461,9 +413,8 @@ public class IndentTestCase extends EditorBase {
             "    if (1) {\n" +
             "#endif|\n" +
             "    }\n" +
-            "}\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing of unbalanced braces",
+            "}\n", // "Incorrect identing of unbalanced braces",
+            "\n",
             "void foo() {\n" +
             "#if A\n" +
             "    if (0) {\n" +
@@ -481,7 +432,7 @@ public class IndentTestCase extends EditorBase {
      */
     public void testIdentUnbalancedBraces2() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "void foo() {\n" +
             "#if A\n" +
             "    if (0) {\n" +
@@ -489,9 +440,8 @@ public class IndentTestCase extends EditorBase {
             "    if (1) {\n" +
             "#endif\n" +
             "    }|\n" +
-            "}\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing of unbalanced braces",
+            "}\n", // "Incorrect identing of unbalanced braces",
+            "\n",
             "void foo() {\n" +
             "#if A\n" +
             "    if (0) {\n" +
@@ -508,7 +458,7 @@ public class IndentTestCase extends EditorBase {
 //     * @see http://www.netbeans.org/issues/show_bug.cgi?id=91561
 //     */
 //    public void testIdentUnbalancedBraces3() {
-//        setLoadDocumentText(
+//        typeCharactersInText(
 //            "void foo() {\n" +
 //            "#if A\n" +
 //            "    if (0) {\n" +
@@ -534,12 +484,12 @@ public class IndentTestCase extends EditorBase {
     public void testIdentMain() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        setLoadDocumentText(
-            "int main() {|\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing of main",
+        typeCharactersInText(
+            "int main() {|\n", // "Incorrect identing of main",
+            "\n",
             "int main() {\n" +
-            "    \n");
+            "    |\n" +
+            "}\n");
     }
 
     public void testIdentMainHalf() {
@@ -548,12 +498,12 @@ public class IndentTestCase extends EditorBase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        setLoadDocumentText(
-            "int main() {|\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing of main",
+        typeCharactersInText(
+            "int main() {|\n", // "Incorrect identing of main",
+            "\n",
             "int main() {\n" +
-            "  \n");
+            "  |\n" +
+            "}\n");
     }
 
     public void testIdentMainHalf2() {
@@ -562,10 +512,9 @@ public class IndentTestCase extends EditorBase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        setLoadDocumentText(
-            "int main()|\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing of main",
+        typeCharactersInText(
+            "int main()|\n", // "Incorrect identing of main",
+            "\n",
             "int main()\n" +
             "\n");
     }
@@ -576,23 +525,21 @@ public class IndentTestCase extends EditorBase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        setLoadDocumentText(
+        typeCharactersInText(
             "int main()\n"+
-            "{|\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing of main",
+            "{|\n", // "Incorrect identing of main",
+            "\n",
             "int main()\n" +
             "{\n" +
-            "  \n");
+            "  |\n" +
+            "}\n");
     }
 
     public void testIZ101099() {
         setDefaultsOptions();
-        setLoadDocumentText(
-                "template <class T>|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent IZ101099",
+        typeCharactersInText(
+                "template <class T>|\n", // "Incorrect new-line indent IZ101099",
+                "\n",
                 "template <class T>\n"+
                 "|\n"
                 );
@@ -600,13 +547,11 @@ public class IndentTestCase extends EditorBase {
 
     public void testIZ122489() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                 "Cpu::Cpu(int units) :\n"+
                 "   Module(units) {\n"+
-                "}|\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent IZ122489",
+                "}|\n", // "Incorrect new-line indent IZ122489",
+                "\n",
                 "Cpu::Cpu(int units) :\n"+
                 "   Module(units) {\n"+
                 "}\n"+
@@ -620,10 +565,9 @@ public class IndentTestCase extends EditorBase {
     public void testIdentMethodParameters() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        setLoadDocumentText(
-            "int longmain(int a,|\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing of main",
+        typeCharactersInText(
+            "int longmain(int a,|\n", // "Incorrect identing of main",
+            "\n",
             "int longmain(int a,\n" +
             "        \n");
     }
@@ -636,10 +580,9 @@ public class IndentTestCase extends EditorBase {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
                 putBoolean(EditorOptions.alignMultilineMethodParams, true);
-        setLoadDocumentText(
-            "int longmain(int a,|\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing of main",
+        typeCharactersInText(
+            "int longmain(int a,|\n", // "Incorrect identing of main",
+            "\n",
             "int longmain(int a,\n" +
             "             \n");
     }
@@ -650,10 +593,9 @@ public class IndentTestCase extends EditorBase {
     public void testIdentCallParameters() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        setLoadDocumentText(
-            "a = longmain(a,|\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing of main",
+        typeCharactersInText(
+            "a = longmain(a,|\n", // "Incorrect identing of main",
+            "\n",
             "a = longmain(a,\n" +
             "        \n");
     }
@@ -665,24 +607,21 @@ public class IndentTestCase extends EditorBase {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        setLoadDocumentText(
-            "a = longmain(a,|\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing of main",
+        typeCharactersInText(
+            "a = longmain(a,|\n", // "Incorrect identing of main",
+            "\n",
             "a = longmain(a,\n" +
             "             \n");
     }
 
     public void testIdentNewLineLocalDeclararion() throws Exception {
         setDefaultsOptions("GNU");
-        setLoadDocumentText(
+        typeCharactersInText(
             "tree\n" +
             "disp(int i){\n" +
             "  int i = |\n" +
-            "}"
-            );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect identing of New Line Local Declararion",
+            "}", // "Incorrect identing of New Line Local Declararion",
+            "\n",
             "tree\n" +
             "disp(int i){\n" +
             "  int i = \n" +
@@ -693,14 +632,12 @@ public class IndentTestCase extends EditorBase {
 
     public void testIdentNewLineLocalStatement() throws Exception {
         setDefaultsOptions("GNU");
-        setLoadDocumentText(
+        typeCharactersInText(
             "tree\n" +
             "disp(int i){\n" +
             "  i = |\n" +
-            "}"
-            );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect identing of New Line Local Statement",
+            "}", // "Incorrect identing of New Line Local Statement",
+            "\n",
             "tree\n" +
             "disp(int i){\n" +
             "  i = \n" +
@@ -711,14 +648,12 @@ public class IndentTestCase extends EditorBase {
 
     public void testIdentNewLineLocalStatement2() throws Exception {
         setDefaultsOptions("GNU");
-        setLoadDocumentText(
+        typeCharactersInText(
             "tree\n" +
             "disp(int i){\n" +
             "  i = f(i,|)\n" +
-            "}"
-            );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect identing of New Line Local Statement",
+            "}", // "Incorrect identing of New Line Local Statement",
+            "\n",
             "tree\n" +
             "disp(int i){\n" +
             "  i = f(i,\n" +
@@ -729,15 +664,13 @@ public class IndentTestCase extends EditorBase {
 
     public void testIdentNewLineLocalStatement3() throws Exception {
         setDefaultsOptions("GNU");
-        setLoadDocumentText(
+        typeCharactersInText(
             "tree\n" +
             "disp(int i){\n" +
             "  i = f(i,\n" +
             "        i+|)\n" +
-            "}"
-            );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect identing of New Line Local Statement",
+            "}", // "Incorrect identing of New Line Local Statement",
+            "\n",
             "tree\n" +
             "disp(int i){\n" +
             "  i = f(i,\n" +
@@ -749,15 +682,13 @@ public class IndentTestCase extends EditorBase {
 
     public void testIdentNewLineLocalStatement4() throws Exception {
         setDefaultsOptions("GNU");
-        setLoadDocumentText(
+        typeCharactersInText(
             "tree\n" +
             "disp(int i){\n" +
             "  i = f(i,\n" +
             "        i+foo(a,|))\n" +
-            "}"
-            );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect identing of New Line Local Statement",
+            "}", // "Incorrect identing of New Line Local Statement",
+            "\n",
             "tree\n" +
             "disp(int i){\n" +
             "  i = f(i,\n" +
@@ -770,7 +701,7 @@ public class IndentTestCase extends EditorBase {
     // IZ#135150:GNU style: wrong indent in 'if else' expression
     public void testIZ135150() throws Exception {
         setDefaultsOptions("GNU");
-        setLoadDocumentText(
+        typeCharactersInText(
             "int\n" +
             "main()\n" +
             "{\n" +
@@ -778,10 +709,8 @@ public class IndentTestCase extends EditorBase {
             "  if (i == 0)\n" +
             "    i = 1;\n" +
             "  else\n" +
-            "    {|\n"
-            );
-        indentNewLine();
-        assertDocumentTextAndCaret("IZ#135150:GNU style: wrong indent in 'if else' expression",
+            "    {|\n", // "IZ#135150:GNU style: wrong indent in 'if else' expression",
+            "\n",
             "int\n" +
             "main()\n" +
             "{\n" +
@@ -790,8 +719,8 @@ public class IndentTestCase extends EditorBase {
             "    i = 1;\n" +
             "  else\n" +
             "    {\n" +
-            "      |\n"
-            );
+            "      |\n" +
+            "    }\n");
     }
     /**
      * test IZ:150788 Slight flaw in apache-style indentation
@@ -801,10 +730,9 @@ public class IndentTestCase extends EditorBase {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
                 putBoolean(EditorOptions.alignMultilineIfCondition, true);
-        setLoadDocumentText(
-            "if (a &&|)");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+        typeCharactersInText(
+            "if (a &&|)", // "Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+            "\n",
             "if (a &&\n"+
             "    )");
     }
@@ -816,10 +744,9 @@ public class IndentTestCase extends EditorBase {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
                 putBoolean(EditorOptions.alignMultilineWhileCondition, true);
-        setLoadDocumentText(
-            "while(a &&|)");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+        typeCharactersInText(
+            "while(a &&|)", // "Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+            "\n",
             "while(a &&\n"+
             "      )");
     }
@@ -832,10 +759,9 @@ public class IndentTestCase extends EditorBase {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
                 putBoolean(EditorOptions.alignMultilineFor, true);
-        setLoadDocumentText(
-            "for  (int a = 0;|)");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+        typeCharactersInText(
+            "for  (int a = 0;|)", // "Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+            "\n",
             "for  (int a = 0;\n"+
             "      )");
     }
@@ -846,10 +772,9 @@ public class IndentTestCase extends EditorBase {
     public void testIZ150788_4() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        setLoadDocumentText(
-            "for  (int a = 0;|)");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+        typeCharactersInText(
+            "for  (int a = 0;|)", // "Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+            "\n",
             "for  (int a = 0;\n"+
             "        )");
     }
@@ -859,22 +784,20 @@ public class IndentTestCase extends EditorBase {
     public void testIZ150788_5() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        setLoadDocumentText(
-            "if (a &&|)");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+        typeCharactersInText(
+            "if (a &&|)", // "Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+            "\n",
             "if (a &&\n"+
             "        )");
     }
 
     public void testIZ161572() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "enum {\n" +
             "  t1 = 1,|\n" +
-            "}");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "}", // "Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "\n",
             "enum {\n" +
             "  t1 = 1,\n" +
             "  \n" +
@@ -883,12 +806,11 @@ public class IndentTestCase extends EditorBase {
 
     public void testIZ161572_1() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "enum A {\n" +
             "  t1 = 1,|\n" +
-            "}");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "}", // "Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "\n",
             "enum A {\n" +
             "  t1 = 1,\n" +
             "  \n" +
@@ -897,12 +819,11 @@ public class IndentTestCase extends EditorBase {
 
     public void testIZ161572_2() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "enum A {\n" +
             "  t1 = 1,|\n" +
-            "}");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "}", // "Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "\n",
             "enum A {\n" +
             "  t1 = 1,\n" +
             "  \n" +
@@ -911,12 +832,11 @@ public class IndentTestCase extends EditorBase {
 
     public void testIZ161572_3() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "enum A {\n" +
             "  t1,|\n" +
-            "}");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "}", // "Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "\n",
             "enum A {\n" +
             "  t1,\n" +
             "  \n" +
@@ -925,12 +845,11 @@ public class IndentTestCase extends EditorBase {
 
     public void testIZ161572_4() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "class A {\n" +
             "  int a,|\n" +
-            "}");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "}", // "Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "\n",
             "class A {\n" +
             "  int a,\n" +
             "  \n" +
@@ -939,13 +858,12 @@ public class IndentTestCase extends EditorBase {
 
     public void testIZ161572_5() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "class A {\n" +
             "  int b;\n" +
             "  int a,|\n" +
-            "}");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "}", // "Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "\n",
             "class A {\n" +
             "  int b;\n" +
             "  int a,\n" +
@@ -955,13 +873,12 @@ public class IndentTestCase extends EditorBase {
 
     public void testIZ161572_6() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "class A {\n" +
             "  int b(int p, int j){}\n" +
             "  int a,|\n" +
-            "}");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "}", // "Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "\n",
             "class A {\n" +
             "  int b(int p, int j){}\n" +
             "  int a,\n" +
@@ -971,14 +888,13 @@ public class IndentTestCase extends EditorBase {
 
     public void testIZ161572_7() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "class A {\n" +
             "  int b(int p, int j){\n" +
             "      int a,|\n" +
             "  }\n" +
-            "}");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "}", // "Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "\n",
             "class A {\n" +
             "  int b(int p, int j){\n" +
             "      int a,\n" +
@@ -989,13 +905,12 @@ public class IndentTestCase extends EditorBase {
 
     public void testIZ168505() {
         setDefaultsOptions();
-        setLoadDocumentText(
-            "std::cout |<< \"Welcome ...\" << std::endl;\n"
-            );
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:168505 cout arrows should be better aligned, like in emacs",
+        typeCharactersInText(
+            "std::cout |<< \"Welcome ...\" << std::endl;\n", 
+            // "Incorrect identing IZ:168505 cout arrows should be better aligned, like in emacs",
+            "\n",
             "std::cout \n" +
-            "        << \"Welcome ...\" << std::endl;\n"
+            "        |<< \"Welcome ...\" << std::endl;\n"
             );
     }
 
@@ -1007,13 +922,12 @@ public class IndentTestCase extends EditorBase {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
                 put(EditorOptions.newLineBeforeBrace, CodeStyle.BracePlacement.NEW_LINE.name());
-        setLoadDocumentText(
+        typeCharactersInText(
             "for (Protein::bb_torsion_it_t _bbt_it = _prot_gap.Torsions().begin();\n"+
             "        _bbt_it != _prot_gap.Torsions().end(); ++_bbt_it) |{\n"+
             "    cout << _bbt_it->phi.getDihedral() << endl;\n"+
-            "}\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:171413 multi-line statement incorrectly tabbed (spaced)",
+            "}\n", // "Incorrect identing IZ:171413 multi-line statement incorrectly tabbed (spaced)",
+            "\n",
             "for (Protein::bb_torsion_it_t _bbt_it = _prot_gap.Torsions().begin();\n"+
             "        _bbt_it != _prot_gap.Torsions().end(); ++_bbt_it) \n"+
             "{\n"+
@@ -1023,13 +937,11 @@ public class IndentTestCase extends EditorBase {
 
     public void testIZ168369() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                   "namespace A\n" +
                   "{\n" +
-                  "/*|"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                  "/*|", // "Incorrect new-line indent",
+                  "\n",
                   "namespace A\n" +
                   "{\n" +
                   "/*\n" +
@@ -1042,34 +954,29 @@ public class IndentTestCase extends EditorBase {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.indentNamespace, false);
-        setLoadDocumentText(
-                  "namespace maths {|"
-                );
-
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+        typeCharactersInText(
+                  "namespace maths {|", // "Incorrect new-line indent",
+                  "\n",
                   "namespace maths {\n" +
-                  "|"
-                );
+                  "|\n" +
+                  "}");
     }
 
     public void testNestedFor() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "int main() {\n"+
             "    for (int i=0; i<n; i++)\n"+
             "        for (int j=0; j<n; j++)\n"+
             "            a[i][j]=0;|\n"+
-            "}\n"
-            );
-        indentNewLine();
-        assertDocumentText("Incorrect identing of nested if/for",
+            "}\n", // "Incorrect identing of nested if/for",
+            "\n",
             "int main() {\n"+
             "    for (int i=0; i<n; i++)\n"+
             "        for (int j=0; j<n; j++)\n"+
             "            a[i][j]=0;\n"+
-            "    \n"+
+            "    |\n"+
             "}\n"
             );
     }
@@ -1077,20 +984,18 @@ public class IndentTestCase extends EditorBase {
     public void testNestedIf() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "int main() {\n"+
             "    if (i==0)\n"+
             "        if (j==0)\n"+
             "            a[i][j]=0;|\n"+
-            "}\n"
-            );
-        indentNewLine();
-        assertDocumentText("Incorrect identing of nested if/for",
+            "}\n", // "Incorrect identing of nested if/for",
+            "\n",
             "int main() {\n"+
             "    if (i==0)\n"+
             "        if (j==0)\n"+
             "            a[i][j]=0;\n"+
-            "    \n"+
+            "    |\n"+
             "}\n"
             );
     }
@@ -1098,20 +1003,18 @@ public class IndentTestCase extends EditorBase {
     public void testNestedForIf() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "int main() {\n"+
             "    for (int i=0; i<n; i++)\n"+
             "        if (j==0)\n"+
             "            a[i][j]=0;|\n"+
-            "}\n"
-            );
-        indentNewLine();
-        assertDocumentText("Incorrect identing of nested if/for",
+            "}\n", // "Incorrect identing of nested if/for",
+            "\n",
             "int main() {\n"+
             "    for (int i=0; i<n; i++)\n"+
             "        if (j==0)\n"+
             "            a[i][j]=0;\n"+
-            "    \n"+
+            "    |\n"+
             "}\n"
             );
     }
@@ -1119,18 +1022,16 @@ public class IndentTestCase extends EditorBase {
     public void testNestedForIf1() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "int main() {\n"+
             "    for (int i=0; i<n; i++)\n"+
             "        if (j==0)|\n"+
-            "}\n"
-            );
-        indentNewLine();
-        assertDocumentText("Incorrect identing of nested if/for",
+            "}\n", // "Incorrect identing of nested if/for",
+            "\n",
             "int main() {\n"+
             "    for (int i=0; i<n; i++)\n"+
             "        if (j==0)\n"+
-            "            \n"+
+            "            |\n"+
             "}\n"
             );
     }
@@ -1138,20 +1039,18 @@ public class IndentTestCase extends EditorBase {
     public void testNestedIfFor() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "int main() {\n"+
             "    if (j==0)\n"+
             "        for (int i=0; i<n; i++)\n"+
             "            a[i][j]=0;|\n"+
-            "}\n"
-            );
-        indentNewLine();
-        assertDocumentText("Incorrect identing of nested if/for",
+            "}\n", // "Incorrect identing of nested if/for",
+            "\n",
             "int main() {\n"+
             "    if (j==0)\n"+
             "        for (int i=0; i<n; i++)\n"+
             "            a[i][j]=0;\n"+
-            "    \n"+
+            "    |\n"+
             "}\n"
             );
     }
@@ -1159,18 +1058,16 @@ public class IndentTestCase extends EditorBase {
     public void testNestedIfFor1() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "int main() {\n"+
             "    if (j==0)\n"+
             "        for (int i=0; i<n; i++)|\n"+
-            "}\n"
-            );
-        indentNewLine();
-        assertDocumentText("Incorrect identing of nested if/for",
+            "}\n", // "Incorrect identing of nested if/for",
+            "\n",
             "int main() {\n"+
             "    if (j==0)\n"+
             "        for (int i=0; i<n; i++)\n"+
-            "            \n"+
+            "            |\n"+
             "}\n"
             );
     }
@@ -1178,16 +1075,14 @@ public class IndentTestCase extends EditorBase {
     public void testEmptyFor() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "int main() {\n"+
             "    for (int i=0; i<n; i++);|\n"+
-            "}\n"
-            );
-        indentNewLine();
-        assertDocumentText("Incorrect identing of empty for",
+            "}\n", // "Incorrect identing of empty for",
+            "\n",
             "int main() {\n"+
             "    for (int i=0; i<n; i++);\n"+
-            "    \n"+
+            "    |\n"+
             "}\n"
             );
     }
@@ -1195,7 +1090,7 @@ public class IndentTestCase extends EditorBase {
     public void testNestedFor2() {
         setCppEditorKit(false);
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "int main() {\n"+
             "    for(i=0;i<10;i++)\n"+
             "        for(j=0;j<10;j++)\n"+
@@ -1203,10 +1098,8 @@ public class IndentTestCase extends EditorBase {
             "                {\n"+
             "                    //contents of the last loop\n"+
             "                }|\n"+
-            "}\n"
-            );
-        indentNewLine();
-        assertDocumentText("Incorrect identing of empty for",
+            "}\n", // "Incorrect identing of empty for",
+            "\n",
             "int main() {\n"+
             "    for(i=0;i<10;i++)\n"+
             "        for(j=0;j<10;j++)\n"+
@@ -1214,23 +1107,21 @@ public class IndentTestCase extends EditorBase {
             "                {\n"+
             "                    //contents of the last loop\n"+
             "                }\n"+
-            "    \n"+
+            "    |\n"+
             "}\n"
             );
     }
 
     public void testPreprocessorIndentTyping() throws Exception {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                 "#ifdef AAA\n" +
                 "    int a;\n" +
-                "    |\n"
-                );
-        typeChar('#', true);
-        assertDocumentText("Incorrect line indent",
+                "    |\n",
+                "#",
                 "#ifdef AAA\n" +
                 "    int a;\n" +
-                "#\n"
+                "#|\n"
                 );
     }
 
@@ -1240,16 +1131,14 @@ public class IndentTestCase extends EditorBase {
                 putBoolean(EditorOptions.sharpAtStartLine, false);
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.indentPreprocessorDirectives, CodeStyle.PreprocessorIndent.PREPROCESSOR_INDENT.name());
-        setLoadDocumentText(
+        typeCharactersInText(
                 "#ifdef AAA\n" +
                 "    int a;\n" +
-                "  |\n"
-                );
-        typeChar('#', true);
-        assertDocumentText("Incorrect line indent",
+                "  |\n",
+                "#",
                 "#ifdef AAA\n" +
                 "    int a;\n" +
-                "    #\n"
+                "    #|\n"
                 );
     }
 
@@ -1259,22 +1148,20 @@ public class IndentTestCase extends EditorBase {
                 putBoolean(EditorOptions.sharpAtStartLine, false);
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.indentPreprocessorDirectives, CodeStyle.PreprocessorIndent.PREPROCESSOR_INDENT.name());
-        setLoadDocumentText(
+        typeCharactersInText(
                 "#ifdef AAA\n" +
                 "    int a;\n" +
-                "  #endi|\n"
-                );
-        typeChar('f', true);
-        assertDocumentText("Incorrect line indent",
+                "  #endi|\n",
+                "f",
                 "#ifdef AAA\n" +
                 "    int a;\n" +
-                "#endif\n"
+                "#endif|\n"
                 );
     }
 
     public void testIZ_196567() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "struct list_head {\n" +
             "    struct list_head *prev, *next;\n" +
             "};\n" +
@@ -1283,9 +1170,8 @@ public class IndentTestCase extends EditorBase {
             "}\n" +
             "\n" +
             "int boo(int a, |int b) {\n" +
-            "}\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:196567 Text editor fails to honor indentation rules in certain cases.",
+            "}\n", // "Incorrect identing IZ:196567 Text editor fails to honor indentation rules in certain cases.",
+            "\n",
             "struct list_head {\n" +
             "    struct list_head *prev, *next;\n" +
             "};\n" +
@@ -1294,38 +1180,34 @@ public class IndentTestCase extends EditorBase {
             "}\n" +
             "\n" +
             "int boo(int a, \n"+
-            "        int b) {\n" +
+            "        |int b) {\n" +
             "}\n");
     }
     
     public void testIZ_196567_2() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
             "struct list_head foo(int a, int b){\n" +
             "    list_head ret,|int b;\n" +
             "    return ret;\n" +
-            "}\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing IZ:196567 Text editor fails to honor indentation rules in certain cases.",
+            "}\n", // "Incorrect identing IZ:196567 Text editor fails to honor indentation rules in certain cases.",
+            "\n",
             "struct list_head foo(int a, int b){\n" +
             "    list_head ret,\n" +
-            "            int b;\n" +
+            "            |int b;\n" +
             "    return ret;\n" +
             "}\n");
     }
 
     public void testIndentMacroDefinition() {
         setDefaultsOptions();
-        setLoadDocumentText(
+        typeCharactersInText(
                 "#define foobar(foo, bar) do {    \\\n"
                 + "    int f = (foo);        \\\n"
                 + "    int b = (bar);        \\\n"
                 + "    f += b;            \\|\n"
-                + "\n"
-                );
-        
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
+                + "\n", // "Incorrect new-line indent",
+                "\n",
                 "#define foobar(foo, bar) do {    \\\n"
                 + "    int f = (foo);        \\\n"
                 + "    int b = (bar);        \\\n"
