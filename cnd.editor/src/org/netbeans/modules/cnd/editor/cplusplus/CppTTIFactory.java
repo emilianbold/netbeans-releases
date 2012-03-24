@@ -49,9 +49,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -81,22 +79,47 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
     }
 
     private static class TypedTextInterceptorImpl implements TypedTextInterceptor {
-
+        private CppTypingCompletion.ExtraText extraText = null;
         public TypedTextInterceptorImpl() {
         }
 
         @Override
         public boolean beforeInsert(Context context) throws BadLocationException {
+            // reset flag
+            extraText = null;
             return false;
         }
 
         @Override
         public void insert(MutableContext context) throws BadLocationException {
+            BaseDocument doc = (BaseDocument) context.getDocument();
+            if (!BracketCompletion.completionSettingEnabled(doc)) {
+                return;
+            }
+            extraText = CppTypingCompletion.checkRawStringInsertion(context);
         }
 
         @Override
         public void afterInsert(final Context context) throws BadLocationException {
             final BaseDocument doc = (BaseDocument) context.getDocument();
+            if (extraText != null) {
+                doc.runAtomicAsUser(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        String txt = extraText.getExtraText();
+                        if (txt != null) {
+                            try {
+                                doc.insertString(extraText.getExtraTextPostion(), txt, null);
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        context.getComponent().setCaretPosition(extraText.getCaretPosition());
+                    }
+                });
+                return;
+            }
             doc.runAtomicAsUser(new Runnable() {
 
                 @Override
