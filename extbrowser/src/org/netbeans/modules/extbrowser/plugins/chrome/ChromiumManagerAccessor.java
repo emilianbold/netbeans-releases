@@ -42,6 +42,8 @@
  */
 package org.netbeans.modules.extbrowser.plugins.chrome;
 
+import java.io.File;
+import java.util.ArrayList;
 import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor;
 import org.netbeans.modules.extbrowser.plugins.Utils;
 
@@ -68,10 +70,31 @@ public class ChromiumManagerAccessor implements ExtensionManagerAccessor {
     private static class ChromiumExtensionManager extends ChromeManagerAccessor.ChromeExtensionManager {
         
         protected String[] getUserData(){
-            if (Utilities.isUnix()) {
+            if (Utilities.isWindows()) {
+                ArrayList<String> result = new ArrayList<String>();
+                String localAppData = System.getenv("LOCALAPPDATA");                // NOI18N
+                if (localAppData != null) {
+                    result.add(localAppData+"\\Chromium\\User Data");
+                }
+                String appData = System.getenv("APPDATA");                // NOI18N
+                if (appData != null) {
+                    // we are in C:\Documents and Settings\<username>\Application Data\ on XP
+                    File f = new File(appData);
+                    if (f.exists()) {
+                        String fName = f.getName();
+                        f = new File(f.getParentFile(),"Local Settings");
+                        f = new File(f, fName);
+                        if (f.exists())
+                            result.add(f.getPath()+"\\Chromium\\User Data");
+                    }
+                }
+                return result.toArray(new String[result.size()]);
+            } 
+            else if (Utilities.isMac()) {
+                return Utils.getUserPaths("/Library/Application Support/Chromium");// NOI18N
+            } 
+            else {
                 return Utils.getUserPaths("/.config/chromium");// NOI18N
-            } else {
-                throw new IllegalStateException("chromium runs in linux only");
             }
         }
         
