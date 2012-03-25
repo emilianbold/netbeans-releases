@@ -64,6 +64,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.openide.util.lookup.NamedServiceDefinition;
 import org.openide.util.lookup.implspi.AbstractServiceProviderProcessor;
@@ -157,7 +158,7 @@ public final class NamedServiceProcessor extends AbstractServiceProviderProcesso
                 NamedServiceDefinition nsd = c.getAnnotation(NamedServiceDefinition.class);
                 int cnt = 0;
                 for (Class<?> type : nsd.serviceType()) {
-                    TypeMirror typeMirror = asType(type);
+                    TypeMirror typeMirror = processingEnv.getTypeUtils().erasure(asType(type));
                     if (processingEnv.getTypeUtils().isSubtype(e.asType(), typeMirror)) {
                         cnt++;
                         for (String p : findPath(nsd.path(), a)) {

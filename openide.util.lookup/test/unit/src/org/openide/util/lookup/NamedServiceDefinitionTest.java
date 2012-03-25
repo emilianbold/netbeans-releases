@@ -132,6 +132,20 @@ public class NamedServiceDefinitionTest extends NbTestCase {
             fail("The error messages should say something about interface Callable\n" + err);
         }
     }
+
+    public void testDoesImplementInterface() throws Exception {
+        System.setProperty("executed", "false");
+        String content = "import org.openide.util.lookup.NamedServiceDefinitionTest.RunTestReg;\n"
+            + "import java.util.concurrent.Callable;\n"
+            + "@RunTestReg(position=10,when=\"now\")\n"
+            + "public class Test implements Callable<Boolean> {\n"
+            + "  public Boolean call() { return true; }\n"
+            + "}\n";
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.Test", content);
+        assertTrue("Compilation succeeds",
+            AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, System.err)
+        );
+    }
     
     public void testMissingPathAttribute() throws Exception {
         String content = "import org.openide.util.lookup.NamedServiceDefinition;\n"
