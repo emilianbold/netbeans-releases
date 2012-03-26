@@ -77,6 +77,7 @@ import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSys
 import org.netbeans.modules.versioning.history.LinkButton;
 import org.netbeans.modules.versioning.ui.history.RevisionNode.Filter;
 import org.netbeans.modules.versioning.ui.options.HistoryOptions;
+import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.openide.cookies.SaveCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
@@ -110,11 +111,14 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     static final String PREFERRED_ID = "text.history";
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
     private Toolbar toolBar;
+    private EmptyToolbar emptyToolbar;
+    
     private HistoryDiffView diffView;
     
     private VCSFileProxy[] files;
     private InstanceContent activatedNodesContent;
     private ProxyLookup lookup;
+    private Lookup context;
     private VersioningSystem versioningSystem;
         
     public HistoryComponent() {
@@ -128,21 +132,30 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     
     public HistoryComponent(File... files) {
         this();
-        
-        VCSFileProxy[] proxies = new VCSFileProxy[files.length];
-        for (int i = 0; i < proxies.length; i++) {
-            proxies[i] = VCSFileProxy.createFileProxy(files[i]);
+
+        VCSFileProxy[] proxies = null;
+        if(files != null && files.length > 0) {
+            proxies = new VCSFileProxy[files.length];
+            for (int i = 0; i < proxies.length; i++) {
+                proxies[i] = VCSFileProxy.createFileProxy(files[i]);
+            }
+            this.files = proxies;
         }
-        this.files = proxies;
-        VersioningSystem vs = files.length > 0 ? Utils.getOwner(proxies[0]) : null;
-        History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{proxies[0], vs != null ? vs.getDisplayName() : null});
-        init(vs, true, proxies);
+        if(hasFiles()) {
+            VersioningSystem vs = files.length > 0 ? Utils.getOwner(proxies[0]) : null;
+            History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{proxies[0], vs != null ? vs.getDisplayName() : null});
+            init(vs, true, proxies);
+        } else {
+            remove(splitPane);
+            add(new NoContentPanel(NbBundle.getMessage(HistoryComponent.class, "MSG_NO_HISTORY")));
+        }
     }
     
     public HistoryComponent(Lookup context) {
         this();
+        
+        this.context = context;
         DataObject dataObject = context.lookup(DataObject.class);
-
         List<VCSFileProxy> filesList = new LinkedList<VCSFileProxy>();
         if (dataObject instanceof DataShadow) {
             dataObject = ((DataShadow) dataObject).getOriginal();
@@ -152,9 +165,14 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             filesList.addAll(doFiles);
         }
         files = filesList.toArray(new VCSFileProxy[filesList.size()]);
-        VersioningSystem vs = files.length > 0 ? Utils.getOwner(files[0]) : null;
-        History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{files[0], vs != null ? vs.getDisplayName() : null});
-        init(vs, false, files);    
+        if(hasFiles()) {
+            VersioningSystem vs = hasFiles() ? Utils.getOwner(files[0]) : null;
+            History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{files[0], vs != null ? vs.getDisplayName() : null});
+            init(vs, false, files);    
+        } else {
+            remove(splitPane);
+            add(new NoContentPanel(NbBundle.getMessage(HistoryComponent.class, "MSG_NO_HISTORY")));
+        }
     }
     
     private Collection<VCSFileProxy> toFileCollection(Collection<? extends FileObject> fileObjects) {
@@ -169,7 +187,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private void init(VersioningSystem vs, boolean refresh, final VCSFileProxy... files) {   
         this.versioningSystem = vs;
         if(toolBar == null) {
-            toolBar = new Toolbar(vs, files);
+            toolBar = new Toolbar(vs);
         } else {
             toolBar.setup(vs);
         }
@@ -211,7 +229,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(Utils.EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
+        if(Utils.EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName()) && hasFiles()) {
             final VersioningSystem vs = Utils.getOwner(files[0]);
             if(versioningSystem != vs) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -269,7 +287,14 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
 
     @Override
     public JComponent getToolbarRepresentation() {
-        return getToolbar();
+        if(hasFiles()) {
+            return getToolbar();
+        } else {
+            if(emptyToolbar == null) {
+                emptyToolbar = new EmptyToolbar();
+            }
+            return emptyToolbar;
+        }
     }
 
     private Toolbar getToolbar() {
@@ -286,7 +311,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     })
     @Override
     public CloseOperationState canCloseElement() {
-        if(files.length == 0) {
+        if(!hasFiles()) {
             return CloseOperationState.STATE_OK;
         }
         FileObject fo = files[0].toFileObject();
@@ -362,10 +387,16 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     @Override
     public Lookup getLookup() {
         if(lookup == null) {
-            lookup = new ProxyLookup(new Lookup[] {
-                Lookups.fixed((Object[]) files),
-                new AbstractLookup(activatedNodesContent)
-            });
+            if(context != null) {
+                lookup = new ProxyLookup(new Lookup[] {
+                    context,
+                    new AbstractLookup(activatedNodesContent)
+                });
+            } else {
+                lookup = new ProxyLookup(new Lookup[] {
+                    new AbstractLookup(activatedNodesContent)
+                });
+            }
         }
         return lookup;
     }
@@ -385,7 +416,19 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     Node[] getSelectedNodes() {
         return masterView.getExplorerManager().getSelectedNodes();
     }
+
+    private boolean hasFiles() {
+        return files != null && files.length > 0;
+    }
         
+    private class EmptyToolbar extends JToolBar  {
+        private EmptyToolbar() {
+            setBorder(new EmptyBorder(0, 0, 0, 0));
+            setOpaque(false);
+            setFloatable(false);
+        }    
+    }
+    
     private class Toolbar extends JToolBar implements ActionListener {
         private JButton nextButton;
         private JButton prevButton;
@@ -403,7 +446,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         private final Separator separator2;
         private final Separator separator3;
         
-        private Toolbar(VersioningSystem vs, final VCSFileProxy... files) {
+        private Toolbar(VersioningSystem vs) {
             setBorder(new EmptyBorder(0, 0, 0, 0));
             setOpaque(false);
             setFloatable(false);
