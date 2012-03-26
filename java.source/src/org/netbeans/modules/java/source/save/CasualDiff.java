@@ -2643,7 +2643,8 @@ public class CasualDiff {
         List<JCVariableDecl> fieldGroup = new ArrayList<JCVariableDecl>();
         List<JCVariableDecl> enumConstants = new ArrayList<JCVariableDecl>();
         for (JCTree tree : list) {
-            if (Kind.VARIABLE == tree.getKind()) {
+            if (tree.pos == (-1)) continue;
+            else if (Kind.VARIABLE == tree.getKind()) {
                 JCVariableDecl var = (JCVariableDecl) tree;
                 if ((var.mods.flags & Flags.ENUM) != 0) {
                     // collect enum constants, make a field group from them
