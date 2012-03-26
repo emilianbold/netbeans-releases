@@ -241,6 +241,7 @@ public final class SearchBar extends JPanel {
     void updateIncSearchComboBoxHistory(String incrementalSearchText) {
         EditorFindSupport.getInstance().addToHistory(new EditorFindSupport.SPW(incrementalSearchText, 
                 wholeWordsCheckBox.isSelected(), matchCaseCheckBox.isSelected(), regexpCheckBox.isSelected()));
+        incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
         // Add the text to the top of the list
         for (int i = incSearchComboBox.getItemCount() - 1; i >= 0; i--) {
             String item = (String) incSearchComboBox.getItemAt(i);
