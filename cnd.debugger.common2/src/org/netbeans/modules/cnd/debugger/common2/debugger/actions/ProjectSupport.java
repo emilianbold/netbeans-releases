@@ -68,7 +68,9 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 
 /**
  * Help manage project and configuration creation for debug/attach/core.
@@ -359,7 +361,7 @@ public final class ProjectSupport {
 	*/
 	// in a capture scenario we have a pid and we have some of 
 	// the below stuff, so let's just do it like this:
-
+        
 	if (seed.workingdir != null)
 	    seed.conf.getProfile().setRunDirectory(seed.workingdir);
 	if (seed.args != null)
@@ -389,6 +391,10 @@ public final class ProjectSupport {
 		public void run() {
 		    Host host = Host.byName(hostName);
 		    seed.setHost(host);
+                    // see IZ 208582, for remote attach we need to set correct remote FSPath
+                    if (host.isRemote()) {
+                        seed.conf.setBaseFSPath(new FSPath(FileSystemProvider.getFileSystem(host.executionEnvironment()), seed.conf.getBaseDir()));
+                    }
 		    CndRemote.fillConfigurationFromHost(seed.conf, seed.engineType, host);
 		}
 	});

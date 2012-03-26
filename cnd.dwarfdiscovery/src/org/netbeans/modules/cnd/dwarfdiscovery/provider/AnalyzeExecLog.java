@@ -81,11 +81,11 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.discovery.api.DiscoveryProvider.class)
 public class AnalyzeExecLog extends BaseDwarfProvider {
 
     private Map<String, ProviderProperty> myProperties = new LinkedHashMap<String, ProviderProperty>();
     public static final String EXEC_LOG_KEY = "exec-log-file"; // NOI18N
+    public static final String EXEC_LOG_PROVIDER_ID = "exec-log"; // NOI18N
 
     public AnalyzeExecLog() {
         clean();
@@ -191,7 +191,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
 
     @Override
     public String getID() {
-        return "exec-log"; // NOI18N
+        return EXEC_LOG_PROVIDER_ID; // NOI18N
     }
 
     @Override

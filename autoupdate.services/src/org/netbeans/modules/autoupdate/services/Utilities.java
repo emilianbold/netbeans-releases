@@ -63,6 +63,7 @@ import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.TopLogging;
 import org.netbeans.modules.autoupdate.updateprovider.DummyModuleInfo;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
@@ -102,7 +103,6 @@ public class Utilities {
     public static final String NBM_EXTENTSION = ".nbm";
     public static final String JAR_EXTENSION = ".jar"; //OSGi bundle
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
-    public static final String ATTR_VISIBLE = "AutoUpdate-Show-In-Client";
     public static final String ATTR_ESSENTIAL = "AutoUpdate-Essential-Module";
 
     private static final String[] FIRST_CLASS_MODULES = new String [] {
@@ -1049,15 +1049,7 @@ public class Utilities {
     }
     
     public static boolean isKitModule (ModuleInfo mi) {
-        // XXX: it test can break simple modules mode
-        // should find corresponing UpdateElement and check its type
-        Object o = mi.getAttribute (ATTR_VISIBLE);
-        if (o != null) {
-            return Boolean.parseBoolean(o.toString());
-        }
-        // OSGi bundles should be considered invisible by default since they are typically autoloads.
-        // (NB modules get AutoUpdate-Show-In-Client inserted into the JAR by the build process.)
-        return mi.getAttribute("Bundle-SymbolicName") == null;
+        return Main.getModuleSystem().isShowInAutoUpdateClient(mi);
     }
     
     public static boolean isEssentialModule (ModuleInfo mi) {

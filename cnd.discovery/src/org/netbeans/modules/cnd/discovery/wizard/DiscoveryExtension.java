@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
@@ -68,7 +69,6 @@ import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGe
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -163,7 +163,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundExecutable",selectedExecutable))); // NOI18N
         }
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
-        DiscoveryProvider provider = findProvider("dwarf-executable"); // NOI18N
+        DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("dwarf-executable"); // NOI18N
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("executable").setValue(selectedExecutable); // NOI18N
             provider.getProperty("libraries").setValue(new String[0]); // NOI18N
@@ -196,7 +196,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             return ApplicableImpl.getNotApplicable(null);
         }
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
-        DiscoveryProvider provider = findProvider("dwarf-folder"); // NOI18N
+        DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("dwarf-folder"); // NOI18N
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("folder").setValue(rootFolder); // NOI18N
             Applicable canAnalyze = provider.canAnalyze(proxy);
@@ -221,7 +221,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         }
         String logFile = descriptor.getBuildLog();
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
-        DiscoveryProvider provider = findProvider("make-log"); // NOI18N
+        DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("make-log"); // NOI18N
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("make-log-file").setValue(logFile); // NOI18N
             Applicable canAnalyze = provider.canAnalyze(proxy);
@@ -246,7 +246,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         }
         String logFile = descriptor.getExecLog();
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
-        DiscoveryProvider provider = findProvider("exec-log"); // NOI18N
+        DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("exec-log"); // NOI18N
         if (provider != null) {
             provider.getProperty("exec-log-file").setValue(logFile); // NOI18N
             if (provider.isApplicable(proxy)){
@@ -326,16 +326,6 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         return canApply(descriptor);
     }
     
-    public static DiscoveryProvider findProvider(String providerID){
-        for(DiscoveryProvider provider : Lookup.getDefault().lookupAll(DiscoveryProvider.class)){
-            if (providerID.equals(provider.getID())) {
-                provider.clean();
-                return provider;
-            }
-        }
-        return null;
-    }
-
     @Override
     public void discoverProject(final Map<String, Object> map, final Project lastSelectedProject, ProjectKind projectKind) {
         ImportExecutable importer = new ImportExecutable(map, lastSelectedProject, projectKind);

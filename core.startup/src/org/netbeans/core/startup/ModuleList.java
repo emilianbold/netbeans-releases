@@ -880,7 +880,7 @@ final class ModuleList implements Stamps.Updater {
             }
             // Newly added modules first.
             for (Module m : mgr.getModules()) {
-                if (m.isFixed() || m.getAllJars().isEmpty()) {
+                if (m.isFixed() || m.getJarFile() == null) {
                     // No way, we don't manage these.
                     continue;
                 }
