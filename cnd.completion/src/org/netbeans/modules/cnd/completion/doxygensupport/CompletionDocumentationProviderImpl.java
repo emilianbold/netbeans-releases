@@ -121,7 +121,6 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
         if (bestDocumentation == null) {
             StringBuilder w = new StringBuilder();
 
-            w.append("<html><body>"); // NOI18N
             w.append("<p>").append(getString("NO_DOC_FOUND")).append("</p>"); // NOI18N
             if (errorText != null) {
                 w.append("<p>").append(errorText).append("</p>"); // NOI18N
