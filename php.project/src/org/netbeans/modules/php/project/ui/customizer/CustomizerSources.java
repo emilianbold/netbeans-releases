@@ -672,7 +672,7 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(CustomizerSources.class);
+        return new HelpCtx("org.netbeans.modules.php.project.ui.customizer.CustomizerSources"); // NOI18N
     }
 
     @Override

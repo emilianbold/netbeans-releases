@@ -129,7 +129,7 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(PhpUnit.class);
+        return new HelpCtx("org.netbeans.modules.php.project.phpunit.PhpUnit"); // NOI18N
     }
 
     @Override

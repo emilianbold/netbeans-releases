@@ -172,7 +172,7 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(RunAsWebAdvanced.class);
+        return new HelpCtx("org.netbeans.modules.php.project.ui.customizer.RunAsWebAdvanced"); // NOI18N
     }
 
     public boolean open() {

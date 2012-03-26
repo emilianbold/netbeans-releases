@@ -230,31 +230,21 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
             SourceRoots seleniumRoots = project.getSeleniumRoots();
 
             StringBuilder sb = new StringBuilder(200);
-            // dirs
-            sb.append("project directory equals sources: "); // NOI18N
-            sb.append(project.getProjectDirectory().equals(sources));
-            sb.append("; sources (not null, valid): "); // NOI18N
-            sb.append(sources != null);
-            sb.append(", "); // NOI18N
-            sb.append(sources != null && sources.isValid());
-            sb.append("; tests (not null, valid): "); // NOI18N
-            sb.append(tests != null);
-            sb.append(", "); // NOI18N
-            sb.append(tests != null && tests.isValid());
-            sb.append("; selenium (not null, valid): "); // NOI18N
-            sb.append(selenium != null);
-            sb.append(", "); // NOI18N
-            sb.append(selenium != null && selenium.isValid());
-            // sources
-            sb.append("; sourceRoots: "); // NOI18N
-            sb.append(Arrays.asList(sourceRoots.getRoots()));
-            sb.append("; testRoots: "); // NOI18N
-            sb.append(Arrays.asList(testRoots.getRoots()));
-            sb.append("; seleniumRoots: "); // NOI18N
-            sb.append(Arrays.asList(seleniumRoots.getRoots()));
+            addDiagnosticForDirs(sb, project, sources, tests, selenium);
+            addDiagnosticForRoots(sb, sourceRoots, testRoots, seleniumRoots);
             LOGGER.log(Level.WARNING, sb.toString(),
-                    new IllegalStateException("No source roots found (attach your IDE log to https://netbeans.org/bugzilla/show_bug.cgi?id=180054)"));
-            groups = null;
+                    new IllegalStateException("No source roots found (attach your IDE log to https://netbeans.org/bugzilla/show_bug.cgi?id=196060)"));
+
+            // try to recover...
+            sourceRoots.fireChange();
+            testRoots.fireChange();
+            seleniumRoots.fireChange();
+            sb = new StringBuilder(200);
+            addDiagnosticForRoots(sb, sourceRoots, testRoots, seleniumRoots);
+            LOGGER.log(Level.WARNING, sb.toString(),
+                    new IllegalStateException("Trying to fire changes for all source roots"));
+
+            groups = PhpProjectUtils.getSourceGroups(p);
         }
         WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.buildSimpleTargetChooser(p, groups).freeFileExtension().create();
 
@@ -264,4 +254,38 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
                 };
         return panels;
     }
+
+    private void addDiagnosticForDirs(StringBuilder sb, PhpProject project, FileObject sources, FileObject tests, FileObject selenium) {
+        sb.append("project directory equals sources: "); // NOI18N
+        sb.append(project.getProjectDirectory().equals(sources));
+        sb.append(";\n sources (not null, valid): "); // NOI18N
+        sb.append(sources != null);
+        sb.append(", "); // NOI18N
+        sb.append(sources != null && sources.isValid());
+        sb.append(";\n tests (not null, valid): "); // NOI18N
+        sb.append(tests != null);
+        sb.append(", "); // NOI18N
+        sb.append(tests != null && tests.isValid());
+        sb.append(";\n selenium (not null, valid): "); // NOI18N
+        sb.append(selenium != null);
+        sb.append(", "); // NOI18N
+        sb.append(selenium != null && selenium.isValid());
+    }
+
+    private void addDiagnosticForRoots(StringBuilder sb, SourceRoots sourceRoots, SourceRoots testRoots, SourceRoots seleniumRoots) {
+        sb.append(";\n sourceRoots (fired changes): "); // NOI18N
+        sb.append(Arrays.asList(sourceRoots.getRoots()));
+        sb.append(" ("); // NOI18N
+        sb.append(sourceRoots.getFiredChanges());
+        sb.append(");\n testRoots (fired changes): "); // NOI18N
+        sb.append(Arrays.asList(testRoots.getRoots()));
+        sb.append(" ("); // NOI18N
+        sb.append(testRoots.getFiredChanges());
+        sb.append(");\n seleniumRoots (fired changes): "); // NOI18N
+        sb.append(Arrays.asList(seleniumRoots.getRoots()));
+        sb.append(" ("); // NOI18N
+        sb.append(seleniumRoots.getFiredChanges());
+        sb.append(")"); // NOI18N
+    }
+
 }

@@ -75,6 +75,7 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula, Tomas Mysik
  */
 public final class SourceRoots {
+
     public enum Type {
         SOURCES,
         TESTS,
@@ -98,14 +99,22 @@ public final class SourceRoots {
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
     private final ReferenceHelper refHelper;
+    // @GuardedBy("Collections.synchronizedList")
     private final List<String> sourceRootProperties;
+    // @GuardedBy("Collections.synchronizedList")
     private final List<String> sourceRootNames;
+    // @GuardedBy("this")
     private List<FileObject> sourceRoots;
+    // @GuardedBy("this")
     private List<URL> sourceRootURLs;
     private final PropertyChangeSupport support;
     private final ProjectMetadataListener listener;
     private final File projectDir;
     private final Type type;
+
+    // #196060 - help to diagnose
+    private volatile long firedChanges = 0;
+
 
     public static SourceRoots create(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, Type type) {
         assert helper != null;
@@ -124,16 +133,16 @@ public final class SourceRoots {
 
         switch (type) {
             case SOURCES:
-                sourceRootProperties = Arrays.asList(PhpProjectProperties.SRC_DIR);
-                sourceRootNames = Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_Sources"));
+                sourceRootProperties = Collections.synchronizedList(Arrays.asList(PhpProjectProperties.SRC_DIR));
+                sourceRootNames = Collections.synchronizedList(Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_Sources")));
                 break;
             case TESTS:
-                sourceRootProperties = Arrays.asList(PhpProjectProperties.TEST_SRC_DIR);
-                sourceRootNames = Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_Tests"));
+                sourceRootProperties = Collections.synchronizedList(Arrays.asList(PhpProjectProperties.TEST_SRC_DIR));
+                sourceRootNames = Collections.synchronizedList(Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_Tests")));
                 break;
             case SELENIUM:
-                sourceRootProperties = Arrays.asList(PhpProjectProperties.SELENIUM_SRC_DIR);
-                sourceRootNames = Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_SeleniumTests"));
+                sourceRootProperties = Collections.synchronizedList(Arrays.asList(PhpProjectProperties.SELENIUM_SRC_DIR));
+                sourceRootNames = Collections.synchronizedList(Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_SeleniumTests")));
                 break;
             default:
                 throw new IllegalStateException("Unknow sources roots type: " + type);
@@ -343,6 +352,7 @@ public final class SourceRoots {
             }
         }
         if (fire) {
+            firedChanges++;
             support.firePropertyChange(PROP_ROOTS, null, null);
         }
     }
@@ -350,6 +360,12 @@ public final class SourceRoots {
     public void fireChange() {
         resetCache(null);
     }
+
+    public long getFiredChanges() {
+        return firedChanges;
+    }
+
+    //~ Inner classes
 
     private final class ProjectMetadataListener implements PropertyChangeListener {
         @Override
