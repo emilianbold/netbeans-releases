@@ -132,12 +132,15 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     public HistoryComponent(File... files) {
         this();
 
-        if(hasFiles()) {
-            VCSFileProxy[] proxies = new VCSFileProxy[files.length];
+        VCSFileProxy[] proxies = null;
+        if(files != null && files.length > 0) {
+            proxies = new VCSFileProxy[files.length];
             for (int i = 0; i < proxies.length; i++) {
                 proxies[i] = VCSFileProxy.createFileProxy(files[i]);
             }
             this.files = proxies;
+        }
+        if(hasFiles()) {
             VersioningSystem vs = files.length > 0 ? Utils.getOwner(proxies[0]) : null;
             History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{proxies[0], vs != null ? vs.getDisplayName() : null});
             init(vs, true, proxies);
