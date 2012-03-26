@@ -807,6 +807,7 @@ public final class SearchBar extends JPanel {
             pcl.propertyChange(new PropertyChangeEvent(this, "actualTextComponent", getActualTextComponent(), component));
         }
         actualTextComponent = new WeakReference<JTextComponent>(component);
+        EditorFindSupport.getInstance().setFocusedTextComponent(getActualTextComponent());
     }
 
     void addActualComponentListener(PropertyChangeListener propertyChangeListener) {
