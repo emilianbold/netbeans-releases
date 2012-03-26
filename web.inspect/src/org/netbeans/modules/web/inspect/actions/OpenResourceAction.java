@@ -72,6 +72,9 @@ public class OpenResourceAction extends NodeAction  {
                 String url = info.getURL();
                 try {
                     URI uri = new URI(url);
+                    if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
+                        uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
+                    }
                     File file = new File(uri);
                     file = FileUtil.normalizeFile(file);
                     FileObject fob = FileUtil.toFileObject(file);

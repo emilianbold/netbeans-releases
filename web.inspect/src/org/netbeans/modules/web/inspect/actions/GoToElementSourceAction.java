@@ -79,7 +79,7 @@ public class GoToElementSourceAction extends NodeAction  {
         try {
             URI uri = new URI(uriTxt);
             // 208252: Workaround for file://localhost/<path> URIs that appear on Mac
-            if (uri.getAuthority() != null) {
+            if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
                 uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
             }
             File file = new File(uri);
