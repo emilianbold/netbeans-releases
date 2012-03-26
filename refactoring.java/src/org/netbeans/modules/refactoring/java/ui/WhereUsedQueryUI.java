@@ -73,17 +73,18 @@ import org.openide.util.lookup.Lookups;
  * @author Martin Matula, Jan Becicka, Ralph Ruijs
  */
 public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactoringUIFactory {
+
     private WhereUsedQuery query = null;
     private String name;
     private WhereUsedPanel panel;
     private TreePathHandle element;
-    private ElementHandle elementHandle;
+    private ElementHandle<Element> elementHandle;
     private ElementKind kind;
     private AbstractRefactoring delegate;
 
     private WhereUsedQueryUI() {
     }
-    
+
     private WhereUsedQueryUI(TreePathHandle handle, CompilationInfo info) {
         this.query = new WhereUsedQuery(Lookups.singleton(handle));
         // ClasspathInfo needs to be in context until all other modules change there
@@ -92,18 +93,18 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         this.query.getContext().add(RefactoringUtils.getClasspathInfoFor(handle));
         this.element = handle;
         Element el = handle.resolveElement(info);
-        if (el!=null) {
+        if (el != null) {
             if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
                 elementHandle = ElementHandle.create(el);
             }
-            name = ElementHeaders.getHeader(el, info, ElementHeaders.NAME);
+            name = el.getSimpleName().toString();
             kind = el.getKind();
         } else {
             name = ""; //NOI18N
             kind = ElementKind.OTHER;
         }
     }
-    
+
     public WhereUsedQueryUI(TreePathHandle jmiObject, String name, AbstractRefactoring delegate) {
         this.delegate = delegate;
         //this.query = new JavaWhereUsedQuery(jmiObject);
@@ -114,7 +115,6 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         //kind = el.getKind();
         this.name = name;
     }
-    
 
     @Override
     public boolean isQuery() {
@@ -131,10 +131,10 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
 
     @Override
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
-        query.putValue(query.SEARCH_IN_COMMENTS,panel.isSearchInComments());
+        query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS, panel.isSearchInComments());
 //        query.putValue(query., name);
         Scope customScope = panel.getCustomScope();
-        if(customScope != null) {
+        if (customScope != null) {
             query.getContext().add(customScope);
         }
         if (kind == ElementKind.METHOD) {
@@ -147,20 +147,21 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
             return null;
         }
     }
-    
+
     private void setForMethod() {
-        query.setRefactoringSource(Lookups.singleton(element));
-        query.putValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS,panel.isMethodFromBaseClass());
-        query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
-        query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isMethodFindUsages());
+        query.getContext().add(element);
+        query.setRefactoringSource(Lookups.singleton(panel.getMethodHandle()));
+        query.putValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, panel.isMethodFromBaseClass());
+        query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, panel.isMethodOverriders());
+        query.putValue(WhereUsedQuery.FIND_REFERENCES, panel.isMethodFindUsages());
     }
-    
+
     private void setForClass() {
-        query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES,panel.isClassSubTypes());
-        query.putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES,panel.isClassSubTypesDirectOnly());
-        query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isClassFindUsages());
+        query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, panel.isClassSubTypes());
+        query.putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES, panel.isClassSubTypesDirectOnly());
+        query.putValue(WhereUsedQuery.FIND_REFERENCES, panel.isClassFindUsages());
     }
-    
+
     @Override
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
         if (kind == ElementKind.METHOD) {
@@ -176,66 +177,80 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
 
     @Override
     public org.netbeans.modules.refactoring.api.AbstractRefactoring getRefactoring() {
-        return query!=null?query:delegate;
+        return query != null ? query : delegate;
     }
 
     @Override
     public String getDescription() {
         boolean isScanning = SourceUtils.isScanInProgress();
         String desc = null;
-        
-        if (panel!=null) {
-            if ((kind == ElementKind.INTERFACE) || (kind == ElementKind.CLASS)) {
-                if (!panel.isClassFindUsages()) {
-                    if (!panel.isClassSubTypesDirectOnly()) {
-                        desc = getString("DSC_WhereUsedFindAllSubTypes", name);
-                    } else {
-                        desc = getString("DSC_WhereUsedFindDirectSubTypes", name);
-                    }
-                }
-            } else {
-                if (kind == ElementKind.METHOD) {
+
+        if (panel != null && kind != null) {
+            switch (kind) {
+                case CONSTRUCTOR:
+                case METHOD: {
                     if (panel.isMethodFindUsages() && panel.isMethodOverriders()) {
                         desc = getString("DSC_WhereUsedAndOverriders", panel.getMethodDeclaringClass() + '.' + name);
-                    } else if(panel.isMethodFindUsages()) {
+                    } else if (panel.isMethodFindUsages()) {
                         desc = getString("DSC_WhereUsed", panel.getMethodDeclaringClass() + '.' + name);
-                    } else if(panel.isMethodOverriders()) {
+                    } else if (panel.isMethodOverriders()) {
                         desc = getString("DSC_WhereUsedMethodOverriders", panel.getMethodDeclaringClass() + '.' + name);
                     }
+                    break;
+                }
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                case ANNOTATION_TYPE: {
+                    if (!panel.isClassFindUsages()) {
+                        if (!panel.isClassSubTypesDirectOnly()) {
+                            desc = getString("DSC_WhereUsedFindAllSubTypes", name);
+                        } else {
+                            desc = getString("DSC_WhereUsedFindDirectSubTypes", name);
+                        }
+                    }
+                    break;
+                }
+                case PACKAGE: {
+//                    panel = packagePanel;
+                    break;
+                }
+                case FIELD:
+                case ENUM_CONSTANT:
+                default: {
+//                    panel = variablePanel;
+                    break;
                 }
             }
         }
         if (desc == null) {
             desc = getString("DSC_WhereUsed", name);
         }
-        
+
         if (isScanning) {
             return getString("DSC_Scan_Warning", desc);
         } else {
             return desc;
         }
     }
-    
     private ResourceBundle bundle;
+
     private String getString(String key) {
         if (bundle == null) {
             bundle = NbBundle.getBundle(WhereUsedQueryUI.class);
         }
         return bundle.getString(key);
     }
-    
-    private String getString(String key, String value) {
-        return new MessageFormat(getString(key)).format (new Object[] {value});
-    }
 
+    private String getString(String key, String value) {
+        return new MessageFormat(getString(key)).format(new Object[]{value});
+    }
 
     @Override
     public String getName() {
-        return new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOf")).format (
-                    new Object[] {name}
-                );
+        return new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOf")).format(new Object[]{name});
     }
-    
+
     @Override
     public boolean hasParameters() {
         return true;
@@ -248,7 +263,7 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
 
     @Override
     public void open() {
-        if (elementHandle!=null) {
+        if (elementHandle != null) {
             ElementOpen.open(element.getFileObject(), elementHandle);
         }
     }
@@ -257,9 +272,8 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
     public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
         return new WhereUsedQueryUI(handles[0], info);
     }
-    
+
     public static JavaRefactoringUIFactory factory() {
         return new WhereUsedQueryUI();
     }
-    
 }

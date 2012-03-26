@@ -922,11 +922,13 @@ public final class UIUtilities {
     /**
      * Creates HTML display name of the Executable element
      */
-    public static String createHtmlHeader(ExecutableElement e, boolean isDeprecated, boolean isInherited) {
+    public static String createHtmlHeader(ExecutableElement e, boolean isDeprecated, boolean isInherited, boolean isBold) {
 
         StringBuilder sb = new StringBuilder();
         if (isDeprecated) {
             sb.append("<s>"); // NOI18N
+        } else if (isBold) {
+            sb.append("<b>"); // NOI18N
         }
         if (isInherited) {
             sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
@@ -956,6 +958,9 @@ public final class UIUtilities {
 
         sb.append(")"); // NOI18N
 
+        if (!isDeprecated && isBold) {
+            sb.append("</b>"); // NOI18N
+        }
         if (e.getKind() != ElementKind.CONSTRUCTOR) {
             TypeMirror rt = e.getReturnType();
             if (rt.getKind() != TypeKind.VOID) {
@@ -969,12 +974,14 @@ public final class UIUtilities {
         return sb.toString();
     }
 
-    public static String createHtmlHeader(VariableElement e, boolean isDeprecated, boolean isInherited) {
+    public static String createHtmlHeader(VariableElement e, boolean isDeprecated, boolean isInherited, boolean isBold) {
 
         StringBuilder sb = new StringBuilder();
 
         if (isDeprecated) {
             sb.append("<s>"); // NOI18N
+        } else if (isBold) {
+            sb.append("<b>"); // NOI18N
         }
         if (isInherited) {
             sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
@@ -982,6 +989,8 @@ public final class UIUtilities {
         sb.append(UIUtilities.escape(e.getSimpleName().toString()));
         if (isDeprecated) {
             sb.append("</s>"); // NOI18N
+        } else if (isBold) {
+            sb.append("</b>"); // NOI18N
         }
 
         if (e.getKind() != ElementKind.ENUM_CONSTANT) {
@@ -994,11 +1003,71 @@ public final class UIUtilities {
         return sb.toString();
     }
 
-    public static String createHtmlHeader(TypeElement e, boolean isDeprecated, boolean isInherited) {
+    public static String createHtmlHeader(TypeParameterElement e, boolean isDeprecated, boolean isInherited, boolean isBold) {
+
+        StringBuilder sb = new StringBuilder();
+
+        if (isDeprecated) {
+            sb.append("<s>"); // NOI18N
+        } else if (isBold) {
+            sb.append("<b>"); // NOI18N
+        }
+        if (isInherited) {
+            sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
+        }
+        sb.append(UIUtilities.escape(e.getSimpleName().toString()));
+        if (isDeprecated) {
+            sb.append("</s>"); // NOI18N
+        } else if (isBold) {
+            sb.append("</b>"); // NOI18N
+        }
+
+        if (e.getKind() != ElementKind.ENUM_CONSTANT) {
+            sb.append(" : "); // NOI18N
+            sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
+            sb.append(print(e.asType()));
+            sb.append("</font>"); // NOI18N
+        }
+
+        return sb.toString();
+    }
+
+    public static String createHtmlHeader(PackageElement e, boolean isDeprecated, boolean isInherited, boolean isBold) {
+
+        StringBuilder sb = new StringBuilder();
+
+        if (isDeprecated) {
+            sb.append("<s>"); // NOI18N
+        } else if (isBold) {
+            sb.append("<b>"); // NOI18N
+        }
+        if (isInherited) {
+            sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
+        }
+        sb.append(UIUtilities.escape(e.getSimpleName().toString()));
+        if (isDeprecated) {
+            sb.append("</s>"); // NOI18N
+        } else if (isBold) {
+            sb.append("</b>"); // NOI18N
+        }
+
+        if (e.getKind() != ElementKind.ENUM_CONSTANT) {
+            sb.append(" : "); // NOI18N
+            sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
+            sb.append(print(e.asType()));
+            sb.append("</font>"); // NOI18N
+        }
+
+        return sb.toString();
+    }
+
+    public static String createHtmlHeader(TypeElement e, boolean isDeprecated, boolean isInherited, boolean isBold) {
 
         StringBuilder sb = new StringBuilder();
         if (isDeprecated) {
             sb.append("<s>"); // NOI18N
+        } else if (isBold) {
+            sb.append("<b>"); // NOI18N
         }
         if (isInherited) {
             sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
@@ -1032,6 +1101,10 @@ public final class UIUtilities {
             sb.append("&gt;"); // NOI18N
         }
 
+        if (!isDeprecated && isBold) {
+            sb.append("<b>"); // NOI18N
+        }
+
         // Add superclass and implemented interfaces
 
         TypeMirror sc = e.getSuperclass();
@@ -1040,8 +1113,8 @@ public final class UIUtilities {
         if (sc == null
                 || e.getKind() == ElementKind.ENUM
                 || e.getKind() == ElementKind.ANNOTATION_TYPE
-                || "Object".equals(scName) || // NOI18N
-                "<none>".equals(scName)) { // NOI18N
+                || "Object".equals(sc.toString()) || // NOI18N
+                "<none>".equals(sc.toString())) { // NOI18N
             scName = null;
         }
 

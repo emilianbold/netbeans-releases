@@ -1062,14 +1062,14 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
 
             if (e instanceof TypeElement) {
                 d.setSubs(new HashSet<Description>());
-                d.setHtmlHeader(UIUtilities.createHtmlHeader((TypeElement) e, info.getElements().isDeprecated(e), d.isInherited()));
+                d.setHtmlHeader(UIUtilities.createHtmlHeader((TypeElement) e, info.getElements().isDeprecated(e), d.isInherited(), false));
             } else if (e instanceof ExecutableElement) {
-                d.setHtmlHeader(UIUtilities.createHtmlHeader((ExecutableElement) e, info.getElements().isDeprecated(e), d.isInherited()));
+                d.setHtmlHeader(UIUtilities.createHtmlHeader((ExecutableElement) e, info.getElements().isDeprecated(e), d.isInherited(), false));
             } else if (e instanceof VariableElement) {
                 if (!(e.getKind() == ElementKind.FIELD || e.getKind() == ElementKind.ENUM_CONSTANT)) {
                     return null;
                 }
-                d.setHtmlHeader(UIUtilities.createHtmlHeader((VariableElement) e, info.getElements().isDeprecated(e), d.isInherited()));
+                d.setHtmlHeader(UIUtilities.createHtmlHeader((VariableElement) e, info.getElements().isDeprecated(e), d.isInherited(), false));
             }
 
             d.setModifiers(e.getModifiers());
