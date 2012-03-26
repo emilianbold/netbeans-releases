@@ -738,7 +738,7 @@ public final class DashboardViewer {
             mapCategoryToNode.clear();
             Collections.sort(categoryNodes);
             Collections.sort(closedCategoryNodes);
-            int index = model.getAllNodes().indexOf(titleCategoryNode) + 1;
+            int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
             for (CategoryNode categoryNode : categoryNodes) {
                 if (appliedFilters.isEmpty() || !categoryNode.getFilteredTaskNodes().isEmpty()) {
                     taskFilterHits += categoryNode.getTotalCount();
@@ -746,7 +746,7 @@ public final class DashboardViewer {
                     addRootToModel(index++, categoryNode);
                 }
             }
-            index = model.getAllNodes().indexOf(titleClosedNode) + 1;
+            index = model.getRootNodes().indexOf(titleClosedNode) + 1;
             for (ClosedCategoryNode closedCategoryNode : closedCategoryNodes) {
                 //for filtering dont show closed nodes
                 if (appliedFilters.isEmpty()) {
@@ -764,14 +764,14 @@ public final class DashboardViewer {
             closedRepositoryNodes = closedRepoNodes;
             Collections.sort(this.repositoryNodes);
             Collections.sort(this.closedRepositoryNodes);
-            int index = model.getAllNodes().indexOf(titleRepositoryNode) + 1;
+            int index = model.getRootNodes().indexOf(titleRepositoryNode) + 1;
             for (RepositoryNode repositoryNode : repositoryNodes) {
                 if (appliedFilters.isEmpty() || !repositoryNode.getFilteredQueryNodes().isEmpty()) {
                     taskFilterHits += repositoryNode.getFilterHits();
                     addRootToModel(index++, repositoryNode);
                 }
             }
-            index = model.getAllNodes().indexOf(titleClosedNode) + closedCategoryNodes.size() + 1;
+            index = model.getRootNodes().indexOf(titleClosedNode) + closedCategoryNodes.size() + 1;
             for (ClosedRepositoryNode closedRepositoryNode : closedRepositoryNodes) {
                 //for filtering dont show closed nodes
                 if (appliedFilters.isEmpty()) {
