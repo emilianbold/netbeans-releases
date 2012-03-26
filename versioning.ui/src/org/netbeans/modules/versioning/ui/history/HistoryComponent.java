@@ -97,7 +97,7 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Tomas Stupka
  */
 @MultiViewElement.Registration(
-        displayName="#CTL_SourceTabCaption",
+        displayName="#CTL_SourceTabCaption",                                    // NOI18N
         // no icon
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID=HistoryComponent.PREFERRED_ID, 
@@ -107,7 +107,7 @@ import org.openide.util.lookup.ProxyLookup;
 final public class HistoryComponent extends JPanel implements MultiViewElement, HelpCtx.Provider, PropertyChangeListener {
 
     private HistoryFileView masterView;
-    static final String PREFERRED_ID = "text.history";
+    static final String PREFERRED_ID = "text.history";                          // NOI18N
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
     private Toolbar toolBar;
     private EmptyToolbar emptyToolbar;
@@ -175,7 +175,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private void init(boolean refresh) {   
         if(hasFiles()) {
             this.versioningSystem = hasFiles() ? Utils.getOwner(files[0]) : null;
-            History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{files[0], versioningSystem != null ? versioningSystem.getDisplayName() : null});
+            History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{files[0], versioningSystem != null ? versioningSystem.getDisplayName() : null}); // NOI18N
             if(!hasHistory()) {
                 noHistoryAvailable();
                 return;
@@ -314,7 +314,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }
 
     @NbBundle.Messages({
-        "MSG_SaveModified=File {0} is modified. Save?"
+        "MSG_SaveModified=File {0} is modified. Save?"                          // NOI18N
     })
     @Override
     public CloseOperationState canCloseElement() {
@@ -518,13 +518,13 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                 }
             });
             
-            nextButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-next.png"))); 
-            prevButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-prev.png"))); 
+            nextButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-next.png"))); // NOI18N
+            prevButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-prev.png"))); // NOI18N
             nextButton.addActionListener(this);
             prevButton.addActionListener(this);
-            refreshButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/refresh.png"))); 
+            refreshButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/refresh.png"))); // NOI18N
             refreshButton.addActionListener(this);
-            settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/options.png"))); 
+            settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/options.png"))); // NOI18N
             settingsButton.addActionListener(this);
             showHistoryAction = new ShowHistoryAction();
             searchHistoryButton = new LinkButton(); // NOI18N
@@ -578,7 +578,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         void setup(VersioningSystem vs) {
             boolean visible = vs != null && vs.getVCSHistoryProvider() != null;
             if(visible) { 
-                searchHistoryButton.setText(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getDisplayName()}));
+                searchHistoryButton.setText(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getDisplayName()})); // NOI18N
                 Filter[] filters = new Filter[] {
                     new AllFilter(), 
                     new VCSFilter(vs.getDisplayName()), 
