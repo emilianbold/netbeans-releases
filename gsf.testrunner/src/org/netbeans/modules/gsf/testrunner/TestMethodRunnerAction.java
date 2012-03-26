@@ -55,7 +55,7 @@ import org.openide.util.actions.NodeAction;
  *
  * @author theofanis
  */
-@ActionID(id = "org.netbeans.modules.gsf.testrunner.api.TestMethodRunnerAction", category = "CommonTestRunner")
+@ActionID(id = "org.netbeans.modules.gsf.testrunner.TestMethodRunnerAction", category = "CommonTestRunner")
 @ActionRegistration(displayName = "#LBL_Action_RunTestMethod")
 @ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup", position=1795)})
 @NbBundle.Messages({"LBL_Action_RunTestMethod=Run Focused Test Method"})
