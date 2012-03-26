@@ -164,6 +164,11 @@ public class PopupList {
         }
         if( rowCount <= MAX_VISIBLE_ROWS )
             prefSize = panel.getPreferredSize();
+        prefSize.height = Math.min( prefSize.height, 600 );
+        if( prefSize.width > 800 ) {
+            prefSize.width = 800;
+            scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        }
         scroll.getViewport().setPreferredSize(prefSize);
         scroll.getViewport().setMinimumSize(prefSize);
         res.add( scroll );
