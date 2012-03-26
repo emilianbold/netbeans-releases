@@ -120,7 +120,7 @@ public class ConfigurationMakefileWriter {
     }
 
     public void write() {
-        Collection<MakeConfiguration> okConfs = getOKConfigurations(true);
+        Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
         cleanup();
         if (isMakefileProject()) {
             for (MakeConfiguration conf : okConfs) {
