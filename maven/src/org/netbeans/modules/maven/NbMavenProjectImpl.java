@@ -185,6 +185,7 @@ public final class NbMavenProjectImpl implements Project {
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
         // @PSP's and the like, and PackagingProvider impls, may check project lookup for e.g. NbMavenProject, so init lookup in two stages:
         basicLookup = createBasicLookup(projectState, auxiliary);
+        //here we akways load the MavenProject instance because we need to touch the packaging from pom.
         completeLookup = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, basicLookup), "Projects/org-netbeans-modules-maven/Lookup");//NOI18N
     }
 
@@ -296,6 +297,18 @@ public final class NbMavenProjectImpl implements Project {
         }
         project = new SoftReference<MavenProject>(mp);
         return mp;
+    }
+    
+    /**
+     * a marginally unreliable, non blocking method for figuring if the model is loaded or not.
+     * @return 
+     */
+    public boolean isMavenProjectLoaded() {
+        Reference<MavenProject> prj = project;
+        if (prj != null) {
+            return prj.get() != null;
+        }
+        return false;
     }
 
     @Messages({
