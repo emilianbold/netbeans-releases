@@ -47,7 +47,7 @@
             <li>References to each instance. You can browse instances or classes holding reference to a particular instance to find unnecessary references and discover memory leaks.</li>
         </ul>
         
-        <h3>Browse Heap Dump</h3>
+        <h3>Using the Tabs in the Heap Window</h3>
         
         <p>When the heap dump is loaded and open in the Heap window, use the following tabs to view information about the heap dump:</p>
 
@@ -55,9 +55,10 @@
             <li><b>Summary.</b> This tab displays general information about the heap dump such as total numbers of classes, instances.
             The Summary tab also provides you with information about the environment and system properties of the machine where the heap dump was taken.</li>
             <li><b>Classes.</b> This tab displays a list of classes with information about the number of instances of the class and total size of the instances.
-            You can also open the Static Fields browser to browse the static fields of each class. 
-            To open the Static Fields browser, click the Static Fields button in the HeapWalker toolbar.
-            <p>You can double-click any class in the classes list to view the instances of that class in the Instances tab.
+            You can use the Static Fields and Classes tab to modify the information that is displayed in the tab.
+            You can click the Static Fields button at the top of the Classes tab to view the static fields of the selected class.
+            You can use the Class Name Filter to limit the classes that are displayed.
+            <p>You can double-click any class in the list to view the instances of that class in the Instances tab.
             Alternatively, you can right-click a class and choose Show in Instances View.</li>
             <li><b>Instances.</b> This tab displays the instances for a class that you select in the Classes tab. 
             For each instance, you can do the following:
@@ -65,38 +66,22 @@
                 <li>Select an instance to browse the fields of the instance in the the Field Browser.</li> 
                 <li>Select an instance to browse the references to the instance in the Reference Browser.</li>
             </ul>
+            <p>If you click <b>Compute retained size</b> at the top of the Instances tab the IDE will
+            calculate and display the size of each instance and the total size for all the instances of the selected class.</p>
             <p>You can hide or reveal the individual windows by using the Instances button, the Fields button and 
             the References button in the toolbar.</p></li>
             <li><b>OQL Console.</b> This tab displays the OQL editor, saved OQL queries and a window
-                that displays the query results. 
+            that displays the query results. 
             You can use any of the sample OQL queries or create a query to filter and select heap data to
             locate the information that you want from the Java heap.
             After you choose or write a query, you can run the query against the Java heap and view the results.
+            <p>For more about using the OQL Console, see <a href="oqlhelp.html">Analyzing a Heap Dump Using Object Query Language (OQL)</a></p>
             </li>
         </ul>
         
-        
-        <h3>Comparing Heap Dumps</h3>
-        <p>You can compare two heap dumps to view the differences between the heap at two different points in time.
-        You do not need to be running a profiling session to compare heap dumps.</p>
-        <ol>
-            <li>If no heap dump is open in the Heap window,
-                choose Profile &gt; Load Heap Dump to open a heap dump.</li>
-            <li>Click the Classes tab in the Heap window.</li>
-            <li>Click <b>Compare with another heap dump</b> at the top of the Classes tab.
-                <p>The IDE opens the Select Heap Dump to Compare dialog box.</p></li>
-            <li>Select a heap dump that is saved in your project or select From file and
-                click Browse to locate a heap dump that is saved outside of your project on your local system.</li>
-            <li>Click OK.</li>
-        </ol>    
-        <p>When you click OK, the IDE will update the Heap window to display the
-            differences between the two heap dumps.
-            You can click <b>reset view</b> to display the initial heap dump.
-            </p>
-        
-                
         <dl>
             <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="heap_comparing.html">Comparing Heap Dumps</a></dd>
             <dd><a href="heap_taking.html">Taking a Heap Dump</a></dd>
             <dd><a href="oqlhelp.html">Analyzing a Heap Dump Using Object Query Language (OQL)</a></dd>
             <dd><a href="results_liveresults.html">Working with Live Profiling Results</a></dd>

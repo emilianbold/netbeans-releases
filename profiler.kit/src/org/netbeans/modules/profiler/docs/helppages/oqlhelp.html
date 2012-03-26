@@ -28,22 +28,28 @@
 <p>
 OQL is a SQL-like query language to query a Java heap that enables you to filter/select information
 wanted from the Java heap. While pre-defined queries such as "show all instances of class X"
-are already supported by the tool, OQL adds more flexibility. OQL is based on JavaScript expression
+are already supported by the tool, OQL adds more flexibility. OQL is based on the JavaScript expression
 language.
 </p>
 
 <p>When you load a Java heap in the Heap window, you can click the OQL Console tab of 
 the window to open the OQL editor.
-The OQL Console contains an OQL editor, a saved OQL queries window and a window
-that displays the query results. 
-You can use any of the sample OQL queries or create a query to filter and select heap data to
-locate the information that you want from the Java heap.
-After you choose or write a query, you can run the query against the Java heap and view the results.
-</p>
+The OQL Console contains a Query Editor pane, a Saved Queries pane and a Query Results pane.
+You can use any of the sample OQL queries or create a query 
+and then run the query against the Java heap and view the results.</p>
 
-<p>
-An OQL query is of the following form:
-</p>
+<p>Perform the following steps to run an OQL query.</p>
+<ol>
+    <li>Type an OQL query in the Query Editor.
+        <p>Alternatively, you can select a query in the Saved Queries pane and click Open.</p></li>
+    <li>Click Execute in the Query Editor.
+    <p>You can click Save to add the query to the list of saved queries.</p>
+    </li>
+</ol>
+<p>When you click Execute the results of the query are displayed in the Query Results pane.</p>
+
+<h3>OQL Query Syntax</h3>
+<p>An OQL query is of the following form:</p>
 
 <pre>
          select &lt;JavaScript expression to select&gt;
@@ -65,8 +71,7 @@ keyword is not specified, only the instances of exact class specified are select
 </p>
 
 
-<p>
-In <tt>select</tt> and (optional) <tt>where</tt> clauses, the expression 
+<p>In <tt>select</tt> and (optional) <tt>where</tt> clauses, the expression 
 used in JavaScript expression. Java heap objects are wrapped as convenient script objects so that 
 fields may be accessed in natural syntax. For example, Java fields can be accessed with <tt>obj.field_name</tt> 
 syntax and array elements can be accessed with <tt>array[index]</tt> syntax. 
@@ -112,9 +117,9 @@ looking at the id shown in that class's page.</p>
 </li>
 </ul>
 
-<h2>OQL built-in objects, functions</h2>
+<h3>OQL built-in objects, functions</h3>
 
-<h3>heap object</h3>
+<h4>heap object</h4>
 
 <p>The <b>heap</b> built-in object supports the following methods:</p>
 
@@ -227,6 +232,7 @@ contains an objects that are in the 'reference chain' of the path.</p>
     </li>
 </ul>
 
+
 <h4>functions on individual objects</h4>
 
 <ul>
@@ -246,7 +252,7 @@ contains an objects that are in the 'reference chain' of the path.</p>
 </ul>
 
 <a name="allocTrace"></a>
-<h5>allocTrace function</h5>
+<p><b>allocTrace function</b></p>
 
 <p>This returns allocation site trace of a given Java object if available.
 <tt>allocTrace</tt> returns array of frame objects. Each frame object has the following
@@ -260,7 +266,7 @@ properties:</p>
 </ul>
 
 <a name="classof"></a>
-<h5>classof function</h5>
+<p><b>classof function</b></p>
 
 <p>Returns Class object of a given Java Object. The result object supports the
 following properties:</p>
@@ -307,12 +313,12 @@ following properties:</p>
 </ul>
 
 <a name="forEachReferrer"></a>
-<h5>forEachReferrer function</h5>
+<p><b>forEachReferrer function</b></p>
 
 <p>calls a callback function for each referrer of a given Java object.</p>
 
 <a name="identical"></a>
-<h5>identical function</h5>
+<p><b>identical function</b></p>
 <p>
 Returns whether two given Java objects are identical or not.
 </p>
@@ -322,7 +328,7 @@ Returns whether two given Java objects are identical or not.
 </pre>
 
 <a name="objectid"></a>
-<h5>objectid function</h5>
+<p><b>objectid function</b></p>
 
 <p>
 Returns String id of a given Java object. This id can be passed to
@@ -335,7 +341,7 @@ objects for identity.
 </pre>
 
 <a name="reachables"></a>
-<h5>reachables function</h5>
+<p><b>reachables function</b></p>
 <p>
 Returns an array of Java objects that are transitively referred from the
 given Java object. Optionally accepts a second parameter that is comma
@@ -358,7 +364,7 @@ via the fields specified.
 </ul>
 
 <a name="referrers"></a>
-<h5>referrers function</h5>
+<p><b>referrers function</b></p>
 <p>
 Returns an enumeration of Java objects that hold reference to a given Java
 object. This method accepts optional second parameter that is a boolean
@@ -385,7 +391,7 @@ By default, weak reference(s) are not included.
 </ul>
 
 <a name="referees"></a>
-<h5>referees function</h5>
+<p><b>referees function</b></p>
 <p>
 Returns an array of Java objects to which the given Java
 object directly refers to. This method accepts optional second parameter 
@@ -398,13 +404,13 @@ By default, weak reference(s) are not included.
 </pre>
 
 <a name="refers"></a>
-<h5>refers function</h5>
+<p><b>refers function</b></p>
 <p>
 Returns whether first Java object refers to second Java object or not.
 </p>
 
 <a name="root"></a>
-<h5>root function</h5>
+<p><b>root function</b></p>
 <p>
 If given object is a member of root set of objects, this function returns
 a descriptive <a href="#rootobj">Root object</a> describing why it is so.
@@ -412,7 +418,7 @@ If given object is not a root, then this function returns null.
 </p>
 
 <a name="sizeof"></a>
-<h5>sizeof function</h5>
+<p><b>sizeof function</b></p>
 
 <p>Returns size of the given Java object in bytes</p>
 <p>Example: </p>
@@ -421,7 +427,7 @@ If given object is not a root, then this function returns null.
 </pre>
 
 <a name="rsizeof"></a>
-<h5>retainedsize function</h5>
+<p><b>retainedsize function</b></p>
 
 <p>Returns size of the retained set of the given Java object in bytes
 <b>Warning! Using this function for the first time on a heap dump may take
@@ -432,7 +438,7 @@ significant amount of time</b></p>
 </pre>
 
 <a name="toHtml"></a>
-<h5>toHtml function</h5>
+<p><b>toHtml function</b></p>
 <p>
 Returns HTML string for the given Java object. Note that this is called
 automatically for objects selected by select expression. But, it may be useful
@@ -481,14 +487,14 @@ these functions may also be used with arbitrary JavaScript objects.
 </ul>
 
 <a name="concat"></a>
-<h5>concat function</h5>
+<p><b>concat function</b></p>
 <p>
 Concatenates two arrays or enumerations (i.e., returns composite
 enumeration).
 </p>
 
 <a name="contains"></a>
-<h5>contains function</h5>
+<p><b>contains function</b></p>
 <p>
 Returns whether the given array/enumeration contains an element
 the given boolean expression specified in code. The code evaluated
@@ -507,7 +513,7 @@ some static field some class.</p>
 </pre>
 
 <a name="count"></a>
-<h5>count function</h5>
+<p><b>count function</b></p>
 <p>
 count function returns the count of elements of the input array/enumeration 
 that satisfy the given boolean expression. The boolean expression code can 
@@ -524,7 +530,7 @@ refer to the following built-in variables.
 </pre>
 
 <a name="filter"></a>
-<h5>filter function</h5>
+<p><b>filter function</b></p>
 <p>
 filter function returns an array/enumeration that contains elements 
 of the input array/enumeration that satisfy the given boolean 
@@ -554,13 +560,13 @@ java.net package
 </ul>
 
 <a name="length"></a>
-<h5>length function</h5>
+<p><b>length function</b></p>
 <p>
 length function returns number of elements of an array/enumeration.
 </p>
 
 <a name="map"></a>
-<h5>map function</h5>
+<p><b>map function</b></p>
 <p>
 Transforms the given array/enumeration by evaluating given code
 on each element. The code evaluated can refer to the following built-in 
@@ -582,7 +588,7 @@ calling code on each element of input array/enumeration.
 </pre>
 
 <a name="max"></a>
-<h5>max function</h5>
+<p><b>max function</b></p>
 <p>
 returns the maximum element of the  given array/enumeration. 
 Optionally accepts code expression to compare elements of the array. 
@@ -608,7 +614,7 @@ use the following built-in variables:
 </ul>
 
 <a name="min"></a>
-<h5>min function</h5>
+<p><b>min function</b></p>
 <p>
 returns the minimum element of the  given array/enumeration. Optionally 
 accepts code expression to compare elements of the array. By default numerical
@@ -634,7 +640,7 @@ variables:
 </ul>
 
 <a name="sort"></a>
-<h5>sort function</h5>
+<p><b>sort function</b></p>
 <p>
 sorts given array/enumeration. Optionally accepts code expression to
 compare elements of the array. By default numerical comparison is used.
@@ -660,7 +666,7 @@ size as well.
 </ul>
 
 <a name="top"></a>
-<h5>top function</h5>
+<p><b>top function</b></p>
 <p>
 returns top N elements of the given array/enumeration. Optionally accepts code expression to
 compare elements of the array and the number of top elements. By default the first 10 elements
@@ -687,7 +693,7 @@ size as well.
 </ul>
 
 <a name="sum"></a>
-<h5>sum function</h5>
+<p><b>sum function</b></p>
 <p>
 This function returns the sum of all the elements of the given input array or
 enumeration. Optionally, accepts an expression as second param. This is used
@@ -704,14 +710,14 @@ to map the input elements before summing those.
 </pre>
 
 <a name="toArray"></a>
-<h5>toArray function</h5>
+<p><b>toArray function</b></p>
 <p>
 This function returns an array that contains elements of the input
 array/enumeration.
 </p>
 
 <a name="unique"></a>
-<h5>unique function</h5>
+<p><b>unique function</b></p>
 <p>
 This function returns an array/enumeration containing unique elements of the 
 given input array/enumeration
@@ -744,7 +750,7 @@ literal and map function. We sort the result by count (i.e., number of classes
 loaded) using sort function with comparison expression.
 </p>
 
-<h5>Show parent-child chain for each class loader instance</h5>
+<p><b>Show parent-child chain for each class loader instance</b></p>
 
 <pre>
    select <a href="#map">map</a>(heap.objects('java.lang.ClassLoader'),
@@ -763,7 +769,7 @@ Note that we use <b>parent</b> field of <b>java.lang.ClassLoader</b> class
 and walk until parent is null using the callback function to map call.
 </p>
 
-<h5>Printing value of all System properties</h5>
+<p><b>Printing value of all System properties</b></p>
 
 <pre>
    select <a href="#map">map</a>(<a href="#filter">filter</a>(<a href="#findClass">heap.findClass</a>('java.lang.System').props.table, 'it != null && it.key != null && it.value != null'),
