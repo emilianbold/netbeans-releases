@@ -55,6 +55,7 @@ import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactNodeSelector;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
@@ -80,37 +81,28 @@ public class MavenRepoProvider implements SearchProvider {
         if (s == null) {
             return;
         }
-        String q = request.getText();
+        final String q = request.getText();
         if (q == null || q.trim().isEmpty()) {
             //#205552
             return;
         }
         
-        List<RepositoryInfo> loadedRepos = RepositoryQueries.getLoadedContexts();
+        final List<RepositoryInfo> loadedRepos = RepositoryQueries.getLoadedContexts();
         if (loadedRepos.isEmpty()) {
             return;
         }
 
         List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
         final List<NBVersionInfo> tempInfos = new ArrayList<NBVersionInfo>();
-        Observer observer = new Observer() {
-            @Override
-            public void update(Observable o, Object arg) {
-                if (null == o || !(o instanceof QueryRequest)) {
-                    return;
-                }
-                synchronized (tempInfos) {
-                    tempInfos.addAll(((QueryRequest) o).getResults());
-                }
-            }
-        };
 
-        final QueryRequest queryRequest = new QueryRequest(getQuery(q), loadedRepos, observer);
         final RequestProcessor.Task searchTask = RP.post(new Runnable() {
             @Override
             public void run() {
                 try {
-                    RepositoryQueries.find(queryRequest);
+                    Result<NBVersionInfo> result = RepositoryQueries.findResult(getQuery(q), loadedRepos);
+                    synchronized (tempInfos) {
+                        tempInfos.addAll(result.getResults());
+                    }
                 } catch (BooleanQuery.TooManyClauses exc) {
                     // query too general, just ignore it
                     synchronized (tempInfos) {
@@ -137,7 +129,6 @@ public class MavenRepoProvider implements SearchProvider {
             searchTask.waitFinished(5000);
         } catch (InterruptedException ex) {
         }
-        queryRequest.deleteObserver(observer);
         synchronized (tempInfos) {
             infos.addAll(tempInfos);
         }

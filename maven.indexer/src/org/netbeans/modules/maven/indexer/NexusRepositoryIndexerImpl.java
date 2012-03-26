@@ -698,13 +698,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private interface RepoAction {
         void run(RepositoryInfo repo) throws IOException;
     }
-    private void iterate(List<RepositoryInfo> repos, final RepoAction action, final RepoAction actionSkip) {
+    
+    private void iterate(List<RepositoryInfo> repos, final RepoAction action, final RepoAction actionSkip, boolean skipUnIndexed) {
         if (repos == null) {
             repos = RepositoryPreferences.getInstance().getRepositoryInfos();
         }
         for (final RepositoryInfo repo : repos) {
             Mutex mutex = getRepoMutex(repo);
-            if (isIndexing(repo, mutex)) {
+            if (skipUnIndexed && isIndexing(repo, mutex)) {
                 try {
                     actionSkip.run(repo);
                 } catch (IOException ex) {
@@ -727,15 +728,25 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     @Override
     public RepositoryQueries.Result<String> filterGroupIds(final String prefix, final List<RepositoryInfo> repos) {
-        final Set<String> groups = new TreeSet<String>();
+        RepositoryQueries.Result<String> result = new RepositoryQueries.Result<String>(new RepositoryQueries.Result.Redo<String>() {
+            @Override
+            public void run(Result<String> result) {
+                filterGroupIds(prefix, result, result.getSkipped(), false);
+            }
+        });
+        return filterGroupIds(prefix, result, repos, true);
+    }
+    
+    private RepositoryQueries.Result<String> filterGroupIds(final String prefix, final RepositoryQueries.Result<String> result, 
+                                                            final List<RepositoryInfo> repos, final boolean skipUnIndexed) {
+        final Set<String> groups = new TreeSet<String>(result.getResults());
         final List<RepositoryInfo> slowCheck = new ArrayList<RepositoryInfo>();
-        RepositoryQueries.Result<String> result = new RepositoryQueries.Result<String>();
         
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
-                if (index) {
+                if (skipUnIndexed && index) {
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
                     return;
@@ -761,7 +772,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
 
-        }, skipAction);
+        }, skipAction, skipUnIndexed);
         
         //the slow check kicking in is nowadays very rare, used to be a workaround for old versions of indexing data..
         iterate(slowCheck, new RepoAction() {
@@ -776,9 +787,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 GroupedSearchResponse response = searcher.searchGrouped(gsr, getContexts(new RepositoryInfo[] {repo}));
                 groups.addAll(response.getResults().keySet());
             }
-        }, skipAction);
+        }, skipAction, skipUnIndexed);
         
-        result.getResults().addAll(groups);
+        result.setResults(groups);
         return result;
     }
 
@@ -786,14 +797,24 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     
 
     @Override
-    public RepositoryQueries.Result<NBVersionInfo> getRecords(final String groupId, final String artifactId, final String version, List<RepositoryInfo> repos) {
-        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
-        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>();
+    public Result<NBVersionInfo> getRecords(final String groupId, final String artifactId, final String version, List<RepositoryInfo> repos) {
+        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>(new RepositoryQueries.Result.Redo<NBVersionInfo>() {
+            @Override
+            public void run(Result<NBVersionInfo> result) {
+                getRecords(groupId, artifactId, version, result, result.getSkipped(), false);
+            }
+        });
+        return getRecords(groupId, artifactId, version, result, repos, true);
+    }
+    
+    private Result<NBVersionInfo> getRecords(final String groupId, final String artifactId, final String version, final Result<NBVersionInfo> result, 
+                                             List<RepositoryInfo> repos, final boolean skipUnIndexed) {
+        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
-                if (index) {
+                if (skipUnIndexed && index) {
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
                     return;
@@ -806,21 +827,30 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(new RepositoryInfo[] {repo}));
                 infos.addAll(convertToNBVersionInfo(response.getResults()));
             }
-        }, skipAction);
+        }, skipAction, skipUnIndexed);
         Collections.sort(infos);
-        result.getResults().addAll(infos);
+        result.setResults(infos);
         return result;
     }
 
     @Override
     public RepositoryQueries.Result<String> getArtifacts(final String groupId, final List<RepositoryInfo> repos) {
-        final Set<String> artifacts = new TreeSet<String>();
-        RepositoryQueries.Result<String> result = new RepositoryQueries.Result<String>();
+        RepositoryQueries.Result<String> result = new RepositoryQueries.Result<String>(new RepositoryQueries.Result.Redo<String>() {
+            @Override
+            public void run(Result<String> result) {
+                getArtifacts(groupId, result, result.getSkipped(), false);
+            }
+        });
+        return getArtifacts(groupId, result, repos, true);
+    }
+    
+    private  RepositoryQueries.Result<String> getArtifacts(final String groupId, Result<String> result, final List<RepositoryInfo> repos, final boolean skipUnIndexed) {
+        final Set<String> artifacts = new TreeSet<String>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
-                if (index) {
+                if (skipUnIndexed && index) {
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
                     return;
@@ -836,20 +866,28 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     }
                 }
             }
-        }, skipAction);
-        result.getResults().addAll(artifacts);
+        }, skipAction, skipUnIndexed);
+        result.setResults(artifacts);
         return result;
     }
 
     @Override
     public RepositoryQueries.Result<NBVersionInfo> getVersions(final String groupId, final String artifactId, List<RepositoryInfo> repos) {
-        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
-        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>();
+        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>(new RepositoryQueries.Result.Redo<NBVersionInfo>() {
+            @Override
+            public void run(Result<NBVersionInfo> result) {
+                getVersions(groupId, artifactId, result, result.getSkipped(), false);
+            }
+        });
+        return getVersions(groupId, artifactId, result, repos, true);
+    }
+    private RepositoryQueries.Result<NBVersionInfo> getVersions(final String groupId, final String artifactId, Result<NBVersionInfo> result, List<RepositoryInfo> repos, final boolean skipUnIndexed) {
+        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
-                if (index) {
+                if (skipUnIndexed && index) {
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
                     return;
@@ -863,21 +901,30 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                 }
             }
-        }, skipAction);
+        }, skipAction, skipUnIndexed);
         Collections.sort(infos);
-        result.getResults().addAll(infos);
+        result.setResults(infos);
         return result;
     }
 
     @Override
     public RepositoryQueries.Result<NBVersionInfo> findVersionsByClass(final String className, List<RepositoryInfo> repos) {
-        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
-        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>();
+        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>(new RepositoryQueries.Result.Redo<NBVersionInfo>() {
+            @Override
+            public void run(Result<NBVersionInfo> result) {
+                findVersionsByClass(className, result, result.getSkipped(), false);
+            }
+        });
+        return findVersionsByClass(className, result, repos, true);
+    }
+    
+    private RepositoryQueries.Result<NBVersionInfo> findVersionsByClass(final String className, Result<NBVersionInfo> result, List<RepositoryInfo> repos, final boolean skipUnIndexed) {
+        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
-                if (index) {
+                if (skipUnIndexed && index) {
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
                     return;
@@ -893,14 +940,25 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             clsname)));
                 }
             }
-        }, skipAction);
+        }, skipAction, skipUnIndexed);
         Collections.sort(infos);
-        result.getResults().addAll(infos);
+        result.setResults(infos);
         return result;
     }
 
     @Override 
     public RepositoryQueries.Result<RepositoryQueries.ClassUsage> findClassUsages(final String className, @NullAllowed List<RepositoryInfo> repos) {
+        RepositoryQueries.Result<RepositoryQueries.ClassUsage> result = new RepositoryQueries.Result<RepositoryQueries.ClassUsage>(new RepositoryQueries.Result.Redo<RepositoryQueries.ClassUsage>() {
+            @Override
+            public void run(Result<RepositoryQueries.ClassUsage> result) {
+                findClassUsages(className, result, result.getSkipped(), false);
+            }
+        });
+        return findClassUsages(className, result, repos, true);
+        
+    }
+    
+    private RepositoryQueries.Result<RepositoryQueries.ClassUsage> findClassUsages(final String className, Result<RepositoryQueries.ClassUsage> result, @NullAllowed List<RepositoryInfo> repos, final boolean skipUnIndexed) {
         List<RepositoryInfo> localRepos = new ArrayList<RepositoryInfo>();
         if (repos == null) {
             repos = RepositoryPreferences.getInstance().getRepositoryInfos();
@@ -910,39 +968,46 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 localRepos.add(repo);
             }
         }
-        final List<RepositoryQueries.ClassUsage> results = new ArrayList<RepositoryQueries.ClassUsage>();
-        RepositoryQueries.Result<RepositoryQueries.ClassUsage> result = new RepositoryQueries.Result<RepositoryQueries.ClassUsage>();
+        final List<RepositoryQueries.ClassUsage> results = new ArrayList<RepositoryQueries.ClassUsage>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(localRepos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
-                if (index) {
+                if (skipUnIndexed && index) {
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
                     return;
                 }
                 ClassDependencyIndexCreator.search(className, indexer, getContexts(new RepositoryInfo[] {repo}), results);
             }
-        }, skipAction);
+        }, skipAction, skipUnIndexed);
         Collections.sort(results, new Comparator<RepositoryQueries.ClassUsage>() {
             @Override public int compare(RepositoryQueries.ClassUsage r1, RepositoryQueries.ClassUsage r2) {
                 return r1.getArtifact().compareTo(r2.getArtifact());
             }
         });
-        result.getResults().addAll(results);
+        result.setResults(results);
         return result;
     }
     
     @Override
-    public RepositoryQueries.Result<NBVersionInfo> findDependencyUsage(String groupId, String artifactId, String version, @NullAllowed List<RepositoryInfo> repos) {
+    public RepositoryQueries.Result<NBVersionInfo> findDependencyUsage(final String groupId, final String artifactId, final String version, @NullAllowed List<RepositoryInfo> repos) {
+        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>(new RepositoryQueries.Result.Redo<NBVersionInfo>() {
+            @Override
+            public void run(Result<NBVersionInfo> result) {
+                findDependencyUsage(groupId, artifactId, version, result, result.getSkipped(), false);
+            }
+        });
+        return findDependencyUsage(groupId, artifactId, version, result, repos, true);
+    }
+    private RepositoryQueries.Result<NBVersionInfo> findDependencyUsage(String groupId, String artifactId, String version, Result<NBVersionInfo> result, @NullAllowed List<RepositoryInfo> repos, final boolean skipUnIndexed) {
         final Query q = ArtifactDependencyIndexCreator.query(groupId, artifactId, version);
-        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
-        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>();
+        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
-                if (index) {
+                if (skipUnIndexed && index) {
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
                     return;
@@ -954,20 +1019,89 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                 }
             }
-        }, skipAction);
-        result.getResults().addAll(infos);
+        }, skipAction, skipUnIndexed);
+        result.setResults(infos);
         return result;
     }
+    
+    @Override
+    public Result<NBGroupInfo> findDependencyUsageGroups(final String groupId, final String artifactId, final String version, List<RepositoryInfo> repos) {
+        RepositoryQueries.Result<NBGroupInfo> result = new RepositoryQueries.Result<NBGroupInfo>(new RepositoryQueries.Result.Redo<NBGroupInfo>() {
+            @Override
+            public void run(Result<NBGroupInfo> result) {
+                findDependencyUsageGroups(groupId, artifactId, version, result, result.getSkipped(), false);
+            }
+        });
+        return findDependencyUsageGroups(groupId, artifactId, version, result, repos, true);
+    }
+
+    private Result<NBGroupInfo> findDependencyUsageGroups(String groupId, String artifactId, String version, Result<NBGroupInfo> result, List<RepositoryInfo> repos, final boolean skipUnIndexed) {
+        //tempmaps
+        Map<String, NBGroupInfo> groupMap = new HashMap<String, NBGroupInfo>();
+        Map<String, NBArtifactInfo> artifactMap = new HashMap<String, NBArtifactInfo>();
+        List<NBGroupInfo> groupInfos = new ArrayList<NBGroupInfo>(result.getResults());
+        Result<NBVersionInfo> res = new Result<NBVersionInfo>(new Result.Redo<NBVersionInfo>() {
+
+            @Override
+            public void run(Result<NBVersionInfo> result) {
+                //noop will not be called
+            }
+        });
+        findDependencyUsage(groupId, artifactId, version, res, repos, skipUnIndexed);
+        convertToNBGroupInfo(res.getResults(),
+                groupMap, artifactMap, groupInfos);
+        if (res.isPartial()) {
+            result.addSkipped(res.getSkipped());
+        }
+        result.setResults(groupInfos);
+        return result;
+        
+    }
+    
+    private static void convertToNBGroupInfo(Collection<NBVersionInfo> artifactInfos, 
+                                      Map<String, NBGroupInfo> groupMap, 
+                                      Map<String, NBArtifactInfo> artifactMap,
+                                      List<NBGroupInfo> groupInfos) {
+        for (NBVersionInfo ai : artifactInfos) {
+            String groupId = ai.getGroupId();
+            String artId = ai.getArtifactId();
+
+            NBGroupInfo ug = groupMap.get(groupId);
+            if (ug == null) {
+                ug = new NBGroupInfo(groupId);
+                groupInfos.add(ug);
+                groupMap.put(groupId, ug);
+            }
+            NBArtifactInfo ua = artifactMap.get(artId);
+            if (ua == null) {
+                ua = new NBArtifactInfo(artId);
+                ug.addArtifactInfo(ua);
+                artifactMap.put(artId, ua);
+            }
+            ua.addVersionInfo(ai);
+        }
+    }
+    
+    
 
     @Override
     public RepositoryQueries.Result<NBVersionInfo> findBySHA1(final String sha1, List<RepositoryInfo> repos) {
-        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
-        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>();
+        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>(new RepositoryQueries.Result.Redo<NBVersionInfo>() {
+            @Override
+            public void run(Result<NBVersionInfo> result) {
+                findBySHA1(sha1, result, result.getSkipped(), false);
+            }
+        });
+        return findBySHA1(sha1, result, repos, true);
+    }
+    
+    private RepositoryQueries.Result<NBVersionInfo> findBySHA1(final String sha1, Result<NBVersionInfo> result, List<RepositoryInfo> repos, final boolean skipUnIndexed) {
+        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
-                if (index) {
+                if (skipUnIndexed && index) {
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
                     return;
@@ -981,21 +1115,30 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                 }
             }
-        }, skipAction);
+        }, skipAction, skipUnIndexed);
         Collections.sort(infos);
-        result.getResults().addAll(infos);
+        result.setResults(infos);
         return result;
     }
 
     @Override
     public RepositoryQueries.Result<NBVersionInfo> findArchetypes(List<RepositoryInfo> repos) {
-        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
-        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>();
+        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>(new RepositoryQueries.Result.Redo<NBVersionInfo>() {
+            @Override
+            public void run(Result<NBVersionInfo> result) {
+                findArchetypes( result, result.getSkipped(), false);
+            }
+        });
+        return findArchetypes( result, repos, true);
+    }
+    
+    private RepositoryQueries.Result<NBVersionInfo> findArchetypes(Result<NBVersionInfo> result, List<RepositoryInfo> repos, final boolean skipUnIndexed) {
+        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
-                if (index) {
+                if (skipUnIndexed && index) {
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
                     return;
@@ -1013,21 +1156,30 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     infos.addAll(results);
                 }
             }
-        }, skipAction);
+        }, skipAction, skipUnIndexed);
         Collections.sort(infos);
-        result.getResults().addAll(infos);
+        result.setResults(infos);
         return result;
     }
 
     @Override
     public RepositoryQueries.Result<String> filterPluginArtifactIds(final String groupId, final String prefix, List<RepositoryInfo> repos) {
-        final Set<String> artifacts = new TreeSet<String>();
-        RepositoryQueries.Result<String> result = new RepositoryQueries.Result<String>();
+        RepositoryQueries.Result<String> result = new RepositoryQueries.Result<String>(new RepositoryQueries.Result.Redo<String>() {
+            @Override
+            public void run(Result<String> result) {
+                filterPluginArtifactIds(groupId, prefix, result, result.getSkipped(), false);
+            }
+        });
+        return filterPluginArtifactIds(groupId, prefix, result, repos, true);
+    }
+    
+    private RepositoryQueries.Result<String> filterPluginArtifactIds(final String groupId, final String prefix, Result<String> result, List<RepositoryInfo> repos, final boolean skipUnIndexed) {
+        final Set<String> artifacts = new TreeSet<String>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
-                if (index) {
+                if (skipUnIndexed && index) {
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
                     return;
@@ -1045,20 +1197,29 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     }
                 }
             }
-        }, skipAction);
-        result.getResults().addAll(artifacts);
+        }, skipAction, skipUnIndexed);
+        result.setResults(artifacts);
         return result;
     }
 
     @Override
     public RepositoryQueries.Result<String> filterPluginGroupIds(final String prefix, List<RepositoryInfo> repos) {
-        final Set<String> artifacts = new TreeSet<String>();
-        RepositoryQueries.Result<String> result = new RepositoryQueries.Result<String>();
+        RepositoryQueries.Result<String> result = new RepositoryQueries.Result<String>(new RepositoryQueries.Result.Redo<String>() {
+            @Override
+            public void run(Result<String> result) {
+                filterPluginGroupIds( prefix, result, result.getSkipped(), false);
+            }
+        });
+        return filterPluginGroupIds( prefix, result, repos, true);
+    }
+    
+    private RepositoryQueries.Result<String> filterPluginGroupIds(final String prefix, Result<String> result, List<RepositoryInfo> repos, final boolean skipUnIndexed) {
+        final Set<String> artifacts = new TreeSet<String>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
-                if (index) {
+                if (skipUnIndexed && index) {
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
                     return;
@@ -1077,20 +1238,28 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     }
                 }
             }
-        }, skipAction);
-        result.getResults().addAll(artifacts);
+        }, skipAction, skipUnIndexed);
+        result.setResults(artifacts);
         return result;
     }
 
     @Override
     public RepositoryQueries.Result<String> filterArtifactIdForGroupId(final String groupId, final String prefix, List<RepositoryInfo> repos) {
-        final Set<String> artifacts = new TreeSet<String>();
-        RepositoryQueries.Result<String> result = new RepositoryQueries.Result<String>();
+        RepositoryQueries.Result<String> result = new RepositoryQueries.Result<String>(new RepositoryQueries.Result.Redo<String>() {
+            @Override
+            public void run(Result<String> result) {
+                filterArtifactIdForGroupId( groupId, prefix, result, result.getSkipped(), false);
+            }
+        });
+        return filterArtifactIdForGroupId( groupId, prefix, result, repos, true);
+    }
+    private RepositoryQueries.Result<String> filterArtifactIdForGroupId(final String groupId, final String prefix, Result<String> result, List<RepositoryInfo> repos, final boolean skipUnIndexed) {
+        final Set<String> artifacts = new TreeSet<String>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
-                if (index) {
+                if (skipUnIndexed && index) {
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
                     return;
@@ -1107,20 +1276,28 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     }
                 }
             }
-        }, skipAction);
-        result.getResults().addAll(artifacts);
+        }, skipAction, skipUnIndexed);
+        result.setResults(artifacts);
         return result;
     }
 
     @Override
     public RepositoryQueries.Result<NBVersionInfo> find(final List<QueryField> fields, List<RepositoryInfo> repos) {
-        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
-        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>();
+        RepositoryQueries.Result<NBVersionInfo> result = new RepositoryQueries.Result<NBVersionInfo>(new RepositoryQueries.Result.Redo<NBVersionInfo>() {
+            @Override
+            public void run(Result<NBVersionInfo> result) {
+                find( fields, result, result.getSkipped(), false);
+            }
+        });
+        return find(fields,  result, repos, true);
+    }
+    private RepositoryQueries.Result<NBVersionInfo> find(final List<QueryField> fields, Result<NBVersionInfo> result, List<RepositoryInfo> repos, final boolean skipUnIndexed) {
+        final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
-                if (index) {
+                if (skipUnIndexed && index) {
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
                     return;
@@ -1166,9 +1343,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                 }
             }
-        }, skipAction);
+        }, skipAction, skipUnIndexed);
         Collections.sort(infos);
-        result.getResults().addAll(infos);
+        result.setResults(infos);
         return result;
     }
 
@@ -1270,7 +1447,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         
         @Override
         public void run(RepositoryInfo repo) throws IOException {
-            result.markAsPartial();
+            result.addSkipped(repo);
         }
         
     }

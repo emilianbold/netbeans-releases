@@ -46,13 +46,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.indexer.spi.*;
@@ -73,27 +74,72 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public final static class Result<T> {
-        private boolean skipped = false;
+        private final List<RepositoryInfo> skipped = new ArrayList<RepositoryInfo>();
         private List<T> results = new ArrayList<T>();
+        private ChangeListener listener;
+        private final Redo<T> redoAction;
+        
+        /**
+         * used internally by the repository indexing/searching engine(s)
+         */
+        public interface Redo<T> {
+            void run(Result<T> result);
+        }
+        /**
+         * used internally by the repository indexing/searching engine(s)
+         */
+        public Result(Redo<T> redo) {
+            redoAction = redo;
+        }
         
         /**
          * returns true is one or more indexes were skipped, eg because the indexing was taking place.
          * @return 
          */
         public boolean isPartial() {
-            return skipped;
+            return !skipped.isEmpty();
         }
         
         /**
          * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
          */
-        public void markAsPartial() {
-            skipped = true;
+        public void addSkipped(RepositoryInfo info) {
+            skipped.add(info);
         }
         
-        public List<T> getResults() {
-            return results;
+        /**
+         * waits for currently processed indexes to finish, not to be called in AWT thread.
+         */
+        public void waitForSkipped() {
+            assert !SwingUtilities.isEventDispatchThread();
+            redoAction.run(this);
+            skipped.clear();
         }
+        
+        public synchronized void setResults(Collection<T> newResults) {
+            results.clear();
+            results.addAll(newResults);
+        }
+        
+        public synchronized List<T> getResults() {
+            return Collections.unmodifiableList(results);
+        }
+        
+        
+        /**
+         * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
+         */
+        public void addSkipped(Collection<RepositoryInfo> infos) {
+            skipped.addAll(infos);
+        }
+        
+        /**
+         * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
+         */
+        public List<RepositoryInfo> getSkipped() {
+            return skipped;
+        }
+        
     } 
     
    /**
@@ -203,44 +249,9 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<NBGroupInfo> findDependencyUsageResult(String groupId, String artifactId, String version, @NullAllowed List<RepositoryInfo> repos) {
-        //tempmaps
-        Map<String, NBGroupInfo> groupMap = new HashMap<String, NBGroupInfo>();
-        Map<String, NBArtifactInfo> artifactMap = new HashMap<String, NBArtifactInfo>();
-        List<NBGroupInfo> groupInfos = new ArrayList<NBGroupInfo>();
-        final Result<NBGroupInfo> result = new Result<NBGroupInfo>();
-        Result<NBVersionInfo> res = findDIQ().findDependencyUsage(groupId, artifactId, version, repos);
-        convertToNBGroupInfo(res.getResults(),
-                groupMap, artifactMap, groupInfos);
-        if (res.isPartial()) {
-            result.markAsPartial();
-        }
-        result.getResults().addAll(groupInfos);
-        return result;
+        return findDIQ().findDependencyUsageGroups(groupId, artifactId, version, repos);
     }
     
-    private static void convertToNBGroupInfo(Collection<NBVersionInfo> artifactInfos, 
-                                      Map<String, NBGroupInfo> groupMap, 
-                                      Map<String, NBArtifactInfo> artifactMap,
-                                      List<NBGroupInfo> groupInfos) {
-        for (NBVersionInfo ai : artifactInfos) {
-            String groupId = ai.getGroupId();
-            String artId = ai.getArtifactId();
-
-            NBGroupInfo ug = groupMap.get(groupId);
-            if (ug == null) {
-                ug = new NBGroupInfo(groupId);
-                groupInfos.add(ug);
-                groupMap.put(groupId, ug);
-            }
-            NBArtifactInfo ua = artifactMap.get(artId);
-            if (ua == null) {
-                ua = new NBArtifactInfo(artId);
-                ug.addArtifactInfo(ua);
-                artifactMap.put(artId, ua);
-            }
-            ua.addVersionInfo(ai);
-        }
-    }
     
     /**
      * 
@@ -256,7 +267,12 @@ public final class RepositoryQueries {
         } catch (IOException ex) {
             Logger.getLogger(RepositoryQueries.class.getName()).log(Level.INFO, "Could not determine SHA-1 of " + file, ex);
         }
-        return new Result<NBVersionInfo>();
+        return new Result<NBVersionInfo>(new Result.Redo<NBVersionInfo>() {
+            @Override
+            public void run(Result<NBVersionInfo> result) {
+                //noop
+            }
+        });
         
     }
     
@@ -265,13 +281,7 @@ public final class RepositoryQueries {
     }    
 
     private static Result<NBVersionInfo> findBySHA1(String sha1, @NullAllowed List<RepositoryInfo> repos) {
-        ChecksumQueries cq = findChecksumQueries();
-        if (cq != null) {
-            return findChecksumQueries().findBySHA1(sha1, repos);
-        } else {
-            //this is here only because of ClassPathProviderImplTest
-            return new Result<NBVersionInfo>();
-        }
+        return findChecksumQueries().findBySHA1(sha1, repos);
     }
     
     private static @NonNull ClassesQuery findClassesQueries() {

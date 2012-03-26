@@ -114,22 +114,42 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             RP.post(new Runnable() {
                 public @Override void run() {
                     final List<String> versions = new ArrayList<String>();
-                    //mkleint: we deliberately sacrifice speed here to precise results..
-                    if (!RepositoryQueries.getLoadedContexts().contains(fInfo)) {
-                        RepositoryIndexer.indexRepo(fInfo);
-                    }
-                    Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult("org.netbeans.cluster", "platform", Collections.singletonList(fInfo));
+                    final Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult("org.netbeans.cluster", "platform", Collections.singletonList(fInfo));
                     for (NBVersionInfo version : result.getResults()) { // NOI18N
                         versions.add(version.getVersion());
                     }
                     versions.add("SNAPSHOT"); // NOI18N
-                    RepositoryPreferences.getInstance().removeTransientRepositories(key);
+                    if (result.isPartial()) {
+                        versions.add(SEARCHING);
+                        //we return the values we have and schedule retrieval of the rest.
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                final List<String> versions2 = new ArrayList<String>();
+                                result.waitForSkipped();
+                                RepositoryPreferences.getInstance().removeTransientRepositories(key);
+                                for (NBVersionInfo version : result.getResults()) { // NOI18N
+                                    versions2.add(version.getVersion());
+                                }
+                                versions2.add("SNAPSHOT"); // NOI18N
+                                
+                                EventQueue.invokeLater(new Runnable()  {
+                                             public @Override void run() {
+                                                 versionCombo.setModel(new DefaultComboBoxModel(versions2.toArray()));
+                                                 versionComboActionPerformed(null);
+                                             }
+                                         });
+                            }
+                        });
+                    } else {
+                        RepositoryPreferences.getInstance().removeTransientRepositories(key);
+                    }
                     EventQueue.invokeLater(new Runnable()  {
-                        public @Override void run() {
-                            versionCombo.setModel(new DefaultComboBoxModel(versions.toArray()));
-                            versionComboActionPerformed(null);
-                        }
-                    });
+                                             public @Override void run() {
+                                                 versionCombo.setModel(new DefaultComboBoxModel(versions.toArray()));
+                                                 versionComboActionPerformed(null);
+                                             }
+                                         });
                 }
             });
         }

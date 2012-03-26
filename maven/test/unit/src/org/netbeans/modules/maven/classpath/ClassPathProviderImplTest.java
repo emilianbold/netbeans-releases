@@ -139,7 +139,12 @@ public class ClassPathProviderImplTest extends NbTestCase {
 
             @Override
             public Result<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos) {
-                return new Result<NBVersionInfo>();
+                return new Result<NBVersionInfo>(new Result.Redo<NBVersionInfo>() {
+
+                    @Override
+                    public void run(Result<NBVersionInfo> result) {
+                    }
+                });
             }
         });
         TestFileUtils.writeFile(d,
