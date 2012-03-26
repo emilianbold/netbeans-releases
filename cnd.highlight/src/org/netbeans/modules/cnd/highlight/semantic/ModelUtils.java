@@ -166,10 +166,10 @@ public class ModelUtils {
     }
 
     /*package*/ static class UnusedVariableCollector implements ReferenceCollector {
-        private final Map<CsmParameter, ReferenceCounter> counters;
+        private final Map<CsmVariable, ReferenceCounter> counters;
         private Set<CsmParameter> parameters;
         public UnusedVariableCollector() {
-            counters = new LinkedHashMap<CsmParameter, ReferenceCounter>();
+            counters = new LinkedHashMap<CsmVariable, ReferenceCounter>();
         }
         public String getEntityName() {
             return "unused-variables"; // NOI18N
@@ -178,11 +178,11 @@ public class ModelUtils {
         public void visit(CsmReference ref, CsmFile file) {
             CsmObject obj = ref.getReferencedObject();
             if (isWanted(obj, file)) {
-                CsmParameter prm = (CsmParameter) obj;
-                ReferenceCounter counter = counters.get(prm);
+                CsmVariable var = (CsmVariable) obj;
+                ReferenceCounter counter = counters.get(var);
                 if (counter == null) {
                     counter = new ReferenceCounter(ref);
-                    counters.put(prm, counter);
+                    counters.put(var, counter);
                 } else {
                     counter.increment();
                 }
