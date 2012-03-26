@@ -120,6 +120,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private ProxyLookup lookup;
     private Lookup context;
     private VersioningSystem versioningSystem;
+    private MultiViewElementCallback callback;
         
     public HistoryComponent() {
         initComponents();
@@ -303,7 +304,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
 
     @Override
     public void setMultiViewCallback(MultiViewElementCallback callback) {
-        
+        this.callback = callback;
     }
 
     @NbBundle.Messages({
@@ -381,7 +382,14 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                 
     @Override
     public Action[] getActions() {
-        return new Action[0]; // XXX
+        Action[] retValue;
+        if (callback != null) {
+            retValue = callback.createDefaultActions();
+        } else {
+            // fallback
+            retValue = new Action[0];
+        }
+        return retValue;
     }
 
     @Override
