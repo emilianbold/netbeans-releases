@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.*;
 import java.util.logging.Logger;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
@@ -108,4 +109,11 @@ public class History {
         } 
         return vs;
     }
+    
+    static VCSHistoryProvider getHistoryProvider(VersioningSystem versioningSystem) {
+        if(versioningSystem == null) {
+            return null;
+        }
+        return  versioningSystem.getVCSHistoryProvider();
+    }    
 }
