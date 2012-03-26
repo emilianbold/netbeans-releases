@@ -421,6 +421,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         next.setVisible(false);
         if (rui.isQuery()) {
             runInBackground.setVisible(true);
+            dialog.getRootPane().setDefaultButton(runInBackground);
             validate();
         }
         
