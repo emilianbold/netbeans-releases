@@ -182,7 +182,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private void init(VersioningSystem vs, boolean refresh, final VCSFileProxy... files) {   
         this.versioningSystem = vs;
         if(toolBar == null) {
-            toolBar = new Toolbar(vs, files);
+            toolBar = new Toolbar(vs);
         } else {
             toolBar.setup(vs);
         }
@@ -439,7 +439,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         private final Separator separator2;
         private final Separator separator3;
         
-        private Toolbar(VersioningSystem vs, final VCSFileProxy... files) {
+        private Toolbar(VersioningSystem vs) {
             setBorder(new EmptyBorder(0, 0, 0, 0));
             setOpaque(false);
             setFloatable(false);
