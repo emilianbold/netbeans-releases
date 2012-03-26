@@ -956,10 +956,6 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
 
         final int caret = caretInstance.getDot();
 
-        CaretLocationAndMessage clam = (CaretLocationAndMessage) currentComponent.getClientProperty(CaretLocationAndMessage.class);
-
-        if (clam != null && clam.caret == caret) return;
-
         WORKER.post(new Runnable() {
             @Override public void run() {
                 final String[] warning = new String[] {AnnotationHolder.resolveWarnings(doc, caret, caret)};
@@ -1003,6 +999,12 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
                             return;
                         }
 
+                        CaretLocationAndMessage clam = (CaretLocationAndMessage) currentComponent.getClientProperty(CaretLocationAndMessage.class);
+
+                        if (clam != null && clam.caret == caret && warning[0].equals(clam.lastMessage)) {
+                            return ;
+                        }
+
                         EditorUI editorUI = Utilities.getEditorUI(currentComponent);
                         StatusBar sb = editorUI != null ? editorUI.getStatusBar() : null;
 
@@ -1010,7 +1012,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
                             Utilities.setStatusText(currentComponent, warning[0], StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
                         } else {
                             Message m = StatusDisplayer.getDefault().setStatusText(warning[0], StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-                            currentComponent.putClientProperty(CaretLocationAndMessage.class, new CaretLocationAndMessage(caret, m));
+                            currentComponent.putClientProperty(CaretLocationAndMessage.class, new CaretLocationAndMessage(caret, warning[0], m));
 
                             //TODO: so that messages with lower priority have chance to be displayed, ideally should not be needed:
                             m.clear(5000);
@@ -1023,10 +1025,12 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
 
     private static final class CaretLocationAndMessage {
         final int caret;
+        final String lastMessage;
         final Message message;
 
-        public CaretLocationAndMessage(int caret, Message message) {
+        public CaretLocationAndMessage(int caret, String lastMessage, Message message) {
             this.caret = caret;
+            this.lastMessage = lastMessage;
             this.message = message;
         }
 
