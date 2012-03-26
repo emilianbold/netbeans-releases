@@ -53,6 +53,14 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="tomcat" target="build-pkg"/>              
     </target>
         
+    <target name="build-jdk-pkg">
+        <ant dir="jdk" target="build-pkg"/>              
+        <copy todir="${basedir}/build/">
+            <fileset description="Copy ${jdk.package.name}.pkg." dir="${basedir}/jdk/build/" includes="*.pkg"/>
+        </copy>
+        <echo message="Copy ${jdk.package.name}.pkg into ${basedir}/jdk/build/"/>
+    </target>
+        
     <target name="build-openesb-pkg">
         <echo message="Building ${openesb-title} into ${basedir}/openesb"/>
         <ant dir="openesb" target="build-pkg"/>                     
@@ -100,10 +108,13 @@ Microsystems, Inc. All Rights Reserved.
         <property
            name="VerifyFile.classpath" 
            value="${basedir}/tools/classes"/>
+        <condition property="do.build.jdk">
+	     <equals arg1="${build.jdk7}" arg2="1"/>
+        </condition>
     </target>        
 
 
-    <target name="prepare-javame-sdk-zip">
+    <target name="prepare-javame-sdk-zip" unless="do.build.jdk">
         <mkdir dir="build"/> 
         <get src="${javame_sdk30_bits_location}"         dest="${common.name}${ml.suffix}-mobility-sdk.zip"/>
         <get src="${javame_sdk30_bits_update_location}"  dest="${common.name}${ml.suffix}-mobility-sdk-update.zip"/>
@@ -149,13 +160,21 @@ Microsystems, Inc. All Rights Reserved.
                                          ergonomics(ergonomics),
                                          ide(baseide), nb-etc(baseide), platform(baseide)
                                          "/>
+        
+        <property name="jdk-bundle.clusters" value="java(javase), 
+                                                   ide(baseide), nb-etc(baseide), platform(baseide)
+                                         "/>
 
         <property name="fx.clusters" value="javafx(javafx), javafx-mac(javafx)"/>
 
-        <condition property="clusters" value="${main.clusters}" else="${main.clusters},${fx.clusters}"> 
+        <condition property="all.clusters" value="${main.clusters}" else="${main.clusters},${fx.clusters}"> 
             <equals arg1="${javafx.build}" arg2="0"/>
         </condition>
-
+        
+        <condition property="clusters" value="${all.clusters}" else="${jdk-bundle.clusters}"> 
+            <equals arg1="${build.jdk7}" arg2="0"/>
+        </condition>
+        
     </target>
 
     <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters,prepare-javame-sdk-zip">
@@ -229,10 +248,16 @@ Microsystems, Inc. All Rights Reserved.
                                         ergonomics(${ergonomics-title}),
                                         php(${php-title})
                                         "/>
+        <property name="jdk-bundle.modules" value="
+                                        javase(${javase-title})
+                                        "/>
         <property name="fx.module" value="javafx(${javafx-title})"/>
 
-        <condition property="modules" value="${main.modules}" else="${main.modules},${fx.module}"> 
+        <condition property="all.modules" value="${main.modules}" else="${main.modules},${fx.module}"> 
             <equals arg1="${javafx.build}" arg2="0"/>
+        </condition>
+        <condition property="modules" value="${all.modules}" else="${jdk-bundle.modules}"> 
+            <equals arg1="${build.jdk7}" arg2="0"/>
         </condition>
     </target>    
 
@@ -292,21 +317,26 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <target name="init-bundles">
-        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
-                                             -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg),
-                                             -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
-                                             -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),                                             
-                                             -php(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/php-${nb.id}.pkg)
-                                             "/>
-
+        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                              -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg),
+                                              -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),                                             
+                                              -php(./build/baseide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
+                                          "/>
         <property name="fx.bundles" value="    
                                                -javafx-full(./build/*pkg),
                                                -javafx(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javafx-${nb.id}.pkg)
                                           "/>
 
-        <condition property="bundles" value="${main.bundles}" else="${main.bundles},${fx.bundles}"> 
+        <property name="jdk-bundle.bundles" value="-jdk(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/${jdk.package.name}.pkg)"/>
+
+        <condition property="all.bundles" value="${main.bundles}" else="${main.bundles},${fx.bundles}"> 
             <equals arg1="${javafx.build}" arg2="0"/>
         </condition>
+        <condition property="bundles" value="${all.bundles}" else="${jdk-bundle.bundles}"> 
+            <equals arg1="${build.jdk7}" arg2="0"/>
+        </condition>
+        
     </target>
     <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
@@ -317,6 +347,18 @@ Microsystems, Inc. All Rights Reserved.
                  <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
             </ant>     
         </for-each>         
+        <delete file="${basedir}/build/sizes.pro"/>
+    </target>     
+            
+    <target name="build-jdk-bundle-dmg" depends="clean,init,build-pkg,build-jdk-pkg,init-bundles">
+        <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
+            <delete dir="${basedir}/dist_dmg"/>                          
+            <ant target="build-dmg">
+                 <property name="dmg.name" value="${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx"/>
+                 <property name="mpkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_jdk}"/>
+                 <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
+            </ant>     
+        </for-each>
         <delete file="${basedir}/build/sizes.pro"/>
     </target>     
             
@@ -523,7 +565,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${license.file}" 
               tofile="${mpkg.file}/Contents/Resources/License.txt" />                         
                          
-        <ant target="prepare-lproj-dirs"/>                                             
+        <ant target="prepare-lproj-dirs"/>
         
         <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
             <filterset>
@@ -556,6 +598,7 @@ Microsystems, Inc. All Rights Reserved.
         </copy> 
         
         <mkdir dir="${mpkg.file}/Contents/Packages"/>         
+        <echo message="Copying ${packages} to '${mpkg.file}'/Contents/Packages..."/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="cp -RPf ${packages} '${mpkg.file}'/Contents/Packages"/>
@@ -563,8 +606,8 @@ Microsystems, Inc. All Rights Reserved.
         
         <exec executable="sh" failonerror="yes">
           <arg value="-c"/>
-          <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}'"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}' '${output.dir}'"/>
         </exec>  
-        <delete dir="dist_dmg"/>
+        <!-- XXX <delete dir="dist_dmg"/>-->
     </target>             
 </project>          
