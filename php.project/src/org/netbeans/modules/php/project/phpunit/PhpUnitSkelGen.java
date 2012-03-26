@@ -103,6 +103,9 @@ public final class PhpUnitSkelGen extends PhpProgram {
             // file already exists
             return testClassFile;
         }
+        if (!ensureTestFolderExists(testClassFile)) {
+            return null;
+        }
         ExternalProcessBuilder processBuilder = getProcessBuilder();
         if (configFiles.bootstrap != null
                 && configFiles.useBootstrapForCreateTests) {
@@ -147,6 +150,18 @@ public final class PhpUnitSkelGen extends PhpProgram {
             className = className.substring(1);
         }
         return className;
+    }
+
+    // #210123
+    private boolean ensureTestFolderExists(File testClassFile) {
+        File parent = testClassFile.getParentFile();
+        if (!parent.isDirectory()) {
+            if (!parent.mkdirs()) {
+                return false;
+            }
+            FileUtil.refreshFor(parent);
+        }
+        return true;
     }
 
 }
