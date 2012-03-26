@@ -68,6 +68,14 @@ public class ReplaceInFilesAction extends FindInFilesAction {
 
     static final long serialVersionUID = 4554342565076372612L;
 
+    public ReplaceInFilesAction() {
+        super();
+    }
+
+    protected ReplaceInFilesAction(boolean preferScopeSelection) {
+        super(preferScopeSelection);
+    }
+
     @Override
     protected void initialize() {
         super.initialize();
@@ -93,4 +101,10 @@ public class ReplaceInFilesAction extends FindInFilesAction {
         return new HelpCtx(ReplaceInFilesAction.class);
     }
 
+    public static class Selection extends ReplaceInFilesAction {
+
+        public Selection() {
+            super(true);
+        }
+    }
 }

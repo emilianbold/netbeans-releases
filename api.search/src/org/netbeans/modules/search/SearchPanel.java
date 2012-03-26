@@ -104,6 +104,8 @@ public class SearchPanel extends JPanel implements FocusListener,
      */
     private Presenter selectedPresenter = null;
 
+    private boolean preferScopeSelection = false;
+
     /**
      * Panel that can show form with settings for several search providers.
      */
@@ -252,13 +254,13 @@ public class SearchPanel extends JPanel implements FocusListener,
         this.setDialogDescriptor(dialogDescriptor);
 
         dialog.pack();
+        setCurrentlyShown(this);
         dialog.setVisible(
                 true);
         dialog.requestFocus();
         this.requestFocusInWindow();
         updateHelp();
         updateUsability();
-        setCurrentlyShown(this);
         if (selectedPresenter == null) {
             chooseLastUsedPresenter();
         }
@@ -395,6 +397,23 @@ public class SearchPanel extends JPanel implements FocusListener,
     private void updateUsability() {
         okButton.setEnabled(selectedPresenter.isUsable(
                 dialogDescr.getNotificationLineSupport()));
+    }
+
+    public boolean isPreferScopeSelection() {
+        return preferScopeSelection;
+    }
+
+    public void setPreferScopeSelection(boolean preferScopeSelection) {
+        this.preferScopeSelection = preferScopeSelection;
+    }
+
+    public static boolean isOpenedForSelection() {
+        SearchPanel sp = getCurrentlyShown();
+        if (sp == null) {
+            return false;
+        } else {
+            return sp.isPreferScopeSelection();
+        }
     }
 
     /**

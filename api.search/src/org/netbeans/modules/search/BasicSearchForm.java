@@ -644,7 +644,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
         memory.setFilePathRegex(scopeSettingsPanel.isFileNameRegExp());
         memory.setUseIgnoreList(scopeSettingsPanel.isUseIgnoreList());
-        if (cboxScope.getSelectedScopeId() != null) {
+        if (cboxScope.getSelectedScopeId() != null
+                && !SearchPanel.isOpenedForSelection()) {
             memory.setScopeTypeId(cboxScope.getSelectedScopeId());
         }
     }
