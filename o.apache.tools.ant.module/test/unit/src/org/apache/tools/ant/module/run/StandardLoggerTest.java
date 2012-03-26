@@ -61,6 +61,7 @@ import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -97,7 +98,7 @@ public class StandardLoggerTest extends NbTestCase {
         session.sendTargetFinished(makeAntEvent(realSession, null, -1, null, "some-target", null));
         session.sendBuildFinished(makeAntEvent(realSession, null, -1, null, null, null));
         List<Message> expectedMessages = Arrays.asList(new Message[] {
-            new Message("ant -f " + MockAntSession.MOCK_SCRIPT + " " + MockAntSession.MOCK_TARGET, false, null),
+            new Message("ant -f " + MockAntSession.MOCK_SCRIPT_DIR + " " + MockAntSession.MOCK_TARGET, false, null),
             new Message(NbBundle.getMessage(StandardLogger.class, "MSG_target_started_printed", "some-target"), false, null),
             new Message("some message", true, null),
             new Message(NbBundle.getMessage(StandardLogger.class, "FMT_finished_target_printed", new Integer(0), new Integer(15)), false, null),
@@ -122,7 +123,7 @@ public class StandardLoggerTest extends NbTestCase {
             AntEvent.LOG_WARN, null, null, null));
         session.sendBuildFinished(makeAntEvent(realSession, null, -1, null, null, null));
         List<Message> expectedMessages = Arrays.asList(
-            new Message("ant -f " + MockAntSession.MOCK_SCRIPT + " " + MockAntSession.MOCK_TARGET, false, null),
+            new Message("ant -f " + MockAntSession.MOCK_SCRIPT_DIR + " " + MockAntSession.MOCK_TARGET, false, null),
             new Message("Stack trace in separate lines:", false, null),
             new Message("\tat Foo.java:3", false, new MockHyperlink("file:/src/Foo.java", "stack trace", 3, -1, -1, -1)),
             new Message("\tat Bar.java:5", false, new MockHyperlink("file:/src/Bar.java", "stack trace", 5, -1, -1, -1)),
@@ -167,7 +168,7 @@ public class StandardLoggerTest extends NbTestCase {
         session.sendTargetFinished(makeAntEvent(realSession, null, -1, null, "some-target", null));
         session.sendBuildFinished(makeAntEvent(realSession, null, -1, null, null, null));
         List<Message> expectedMessages = Arrays.asList(
-            new Message("ant -f " + MockAntSession.MOCK_SCRIPT + " " + MockAntSession.MOCK_TARGET, false, null),
+            new Message("ant -f " + MockAntSession.MOCK_SCRIPT_DIR + " " + MockAntSession.MOCK_TARGET, false, null),
             new Message(NbBundle.getMessage(StandardLogger.class, "MSG_target_started_printed", "some-target"), false, null),
             /*
             new Message("c:\\temp\\foo: malformed", true, new MockHyperlink("c:\\temp\\foo", "malformed", -1, -1, -1, -1)),
@@ -210,7 +211,9 @@ public class StandardLoggerTest extends NbTestCase {
      */
     private static final class MockAntSession implements LoggerTrampoline.AntSessionImpl {
 
-        static final File MOCK_SCRIPT = new File("/tmp/mock-script");
+        @SuppressWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
+        static final File MOCK_SCRIPT_DIR = new File("/tmp/mock-script");
+        static final File MOCK_SCRIPT = new File(MOCK_SCRIPT_DIR, "build.xml");
         static final String MOCK_TARGET = "mock-target";
         
         private final AntLogger[] loggers;

@@ -201,7 +201,7 @@ public abstract class BaseEEModuleImpl implements J2eeModuleImplementation2, Mod
      * non-warred file, meaning from the expanded webapp. weird.
      */
     @Override
-    public Iterator getArchiveContents() throws IOException {
+    public Iterator<J2eeModule.RootedEntry> getArchiveContents() throws IOException {
         FileObject fo = getContentDirectory();
         if (fo != null) {
             return new ContentIterator(fo);
@@ -294,7 +294,7 @@ public abstract class BaseEEModuleImpl implements J2eeModuleImplementation2, Mod
     
     
     
-    private static final class ContentIterator implements Iterator {
+    private static final class ContentIterator implements Iterator<J2eeModule.RootedEntry> {
         private ArrayList<FileObject> ch;
         private FileObject root;
         
@@ -310,7 +310,7 @@ public abstract class BaseEEModuleImpl implements J2eeModuleImplementation2, Mod
         }
         
         @Override
-        public Object next() {
+        public J2eeModule.RootedEntry next() {
             FileObject f = ch.get(0);
             ch.remove(0);
             if (f.isFolder()) {

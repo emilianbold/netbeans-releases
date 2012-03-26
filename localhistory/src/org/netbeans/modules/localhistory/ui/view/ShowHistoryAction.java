@@ -177,14 +177,11 @@ public class ShowHistoryAction extends NodeAction {
         String mime = dataObject.getPrimaryFile().getMIMEType();
         Lookup l = MimeLookup.getLookup(MimePath.get(mime));
         Collection<? extends MultiViewDescription> descs = l.lookupAll(MultiViewDescription.class);
-        if (descs.size() > 1) {
-            // LH is registred for every mimetype, so we need at least two
-            for (MultiViewDescription desc : descs) {
-                if (desc.preferredID().equals(HistoryTopComponent.PREFERRED_ID)) {
-                    return true;
-                } 
+        for (MultiViewDescription desc : descs) {
+            if (desc.preferredID().equals(HistoryTopComponent.PREFERRED_ID)) {
+                return true;
             } 
-        }
+        } 
         return false;
     }
 

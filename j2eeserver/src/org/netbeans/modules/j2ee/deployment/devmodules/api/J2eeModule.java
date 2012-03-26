@@ -252,9 +252,9 @@ public class J2eeModule {
      *  Currently uses its own {@link RootedEntry} interface.
      *  If the J2eeModule instance describes a
      *  j2ee application, the result should not contain module archives.
-     *  @return Iterator through {@link RootedEntry}s
+     *  @return entries
      */
-    public Iterator getArchiveContents() throws java.io.IOException {
+    public Iterator<J2eeModule.RootedEntry> getArchiveContents() throws java.io.IOException {
         return impl.getArchiveContents();
     }
 

@@ -46,8 +46,9 @@ Microsystems, Inc. All Rights Reserved.
         </exec>
         
         <echo message="Delete launchers for another platforms"/>
-        <delete file="${appdir}/Contents/Resources/NetBeans/bin/nb.exe"/>
-        <delete file="${appdir}/Contents/Resources/NetBeans/bin/netbeans.exe"/>
+        <delete>
+            <fileset dir="${appdir}/Contents/Resources/NetBeans/bin" includes="*.exe"/>
+        </delete>
         
         <echo message="Copying the icon into the correct place" />
         <copy file="${appdir}/Contents/Resources/NetBeans/${nbClusterDir}/netbeans.icns" todir="${appdir}/Contents/Resources"/>

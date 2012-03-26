@@ -62,10 +62,12 @@ public class RevertFileAction extends NodeAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }   
     
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(getClass());
+        return new HelpCtx("org.netbeans.modules.localhistory.ui.view.RevertFileAction"); // NOI18N
     }  
     
+    @Override
     protected void performAction(final Node[] activatedNodes) {      
        // XXX try to save files in invocation context only
         // list somehow modified file in the context and save
@@ -75,12 +77,14 @@ public class RevertFileAction extends NodeAction {
         
         // XXX progress support ???
         LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {                 
                 Utils.revert(activatedNodes);
             }
         });
     }
             
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if(activatedNodes == null || activatedNodes.length != 1) {
             return false;
@@ -94,7 +98,8 @@ public class RevertFileAction extends NodeAction {
         return true; 
     }
 
+    @Override
     public String getName() {
-        return NbBundle.getMessage(RevertFileAction.class, "LBL_RevertFileAction");
+        return NbBundle.getMessage(RevertFileAction.class, "LBL_RevertFileAction"); // NOI18N
     }      
 }
