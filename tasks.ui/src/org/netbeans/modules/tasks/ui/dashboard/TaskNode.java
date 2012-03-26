@@ -179,11 +179,14 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
         if (statusCompare != 0) {
             return statusCompare;
         } else {
-            int idCompare = task.getID().compareToIgnoreCase(toCompare.task.getID());
-            if (idCompare == 0) {
-                return task.getDisplayName().compareToIgnoreCase(toCompare.task.getDisplayName());
+            int id = Integer.parseInt(task.getID());
+            int idOther = Integer.parseInt(toCompare.task.getID());
+            if (id < idOther) {
+                return 1;
+            } else  if (id > idOther){
+                return -1;
             } else {
-                return idCompare;
+                return 0;
             }
         }
     }
