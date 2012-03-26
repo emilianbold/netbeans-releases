@@ -711,7 +711,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     valueString = HistoryUtils.computeFitText(table, row, column, valueString);
                     
                     Filter f = tc != null ? tc.getSelectedFilter() : null;
-                    if(f != null && !(value instanceof HistoryRootNode.LoadNextNode.MessageProperty)) {
+                    if(f != null && f.filtersProperty((Node.Property) value)) {
                         valueString = f.getRendererValue(valueString);
                     } else {
                         valueString = HistoryUtils.escapeForHTMLLabel(valueString); 
@@ -761,6 +761,10 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         }
         
         String getTooltip(Node.Property p) throws IllegalAccessException, InvocationTargetException {
+            Object value = p.getValue();
+            if(value instanceof TableEntry) {
+                return ((TableEntry) value).getTooltip();
+            }
             String tooltip = p.toString();
             if(tooltip != null && tooltip.contains("\n")) { // NOI18N
                 tooltip = HistoryUtils.escapeForHTMLLabel(tooltip);

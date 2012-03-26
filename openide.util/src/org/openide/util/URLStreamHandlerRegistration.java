@@ -49,6 +49,7 @@ import java.lang.annotation.Target;
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
+import org.openide.util.lookup.NamedServiceDefinition;
 
 /**
  * Replacement for {@link URLStreamHandlerFactory} within the NetBeans platform.
@@ -62,6 +63,7 @@ import java.net.URLStreamHandlerFactory;
  * from a unit test or otherwise without the module system active.
  * @since org.openide.util 7.31
  */
+@NamedServiceDefinition(path="URLStreamHandler/@protocol()", serviceType=URLStreamHandler.class)
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface URLStreamHandlerRegistration {

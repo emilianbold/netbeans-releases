@@ -119,7 +119,7 @@ public class HistoryDiffView implements PropertyChangeListener {
             if (newSelection.length == 1) {
                 HistoryEntry entry1 = newSelection[0].getLookup().lookup(HistoryEntry.class);
                 if (entry1 != null) {
-                    VCSFileProxy file1 = entry1.getFiles()[0];
+                    VCSFileProxy file1 = getFile(newSelection[0], entry1);
                     
                     CompareMode mode = tc.getMode();
                     switch(mode) {
@@ -129,10 +129,8 @@ public class HistoryDiffView implements PropertyChangeListener {
 
                         case TOPARENT:    
                             HistoryEntry entry2 = tc.getParentEntry(entry1);
-                            VCSFileProxy file2 = null;
-                            if (entry2 != null) {
-                                file2 = entry2.getFiles()[0];
-                            } else {
+                            VCSFileProxy file2 = file1;
+                            if (entry2 == null) {
                                 showNoContent(NbBundle.getMessage(HistoryDiffView.class, "MSG_DiffPanel_NoVersionToCompare")); // NOI18N                                
                                 return;
                             }
@@ -150,13 +148,13 @@ public class HistoryDiffView implements PropertyChangeListener {
                 HistoryEntry entry1 = newSelection[0].getLookup().lookup(HistoryEntry.class);
                 VCSFileProxy file1 = null;
                 if (entry1 != null) {
-                    file1 = entry1.getFiles()[0];
+                    file1 = getFile(newSelection[0], entry1);
                 }
                 
                 VCSFileProxy file2 = null;
                 HistoryEntry entry2 = newSelection[1].getLookup().lookup(HistoryEntry.class);
                 if (entry2 != null) {
-                    file2 = entry2.getFiles()[0];
+                    file2 = file1 = getFile(newSelection[1], entry2);
                 }
                 
                 if(entry1 != null && entry2 != null && file1 != null && file2 != null) {
@@ -199,6 +197,11 @@ public class HistoryDiffView implements PropertyChangeListener {
             preparingDiffPanel = new PreparingDiffHandler();
     }
         return preparingDiffPanel;
+    }
+
+    private VCSFileProxy getFile(Node node, HistoryEntry entry) {
+        VCSFileProxy file = node.getLookup().lookup(VCSFileProxy.class);
+        return file != null ? file : entry.getFiles()[0];
     }
 
     private class CurrentDiffPrepareTask implements Runnable {

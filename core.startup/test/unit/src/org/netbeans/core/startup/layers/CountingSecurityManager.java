@@ -170,6 +170,11 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     @Override
     public void checkRead(String file) {
         if (mode == Mode.CHECK_READ && acceptFileRead(file)) {
+            String off = System.getProperty("counting.off");
+            if ("true".equals(off)) {
+                return;
+            }
+            
             String dirs = System.getProperty("netbeans.dirs");
             if (dirs == null && !acceptAll) {
                 // not initialized yet

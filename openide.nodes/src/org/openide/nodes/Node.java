@@ -1387,8 +1387,11 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             if (!(propertySet instanceof PropertySet)) {
                 return false;
             }
-
-            return ((PropertySet) propertySet).getName().equals(getName());
+            final String n1 = ((PropertySet) propertySet).getName();
+            if (n1 == null && getName() == null) {
+                return true;
+            }
+            return n1.equals(getName());
         }
 
         /* Returns a hash code value for the object.

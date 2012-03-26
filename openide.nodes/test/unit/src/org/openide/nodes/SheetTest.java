@@ -47,10 +47,7 @@ package org.openide.nodes;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
-
-import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 
 
@@ -62,9 +59,12 @@ public class SheetTest extends NbTestCase {
     public SheetTest(String name) {
         super(name);
     }
-
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(SheetTest.class));
+    
+    public void testSheetSetEquals() {
+        Sheet.Set s1 = new Sheet.Set();
+        Sheet.Set s2 = new Sheet.Set();
+        
+        assertTrue("Equal as they don't have a name", s1.equals(s2));
     }
 
     public void testSheetEvents() {

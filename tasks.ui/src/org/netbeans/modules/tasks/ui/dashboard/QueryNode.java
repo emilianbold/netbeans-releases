@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author jpeska
  */
-public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparable<QueryNode>, PropertyChangeListener {
+public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparable<QueryNode> {
 
     private final Query query;
     private JPanel panel;
@@ -77,6 +77,9 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
     private boolean refresh;
     private LinkButton btnChanged;
     private LinkButton btnTotal;
+    private QueryListener queryListener;
+    private TaskListener taskListener;
+    private TreeLabel lblSeparator;
 
     public QueryNode(Query query, TreeListNode parent, boolean refresh) {
         super(true, parent, query.getDisplayName());
@@ -84,16 +87,22 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
         labels = new ArrayList<TreeLabel>();
         buttons = new ArrayList<LinkButton>();
         updateNodes();
-        query.addPropertyChangeListener(this);
+        queryListener = new QueryListener();
+        query.addPropertyChangeListener(queryListener);
         this.refresh = refresh;
     }
 
     private void updateNodes() {
         AppliedFilters appliedFilters = DashboardViewer.getInstance().getAppliedFilters();
         Collection<Issue> issues = query.getIssues();
+        removeTaskListeners();
+        if (taskListener == null) {
+            taskListener = new TaskListener();
+        }
         taskNodes = new ArrayList<TaskNode>(issues.size());
         filteredTaskNodes = new ArrayList<TaskNode>(issues.size());
         for (Issue issue : issues) {
+            issue.addPropertyChangeListener(taskListener);
             TaskNode taskNode = new TaskNode(issue, this);
             taskNodes.add(taskNode);
             if (appliedFilters.isInFilter(issue)) {
@@ -105,10 +114,8 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
     @Override
     protected void dispose() {
         super.dispose();
-        query.removePropertyChangeListener(this);
-        for (TaskNode taskNode : getFilteredTaskNodes()) {
-            taskNode.getTask().addPropertyChangeListener(this);
-        }
+        query.removePropertyChangeListener(queryListener);
+        removeTaskListeners();
     }
 
     @Override
@@ -124,9 +131,6 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
     protected List<TreeListNode> createChildren() {
         List<TaskNode> children = getFilteredTaskNodes();
         Collections.sort(children);
-        for (TaskNode taskNode : children) {
-            taskNode.getTask().addPropertyChangeListener(this);
-        }
         return new ArrayList<TreeListNode>(children);
     }
 
@@ -165,11 +169,11 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
                 btnTotal = new LinkButton(getTotalString(), new OpenQueryAction(query));
                 panel.add(btnTotal, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 buttons.add(btnTotal);
-
+                lblSeparator = new TreeLabel(""); //NOI18N
+                panel.add(lblSeparator, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
+                labels.add(lblSeparator);
                 if (getChangedTaskCount() > 0) {
-                    lbl = new TreeLabel("|"); //NOI18N
-                    panel.add(lbl, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
-                    labels.add(lbl);
+                    lblSeparator.setText("|"); //NOI18N
                     btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(query)); //NOI18N
                     panel.add(btnChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                     buttons.add(btnChanged);
@@ -190,21 +194,10 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
         return panel;
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
-            updateContent(true);
-        } else if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)){
-            updateContent(false);
-        }
-    }
-
-    private void updateContent(boolean refreshChildren) {
+    private void updateContent() {
         updateCounts();
         fireContentChanged();
-        if (refreshChildren) {
-            refreshChildren();
-        }
+        refreshChildren();
     }
 
     private void updateCounts() {
@@ -212,8 +205,16 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
         if (btnTotal != null) {
             btnTotal.setText(getTotalString());
         }
+        String changedString = getChangedString();
+        if (lblSeparator != null) {
+            if (changedString.isEmpty()) {
+                lblSeparator.setText("");
+            } else {
+                lblSeparator.setText("|");
+            }
+        }
         if (btnChanged != null) {
-            btnChanged.setText(getChangedString());
+            btnChanged.setText(changedString);
         }
     }
 
@@ -299,6 +300,34 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
     }
 
     private String getChangedString() {
-        return getChangedTaskCount() + " " + NbBundle.getMessage(QueryNode.class, "LBL_Changed");
+        return getChangedTaskCount() == 0 ? "" : getChangedTaskCount() + " " + NbBundle.getMessage(QueryNode.class, "LBL_Changed");//NOI18N
+    }
+
+    private void removeTaskListeners() {
+        if (taskListener != null) {
+            for (TaskNode taskNode : getFilteredTaskNodes()) {
+                taskNode.getTask().removePropertyChangeListener(taskListener);
+            }
+        }
+    }
+
+    private class QueryListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
+                updateContent();
+            }
+        }
+    }
+
+    private class TaskListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
+                updateContent();
+            }
+        }
     }
 }
