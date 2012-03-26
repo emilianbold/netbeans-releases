@@ -1052,8 +1052,12 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
             }
 
             updateVisibleRanges();
-            
-            HintsUI.getDefault().caretUpdate(null);
+
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override public void run() {
+                    HintsUI.getDefault().caretUpdate(null);
+                }
+            });
         } catch (BadLocationException ex) {
             throw new IOException(ex);
         } finally {

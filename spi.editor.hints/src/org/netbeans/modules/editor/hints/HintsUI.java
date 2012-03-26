@@ -91,6 +91,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -945,7 +946,11 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
         
         final HighlightingManager hm = HighlightingManager.getInstance(currentComponent);
         final Document doc = currentComponent.getDocument();
-        final int caret = currentComponent.getCaretPosition();
+        final Caret caretInstance = currentComponent.getCaret();
+
+        if (caretInstance == null) return ;
+
+        final int caret = caretInstance.getDot();
 
         WORKER.post(new Runnable() {
             @Override public void run() {
