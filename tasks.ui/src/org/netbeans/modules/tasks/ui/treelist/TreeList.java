@@ -256,9 +256,9 @@ public class TreeList extends JList {
             }
             TreeListNode node = (TreeListNode) value;
             int rowHeight = list.getFixedCellHeight();
-            int rowWidth = list.getVisibleRect().width - 20;
-            Color background = isSelected && cellHasFocus ? list.getSelectionBackground() : list.getBackground();
-            Color foreground = isSelected && cellHasFocus ? list.getSelectionForeground() : list.getForeground();
+            int rowWidth = list.getVisibleRect().width - 30;
+            Color background = isSelected ? list.getSelectionBackground() : list.getBackground();
+            Color foreground = isSelected ? list.getSelectionForeground() : list.getForeground();
 
             return node.getRenderer(foreground, background, isSelected, cellHasFocus, rowHeight, rowWidth);
         }

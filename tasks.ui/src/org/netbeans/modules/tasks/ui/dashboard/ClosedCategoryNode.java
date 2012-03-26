@@ -114,4 +114,8 @@ public class ClosedCategoryNode extends AbstractCategoryNode {
         }
         return categoryAction;
     }
+
+    @Override
+    void updateContent() {
+    }
 }
