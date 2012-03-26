@@ -120,6 +120,9 @@ public class ClassCompletionProvider implements CompletionProvider {
                     String className = type.getQualifiedName();
                     if (lastTextDot > 0) {
                         className = className.substring(lastTextDot + 1);
+                        if (!className.startsWith(classFilter)) {
+                            continue;
+                        }
                     }
                     int dot = className.indexOf('.');
                     if (dot > 0) className = className.substring(0, dot);
