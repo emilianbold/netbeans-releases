@@ -56,6 +56,7 @@ import org.openide.util.CharSequences;
  * @author Vladimir Voskresensky
  */
 public class CppTypingCompletion {
+
     private CppTypingCompletion() {}
 
     static final class ExtraText {
@@ -132,20 +133,11 @@ public class CppTypingCompletion {
             Token<TokenId> token = ts.token();
             if (token.id() == CppTokenId.RAW_STRING_LITERAL) {
                 // typing inside raw string delimeter should be symmetrical
-                TokenSequence<?> es = ts.embedded();
-                int offsetInStringToken = es.move(dotPos);
-//                int tokenStartOffset = es.offset();
-                if (es.moveNext()) {
-                    @SuppressWarnings("unchecked")
-                    Token<CppStringTokenId> strToken = (Token<CppStringTokenId>) es.token();
-                    int strTokenOffset = es.offset();
-                    CppStringTokenId id = strToken.id();
-                    if (id != CppStringTokenId.START_DELIMETER &&
-                        id != CppStringTokenId.START_DELIMETER_PAREN &&
-                        id != CppStringTokenId.END_DELIMETER &&
-                        id != CppStringTokenId.LAST_QUOTE) {
-                        return null;
-                    }
+                @SuppressWarnings("unchecked")
+                TokenSequence<CppStringTokenId> es = (TokenSequence<CppStringTokenId>) ts.embedded();
+                RawStringContext rsContext = calculateRawStringContext(es, dotPos);
+                if (rsContext.contextTokenId != null) {
+                    CppStringTokenId id = rsContext.contextTokenId;
                     if (typedChar == '(' && id == CppStringTokenId.START_DELIMETER_PAREN) {
                         // eat (
                         context.setText("", 0);
@@ -154,136 +146,178 @@ public class CppTypingCompletion {
                         // eat closing "
                         context.setText("", 0);
                         return new ExtraText(dotPos + 1);
-                    }
-                    if (true) {
-                        return null;
-                    }
-                    int startDelimPos = -1;
-                    Token<?> startDelim = null;
-                    Token<?> endDelim = null;
-                    int endDelimPos = -1;
-                    if (id == CppStringTokenId.START_DELIMETER_PAREN) {
-                        // check if there is start delimeter before paren
-                        if (es.movePrevious() && es.token().id() == CppStringTokenId.START_DELIMETER) {
-                            strToken = (Token<CppStringTokenId>) es.token();
-                            offsetInStringToken = strToken.length();
-                        }
-                    }
-                    if (id == CppStringTokenId.START_DELIMETER) {
-                        // before or inside start delimeter
-                        es.moveEnd();
-                        while (es.movePrevious()) {
-                            if (es.token().id() == CppStringTokenId.END_DELIMETER) {
-                                if (CharSequences.comparator().compare(strToken.text(), es.token().text()) == 0) {
-                                    return new ExtraText(dotPos + 1, es.offset() + offsetInStringToken, "" + typedChar);
-                                }
-                                break;
-                            } if (es.token().id() == CppStringTokenId.END_DELIMETER_PAREN) {
-                                // no end delimeter
-                                break;
-                            }
-                        }
-                    } else if (id == CppStringTokenId.START_DELIMETER_PAREN) {
-
-                        startDelim = strToken;
-                        startDelimPos = strTokenOffset;
-                        int index = es.index();
-                        es.moveEnd();
-                        while (es.movePrevious()) {
-                            if (es.token().id() == CppStringTokenId.END_DELIMETER) {
-                                startDelim = es.token();
-                                startDelimPos = es.offset();
-                                break;
-                            }
-                            if (es.token().id() == CppStringTokenId.END_DELIMETER_PAREN) {
-                                return null;
-                            }
-                        }
-                        es.moveIndex(index);
-                    } else if (id == CppStringTokenId.END_DELIMETER) {
-
-                    } else if (id == CppStringTokenId.LAST_QUOTE) {
-                        int index = es.index();
-                        es.moveStart();
-                        while (es.moveNext()) {
-                            if (es.token().id() == CppStringTokenId.START_DELIMETER ||
-                                es.token().id() == CppStringTokenId.START_DELIMETER_PAREN) {
-                                startDelim = es.token();
-                                startDelimPos = es.offset();
-                                break;
-                            }
-                        }
-                        es.moveIndex(index);
-                    }
-                    int tokLen = strToken.length();
-
-                    if (id == CppStringTokenId.START_DELIMETER_PAREN ||
-                        id == CppStringTokenId.START_DELIMETER) {
-                        if (typedChar == '(' && id == CppStringTokenId.START_DELIMETER_PAREN) {
-                        } else {
-                            // prepare for insertion
-                            startDelim = strToken;
-                            startDelimPos = es.offset();
-                            es.moveEnd();
-                            while (es.movePrevious()) {
-                                endDelim = es.token();
-                                if (endDelim.id() == CppStringTokenId.END_DELIMETER) {
-                                    // found
-                                    endDelimPos = es.offset();
-                                    break;
-                                } else if (endDelim.id() == CppStringTokenId.END_DELIMETER_PAREN) {
-                                    // no delimeter move back to the end
-                                    if (es.moveNext()) {
-                                        endDelim = es.token();
-                                        endDelimPos = es.offset();
-                                    } else {
-                                        endDelim = null;
-                                        endDelimPos = -1;
-                                    }
-                                    break;
-                                } else {
-                                    endDelim = null;
-                                }
-                            }
-                        }
-                    } else if (id == CppStringTokenId.LAST_QUOTE || id == CppStringTokenId.END_DELIMETER) {
-                        if (typedChar == '"' && id == CppStringTokenId.LAST_QUOTE) {
-                            assert offsetInStringToken == 0;
-                        } else {
-                            endDelim = strToken;
-                            endDelimPos = es.offset();
-                            es.moveStart();
-                            while (es.moveNext()) {
-                                startDelim = es.token();
-                                if (startDelim.id() == CppStringTokenId.START_DELIMETER
-                                        || startDelim.id() == CppStringTokenId.START_DELIMETER_PAREN) {
-                                    startDelimPos = es.offset();
-                                    break;
-                                } else {
-                                    startDelim = null;
-                                }
-                            }
-                        }
-                    }
-                    if (rawStringTypingInfo == null && startDelim != null && endDelim != null) {
-                        // typing in start delimeter should by synced with end delim
-                        if ((startDelim.id() == CppStringTokenId.START_DELIMETER_PAREN &&
-                             endDelim.id() == CppStringTokenId.LAST_QUOTE) ||
-                             CharSequences.comparator().compare(startDelim.text(), endDelim.text()) == 0) {
-                            // we sync only equal texts
-                            if (startDelim == strToken) {
-                                // insert at the end token
-                                rawStringTypingInfo = new ExtraText(dotPos + 1, endDelimPos + offsetInStringToken, "" + typedChar);
-                            } else {
-                                // insert at the end token
-                                rawStringTypingInfo = new ExtraText(dotPos + 2, startDelimPos + offsetInStringToken, "" + typedChar);
-                            }
-                        }
+                    } else if (typedChar == ')' && id == CppStringTokenId.END_DELIMETER_PAREN &&
+                            rsContext.emptyDelimeter) {
+                        // eat closing ) when no delimeters specified
+                        context.setText("", 0);
+                        return new ExtraText(dotPos + 1);
+                    } else if (rsContext.matchingDelimeterSymbolOffset != -1) {
+                        context.setText("", 0);
+                        return new ExtraText(dotPos, rsContext.matchingDelimeterSymbolOffset, "" + typedChar);
                     }
                 }
             }
         }
         return rawStringTypingInfo;
+    }
+
+    private static final class RawStringContext {
+        private final int matchingOffset;
+        private final int matchingDelimeterSymbolOffset;
+        private final Token<CppStringTokenId> contextToken;
+        private final CppStringTokenId contextTokenId;
+        private final boolean emptyStartDelimeter;
+        private final boolean emptyEndDelimeter;
+        private final boolean emptyDelimeter;
+
+        public RawStringContext(Token<CppStringTokenId> contextToken, 
+                int matchingOffset, int matchingDelimeterSymbolOffset,
+                boolean emptyStartDelimeter, boolean emptyEndDelimeter) {
+            this.matchingOffset = matchingOffset;
+            this.matchingDelimeterSymbolOffset = matchingDelimeterSymbolOffset;
+            this.contextToken = contextToken;
+            this.contextTokenId = contextToken == null ? null : contextToken.id();
+            this.emptyStartDelimeter = emptyStartDelimeter;
+            this.emptyEndDelimeter = emptyEndDelimeter;
+            this.emptyDelimeter = emptyStartDelimeter && emptyEndDelimeter;
+        }
+
+        @Override
+        public String toString() {
+            return "RawStringContext{" + "matchingOffset=" + matchingOffset + // NOI18N
+                    ", matchingDelimeterSymbolOffset=" + matchingDelimeterSymbolOffset + // NOI18N
+                    ", contextToken=" + contextToken + ", contextTokenId=" + // NOI18N
+                    contextTokenId + ", emptyStartDelimeter=" + emptyStartDelimeter + // NOI18N
+                    ", emptyEndDelimeter=" + emptyEndDelimeter + // NOI18N
+                    ", emptyDelimeter=" + emptyDelimeter + '}'; // NOI18N
+        }
+    }
+
+    private static RawStringContext calculateRawStringContext(final TokenSequence<CppStringTokenId> es, final int dotPos) {
+        RawStringContext out = null;
+        Token<CppStringTokenId> firstQuote = null;
+        int firstQuoteOffset = -1;
+        Token<CppStringTokenId> startDelim = null;
+        int startDelimOffset = -1;
+        Token<?> startDelimParen = null;
+        int startDelimParenOffset = -1;
+        Token<CppStringTokenId> endDelimParen = null;
+        int endDelimParenOffset = -1;
+        Token<CppStringTokenId> endDelim = null;
+        int endDelimOffset = -1;
+        Token<CppStringTokenId> lastQuote = null;
+        int lastQuoteOffset = -1;
+        Token<CppStringTokenId> contextToken = null;
+        int matchingOffset = -1;
+        int matchingDelimSymbolOffset = -1;
+        es.moveStart();
+        Outer:
+        while (es.moveNext()) {
+            @SuppressWarnings("unchecked")
+            Token<CppStringTokenId> cur = es.token();
+            int curOffset = es.offset();
+            switch (cur.id()) {
+                case FIRST_QUOTE:
+                    assert firstQuote == null;
+                    firstQuote = cur;
+                    firstQuoteOffset = curOffset;
+                    if (curOffset == dotPos) {
+                        contextToken = cur;
+                    }
+                    break;
+                case START_DELIMETER:
+                    assert startDelim == null;
+                    startDelim = cur;
+                    startDelimOffset = curOffset;
+                    if (curOffset <= dotPos && dotPos < curOffset + cur.length()) {
+                        contextToken = cur;
+                    }
+                    break;
+                case START_DELIMETER_PAREN:
+                    assert startDelimParen == null;
+                    startDelimParen = cur;
+                    startDelimParenOffset = curOffset;
+                    if (curOffset == dotPos) {
+                        contextToken = cur;
+                    }
+                    break;
+                case PREFIX_L:
+                case PREFIX_R:
+                case PREFIX_U:
+                case PREFIX_u:
+                case PREFIX_u8:
+                case PREFIX_UR:
+                case PREFIX_uR:
+                case PREFIX_u8R:
+                    // skip prefix
+                    break;
+                default:
+                    break Outer;
+            }
+        }
+        CppStringTokenId contextTokenId = contextToken == null ? null : contextToken.id();
+        es.moveEnd();
+        Outer:
+        while (es.movePrevious()) {
+            @SuppressWarnings("unchecked")
+            Token<CppStringTokenId> cur = es.token();
+            int curOffset = es.offset();
+            switch (cur.id()) {
+                case LAST_QUOTE:
+                    assert lastQuote == null;
+                    lastQuote = cur;
+                    lastQuoteOffset = curOffset;
+                    // last quote matches with start delimeter paren
+                    if (curOffset == dotPos) {
+                        contextToken = cur;
+                        if (startDelimParenOffset != -1) {
+                            matchingDelimSymbolOffset = matchingOffset = startDelimParenOffset;
+                        }
+                    } else if (contextTokenId == CppStringTokenId.START_DELIMETER_PAREN) {
+                        matchingDelimSymbolOffset = matchingOffset = curOffset;
+                    }
+                    break;
+                case END_DELIMETER:
+                    assert endDelim == null;
+                    endDelim = cur;
+                    endDelimOffset = curOffset;
+                    // end delimeter matches with start delimeter
+                    if (curOffset <= dotPos && dotPos < curOffset + cur.length()) {
+                        contextToken = cur;
+                        if (startDelimOffset != -1) {
+                            assert startDelimOffset != -1;
+                            assert matchingOffset == -1;
+                            matchingDelimSymbolOffset = matchingOffset = startDelimOffset + (dotPos - curOffset);
+                        }
+                    } else if (contextTokenId == CppStringTokenId.START_DELIMETER) {
+                        assert startDelimOffset != -1;
+                        assert matchingOffset == -1;
+                        assert dotPos >= startDelimOffset;
+                        matchingDelimSymbolOffset = matchingOffset = curOffset + (dotPos - startDelimOffset);
+                    }
+                    break;
+                case END_DELIMETER_PAREN:
+                    assert endDelimParen == null;
+                    endDelimParen = cur;
+                    endDelimParenOffset = curOffset;
+                    if (curOffset == dotPos) {
+                        contextToken = cur;
+                        if (startDelimParenOffset != -1) {
+                            matchingOffset = startDelimParenOffset + 1;
+                        }
+                    }
+                    break;
+                default:
+                    break Outer;
+            }
+        }
+        if ((startDelim == null && endDelim == null) ||
+            (startDelim != null && endDelim != null && CharSequences.comparator().compare(startDelim.text(), endDelim.text()) == 0)) {
+            // only if both delimeters are empty or both have the same text
+            return new RawStringContext(contextToken, matchingOffset, matchingDelimSymbolOffset, startDelim == null, endDelim == null);
+        } else {
+            return new RawStringContext(contextToken, matchingOffset, -1, startDelim == null, endDelim == null);
+        }
     }
 
 }

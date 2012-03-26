@@ -57,17 +57,58 @@ public class BracketCompletionTestCase extends EditorBase  {
         typeCharactersInText("  R\"|()\"", "(", "  R\"(|)\"");
     }
 
+    public void testLeftParenInRawStringStartDelim2() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText("  R\"XXX|()XXX\"", "(", "  R\"XXX(|)XXX\"");
+    }
+
     public void testQuoteInRawStringEndDelim() throws Exception {
         setDefaultsOptions();
         typeCharactersInText(" R\"delim()delim|\"  ", "\"", " R\"delim()delim\"|  ");
     }
 
-//    public void testTypeInRawStringStartDelim() throws Exception {
-//        setDefaultsOptions();
-//        typeCharactersInText("    R\"del|im()delim\"  ", "U", "    R\"delU|im()delUim\"  ");
-//        typeCharactersInText("    R\"del|im()delim\"  ", "UU", "   R\"delUU|im()delUUim\"  ");
-//    }
+    public void testQuoteInRawStringEndDelim2() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(" R\"()|\"  ", "\"", " R\"()\"|  ");
+    }
 
+    public void testRightParenInRawStringWithEmptyDelim() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(" R\"(|)\"  ", ")", " R\"()|\"  ");
+    }
+
+    public void testRightParenInRawStringBeforeEndDelim() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(" R\"ddd(|)ddd\"  ", ")", " R\"ddd()|)ddd\"  ");
+    }
+
+    public void testTypeInRawStringStartDelim() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText("    R\"del|im()delim\"  ", "U",  "    R\"delU|im()delUim\"  ");
+        typeCharactersInText("    R\"delim|()delim\"  ", "E",  "    R\"delimE|()delimE\"  ");
+        typeCharactersInText("    R\"|delim()delim\"  ", "S",  "    R\"S|delim()Sdelim\"  ");
+    }
+
+    public void testType2InRawStringStartDelim() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText("    R\"del|im()delim\"  ", "UU", "    R\"delUU|im()delUUim\"  ");
+        typeCharactersInText("    R\"delim|()delim\"  ", "EE", "    R\"delimEE|()delimEE\"  ");
+        typeCharactersInText("    R\"|delim()delim\"  ", "SS", "    R\"SS|delim()SSdelim\"  ");
+    }
+
+    public void testTypeInRawStringEndDelim() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText("    R\"delim()del|im\"  ", "U", "    R\"delUim()delU|im\"  ");
+        typeCharactersInText("    R\"delim()delim|\"  ", "A", "    R\"delimA()delimA|\"  ");
+        typeCharactersInText("    R\"delim()|delim\"  ", "B", "    R\"Bdelim()B|delim\"  ");
+    }
+
+    public void test2TypeInRawStringEndDelim() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText("    R\"delim()del|im\"  ", "UU", "    R\"delUUim()delUU|im\"  ");
+        typeCharactersInText("    R\"delim()delim|\"  ", "AA", "    R\"delimAA()delimAA|\"  ");
+        typeCharactersInText("    R\"delim()|delim\"  ", "BB", "    R\"BBdelim()BB|delim\"  ");
+    }
     // ------- Tests for completion of right parenthesis ')' -------------
     
     public void testRightParenSimpleMethodCall() {
