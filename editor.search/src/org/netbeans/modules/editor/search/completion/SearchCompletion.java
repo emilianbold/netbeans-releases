@@ -94,7 +94,7 @@ public class SearchCompletion implements CompletionProvider {
                 Exceptions.printStackTrace(ex);
             }
             if (!queryText.trim().isEmpty()) {
-
+                queryText = queryText.toLowerCase();
                 String text = searchBar.getActualTextComponent().getText();
                 String[] split = text.split("[\\p{Punct}\\s]");
 
