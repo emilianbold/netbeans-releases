@@ -1094,7 +1094,7 @@ public final class ModuleManager extends Modules {
             Util.err.fine("enable: fixing classloader");
             installer.classLoaderUp(classLoader);
             Util.err.fine("enable: continuing to installation");
-            Set<Module> enableMore = NetigsoFramework.turnOn(this, classLoader, this.modules);
+            Set<Module> enableMore = NetigsoFramework.turnOn(this, classLoader, Collections.unmodifiableCollection(new ArrayList<Module>(this.modules)));
             if (!enableMore.isEmpty()) {
                 Util.err.log(Level.FINE, "netigso needs additional modules: {0}", enableMore);
                 List<Module> toEnableMore = simulateEnable(enableMore, false);

@@ -446,7 +446,12 @@ top_statement_list:sList top_statement:statement
 		if (!(statement instanceof NamespaceDeclaration) && sList.size() > 0) {
 			Statement lastStatement = (Statement) ((LinkedList) sList).getLast();
 			if (lastStatement instanceof NamespaceDeclaration) {
-				((NamespaceDeclaration)lastStatement).addStatement(statement);
+                                NamespaceDeclaration namespaceDeclaration = (NamespaceDeclaration) lastStatement;
+                                // there should be NO statement outside bracketed namespaces - it's PHP FATAL ERROR
+                                // (that statement doesn't belong to last bracketed namespace)
+                                if (!namespaceDeclaration.isBracketed()) {
+                                    namespaceDeclaration.addStatement(statement);
+                                }
 			} else {
 				sList.add(statement);
 			}

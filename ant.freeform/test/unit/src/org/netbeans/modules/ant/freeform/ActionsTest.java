@@ -56,6 +56,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
@@ -116,7 +117,7 @@ public class ActionsTest extends TestBase {
     
     static {
         Actions.TARGET_RUNNER = new Actions.TargetRunner() {
-            public void runTarget(FileObject scriptFile, String[] targetNameArray, Properties props) {
+            public void runTarget(FileObject scriptFile, String[] targetNameArray, Properties props, ActionProgress listener) {
                 targetsRun.add(new AntTargetInvocation(scriptFile, targetNameArray,
                         NbCollections.checkedMapByFilter(props, String.class, String.class, true)));
             }

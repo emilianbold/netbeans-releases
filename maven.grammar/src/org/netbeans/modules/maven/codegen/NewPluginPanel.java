@@ -178,6 +178,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
         }
     }
 
+    @NbBundle.Messages("LBL_Incomplete=Incomplete result, still processing indices...")
     void find(String queryText) {
         synchronized (LOCK) {
             if (inProgressText != null) {
@@ -242,7 +243,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
                     public void run() {
                         queryPanel.getExplorerManager().setRootContext(createResultsNode(keyList, map));
                         if (result.isPartial()) {
-                            support.setWarningMessage("Incomplete result, still processing indices...");
+                            support.setWarningMessage(Bundle.LBL_Incomplete());
                         } else {
                             support.clearMessages();
                         }

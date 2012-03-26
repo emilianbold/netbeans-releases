@@ -135,9 +135,6 @@ public final class SyncItem {
     private final Operation defaultOperation;
 
     private volatile Operation operation;
-    private volatile boolean valid = false;
-    private volatile String message = null;
-    private volatile boolean validated = false;
     // for merging
     private volatile TmpLocalFile tmpLocalFile = null;
 
@@ -203,7 +200,6 @@ public final class SyncItem {
 
     public void setOperation(Operation operation) {
         assert operation != null;
-        validated = false;
         this.operation = operation;
     }
 
@@ -211,7 +207,6 @@ public final class SyncItem {
         cleanupTmpLocalFile();
         tmpLocalFile = null;
         operation = null;
-        validated = false;
     }
 
     public void cleanupTmpLocalFile() {
@@ -230,84 +225,53 @@ public final class SyncItem {
         "SyncItem.warn.uploadReview=File should be reviewed before first upload.",
         "SyncItem.warn.symlink=Symbolic links are not transfered (to avoid future overriding)."
     })
-    public void validate() {
-        if (validated) {
-            return;
-        }
-        validated = true;
-        message = null;
-        valid = true;
+    public ValidationResult validate() {
         Operation op = getOperation();
         switch (op) {
             case NOOP:
                 // noop
                 break;
             case FILE_CONFLICT:
-                valid = false;
-                message = Bundle.SyncItem_error_fileConflict();
-                return;
+                return new ValidationResult(false, Bundle.SyncItem_error_fileConflict());
+                //break;
             case FILE_DIR_COLLISION:
-                valid = false;
-                message = Bundle.SyncItem_error_fileDirCollision();
-                break;
+                return new ValidationResult(false, Bundle.SyncItem_error_fileDirCollision());
+                //break;
             case SYMLINK:
-                valid = true;
-                message = Bundle.SyncItem_warn_symlink();
-                break;
+                return new ValidationResult(true, Bundle.SyncItem_warn_symlink());
+                //break;
             case DELETE:
                 if (localTransferFile != null
                         && !verifyChildrenOperation(localTransferFile, Operation.DELETE)) {
-                    valid = false;
-                    message = Bundle.SyncItem_error_childNotDeleted();
-                    return;
+                    return new ValidationResult(false, Bundle.SyncItem_error_childNotDeleted());
                 }
                 if (remoteTransferFile != null
                         && !verifyChildrenOperation(remoteTransferFile, Operation.DELETE)) {
-                    valid = false;
-                    message = Bundle.SyncItem_error_childNotDeleted();
-                    return;
+                    return new ValidationResult(false, Bundle.SyncItem_error_childNotDeleted());
                 }
                 break;
             case DOWNLOAD:
             case DOWNLOAD_REVIEW:
                 if (remoteTransferFile == null) {
-                    valid = false;
-                    message = Bundle.SyncItem_error_cannotDownload();
-                    return;
+                    return new ValidationResult(false, Bundle.SyncItem_error_cannotDownload());
                 }
                 if (op == Operation.DOWNLOAD_REVIEW) {
-                    message = Bundle.SyncItem_warn_downloadReview();
+                    return new ValidationResult(true, Bundle.SyncItem_warn_downloadReview());
                 }
                 break;
             case UPLOAD:
             case UPLOAD_REVIEW:
                 if (localTransferFile == null) {
-                    valid = false;
-                    message = Bundle.SyncItem_error_cannotUpload();
-                    return;
+                    return new ValidationResult(false, Bundle.SyncItem_error_cannotUpload());
                 }
                 if (op == Operation.UPLOAD_REVIEW) {
-                    message = Bundle.SyncItem_warn_uploadReview();
+                    return new ValidationResult(true, Bundle.SyncItem_warn_uploadReview());
                 }
                 break;
             default:
                 throw new IllegalStateException("Unhandled operation: " + op);
         }
-    }
-
-    public boolean hasError() {
-        validate();
-        return !valid;
-    }
-
-    public boolean hasWarning() {
-        validate();
-        return valid && message != null;
-    }
-
-    public String getMessage() {
-        validate();
-        return message;
+        return ValidationResult.VALID;
     }
 
     public boolean isDiffPossible() {
@@ -442,7 +406,7 @@ public final class SyncItem {
                 + ", localFile: " + (localTransferFile != null) // NOI18N
                 + ", remoteFile: " + (remoteTransferFile != null) // NOI18N
                 + ", operation: " + getOperation() // NOI18N
-                + ", valid: " + valid // NOI18N
+                + ", valid: " + validate() // NOI18N
                 + ", tmpLocalFile: " + (hasTmpLocalFile()) // NOI18N
                 + "}"; // NOI18N
     }
@@ -482,6 +446,40 @@ public final class SyncItem {
         @Override
         public String toString() {
             return String.valueOf(remoteTimestamp);
+        }
+
+    }
+
+    //~ Inner classes
+
+    public static final class ValidationResult {
+
+        static final ValidationResult VALID = new ValidationResult(true, null);
+
+        private final boolean valid;
+        private final String message;
+
+
+        public ValidationResult(boolean valid, String message) {
+            this.valid = valid;
+            this.message = message;
+        }
+
+        public boolean hasError() {
+            return !valid;
+        }
+
+        public boolean hasWarning() {
+            return valid && message != null;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public String toString() {
+            return "ValidationResult{valid=" + valid + ", message=" + message + '}'; // NOI18N
         }
 
     }

@@ -283,6 +283,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             }
             PackageConfiguration[] libs = stdLibPanel.getPkgConfigLibs();
             for (int i = 0; i < libs.length; i++) {
+                // This string is parsed in class org.netbeans.modules.cnd.makeproject.configurations.QmakeProjectWriter                
                 myListEditorPanel.addObjectAction(new LibraryItem.OptionItem("`pkg-config --libs "+libs[i].getName()+"`")); //NOI18N
             }
         }

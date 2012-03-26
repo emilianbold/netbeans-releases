@@ -56,6 +56,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
+import static org.netbeans.modules.maven.api.customizer.Bundle.*;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
@@ -65,7 +66,7 @@ import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3R
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.ProjectConfiguration;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -73,13 +74,13 @@ import org.openide.util.NbBundle;
  */
 public class ModelHandle2 {
     
-    public static final String PANEL_RUN = ModelHandle.PANEL_RUN;
-    public static final String PANEL_BASIC = ModelHandle.PANEL_BASIC;
-    public static final String PANEL_CONFIGURATION = ModelHandle.PANEL_CONFIGURATION;
-    public static final String PANEL_MAPPING = ModelHandle.PANEL_MAPPING;
-    public static final String PANEL_LIBRARIES = ModelHandle.PANEL_LIBRARIES;
-    public static final String PANEL_SOURCES = ModelHandle.PANEL_SOURCES;
-    public static final String PANEL_COMPILE = ModelHandle.PANEL_COMPILE;
+    public static final String PANEL_RUN = "RUN"; //NOI18N
+    public static final String PANEL_BASIC = "BASIC"; //NOI18N
+    public static final String PANEL_CONFIGURATION = "CONFIGURATION"; //NOI18N
+    public static final String PANEL_MAPPING = "MAPPING"; //NOI18N
+    public static final String PANEL_LIBRARIES = "LIBRARIES"; //NOI18N
+    public static final String PANEL_SOURCES = "SOURCES"; //NOI18N
+    public static final String PANEL_COMPILE = "COMPILE"; //NOI18N
 
     
     private final MavenProjectPropsImpl auxiliaryProps;
@@ -414,17 +415,23 @@ public class ModelHandle2 {
             this.activatedProfiles = activatedProfiles;
         }
 
+        @Messages({
+            "DefaultConfig=<default config>",
+            "# {0} - config ID", "ProfileConfig={0} (Profile)",
+            "# {0} - config ID", "# {1} - list of profiles", "CustomConfig1={0} (Profiles: {1})",
+            "# {0} - config ID", "CustomConfig2={0}"
+        })
         public String getDisplayName() {
             if (isDefault()) {
-                return NbBundle.getMessage(ModelHandle.class, "DefaultConfig");
+                return DefaultConfig();
             }
             if (isProfileBased()) {
-                return NbBundle.getMessage(ModelHandle.class, "ProfileConfig", id);
+                return ProfileConfig(id);
             }
             if (getActivatedProfiles() != null && getActivatedProfiles().size() > 0) {
-                return NbBundle.getMessage(ModelHandle.class, "CustomConfig1", id, Arrays.toString(getActivatedProfiles().toArray()));
+                return CustomConfig1(id, Arrays.toString(getActivatedProfiles().toArray()));
             }
-            return NbBundle.getMessage(ModelHandle.class, "CustomConfig2", id);
+            return CustomConfig2(id);
         }
 
         public String getId() {

@@ -149,6 +149,7 @@ public enum CppTokenId implements TokenId {
     THIS("this", "keyword"), // C++ // NOI18N
     THROW("throw", "keyword-directive"), //C++ // NOI18N
     TRY("try", "keyword-directive"), // C++ // NOI18N
+    __TRY("__try", "keyword"), // g++ // NOI18N
     TYPEDEF("typedef", "keyword"), // NOI18N
     TYPEID("typeid", "keyword"), // C++ // NOI18N
     TYPENAME("typename", "keyword"), // C++ // NOI18N
@@ -171,13 +172,17 @@ public enum CppTokenId implements TokenId {
     _BOOL("_Bool", "keyword"), // C // NOI18N
     _CDECL("_cdecl", "keyword"), // g++ // NOI18N
     __CDECL("__cdecl", "keyword"), // g++ // NOI18N
+    __CLRCALL("__clrcall", "keyword"), // g++ // NOI18N    
     _COMPLEX("_Complex", "keyword"), // C // NOI18N
+    __COMPLEX("__complex", "keyword"), // g++ // NOI18N
     __COMPLEX__("__complex__", "keyword"), // gcc // NOI18N
     _DECLSPEC("_declspec", "keyword"), // g++ // NOI18N
     __DECLSPEC("__declspec", "keyword"), // g++ // NOI18N
     __EXTENSION__("__extension__", "keyword"), // g++ // NOI18N
     _FAR("_far", "keyword"), // g++ // NOI18N
     __FAR("__far", "keyword"), // g++ // NOI18N
+    __FINALLY("__finally", "keyword"), // g++ // NOI18N    
+    __FORCEINLINE("__forceinline", "keyword"), // g++ // NOI18N    
     _IMAGINARY("_Imaginary", "keyword"), // C // NOI18N
     __IMAG__("__imag__", "keyword"), // gcc // NOI18N
     _INT64("_int64", "keyword"), // g++ // NOI18N
@@ -202,6 +207,7 @@ public enum CppTokenId implements TokenId {
     OVERRIDE("override", "keyword"), // c++11 // NOI18N
     CONSTEXPR("constexpr", "keyword"), // c++11 // NOI18N
     DECLTYPE("decltype", "keyword"), // c++11 // NOI18N
+    __DECLTYPE("__decltype", "keyword"), // g++ // NOI18N
     NULLPTR("nullptr", "keyword"), // c++11 // NOI18N
     THREAD_LOCAL("thread_local", "keyword"), // c++11 // NOI18N
     STATIC_ASSERT("static_assert", "keyword"), // c++11 // NOI18N
@@ -226,6 +232,7 @@ public enum CppTokenId implements TokenId {
     UNSIGNED_LONG_LONG_LITERAL(null, "number"), // NOI18N
     CHAR_LITERAL(null, "character"), // NOI18N
     STRING_LITERAL(null, "string"), // NOI18N
+    RAW_STRING_LITERAL(null, "string"), // NOI18N
     
     TRUE("true", "literal"), // C++ // NOI18N
     FALSE("false", "literal"), // C++ // NOI18N
@@ -498,6 +505,7 @@ public enum CppTokenId implements TokenId {
                 CppTokenId.DOUBLE_LITERAL,
                 CppTokenId.UNSIGNED_LITERAL,
                 CppTokenId.CHAR_LITERAL,
+                CppTokenId.RAW_STRING_LITERAL,
                 CppTokenId.STRING_LITERAL
             );
             cats.put(LITERAL_CATEGORY, l);
@@ -526,6 +534,8 @@ public enum CppTokenId implements TokenId {
                             (token.partType() == PartType.COMPLETE) ? 2 : 0);
                 case DOXYGEN_LINE_COMMENT:
                     return LanguageEmbedding.create(DoxygenTokenId.language(), 3, 0);
+                case RAW_STRING_LITERAL:
+                    return LanguageEmbedding.create(CppStringTokenId.languageRawString(), 0, 0);
                 case STRING_LITERAL:
                     return LanguageEmbedding.create(CppStringTokenId.languageDouble(), 0, 0);
                 case CHAR_LITERAL:

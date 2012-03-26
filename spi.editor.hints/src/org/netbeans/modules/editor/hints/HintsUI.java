@@ -76,13 +76,28 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.InputMap;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JTextArea;
+import javax.swing.JViewport;
+import javax.swing.KeyStroke;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
@@ -91,6 +106,9 @@ import org.netbeans.editor.JumpList;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.hints.borrowed.ListCompletionView;
 import org.netbeans.modules.editor.hints.borrowed.ScrollCompletionPane;
+import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
+import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
+import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -119,7 +137,7 @@ import org.openide.util.TaskListener;
  *
  * @author Tim Boudreau
  */
-public final class HintsUI implements MouseListener, MouseMotionListener, KeyListener, PropertyChangeListener, AWTEventListener  {
+public final class HintsUI implements MouseListener, MouseMotionListener, KeyListener, PropertyChangeListener, AWTEventListener, CaretListener  {
 
     //-J-Dorg.netbeans.modules.editor.hints.HintsUI.always.show.error=true
     private static final boolean ALWAYS_SHOW_ERROR_MESSAGE = Boolean.getBoolean(HintsUI.class.getName() + ".always.show.error");
@@ -128,6 +146,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
     private static final String POPUP_NAME = "hintsPopup"; // NOI18N
     private static final String SUB_POPUP_NAME = "subHintsPopup"; // NOI18N
     private static final int POPUP_VERTICAL_OFFSET = 5;
+    private static final RequestProcessor WORKER = new RequestProcessor(HintsUI.class.getName(), 1, false, false);
 
     static {
         fixableAnnotations = new HashSet<String>(3);
@@ -180,6 +199,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
             unregister();
             this.compRef = new WeakReference<JTextComponent>(comp);
             register();
+            caretUpdate(null);
         }
     }
 
@@ -197,6 +217,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
             return;
         }
         comp.addKeyListener (this);
+        comp.addCaretListener(this);
     }
     
     private void unregister() {
@@ -205,6 +226,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
             return;
         }
         comp.removeKeyListener (this);
+        comp.removeCaretListener(this);
     }
     
     
@@ -914,6 +936,59 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
         } else {
             removePopups();
         }
+    }
+
+    @Override
+    public void caretUpdate(CaretEvent e) {
+        JTextComponent currentComponent = compRef != null ? compRef.get() : null;
+
+        if (currentComponent == null) return ;
+        
+        final HighlightingManager hm = HighlightingManager.getInstance(currentComponent);
+        final Document doc = currentComponent.getDocument();
+        final Caret caretInstance = currentComponent.getCaret();
+
+        if (caretInstance == null) return ;
+
+        final int caret = caretInstance.getDot();
+
+        WORKER.post(new Runnable() {
+            @Override public void run() {
+                final String[] warning = new String[] {AnnotationHolder.resolveWarnings(doc, caret, caret)};
+
+                if (warning[0] == null || warning[0].trim().isEmpty()) {
+                    doc.render(new Runnable() {
+                        @Override public void run() {
+                            HighlightsSequence hit = hm.getBottomHighlights().getHighlights(caret, caret + 1);
+
+                            if (hit.moveNext() && hit.getAttributes().containsAttribute("unused-browseable", Boolean.TRUE)) {
+                                Object tp = hit.getAttributes().getAttribute(EditorStyleConstants.Tooltip);
+
+                                if (tp instanceof HighlightAttributeValue) {
+                                    Object res = ((HighlightAttributeValue) tp).getValue(errorTooltip, doc, tp, caret, caret);
+
+                                    if (res instanceof String) {
+                                        warning[0] = (String) res;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    warning[0] = warning[0].replace('\n', ' ');
+                }
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        JTextComponent currentComponent = compRef.get();
+
+                        if (currentComponent == null) return;
+
+                        Utilities.setStatusText(currentComponent, warning[0]);
+                    }
+                });
+            }
+        });
     }
 
 }

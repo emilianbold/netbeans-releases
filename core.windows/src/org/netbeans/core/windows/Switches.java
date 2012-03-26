@@ -308,6 +308,22 @@ public final class Switches {
         return getSwitchValue( "WinSys.TabControl.SimpleTabs.MultiRow", false ); //NOI18N
     }
 
+    /**
+     * Ctrl+Tab and Ctrl+Shift+Tab key strokes are hard-coded to switch between
+     * opened TopComponents. However the same keys are also used in some Containers
+     * (e.g. JTable and JTabbedPane) to transfer input focus to next Component.
+     * When this switch is enabled (default value) and input focus is in JTable
+     * or JTabbedPane then the window system will consume Ctrl+Tab and Ctrl+Shift+Tab
+     * key strokes and show window switcher popup.
+     * When this switch is disabled then KeyboardFocusManager will consume
+     * Ctrl+Tab and Ctrl+Shift+Tab key strokes to transfer focus out of JTable or
+     * JTabbedPane.
+     * @since 2.47
+     */
+    public static boolean isCtrlTabWindowSwitchingInJTableEnabled() {
+        return getSwitchValue( "WinSys.CtrlTabSwitching.In.JTable.Enabled", true ); //NOI18N
+    }
+
     private static boolean getSwitchValue( String switchName, boolean defaultValue ) {
         boolean result = defaultValue;
         try {

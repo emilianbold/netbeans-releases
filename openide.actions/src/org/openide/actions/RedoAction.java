@@ -62,7 +62,12 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 
-
+/**
+ * Redo an edit. Since version 6.18 this class implements {@link ContextAwareAction}.
+ * 
+ * @see UndoAction
+ * @author Ian Formanek, Jaroslav Tulach
+ */
 public class RedoAction extends CallableSystemAction implements ContextAwareAction {
     private static String SWING_DEFAULT_LABEL = UIManager.getString("AbstractUndoableEdit.redoText"); //NOI18N
 

@@ -73,6 +73,7 @@ public abstract class AbstractCategoryNode extends TreeListNode implements Compa
         filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
         for (Issue issue : tasks) {
             TaskNode taskNode = new TaskNode(issue, this);
+            taskNode.setCategory(category);
             taskNodes.add(taskNode);
             if (appliedFilters.isInFilter(issue)) {
                 filteredTaskNodes.add(taskNode);

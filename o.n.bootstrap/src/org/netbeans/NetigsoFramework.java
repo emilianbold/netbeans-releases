@@ -180,23 +180,28 @@ public abstract class NetigsoFramework {
 
     private static NetigsoFramework framework;
     private static List<NetigsoModule> toInit = new ArrayList<NetigsoModule>();
-    private static ArrayList<Module> toEnable = new ArrayList<Module>();
+    // @GuardedBy("toEnable")
+    private static final ArrayList<Module> toEnable = new ArrayList<Module>();
 
     static NetigsoFramework getDefault() {
         return framework;
     }
 
     static void willEnable(List<Module> newlyEnabling) {
-        toEnable.addAll(newlyEnabling);
+        synchronized (toEnable) {
+            toEnable.addAll(newlyEnabling);
+        }
     }
 
     static Set<Module> turnOn(ModuleManager mgr, ClassLoader findNetigsoFrameworkIn, Collection<Module> allModules) throws InvalidException {
         boolean found = false;
         if (framework == null) {
-            for (Module m : toEnable) {
-                if (m instanceof NetigsoModule) {
-                    found = true;
-                    break;
+            synchronized (toEnable) {
+                for (Module m : toEnable) {
+                    if (m instanceof NetigsoModule) {
+                        found = true;
+                        break;
+                    }
                 }
             }
         } else {
@@ -212,8 +217,10 @@ public abstract class NetigsoFramework {
         }
         framework.mgr = mgr;
         getDefault().prepare(lkp, allModules);
-        toEnable.clear();
-        toEnable.trimToSize();
+        synchronized (toEnable) {
+            toEnable.clear();
+            toEnable.trimToSize();
+        }
         delayedInit(mgr);
         Set<String> cnbs = framework.start(allModules);
         if (cnbs == null) {
@@ -261,9 +268,13 @@ public abstract class NetigsoFramework {
             toInit.add(nm);
             return;
         }
-        if (!toEnable.isEmpty()) {
-            getDefault().prepare(Lookup.getDefault(), toEnable);
+        List<Module> clone;
+        synchronized (toEnable) {
+            clone = (List<Module>) toEnable.clone();
             toEnable.clear();
+        }
+        if (!clone.isEmpty()) {
+            getDefault().prepare(Lookup.getDefault(), clone);
         }
         nm.start();
     }

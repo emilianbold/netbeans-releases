@@ -131,6 +131,26 @@ public class NeonLexerTest extends NeonTestBase {
         performTest("multilineValues");
     }
 
+    public void testIssue209549() throws Exception {
+        performTest("issue209549");
+    }
+
+    public void testIssue208274() throws Exception {
+        performTest("issue208274");
+    }
+
+    public void testIssue210049_01() throws Exception {
+        performTest("issue210049_01");
+    }
+
+    public void testIssue210049_02() throws Exception {
+        performTest("issue210049_02");
+    }
+    
+    public void testIssue210049_03() throws Exception {
+        performTest("issue210049_03");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = NeonLexerUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/" + filename + ".neon"));

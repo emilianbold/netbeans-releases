@@ -70,6 +70,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
 import org.netbeans.modules.html.editor.refactoring.api.SelectorType;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -146,7 +147,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                 break;
         }
 
-        refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
+        refactoringElements.registerTransaction(new RefactoringCommit(Collections.singletonList(modificationResult)));
 
         for (FileObject fo : modificationResult.getModifiedFileObjects()) {
             for (Difference diff : modificationResult.getDifferences(fo)) {

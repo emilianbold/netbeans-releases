@@ -127,7 +127,8 @@ public class SearchPanel extends JPanel implements FocusListener,
         if (presenters.isEmpty()) {
             throw new IllegalStateException("No presenter found");      //NOI18N
         } else if (presenters.size() == 1) {
-            add(presenters.get(0).getForm());
+            selectedPresenter = presenters.get(0).getPresenter();
+            add(selectedPresenter.getForm());
         } else {
             tabbedPane = new JTabbedPane();
             for (PresenterProxy pp : presenters) {
@@ -146,11 +147,25 @@ public class SearchPanel extends JPanel implements FocusListener,
             add(tabbedPane);
         }
         if (selectedPresenter == null) {
-            // TODO select last opened tab.
-            selectedPresenter = presenters.get(0).getPresenter();
+            chooseLastUsedPresenter();
         }
         initLocalStrings();
         initAccessibility();
+    }
+
+    private void chooseLastUsedPresenter() {
+        FindDialogMemory memory = FindDialogMemory.getDefault();
+        String lastProv = memory.getProvider();
+        if (lastProv != null) {
+            for (PresenterProxy pp : presenters) {
+                if (lastProv.equals(pp.getTitle())) {
+                    selectedPresenter = pp.getPresenter();
+                    tabbedPane.setSelectedComponent(pp.getForm());
+                    return;
+                }
+            }
+        }
+        selectedPresenter = presenters.get(0).getPresenter();
     }
 
     private void initLocalStrings() throws MissingResourceException {
@@ -244,6 +259,9 @@ public class SearchPanel extends JPanel implements FocusListener,
         updateHelp();
         updateUsability();
         setCurrentlyShown(this);
+        if (selectedPresenter == null) {
+            chooseLastUsedPresenter();
+        }
     }
 
     @Override
@@ -271,9 +289,14 @@ public class SearchPanel extends JPanel implements FocusListener,
             int i = tabbedPane.getSelectedIndex();
             PresenterProxy pp = presenters.get(i);
             selectedPresenter = pp.getPresenter();
-            dialogDescr.getNotificationLineSupport().clearMessages();
-            updateUsability();
+            if (dialogDescr != null) {
+                dialogDescr.getNotificationLineSupport().clearMessages();
+                updateUsability();
+                dialog.pack();
+            }
             updateHelp();
+            FindDialogMemory.getDefault().setProvider(
+                    selectedPresenter.getSearchProvider().getTitle());
         }
     }
 

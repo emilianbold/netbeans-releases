@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,13 +45,13 @@
 package org.netbeans.core;
 
 import java.lang.reflect.Field;
-import java.net.ProxySelector;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import junit.framework.TestResult;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.NbPreferences;
 
 /** Tests HTTP Proxy settings.
@@ -98,9 +98,10 @@ public class HttpSettingsTest extends NbTestCase {
     protected void setUp () throws Exception {
         super.setUp ();
         System.setProperty ("http.nonProxyHosts", NETBEANS_ORG + ',' + NETBEANS_ORG);
-        ProxySelector.setDefault (new NbProxySelector ());
+        NbProxySelector.register();
         proxyPreferences  = NbPreferences.root ().node ("/org/netbeans/core");
         proxyPreferences.addPreferenceChangeListener (new PreferenceChangeListener() {
+            @Override
             public void preferenceChange(PreferenceChangeEvent arg0) {
                 synchronized (sync) {
                     sync.notifyAll ();

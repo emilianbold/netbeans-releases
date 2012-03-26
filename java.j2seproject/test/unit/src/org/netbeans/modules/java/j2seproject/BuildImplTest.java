@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -90,6 +90,7 @@ public final class BuildImplTest extends NbTestCase {
     }
 
     private File junitJar;
+    private File testNGJar;
 
     @Override protected Level logLevel() {
         return Level.FINE;
@@ -109,6 +110,10 @@ public final class BuildImplTest extends NbTestCase {
         assertNotNull("must set test.junit.jar", junitJarProp);
         junitJar = new File(junitJarProp);
         assertTrue("file " + junitJar + " exists", junitJar.isFile());
+        String tngJarProp = System.getProperty("test.testng.jar");
+        assertNotNull("must set test.testng.jar", tngJarProp);
+        testNGJar = new File(tngJarProp);
+        assertTrue("file " + testNGJar + " exists", testNGJar.isFile());
         MockLookup.setLayersAndInstances(new IOP(), new IFL());
     }
 
@@ -160,7 +165,7 @@ public final class BuildImplTest extends NbTestCase {
 
     private Properties getProperties() {
         Properties p = new Properties();
-        p.setProperty("libs.junit.classpath", junitJar.getAbsolutePath());
+        p.setProperty("libs.junit.classpath", testNGJar.getAbsolutePath()  + ":" + junitJar.getAbsolutePath());
         return p;
     }
 
@@ -301,6 +306,7 @@ public final class BuildImplTest extends NbTestCase {
         // XXX test alternate src/test dirs
     }
 
+    @RandomlyFails // NB-Core-Build #8012: in writeFile, RefersToExcluded1b.java is "not valid" (should convert to java.io.File)
     public void testIncludesExcludes() throws Exception {
         AntProjectHelper aph = setupProject(12, true);
         EditableProperties ep = aph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -617,7 +623,8 @@ public final class BuildImplTest extends NbTestCase {
         p.setProperty("javac.includes", "pkg/SomeTest.java");
         p.setProperty("test.includes", "pkg/SomeTest.java");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"test-single"}, p));
-        assertOutput("Testsuite: pkg.SomeTest");
+        assertTrue("wrong default suite name", output.contains("testRunSingleTestWithDep"));
+        assertTrue("wrong tests executed", output.contains("Total tests run: 1, Failures: 0, Skips: 0"));
     }
 
     public void testSubprojects() throws Exception {

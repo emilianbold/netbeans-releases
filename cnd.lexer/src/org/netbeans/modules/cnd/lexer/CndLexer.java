@@ -43,10 +43,10 @@
  */
 package org.netbeans.modules.cnd.lexer;
 
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -102,7 +102,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
             int next;
             while (c == '\\') {
                 escapedEatenChars++;
-                switch (next = input.read()) {
+                switch (input.read()) {
                     case '\r':
                         if (consumeNewline()) {
                             escapedEatenChars++;
@@ -455,15 +455,29 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                     default:
                         c = translateSurrogates(c);
                         if (CndLexerUtilities.isCppIdentifierStart(c)) {
-                            if (c == 'L') {
+                            if (c == 'L' || c == 'U' || c == 'u' || c == 'R') {
                                 int next = read(true);
+                                boolean raw_string = (c == 'R');
+                                if (next == 'R' && (c == 'u' || c == 'U')) {
+                                    // uR or UR
+                                    raw_string = true;
+                                    next = read(true);
+                                } else if (next == '8' && c == 'u') {
+                                    // u8
+                                    next = read(true);
+                                    if (next == 'R') {
+                                        // u8R
+                                        raw_string = true;
+                                        next = read(true);
+                                    }
+                                }
                                 if (next == '"') {
-                                    // string with L prefix
-                                    Token<CppTokenId> out = finishDblQuote();
+                                    // string with L/U/u/R prefixes
+                                    Token<CppTokenId> out = raw_string ? finishRawString() : finishDblQuote();
                                     assert out != null : "not handled dobule quote";
                                     return out;
                                 } else if (next == '\'') {
-                                    // char with L prefix
+                                    // char with L or U/u prefix
                                     Token<CppTokenId> out = finishSingleQuote();
                                     assert out != null : "not handled single quote";
                                     return out;
@@ -678,7 +692,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
 
     private Token<CppTokenId> token(CppTokenId id, String fixedText, PartType part) {
         assert id != null : "id must be not null";
-        Token<CppTokenId> token = null;
+        Token<CppTokenId> token;
         if (fixedText != null && !isTokenSplittedByEscapedLine()) {
             // create flyweight token
             token = tokenFactory.getFlyweightToken(id, fixedText);
@@ -702,6 +716,15 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
         }
         backup(1);
         return token(CppTokenId.SHARP);
+    }
+
+    private Token<CppTokenId> finishRawString() {
+        PartType type = CppStringLexer.finishRawString(input);
+        if (type == PartType.COMPLETE) {
+            return token(CppTokenId.RAW_STRING_LITERAL);
+        } else {
+            return tokenPart(CppTokenId.RAW_STRING_LITERAL, type);
+        }
     }
 
     @SuppressWarnings("fallthrough")

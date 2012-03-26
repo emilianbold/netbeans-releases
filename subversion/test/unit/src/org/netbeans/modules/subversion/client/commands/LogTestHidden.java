@@ -275,11 +275,17 @@ public class LogTestHidden extends AbstractCommandTestCase {
                 SVNRevision.HEAD, 
                 false, 
                 true);
+        if (isCommandLine()) {
+            assertEquals(3, logsNb.length);
+        } else {
+            // SvnClientAdapter completely ignores String[] argument, see AbstractClientAdapter.getLogMessages()
+            assertFalse(3 == logsNb.length);
+        }
         changePath1 = "/" + changePath1;
         changePath2 = "/" + changePath2;
         assertLogMessage(
             info11, 
-            logsNb[1],
+            logsNb[logsNb.length - 3],
             "msg1",  
             new ISVNLogMessageChangePath[] { 
                 new ChangePath('A', "/" + testName + "/" + testName + "_wc/folder1", null, null),
@@ -290,7 +296,7 @@ public class LogTestHidden extends AbstractCommandTestCase {
         );
         assertLogMessage(
             info12, 
-            logsNb[1],
+            logsNb[logsNb.length - 3],
             "msg1",  
             new ISVNLogMessageChangePath[] { 
                 new ChangePath('A', "/" + testName + "/" + testName + "_wc/folder1", null, null),
@@ -301,7 +307,7 @@ public class LogTestHidden extends AbstractCommandTestCase {
         );
         assertLogMessage(
             info21, 
-            logsNb[2],
+            logsNb[logsNb.length - 2],
             "msg2",  
             new ISVNLogMessageChangePath[] { 
                 new ChangePath('M', changePath1, null, null),
@@ -310,7 +316,7 @@ public class LogTestHidden extends AbstractCommandTestCase {
         );
         assertLogMessage(
             info22, 
-            logsNb[2],
+            logsNb[logsNb.length - 2],
             "msg2",  
             new ISVNLogMessageChangePath[] { 
                 new ChangePath('M', changePath1, null, null),
@@ -319,7 +325,7 @@ public class LogTestHidden extends AbstractCommandTestCase {
         );
         assertLogMessage(
             info31, 
-            logsNb[3],
+            logsNb[logsNb.length - 1],
             "msg3",  new
             ISVNLogMessageChangePath[] { 
                 new ChangePath('M', changePath1, null, null),
@@ -328,7 +334,7 @@ public class LogTestHidden extends AbstractCommandTestCase {
         );            
         assertLogMessage(
             info32, 
-            logsNb[3],
+            logsNb[logsNb.length - 1],
             "msg3",  
             new ISVNLogMessageChangePath[] { 
                 new ChangePath('M', changePath1, null, null),

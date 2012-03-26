@@ -176,6 +176,12 @@ class APTGnuCpp11Filter extends APTBaseLanguageFilter {
         filter("__global", APTTokenTypes.LITERAL___global); // NOI18N
         filter("__hidden", APTTokenTypes.LITERAL___hidden); // NOI18N
         filter("__symbolic", APTTokenTypes.LITERAL___symbolic); // NOI18N
+        filter("__decltype", APTTokenTypes.LITERAL___decltype); // NOI18N
+        filter("__complex", APTTokenTypes.LITERAL___complex); // NOI18N
+        filter("__forceinline", APTTokenTypes.LITERAL___forceinline); // NOI18N
+        filter("__clrcall", APTTokenTypes.LITERAL___clrcall); // NOI18N
+        filter("__try", APTTokenTypes.LITERAL___try); // NOI18N
+        filter("__finally", APTTokenTypes.LITERAL___finally); // NOI18N
 
         // C++11
         filter("final", APTTokenTypes.LITERAL_final); // NOI18N

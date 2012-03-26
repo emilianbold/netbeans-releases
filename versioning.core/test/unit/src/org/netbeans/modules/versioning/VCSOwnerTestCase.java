@@ -160,7 +160,7 @@ public class VCSOwnerTestCase extends AbstractFSTestCase {
         assertTrue(VersioningSupport.isExcluded(VCSFileProxy.createFileProxy(userDirFile)));
         assertFalse(VersioningSupport.isExcluded(VCSFileProxy.createFileProxy(userdir.getParentFile())));
 
-        assertEquals(4, ((VCSFileProxy[]) f.get(Utils.class)).length);
+        assertEquals(4, ((String[]) f.get(Utils.class)).length);
 
         // what if someone still wants to have userdir versioned?
         System.setProperty("versioning.netbeans.user.versioned", "true");
@@ -174,6 +174,6 @@ public class VCSOwnerTestCase extends AbstractFSTestCase {
         assertFalse(VersioningSupport.isExcluded(VCSFileProxy.createFileProxy(userDirFile)));
         assertFalse(VersioningSupport.isExcluded(VCSFileProxy.createFileProxy(userdir.getParentFile())));
 
-        assertEquals(3, ((VCSFileProxy[]) f.get(Utils.class)).length);
+        assertEquals(3, ((String[]) f.get(Utils.class)).length);
     }
 }

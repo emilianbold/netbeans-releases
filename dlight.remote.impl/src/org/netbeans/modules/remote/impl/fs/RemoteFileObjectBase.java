@@ -481,6 +481,22 @@ public abstract class RemoteFileObjectBase implements Serializable {
     protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {        
     }
 
+    /*package*/ void nonRecursiveRefresh() {
+        try {
+            refreshImpl(false, null, true);
+        } catch (ConnectException ex) {
+            RemoteLogger.finest(ex, this);
+        } catch (IOException ex) {
+            RemoteLogger.info(ex, this);
+        } catch (InterruptedException ex) {
+            RemoteLogger.finest(ex, this);
+        } catch (CancellationException ex) {
+            RemoteLogger.finest(ex, this);
+        } catch (ExecutionException ex) {
+            RemoteLogger.info(ex, this);
+        }
+    }
+
     public void refresh(boolean expected) {
         try {
             refreshImpl(true, null, expected);

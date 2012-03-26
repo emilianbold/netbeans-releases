@@ -97,7 +97,7 @@ public class AmazonWizardPanel implements WizardDescriptor.AsynchronousValidatin
     
     @Override
     public HelpCtx getHelp() {
-        return null;
+        return new HelpCtx(AmazonWizardPanel.class);
     }
 
     @Override

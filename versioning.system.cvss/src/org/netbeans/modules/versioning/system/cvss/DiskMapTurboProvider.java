@@ -86,7 +86,19 @@ class DiskMapTurboProvider implements TurboProvider {
                     File file = files[i];
                     DataInputStream dis = null;
                     try {
-                        dis = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+                        int retry = 0;
+                        while (true) {
+                            try {
+                                dis = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+                                break;
+                            } catch (IOException ioex) {
+                                retry++;
+                                if (retry > 7) {
+                                    throw ioex;
+                                }
+                                Thread.sleep(retry * 30);
+                            }
+                        }
                         for (;;) {
                             int pathLen = dis.readInt();
                             dis.readInt();
@@ -142,7 +154,19 @@ class DiskMapTurboProvider implements TurboProvider {
         int dirPathLen = dirPath.length();
         DataInputStream dis = null;
         try {
-            dis = new DataInputStream(new BufferedInputStream(new FileInputStream(store)));
+            int retry = 0;
+            while (true) {
+                try {
+                    dis = new DataInputStream(new BufferedInputStream(new FileInputStream(store)));
+                    break;
+                } catch (IOException ioex) {
+                    retry++;
+                    if (retry > 7) {
+                        throw ioex;
+                    }
+                    Thread.sleep(retry * 30);
+                }
+            }
             for (;;) {
                 int pathLen = dis.readInt();
                 int mapLen = dis.readInt();
@@ -196,7 +220,19 @@ class DiskMapTurboProvider implements TurboProvider {
                 writeEntry(oos, dirPath, value);
             }
             if (store.exists()) {
-                dis = new DataInputStream(new BufferedInputStream(new FileInputStream(store)));
+                int retry = 0;
+                while (true) {
+                    try {
+                        dis = new DataInputStream(new BufferedInputStream(new FileInputStream(store)));
+                        break;
+                    } catch (IOException ioex) {
+                        retry++;
+                        if (retry > 7) {
+                            throw ioex;
+                        }
+                        Thread.sleep(retry * 30);
+                    }
+                }
                 for (;;) {
                     int pathLen;
                     try {

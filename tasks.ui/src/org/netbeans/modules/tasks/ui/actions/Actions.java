@@ -71,7 +71,7 @@ public class Actions {
         if (taskNode.isCategorized()) {
             actions.add(new RemoveTaskAction(taskNode));
         }
-        actions.add(new MoveTaskAction(taskNode));
+        actions.add(new SetCategoryAction(taskNode));
         actions.add(new ScheduleTaskAction(task));
         actions.add(new RefreshTaskAction(task));
         actions.add(new NotificationTaskAction(task));
@@ -117,12 +117,12 @@ public class Actions {
         }
     }
 
-    private static class MoveTaskAction extends AbstractAction {
+    private static class SetCategoryAction extends AbstractAction {
 
         private TaskNode taskNode;
 
-        public MoveTaskAction(TaskNode taskNode) {
-            super(NbBundle.getMessage(Actions.class, "CTL_MoveTask")); //NOI18N
+        public SetCategoryAction(TaskNode taskNode) {
+            super(taskNode.isCategorized() ? NbBundle.getMessage(Actions.class, "CTL_MoveTask") : NbBundle.getMessage(Actions.class, "CTL_AddToCat")); //NOI18N
             this.taskNode = taskNode;
         }
 

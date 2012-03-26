@@ -141,6 +141,7 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo {
 
     @Override
     public UndoRedo getUndoRedo() {
-        return Lookups.forPath("org/netbeans/modules/refactoring").lookup(UndoRedo.class);
+        final UndoRedo undoRedo = Lookups.forPath("org/netbeans/modules/refactoring").lookup(UndoRedo.class);
+        return undoRedo==null?UndoRedo.NONE:undoRedo;
     }
 }

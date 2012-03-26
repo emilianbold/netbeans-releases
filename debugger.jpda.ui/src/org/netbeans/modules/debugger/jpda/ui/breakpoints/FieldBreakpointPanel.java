@@ -44,14 +44,18 @@
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.ResourceBundle;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
-import javax.swing.JTextField;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
+import org.netbeans.modules.debugger.jpda.ui.completion.JavaClassNbDebugEditorKit;
+import org.netbeans.modules.debugger.jpda.ui.completion.JavaFieldNbDebugEditorKit;
 import org.netbeans.spi.debugger.ui.Controller;
 
 import org.openide.DialogDisplayer;
@@ -74,7 +78,10 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
     private ActionsPanel                actionsPanel; 
     private FieldBreakpoint             breakpoint;
     private boolean                     createBreakpoint = false;
-    private JTextField                  tfClassName;
+    private JEditorPane                 epClassName;
+    private JScrollPane                 spClassName;
+    private JEditorPane                 epFieldName;
+    private JScrollPane                 spFieldName;
     
     private static FieldBreakpoint creteBreakpoint () {
         String className;
@@ -113,16 +120,39 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
         initComponents();
         
         String className = b.getClassName ();
-        tfFieldName.setText(b.getFieldName());
 
         ResourceBundle bundle = NbBundle.getBundle(FieldBreakpointPanel.class);
         String tooltipText = bundle.getString("TTT_TF_Field_Breakpoint_Class_Name");
-        tfClassName = ClassBreakpointPanel.addClassNameEditor(pSettings, className, tooltipText);
-        tfClassName.setToolTipText(tooltipText); // NOI18N
-        tfClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
-        tfClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Field_Breakpoint_ClassName"));
-        HelpCtx.setHelpIDString(tfClassName, HELP_ID);
-        jLabel3.setLabelFor(tfClassName);
+        Pair<JScrollPane, JEditorPane> editorCC = ClassBreakpointPanel.addClassNameEditorCC(JavaClassNbDebugEditorKit.MIME_TYPE, pSettings, className, tooltipText);
+        spClassName = editorCC.get1();
+        epClassName = editorCC.get2();
+        epClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
+        epClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Field_Breakpoint_ClassName"));
+        HelpCtx.setHelpIDString(epClassName, HELP_ID);
+        jLabel3.setLabelFor(spClassName);
+        
+        editorCC = ClassBreakpointPanel.addClassNameEditorCC(JavaFieldNbDebugEditorKit.MIME_TYPE, null, b.getFieldName(), bundle.getString("TTT_TF_Field_Breakpoint_Field_Name"));
+        spFieldName = editorCC.get1();
+        epFieldName = editorCC.get2();
+        
+        jLabel1.setLabelFor(spFieldName);
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        pSettings.add(spFieldName, gridBagConstraints);
+        epFieldName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Field_Breakpoint_Field_Name")); // NOI18N
+        epFieldName.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                epFieldName.getDocument().putProperty("class-name", epClassName.getText());
+            }
+            @Override
+            public void focusLost(FocusEvent e) {}
+        });
         
         cbBreakpointType.addItem (bundle.getString("LBL_Field_Breakpoint_Type_Access"));
         cbBreakpointType.addItem (bundle.getString("LBL_Field_Breakpoint_Type_Modification"));
@@ -176,7 +206,6 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
         pSettings = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        tfFieldName = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         cbBreakpointType = new javax.swing.JComboBox();
         cPanel = new javax.swing.JPanel();
@@ -199,7 +228,6 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
         pSettings.add(jLabel3, gridBagConstraints);
         jLabel3.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Field_Breakpoint_Class_Name")); // NOI18N
 
-        jLabel1.setLabelFor(tfFieldName);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("L_Field_Breakpoint_Field_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -209,17 +237,6 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(jLabel1, gridBagConstraints);
         jLabel1.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Field_Breakpoint_Field_Name")); // NOI18N
-
-        tfFieldName.setToolTipText(bundle.getString("TTT_TF_Field_Breakpoint_Field_Name")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(tfFieldName, gridBagConstraints);
-        tfFieldName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Field_Breakpoint_Field_Name")); // NOI18N
 
         jLabel4.setLabelFor(cbBreakpointType);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, bundle.getString("L_Field_Breakpoint_Type")); // NOI18N
@@ -290,9 +307,9 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
             return false;
         }
         actionsPanel.ok ();
-        String className = tfClassName.getText ().trim ();
+        String className = epClassName.getText ().trim ();
         breakpoint.setClassName (className);
-        breakpoint.setFieldName (tfFieldName.getText ().trim ());
+        breakpoint.setFieldName (epFieldName.getText ().trim ());
         switch (cbBreakpointType.getSelectedIndex ()) {
             case 0:
                 breakpoint.setBreakpointType (FieldBreakpoint.TYPE_ACCESS);
@@ -323,7 +340,7 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
     }
     
     private String valiadateMsg () {
-        if (tfClassName.getText().trim ().length() == 0 || tfFieldName.getText().trim ().length() == 0) {
+        if (epClassName.getText().trim ().length() == 0 || epFieldName.getText().trim ().length() == 0) {
             return NbBundle.getMessage(FieldBreakpointPanel.class, "MSG_No_Class_or_Field_Name_Spec");
         }
         return null;
@@ -338,7 +355,6 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel pActions;
     private javax.swing.JPanel pSettings;
-    private javax.swing.JTextField tfFieldName;
     // End of variables declaration//GEN-END:variables
     
 }

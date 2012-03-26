@@ -622,7 +622,8 @@ public class BracketCompletion {
         if (isEscapeSequence(doc, dotPos)) {
             return;
         }
-        CppTokenId[] tokenIds = theBracket == '\"' ? new CppTokenId[]{CppTokenId.STRING_LITERAL, CppTokenId.PREPROCESSOR_USER_INCLUDE}
+        CppTokenId[] tokenIds = theBracket == '\"' ? 
+                  new CppTokenId[]{CppTokenId.STRING_LITERAL, CppTokenId.RAW_STRING_LITERAL, CppTokenId.PREPROCESSOR_USER_INCLUDE}
                 : new CppTokenId[]{CppTokenId.CHAR_LITERAL};
         if ((posWithinQuotes(doc, dotPos + 1, theBracket, tokenIds) && isCompletablePosition(doc, dotPos + 1)) &&
                 (isUnclosedStringAtLineEnd(doc, dotPos + 1, tokenIds) &&
@@ -673,7 +674,7 @@ public class BracketCompletion {
     /**
      * Returns true if bracket completion is enabled in options.
      */
-    private static boolean completionSettingEnabled(Document doc) {
+    static boolean completionSettingEnabled(Document doc) {
         Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
         return prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, true);
     }
@@ -707,7 +708,7 @@ public class BracketCompletion {
      * @param dotPos position to be tested
      */
     static boolean posWithinString(BaseDocument doc, int dotPos) {
-        return posWithinQuotes(doc, dotPos, '\"', new CppTokenId[]{CppTokenId.STRING_LITERAL});
+        return posWithinQuotes(doc, dotPos, '\"', new CppTokenId[]{CppTokenId.STRING_LITERAL, CppTokenId.RAW_STRING_LITERAL});
     }
 
     /**
@@ -732,6 +733,7 @@ public class BracketCompletion {
             TokenId id = cppTS.token().id();
             if(id instanceof CppTokenId) {
                 switch ((CppTokenId)id) {
+                    case RAW_STRING_LITERAL:
                     case STRING_LITERAL:
                     case CHAR_LITERAL:
                     case PREPROCESSOR_USER_INCLUDE:

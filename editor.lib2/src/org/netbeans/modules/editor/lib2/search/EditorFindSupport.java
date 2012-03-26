@@ -148,6 +148,7 @@ public final class EditorFindSupport {
 
     /** Find properties */
     private Map<String, Object> findProps;
+    private WeakReference<JTextComponent> focusedTextComponent;
 
     private final WeakHashMap<JTextComponent, Map<String, WeakReference<BlockHighlighting>>> comp2layer =
         new WeakHashMap<JTextComponent, Map<String, WeakReference<BlockHighlighting>>>();
@@ -267,8 +268,17 @@ public final class EditorFindSupport {
         }
     }
     
+    public void setFocusedTextComponent(JTextComponent component) { 
+        focusedTextComponent = new WeakReference<JTextComponent>(component);
+    }
+    
+    private JTextComponent getFocusedTextComponent() {
+        JTextComponent jc = focusedTextComponent != null ? focusedTextComponent.get() : null;
+        return (jc != null) ? jc : EditorRegistry.lastFocusedComponent();
+    }
+    
     public void setBlockSearchHighlight(int startSelection, int endSelection){
-        JTextComponent comp = EditorRegistry.lastFocusedComponent();
+        JTextComponent comp = getFocusedTextComponent();
         BlockHighlighting layer = comp == null ? null : findLayer(comp, Factory.BLOCK_SEARCH_LAYER);
 
         if (layer != null) {
@@ -292,7 +302,7 @@ public final class EditorFindSupport {
         
         b = (Boolean)props.get(FIND_INC_SEARCH);
         if (b != null && b.booleanValue()) { // inc search enabled
-            JTextComponent comp = EditorRegistry.lastFocusedComponent();
+            JTextComponent comp = getFocusedTextComponent();
             
             if (comp != null) {
                 b = (Boolean)props.get(FIND_BACKWARD_SEARCH);
@@ -359,7 +369,7 @@ public final class EditorFindSupport {
 
     public void incSearchReset() {
         // Find the layer
-        JTextComponent comp = EditorRegistry.lastFocusedComponent();
+        JTextComponent comp = getFocusedTextComponent();
         BlockHighlighting layer = comp == null ? null : findLayer(comp, Factory.INC_SEARCH_LAYER);
         
         if (layer != null) {
@@ -522,7 +532,7 @@ public final class EditorFindSupport {
     * @param oppositeDir whether search in opposite direction
     */
     public boolean find(Map<String, Object> props, boolean oppositeDir) {
-        FindReplaceResult result = findReplaceImpl(null, props, oppositeDir, EditorRegistry.lastFocusedComponent());
+        FindReplaceResult result = findReplaceImpl(null, props, oppositeDir, getFocusedTextComponent());
         return (result != null);
     }
 
@@ -623,8 +633,7 @@ public final class EditorFindSupport {
     public boolean replace(Map<String, Object> props, boolean oppositeDir)
     throws BadLocationException {
         incSearchReset();
-        JTextComponent c = EditorRegistry.lastFocusedComponent();
-        return replaceImpl(props, oppositeDir, c);
+        return replaceImpl(props, oppositeDir, getFocusedTextComponent());
     }
 
     boolean replaceImpl(Map<String, Object> props, boolean oppositeDir, JTextComponent c) throws BadLocationException {
@@ -687,8 +696,7 @@ public final class EditorFindSupport {
 
     public void replaceAll(Map<String, Object> props) {
         incSearchReset();
-        JTextComponent c = EditorRegistry.lastFocusedComponent();
-        replaceAllImpl(props, c);
+        replaceAllImpl(props, getFocusedTextComponent());
     }
 
     /**
