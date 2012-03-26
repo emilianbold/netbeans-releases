@@ -264,7 +264,11 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
                             scan(invocationParameterExp);
                         }
                     }
+                } else {
+                    scan(invocationParametersExp);
                 }
+            } else {
+                scan(invocationParametersExp);
             }
         }
 
