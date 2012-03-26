@@ -539,7 +539,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             }
 
             TokenHierarchy<?> tokenHierarchy = request.result.getSnapshot().getTokenHierarchy();
-            TokenSequence<PHPTokenId> tokenSequence = (TokenSequence<PHPTokenId>) tokenHierarchy.tokenSequence().subSequence(request.anchor, request.result.getModel().getVariableScope(request.anchor).getBlockRange().getEnd());
+            TokenSequence<PHPTokenId> tokenSequence = (TokenSequence<PHPTokenId>) tokenHierarchy.tokenSequence();
+            if (tokenSequence != null) {
+                tokenSequence = tokenSequence.subSequence(request.anchor, request.result.getModel().getVariableScope(request.anchor).getBlockRange().getEnd());
+            }
             while (tokenSequence.moveNext()) {
                 Token<PHPTokenId> token = tokenSequence.token();
                 PHPTokenId id = token.id();
