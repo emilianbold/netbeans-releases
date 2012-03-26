@@ -67,26 +67,26 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public enum CppStringTokenId implements TokenId {
 
     TEXT(null, "string"), //NOI18N
-    PREFIX_L("L", "string"), // NOI18N
+    PREFIX_L("L", "string-escape"), // NOI18N
     // raw string
-    PREFIX_R("R", "string"), // NOI18N
+    PREFIX_R("R", "string-escape"), // NOI18N
     // unicode strings
-    PREFIX_U("U", "string"), // NOI18N
-    PREFIX_u("u", "string"), // NOI18N
-    PREFIX_u8("u8", "string"), // NOI18N
+    PREFIX_U("U", "string-escape"), // NOI18N
+    PREFIX_u("u", "string-escape"), // NOI18N
+    PREFIX_u8("u8", "string-escape"), // NOI18N
     // raw unicode strings
-    PREFIX_UR("UR", "string"), // NOI18N
-    PREFIX_uR("uR", "string"), // NOI18N
-    PREFIX_u8R("u8R", "string"), // NOI18N
+    PREFIX_UR("UR", "string-escape"), // NOI18N
+    PREFIX_uR("uR", "string-escape"), // NOI18N
+    PREFIX_u8R("u8R", "string-escape"), // NOI18N
     
     SINGLE_QUOTE("'", "string"), // NOI18N
-    FIRST_QUOTE("\"", "string"), // NOI18N
+    FIRST_QUOTE("\"", "string-escape"), // NOI18N
     START_DELIMETER(null, "string-escape"), // NOI18N
     START_DELIMETER_PAREN("(", "string-escape"), // NOI18N
     DOUBLE_QUOTE("\"", "string"), // NOI18N
     END_DELIMETER_PAREN(")", "string-escape"), // NOI18N
     END_DELIMETER(null, "string-escape"), // NOI18N
-    LAST_QUOTE("\"", "string"), // NOI18N
+    LAST_QUOTE("\"", "string-escape"), // NOI18N
     BACKSPACE("\\b", "string-escape"), //NOI18N
     ANSI_COLOR(null, "string-escape"), //NOI18N
     FORM_FEED("\\f","string-escape"), //NOI18N
