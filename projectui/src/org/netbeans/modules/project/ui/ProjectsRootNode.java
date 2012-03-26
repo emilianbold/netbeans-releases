@@ -94,6 +94,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -861,8 +862,13 @@ public class ProjectsRootNode extends AbstractNode {
             if (p == null) {
                 return;
             }
-            ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
-            ap.invokeAction(ActionProvider.COMMAND_DELETE, getLookup());
+            final ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+            Mutex.EVENT.writeAccess(new Runnable() {
+                @Override
+                public void run() {
+                    ap.invokeAction(ActionProvider.COMMAND_DELETE, getLookup());
+                }
+            });
         }
     } // end of BadgingNode
     private static final class BadgingLookup extends ProxyLookup {
