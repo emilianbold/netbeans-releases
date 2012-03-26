@@ -55,18 +55,24 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu.Separator;
 import javax.swing.JRadioButtonMenuItem;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
-import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.project.ui.ProjectsRootNode;
+import static org.netbeans.modules.project.ui.actions.Bundle.*;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.Presenter;
 
-public class SetMainProject extends ProjectAction implements Presenter.Menu, PropertyChangeListener {
-    
-    private static final String namePattern = NbBundle.getMessage( SetMainProject.class, "LBL_SetAsMainProjectAction_Name" ); // NOI18N
+@ActionID(id = "org.netbeans.modules.project.ui.SetMainProject", category = "Project")
+@ActionRegistration(lazy = false, displayName = "#LBL_SetAsMainProjectAction_Name")
+@ActionReference(path = "Menu/BuildProject", position = 310)
+@Messages("LBL_SetAsMainProjectAction_Name=Set as Main Project")
+public class SetMainProject extends ProjectAction implements PropertyChangeListener {
 
     /** Key for remembering project in JMenuItem
      */
@@ -80,8 +86,9 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         this( null );
     }
     
+    @SuppressWarnings("LeakingThisInConstructor")
     public SetMainProject( Lookup context ) {
-        super( SetMainProject.class.getName() /*this is a fake command to make ActionUtils.SHORCUTS_MANAGER work*/, namePattern, null, context );
+        super( SetMainProject.class.getName() /*this is a fake command to make ActionUtils.SHORTCUTS_MANAGER work*/, LBL_SetAsMainProjectAction_Name(), null, context );
         // wpcl = WeakListeners.propertyChange( this, OpenProjectList.getDefault() );
         // OpenProjectList.getDefault().addPropertyChangeListener( wpcl );
         if ( context == null ) { 
@@ -90,7 +97,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         refresh(getLookup(), true);
     }
     
-    protected void actionPerformed( Lookup context ) {
+    @Override protected void actionPerformed(Lookup context) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
         
         if (projects != null && projects.length == 1) {
@@ -102,8 +109,9 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         }
         
     }
-    
-    public @Override void refresh(Lookup context, boolean immediate) {
+
+    @Messages("LBL_UnSetAsMainProjectAction_Name=Unset as Main Project")
+    @Override public final void refresh(Lookup context, boolean immediate) {
         
         super.refresh(context, immediate);
         
@@ -114,22 +122,27 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         else {
             setEnabled( true );
             if (projects[0] == OpenProjectList.getDefault().getMainProject()) {
-                putValue("popupText", NbBundle.getMessage(SetMainProject.class, "LBL_UnSetAsMainProjectAction_Name"));
+                putValue("popupText", LBL_UnSetAsMainProjectAction_Name());
             } else {
                 putValue("popupText", null);
             }
         }        
     }
     
-    public Action createContextAwareInstance( Lookup actionContext ) {
+    @Override public Action createContextAwareInstance(Lookup actionContext) {
         return new SetMainProject( actionContext );
     }
     
-    public JMenuItem getMenuPresenter() {
+    @Override public JMenuItem getMenuPresenter() {
         createSubMenu();
         return subMenu;
     }
         
+    @Messages({
+        "LBL_SetMainProjectAction_Name=Set Main Project",
+        "MNE_SetMainProjectAction_Name=M",
+        "LBL_NoneMainProject_Name=&None"
+    })
     private void createSubMenu() {
         
         Project projects[] = OpenProjectList.getDefault().getOpenProjects();
@@ -137,7 +150,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         Arrays.sort(projects, OpenProjectList.projectByDisplayName());
         
         // Enable disable the action according to number of open projects
-        if ( projects == null || projects.length == 0 ) {
+        if (projects.length == 0) {
             setEnabled( false );
         }
         else {
@@ -145,10 +158,9 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         }
         
         if ( subMenu == null ) {
-            String label = NbBundle.getMessage( SetMainProject.class, "LBL_SetMainProjectAction_Name" ); // NOI18N
-            subMenu = new JMenu( label );
+            subMenu = new JMenu(LBL_SetMainProjectAction_Name());
             //ok to have mnenomics here, not shown on mac anyway
-            subMenu.setMnemonic (NbBundle.getMessage (SetMainProject.class, "MNE_SetMainProjectAction_Name").charAt (0)); // NOI18N
+            subMenu.setMnemonic(MNE_SetMainProjectAction_Name().charAt(0));
             //#70835: the menu bar holds only subMenu not this action. As this action listens only weakly on OPL, noone holds this action.
             //The action is the garbage collected and the sub menu does not react on changes of opened projects.
             //The action instance has to exists as long as the subMenu:
@@ -159,7 +171,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         ActionListener jmiActionListener = new MenuItemActionListener(); 
         
         JRadioButtonMenuItem jmiNone = new JRadioButtonMenuItem((javax.swing.Icon) null, false);
-        Mnemonics.setLocalizedText(jmiNone, NbBundle.getMessage(SetMainProject.class, "LBL_NoneMainProject_Name"));
+        Mnemonics.setLocalizedText(jmiNone, LBL_NoneMainProject_Name());
         jmiNone.addActionListener(jmiActionListener);
         subMenu.add(jmiNone);
         subMenu.add(new Separator());
@@ -211,7 +223,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
     // Implementation of change listener ---------------------------------------
     
     
-    public void propertyChange( PropertyChangeEvent e ) {
+    @Override public void propertyChange(PropertyChangeEvent e) {
         
         if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
             createSubMenu();
@@ -227,7 +239,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
     
     private static class MenuItemActionListener implements ActionListener {
         
-        public void actionPerformed( ActionEvent e ) {
+        @Override public void actionPerformed(ActionEvent e) {
             
             if ( e.getSource() instanceof JMenuItem ) {
                 JMenuItem jmi = (JMenuItem)e.getSource();
@@ -243,7 +255,10 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
      * Variant which behaves just like the menu presenter without a context, but
      * can be displayed in a context menu.
      */
-    public static final class PopupWithoutContext extends SetMainProject implements Presenter.Popup {
+    @ActionID(id = "org.netbeans.modules.project.ui.SetMainProjectPopupWithoutContext", category = "Project")
+    @ActionRegistration(lazy = false, displayName = "#LBL_SetAsMainProjectAction_Name")
+    @ActionReference(path = ProjectsRootNode.ACTIONS_FOLDER, position = 1400)
+    public static final class PopupWithoutContext extends SetMainProject {
         
         public PopupWithoutContext() {}
         
@@ -251,13 +266,13 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
             super(actionContext);
         }
         
-        public JMenuItem getPopupPresenter() {
+        @Override public JMenuItem getPopupPresenter() {
             // Hack!
             subMenu = null;
             return getMenuPresenter();
         }
         
-        public Action createContextAwareInstance(Lookup actionContext) {
+        @Override public Action createContextAwareInstance(Lookup actionContext) {
             return new PopupWithoutContext(actionContext);
         }
 
