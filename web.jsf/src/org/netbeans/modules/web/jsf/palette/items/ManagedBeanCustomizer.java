@@ -105,10 +105,12 @@ import org.openide.util.RequestProcessor;
 
 public class ManagedBeanCustomizer extends javax.swing.JPanel implements CancellableDialog {
 
+    private static final RequestProcessor RP = new RequestProcessor();
+    
     public static final String VIEW_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Snippets/view.ftl"; // NOI18N
     public static final String EDIT_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Snippets/edit.ftl"; // NOI18N
     public static final String TABLE_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Snippets/table.ftl"; // NOI18N
-    
+
     private Project project;
     private boolean collection;
     private boolean dummyBean = false;
@@ -284,7 +286,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
                 hint.setText(NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.instanceHint", entityClass));
             }
             hint.setVisible(true);
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.getDefault().post(new Runnable() {
                 public void run() {
                     final List<String> props = getPropertyNames(project, entityClass, collection);
                     EventQueue.invokeLater(new Runnable() {
