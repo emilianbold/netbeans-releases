@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 
 /**
@@ -167,10 +166,10 @@ public class ModelUtils {
     }
 
     /*package*/ static class UnusedVariableCollector implements ReferenceCollector {
-        private final Map<CsmUID, ReferenceCounter> counters;
-        private Set<CsmUID> parameters;
+        private final Map<CsmParameter, ReferenceCounter> counters;
+        private Set<CsmParameter> parameters;
         public UnusedVariableCollector() {
-            counters = new LinkedHashMap<CsmUID, ReferenceCounter>();
+            counters = new LinkedHashMap<CsmParameter, ReferenceCounter>();
         }
         public String getEntityName() {
             return "unused-variables"; // NOI18N
@@ -179,11 +178,11 @@ public class ModelUtils {
         public void visit(CsmReference ref, CsmFile file) {
             CsmObject obj = ref.getReferencedObject();
             if (isWanted(obj, file)) {
-                CsmUID uid = UIDs.get(obj);
-                ReferenceCounter counter = counters.get(uid);
+                CsmParameter prm = (CsmParameter) obj;
+                ReferenceCounter counter = counters.get(prm);
                 if (counter == null) {
                     counter = new ReferenceCounter(ref);
-                    counters.put(uid, counter);
+                    counters.put(prm, counter);
                 } else {
                     counter.increment();
                 }
@@ -210,22 +209,21 @@ public class ModelUtils {
                 return false;
             }
             if (CsmKindUtilities.isParameter(obj)) {
-                Set<CsmUID> set = getFunctionDefinitionParameters(file);
-                return set.contains(UIDs.get(var));
+                CsmParameter prm = (CsmParameter) var;
+                Set<CsmParameter> set = getFunctionDefinitionParameters(file);
+                return set.contains(prm);
             } else {
                 return true;
             }
         }
-        private Set<CsmUID> getFunctionDefinitionParameters(CsmFile file) {
+        private Set<CsmParameter> getFunctionDefinitionParameters(CsmFile file) {
             if (parameters == null) {
-                parameters = new HashSet<CsmUID>();
+                parameters = new HashSet<CsmParameter>();
                 CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION_DEFINITION, CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
                 Iterator<CsmOffsetableDeclaration> i = CsmSelect.getDeclarations(file, filter);
                 while (i.hasNext()) {
                     CsmFunctionDefinition fundef = (CsmFunctionDefinition)i.next();
-                    for (Object obj : fundef.getParameters()) {
-                        parameters.add(UIDs.get(obj));
-                    }
+                    parameters.addAll(fundef.getParameters());
                 }
             }
             return parameters;
