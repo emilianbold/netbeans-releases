@@ -45,6 +45,7 @@ package org.netbeans.modules.xsl.transform;
 
 //import java.io.*;
 import java.net.*;
+import java.security.Permission;
 //import java.util.*;
 
 //import javax.servlet.*;
@@ -84,10 +85,10 @@ public class TransformServletTest extends NbTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
+    
+    
     public static Test suite() {
-        TestSuite suite = new NbTestSuite();
-        // issue #196602
-        //TestSuite suite = new NbTestSuite(TransformServletTest.class);
+        TestSuite suite = new NbTestSuite(TransformServletTest.class);
         
         return suite;
     }
@@ -108,6 +109,29 @@ public class TransformServletTest extends NbTestCase {
         }
         
         assertTrue ("I need correct Transform Servlet URL!", (servletURL!=null & exceptionThrown!= true));
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        SecurityManager sm = new SecurityManager() {
+
+            @Override
+            public void checkPermission(Permission perm) {
+            }
+
+            @Override
+            public void checkPermission(Permission perm, Object context) {
+            }
+            
+        };
+        System.setSecurityManager(sm);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        System.setSecurityManager(null);
+        super.tearDown();
     }
     
 }

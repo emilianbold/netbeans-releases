@@ -1835,7 +1835,7 @@ public class CasualDiff {
             }
             copyTo(localPointer, localPointer = endPos);
         }
-        localPointer = diffParameterList(oldT.args, newT.args, parens, localPointer, Measure.ARGUMENT);
+        localPointer = diffParameterList(oldT.args, newT.args, oldT, parens, localPointer, Measure.ARGUMENT);
         copyTo(localPointer, bounds[1]);
 
         return bounds[1];
@@ -2322,11 +2322,36 @@ public class CasualDiff {
             int pos,
             Comparator<JCTree> measure)
     {
-        return diffParameterList(oldList, newList, makeAround, pos, measure, diffContext.style.spaceBeforeComma(), diffContext.style.spaceAfterComma(), false, ",");   //NOI18N
+        return diffParameterList(oldList, newList, null, makeAround, pos, measure);
     }
     private int diffParameterList(
             List<? extends JCTree> oldList,
             List<? extends JCTree> newList,
+            JCTree parent,
+            JavaTokenId[] makeAround,
+            int pos,
+            Comparator<JCTree> measure)
+    {
+        return diffParameterList(oldList, newList, parent, makeAround, pos, measure, diffContext.style.spaceBeforeComma(), diffContext.style.spaceAfterComma(), false, ",");   //NOI18N
+    }
+    private int diffParameterList(
+            List<? extends JCTree> oldList,
+            List<? extends JCTree> newList,
+            JavaTokenId[] makeAround,
+            int pos,
+            Comparator<JCTree> measure,
+            boolean spaceBefore,
+            boolean spaceAfter,
+            boolean isEnum,
+            String separator)
+    {
+        return diffParameterList(oldList, newList, null, makeAround, pos, measure, spaceBefore, spaceAfter, isEnum, separator);
+    }
+    
+    private int diffParameterList(
+            List<? extends JCTree> oldList,
+            List<? extends JCTree> newList,
+            JCTree parent,
             JavaTokenId[] makeAround,
             int pos,
             Comparator<JCTree> measure,
@@ -2377,7 +2402,7 @@ public class CasualDiff {
                     tokenSequence.moveNext();
                     int start = tokenSequence.offset();
                     copyTo(start, bounds[0], printer);
-                    diffTree(tree, item.element, bounds);
+                    diffTree(tree, item.element, parent, bounds);
                     tokenSequence.move(bounds[1]);
                     moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                     if (!commaNeeded(result, item) &&
@@ -2643,7 +2668,8 @@ public class CasualDiff {
         List<JCVariableDecl> fieldGroup = new ArrayList<JCVariableDecl>();
         List<JCVariableDecl> enumConstants = new ArrayList<JCVariableDecl>();
         for (JCTree tree : list) {
-            if (Kind.VARIABLE == tree.getKind()) {
+            if (tree.pos == (-1)) continue;
+            else if (Kind.VARIABLE == tree.getKind()) {
                 JCVariableDecl var = (JCVariableDecl) tree;
                 if ((var.mods.flags & Flags.ENUM) != 0) {
                     // collect enum constants, make a field group from them
