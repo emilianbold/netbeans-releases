@@ -238,6 +238,7 @@ class JCLogicalViewProvider implements LogicalViewProvider {
             }
 //            actions.add(CommonProjectActions.setProjectConfigurationAction());
             actions.add(null);
+            actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.closeProjectAction());
             actions.add(null);
             actions.add(CommonProjectActions.renameProjectAction());

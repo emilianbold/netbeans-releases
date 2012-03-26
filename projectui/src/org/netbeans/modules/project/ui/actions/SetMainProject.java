@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -63,9 +64,11 @@ import static org.netbeans.modules.project.ui.actions.Bundle.*;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
 
 @ActionID(id = "org.netbeans.modules.project.ui.SetMainProject", category = "Project")
@@ -77,6 +80,13 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
     /** Key for remembering project in JMenuItem
      */
     private static final String PROJECT_KEY = "org.netbeans.modules.project.ui.MainProjectItem"; // NOI18N
+
+    /** #210148: whether the context menu should be displayed at the moment, even if there is no main project set. */
+    private static final String CONTEXT_MENU_ITEM_ENABLED = "setMainProjectContextEnabled";
+
+    private static Preferences prefs() {
+        return NbPreferences.forModule(SetMainProject.class);
+    }
     
     protected JMenu subMenu;
     
@@ -94,6 +104,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
         if ( context == null ) { 
             OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         }
+        putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         refresh(getLookup(), true);
     }
     
@@ -120,8 +131,9 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
             setEnabled( false );
         }
         else {
-            setEnabled( true );
-            if (projects[0] == OpenProjectList.getDefault().getMainProject()) {
+            Project main = OpenProjectList.getDefault().getMainProject();
+            setEnabled(prefs().getBoolean(CONTEXT_MENU_ITEM_ENABLED, main != null));
+            if (projects[0] == main) {
                 putValue("popupText", LBL_UnSetAsMainProjectAction_Name());
             } else {
                 putValue("popupText", null);
@@ -245,6 +257,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
                 JMenuItem jmi = (JMenuItem)e.getSource();
                 Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
                 OpenProjectList.getDefault().setMainProject(project);
+                prefs().putBoolean(CONTEXT_MENU_ITEM_ENABLED, project != null);
             }
             
         }
