@@ -43,6 +43,7 @@
 package org.netbeans.modules.xml.schema.model.impl.resolver;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -136,7 +137,7 @@ public class ResolveSession {
     public BidirectionalGraph<SchemaModelImpl> getInclusionGraph(
             SchemaModelImpl sModel, String namespace) {
         //
-        Set<SchemaModelImpl> sModels = null;
+        Set<SchemaModelImpl> sModels = Collections.emptySet();
         BidirectionalGraph<SchemaModelImpl> graph = null;
         if (Util.equal(namespace, mSoughtNamespace)) {
             if (mSecondIncludeGraph == null) {

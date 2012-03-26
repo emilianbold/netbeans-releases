@@ -160,8 +160,9 @@ public class DoxygenDocumentation {
             }
         }
 
-        return "<html><body><p>" + output.toString() + "</p>"; // NOI18N
+        return "<p>" + output.toString() + "</p>"; // NOI18N
     }
+    
     private static final Map<String, CommandDescription> commands = new HashMap<String, CommandDescription>();
 
     static {
@@ -177,6 +178,8 @@ public class DoxygenDocumentation {
         commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\verbatim", new CommandDescription(EndsOn.NONE, "<pre>", "")); // NOI18N
         commands.put("\\endverbatim", new CommandDescription(EndsOn.NONE, "</pre>", "")); // NOI18N
+        commands.put("\\code", new CommandDescription(EndsOn.NONE, "<pre>", "")); // NOI18N
+        commands.put("\\endcode", new CommandDescription(EndsOn.NONE, "</pre>", "")); // NOI18N
         commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", "")); // NOI18N
         commands.put("\\date", new CommandDescription(EndsOn.PAR, "<strong>Date:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\bug", new CommandDescription(EndsOn.PAR, "<strong>Bug:</strong><br>&nbsp; ", "")); // NOI18N
@@ -329,13 +332,14 @@ public class DoxygenDocumentation {
             //}
         }
     }
-
+    
     static Collection<Token> lex(String text) {
         LinkedList<Token> result = new LinkedList<Token>();
         StringBuilder img = new StringBuilder();
         int i = 0;
         boolean wasContent = true;
         boolean verbatimMode = false;
+        boolean codeMode = false;
         boolean escapedCommand = false;
 
         OUTER:
@@ -343,7 +347,7 @@ public class DoxygenDocumentation {
             switch (text.charAt(i)) {
                 case '\n': // NOI18N
                     if (i < text.length() - 1) {
-                        if (!verbatimMode) {
+                        if (!(verbatimMode || codeMode)) {
                             // skip white spaces
                             while (i < (text.length() - 1) && (text.charAt(i + 1) == ' ' || text.charAt(i + 1) == '\t')) { // NOI18N
                                 i++;
@@ -357,7 +361,7 @@ public class DoxygenDocumentation {
                                 wasContent = false;
                             }
                         } else {
-                            if (!verbatimMode) {
+                            if (!(verbatimMode || codeMode)) {
                                 // Convert to space
                                 result.add(new Token(TokenId.WHITESPACE, " ")); // NOI18N
                                 wasContent = false;
@@ -397,13 +401,29 @@ public class DoxygenDocumentation {
                                 escapedCommand = true;
                                 i++;
                                 break;
-                            case '&':// This command writes the & character to output. This character has to be escaped because it has a special meaning in HTML.
-                            case '$':// This command writes the $ character to the output. This character has to be escaped in some cases, because it is used to expand environment variables.
-                            case '#':// This command writes the # character to the output. This character has to be escaped in some cases, because it is used to refer to documented entities.
-                            case '<':// This command writes the < character to the output. This character has to be escaped because it has a special meaning in HTML.
-                            case '>':// This command writes the > character to the output. This character has to be escaped because it has a special meaning in HTML.
-                            case '%':// This command writes the % character to the output. This character has to be escaped in some cases, because it is used to prevent auto-linking to word that is also a documented class or struct.
                             case '"':// This command writes the " character to the output. This character has to be escaped in some cases, because it is used in pairs to indicate an unformatted text fragment.
+                                i++;
+                                img.append("&quot;");
+                                escaped = true;
+                                break;
+                            case '&':// This command writes the & character to output. This character has to be escaped because it has a special meaning in HTML.
+                                i++;
+                                img.append("&amp;");
+                                escaped = true;
+                                break;
+                            case '<':// This command writes the < character to the output. This character has to be escaped because it has a special meaning in HTML.
+                                i++;
+                                img.append("&lt;");
+                                escaped = true;
+                                break;
+                            case '>':// This command writes the > character to the output. This character has to be escaped because it has a special meaning in HTML.
+                                i++;
+                                img.append("&gt;");
+                                escaped = true;
+                                break;
+                            case '#':// This command writes the # character to the output. This character has to be escaped in some cases, because it is used to refer to documented entities.
+                            case '$':// This command writes the $ character to the output. This character has to be escaped in some cases, because it is used to expand environment variables.
+                            case '%':// This command writes the % character to the output. This character has to be escaped in some cases, because it is used to prevent auto-linking to word that is also a documented class or struct.
                                 i++;
                                 img.append(text.charAt(i));
                                 escaped = true;
@@ -429,25 +449,51 @@ public class DoxygenDocumentation {
                     while (i < text.length() && Character.isLetter(text.charAt(i))) {
                         img.append(text.charAt(i++));
                     }
-                    result.add(new Token(TokenId.COMMAND, img.toString()));
                     if (img.toString().equals("\\verbatim")) { // NOI18N
                         verbatimMode = true;
-                    }
+                    } else if (img.toString().equals("\\code")) { // NOI18N
+                        codeMode = true;
+                    } 
                     if (verbatimMode && img.toString().equals("\\endverbatim")) { // NOI18N
                         verbatimMode = false;
+                    } else if (codeMode && img.toString().equals("\\endcode")) { // NOI18N
+                        codeMode = false;
                     }
+                    result.add(new Token(TokenId.COMMAND, img.toString()));
                     img = new StringBuilder();
                     wasContent = true;
                     break;
                 default:
                     img.append(text.charAt(i++));
-                    while (i < text.length()) { // NOI18N
-                        if (!verbatimMode && (text.charAt(i) == ' ' || text.charAt(i) == '\t' || text.charAt(i) == '\n')) {
+                    while (i < text.length()) {
+                        char c = text.charAt(i);
+                        if (!(verbatimMode || codeMode) && (c == ' ' || c == '\t' || c == '\n')) {
                             break;
-                        } else if (text.charAt(i) == '\\' || text.charAt(i) == '@') {
+                        } else if (c == '\\' || c == '@') {
                             break;
                         }
-                        img.append(text.charAt(i++));
+                        if (verbatimMode || codeMode) {
+                            switch (c) {
+                                case '&':
+                                    img.append("&amp;");
+                                    break;
+                                case '<':
+                                    img.append("&lt;");
+                                    break;
+                                case '>':
+                                    img.append("&gt;");
+                                    break;
+                                case '"':
+                                    img.append("&quot;");
+                                    break;
+                                default:
+                                    img.append(c);
+                                    break;
+                            }
+                        } else {
+                            img.append(c);
+                        }
+                        i++;
                     }
                     result.add(new Token(TokenId.WORD, img.toString()));
                     img = new StringBuilder();
