@@ -48,7 +48,6 @@ import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -58,9 +57,11 @@ import org.openide.util.actions.NodeAction;
 public class DeleteAction extends NodeAction {
     
 
+    @Override
     protected void performAction(final Node[] activatedNodes) {
         // XXX progress support ???
         LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() { 
                 for(Node node : activatedNodes) {
                     StoreEntry se =  node.getLookup().lookup(StoreEntry.class);
@@ -71,6 +72,7 @@ public class DeleteAction extends NodeAction {
         });
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if(activatedNodes == null || activatedNodes.length < 1) {
             return false;
@@ -84,12 +86,14 @@ public class DeleteAction extends NodeAction {
         return true;
     }
 
+    @Override
     public String getName() {
-        return NbBundle.getMessage(DeleteAction.class, "LBL_DeleteAction");
+        return NbBundle.getMessage(DeleteAction.class, "LBL_DeleteAction"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(DeleteAction.class);
+        return new HelpCtx("org.netbeans.modules.localhistory.ui.view.DeleteAction"); // NOI18N
     }    
     
 }

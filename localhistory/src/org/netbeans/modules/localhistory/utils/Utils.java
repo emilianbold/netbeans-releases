@@ -46,19 +46,12 @@ package org.netbeans.modules.localhistory.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.logging.Level;
-import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 /**

@@ -84,6 +84,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Property;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -125,6 +126,19 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         activatedNodesContent = new InstanceContent();
     }
     
+    public HistoryComponent(File... files) {
+        this();
+        
+        VCSFileProxy[] proxies = new VCSFileProxy[files.length];
+        for (int i = 0; i < proxies.length; i++) {
+            proxies[i] = VCSFileProxy.createFileProxy(files[i]);
+        }
+        this.files = proxies;
+        VersioningSystem vs = files.length > 0 ? Utils.getOwner(proxies[0]) : null;
+        History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{proxies[0], vs != null ? vs.getDisplayName() : null});
+        init(vs, true, proxies);
+    }
+    
     public HistoryComponent(Lookup context) {
         this();
         DataObject dataObject = context.lookup(DataObject.class);
@@ -140,18 +154,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         files = filesList.toArray(new VCSFileProxy[filesList.size()]);
         VersioningSystem vs = files.length > 0 ? Utils.getOwner(files[0]) : null;
         History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{files[0], vs != null ? vs.getDisplayName() : null});
-        init(vs, files);    
-    }
-    
-    public void setFiles(File... files) {   
-        VCSFileProxy[] proxies = new VCSFileProxy[files.length];
-        for (int i = 0; i < proxies.length; i++) {
-            proxies[i] = VCSFileProxy.createFileProxy(files[i]);
-        }
-        this.files = proxies;
-        VersioningSystem vs = files.length > 0 ? Utils.getOwner(proxies[0]) : null;
-        History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{proxies[0], vs != null ? vs.getDisplayName() : null});
-        init(vs, true, proxies);
+        init(vs, false, files);    
     }
     
     private Collection<VCSFileProxy> toFileCollection(Collection<? extends FileObject> fileObjects) {
@@ -163,10 +166,6 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         return ret;
     }        
 
-    private void init(VersioningSystem vs, final VCSFileProxy... files) {   
-        init(vs, false, files);
-    }
-    
     private void init(VersioningSystem vs, boolean refresh, final VCSFileProxy... files) {   
         this.versioningSystem = vs;
         if(toolBar == null) {
@@ -344,6 +343,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         getToolbar().containsLabel.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
         getToolbar().containsField.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
         masterView.setFilter(getSelectedFilter());
+        getToolbar().containsField.setText(""); // NOI18N
         getToolbar().containsField.requestFocus();
     }
 
@@ -653,6 +653,11 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }       
     private class ByUserFilter extends Filter {
         @Override
+        public boolean filtersProperty(Property property) {
+            return property instanceof RevisionNode.UserProperty;
+        }
+                
+        @Override
         public boolean accept(Object value) {
             if(HistoryRootNode.isLoadNext(value) || HistoryRootNode.isWait(value)) return true;
             
@@ -676,6 +681,12 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         }        
     }           
     private class ByMsgFilter extends Filter {
+
+        @Override
+        public boolean filtersProperty(Property property) {
+            return property instanceof RevisionNode.MessageProperty;
+        }
+        
         @Override
         public boolean accept(Object value) {
             if(HistoryRootNode.isLoadNext(value) || HistoryRootNode.isWait(value)) return true;
