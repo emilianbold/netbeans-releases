@@ -180,6 +180,7 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
             scan(node.getExpression());
             initializeExpression(node.getKey());
             initializeExpression(node.getValue());
+            scan(node.getStatement());
         }
 
         @Override
