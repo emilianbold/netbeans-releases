@@ -68,13 +68,13 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.discovery.api.DiscoveryProvider.class)
 public class AnalyzeExecutable extends BaseDwarfProvider {
     private Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
     public static final String EXECUTABLE_KEY = "executable"; // NOI18N
     public static final String LIBRARIES_KEY = "libraries"; // NOI18N
     public static final String FIND_MAIN_KEY = "find_main"; // NOI18N
-    
+    public static final String EXECUTABLE_PROVIDER_ID = "dwarf-executable"; // NOI18N
+
     public AnalyzeExecutable() {
         clean();
     }
@@ -211,7 +211,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     
     @Override
     public String getID() {
-        return "dwarf-executable"; // NOI18N
+        return EXECUTABLE_PROVIDER_ID; // NOI18N
     }
     
     @Override
