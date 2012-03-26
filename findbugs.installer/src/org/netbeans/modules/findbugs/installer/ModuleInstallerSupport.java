@@ -148,6 +148,7 @@ public class ModuleInstallerSupport  {
                         } else if (tryAgain.equals(answer)) {
                             LOG.fine("try again searching");
                             RP.post(this);
+                        } else {
                             assert false : "Unknown " + answer;
                         }
                     }
