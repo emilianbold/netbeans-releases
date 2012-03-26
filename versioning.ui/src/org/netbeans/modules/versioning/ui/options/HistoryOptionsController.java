@@ -83,7 +83,7 @@ public final class HistoryOptionsController extends OptionsPanelController imple
         if(HistorySettings.getInstance().getKeepForever()) {
             panel.keepForeverRadioButton.setSelected(true);
         } else {
-            panel.removeOlderRadioButton.setSelected(false);
+            panel.removeOlderRadioButton.setSelected(true);
         }
         updateForeverState();
         updateLoadAllState(HistorySettings.getInstance().getLoadAll());
