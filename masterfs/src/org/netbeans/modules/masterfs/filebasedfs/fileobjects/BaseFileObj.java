@@ -269,6 +269,8 @@ public abstract class BaseFileObj extends FileObject {
             FSException.io("EXC_InvalidLock", lock, getPath()); // NOI18N
         }
 
+        Watcher.lock(target);
+        Watcher.lock(getParent());
         final IOHandler moveHandler = extensions.getMoveHandler(getFileName().getFile(), to);
         if (moveHandler != null) {
             if (target instanceof FolderObj) {
@@ -285,7 +287,7 @@ public abstract class BaseFileObj extends FileObject {
         } else {
             result = super.move(lock, target, name, ext);
         }
-        
+
         FileUtil.copyAttributes(this, result);
         } catch (IOException ioe) {
             extensions.moveFailure(this, to);

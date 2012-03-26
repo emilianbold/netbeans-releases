@@ -62,6 +62,8 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.Module;
 import org.netbeans.api.project.Project;
+import org.netbeans.core.startup.Main;
+import org.netbeans.core.startup.ModuleSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
@@ -122,8 +124,7 @@ implements PropertyChangeListener, LookupListener {
     }
 
     static boolean showInAU(ModuleInfo mi) {
-        final Object show = mi.getAttribute("AutoUpdate-Show-In-Client"); // NOI18N
-        return show == null || "true".equals(show); // NOI18N
+        return Main.getModuleSystem().isShowInAutoUpdateClient(mi);
     }
 
 

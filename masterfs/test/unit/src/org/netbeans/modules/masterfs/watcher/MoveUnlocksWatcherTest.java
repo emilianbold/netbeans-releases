@@ -1,7 +1,9 @@
+package org.netbeans.modules.masterfs.watcher;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +39,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.openide.util;
+import java.io.IOException;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-import java.net.URLStreamHandler;
-import java.util.Collections;
-import java.util.Set;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
-import org.openide.util.URLStreamHandlerRegistration;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.implspi.AbstractServiceProviderProcessor;
+public class MoveUnlocksWatcherTest extends NbTestCase {
 
-@ServiceProvider(service=Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class URLStreamHandlerRegistrationProcessor extends AbstractServiceProviderProcessor {
-
-    public @Override Set<String> getSupportedAnnotationTypes() {
-        return Collections.singleton(URLStreamHandlerRegistration.class.getCanonicalName());
+    
+    public MoveUnlocksWatcherTest(String name) {
+        super(name);
     }
 
-    public static final String REGISTRATION_PREFIX = "URLStreamHandler/"; // NOI18N
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+    }
+    
+    public void testMovedUnlocks() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        FileObject fromFile = fo.createData("move.txt");
+        FileObject toFolder = fo.createFolder("toFolder");
+        
+        FileObject toFile = fromFile.move(fromFile.lock(), toFolder, fromFile.getName(), fromFile.getExt());
 
-    protected @Override boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        for (Element el : roundEnv.getElementsAnnotatedWith(URLStreamHandlerRegistration.class)) {
-            URLStreamHandlerRegistration r = el.getAnnotation(URLStreamHandlerRegistration.class);
-            TypeMirror type = processingEnv.getTypeUtils().getDeclaredType(
-                    processingEnv.getElementUtils().getTypeElement(URLStreamHandler.class.getName()));
-            for (String protocol : r.protocol()) {
-                register(el, URLStreamHandlerRegistration.class, type,
-                        REGISTRATION_PREFIX + protocol, r.position(), new String[0]);
-            }
-        }
-        return true;
+        assertFalse("Not locked anymore: " + fo, Watcher.isLocked(fo));
+        assertFalse("Not locked anymore: " + fromFile, Watcher.isLocked(fromFile));
+        assertFalse("Not locked anymore: " + toFolder, Watcher.isLocked(toFolder));
+        assertFalse("Not locked anymore: " + toFile, Watcher.isLocked(toFile));
     }
 
 }
