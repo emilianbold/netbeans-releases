@@ -56,6 +56,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.maven.indexer.NexusRepositoryIndexerImpl;
 import org.netbeans.modules.maven.indexer.spi.*;
 import org.openide.util.Lookup;
 
@@ -82,13 +83,7 @@ public final class RepositoryQueries {
         /**
          * used internally by the repository indexing/searching engine(s)
          */
-        public interface Redo<T> {
-            void run(Result<T> result);
-        }
-        /**
-         * used internally by the repository indexing/searching engine(s)
-         */
-        public Result(Redo<T> redo) {
+        Result(Redo<T> redo) {
             redoAction = redo;
         }
         
@@ -103,12 +98,12 @@ public final class RepositoryQueries {
         /**
          * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
          */
-        public void addSkipped(RepositoryInfo info) {
+        void addSkipped(RepositoryInfo info) {
             skipped.add(info);
         }
         
         /**
-         * waits for currently processed indexes to finish, not to be called in AWT thread.
+         * waits for currently unaccessible indexes to finish, not to be called in AWT thread.
          */
         public void waitForSkipped() {
             assert !SwingUtilities.isEventDispatchThread();
@@ -116,7 +111,7 @@ public final class RepositoryQueries {
             skipped.clear();
         }
         
-        public synchronized void setResults(Collection<T> newResults) {
+        synchronized void setResults(Collection<T> newResults) {
             results.clear();
             results.addAll(newResults);
         }
@@ -129,18 +124,91 @@ public final class RepositoryQueries {
         /**
          * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
          */
-        public void addSkipped(Collection<RepositoryInfo> infos) {
+        void addSkipped(Collection<RepositoryInfo> infos) {
             skipped.addAll(infos);
         }
         
         /**
          * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
          */
-        public List<RepositoryInfo> getSkipped() {
+        List<RepositoryInfo> getSkipped() {
             return skipped;
         }
         
     } 
+    
+    
+    static {
+        AccessorImpl impl = new AccessorImpl();
+        impl.assign();
+    }
+    
+    
+    
+    static class AccessorImpl extends NexusRepositoryIndexerImpl.Accessor {
+        
+         public void assign() {
+             if (NexusRepositoryIndexerImpl.ACCESSOR == null) {
+                 NexusRepositoryIndexerImpl.ACCESSOR = this;
+             }
+         }
+
+        @Override
+        public void addSkipped(Result<?> result, Collection<RepositoryInfo> infos) {
+            result.addSkipped(infos);
+        }
+
+        @Override
+        public List<RepositoryInfo> getSkipped(Result<?> result) {
+            return result.getSkipped();
+        }
+
+        @Override
+        public void addSkipped(Result<?> result, RepositoryInfo info) {
+            result.addSkipped(info);
+        }
+
+        @Override
+        public Result<String> createStringResult(Redo<String> redo) {
+            return new Result<String>(redo);
+        }
+
+        @Override
+        public Result<NBVersionInfo> createVersionResult(Redo<NBVersionInfo> redo) {
+            return new Result<NBVersionInfo>(redo);
+        }
+
+        @Override
+        public void setStringResults(Result<String> result, Collection<String> newResults) {
+            result.setResults(newResults);
+        }
+
+        @Override
+        public void setVersionResults(Result<NBVersionInfo> result, Collection<NBVersionInfo> newResults) {
+            result.setResults(newResults);
+        }
+
+        @Override
+        public Result<NBGroupInfo> createGroupResult(Redo<NBGroupInfo> redo) {
+            return new Result<NBGroupInfo>(redo);
+        }
+
+        @Override
+        public void setGroupResults(Result<NBGroupInfo> result, Collection<NBGroupInfo> newResults) {
+            result.setResults(newResults);
+        }
+
+        @Override
+        public Result<ClassUsage> createClassResult(Redo<ClassUsage> redo) {
+            return new Result<ClassUsage>(redo);
+        }
+
+        @Override
+        public void setClassResults(Result<ClassUsage> result, Collection<ClassUsage> newResults) {
+            result.setResults(newResults);
+        }
+    }
+    
     
    /**
      * One usage result.
@@ -267,7 +335,7 @@ public final class RepositoryQueries {
         } catch (IOException ex) {
             Logger.getLogger(RepositoryQueries.class.getName()).log(Level.INFO, "Could not determine SHA-1 of " + file, ex);
         }
-        return new Result<NBVersionInfo>(new Result.Redo<NBVersionInfo>() {
+        return NexusRepositoryIndexerImpl.ACCESSOR.createVersionResult(new Redo<NBVersionInfo>() {
             @Override
             public void run(Result<NBVersionInfo> result) {
                 //noop
