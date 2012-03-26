@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,24 +37,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.maven.indexer.spi;
 
-import java.util.List;
-import org.netbeans.modules.maven.indexer.api.NBGroupInfo;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 
 /**
- * Query to find dependency information of artifacts.Non mandatory for repository managers.
- * @author Milos Kleint
+ * used internally by the repository indexing/searching engine(s)
+ * @author mkleint
  */
-public interface DependencyInfoQueries {
+public interface Redo<T> {
+    void run(RepositoryQueries.Result<T> result);
+}    
 
-    RepositoryQueries.Result<NBVersionInfo> findDependencyUsage(String groupId, String artifactId, String version, List<RepositoryInfo> repoIds);
-    
-    RepositoryQueries.Result<NBGroupInfo> findDependencyUsageGroups(String groupId, String artifactId, String version, List<RepositoryInfo> repoIds);
-
-}

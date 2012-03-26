@@ -45,14 +45,12 @@ import java.awt.event.ActionEvent;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
-import org.netbeans.modules.maven.indexer.api.QueryRequest;
+import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -146,9 +144,7 @@ public final class M2RepositoryBrowser extends AbstractNode {
     Object ret = DialogDisplayer.getDefault().notify(dd);
     if (ret == DialogDescriptor.OK_OPTION) {
         synchronized (searches) {
-            searches.add(new QueryRequest(pnl.getQuery(), RepositoryPreferences.getInstance().getRepositoryInfos(), new Observer() {
-                @Override public void update(Observable o, Object arg) {/* unused, real observer added later */}
-            }));
+            searches.add(new QueryRequest(pnl.getQuery(), RepositoryPreferences.getInstance().getRepositoryInfos()));
         }
         cs.fireChange();
     }
@@ -200,6 +196,16 @@ public final class M2RepositoryBrowser extends AbstractNode {
         @Override public void stateChanged(ChangeEvent e) {
             refresh(false);
         }
+    }
+    
+    static class QueryRequest {
+        final List<QueryField> fields;
+        final List<RepositoryInfo> infos;
+        QueryRequest(List<QueryField> fields, List<RepositoryInfo> infos) {
+            this.fields = fields;
+            this.infos = infos;
+        }
+        
     }
 
 }
