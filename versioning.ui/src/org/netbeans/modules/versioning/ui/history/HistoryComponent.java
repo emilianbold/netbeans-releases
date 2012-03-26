@@ -118,6 +118,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private VCSFileProxy[] files;
     private InstanceContent activatedNodesContent;
     private ProxyLookup lookup;
+    private Lookup context;
     private VersioningSystem versioningSystem;
         
     public HistoryComponent() {
@@ -153,6 +154,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     public HistoryComponent(Lookup context) {
         this();
         
+        this.context = context;
         DataObject dataObject = context.lookup(DataObject.class);
         List<VCSFileProxy> filesList = new LinkedList<VCSFileProxy>();
         if (dataObject instanceof DataShadow) {
@@ -385,13 +387,15 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     @Override
     public Lookup getLookup() {
         if(lookup == null) {
-            if(hasFiles()) {
+            if(context != null) {
                 lookup = new ProxyLookup(new Lookup[] {
-                    Lookups.fixed((Object[]) files),
+                    context,
                     new AbstractLookup(activatedNodesContent)
                 });
             } else {
-                lookup = new ProxyLookup(Lookup.EMPTY);
+                lookup = new ProxyLookup(new Lookup[] {
+                    new AbstractLookup(activatedNodesContent)
+                });
             }
         }
         return lookup;
