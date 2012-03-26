@@ -58,7 +58,6 @@ import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
@@ -347,26 +346,19 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     }
 
     private static void registerHistoryListener(VersioningSystem versioningSystem, VCSHistoryProvider.HistoryChangeListener l) {
-        VCSHistoryProvider hp = getHistoryProvider(versioningSystem);
+        VCSHistoryProvider hp = History.getHistoryProvider(versioningSystem);
         if(hp != null) {
             hp.addHistoryChangeListener(l);
         }
     }
 
     private static void unregisterHistoryListener(VersioningSystem versioningSystem, VCSHistoryProvider.HistoryChangeListener l) {
-        VCSHistoryProvider hp = getHistoryProvider(versioningSystem);
+        VCSHistoryProvider hp = History.getHistoryProvider(versioningSystem);
         if(hp != null) {
             hp.addHistoryChangeListener(l);
         }
     }
     
-    private static VCSHistoryProvider getHistoryProvider(VersioningSystem versioningSystem) {
-        if(versioningSystem == null) {
-            return null;
-        }
-        return  versioningSystem.getVCSHistoryProvider();
-    }
-
     HistoryEntry getParentEntry(HistoryEntry entry) {
         // XXX this is a hack! in case of VCS this isn't correct - the previous 
         // doesn't necesserily has to be real parent of the revision
@@ -388,7 +380,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         public void run() {  
             HistoryRootNode root = getRootNode();
             if(root == null) {
-                final String vcsName = (String) (getHistoryProvider(versioningSystem) != null ? 
+                final String vcsName = (String) (History.getHistoryProvider(versioningSystem) != null ? 
                                                     versioningSystem.getDisplayName() :
                                                     null);
                 root = new HistoryRootNode(vcsName, loadNextAction, createActions()); 
@@ -398,7 +390,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             // refresh local history
             try {
                 root.addWaitNode();
-                VCSHistoryProvider lhProvider = getHistoryProvider(History.getInstance().getLocalHistory(files));
+                VCSHistoryProvider lhProvider = History.getHistoryProvider(History.getInstance().getLocalHistory(files));
                 if(lhProvider != null && (providerToRefresh == null || lhProvider == providerToRefresh)) {
                     root.addLHEntries(loadLHEntries(files));
                 }
@@ -406,7 +398,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 root.removeWaitNode();
             }
             // refresh vcs
-            VCSHistoryProvider vcsProvider = getHistoryProvider(versioningSystem);
+            VCSHistoryProvider vcsProvider = History.getHistoryProvider(versioningSystem);
             if(tc != null && vcsProvider != null && (providerToRefresh == null || providerToRefresh == vcsProvider)) {
                 loadVCSEntries(files, false);
             }

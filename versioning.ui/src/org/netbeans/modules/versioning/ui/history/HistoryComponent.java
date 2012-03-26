@@ -89,7 +89,6 @@ import org.openide.nodes.Node.Property;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -98,7 +97,7 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Tomas Stupka
  */
 @MultiViewElement.Registration(
-        displayName="#CTL_SourceTabCaption",
+        displayName="#CTL_SourceTabCaption",                                    // NOI18N
         // no icon
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID=HistoryComponent.PREFERRED_ID, 
@@ -108,7 +107,7 @@ import org.openide.util.lookup.ProxyLookup;
 final public class HistoryComponent extends JPanel implements MultiViewElement, HelpCtx.Provider, PropertyChangeListener {
 
     private HistoryFileView masterView;
-    static final String PREFERRED_ID = "text.history";
+    static final String PREFERRED_ID = "text.history";                          // NOI18N
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
     private Toolbar toolBar;
     private EmptyToolbar emptyToolbar;
@@ -121,6 +120,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private Lookup context;
     private VersioningSystem versioningSystem;
     private MultiViewElementCallback callback;
+    private JSplitPane splitPane;
+    private NoContentPanel noContentPanel;
         
     public HistoryComponent() {
         initComponents();
@@ -142,14 +143,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             }
             this.files = proxies;
         }
-        if(hasFiles()) {
-            VersioningSystem vs = files.length > 0 ? Utils.getOwner(proxies[0]) : null;
-            History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{proxies[0], vs != null ? vs.getDisplayName() : null});
-            init(vs, true, proxies);
-        } else {
-            remove(splitPane);
-            add(new NoContentPanel(NbBundle.getMessage(HistoryComponent.class, "MSG_NO_HISTORY")));
-        }
+        init(true);
     }
     
     public HistoryComponent(Lookup context) {
@@ -165,15 +159,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             Collection<VCSFileProxy> doFiles = toFileCollection(dataObject.files());
             filesList.addAll(doFiles);
         }
-        files = filesList.toArray(new VCSFileProxy[filesList.size()]);
-        if(hasFiles()) {
-            VersioningSystem vs = hasFiles() ? Utils.getOwner(files[0]) : null;
-            History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{files[0], vs != null ? vs.getDisplayName() : null});
-            init(vs, false, files);    
-        } else {
-            remove(splitPane);
-            add(new NoContentPanel(NbBundle.getMessage(HistoryComponent.class, "MSG_NO_HISTORY")));
-        }
+        this.files = filesList.toArray(new VCSFileProxy[filesList.size()]);
+        init(false);
     }
     
     private Collection<VCSFileProxy> toFileCollection(Collection<? extends FileObject> fileObjects) {
@@ -185,14 +172,36 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         return ret;
     }        
 
-    private void init(VersioningSystem vs, boolean refresh, final VCSFileProxy... files) {   
-        this.versioningSystem = vs;
-        if(toolBar == null) {
-            toolBar = new Toolbar(vs);
+    private void init(boolean refresh) {   
+        if(hasFiles()) {
+            this.versioningSystem = hasFiles() ? Utils.getOwner(files[0]) : null;
+            History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{files[0], versioningSystem != null ? versioningSystem.getDisplayName() : null}); // NOI18N
+            if(!hasHistory()) {
+                noHistoryAvailable();
+                return;
+            }
         } else {
-            toolBar.setup(vs);
+            noHistoryAvailable();
+            return;
         }
-        masterView = new HistoryFileView(files, vs, this);
+        
+        if(noContentPanel != null) {
+            remove(noContentPanel);
+        }
+        if(splitPane == null) {
+            splitPane = new JSplitPane();
+            splitPane.setDividerLocation(150);
+            splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+            splitPane.setOneTouchExpandable(true);
+            add(splitPane, BorderLayout.CENTER);
+        }
+        
+        if(toolBar == null) {
+            toolBar = new Toolbar(versioningSystem);
+        } else {
+            toolBar.setup(versioningSystem);
+        }
+        masterView = new HistoryFileView(files, versioningSystem, this);
         diffView = new HistoryDiffView(this); 
         
         masterView.getExplorerManager().addPropertyChangeListener(diffView); 
@@ -231,12 +240,15 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(Utils.EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName()) && hasFiles()) {
-            final VersioningSystem vs = Utils.getOwner(files[0]);
-            if(versioningSystem != vs) {
+            VersioningSystem vs = Utils.getOwner(files[0]);
+            if(versioningSystem != vs ||
+               hasLocalHistory != (History.getHistoryProvider(History.getInstance().getLocalHistory(files)) != null)) 
+            {
+                versioningSystem = vs;
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        init(vs, true, files);
+                        init(true);
                     }
                 });
             }
@@ -260,16 +272,10 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private void initComponents() {
 
         setLayout(new java.awt.BorderLayout());
-
-        splitPane.setDividerLocation(150);
-        splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        splitPane.setOneTouchExpandable(true);
-        add(splitPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JSplitPane splitPane = new javax.swing.JSplitPane();
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -288,7 +294,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
 
     @Override
     public JComponent getToolbarRepresentation() {
-        if(hasFiles()) {
+        if(hasHistory()) {
             return getToolbar();
         } else {
             if(emptyToolbar == null) {
@@ -308,7 +314,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }
 
     @NbBundle.Messages({
-        "MSG_SaveModified=File {0} is modified. Save?"
+        "MSG_SaveModified=File {0} is modified. Save?"                          // NOI18N
     })
     @Override
     public CloseOperationState canCloseElement() {
@@ -428,6 +434,22 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private boolean hasFiles() {
         return files != null && files.length > 0;
     }
+
+    private void noHistoryAvailable() throws MissingResourceException {
+        if(noContentPanel == null) {
+             noContentPanel = new NoContentPanel(NbBundle.getMessage(HistoryComponent.class, "MSG_NO_HISTORY"));
+        }
+        add(noContentPanel); 
+    }
+
+    private boolean hasLocalHistory;
+    private boolean hasHistory() {
+        if(hasFiles()) {
+            hasLocalHistory = History.getHistoryProvider(History.getInstance().getLocalHistory(files)) != null;
+            return hasFiles() && (hasLocalHistory || History.getHistoryProvider(versioningSystem) != null);
+        } 
+        return false;
+    }
         
     private class EmptyToolbar extends JToolBar  {
         private EmptyToolbar() {
@@ -496,13 +518,13 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                 }
             });
             
-            nextButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-next.png"))); 
-            prevButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-prev.png"))); 
+            nextButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-next.png"))); // NOI18N
+            prevButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-prev.png"))); // NOI18N
             nextButton.addActionListener(this);
             prevButton.addActionListener(this);
-            refreshButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/refresh.png"))); 
+            refreshButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/refresh.png"))); // NOI18N
             refreshButton.addActionListener(this);
-            settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/options.png"))); 
+            settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/options.png"))); // NOI18N
             settingsButton.addActionListener(this);
             showHistoryAction = new ShowHistoryAction();
             searchHistoryButton = new LinkButton(); // NOI18N
@@ -556,7 +578,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         void setup(VersioningSystem vs) {
             boolean visible = vs != null && vs.getVCSHistoryProvider() != null;
             if(visible) { 
-                searchHistoryButton.setText(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getDisplayName()}));
+                searchHistoryButton.setText(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getDisplayName()})); // NOI18N
                 Filter[] filters = new Filter[] {
                     new AllFilter(), 
                     new VCSFilter(vs.getDisplayName()), 
