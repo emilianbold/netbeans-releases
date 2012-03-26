@@ -427,17 +427,19 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
     @Override
     public Collection<? extends String> getSuperClassNames() {
-        String supeClsName = superClass.hasFirst() ? superClass.first() : null;
-        if (supeClsName != null) {
-            return Collections.singletonList(supeClsName);
-        }
-        List<ClassScopeImpl> supeClasses =  Collections.emptyList();
-        if (superClass.hasSecond()) {
-            supeClasses = superClass.second();
-        }
         List<String> retval =  new ArrayList<String>();
-        for (ClassScopeImpl cls : supeClasses) {
-            retval.add(cls.getName());
+        if (superClass != null) {
+            String supeClsName = superClass.hasFirst() ? superClass.first() : null;
+            if (supeClsName != null) {
+                return Collections.singletonList(supeClsName);
+            }
+            List<ClassScopeImpl> supeClasses =  Collections.emptyList();
+            if (superClass.hasSecond()) {
+                supeClasses = superClass.second();
+            }
+            for (ClassScopeImpl cls : supeClasses) {
+                retval.add(cls.getName());
+            }
         }
         return retval;
     }
