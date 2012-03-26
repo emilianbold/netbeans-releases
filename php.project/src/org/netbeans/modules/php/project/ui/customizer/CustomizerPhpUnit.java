@@ -112,7 +112,7 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(CustomizerPhpUnit.class);
+        return new HelpCtx("org.netbeans.modules.php.project.ui.customizer.CustomizerPhpUnit"); // NOI18N
     }
 
     void enableFile(boolean enabled, JComponent... components) {

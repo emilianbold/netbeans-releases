@@ -45,6 +45,7 @@ package org.netbeans.modules.php.project.ui.options;
 import javax.swing.JComponent;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -126,6 +127,11 @@ public class PhpDebuggerPanelController extends BaseOptionsPanelController {
         // everything ok
         debuggerPanel.setError(" "); // NOI18N
         return true;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.php.project.ui.options.PhpDebuggerPanelController"); // NOI18N
     }
 
 }
