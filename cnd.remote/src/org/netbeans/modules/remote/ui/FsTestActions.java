@@ -41,15 +41,8 @@
  */
 package org.netbeans.modules.remote.ui;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -62,7 +55,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 
 /**
  *
