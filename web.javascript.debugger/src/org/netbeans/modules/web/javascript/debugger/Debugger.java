@@ -47,6 +47,8 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.chromium.sdk.Breakpoint.Target;
 import org.chromium.sdk.*;
 import org.chromium.sdk.wip.*;
@@ -60,6 +62,8 @@ import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  * Debugger based on WebKit Remote Debugging.
@@ -93,6 +97,10 @@ public class Debugger {
     private Session session;
     private DebuggerEngine debuggerEngine;
     private LoggerFactoryImpl logger;
+    
+    private static final Logger LOGGER = Logger.getLogger(Debugger.class.getName());
+    
+    private static InputOutput COMM = IOProvider.getDefault().getIO("Chrome Communication", true);
     
     public static Debugger createConnection(String host, int port, String urlToDebug) {
         Debugger d = new Debugger();
@@ -157,6 +165,13 @@ public class Debugger {
                     // before debugging session was established
 
                     return true;
+                }
+            }
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "following tabs detected in the browser and none of them matches '"
+                        + urlToDebug + "':");
+                for (WipBrowser.WipTabConnector tabConnector : tabs) {
+                    LOGGER.log(Level.FINE, " > "+tabConnector.getUrl());
                 }
             }
             BrowserDebugger.logError(Bundle.ConnectionNotEstablished(urlToDebug));
@@ -395,15 +410,21 @@ public class Debugger {
     private class ConnectionLoggerImpl implements ConnectionLogger {
 
         private ConnectionLogger.ConnectionCloser connectionCloser;
+
+        private StreamListenerImpl stream;
+        
+        public ConnectionLoggerImpl() {
+            stream = new StreamListenerImpl();
+        }
         
         @Override
         public ConnectionLogger.StreamListener getIncomingStreamListener() {
-            return new StreamListenerImpl();
+            return new StreamListenerDelegate(stream, false);
         }
 
         @Override
         public ConnectionLogger.StreamListener getOutgoingStreamListener() {
-            return new StreamListenerImpl();
+            return new StreamListenerDelegate(stream, true);
         }
 
         @Override
@@ -423,15 +444,58 @@ public class Debugger {
     
     private class StreamListenerImpl implements ConnectionLogger.StreamListener {
 
+        protected boolean out = true;
+        private Boolean lastMode = null;
+        
+        public StreamListenerImpl() {
+        }
+        
         @Override
         public void addContent(CharSequence text) {
-        //    System.err.println(""+text);
+            if (lastMode == null || lastMode != out) {
+                lastMode = out;
+                COMM.getOut().println(out ? "\n >SENDING:" : "\n <RECEIVING:");
+            }
+            String val = text.toString();
+            if (val.startsWith("{\"result\":{\"scriptSource\":\"")) {
+                int index = val.indexOf("\"},\"");
+                if (index != -1) {
+                    val = val.substring(0, 60)+"[...]"+val.substring(index);
+                } else {
+                    val = text.subSequence(0, 60)+"...[trimmed]";
+                }
+            }
+            COMM.getOut().print(val);
         }
 
         @Override
         public void addSeparator() {
-//            System.err.println("   ------ ");
+            COMM.getOut().println();
         }
         
     }
+    
+    private class StreamListenerDelegate implements ConnectionLogger.StreamListener {
+        
+        private StreamListenerImpl stream;
+        private boolean out;
+
+        public StreamListenerDelegate(StreamListenerImpl stream, boolean out) {
+            this.stream = stream;
+            this.out = out;
+        }
+        
+        @Override
+        public void addContent(CharSequence text) {
+            stream.out = out;
+            stream.addContent(text);
+        }
+
+        @Override
+        public void addSeparator() {
+            stream.addSeparator();
+        }
+        
+    }
+    
 }
