@@ -102,7 +102,7 @@ public class FsTestActions {
         }
 
         private boolean isAllowed(DataObject dataObject) {
-            return dataObject.getPrimaryFile().isFolder();
+            return dataObject != null && dataObject.getPrimaryFile().isFolder();
         }
         
         @Override
