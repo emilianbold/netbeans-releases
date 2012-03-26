@@ -686,10 +686,6 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_PARENT;
 }
 
-<ST_PHP_IN_SCRIPTING>"from" {
-    return PHPTokenId.PHP_FROM;
-}
-
 <ST_PHP_IN_SCRIPTING>"true" {
     return PHPTokenId.PHP_TRUE;
 }
