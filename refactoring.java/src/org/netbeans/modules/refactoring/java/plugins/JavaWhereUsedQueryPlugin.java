@@ -87,7 +87,6 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     private boolean fromLibrary;
     private WhereUsedQuery refactoring;
     private ClasspathInfo cp;
-    private TreePathHandle basem;
     
     private volatile CancellableTask queryTask;
 
@@ -123,39 +122,13 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         if(cp == null) {
             cp = getClasspathInfo(refactoring);
         }
-        fromLibrary = false;
+        fromLibrary = tph.getFileObject() == null || tph.getFileObject().getNameExt().endsWith("class"); // NOI18N
         if(isSearchFromBaseClass()) {
-            JavaSource source;
-            source = JavaPluginUtils.createSource(tph.getFileObject(), cp, tph);
-            try {
-                source.runUserActionTask(new Task<CompilationController>() {
-
-                    @Override
-                    public void run(CompilationController info) throws Exception {
-                        info.toPhase(JavaSource.Phase.RESOLVED);
-                        final Element element = tph.resolveElement(info);
-                        if (element == null) {
-                            throw new NullPointerException(String.format("#145291: Cannot resolve handle: %s\n%s", tph, info.getClasspathInfo())); // NOI18N
-                        }
-                        ElementKind kind = element.getKind();
-                        if (kind == ElementKind.METHOD && isSearchFromBaseClass()) {
-                            Collection<ExecutableElement> overridens = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)element, info);
-                            if(!overridens.isEmpty()) {
-                                ExecutableElement el = (ExecutableElement) overridens.iterator().next();
-                                assert el!=null;
-                                basem = TreePathHandle.create(el, info);
-                                refactoring.setRefactoringSource(Lookups.fixed(basem)); // TODO: This is wrong! Should not change instance from a plugin
-                            }
-                            if ((fromLibrary = basem != null && (basem.getFileObject() == null || basem.getFileObject().getNameExt().endsWith("class")))) { //NOI18N
-                                cp = RefactoringUtils.getClasspathInfoFor(tph, basem);
-                            } else {
-                                cp = RefactoringUtils.getClasspathInfoFor(basem!=null?basem:tph);
-                            }
-                        }
-                    }
-                }, true);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            TreePathHandle sourceHandle = refactoring.getContext().lookup(TreePathHandle.class);
+            if (fromLibrary && sourceHandle != null) {
+                cp = RefactoringUtils.getClasspathInfoFor(sourceHandle, tph);
+            } else {
+                cp = RefactoringUtils.getClasspathInfoFor(tph);
             }
         }
         
@@ -166,20 +139,20 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             fileSet.addAll(customScope.getFiles());
             FileObject fo = null;
             if(fromLibrary) {
-                fo = RefactoringUtils.getFileObject(basem);
+                fo = RefactoringUtils.getFileObject(tph);
                 if (fo == null) {
-                    fo = basem.getFileObject();
+                    fo = tph.getFileObject();
                 }
             }
             if (!customScope.getSourceRoots().isEmpty()) {
                 if(isSearchFromBaseClass() && fo != null) {
-                    HashSet<FileObject> fileobjects = new HashSet(customScope.getSourceRoots());
+                    HashSet<FileObject> fileobjects = new HashSet<FileObject>(customScope.getSourceRoots());
                     fileobjects.add(fo);
                     cpath = RefactoringUtils.getClasspathInfoFor(false, fileobjects.toArray(new FileObject[0]));
                 } else {
                     cpath = RefactoringUtils.getClasspathInfoFor(false, customScope.getSourceRoots().toArray(new FileObject[0]));
                 }
-                fileSet.addAll(getRelevantFiles(basem!=null?basem:tph,
+                fileSet.addAll(getRelevantFiles(tph,
                         cpath,
                         isFindSubclasses(),
                         isFindDirectSubclassesOnly(),
@@ -209,7 +182,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                     } else {
                         cpath = RefactoringUtils.getClasspathInfoFor(false, sourceRoot);
                     }
-                    fileSet.addAll(getRelevantFiles(basem!=null?basem:tph,
+                    fileSet.addAll(getRelevantFiles(tph,
                             cpath,
                             isFindSubclasses(),
                             isFindDirectSubclassesOnly(),
@@ -220,7 +193,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             return fileSet;
         } else {
             fileSet = getRelevantFiles(
-                    basem!=null?basem:tph,
+                    tph,
                     cp,
                     isFindSubclasses(),
                     isFindDirectSubclassesOnly(),
@@ -239,7 +212,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             final Set<NonRecursiveFolder> folders, final AtomicBoolean cancel) {
         final ClassIndex idx = cpInfo.getClassIndex();
         final Set<FileObject> set = new TreeSet<FileObject>(new FileComparator());
-        final Set<NonRecursiveFolder> packages = (folders == null)? Collections.EMPTY_SET : folders;
+        final Set<NonRecursiveFolder> packages = (folders == null)? Collections.<NonRecursiveFolder>emptySet() : folders;
         
         final FileObject file = tph.getFileObject();
         JavaSource source;
@@ -312,7 +285,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                             continue;
                         }
                         for (Element e:te.getEnclosedElements()) {
-                            if (e instanceof ExecutableElement) {
+                            if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
                                 if (info.getElements().overrides((ExecutableElement)e, (ExecutableElement)el, te)) {
                                     set.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType));
                                 }
