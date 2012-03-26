@@ -52,17 +52,16 @@ package org.netbeans;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInput;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -92,38 +91,19 @@ class StandardModule extends Module {
     /** JAR file holding the module */
     private final File jar;
     /** if reloadable, temporary JAR file actually loaded from */
-    private File physicalJar = null;
+    private File physicalJar;
     private Manifest manifest;
     
-    /** Map from extension JARs to sets of JAR that load them via Class-Path.
-     * Used only for debugging purposes, so that a warning is printed if two
-     * different modules try to load the same extension (which would cause them
-     * to both load their own private copy, which may not be intended).
-     */
-    private static final Map<File,Set<File>> extensionOwners = new HashMap<File,Set<File>>();
     /** Simple registry of JAR files used as modules.
      * Used only for debugging purposes, so that we can be sure
      * that no one is using Class-Path to refer to other modules.
      */
     private static final Set<File> moduleJARs = new HashSet<File>();
 
-    /** Set of locale-variants JARs for this module (or null).
-     * Added explicitly to classloader, and can be used by execution engine.
-     */
-    private Set<File> localeVariants = null;
-    /** Set of extension JARs that this module loads via Class-Path (or null).
-     * Can be used e.g. by execution engine. (#9617)
-     */
-    private Set<File> plainExtensions = null;
-    /** Set of localized extension JARs derived from plainExtensions (or null).
-     * Used to add these to the classloader. (#9348)
-     * Can be used e.g. by execution engine.
-     */
-    private Set<File> localeExtensions = null;
     /** Patches added at the front of the classloader (or null).
      * Files are assumed to be JARs; directories are themselves.
      */
-    private Set<File> patches = null;
+    private Set<File> patches;
     
     /** localized properties, only non-null if requested from disabled module */
     private Properties localizedProps;
@@ -132,16 +112,16 @@ class StandardModule extends Module {
     public StandardModule(ModuleManager mgr, Events ev, File jar, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         super(mgr, ev, history, JaveleonModule.isJaveleonPresent || reloadable, autoload, eager);
         this.jar = jar;
-        loadManifest();
-        parseManifest();
-        findExtensionsAndVariants(manifest);
-        // Check if some other module already listed this one in Class-Path.
-        // For the chronologically reverse case, see findExtensionsAndVariants().
-        Set<File> bogoOwners = extensionOwners.get(jar);
-        if (bogoOwners != null) {
-            Util.err.warning("module " + jar + " was incorrectly placed in the Class-Path of other JARs " + bogoOwners + "; please use OpenIDE-Module-Module-Dependencies instead");
-        }
         moduleJARs.add(jar);
+    }
+
+    @Override
+    ModuleData createData(ObjectInput in, Manifest mf) throws IOException {
+        if (in != null) {
+            return new StandardModuleData(in);
+        } else {
+            return new StandardModuleData(mf, this);
+        }
     }
 
     public @Override Manifest getManifest() {
@@ -315,109 +295,57 @@ class StandardModule extends Module {
         }
     }
     
-    /** Find any extensions loaded by the module, as well as any localized
-     * variants of the module or its extensions.
-     */
-    private void findExtensionsAndVariants(Manifest m) {
-        assert jar != null : "Cannot load extensions from classpath module " + getCodeNameBase();
-        localeVariants = null;
-        List<File> l = LocaleVariants.findLocaleVariantsOf(jar, getCodeNameBase());
-        if (!l.isEmpty()) {
-            localeVariants = new HashSet<File>(l);
-        }
-        plainExtensions = null;
-        localeExtensions = null;
-        String classPath = m.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
-        if (classPath != null) {
-            StringTokenizer tok = new StringTokenizer(classPath);
-            while (tok.hasMoreTokens()) {
-                String ext = tok.nextToken();
-                if (new File(ext).isAbsolute()) { // NOI18N
-                    Util.err.log(Level.WARNING, "Class-Path value {0} from {1} is illegal according to the Java Extension Mechanism: must be relative", new Object[] {ext, jar});
-                }
-                File base = jar.getParentFile();
-                while (ext.startsWith("../")) {
-                    // cannot access FileUtil.normalizeFile from here, and URI.normalize might be unsafe for UNC paths
-                    ext = ext.substring(3);
-                    base = base.getParentFile();
-                }
-                File extfile = new File(base, ext.replace('/', File.separatorChar));
-                //No need to sync on extensionOwners - we are in write mutex
-                Set<File> owners = extensionOwners.get(extfile);
-                if (owners == null) {
-                    owners = new HashSet<File>(2);
-                    owners.add(jar);
-                    extensionOwners.put(extfile, owners);
-                } else if (! owners.contains(jar)) {
-                    owners.add(jar);
-                    events.log(Events.EXTENSION_MULTIPLY_LOADED, extfile, owners);
-                } // else already know about it (OK or warned)
-                // Also check to make sure it is not a module JAR! See constructor for the reverse case.
-                if (moduleJARs.contains(extfile)) {
-                    Util.err.warning("Class-Path value " + ext + " from " + jar + " illegally refers to another module; use OpenIDE-Module-Module-Dependencies instead");
-                }
-                if (plainExtensions == null) plainExtensions = new HashSet<File>();
-                plainExtensions.add(extfile);
-                l = LocaleVariants.findLocaleVariantsOf(extfile, getCodeNameBase());
-                if (!l.isEmpty()) {
-                    if (localeExtensions == null) {
-                        localeExtensions = new HashSet<File>();
+    private Set<File> findPatches() {
+        if (patches == null) {
+            // #9273: load any modules/patches/this-code-name/*.jar files first:
+            File patchdir = new File(new File(jar.getParentFile(), "patches"), // NOI18N
+                getCodeNameBase().replace('.', '-')); // NOI18N
+            if (patchdir.isDirectory()) {
+                File[] jars = patchdir.listFiles(Util.jarFilter());
+                if (jars != null) {
+                    for (File patchJar : jars) {
+                        if (patches == null) {
+                            patches = new HashSet<File>(5);
+                        }
+                        patches.add(patchJar);
                     }
-                    localeExtensions.addAll(l);
+                } else {
+                    Util.err.warning("Could not search for patches in " + patchdir);
                 }
             }
-        }
-        // #9273: load any modules/patches/this-code-name/*.jar files first:
-        File patchdir = new File(new File(jar.getParentFile(), "patches"), // NOI18N
-                                 getCodeNameBase().replace('.', '-')); // NOI18N
-        scanForPatches(patchdir);
-        // Use of the following system property is not supported, but is used
-        // by e.g. XTest to influence installed modules without changing the build.
-        // Format is -Dnetbeans.patches.org.nb.mods.foo=/path/to.file.jar:/path/to/dir
-        String patchesClassPath = System.getProperty("netbeans.patches." + getCodeNameBase()); // NOI18N
-        if (patchesClassPath != null) {
-            StringTokenizer tokenizer = new StringTokenizer(patchesClassPath, File.pathSeparator);
-            while (tokenizer.hasMoreTokens()) {
-                String element = tokenizer.nextToken();
-                File fileElement = new File(element);
-                if (fileElement.exists()) {
-                    if (patches == null) {
-                        patches = new HashSet<File>(15);
+            // Use of the following system property is not supported, but is used
+            // by e.g. XTest to influence installed modules without changing the build.
+            // Format is -Dnetbeans.patches.org.nb.mods.foo=/path/to.file.jar:/path/to/dir
+            String patchesClassPath = System.getProperty("netbeans.patches." + getCodeNameBase()); // NOI18N
+            if (patchesClassPath != null) {
+                StringTokenizer tokenizer = new StringTokenizer(patchesClassPath, File.pathSeparator);
+                while (tokenizer.hasMoreTokens()) {
+                    String element = tokenizer.nextToken();
+                    File fileElement = new File(element);
+                    if (fileElement.exists()) {
+                        if (patches == null) {
+                            patches = new HashSet<File>(15);
+                        }
+                        patches.add(fileElement);
                     }
-                    patches.add(fileElement);
                 }
             }
-        }
-        if (Util.err.isLoggable(Level.FINE)) {
-            Util.err.fine("localeVariants of " + jar + ": " + localeVariants);
-            Util.err.fine("plainExtensions of " + jar + ": " + plainExtensions);
-            Util.err.fine("localeExtensions of " + jar + ": " + localeExtensions);
-            Util.err.fine("patches of " + jar + ": " + patches);
-        }
-        if (patches != null) {
-            for (File patch : patches) {
-                events.log(Events.PATCH, patch);
+            if (Util.err.isLoggable(Level.FINE)) {
+                Util.err.log(Level.FINE, "patches of {0}: {1}", new Object[]{jar, patches});
+            }
+            if (patches != null) {
+                for (File patch : patches) {
+                    events.log(Events.PATCH, patch);
+                }
+            }
+            if (patches == null) {
+                patches = Collections.emptySet();
             }
         }
+        
+        return patches;
     }
     
-    /** Scans a directory for possible patch JARs. */
-    private void scanForPatches(File patchdir) {
-        if (!patchdir.isDirectory()) {
-            return;
-        }
-        File[] jars = patchdir.listFiles(Util.jarFilter());
-        if (jars != null) {
-            for (File patchJar : jars) {
-                if (patches == null) {
-                    patches = new HashSet<File>(5);
-                }
-                patches.add(patchJar);
-            }
-        } else {
-            Util.err.warning("Could not search for patches in " + patchdir);
-        }
-    }
     
     /** Check if there is any need to load localized properties.
      * If so, try to load them. Throw an exception if they cannot
@@ -508,17 +436,17 @@ class StandardModule extends Module {
      * JARs already present in the classpath are <em>not</em> listed.
      * @return a <code>List&lt;File&gt;</code> of JARs
      */
+    @Override
     public List<File> getAllJars() {
         List<File> l = new ArrayList<File>();
-        if (patches != null) l.addAll(patches);
+        Set<File> ptchs = findPatches();
+        if (ptchs != null) l.addAll(ptchs);
         if (physicalJar != null) {
             l.add(physicalJar);
         } else if (jar != null) {
             l.add(jar);
         }
-        if (plainExtensions != null) l.addAll (plainExtensions);
-        if (localeVariants != null) l.addAll (localeVariants);
-        if (localeExtensions != null) l.addAll (localeExtensions);
+        ((StandardModuleData)data()).addCp(l);
         return l;
     }
 
@@ -548,7 +476,8 @@ class StandardModule extends Module {
         localizedProps = null;
         loadManifest();
         parseManifest();
-        findExtensionsAndVariants(manifest);
+    // JST:  reload not solved yet
+    // JST   findExtensionsAndVariants(manifest);
         String codeNameBase2 = getCodeNameBase();
         if (! codeNameBase1.equals(codeNameBase2)) {
             throw new InvalidException("Code name base changed during reload: " + codeNameBase1 + " -> " + codeNameBase2); // NOI18N
@@ -596,7 +525,8 @@ class StandardModule extends Module {
             loaders.add(l);
         }
         List<File> classp = new ArrayList<File>(3);
-        if (patches != null) classp.addAll(patches);
+        Set<File> ptchs = findPatches();
+        if (ptchs != null) classp.addAll(ptchs);
 
         if (reloadable) {
             ensurePhysicalJar();
@@ -607,12 +537,8 @@ class StandardModule extends Module {
         } else {
             classp.add(jar);
         }
-        // URLClassLoader would not otherwise find these, so:
-        if (localeVariants != null) classp.addAll(localeVariants);
-
-        if (localeExtensions != null) classp.addAll(localeExtensions);
-
-        if (plainExtensions != null) classp.addAll(plainExtensions);
+        
+        ((StandardModuleData)data()).addCp(classp);
         
         // #27853:
         getManager().refineClassLoader(this, loaders);
@@ -674,6 +600,10 @@ class StandardModule extends Module {
             modulePermissions.setReadOnly();
         }
         return modulePermissions;
+    }
+    
+    static boolean isModuleJar(File f) {
+        return moduleJARs.contains(f);
     }
 
     /** Class loader to load a single module.

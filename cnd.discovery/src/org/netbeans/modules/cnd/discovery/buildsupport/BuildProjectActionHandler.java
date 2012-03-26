@@ -51,15 +51,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.BuildActionsProviderImpl;
-import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
-import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
@@ -213,12 +213,12 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
     private void reconfigureCodeAssistance(int rc, ExecLogWrapper execLog) {
         DiscoveryProvider provider = null;
         if (execLog.getExecLog() != null) {
-            provider = DiscoveryExtension.findProvider("exec-log"); // NOI18N
+            provider = DiscoveryProviderFactory.findProvider("exec-log"); // NOI18N
         }
         if (false) {
             // use incremental configure code assistance only for interceptor.
             if (provider == null) {
-                provider = DiscoveryExtension.findProvider("make-log"); // NOI18N
+                provider = DiscoveryProviderFactory.findProvider("make-log"); // NOI18N
             }
         }
         if (provider == null) {

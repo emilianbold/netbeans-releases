@@ -72,9 +72,12 @@ final public class HistoryTopComponent extends TopComponent {
 
     HistoryTopComponent(File[] files) {
         this();
-        HistoryComponent hc = new HistoryComponent();
-        add(hc);
-        hc.setFiles(files);
+
+        HistoryComponent hc = new HistoryComponent(files);
+        setLayout(new java.awt.BorderLayout());
+        add(hc, java.awt.BorderLayout.CENTER);
+        add(hc.getToolbarRepresentation(), java.awt.BorderLayout.PAGE_START);
+        
     }
     
     /** This method is called from within the constructor to

@@ -341,6 +341,9 @@ public class RevisionNode extends AbstractNode implements Comparable {
     }    
     
     public static abstract class Filter implements QuickFilter {
+        public boolean filtersProperty(Property property) {
+            return false;
+        }
         public abstract String getDisplayName();
         protected HistoryEntry getEntry(Object value) {
             if(value instanceof Node) {
@@ -361,14 +364,13 @@ public class RevisionNode extends AbstractNode implements Comparable {
         }
         
         public String getRendererValue(String value) {
-            return value;
+            return HistoryUtils.escapeForHTMLLabel(value);
         }
 
         @Override
         public String toString() {
             return getDisplayName();
         }
-        
     }
 
 }

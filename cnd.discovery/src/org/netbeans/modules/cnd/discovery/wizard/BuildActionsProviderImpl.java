@@ -42,16 +42,12 @@
 
 package org.netbeans.modules.cnd.discovery.wizard;
 
-import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,6 +57,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.buildsupport.BuildProjectActionHandler.ExecLogWrapper;
 import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
@@ -69,11 +66,8 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -114,7 +108,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             if (key.equals(Action.SMALL_ICON)) {
                 return new ImageIcon(BuildActionsProviderImpl.class.getResource("/org/netbeans/modules/cnd/discovery/wizard/resources/configure.png")); // NOI18N
             } else if (key.equals(Action.SHORT_DESCRIPTION)) {
-                return NbBundle.getBundle(BuildActionsProviderImpl.class).getString("OUTPUT_LOG_ACTION_TEXT"); // NOI18N
+                return NbBundle.getMessage(BuildActionsProviderImpl.class, "OUTPUT_LOG_ACTION_TEXT"); // NOI18N
             } else {
                 return super.getValue(key);
             }
@@ -204,10 +198,10 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         private void invokeWizard(Project project) {
             DiscoveryProvider provider = null;
             if (execLog.getExecLog() != null) {
-                provider = DiscoveryExtension.findProvider("exec-log"); // NOI18N
+                provider = DiscoveryProviderFactory.findProvider("exec-log"); // NOI18N
             }
             if (provider == null) {
-                provider = DiscoveryExtension.findProvider("make-log"); // NOI18N
+                provider = DiscoveryProviderFactory.findProvider("make-log"); // NOI18N
             }
             if (provider == null) {
                 return;
@@ -229,7 +223,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         }
         
         private String getString(String key) {
-            return NbBundle.getBundle(BuildActionsProviderImpl.class).getString(key);
+            return NbBundle.getMessage(BuildActionsProviderImpl.class, key);
         }
     }
 }
