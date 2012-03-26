@@ -243,7 +243,6 @@ public enum PHPTokenId implements TokenId {
     PHP_PARENT(null, "keyword"), //NOI18N
     PHP__CLASS__(null, "constant"), //NOI18N
     PHP__METHOD__(null, "constant"), //NOI18N
-    PHP_FROM(null, "keyword"), //NOI18N
     PHP_TRUE(null, "keyword"), //NOI18N
     PHP_FALSE(null, "keyword"), //NOI18N
     PHP_NULL(null, "keyword"), //NOI18N
