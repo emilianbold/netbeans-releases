@@ -101,8 +101,10 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.JumpList;
+import org.netbeans.editor.StatusBar;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.hints.borrowed.ListCompletionView;
 import org.netbeans.modules.editor.hints.borrowed.ScrollCompletionPane;
@@ -116,6 +118,8 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.PositionRefresher;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
+import org.openide.awt.StatusDisplayer.Message;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -952,6 +956,10 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
 
         final int caret = caretInstance.getDot();
 
+        CaretLocationAndMessage clam = (CaretLocationAndMessage) currentComponent.getClientProperty(CaretLocationAndMessage.class);
+
+        if (clam != null && clam.caret == caret) return;
+
         WORKER.post(new Runnable() {
             @Override public void run() {
                 final String[] warning = new String[] {AnnotationHolder.resolveWarnings(doc, caret, caret)};
@@ -984,11 +992,44 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
 
                         if (currentComponent == null) return;
 
-                        Utilities.setStatusText(currentComponent, warning[0]);
+                        if (warning[0] == null || warning[0].trim().isEmpty()) {
+                            CaretLocationAndMessage clam = (CaretLocationAndMessage) currentComponent.getClientProperty(CaretLocationAndMessage.class);
+
+                            if (clam != null) {
+                                clam.message.clear(0);
+                                currentComponent.putClientProperty(CaretLocationAndMessage.class, null);
+                            }
+                            
+                            return;
+                        }
+
+                        EditorUI editorUI = Utilities.getEditorUI(currentComponent);
+                        StatusBar sb = editorUI != null ? editorUI.getStatusBar() : null;
+
+                        if (sb != null && sb.isVisible()) {
+                            Utilities.setStatusText(currentComponent, warning[0], StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                        } else {
+                            Message m = StatusDisplayer.getDefault().setStatusText(warning[0], StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                            currentComponent.putClientProperty(CaretLocationAndMessage.class, new CaretLocationAndMessage(caret, m));
+
+                            //TODO: so that messages with lower priority have chance to be displayed, ideally should not be needed:
+                            m.clear(5000);
+                        }
                     }
                 });
             }
         });
+    }
+
+    private static final class CaretLocationAndMessage {
+        final int caret;
+        final Message message;
+
+        public CaretLocationAndMessage(int caret, Message message) {
+            this.caret = caret;
+            this.message = message;
+        }
+
     }
 
 }
