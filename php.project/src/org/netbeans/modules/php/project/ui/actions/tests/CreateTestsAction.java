@@ -293,15 +293,15 @@ public final class CreateTestsAction extends NodeAction {
     }
 
     private TestGenerator getTestGenerator(PhpProject phpProject, FileObject source) {
+        ConfigFiles configFiles = PhpUnit.getConfigFiles(phpProject, false);
         PhpUnitSkelGen skelGen = CommandUtils.getPhpUnitSkelGen(false);
         if (skelGen != null) {
             // phpunit-skel-gen is preferred
             LOGGER.log(Level.FINE, "Using phpunit-skel-gen for generating a test for {0}", source.getNameExt());
-            return new PhpUnitSkelGenTestGenerator(skelGen, phpProject, source);
+            return new PhpUnitSkelGenTestGenerator(skelGen, phpProject, source, configFiles);
         }
         LOGGER.log(Level.FINE, "Using phpunit-skel-gen for generating a test for {0}", source.getNameExt());
         PhpUnit phpUnit = CommandUtils.getPhpUnit(phpProject, false);
-        ConfigFiles configFiles = PhpUnit.getConfigFiles(phpProject, false);
         File parent = FileUtil.toFile(source.getParent());
         File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
         return new PhpUnitTestGenerator(phpUnit, phpProject, source, configFiles, workingDirectory);
@@ -342,17 +342,19 @@ public final class CreateTestsAction extends NodeAction {
         private final PhpUnitSkelGen skelGen;
         private final PhpProject phpProject;
         private final FileObject source;
+        private final ConfigFiles configFiles;
 
 
-        public PhpUnitSkelGenTestGenerator(PhpUnitSkelGen skelGen, PhpProject phpProject, FileObject source) {
+        public PhpUnitSkelGenTestGenerator(PhpUnitSkelGen skelGen, PhpProject phpProject, FileObject source, ConfigFiles configFiles) {
             this.skelGen = skelGen;
             this.phpProject = phpProject;
             this.source = source;
+            this.configFiles = configFiles;
         }
 
         @Override
         public File generateTest(PhpClass phpClass) {
-            return skelGen.generateTest(phpClass.getFullyQualifiedName(), FileUtil.toFile(source),
+            return skelGen.generateTest(configFiles, phpClass.getFullyQualifiedName(), FileUtil.toFile(source),
                     phpClass.getFullyQualifiedName() + PhpUnit.TEST_CLASS_SUFFIX, PhpUnit.getTestFile(phpProject, source, phpClass.getName()));
         }
 
