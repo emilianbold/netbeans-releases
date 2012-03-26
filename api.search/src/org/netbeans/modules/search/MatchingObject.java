@@ -47,15 +47,14 @@ package org.netbeans.modules.search;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CoderResult;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -498,52 +497,34 @@ public final class MatchingObject implements Comparable<MatchingObject>,
      * @author  TimBoudreau
      * @author  Marian Petras
      */
-    private StringBuilder text(boolean refreshCache) throws IOException {
+    StringBuilder text(boolean refreshCache) throws IOException {
         assert !EventQueue.isDispatchThread();
 
         if (refreshCache || (text == null)) {     
             if (charset == null) {
                 text = new StringBuilder(getFileObject().asText());
             } else {
+                text = new StringBuilder();
                 InputStream istm = getFileObject().getInputStream();
                 try {
                     CharsetDecoder decoder = charset.newDecoder();
-
-                    ByteBuffer fileBuf = ByteBuffer.allocate(FILE_READ_BUFFER_SIZE);
-                    CharBuffer charBuf = CharBuffer.allocate(FILE_READ_BUFFER_SIZE);
-                    text = new StringBuilder();
-
-                    int read;
-                    // read from the stream
-                    while ((read = istm.read(fileBuf.array(), fileBuf.arrayOffset() + fileBuf.position(), fileBuf.remaining())) != -1) {
-                        fileBuf.limit(fileBuf.position() + read);
-                        fileBuf.position(0);
-
-                        // Can ignore UNDERFLOW, as new input will be given on the next
-                        // loop iteration 
-                        CoderResult result;
-                        
-                        do {
-                            result = decoder.decode(fileBuf, charBuf, false);
-                            charBuf.flip();
-                            text.append(charBuf, charBuf.position(), charBuf.remaining());
-                        } while (result.isOverflow());
-                        charBuf.clear();
-                        fileBuf.compact();
+                    InputStreamReader isr = new InputStreamReader(istm,
+                            decoder);
+                    try {
+                        BufferedReader br = new BufferedReader(isr,
+                                FILE_READ_BUFFER_SIZE);
+                        try {
+                            int read;
+                            char[] chars = new char[FILE_READ_BUFFER_SIZE];
+                            while ((read = br.read(chars)) != -1) {
+                                text.append(chars, 0, read);
+                            }
+                        } finally {
+                            br.close();
+                        }
+                    } finally {
+                        isr.close();;
                     }
-
-                    // final decode, potentially with an empty fileBuf
-                    fileBuf.limit(fileBuf.position());
-                    decoder.decode(fileBuf, charBuf, true);
-
-                    boolean repeat;
-
-                    do {
-                        repeat = decoder.flush(charBuf).isOverflow();
-                        charBuf.flip();
-                        text.append(charBuf, charBuf.position(), charBuf.remaining());
-                        charBuf.clear();
-                    } while (repeat);
                 } finally {
                     istm.close();
                 }

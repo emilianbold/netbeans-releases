@@ -47,14 +47,17 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.search.MatchingObject.Def;
 import org.netbeans.modules.search.matcher.AbstractMatcher;
 import org.netbeans.modules.search.matcher.DefaultMatcher;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.search.SearchScopeDefinition;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.openide.filesystems.FileObject;
@@ -316,5 +319,36 @@ public class MatchingObjectTest extends NbTestCase {
             os.close();
         }
         return fo;
+    }
+
+    public void testRead() throws IOException {
+
+        MockServices.setServices(Utf8FileEncodingQueryImpl.class);
+
+        FileObject dir = FileUtil.toFileObject(getDataDir());
+        assertNotNull(dir);
+        FileObject file = dir.getFileObject(
+                "textFiles/utf8file.txt");
+        Charset c = FileEncodingQuery.getEncoding(file);
+        MatchingObject mo = new MatchingObject(new ResultModel(
+                new BasicSearchCriteria(), ""), file, c, null);
+        StringBuilder text = mo.text(true);
+        String textStr = text.toString();
+        int lineBreakSize = textStr.charAt(textStr.length() - 1) == '\n'
+                && textStr.charAt(textStr.length() - 2) == '\r' ? 2 : 1;
+        assertEquals('.', textStr.charAt(textStr.length() - lineBreakSize - 1));
+    }
+
+    public static class Utf8FileEncodingQueryImpl
+            extends FileEncodingQueryImplementation {
+
+        @Override
+        public Charset getEncoding(FileObject file) {
+            if (file.getName().equals("utf8file")) {
+                return Charset.forName("UTF-8");
+            } else {
+                return null;
+            }
+        }
     }
 }
