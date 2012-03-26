@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.editor.cplusplus;
 
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -48,6 +49,7 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor.Context;
 import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 import org.openide.util.CharSequences;
 
@@ -56,6 +58,8 @@ import org.openide.util.CharSequences;
  * @author Vladimir Voskresensky
  */
 public class CppTypingCompletion {
+    private static final String EMPTY_RAW_STRING = "\"()\""; // NOI18N
+    private static final String EMPTY_RAW_STRING_WITHOUT_CHARACTER = "\")\""; // NOI18N
 
     private CppTypingCompletion() {}
 
@@ -88,6 +92,48 @@ public class CppTypingCompletion {
             return textPosition;
         }
     }
+
+    static ExtraText checkRawStringRemove(Context context) throws BadLocationException {
+        BaseDocument doc = (BaseDocument) context.getDocument();
+        int dotPos = context.getOffset();
+        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, dotPos, true, false);
+        if (ts == null) {
+            return null;
+        }
+        if (ts.move(dotPos) != 0 && ts.moveNext()) {
+            Token<TokenId> token = ts.token();
+            if (token.id() == CppTokenId.RAW_STRING_LITERAL) {
+                // remove delimeter inside raw string should be symmetrical
+                @SuppressWarnings("unchecked")
+                TokenSequence<CppStringTokenId> es = (TokenSequence<CppStringTokenId>) ts.embedded();
+                RawStringContext rsContext = calculateRawStringContext(es, dotPos);
+                if (rsContext.emptyString) {
+                    // remove of empty string is expected
+                    return new ExtraText(rsContext.firstQuoteOffset, rsContext.firstQuoteOffset, EMPTY_RAW_STRING_WITHOUT_CHARACTER);
+                }
+                if (rsContext.contextTokenId != null && !rsContext.emptyDelimeter) {
+                    CppStringTokenId id = rsContext.contextTokenId;
+                    if (context.isBackwardDelete()) {
+                        if (id == CppStringTokenId.START_DELIMETER ||
+                            id == CppStringTokenId.START_DELIMETER_PAREN) {
+                            return new ExtraText(dotPos, rsContext.matchingDelimeterSymbolOffset-2, context.getText());
+                        } else if (id == CppStringTokenId.LAST_QUOTE ||
+                                id == CppStringTokenId.END_DELIMETER) {
+                            return new ExtraText(dotPos, rsContext.matchingDelimeterSymbolOffset-1, context.getText());
+                        }
+                    } else {
+                        if (id == CppStringTokenId.START_DELIMETER) {
+                            return new ExtraText(dotPos, rsContext.matchingDelimeterSymbolOffset-1, context.getText());
+                        } else if (id == CppStringTokenId.END_DELIMETER) {
+                            return new ExtraText(dotPos, rsContext.matchingDelimeterSymbolOffset, context.getText());
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      *
      * @param context
@@ -119,7 +165,7 @@ public class CppTypingCompletion {
                                 || CppStringTokenId.PREFIX_u8R.fixedText().contentEquals(tokText)) {
                             // this is start of raw string, need to close it, otherwise it will continue
                             // till the end of document
-                            context.setText("\"()\"", 1); // NOI18N
+                            context.setText(EMPTY_RAW_STRING, 1);
                             rawStringTypingInfo = new ExtraText(dotPos + 1);
                         }
                     }
@@ -162,6 +208,7 @@ public class CppTypingCompletion {
     }
 
     private static final class RawStringContext {
+        private final int firstQuoteOffset;
         private final int matchingOffset;
         private final int matchingDelimeterSymbolOffset;
         private final Token<CppStringTokenId> contextToken;
@@ -169,10 +216,14 @@ public class CppTypingCompletion {
         private final boolean emptyStartDelimeter;
         private final boolean emptyEndDelimeter;
         private final boolean emptyDelimeter;
+        private final boolean emptyString;
 
-        public RawStringContext(Token<CppStringTokenId> contextToken, 
+        public RawStringContext(Token<CppStringTokenId> contextToken,
+                int firstQuoteOffset, boolean emptyString,
                 int matchingOffset, int matchingDelimeterSymbolOffset,
                 boolean emptyStartDelimeter, boolean emptyEndDelimeter) {
+            this.firstQuoteOffset = firstQuoteOffset;
+            this.emptyString = emptyString;
             this.matchingOffset = matchingOffset;
             this.matchingDelimeterSymbolOffset = matchingDelimeterSymbolOffset;
             this.contextToken = contextToken;
@@ -314,9 +365,11 @@ public class CppTypingCompletion {
         if ((startDelim == null && endDelim == null) ||
             (startDelim != null && endDelim != null && CharSequences.comparator().compare(startDelim.text(), endDelim.text()) == 0)) {
             // only if both delimeters are empty or both have the same text
-            return new RawStringContext(contextToken, matchingOffset, matchingDelimSymbolOffset, startDelim == null, endDelim == null);
+            return new RawStringContext(contextToken, 
+                    firstQuoteOffset, firstQuoteOffset + EMPTY_RAW_STRING.length()-1 == lastQuoteOffset,
+                    matchingOffset, matchingDelimSymbolOffset, startDelim == null, endDelim == null);
         } else {
-            return new RawStringContext(contextToken, matchingOffset, -1, startDelim == null, endDelim == null);
+            return new RawStringContext(contextToken, firstQuoteOffset, false, matchingOffset, -1, startDelim == null, endDelim == null);
         }
     }
 

@@ -57,6 +57,37 @@ public class BracketCompletionTestCase extends EditorBase  {
         typeCharactersInText("  R\"|()\"", "(", "  R\"(|)\"");
     }
 
+    public void testRawStringDelete() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText("  R|\"()\"", "\f", "  R");
+        typeCharactersInText("  R\"|()\"", "\f", "  R");
+        typeCharactersInText("  R\"|()\"", "\b", "  R");
+        typeCharactersInText("  R\"(|)\"", "\f", "  R");
+        typeCharactersInText("  R\"(|)\"", "\b", "  R");
+        typeCharactersInText("  R\"()|\"", "\f", "  R");
+        typeCharactersInText("  R\"()|\"", "\b", "  R");
+    }
+
+    public void testRawStringDelStartDelimeter() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText("  R\"|XYZ()XYZ\"", "\f", "  R\"|YZ()YZ\"");
+        typeCharactersInText("  R\"X|YZ()XYZ\"", "\b", "  R\"|YZ()YZ\"");
+        typeCharactersInText("  R\"X|YZ()XYZ\"", "\f", "  R\"X|Z()XZ\"");
+        typeCharactersInText("  R\"XY|Z()XYZ\"", "\b", "  R\"X|Z()XZ\"");
+        typeCharactersInText("  R\"XY|Z()XYZ\"", "\f", "  R\"XY|()XY\"");
+        typeCharactersInText("  R\"XYZ|()XYZ\"", "\b", "  R\"XY|()XY\"");
+    }
+
+    public void testRawStringDelEndDelimeter() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText("  R\"XYZ()|XYZ\"", "\f", "  R\"YZ()|YZ\"");
+        typeCharactersInText("  R\"XYZ()X|YZ\"", "\b", "  R\"YZ()|YZ\"");
+        typeCharactersInText("  R\"XYZ()X|YZ\"", "\f", "  R\"XZ()X|Z\"");
+        typeCharactersInText("  R\"XYZ()XY|Z\"", "\b", "  R\"XZ()X|Z\"");
+        typeCharactersInText("  R\"XYZ()XY|Z\"", "\f", "  R\"XY()XY|\"");
+        typeCharactersInText("  R\"XYZ()XYZ|\"", "\b", "  R\"XY()XY|\"");
+    }
+
     public void testLeftParenInRawStringStartDelim2() throws Exception {
         setDefaultsOptions();
         typeCharactersInText("  R\"XXX|()XXX\"", "(", "  R\"XXX(|)XXX\"");
@@ -109,6 +140,8 @@ public class BracketCompletionTestCase extends EditorBase  {
         typeCharactersInText("    R\"delim()delim|\"  ", "AA", "    R\"delimAA()delimAA|\"  ");
         typeCharactersInText("    R\"delim()|delim\"  ", "BB", "    R\"BBdelim()BB|delim\"  ");
     }
+
+
     // ------- Tests for completion of right parenthesis ')' -------------
     
     public void testRightParenSimpleMethodCall() {
