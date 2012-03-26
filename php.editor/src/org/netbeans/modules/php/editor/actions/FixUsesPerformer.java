@@ -121,8 +121,10 @@ public class FixUsesPerformer {
         for (int i = 0; i < selections.length; i++) {
             String use = selections[i];
             if (canBeUsed(use)) {
-                SanitizedUse sanitizedUse = new SanitizedUse(use, i, selections, useParts, options);
-                useParts.add(sanitizedUse.getSanitizedUsePart());
+                SanitizedUse sanitizedUse = new SanitizedUse(modifyUseName(use), i, selections, useParts, options);
+                if (sanitizedUse.shouldBeUsed()) {
+                    useParts.add(sanitizedUse.getSanitizedUsePart());
+                }
                 List<UsedNamespaceName> namesToModify = importData.usedNamespaceNames.get(i);
                 for (UsedNamespaceName usedNamespaceName : namesToModify) {
                     editList.replace(usedNamespaceName.getOffset(), usedNamespaceName.getReplaceLength(), sanitizedUse.getReplaceName(usedNamespaceName), false, 0);
@@ -243,6 +245,7 @@ public class FixUsesPerformer {
         private String alias;
         private final List<String> existingUseParts;
         private final Options options;
+        private final boolean shouldBeUsed;
 
         public SanitizedUse(final String use, final int selectionIndex, final String selections[], final List<String> existingUseParts, final Options options) {
             this.use = use;
@@ -251,11 +254,16 @@ public class FixUsesPerformer {
             QualifiedName qualifiedName = QualifiedName.create(use);
             String name = qualifiedName.getName();
             String aliasedName = name;
-            int i = 1;
-            while (existSelectionWith(aliasedName, selectionIndex) || existUseWith(aliasedName)) {
-                i++;
-                aliasedName = createAlias(name, i);
-                alias = aliasedName;
+            if (!existingUseParts.contains(use)) {
+                int i = 1;
+                while (existSelectionWith(aliasedName, selectionIndex) || existUseWith(aliasedName)) {
+                    i++;
+                    aliasedName = createAlias(name, i);
+                    alias = aliasedName;
+                }
+                shouldBeUsed = true;
+            } else {
+                shouldBeUsed = false;
             }
         }
 
@@ -298,6 +306,10 @@ public class FixUsesPerformer {
 
         public String getReplaceName(final UsedNamespaceName usedNamespaceName) {
             return hasAlias() ? alias + ImportDataCreator.NS_SEPARATOR + usedNamespaceName.getReplaceName() : usedNamespaceName.getReplaceName();
+        }
+
+        public boolean shouldBeUsed() {
+            return shouldBeUsed;
         }
     }
 
