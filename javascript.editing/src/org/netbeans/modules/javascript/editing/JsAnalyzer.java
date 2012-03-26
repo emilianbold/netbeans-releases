@@ -803,7 +803,6 @@ public class JsAnalyzer implements StructureScanner {
                 imports = new ArrayList<String>();
             }
             while (node != null) {
-                assert node.getType() == Token.STRING;
                 String path = node.getString();
                 if (path.indexOf(",") != -1) {
                     String[] paths = path.split(",");
