@@ -62,7 +62,5 @@ sed -i "s/\(<property name=\"buildnumber\" value=\"\).*\(\"\)/\1$buildnum\2/g" $
 cp -R build/test/unit/work/ "$WORKSPACE"/scanning
 cp -R build/test/unit/results/ "$WORKSPACE"/scanning
 rm -rf "$WORKSPACE"/scanning/userdir0
-touch "$WORKSPACE"/scanning/tmpdir
-rm -rf "$WORKSPACE"/scanning/tmpdir
 
 fi
