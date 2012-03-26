@@ -49,12 +49,12 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.ParseException;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationContext;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationException;
@@ -90,9 +90,9 @@ public class Html4ValidatorImpl implements Validator {
         ElementVisitor errorsCollector = new ElementVisitor() {
 
             @Override
-            public void visit(Node node) {
+            public void visit(Element node) {
                 if (node.type() == ElementType.OPEN_TAG
-                        || node.type() == ElementType.END_TAG) {
+                        || node.type() == ElementType.CLOSE_TAG) {
 //                        || node.type() == ElementType.UNKNOWN_TAG) { 
 
                     for (ProblemDescription desc : node.problems()) {

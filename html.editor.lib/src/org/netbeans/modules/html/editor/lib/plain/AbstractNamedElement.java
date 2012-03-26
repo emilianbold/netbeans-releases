@@ -41,74 +41,20 @@
  */
 package org.netbeans.modules.html.editor.lib.plain;
 
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.TagElement;
-import org.netbeans.modules.html.editor.lib.api.elements.AttributeFilter;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import java.util.*;
-import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.openide.util.CharSequences;
 
 /**
  *
  * @author marekfukala
  */
-public class TagElementElement extends AbstractElement implements TagElement {
+public abstract class AbstractNamedElement extends AbstractElement implements NamedElement {
 
     private CharSequence name;
-    private List<Attribute> attribs;
-    private boolean empty, openTag;
 
-    public TagElementElement(CharSequence document, int from, int length,
-            CharSequence name,
-            List<Attribute> attribs,
-            boolean openTag,
-            boolean isEmpty) {
+    public AbstractNamedElement(CharSequence document, int from, int length, CharSequence name) {
         super(document, from, length);
         this.name = name;
-        this.attribs = attribs;
-        this.openTag = openTag;
-        this.empty = isEmpty;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return empty;
-    }
-
-    @Override
-    public Collection<Attribute> attributes() {
-        return attribs == null ? Collections.EMPTY_LIST : attribs;
-    }
-
-    @Override
-     public Collection<Attribute> attributes(AttributeFilter filter) {
-        Collection<Attribute> filtered = new ArrayList<Attribute>(attributes().size() / 2);
-        for (Attribute attr : attributes()) {
-            if (filter.accepts(attr)) {
-                filtered.add(attr);
-            }
-        }
-        return filtered;
-    }
-
-    @Override
-    public Attribute getAttribute(String name) {
-        return getAttribute(name, true);
-    }
-
-    public Attribute getAttribute(String name, boolean ignoreCase) {
-        for (Attribute ta : attributes()) {
-            if (LexerUtils.equals(ta.name(), name, ignoreCase, false)) {
-                return ta;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public ElementType type() {
-        return openTag ? ElementType.OPEN_TAG : ElementType.END_TAG;
     }
 
     @Override
@@ -128,21 +74,5 @@ public class TagElementElement extends AbstractElement implements TagElement {
         int colonIndex = CharSequences.indexOf(name(), ":");
         return colonIndex == -1 ? name() : name().subSequence(colonIndex + 1, name().length());
     }
-
-    @Override
-    public String toString() {
-        StringBuilder ret = new StringBuilder(super.toString());
-        ret.append(" - {");   // NOI18N
-
-        for (Iterator i = attributes().iterator(); i.hasNext();) {
-            ret.append(i.next());
-            ret.append(", ");    // NOI18N
-        }
-
-        ret.append("}");      //NOI18N
-        if (isEmpty()) {
-            ret.append(" (EMPTY TAG)"); //NOI18N
-        }
-        return ret.toString();
-    }
+    
 }

@@ -57,8 +57,8 @@ public interface OpenTag extends NamedElement, Node {
     
     public boolean isEmpty();
     
-    public EndTag matchingTag();
+    public CloseTag matchingCloseTag();
     
-    public int[] logicalRange();
+    public int semanticEnd();
     
 }

@@ -65,19 +65,23 @@ import org.netbeans.modules.web.common.api.LexerUtils;
 public final class SyntaxAnalyzer {
 
     public static final String UNEXPECTED_SYMBOL_IN_OPEN_TAG = "unexpected_symbol_in_open_tag"; //NOI18N
-    
-    public enum Behaviour {
-        /** set as SyntaxParserContext property if you do not want to check html structure */
-        DISABLE_STRUCTURE_CHECKS,
-        /** set as SyntaxParserContext property if you do not want to check html attributes */
-        DISABLE_ATTRIBUTES_CHECKS 
-    }
 
+    public enum Behaviour {
+
+        /**
+         * set as SyntaxParserContext property if you do not want to check html
+         * structure
+         */
+        DISABLE_STRUCTURE_CHECKS,
+        /**
+         * set as SyntaxParserContext property if you do not want to check html
+         * attributes
+         */
+        DISABLE_ATTRIBUTES_CHECKS
+    }
     private final LanguagePath languagePath;
     private final TokenHierarchy hi;
-    
     private final SharedTextElement SHARED_TEXT_ELEMENT = new SharedTextElement();
-    
     private HtmlSource source;
     private CharSequence sourceCode;
 
@@ -90,7 +94,7 @@ public final class SyntaxAnalyzer {
         this.sourceCode = source.getSourceCode();
         this.languagePath = LanguagePath.get(HTMLTokenId.language());
         this.hi = TokenHierarchy.create(sourceCode, HTMLTokenId.language());
-        
+
         init();
     }
 
@@ -105,28 +109,27 @@ public final class SyntaxAnalyzer {
     public HtmlSource source() {
         return source;
     }
-    
+
     /**
-     * Iterating over the SyntaxElements of this iterator causes the input source
-     * being incrementally parsed if it hasn't been parsed before.
-     * 
-     * !!! Not thread-safe and MOREOVER No more than one iterator 
-     * can be iterated in one moment, resp. always stop using one iterator 
-     * before creating another one. If this happens the iterated elements 
-     * may not properly reflect the real elements in the parsed source !!!
-     * 
+     * Iterating over the SyntaxElements of this iterator causes the input
+     * source being incrementally parsed if it hasn't been parsed before.
+     *
+     * !!! Not thread-safe and MOREOVER No more than one iterator can be
+     * iterated in one moment, resp. always stop using one iterator before
+     * creating another one. If this happens the iterated elements may not
+     * properly reflect the real elements in the parsed source !!!
+     *
      * @return Iterator of SyntaxElement-s
      */
     public synchronized Iterator<Element> elementsIterator() {
         final Iterator<Element> alreadyParsedElementsIterator = new ArrayList<Element>(elements).iterator();
         return new Iterator<Element>() {
-            
             boolean iteratingCache = true;
 
             @Override
             public boolean hasNext() {
                 iteratingCache = alreadyParsedElementsIterator.hasNext();
-                if(iteratingCache) {
+                if (iteratingCache) {
                     return iteratingCache;
                 } else {
                     return SyntaxAnalyzer.this.hasNext();
@@ -142,21 +145,19 @@ public final class SyntaxAnalyzer {
             public void remove() {
                 //no-op
             }
-            
         };
     }
 
     public synchronized SyntaxAnalyzerElements elements() {
         List<Element> result = new ArrayList<Element>();
         Iterator<Element> elementsIterator = elementsIterator();
-        while(elementsIterator.hasNext()) {
+        while (elementsIterator.hasNext()) {
             result.add(elementsIterator.next());
         }
         return new SyntaxAnalyzerElements(result);
     }
-    
+
     //---------------------------- private methods -----------------------------
- 
     private void error() {
         current = new ErrorElement(sourceCode,
                 start,
@@ -173,90 +174,93 @@ public final class SyntaxAnalyzer {
 
     private void entityReference() {
         current = new EntityReferenceElement(sourceCode,
-                start, 
+                start,
                 ts.offset() + ts.token().length() - start);
-        
+
     }
-    
+
     private void comment() {
         current = new CommentElement(sourceCode,
-                start, 
+                start,
                 ts.offset() + ts.token().length() - start);
     }
-    
+
     private void declaration() {
         current = new DeclarationElement(sourceCode,
-                start, 
+                start,
                 ts.offset() + ts.token().length() - start,
                 root_element,
                 doctype_public_id,
                 doctype_file,
                 doctype_name);
     }
-    
+
     private void tag(boolean emptyTag) {
         tag(emptyTag, null);
     }
 
     private void tag(boolean emptyTag, ProblemDescription problem) {
         List<Attribute> attributes = new ArrayList<Attribute>(1); //use small initial capacity since typically there are one or two attribs (if any)
-            for(int i = 0; i < attr_keys.size(); i++) {
-                TokenInfo key = attr_keys.get(i);
-                List<TokenInfo> values = attr_values.get(i);
-                StringBuilder joinedValue = new StringBuilder();
-                
-                if(values == null) {
-                    //attribute has no value
+        for (int i = 0; i < attr_keys.size(); i++) {
+            TokenInfo key = attr_keys.get(i);
+            List<TokenInfo> values = attr_values.get(i);
+            StringBuilder joinedValue = new StringBuilder();
+
+            if (values == null) {
+                //attribute has no value
+                Attribute ta = new AttributeElement(
+                        key.offset,
+                        -1,
+                        key.token.text(),
+                        null);
+                attributes.add(ta);
+            } else {
+                if (values.size() == 1) {
+                    //one part value
+                    TokenInfo ti = values.get(0);
+
                     Attribute ta = new AttributeElement(
                             key.offset,
-                            -1,
+                            ti.offset,
                             key.token.text(),
-                            null);
+                            ti.token.text());
+
                     attributes.add(ta);
+
                 } else {
-                    if(values.size() == 1) {
-                        //one part value
-                        TokenInfo ti = values.get(0);
-                        
-                        Attribute ta = new AttributeElement(
-                                key.offset, 
-                                ti.offset,
-                                key.token.text(),
-                                ti.token.text());
-                        
-                        attributes.add(ta);
-                        
-                    } else {
-                        //multipart value
-                        for(TokenInfo t: values) {
-                            joinedValue.append(t.token.text());
-                        }
+                    //multipart value
+                    for (TokenInfo t : values) {
+                        joinedValue.append(t.token.text());
+                    }
 
-                        TokenInfo firstValuePart = values.get(0);
-                        TokenInfo lastValuePart = values.get(values.size() - 1);
+                    TokenInfo firstValuePart = values.get(0);
+                    TokenInfo lastValuePart = values.get(values.size() - 1);
 
-                        Attribute ta = new AttributeElement(
-                                key.offset, 
-                                firstValuePart.offset,
-                                key.token.text(),
-                                joinedValue.toString().intern());
+                    Attribute ta = new AttributeElement(
+                            key.offset,
+                            firstValuePart.offset,
+                            key.token.text(),
+                            joinedValue.toString().intern());
 //                                , 
 //                                
 //                                lastValuePart.offset + lastValuePart.token.length() - firstValuePart.offset);
-                        attributes.add(ta);
-                    }
+                    attributes.add(ta);
                 }
             }
+        }
 
-        current = new TagElementElement(sourceCode,
-                start,
-                ts.offset() + ts.token().length() - start,
-                tagName.intern(),
-                attributes.isEmpty() ? null : attributes,
-                openTag,
-                emptyTag);
+        if (openTag) {
+            current = new OpenTagElement(sourceCode,
+                    start,
+                    ts.offset() + ts.token().length() - start,
+                    tagName.intern(),
+                    attributes.isEmpty() ? null : attributes,
+                    emptyTag);
+        } else {
+            current = new EndTagElement(sourceCode, start, ts.offset() + ts.token().length() - start, tagName.intern());
+        }
 
-        if(problem != null) {
+        if (problem != null) {
             current.addProblem(problem);
         }
 
@@ -272,7 +276,7 @@ public final class SyntaxAnalyzer {
         backup(1);
         //make the tag, we do not know if empty or not
         tag(false, problem);
-        
+
         state = S_INIT;
         start = -1;
     }
@@ -285,14 +289,13 @@ public final class SyntaxAnalyzer {
         state = S_INIT;
         start = -1;
     }
-    
+
     private void backup(int tokens) {
-        for(int i = 0; i < tokens; i++) {
+        for (int i = 0; i < tokens; i++) {
             ts.movePrevious();
             token = ts.token();
         }
     }
-    
     private static final int S_INIT = 0;
     private static final int S_TAG_OPEN_SYMBOL = 1;
     private static final int S_TAG = 2;
@@ -306,13 +309,11 @@ public final class SyntaxAnalyzer {
     private static final int S_DOCTYPE_FILE = 10;
     private static final int S_TEXT = 11;
     private static final int S_TAG_AFTER_NAME = 12;
-    
     private int state;
     private int start;
     private TokenSequence ts;
     private Token<HTMLTokenId> token;
     private List<Element> elements;
-    
     private boolean openTag = true;
     private String tagName = null;
     private TokenInfo attrib = null;
@@ -322,13 +323,12 @@ public final class SyntaxAnalyzer {
     private AbstractElement current;
     private boolean eof;
     private AtomicReference<Element> lastFoundElement;
-    
     private String root_element, doctype_public_id, doctype_file, doctype_name;
-    
+
     private void init() {
         elements = new ArrayList<Element>();
         sequences = hi.tokenSequenceList(languagePath, 0, Integer.MAX_VALUE).iterator();
-        if(!sequences.hasNext()) {
+        if (!sequences.hasNext()) {
             eof = true;
             return;
         }
@@ -339,18 +339,18 @@ public final class SyntaxAnalyzer {
         attr_keys = new ArrayList<TokenInfo>();
         attr_values = new ArrayList<List<TokenInfo>>();
         eof = false;
-        
+
     }
-    
+
     private boolean hasNext() {
-        if(lastFoundElement == null) {
+        if (lastFoundElement == null) {
             lastFoundElement = new AtomicReference<Element>(findNextElement());
         }
         return lastFoundElement.get() != null;
     }
-    
+
     private Element next() {
-        if(!hasNext()) {
+        if (!hasNext()) {
             throw new IllegalStateException("No such element");
         }
         Element element = lastFoundElement.get();
@@ -358,17 +358,16 @@ public final class SyntaxAnalyzer {
         elements.add(element);
         return element;
     }
-    
-    
+
     private Element findNextElement() {
         Element element = null;
         //parse tokens until a syntaxelement is found
-        while(!eof && (element = processNextToken()) == null) {
+        while (!eof && (element = processNextToken()) == null) {
             //no-op
         }
         return element;
     }
-    
+
     private Element processNextToken() {
         current = null;
 
@@ -692,11 +691,11 @@ public final class SyntaxAnalyzer {
         return current;
 
     }
-    
+
     private void handleEOF() {
-        if(state != S_INIT) {
+        if (state != S_INIT) {
             //an incomplete syntax element at the end of the file
-            switch(state) {
+            switch (state) {
                 case S_COMMENT:
                     comment();
                     break;
@@ -722,7 +721,7 @@ public final class SyntaxAnalyzer {
                     error();
                     break;
             }
-            
+
         }
     }
 
@@ -731,8 +730,10 @@ public final class SyntaxAnalyzer {
     }
 
     private static final class TokenInfo {
+
         public int offset;
         public Token token;
+
         public TokenInfo(int offset, Token token) {
             this.offset = offset;
             this.token = token;
@@ -763,7 +764,5 @@ public final class SyntaxAnalyzer {
             hash = 37 * hash + (this.token != null ? this.token.hashCode() : 0);
             return hash;
         }
-
     }
-
 }

@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
 
 /**
  * 
@@ -94,6 +95,8 @@ public abstract class AbstractElement implements Element {
         return problems;
     }
     
+    
+    
     public void addProblem(ProblemDescription problem) {
         assert problem != null;
         if(problems == null) {
@@ -119,6 +122,16 @@ public abstract class AbstractElement implements Element {
                 .append(to())
                 .append(']')
                 .toString(); //NOI18N
+    }
+
+    @Override
+    public CharSequence id() {
+        return type().name();
+    }
+
+    @Override
+    public Node parent() {
+        return null;
     }
 
 }

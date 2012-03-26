@@ -50,8 +50,10 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.openide.util.NbBundle;
 
 /**
@@ -93,7 +95,7 @@ public class RemoveSurroundingTag extends Hint {
                 @Override
                 public void run() {
                     try {
-                        Node[] surroundingPair = findPairNodesAtSelection(context) ;
+                        Element[] surroundingPair = findPairNodesAtSelection(context) ;
                         if(surroundingPair == null) {
                             return ;
                         }
@@ -149,7 +151,7 @@ public class RemoveSurroundingTag extends Hint {
         }
     }
 
-    private static Node[] findPairNodesAtSelection(RuleContext context) {
+    private static Element[] findPairNodesAtSelection(RuleContext context) {
         if (context.selectionStart == -1 || context.selectionEnd == -1) {
             return null;
         }
@@ -158,24 +160,24 @@ public class RemoveSurroundingTag extends Hint {
 
         //check whether the selection starts at a tag and ends at a tag
         //open tag
-        Node open = result.findLeafTag(context.selectionStart, true, true);
-
+        Element open = result.findLeafTag(context.selectionStart, true, true);
         if (open == null || open.type() != ElementType.OPEN_TAG) {
             return null;
         }
 
         //close tag
-        Node close = result.findLeafTag(context.selectionEnd, false, true);
-        if (close == null || close.type() != ElementType.END_TAG) {
+        Element close = result.findLeafTag(context.selectionEnd, false, true);
+        if (close == null || close.type() != ElementType.CLOSE_TAG) {
             return null;
         }
 
         //is the end tag really a pair node of the open tag?
-        if (open.matchingTag() != close) { //same AST ... reference test is ok
+        OpenTag openTag = (OpenTag)open;
+        if (openTag.matchingCloseTag() != close) { //same AST ... reference test is ok
             return null;
         }
 
-        return new Node[]{open, close};
+        return new Element[]{open, close};
     }
     
     

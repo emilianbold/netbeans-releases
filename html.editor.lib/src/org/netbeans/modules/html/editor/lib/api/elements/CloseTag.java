@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.html.editor.lib;
-
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.html.editor.lib.api.ParseResult;
-import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
+package org.netbeans.modules.html.editor.lib.api.elements;
 
 /**
  *
  * @author marekfukala
  */
-public class EmptyResult implements ParseResult {
-
-    private HtmlSource source;
-
-    public EmptyResult(HtmlSource source) {
-        this.source = source;
-    }
-
-    @Override
-    public HtmlSource source() {
-        return source;
-    }
-
-    @Override
-    public Node root() {
-        return new RootNode(source.getSourceCode());
-    }
-
-    @Override
-    public Collection<ProblemDescription> getProblems() {
-        return Collections.emptyList();
-    }
-
+public interface CloseTag extends NamedElement {
+    
+    public OpenTag matchingOpenTag();
+    
 }

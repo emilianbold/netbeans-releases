@@ -66,10 +66,7 @@ import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.html.editor.HtmlSourceUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
-import org.netbeans.modules.html.editor.lib.api.elements.Tag;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
 import org.netbeans.modules.html.editor.refactoring.api.SelectorType;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -191,9 +188,9 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
             if (jsfHtmlLibRoot != null) {
                 ElementUtils.visitChildren(jsfHtmlLibRoot, new ElementVisitor() {
                     @Override
-                    public void visit(Node node) {
+                    public void visit(Element node) {
                         //assume <h:head>
-                        Tag t = (Tag) node;
+                        OpenTag t = (OpenTag) node;
                         if (LexerUtils.equals("head", t.unqualifiedName(), true, true)) { //NOI18N
                             //append the section as first head's child if there are
                             //no existing link attribute
@@ -208,8 +205,8 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
             Node root = result.root();
             ElementUtils.visitChildren(root, new ElementVisitor() {
                 @Override
-                public void visit(Node node) {
-                    Tag t = (Tag) node;
+                public void visit(Element node) {
+                    OpenTag t = (OpenTag) node;
                     if (LexerUtils.equals("html", t.name(), true, true)) {
                         if (insertPositionRef.get() == -1) { //h:head already found?
                             //append the section as first html's child if there are
@@ -226,7 +223,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                             //NOI18N
                             //existing style section
                             //append the new section after the last one
-                            insertPositionRef.set(node.logicalRange()[1]); //end of the end tag offset
+                            insertPositionRef.set(t.semanticEnd()); //end of the end tag offset
                             increaseIndent.set(false);
                         }
                     }

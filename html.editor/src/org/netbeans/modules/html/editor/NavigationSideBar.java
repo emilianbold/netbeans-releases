@@ -41,16 +41,8 @@
  */
 package org.netbeans.modules.html.editor;
 
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedList;
+import java.awt.*;
+import java.util.*;
 import java.util.List;
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
@@ -67,12 +59,9 @@ import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.SideBarFactory;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.HtmlCaretAwareSourceTask.Source;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.TreePath;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -107,7 +96,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
         }
     };
     private boolean enabled = true;
-    List<Node> nesting = new ArrayList<Node>(5);
+    List<OpenTag> nesting = new ArrayList<OpenTag>(5);
 
     public NavigationSideBar() {
         doc = null;
@@ -144,25 +133,25 @@ public class NavigationSideBar extends JPanel implements Accessible {
         allRoots.addAll(result.roots().values());
         allRoots.add(result.rootOfUndeclaredTagsParseTree());
 
-        List<Node> nodesInPath = new ArrayList<Node>();
+        List<OpenTag> nodesInPath = new ArrayList<OpenTag>();
         int astOffset = info.getSnapshot().getEmbeddedOffset(caretPosition);
         for (Node root : allRoots) {
-            Node leaf = ElementUtils.findElement(root, astOffset, false, false);
+            Element leaf = ElementUtils.findElement(root, astOffset, false, false);
             if (leaf != null) {
                 //add all nodes in the leaf's path to the root
                 TreePath treePath = new TreePath(null, leaf);
-                for (Node node : treePath.path()) { //really brilliant wording!!!!
+                for (Element node : treePath.path()) { //really brilliant wording!!!!
                     if (node.type() == ElementType.OPEN_TAG && !ElementUtils.isVirtualNode(node)) {
-                        nodesInPath.add(node);
+                        nodesInPath.add((OpenTag)node);
                     }
                 }
             }
         }
         //sort by start offsets
-        Collections.sort(nodesInPath, new Comparator<Node>() {
+        Collections.sort(nodesInPath, new Comparator<Element>() {
 
             @Override
-            public int compare(Node o1, Node o2) {
+            public int compare(Element o1, Element o2) {
                 return o1.from() - o2.from();
             }
         });
@@ -175,7 +164,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
     }
 
-    private void updateNestingInfo(final Result tsource, List<Node> sortedPath) {
+    private void updateNestingInfo(final Result tsource, List<OpenTag> sortedPath) {
         nesting = sortedPath;
 
         //update UI
@@ -192,12 +181,12 @@ public class NavigationSideBar extends JPanel implements Accessible {
     private void updatePanelUI(final Result tsource) {
         removeAll();
 
-        for (final Node node : nesting) {
+        for (final OpenTag node : nesting) {
             final JLabel label = new javax.swing.JLabel();
             label.setForeground(Color.BLACK);
             label.setFont(new Font("Monospaced", Font.PLAIN, (int) (getColoring().getFont().getSize() * .9))); // NOI18N
             label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            label.setText(getDrawText(node.nodeId().toString()));
+            label.setText(getDrawText(node.name().toString()));
             label.addMouseListener(new java.awt.event.MouseAdapter() {
 
                 @Override
@@ -273,7 +262,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
     static interface TestAccess {
 
-        public void updated(List<Node> path);
+        public void updated(List<OpenTag> path);
     }
     private TestAccess testAccess;
 }

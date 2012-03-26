@@ -50,6 +50,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.html.editor.lib.api.*;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
@@ -441,7 +442,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
         String code = "<table><tr><td></tr></table>";
         AstNode root = parse(code, null);
 
-        Iterator<Node> ch = root.children().iterator();
+        Iterator<Element> ch = root.children().iterator();
         AstNode otable = (AstNode)ch.next();
         AstNode ctable = (AstNode)ch.next();
 
@@ -451,7 +452,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
         assertTrue(otable.needsToHaveMatchingTag());
         assertTrue(ctable.needsToHaveMatchingTag());
 
-        Iterator<Node> tch = otable.children().iterator();
+        Iterator<Element> tch = otable.children().iterator();
         AstNode otr = (AstNode)tch.next();
         AstNode ctr = (AstNode)tch.next();
 
@@ -572,7 +573,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
         errors[0] = 0;
         final List<ProblemDescription> errorslist = new ArrayList<ProblemDescription>();
         ElementVisitor visitor = new ElementVisitor() {
-            public void visit(Node node) {
+            public void visit(Element node) {
                 for(ProblemDescription d : node.problems()) {
                     errorslist.add(d);
                     errors[0]++;
@@ -597,7 +598,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
 
         final Iterator<ProblemDescription> errorsItr = Arrays.asList(expectedErrors).listIterator();
         ElementVisitor visitor = new ElementVisitor() {
-            public void visit(Node node) {
+            public void visit(Element node) {
                 for(ProblemDescription d : node.problems()) {
                     assertTrue("Unexpected error description: " + d.dump(code), errorsItr.hasNext());
                     assertEquals(errorsItr.next(), d);

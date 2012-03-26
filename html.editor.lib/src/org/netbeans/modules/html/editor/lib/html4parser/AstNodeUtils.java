@@ -42,10 +42,10 @@
 package org.netbeans.modules.html.editor.lib.html4parser;
 
 import java.util.*;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementFilter;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementFilter;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.dtd.DTD;
 
 /**
@@ -69,7 +69,7 @@ public class AstNodeUtils {
     }
 
     private static AstNode findNodeByPhysicalRange(AstNode node, int offset, boolean forward) {
-        for (Node child : node.children()) {
+        for (Element child : node.children()) {
             AstNode achild = (AstNode)child;
             if(matchesNodeRange(achild, offset, forward, true)) {
                 return achild;
@@ -88,7 +88,7 @@ public class AstNodeUtils {
     }
 
     private static AstNode findNodeByLogicalRange(AstNode node, int offset, boolean forward) {
-        for (Node child : node.children()) {
+        for (Element child : node.children()) {
             AstNode achild = (AstNode)child;
             if(achild.isVirtual()) {
                 //we need to recurse into every virtual branch blindly hoping there might by some
@@ -129,7 +129,7 @@ public class AstNodeUtils {
             }
 
             AstNode match = (AstNode)node.getMatchingTag();
-            if (match != null && match.type() == ElementType.END_TAG) {
+            if (match != null && match.type() == ElementType.CLOSE_TAG) {
                 //end tag is possibly the searched node
                 if (astOffset >= match.from() && astOffset < match.endOffset()) {
                     return match;
@@ -144,56 +144,7 @@ public class AstNodeUtils {
         return node;
     }
 
-    public static AstNode query(AstNode base, String path) {
-        return query(base, path, false);
-    }
-
-    /** find an AstNode according to the path
-     * example of path: html/body/table|2/tr -- find a second table tag in body tag
-     *
-     * note: queries OPEN TAGS ONLY!
-     */
-    public static AstNode query(AstNode base, String path, boolean caseInsensitive) {
-        StringTokenizer st = new StringTokenizer(path, "/");
-        AstNode found = base;
-        while (st.hasMoreTokens()) {
-            String token = st.nextToken();
-            int indexDelim = token.indexOf('|');
-
-            String nodeName = indexDelim >= 0 ? token.substring(0, indexDelim) : token;
-            if (caseInsensitive) {
-                nodeName = nodeName.toLowerCase(Locale.ENGLISH);
-            }
-            String sindex = indexDelim >= 0 ? token.substring(indexDelim + 1, token.length()) : "0";
-            int index = Integer.parseInt(sindex);
-
-            int count = 0;
-            AstNode foundLocal = null;
-            for (Node child : found.children()) {
-                AstNode achild = (AstNode)child;
-                String nodeId = child.nodeId().toString();
-                if (child.type() == ElementType.OPEN_TAG && (caseInsensitive ? nodeId = nodeId.toLowerCase(Locale.ENGLISH) : nodeId).equals(nodeName) && count++ == index) {
-                    foundLocal = achild;
-                    break;
-                }
-            }
-            if (foundLocal != null) {
-                found = foundLocal;
-
-                if (!st.hasMoreTokens()) {
-                    //last token, we may return
-                    assert found.name().equals(nodeName);
-                    return found;
-                }
-
-            } else {
-                return null; //no found
-            }
-        }
-
-        return null;
-    }
-
+  
     public static Collection<AstNode> getPossibleEndTagElements(AstNode leaf) {
         Collection<AstNode> possible = new LinkedList<AstNode>();
 
@@ -271,7 +222,7 @@ public class AstNodeUtils {
         DTD.Content content = contentModel.getContent();
         //resolve all preceding siblings before the astPosition
         Collection<DTD.Element> childrenBefore = new ArrayList<DTD.Element>();
-        for (Node sibling : leafAstNodeForPosition.children()) {
+        for (Element sibling : leafAstNodeForPosition.children()) {
             AstNode asibling = (AstNode)sibling;
             if (sibling.from() >= astPosition) {
                 //process only siblings before the offset!
@@ -415,7 +366,7 @@ public class AstNodeUtils {
 
     /** finds closest physical preceeding node to the offset */
     public static AstNode getClosestNodeBackward(AstNode context, int offset, ElementFilter filter) {
-        for (Node child : context.children(filter)) {
+        for (Element child : context.children(filter)) {
             if (child.from() >= offset) {
                  return context;
             }

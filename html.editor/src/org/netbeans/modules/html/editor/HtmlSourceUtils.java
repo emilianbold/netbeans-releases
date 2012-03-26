@@ -41,11 +41,6 @@
  */
 package org.netbeans.modules.html.editor;
 
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.Tag;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -59,6 +54,7 @@ import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.refactoring.ExtractInlinedStyleRefactoringPlugin;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
@@ -91,8 +87,8 @@ public class HtmlSourceUtils {
                 ElementUtils.visitChildren(jsfHtmlLibRoot, new ElementVisitor() {
 
                     @Override
-                    public void visit(Node node) {
-                        Tag tag = (Tag)node;
+                    public void visit(Element node) {
+                        OpenTag tag = (OpenTag)node;
                         //assume <h:head>
                         if (LexerUtils.equals("head",tag.unqualifiedName(), false, false)) { //NOI18N
                             //append the section as first head's child if there are
@@ -110,8 +106,8 @@ public class HtmlSourceUtils {
             ElementUtils.visitChildren(root, new ElementVisitor() {
 
                 @Override
-                public void visit(Node node) {
-                    Tag tag = (Tag)node;
+                public void visit(Element node) {
+                    OpenTag tag = (OpenTag)node;
                     CharSequence name = tag.name();
                     if(LexerUtils.equals("html", name, true, true)) {
                         if(insertPositionRef.get() == -1) { //h:head already found?
@@ -128,7 +124,7 @@ public class HtmlSourceUtils {
                     } else if (LexerUtils.equals("link", name, true, true)) {
                         //NOI18N
                         //existing link => append the new section after the last one
-                        insertPositionRef.set(tag.logicalRange()[1]); //end of the end tag offset
+                        insertPositionRef.set(tag.semanticEnd()); //end of the end tag offset
                         increaseIndent.set(false);
                         isLinkTagEmpty.set(tag.isEmpty());
                     }

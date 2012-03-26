@@ -39,14 +39,30 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.elements;
+package org.netbeans.modules.html.editor.lib.plain;
+
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 
 /**
  *
  * @author marekfukala
  */
-public interface EndTag extends NamedElement {
-    
-    public OpenTag matchingTag();
+public class EndTagElement extends AbstractNamedElement implements CloseTag {
+
+    public EndTagElement(CharSequence document, int from, int length, CharSequence name) {
+        super(document, from, length, name);
+    }
+
+    @Override
+    public ElementType type() {
+        return ElementType.CLOSE_TAG;
+    }
+
+    @Override
+    public OpenTag matchingOpenTag() {
+        return null;
+    }
     
 }

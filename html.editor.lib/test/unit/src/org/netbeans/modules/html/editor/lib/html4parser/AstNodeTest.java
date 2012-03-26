@@ -47,8 +47,8 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersionTest;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 
 /**
@@ -90,12 +90,12 @@ public class AstNodeTest extends TestBase {
     }
 
     public void testAttribute() {
-        AstNode.AstAttribute attr = new AstNode.AstAttribute("name", "value", 0, 6);
+        AstAttribute attr = new AstAttribute("name", "value", 0, 6);
         assertEquals("name", attr.name());
         assertEquals("name", attr.nameWithoutNamespacePrefix());
         assertNull(attr.namespacePrefix());
 
-        attr = new AstNode.AstAttribute("xmlns:h", "value", 0, 6);
+        attr = new AstAttribute("xmlns:h", "value", 0, 6);
         assertEquals("xmlns:h", attr.name());
         assertEquals("h", attr.nameWithoutNamespacePrefix());
         assertEquals("xmlns", attr.namespacePrefix());
@@ -111,7 +111,7 @@ public class AstNodeTest extends TestBase {
         node.addChild(node2);
         node.addChild(node3);
 
-        Collection<Node> children = node.children();
+        Collection<Element> children = node.children();
         AstNode child = (AstNode)children.iterator().next();
         
         //we can directly remove the children w/o java.util.ConcurrentModificationException

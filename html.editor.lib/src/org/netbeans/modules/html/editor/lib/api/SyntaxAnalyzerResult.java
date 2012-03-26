@@ -41,18 +41,13 @@
  */
 package org.netbeans.modules.html.editor.lib.api;
 
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.html.editor.lib.EmptyResult;
 import org.netbeans.modules.html.editor.lib.HtmlSourceVersionQuery;
-import org.netbeans.modules.html.editor.lib.html4parser.AstNode;
-import org.netbeans.modules.html.editor.lib.html4parser.XmlSyntaxTreeBuilder;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import org.netbeans.modules.html.editor.lib.html4parser.XmlSyntaxTreeBuilder;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -192,7 +187,7 @@ public class SyntaxAnalyzerResult {
         LocalSourceContext context = createLocalContext(new TagsFilter() {
 
             @Override
-            public boolean accepts(TagElement tag, CharSequence prefix) {
+            public boolean accepts(NamedElement tag, CharSequence prefix) {
                 if (prefix == null) {
                     return true; //default namespace, should be html in most cases
                 }
@@ -243,7 +238,7 @@ public class SyntaxAnalyzerResult {
         LocalSourceContext context = createLocalContext(new TagsFilter() {
 
             @Override
-            public boolean accepts(TagElement tag, CharSequence prefix) {
+            public boolean accepts(NamedElement tag, CharSequence prefix) {
                 return prefix != null && prefixes.contains(prefix.toString());
             }
         });
@@ -253,10 +248,7 @@ public class SyntaxAnalyzerResult {
         //create a new html source with the cleared areas
         HtmlSource source = new HtmlSource(clearedSource, analyzer.source().getSnapshot() , analyzer.source().getSourceFileObject());
 
-        AstNode root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, context.getFiltered());
-
-        //XXX fix that later
-        root.setProperty(NAMESPACE_PROPERTY, namespace);
+        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, namespace, context.getFiltered());
         
         return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
 
@@ -268,7 +260,7 @@ public class SyntaxAnalyzerResult {
      * to the tree structure.
      */
     public ParseResult parsePlain() {
-        AstNode root = XmlSyntaxTreeBuilder.makeUncheckedTree(analyzer.source(), getElements().items());
+        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(analyzer.source(), null, getElements().items());
         return new DefaultParseResult(analyzer.source(), root, Collections.<ProblemDescription>emptyList());
     }
 
@@ -284,7 +276,7 @@ public class SyntaxAnalyzerResult {
         LocalSourceContext context = createLocalContext(new TagsFilter() {
 
             @Override
-            public boolean accepts(TagElement tag, CharSequence prefix) {
+            public boolean accepts(NamedElement tag, CharSequence prefix) {
                 return prefix != null && !prefixes.contains(prefix.toString());
             }
         });
@@ -294,7 +286,7 @@ public class SyntaxAnalyzerResult {
         //create a new html source with the cleared areas
         HtmlSource source = new HtmlSource(clearedSource, analyzer.source().getSnapshot() , analyzer.source().getSourceFileObject());
 
-        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, context.getFiltered());
+        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, context.getFiltered());
 
         return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
 
@@ -315,16 +307,19 @@ public class SyntaxAnalyzerResult {
         List<Element> filtered = new ArrayList<Element>();
 
         for (Element e : getElements().items()) {
-            if (e.type() == ElementType.OPEN_TAG || e.type() == ElementType.END_TAG) {
-                TagElement tag = (TagElement) e;
+            if (e.type() == ElementType.OPEN_TAG || e.type() == ElementType.CLOSE_TAG) {
+                NamedElement tag = (NamedElement) e;
                 CharSequence tagNamePrefix = tag.namespacePrefix();
 
                 if (filter.accepts(tag, tagNamePrefix)) {
                     filtered.add(e);
                     //check for the xmlns attributes
-                    for(Attribute a : tag.attributes()) {
-                        if(LexerUtils.startsWith(a.name(), "xmlns:", true, false)) { //NOI18N
-                            ignoredAreas.add(new IgnoredArea(a.nameOffset(), a.valueOffset() + a.value().length()));
+                    if(e.type() == ElementType.OPEN_TAG) {
+                        OpenTag ot = (OpenTag)tag;
+                        for(Attribute a : ot.attributes()) {
+                            if(LexerUtils.startsWith(a.name(), "xmlns:", true, false)) { //NOI18N
+                                ignoredAreas.add(new IgnoredArea(a.nameOffset(), a.valueOffset() + a.value().length()));
+                            }
                         }
                     }
 
@@ -529,7 +524,7 @@ public class SyntaxAnalyzerResult {
             Element se = elementsIterator.next();
             if (se.type() == ElementType.OPEN_TAG) {
                 //look for the xmlns attribute only in the first tag
-                TagElement tag = (TagElement) se;
+                OpenTag tag = (OpenTag) se;
                 Attribute xmlns = tag.getAttribute("xmlns");
                 return xmlns != null ? dequote(xmlns.value()).toString() : null;
             }
@@ -553,7 +548,7 @@ public class SyntaxAnalyzerResult {
             
             for (Element se : getElements().items()) {
                 if (se.type() == ElementType.OPEN_TAG) {
-                    TagElement tag = (TagElement) se;
+                    OpenTag tag = (OpenTag) se;
                     for (Attribute attr : tag.attributes()) {
                         String attrName = attr.name().toString();
                         if (attrName.startsWith("xmlns")) { //NOI18N
@@ -617,7 +612,8 @@ public class SyntaxAnalyzerResult {
 
     private static interface TagsFilter {
 
-        public boolean accepts(TagElement tag, CharSequence prefix);
+        public boolean accepts(NamedElement tag, CharSequence prefix);
+        
     }
 
     private static class IgnoredArea {

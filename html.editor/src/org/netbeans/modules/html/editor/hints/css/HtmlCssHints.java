@@ -53,13 +53,7 @@ import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.hints.EmbeddingUtil;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.AttributeFilter;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
-import org.netbeans.modules.html.editor.lib.api.elements.Tag;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
@@ -131,8 +125,8 @@ public class HtmlCssHints {
         }
 
         @Override
-        public void visit(Node node) {
-            Tag tag = (Tag)node;
+        public void visit(Element node) {
+            OpenTag tag = (OpenTag)node;
             for (Attribute id : tag.attributes(new AttributeFilter() {
 
                 @Override

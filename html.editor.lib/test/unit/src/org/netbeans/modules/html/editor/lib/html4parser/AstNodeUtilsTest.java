@@ -46,6 +46,7 @@ import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.html.editor.lib.api.*;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementFilter;
@@ -81,6 +82,10 @@ public class AstNodeUtilsTest extends TestBase {
         suite.addTest(new AstNodeUtilsTest("testFindClosestNodeBackward"));
         return suite;
     }
+    
+    private AstNode query(Node root, String path) {
+        return (AstNode)ElementUtils.query(root, path);
+    }
 
     public void testFindClosestNodeBackward() throws Exception {
         String code = "<p><a>text</a><b>xxx</b></p>";
@@ -89,16 +94,16 @@ public class AstNodeUtilsTest extends TestBase {
         AstNode root = parse(code, null);
         assertNotNull(root);
 
-        AstNode a = AstNodeUtils.query(root, "p/a");
+        AstNode a = query(root, "p/a");
         assertNotNull(a);
-        AstNode b = AstNodeUtils.query(root, "p/b");
+        AstNode b = query(root, "p/b");
         assertNotNull(b);
-        AstNode p = AstNodeUtils.query(root, "p");
+        AstNode p = query(root, "p");
         assertNotNull(p);
 
         ElementFilter filter = new ElementFilter() {
             @Override
-            public boolean accepts(Node node) {
+            public boolean accepts(Element node) {
                 return node.type() == ElementType.OPEN_TAG;
             }
         };
@@ -137,7 +142,7 @@ public class AstNodeUtilsTest extends TestBase {
         assertNotNull(adjusted);
         assertEquals(10, adjusted.startOffset());
         assertEquals(14, adjusted.endOffset());
-        assertEquals(ElementType.END_TAG, adjusted.type());
+        assertEquals(ElementType.CLOSE_TAG, adjusted.type());
 
         assertDescendant(root, 17, "p", ElementType.OPEN_TAG, 0, 18);
 
@@ -165,27 +170,27 @@ public class AstNodeUtilsTest extends TestBase {
         AstNode root = parse(code, null);
         assertNotNull(root);
 
-        AstNode node = AstNodeUtils.query(root, "html");
+        AstNode node = query(root, "html");
         assertNotNull(node);
         assertEquals("html", node.name());
 
-        node = AstNodeUtils.query(root, "html/body");
+        node = query(root, "html/body");
         assertNotNull(node);
         assertEquals("body", node.name());
 
-        node = AstNodeUtils.query(root, "html/body/table");
+        node = query(root, "html/body/table");
         assertNotNull(node);
         assertEquals("table", node.name());
 
-        node = AstNodeUtils.query(root, "html/body/table/tr");
+        node = query(root, "html/body/table/tr");
         assertNotNull(node);
         assertEquals("tr", node.name());
 
-        node = AstNodeUtils.query(root, "html/body/table/tr|1");
+        node = query(root, "html/body/table/tr|1");
         assertNotNull(node);
         assertEquals("tr", node.name());
 
-        node = AstNodeUtils.query(root, "html/body/table/tr|1/td");
+        node = query(root, "html/body/table/tr|1/td");
         assertNotNull(node);
         assertEquals("td", node.name());
     }
@@ -202,7 +207,7 @@ public class AstNodeUtilsTest extends TestBase {
         final int nodes[] = new int[1];
         ElementUtils.visitChildren(root, new ElementVisitor() {
             @Override
-            public void visit(Node node) {
+            public void visit(Element node) {
                 nodes[0]++;
             }
         });
@@ -286,7 +291,7 @@ public class AstNodeUtilsTest extends TestBase {
 
 //        AstAstNodeUtils.dumpTree(root);
 
-        AstNode title = AstNodeUtils.query(root, "html/head/title");
+        AstNode title = query(root, "html/head/title");
         assertNotNull(title);
 
         //non logical range
@@ -297,7 +302,7 @@ public class AstNodeUtilsTest extends TestBase {
         //logical range
         assertSame(title, AstNodeUtils.findNode(root, 23, false, false));
 
-        AstNode div = AstNodeUtils.query(root, "html/body/div");
+        AstNode div = query(root, "html/body/div");
         assertNotNull(div);
         //non logical range
         assertSame(div, AstNodeUtils.findNode(root, 35, true, false)); //middle
@@ -318,15 +323,15 @@ public class AstNodeUtilsTest extends TestBase {
 
 //        AstAstNodeUtils.dumpTree(root);
 
-        AstNode html = AstNodeUtils.query(root, "html");
+        AstNode html = query(root, "html");
         assertNotNull(html);
         Node htmlEnd = html.getMatchingTag();
         assertNotNull(htmlEnd);
-        AstNode body = AstNodeUtils.query(root, "html/body");
+        AstNode body = query(root, "html/body");
         assertNotNull(body);
         Node bodyEnd = body.getMatchingTag();
         assertNotNull(bodyEnd);
-        AstNode div = AstNodeUtils.query(root, "html/div");
+        AstNode div = query(root, "html/div");
         assertNotNull(div);
 
         assertNull(AstNodeUtils.findNode(root,7, true, true));

@@ -43,12 +43,11 @@ package org.netbeans.modules.html.editor.lib.html4parser;
 
 import java.util.*;
 import org.netbeans.modules.html.editor.lib.api.*;
-import org.netbeans.modules.html.editor.lib.api.model.*;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
-import org.netbeans.modules.html.editor.lib.api.elements.Tag;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.html.editor.lib.dtd.DTD;
-import org.netbeans.modules.html.editor.lib.dtd.DTD.Element;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -70,9 +69,9 @@ public class DefaultHtmlParser implements HtmlParser {
             DTD dtd = version.getDTD();
             assert dtd != null;
 
-            List<Element> all = dtd.getElementList("");
+            List<org.netbeans.modules.html.editor.lib.dtd.DTD.Element> all = dtd.getElementList("");
             value = new ArrayList<HtmlTag>();
-            for (Element e : all) {
+            for (org.netbeans.modules.html.editor.lib.dtd.DTD.Element e : all) {
                 value.add(DTD2HtmlTag.getTagForElement(dtd, e));
             }
             ALL_TAGS_MAP.put(version, value);
@@ -113,14 +112,14 @@ public class DefaultHtmlParser implements HtmlParser {
             }
 
             @Override
-            public Collection<HtmlTag> getPossibleOpenTags(Tag context) {
+            public Collection<HtmlTag> getPossibleOpenTags(Element context) {
                 return DTD2HtmlTag.convert(version.getDTD(), AstNodeUtils.getPossibleOpenTagElements((AstNode)context));
             }
 
             @Override
-            public Map<HtmlTag, Node> getPossibleEndTags(Tag context) {
+            public Map<HtmlTag, OpenTag> getPossibleEndTags(Element context) {
                 Collection<AstNode> possibleEndTags = AstNodeUtils.getPossibleEndTagElements((AstNode)context);
-                Map<HtmlTag, Node> result = new LinkedHashMap<HtmlTag, Node>();
+                Map<HtmlTag, OpenTag> result = new LinkedHashMap<HtmlTag, OpenTag>();
                 for (AstNode node : possibleEndTags) {
                     if (node.getDTDElement() != null) {
                         //DTD element bound node

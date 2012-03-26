@@ -45,18 +45,16 @@ package org.netbeans.modules.html.editor.lib.html4parser;
 import java.util.Collection;
 import java.util.LinkedList;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.TagElement;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
  * @author marekfukala
  */
-public class XmlSyntaxTreeBuilder extends SyntaxTreeBuilder {
+public class XmlSyntaxTreeBuilder {
 
-    public static AstNode makeUncheckedTree(HtmlSource source, Collection<Element> elements) {
+    public static Node makeUncheckedTree(HtmlSource source, String namespace, Collection<Element> elements) {
 
         assert elements != null : "passed elements list cannot but null"; //NOI18N
 
@@ -64,44 +62,53 @@ public class XmlSyntaxTreeBuilder extends SyntaxTreeBuilder {
 
         //create a root node, it can contain one or more child nodes
         //normally just <html> node should be its child
-        AstNode rootNode = new AstNode.RootAstNode(0, lastEndOffset);
-        LinkedList<AstNode> stack = new LinkedList<AstNode>();
+        XmlSTElements.Root rootNode = new XmlSTElements.Root(namespace, lastEndOffset);
+        LinkedList<XmlSTElements.OT> stack = new LinkedList<XmlSTElements.OT>();
         stack.add(rootNode);
 
         for (Element element : elements) {
 
             if (element.type() == ElementType.OPEN_TAG) { //open tag
-                TagElement tagElement = (TagElement) element;
-                CharSequence tagName = tagElement.name();
+                OpenTag plainOpenTag = (OpenTag) element;
 
-                AstNode lNode = stack.getLast();
 
-                //create an AST node for current element
-                AstNode openTagNode = new AstNode(tagName, ElementType.OPEN_TAG,
-                        tagElement.from(), tagElement.to(), tagElement.isEmpty());
-
-                //add existing tag attributes
-                setTagAttributes(openTagNode, tagElement);
-
+                OpenTag openTagNode = plainOpenTag.isEmpty()
+                        ?
+                        new XmlSTElements.EmptyOT(
+                            plainOpenTag.attributes(),
+                            plainOpenTag.name(), 
+                            plainOpenTag.from(),
+                            plainOpenTag.to())
+                        :
+                        new XmlSTElements.OT(
+                            plainOpenTag.attributes(),
+                            plainOpenTag.name(), 
+                            plainOpenTag.from(),
+                            plainOpenTag.to())
+                        ;
+                
+                XmlSTElements.OT peek = stack.getLast();
+                
                 //possible add the node to the nodes stack
-                if (!(tagElement.isEmpty())) {
-                    stack.addLast(openTagNode);
+                if (!(plainOpenTag.isEmpty())) {
+                    stack.addLast((XmlSTElements.OT)openTagNode);
                 }
 
                 //add the node to its parent
-                lNode.addChild(openTagNode);
+                peek.addChild(openTagNode);
 
-            } else if (element.type() == ElementType.END_TAG) { //close tag
-                TagElement tagElement = (TagElement) element;
-                CharSequence tagName = tagElement.name();
+            } else if (element.type() == ElementType.CLOSE_TAG) { //close tag
+                CloseTag plainElement = (CloseTag) element;
+                CharSequence tagName = plainElement.name();
 
-                AstNode closeTagNode = new AstNode(tagName, ElementType.END_TAG,
-                        element.from(), element.to(), false);
-
+                XmlSTElements.ET endTagNode = new XmlSTElements.ET(plainElement.name(),
+                        plainElement.from(), 
+                        plainElement.to());
+                
                 int matched_index = -1;
                 for (int i = stack.size() - 1; i >= 0; i--) {
-                    AstNode node = stack.get(i);
-                    if (LexerUtils.equals(tagName, node.nodeId(), false, false)) {
+                    OpenTag node = stack.get(i);
+                    if (LexerUtils.equals(tagName, node.name(), false, false)) {
                         //ok, match
                         matched_index = i;
                         break;
@@ -112,30 +119,30 @@ public class XmlSyntaxTreeBuilder extends SyntaxTreeBuilder {
 
                 if (matched_index > 0) {
                     //something matched
-                    AstNode match = stack.get(matched_index);
+                    XmlSTElements.OT match = stack.get(matched_index);
 
                     //remove them ALL the left elements from the stack
                     for (int i = stack.size() - 1; i > matched_index; i--) {
-                        AstNode node = stack.get(i);
-                        node.setLogicalEndOffset(closeTagNode.from());
+                        XmlSTElements.OT node = stack.get(i);
+                        node.setLogicalEndOffset(endTagNode.from());
                         stack.remove(i);
                     }
 
                     //add the node to the proper parent
-                    AstNode match_parent = stack.get(matched_index - 1);
-                    match_parent.addChild(closeTagNode);
+                    XmlSTElements.OT match_parent = stack.get(matched_index - 1);
+                    match_parent.addChild(endTagNode);
 
                     //wont' help GS at all, but should be ok
-                    match.setMatchingNode(closeTagNode);
-                    match.setLogicalEndOffset(closeTagNode.endOffset());
-                    closeTagNode.setMatchingNode(match);
+                    match.setMatchingEndTag(endTagNode);
+                    match.setLogicalEndOffset(endTagNode.to());
+                    endTagNode.setMatchingOpenTag(match);
 
                     //remove the matched tag from stack
                     stack.removeLast();
 
                 } else {
                     //add it to the last node
-                    stack.getLast().addChild(closeTagNode);
+                    stack.getLast().addChild(endTagNode);
                 }
 
             } else {
@@ -154,7 +161,7 @@ public class XmlSyntaxTreeBuilder extends SyntaxTreeBuilder {
 
         //check the stack content and resolve left nodes
         for (int i = stack.size() - 1; i > 0; i--) { // (i > 0) == do not process the very first (root) node
-            AstNode node = stack.get(i);
+            XmlSTElements.OT node = stack.get(i);
             node.setLogicalEndOffset(lastEndOffset);
 
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,65 +37,81 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.editor.lib.html4parser;
 
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.html.editor.lib.api.ParseException;
-import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
-import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerElements;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.test.TestBase;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 
 /**
  *
  * @author marekfukala
  */
-public class XmlSyntaxTreeBuilderTest extends TestBase {
+public class AstAttribute implements Attribute {
     
-    public XmlSyntaxTreeBuilderTest(String name) {
-        super(name);
+    private static final char NS_PREFIX_DELIMITER = ':';
+    
+    protected CharSequence name;
+    protected CharSequence value;
+    protected int nameOffset;
+    protected int valueOffset;
+
+    public AstAttribute(CharSequence name, CharSequence value, int nameOffset, int valueOffset) {
+        this.name = name;
+        this.value = value;
+        this.nameOffset = nameOffset;
+        this.valueOffset = valueOffset;
     }
 
-    public void testBasic() {
-        String code = "<x></x>";
-        Node root = parse(code);
+    @Override
+    public String name() {
+        return name.toString();
+    }
 
-        Element div = ElementUtils.query(root, "x"); 
-        assertNotNull(div);
+    public String namespacePrefix() {
+        int delimIndex = name().indexOf(NS_PREFIX_DELIMITER);
+        return delimIndex == -1 ? null : name().substring(0, delimIndex);
+    }
+
+    public String nameWithoutNamespacePrefix() {
+        int delimIndex = name().indexOf(NS_PREFIX_DELIMITER);
+        return delimIndex == -1 ? name() : name().substring(delimIndex + 1);
+    }
+
+    @Override
+    public int nameOffset() {
+        return nameOffset;
+    }
+
+    @Override
+    public int valueOffset() {
+        return valueOffset;
+    }
+
+    public int unqotedValueOffset() {
+        return isValueQuoted() ? valueOffset + 1 : valueOffset;
+    }
+
+    @Override
+    public String value() {
+        return value.toString();
+    }
+
+    public String unquotedValue() {
+        return isValueQuoted() ? value().substring(1, value().length() - 1) : value();
+    }
+
+    public boolean isValueQuoted() {
+        if (value.length() < 2) {
+            return false;
+        } else {
+            return (value.charAt(0) == '\'' || value.charAt(0) == '"') && (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"');
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Attr[" + name() + "(" + nameOffset() + ")=" + value + "(" + valueOffset() + ")]";
     }
     
-     //Bug 197608 - Non-html tags offered as closing tags using code completion
-    public void testIssue197608() throws ParseException, BadLocationException {
-        String code = "<div></di";
-        Node root = parse(code);
-
-        Element div = ElementUtils.query(root, "div"); 
-        assertNotNull(div);
-//        AstNodeUtils.dumpTree(root);
-    }
-
-    private Node parse(String code) {
-        HtmlSource source = new HtmlSource(code);
-        SyntaxAnalyzer result = SyntaxAnalyzer.create(source);
-        SyntaxAnalyzerElements elements = result.elements();
-        
-//        for(SyntaxElement se : elements.items()) {
-//            System.out.print(se);
-//            List<ProblemDescription> problems = se.getProblems();
-//            if(problems == null || problems.isEmpty()) {
-//                System.out.println("OK");
-//            } else { 
-//                System.out.println(se.getProblems().get(0));
-//            }
-//            
-//        }
-        
-        return XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, elements.items());
-    }
-
 }

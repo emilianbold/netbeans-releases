@@ -41,13 +41,6 @@
  */
 package org.netbeans.modules.html.editor.indexing;
 
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.TreePath;
-import org.netbeans.modules.html.editor.lib.api.elements.Tag;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,6 +52,7 @@ import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.completion.AttrValuesCompletion;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -195,8 +189,8 @@ public class HtmlFileModel {
     public class ReferencesSearch implements ElementVisitor {
 
         @Override
-        public void visit(Node node) {
-            Tag tnode = (Tag)node;
+        public void visit(Element node) {
+            OpenTag tnode = (OpenTag)node;
             //XXX This is HTML specific - USE TagMetadata!!!
             //TODO this is a funny way how to figure out if the attribute contains
             //a file reference or not. The code needs to be generified later.
@@ -226,7 +220,7 @@ public class HtmlFileModel {
                 if(!tnode.isEmpty()) {
                     int from = node.to();
                     if(from != -1) {
-                        Node closeTag = node.matchingTag();
+                        CloseTag closeTag = tnode.matchingCloseTag();
                         if(closeTag != null) {
                             int to = closeTag.from();
                             getEmbeddedCssSectionsCollectionInstance().add(new OffsetRange(from, to));

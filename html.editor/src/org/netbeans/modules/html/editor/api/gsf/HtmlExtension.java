@@ -58,6 +58,7 @@ import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -144,7 +145,7 @@ public class HtmlExtension {
         private int astoffset;
         private String preText;
         private String itemText;
-        private Node currentNode;
+        private Element currentNode;
         private String attributeName; //for attribute value completion
         private boolean valueQuoted;
 
@@ -152,11 +153,11 @@ public class HtmlExtension {
             this(result, originalOffset, astoffset, ccItemStartOffset, preText, itemText, null);
         }
 
-        public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, Node currentNode) {
+        public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, Element currentNode) {
             this(result, originalOffset, astoffset, ccItemStartOffset, preText, itemText, currentNode, null, false);
         }
 
-        public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, Node currentNode, String attributeName, boolean valueQuoted) {
+        public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, Element currentNode, String attributeName, boolean valueQuoted) {
             this.result = result;
             this.originalOffset = originalOffset;
             this.astoffset = astoffset;
@@ -193,7 +194,7 @@ public class HtmlExtension {
             return result;
         }
 
-        public Node getCurrentNode() {
+        public Element getCurrentNode() {
             return currentNode;
         }
 

@@ -70,7 +70,7 @@ public class HtmlNodeFactory {
     }
 
     public Node createEndTag(String name, int startOffset, int endOffset) {
-        return new HtmlNode(startOffset, endOffset, name, ElementType.END_TAG, true, null, null);
+        return new HtmlNode(startOffset, endOffset, name, ElementType.CLOSE_TAG, true, null, null);
     }
 
     public Node.Attribute createAttribute(String name, String value, int nameOffset, int valueOffset) {

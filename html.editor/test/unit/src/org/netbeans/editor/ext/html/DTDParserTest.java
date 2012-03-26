@@ -45,10 +45,10 @@ import java.io.IOException;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.modules.html.editor.lib.dtd.DTD;
 import org.netbeans.modules.html.editor.lib.dtd.DTD.Content;
 import org.netbeans.modules.html.editor.lib.dtd.DTD.Element;
 import org.netbeans.modules.html.editor.test.TestBase;
-import static org.junit.Assert.*;
 
 /**
  *

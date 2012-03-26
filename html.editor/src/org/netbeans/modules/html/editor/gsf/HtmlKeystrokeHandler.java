@@ -56,7 +56,10 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
@@ -206,14 +209,16 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         
         for(Node root : roots) {
             //find leaf at the position
-            Node node = ElementUtils.findElement(root, snapshot.getEmbeddedOffset(caretOffset), false, false);
+            Element node = ElementUtils.findElement(root, snapshot.getEmbeddedOffset(caretOffset), false, false);
             if(node != null) {
                 //go through the tree and add all parents with, eliminate duplicate nodes
                 do {
-                    int[] logicalRange = node.logicalRange();
+                    int ast_to = node.type() == ElementType.OPEN_TAG 
+                            ? ((OpenTag)node).semanticEnd()
+                            : node.to();
 
-                    int from = snapshot.getOriginalOffset(logicalRange[0]);
-                    int to = snapshot.getOriginalOffset(logicalRange[1]);
+                    int from = snapshot.getOriginalOffset(node.from());
+                    int to = snapshot.getOriginalOffset(ast_to);
 
                     if(from == -1 || to == -1 || from == to) {
                         continue;

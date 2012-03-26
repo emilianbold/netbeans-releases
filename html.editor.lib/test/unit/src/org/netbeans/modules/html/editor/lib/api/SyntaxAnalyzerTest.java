@@ -57,11 +57,7 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.junit.MockServices;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.TagElement;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 
 /**
@@ -102,9 +98,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         assertNotNull(div);
         assertEquals(ElementType.OPEN_TAG, div.type());
-        assertTrue(div instanceof TagElement);
+        assertTrue(div instanceof OpenTag);
 
-        TagElement divTag = (TagElement) div;
+        OpenTag divTag = (OpenTag) div;
 
         assertEquals("div", divTag.name());
         assertFalse(divTag.isEmpty());
@@ -124,13 +120,12 @@ public class SyntaxAnalyzerTest extends TestBase {
         Element div = elements.get(0);
 
         assertNotNull(div);
-        assertEquals(ElementType.END_TAG, div.type());
-        assertTrue(div instanceof TagElement);
+        assertEquals(ElementType.CLOSE_TAG, div.type());
+        assertTrue(div instanceof CloseTag);
 
-        TagElement divTag = (TagElement) div;
+        CloseTag divTag = (CloseTag) div;
 
         assertEquals("div", divTag.name());
-        assertFalse(divTag.isEmpty());
         assertEquals(0, divTag.from());
         assertEquals(text.length(), divTag.to() - divTag.from());
         assertEquals(text, divTag.image());
@@ -148,9 +143,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         assertNotNull(div);
         assertEquals(ElementType.OPEN_TAG, div.type());
-        assertTrue(div instanceof TagElement);
+        assertTrue(div instanceof OpenTag);
 
-        TagElement divTag = (TagElement) div;
+        OpenTag divTag = (OpenTag) div;
 
         assertEquals("div", divTag.name());
         assertTrue(divTag.isEmpty());
@@ -183,9 +178,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         assertNotNull(div);
         assertEquals(ElementType.OPEN_TAG, div.type());
-        assertTrue(div instanceof TagElement);
+        assertTrue(div instanceof OpenTag);
 
-        TagElement divTag = (TagElement) div;
+        OpenTag divTag = (OpenTag) div;
 
         assertEquals("div", divTag.name());
         assertTrue(divTag.isEmpty());
@@ -218,9 +213,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         assertNotNull(div);
         assertEquals(ElementType.OPEN_TAG, div.type());
-        assertTrue(div instanceof TagElement);
+        assertTrue(div instanceof OpenTag);
 
-        TagElement divTag = (TagElement) div;
+        OpenTag divTag = (OpenTag) div;
 
         assertEquals("div", divTag.name());
         assertTrue(divTag.isEmpty());
@@ -255,9 +250,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         assertNotNull(div);
         assertEquals(ElementType.OPEN_TAG, div.type());
-        assertTrue(div instanceof TagElement);
+        assertTrue(div instanceof OpenTag);
 
-        TagElement divTag = (TagElement) div;
+        OpenTag divTag = (OpenTag) div;
 
         assertEquals("div", divTag.name());
         assertTrue(divTag.isEmpty());
@@ -291,9 +286,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         assertNotNull(div);
         assertEquals(ElementType.OPEN_TAG, div.type());
-        assertTrue(div instanceof TagElement);
+        assertTrue(div instanceof OpenTag);
 
-        TagElement divTag = (TagElement) div;
+        OpenTag divTag = (OpenTag) div;
 
         assertEquals("div", divTag.name());
         assertTrue(divTag.isEmpty());
@@ -580,9 +575,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         assertNotNull(div);
         assertEquals(ElementType.OPEN_TAG, div.type());
-        assertTrue(div instanceof TagElement);
+        assertTrue(div instanceof OpenTag);
 
-        TagElement divTag = (TagElement) div;
+        OpenTag divTag = (OpenTag) div;
 
         Collection<Attribute> attributes = divTag.attributes();
 
@@ -648,7 +643,7 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         assertNotNull(div);
         assertEquals(ElementType.OPEN_TAG, div.type());
-        assertTrue(div instanceof TagElement);
+        assertTrue(div instanceof OpenTag);
 
         Element error = elements.get(1);
 
@@ -668,7 +663,7 @@ public class SyntaxAnalyzerTest extends TestBase {
         Element se = elements.get(0);
         assertNotNull(se);
         assertEquals(ElementType.OPEN_TAG, se.type());
-        assertTrue(se instanceof TagElement);
+        assertTrue(se instanceof OpenTag);
 
         se = elements.get(1);
         assertNotNull(se);
@@ -676,8 +671,8 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         se = elements.get(2);
         assertNotNull(se);
-        assertEquals(ElementType.END_TAG, se.type());
-        assertTrue(se instanceof TagElement);
+        assertEquals(ElementType.CLOSE_TAG, se.type());
+        assertTrue(se instanceof CloseTag);
 
     }
 
@@ -696,7 +691,7 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         assertNotNull(div);
         assertEquals(ElementType.OPEN_TAG, div.type());
-        assertTrue(div instanceof TagElement);
+        assertTrue(div instanceof OpenTag);
 
         Element endtag = elements.get(1);
 
@@ -720,12 +715,12 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         assertNotNull(div);
         assertEquals(ElementType.OPEN_TAG, div.type());
-        assertTrue(div instanceof TagElement);
+        assertTrue(div instanceof OpenTag);
 
         Element endtag = elements.get(1);
 
         assertNotNull(endtag);
-        assertEquals(ElementType.END_TAG, endtag.type());
+        assertEquals(ElementType.CLOSE_TAG, endtag.type());
 
     }
 
@@ -741,7 +736,7 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         assertNotNull(div);
         assertEquals(ElementType.OPEN_TAG, div.type());
-        assertTrue(div instanceof TagElement);
+        assertTrue(div instanceof OpenTag);
 
     }
 
@@ -758,7 +753,7 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         assertNotNull(div);
         assertEquals(ElementType.OPEN_TAG, div.type());
-        assertTrue(div instanceof TagElement);
+        assertTrue(div instanceof OpenTag);
         assertEquals("<col", div.image());
 
     }

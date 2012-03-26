@@ -104,6 +104,6 @@ public enum ElementType {
      * 
      * Represents a leaf element (no subelements).
      */
-    END_TAG
+    CLOSE_TAG
 
 }

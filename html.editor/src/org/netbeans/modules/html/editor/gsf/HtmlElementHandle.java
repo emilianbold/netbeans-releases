@@ -43,6 +43,8 @@ package org.netbeans.modules.html.editor.gsf;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.html.editor.lib.api.elements.TreePath;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -50,6 +52,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.openide.filesystems.FileObject;
 
@@ -59,10 +62,10 @@ import org.openide.filesystems.FileObject;
  */
 public class HtmlElementHandle implements ElementHandle {
 
-    private Node node;
+    private Element node;
     private FileObject fo;
 
-    HtmlElementHandle(Node node, FileObject fo) {
+    HtmlElementHandle(Element node, FileObject fo) {
         this.node = node;
         this.fo = fo;
     }
@@ -79,7 +82,7 @@ public class HtmlElementHandle implements ElementHandle {
 
     @Override
     public String getName() {
-        return node.nodeId().toString();
+        return node.id().toString();
     }
 
     @Override
@@ -103,7 +106,7 @@ public class HtmlElementHandle implements ElementHandle {
             return false;
         }
 
-        Node foreignNode = ((HtmlElementHandle) handle).node();
+        Element foreignNode = ((HtmlElementHandle) handle).node();
         if (node == foreignNode) {
             return true;
         }
@@ -114,16 +117,16 @@ public class HtmlElementHandle implements ElementHandle {
         return path.equals(fnPath);
     }
 
-    Node node() {
+    Element node() {
         return node;
     }
 
     public int from() {
-        return node().logicalRange()[0];
+        return node().from();
     }
 
     public int to() {
-        return node().logicalRange()[1];
+        return node().type() == ElementType.OPEN_TAG ? ((OpenTag)node()).semanticEnd() : node().to();
     }
 
     @Override

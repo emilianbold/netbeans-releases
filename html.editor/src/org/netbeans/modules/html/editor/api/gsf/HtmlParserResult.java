@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.lib.api.HtmlParsingResult;
 import org.netbeans.modules.html.editor.lib.api.ParseException;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.html.editor.lib.api.ParseResult;
@@ -188,13 +189,13 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
      *
      * @param offset of the searched node
      */
-    public Node findLeafTag(int offset, boolean forward, boolean physicalNodesOnly ) {
+    public Element findLeafTag(int offset, boolean forward, boolean physicalNodesOnly ) {
         //first try to find the leaf in html content
-        Node mostLeaf = ElementUtils.findElement(root(), offset, forward, physicalNodesOnly);
+        Element mostLeaf = ElementUtils.findElement(root(), offset, forward, physicalNodesOnly);
         //now search the non html trees
         for (String uri : getNamespaces().keySet()) {
             Node root = root(uri);
-            Node leaf = ElementUtils.findElement(root, offset, forward, physicalNodesOnly);
+            Element leaf = ElementUtils.findElement(root, offset, forward, physicalNodesOnly);
             if (leaf == null) {
                 continue;
             }
@@ -202,7 +203,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
                 mostLeaf = leaf;
             } else {
                 //they cannot overlap, just be nested, at least I think
-                if (leaf.logicalRange()[0] > mostLeaf.logicalRange()[0]) {
+                if (leaf.from() > mostLeaf.from()) {
                     mostLeaf = leaf;
                 }
             }

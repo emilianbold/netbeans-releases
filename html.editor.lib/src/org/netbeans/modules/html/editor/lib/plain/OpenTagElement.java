@@ -39,90 +39,105 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib;
+package org.netbeans.modules.html.editor.lib.plain;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.FeaturedNode;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import java.util.*;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
  * @author marekfukala
  */
-public class RootNode implements FeaturedNode {
+public class OpenTagElement extends AbstractNamedElement implements OpenTag {
 
-    private CharSequence source;
-    private Collection<Element> children;
+    private List<Attribute> attribs;
+    private boolean empty;
 
-    public RootNode(CharSequence source) {
-        this(source, new LinkedList<Element>());
-    }
-
-    public RootNode(CharSequence source, Collection<Element> children) {
-        this.source = source;
-        this.children = children;
-    }
-    
-    @Override
-    public Collection<Element> children() {
-        return children;
+    public OpenTagElement(CharSequence document, int from, int length,
+            CharSequence name,
+            List<Attribute> attribs,
+            boolean isEmpty) {
+        super(document, from, length, name);
+        this.attribs = attribs;
+        this.empty = isEmpty;
     }
 
     @Override
-    public Collection<Element> children(ElementType type) {
-        Collection<Element> filtered = new ArrayList<Element>();
-        for(Element child : children()) {
-            if(child.type() == type) {
-                filtered.add(child);
+    public boolean isEmpty() {
+        return empty;
+    }
+
+    @Override
+    public Collection<Attribute> attributes() {
+        return attribs == null ? Collections.EMPTY_LIST : attribs;
+    }
+
+    @Override
+     public Collection<Attribute> attributes(AttributeFilter filter) {
+        Collection<Attribute> filtered = new ArrayList<Attribute>(attributes().size() / 2);
+        for (Attribute attr : attributes()) {
+            if (filter.accepts(attr)) {
+                filtered.add(attr);
             }
         }
         return filtered;
     }
-    
+
     @Override
-    public Node parent() {
+    public Attribute getAttribute(String name) {
+        return getAttribute(name, true);
+    }
+
+    public Attribute getAttribute(String name, boolean ignoreCase) {
+        for (Attribute ta : attributes()) {
+            if (LexerUtils.equals(ta.name(), name, ignoreCase, false)) {
+                return ta;
+            }
+        }
         return null;
-    }
-
-    @Override
-    public int from() {
-        return 0;
-    }
-
-    @Override
-    public int to() {
-        return source.length();
     }
 
     @Override
     public ElementType type() {
-        return ElementType.ROOT;
+        return ElementType.OPEN_TAG;
     }
 
     @Override
-    public CharSequence image() {
-        return source;
+    public String toString() {
+        StringBuilder ret = new StringBuilder(super.toString());
+        ret.append(" - {");   // NOI18N
+
+        for (Iterator i = attributes().iterator(); i.hasNext();) {
+            ret.append(i.next());
+            ret.append(", ");    // NOI18N
+        }
+
+        ret.append("}");      //NOI18N
+        if (isEmpty()) {
+            ret.append(" (EMPTY TAG)"); //NOI18N
+        }
+        return ret.toString();
     }
 
     @Override
-    public Collection<ProblemDescription> problems() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Object getProperty(String propertyName) {
+    public CloseTag matchingCloseTag() {
         return null;
     }
 
     @Override
-    public CharSequence id() {
-        return type().name();
+    public int semanticEnd() {
+        return to();
+    }
+
+    @Override
+    public Collection<Element> children() {
+        return null;
+    }
+
+    @Override
+    public Collection<Element> children(ElementType type) {
+        return null;
     }
     
 }

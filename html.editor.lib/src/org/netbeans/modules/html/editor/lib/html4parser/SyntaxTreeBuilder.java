@@ -41,17 +41,14 @@
  */
 package org.netbeans.modules.html.editor.lib.html4parser;
 
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.TagElement;
 import java.util.*;
+import javax.swing.text.html.parser.TagElement;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.dtd.DTD;
-import org.netbeans.modules.html.editor.lib.dtd.DTD.Element;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.CharSequences;
 import org.openide.util.NbBundle;
@@ -102,7 +99,7 @@ public class SyntaxTreeBuilder {
         
         //create a root node, it can contain one or more child nodes
         //normally just <html> node should be its child
-        AstNode rootNode = new AstNode.RootAstNode(0, sourceCode.length(), dtd);
+        AstNode rootNode = new RootAstNode(0, sourceCode.length(), dtd);
         LinkedList<AstNode> stack = new LinkedList<AstNode>();
         stack.add(rootNode);
 
@@ -110,13 +107,13 @@ public class SyntaxTreeBuilder {
 
             if (element.type() == ElementType.OPEN_TAG) { //open tag
 
-                TagElement tagElement = (TagElement) element;
+                OpenTag tagElement = (OpenTag) element;
                 CharSequence tagName = tagElement.name();
 
                 AstNode lNode = stack.getLast();
 
                 //try to find DTD element for the current node
-                Element currentNodeDtdElement = dtd.getElement(tagName.toString());
+                org.netbeans.modules.html.editor.lib.dtd.DTD.Element currentNodeDtdElement = dtd.getElement(tagName.toString());
 
                 if (currentNodeDtdElement == null) {
                     //no DTD tag, just mark as unknown and add it as a child of current stack's top node
@@ -156,7 +153,7 @@ public class SyntaxTreeBuilder {
 
                 //check tag attributes
                 if(!context.isPropertyEnabled(SyntaxAnalyzer.Behaviour.DISABLE_ATTRIBUTES_CHECKS.name())) {
-                    checkTagAttributes(openTagNode, (TagElement) tagElement, currentNodeDtdElement);
+                    checkTagAttributes(openTagNode, tagElement, currentNodeDtdElement);
                 }
 
                 //add existing tag attributes
@@ -180,14 +177,14 @@ public class SyntaxTreeBuilder {
 
                         //check if the node we are going to close have required end tag
                         //if so show an error
-                        Element lastDtdElement = dtd.getElement(lNode.name().toString());
+                        org.netbeans.modules.html.editor.lib.dtd.DTD.Element lastDtdElement = dtd.getElement(lNode.name().toString());
 
                         assert lastDtdElement != null; //only DTD based elements are put into the stack
 
                         if (!lastDtdElement.hasOptionalEnd()) {
                             //the last node has required end tag => report error
                             if(!context.isPropertyEnabled(SyntaxAnalyzer.Behaviour.DISABLE_STRUCTURE_CHECKS.name())) {
-                                Collection<Element> possibleElems = lNode.getAllPossibleElements();
+                                Collection<org.netbeans.modules.html.editor.lib.dtd.DTD.Element> possibleElems = lNode.getAllPossibleElements();
                                 if (possibleElems.isEmpty()) {
                                     openTagNode.addDescriptionToNode(UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNEXPECTED_TAG_NO_EXPECTED_CONTENT", //NOI18N
                                             new Object[]{currentNodeDtdElement.getName()}), ProblemDescription.ERROR);
@@ -293,16 +290,16 @@ public class SyntaxTreeBuilder {
 //add the node to its parent
                 lNode.addChild(openTagNode);
 
-            } else if (element.type() == ElementType.END_TAG) { //close tag
+            } else if (element.type() == ElementType.CLOSE_TAG) { //close tag
 
-                TagElement telement = (TagElement)element;
+                CloseTag telement = (CloseTag)element;
                 CharSequence tagName = telement.name();
 
                 //test if DTD tag, if not do not try to match
-                Element dtdElement = dtd.getElement(tagName.toString());
+                org.netbeans.modules.html.editor.lib.dtd.DTD.Element dtdElement = dtd.getElement(tagName.toString());
                 if (dtdElement == null) {
                     //no DTD tag, just mark as unknown and add it as a child of current stack's top node
-                    AstNode unknownTagNode = new AstNode(tagName, ElementType.UNKNOWN_TAG,
+                    AstNode unknownTagNode = new AstNode(tagName, ElementType.CLOSE_TAG,
                             element.from(), element.to(), false);
 
                     copyProblemsFromElementToNode(element, unknownTagNode);
@@ -323,7 +320,7 @@ public class SyntaxTreeBuilder {
 
 
 
-                AstNode closeTagNode = new AstNode(tagName, ElementType.END_TAG,
+                AstNode closeTagNode = new AstNode(tagName, ElementType.CLOSE_TAG,
                         element.from(), element.to(), dtdElement, false, stack(stack));
 
                 copyProblemsFromElementToNode(element, closeTagNode);
@@ -500,7 +497,7 @@ public class SyntaxTreeBuilder {
     }
 
     private static boolean hasOptionalEndTag(AstNode node) {
-        Element e = node.getDTDElement();
+        org.netbeans.modules.html.editor.lib.dtd.DTD.Element e = node.getDTDElement();
         assert e != null;
 
         return e.hasOptionalEnd();
@@ -514,7 +511,7 @@ public class SyntaxTreeBuilder {
         return CharSequences.indexOf(tagName, COLON) != -1; //NOI18N
     }
 
-    private static void checkTagAttributes(AstNode node, TagElement element, Element dtdElement) {
+    private static void checkTagAttributes(AstNode node, OpenTag element, org.netbeans.modules.html.editor.lib.dtd.DTD.Element dtdElement) {
         //check existing attributes
         Collection<Attribute> existingAttrs = element.attributes();
         List<String> existingAttrNames = new ArrayList<String>(existingAttrs.size());
@@ -569,10 +566,10 @@ public class SyntaxTreeBuilder {
 
     }
 
-    protected static void setTagAttributes(AstNode node, TagElement tag) {
+    protected static void setTagAttributes(AstNode node, OpenTag tag) {
         for (Attribute ta : tag.attributes()) {
             if (ta != null) {
-                AstNode.AstAttribute nodeAttribute = new AstNode.AstAttribute(ta.name(),
+                AstAttribute nodeAttribute = new AstAttribute(ta.name(),
                         ta.value(), ta.nameOffset(), ta.valueOffset());
 
                 node.setAttribute(nodeAttribute);
@@ -581,9 +578,9 @@ public class SyntaxTreeBuilder {
         }
     }
 
-    private static String elementsToString(Collection<Element> elements) {
+    private static String elementsToString(Collection<org.netbeans.modules.html.editor.lib.dtd.DTD.Element> elements) {
         StringBuilder b = new StringBuilder();
-        for (Element e : elements) {
+        for (org.netbeans.modules.html.editor.lib.dtd.DTD.Element e : elements) {
             b.append('<'); //NOI18N
             b.append(e.getName());
             b.append('>'); //NOI18N

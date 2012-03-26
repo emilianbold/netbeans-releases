@@ -108,7 +108,7 @@ public class ElementUtils {
         return null;
     }
 
-    public static boolean isVirtualNode(Node node) {
+    public static boolean isVirtualNode(Element node) {
         return node.from() == -1 && node.to() == -1;
     }
 
@@ -136,8 +136,8 @@ public class ElementUtils {
             case OPEN_TAG:
 //            case END_TAG:
                 OpenTag t = (OpenTag) node;
-                lf = t.logicalRange()[0];
-                lt = t.logicalRange()[1];
+                lf = t.from();
+                lt = t.semanticEnd();
                 break;
             default:
                 lf = node.from();
@@ -195,10 +195,10 @@ public class ElementUtils {
         }
     }
 
-    public static Node getRoot(Node node) {
+    public static Node getRoot(Element node) {
         for (;;) {
             if (node.parent() == null) {
-                return node;
+                return (Node)node; //root
             } else {
                 node = node.parent();
             }

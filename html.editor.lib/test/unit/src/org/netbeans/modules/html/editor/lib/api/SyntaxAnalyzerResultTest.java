@@ -237,6 +237,8 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         Node froot = presult.root();
         assertNotNull(froot);
 
+        ElementUtils.dumpTree(froot);
+        
         assertEquals(2, froot.children().size());
         assertNotNull(ElementUtils.query(froot, "ui:composition"));
         assertNotNull(ElementUtils.query(froot, "ui:composition/ui:define"));

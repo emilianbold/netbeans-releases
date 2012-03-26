@@ -41,19 +41,12 @@
  */
 package org.netbeans.modules.html.editor.lib.html4parser;
 
-import org.netbeans.modules.html.editor.lib.api.elements.ElementFilter;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.AttributeFilter;
-import org.netbeans.modules.html.editor.lib.api.elements.FeaturedNode;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.TreePath;
 import java.util.*;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.dtd.DTD;
 import org.netbeans.modules.html.editor.lib.dtd.DTD.Content;
 import org.netbeans.modules.html.editor.lib.dtd.DTD.ContentModel;
-import org.netbeans.modules.html.editor.lib.dtd.DTD.Element;
 import org.openide.util.CharSequences;
 import org.openide.util.Parameters;
 
@@ -61,84 +54,18 @@ import org.openide.util.Parameters;
  *
  * @author mfukala@netbeans.org, Tomasz.Slota@Sun.COM
  */
-public class AstNode implements FeaturedNode {
+public class AstNode implements FeaturedNode, OpenTag, CloseTag {
 
     public static final String NAMESPACE_PROPERTY = "namespace";
-    //an attempt to save some memory
-    private static byte tchildren = 0;
-//    private static byte parent = 1;
-    private static byte tattributes = 2;
-    private static byte tcontent = 3;
-    private static byte tcontentModel = 4;
-    private static byte tdtdElement = 5;
-    private static byte tdescriptions = 6;
-    private static byte tstack = 7;
-//    private static byte matchingNode = 8;
-    private static byte tproperties = 9;
 
     @Override
-    public int[] logicalRange() {
-        return getLogicalRange();
+    public int semanticEnd() {
+        return logicalEndOffset();
     }
 
     @Override
-    public Node matchingTag() {
-        return getMatchingTag();
-    }
-
-//    @Override
-//    public String getProperty(String propertyName) {
-//        return getProperty(propertyName);
-//    }
-
-    private static class PEntry {
-
-        private byte type;
-        private Object entry;
-        private PEntry next;
-
-        public PEntry(byte type, Object entry, PEntry next) {
-            this.type = type;
-            this.entry = entry;
-            this.next = next;
-        }
-    }
-    //to store arbitrary and usually not used properties
-    private PEntry pEntry;
-
-    private void putProp(byte type, Object value) {
-        if (pEntry == null) {
-            //not a single entry
-            pEntry = new PEntry(type, value, null);
-            return;
-        }
-
-        PEntry pe = pEntry;
-        PEntry lastNonNullPe;
-        do {
-            lastNonNullPe = pe;
-            if (pe.type == type) {
-                //update existing entry
-                pe.entry = value;
-                return;
-            }
-            pe = pe.next;
-        } while (pe != null);
-
-        //no entry of such type found - add a new one to the last entry
-        lastNonNullPe.next = new PEntry(type, value, null);
-    }
-
-    //linked list
-    private Object getProp(byte type) {
-        PEntry pe = pEntry;
-        while (pe != null) {
-            if (pe.type == type) {
-                return pe.entry;
-            }
-            pe = pe.next;
-        }
-        return null;
+    public OpenTag matchingOpenTag() {
+        return (OpenTag) getMatchingTag();
     }
     //base properties held by the AstNode itself
     protected final int startOffset;
@@ -149,26 +76,32 @@ public class AstNode implements FeaturedNode {
     private final ElementType nodeType;
     private Node parent = null;
     private Node matchingNode = null;
+    private List<Element> children = null;
+    private Map<String, Attribute> attributes = null;
+    private Content content = null;
+    private ContentModel contentModel = null;
+    private org.netbeans.modules.html.editor.lib.dtd.DTD.Element dtdElement = null;
+    private Collection<ProblemDescription> descriptions = null;
+    private List<CharSequence> stack = null; //for debugging
+    private Map<String, Object> properties;
 
-//    private List<AstNode> children = null;
-//    private Map<String, Attribute> attributes = null;
-//    private Content content = null;
-//    private ContentModel contentModel = null;
-//    private Element dtdElement = null;
-//    private Collection<ProblemDescription> descriptions = null;
-//    private List<String> stack = null; //for debugging
-//    private Map<String, Object> properties;
-    public AstNode(CharSequence name, ElementType nodeType, int startOffset, int endOffset, Element dtdElement, boolean isEmpty, List<CharSequence> stack) {
+    public AstNode(CharSequence name,
+            ElementType nodeType,
+            int startOffset,
+            int endOffset,
+            org.netbeans.modules.html.editor.lib.dtd.DTD.Element dtdElement,
+            boolean isEmpty,
+            List<CharSequence> stack) {
+
         this(name, nodeType, startOffset, endOffset, isEmpty);
 
-        setDtdElement(dtdElement);
+        this.dtdElement = dtdElement;
 
-        setContentModel(dtdElement != null ? dtdElement.getContentModel() : null);
+        this.contentModel = dtdElement != null ? dtdElement.getContentModel() : null;
 
-        ContentModel cModel = getContentModel();
-        setContent(cModel != null ? cModel.getContent() : null);
+        this.content = contentModel != null ? contentModel.getContent() : null;
 
-        setStack(stack);
+        this.stack = stack;
     }
 
     public AstNode(CharSequence name, ElementType nodeType, int startOffset, int endOffset, boolean isEmpty) {
@@ -183,7 +116,7 @@ public class AstNode implements FeaturedNode {
     }
 
     @Override
-    public CharSequence nodeId() {
+    public CharSequence id() {
         return name;
     }
 
@@ -204,63 +137,23 @@ public class AstNode implements FeaturedNode {
 
     @Override
     public Collection<ProblemDescription> problems() {
-        return getDescriptions();
+        return descriptions == null ? Collections.<ProblemDescription>emptyList() : descriptions;
     }
 
     private ContentModel getContentModel() {
-        return (ContentModel) getProp(tcontentModel);
-    }
-
-    private void setContentModel(ContentModel model) {
-        putProp(tcontentModel, model);
+        return contentModel;
     }
 
     private Content getContent() {
-        return (Content) getProp(tcontent);
+        return content;
     }
 
-    private void setContent(Content c) {
-        putProp(tcontent, c);
+    private void setContent(Content content) {
+        this.content = content;
     }
 
     private List<CharSequence> getStack() {
-        return (List<CharSequence>) getProp(tstack);
-    }
-
-    private void setStack(List<CharSequence> s) {
-        putProp(tstack, s);
-    }
-
-    private Collection<ProblemDescription> getDescriptions_property() { //we already have getDescriptions()
-        return (Collection<ProblemDescription>) getProp(tdescriptions);
-    }
-
-    private void setDescriptions(Collection<ProblemDescription> d) {
-        putProp(tdescriptions, d);
-    }
-
-    private List<Node> getChildren() {
-        return (List<Node>) getProp(tchildren);
-    }
-
-    private void setChildren(List<Node> c) {
-        putProp(tchildren, c);
-    }
-
-    private Map<String, AstAttribute> getAttributes_property() {
-        return (Map<String, AstAttribute>) getProp(tattributes);
-    }
-
-    private void setAttributes(Map<String, AstAttribute> a) {
-        putProp(tattributes, a);
-    }
-
-    private Map<String, Object> getProperties() {
-        return (Map<String, Object>) getProp(tproperties);
-    }
-
-    private void setProperties(Map<String, Object> p) {
-        putProp(tproperties, p);
+        return stack;
     }
 
     public boolean isRootNode() {
@@ -315,7 +208,7 @@ public class AstNode implements FeaturedNode {
             //dtd elements
             if (type() == ElementType.OPEN_TAG) {
                 return !getDTDElement().hasOptionalEnd();
-            } else if (type() == ElementType.END_TAG) {
+            } else if (type() == ElementType.CLOSE_TAG) {
                 return !getDTDElement().hasOptionalStart();
             } else {
                 return false;
@@ -323,15 +216,11 @@ public class AstNode implements FeaturedNode {
         }
     }
 
-    public Element getDTDElement() {
-        return (Element) getProp(tdtdElement);
+    public org.netbeans.modules.html.editor.lib.dtd.DTD.Element getDTDElement() {
+        return dtdElement;
     }
 
-    private void setDtdElement(Element de) {
-        putProp(tdtdElement, de);
-    }
-
-    public boolean reduce(Element element) {
+    public boolean reduce(org.netbeans.modules.html.editor.lib.dtd.DTD.Element element) {
         if (getContentModel() == null) {
             return false; //unknown tag can contain anything, error reports done somewhere else
         }
@@ -372,7 +261,7 @@ public class AstNode implements FeaturedNode {
             //nothing reduced, it still may be valid if one of the expected elements
             //has optional start && end
             for (Object o : getContentModel().getContent().getPossibleElements()) {
-                Element e = (Element) o;
+                org.netbeans.modules.html.editor.lib.dtd.DTD.Element e = (org.netbeans.modules.html.editor.lib.dtd.DTD.Element) o;
                 if (e != null && e.hasOptionalStart() && e.hasOptionalEnd()) {
                     //try to reduce here
                     Content c2 = e.getContentModel().getContent().reduce(element.getName());
@@ -420,12 +309,12 @@ public class AstNode implements FeaturedNode {
         }
     }
 
-    public List<Element> getAllPossibleElements() {
+    public List<org.netbeans.modules.html.editor.lib.dtd.DTD.Element> getAllPossibleElements() {
         Content content = getContent();
         assert content != null;
 
-        List<Element> col = new ArrayList<Element>();
-        col.addAll((Collection<Element>) content.getPossibleElements());
+        List<org.netbeans.modules.html.editor.lib.dtd.DTD.Element> col = new ArrayList<org.netbeans.modules.html.editor.lib.dtd.DTD.Element>();
+        col.addAll((Collection<org.netbeans.modules.html.editor.lib.dtd.DTD.Element>) content.getPossibleElements());
         col.addAll(getContentModel().getIncludes());
         col.removeAll(getContentModel().getExcludes());
         return col;
@@ -458,27 +347,26 @@ public class AstNode implements FeaturedNode {
     }
 
     public synchronized void addDescription(ProblemDescription message) {
-        if (getDescriptions_property() == null) {
-            setDescriptions(new ArrayList<ProblemDescription>(2));
+        if (descriptions == null) {
+            descriptions = new ArrayList<ProblemDescription>(1);
         }
-        getDescriptions_property().add(message);
+        descriptions.add(message);
+
     }
 
     public synchronized void addDescriptions(Collection<ProblemDescription> messages) {
-        if (getDescriptions_property() == null) {
-            setDescriptions(new LinkedHashSet<ProblemDescription>(messages.size()));
+        if (descriptions == null) {
+            descriptions = new ArrayList<ProblemDescription>(1);
         }
-        getDescriptions_property().addAll(messages);
+        descriptions.addAll(messages);
     }
 
-    public Collection<ProblemDescription> getDescriptions() {
-        return getDescriptions_property() == null ? Collections.<ProblemDescription>emptyList() : getDescriptions_property();
-    }
-
+    @Override
     public CharSequence name() {
         return name;
     }
 
+    @Override
     public ElementType type() {
         return nodeType;
     }
@@ -504,14 +392,13 @@ public class AstNode implements FeaturedNode {
     }
 
     @Override
-    public List<Node> children() {
-        List<Node> children = getChildren();
+    public Collection<Element> children() {
         return children == null ? Collections.EMPTY_LIST : children;
     }
 
-    public List<Node> children(ElementFilter filter) {
-        List<Node> filtered = new ArrayList<Node>(children().size());
-        for (Node child : children()) {
+    public Collection<Element> children(ElementFilter filter) {
+        Collection<Element> filtered = new ArrayList<Element>(children().size());
+        for (Element child : children()) {
             if (filter.accepts(child)) {
                 filtered.add(child);
             }
@@ -519,6 +406,7 @@ public class AstNode implements FeaturedNode {
         return filtered;
     }
 
+    @Override
     public boolean isEmpty() {
         return empty;
     }
@@ -533,16 +421,16 @@ public class AstNode implements FeaturedNode {
         return colonIndex == -1 ? name() : name().subSequence(colonIndex + 1, name().length());
     }
 
+    @Override
     public Object getProperty(String key) {
-        Map<String, Object> properties = getProperties();
         return properties == null ? null : properties.get(key);
     }
 
     public synchronized void setProperty(String key, Object value) {
-        if (getProperties() == null) {
-            setProperties(new HashMap<String, Object>());
+        if (properties == null) {
+            properties = new HashMap<String, Object>();
         }
-        getProperties().put(key, value);
+        properties.put(key, value);
     }
 
     public AstNode getRootNode() {
@@ -556,12 +444,12 @@ public class AstNode implements FeaturedNode {
 
     public void addChild(AstNode child) {
         initChildren();
-        getChildren().add(child);
+        children.add(child);
         child.setParent(this);
     }
 
     public boolean insertBefore(AstNode node, AstNode insertBeforeNode) {
-        List<Node> _children = getChildren();
+        List<Element> _children = children;
         initChildren();
         int idx = _children.indexOf(insertBeforeNode);
         if (idx == -1) {
@@ -582,7 +470,7 @@ public class AstNode implements FeaturedNode {
     public void removeChild(AstNode child) {
         initChildren();
         child.setParent(null);
-        getChildren().remove(child);
+        children.remove(child);
     }
 
     public void removeChildren(List<AstNode> childrenList) {
@@ -593,34 +481,31 @@ public class AstNode implements FeaturedNode {
     }
 
     private synchronized void initChildren() {
-        if (getChildren() == null) {
-            setChildren(new LinkedList<Node>());
+        if (children == null) {
+            children = new LinkedList<Element>();
         }
     }
 
     public void setAttribute(AstAttribute attr) {
-        if (getAttributes_property() == null) {
-            setAttributes(new HashMap<String, AstAttribute>());
+        if (attributes == null) {
+            attributes = new HashMap<String, Attribute>();
         }
-        getAttributes_property().put(attr.name(), attr);
+        attributes.put(attr.name(), attr);
     }
 
     public Collection<String> getAttributeKeys() {
-        Map<String, AstAttribute> _attributes = getAttributes_property();
-        return _attributes == null ? Collections.EMPTY_LIST : _attributes.keySet();
+        return attributes == null ? Collections.EMPTY_LIST : attributes.keySet();
     }
 
     public Collection<AstAttribute> getAttributes() {
-        Map<String, AstAttribute> _attributes = getAttributes_property();
-        return _attributes == null ? Collections.EMPTY_LIST : _attributes.values();
+        return attributes == null ? Collections.EMPTY_LIST : attributes.values();
     }
 
     public Collection<AstAttribute> getAttributes(AttributeFilter filter) {
-        Map<String, AstAttribute> _attributes = getAttributes_property();
-        if (_attributes == null) {
+        if (attributes == null) {
             return Collections.EMPTY_LIST;
         }
-        Collection<AstAttribute> filtered = new ArrayList<AstAttribute>(getAttributes_property().size() / 2);
+        Collection<AstAttribute> filtered = new ArrayList<AstAttribute>(attributes.size() / 2);
         for (AstAttribute attr : getAttributes()) {
             if (filter.accepts(attr)) {
                 filtered.add(attr);
@@ -629,13 +514,13 @@ public class AstNode implements FeaturedNode {
         return filtered;
     }
 
-    public AstAttribute getAttribute(String attributeName) {
-        Map<String, AstAttribute> _attributes = getAttributes_property();
-        return _attributes == null ? null : _attributes.get(attributeName);
+    @Override
+    public Attribute getAttribute(String attributeName) {
+        return attributes == null ? null : attributes.get(attributeName);
     }
 
     public String getUnqotedAttributeValue(String attributeName) {
-        AstAttribute a = getAttribute(attributeName);
+        AstAttribute a = (AstAttribute) getAttribute(attributeName);
         return a == null ? null : a.unquotedValue();
     }
 
@@ -644,11 +529,11 @@ public class AstNode implements FeaturedNode {
         StringBuilder b = new StringBuilder();
 
         //basic info
-        boolean isTag = type() == ElementType.OPEN_TAG || type() == ElementType.END_TAG;
+        boolean isTag = type() == ElementType.OPEN_TAG || type() == ElementType.CLOSE_TAG;
 
         if (isTag) {
             b.append(type() == ElementType.OPEN_TAG ? "<" : "");
-            b.append(type() == ElementType.END_TAG ? "</" : "");
+            b.append(type() == ElementType.CLOSE_TAG ? "</" : "");
         }
         if (getMatchingTag() != null) {
             b.append('*');
@@ -680,7 +565,7 @@ public class AstNode implements FeaturedNode {
         b.append(')');
 
         //add dtd element info
-        Element e = getDTDElement();
+        org.netbeans.modules.html.editor.lib.dtd.DTD.Element e = getDTDElement();
         if (e != null) {
             b.append("[");
             b.append(e.hasOptionalStart() ? "O" : "R");
@@ -701,7 +586,7 @@ public class AstNode implements FeaturedNode {
         b.append('}');
 
         //attched messages
-        for (ProblemDescription d : getDescriptions_property()) {
+        for (ProblemDescription d : problems()) {
             b.append(d.getKey());
             b.append(' ');
         }
@@ -716,9 +601,9 @@ public class AstNode implements FeaturedNode {
             b.deleteCharAt(b.length() - 1);
         }
 
-        if (!getDescriptions_property().isEmpty()) {
+        if (!problems().isEmpty()) {
             b.append("; issues:");
-            for (ProblemDescription d : getDescriptions_property()) {
+            for (ProblemDescription d : problems()) {
                 b.append(d);
             }
         }
@@ -731,6 +616,7 @@ public class AstNode implements FeaturedNode {
         return name() + "[" + type() + "]";
     }
 
+    @Override
     public Node parent() {
         return parent;
     }
@@ -746,92 +632,45 @@ public class AstNode implements FeaturedNode {
         this.parent = p;
     }
 
-    public static class AstAttribute implements Attribute {
-
-        private static final char NS_PREFIX_DELIMITER = ':';
-        protected CharSequence name;
-        protected CharSequence value;
-        protected int nameOffset;
-        protected int valueOffset;
-
-        public AstAttribute(CharSequence name, CharSequence value, int nameOffset, int valueOffset) {
-            this.name = name;
-            this.value = value;
-            this.nameOffset = nameOffset;
-            this.valueOffset = valueOffset;
-        }
-
-        public String name() {
-            return name.toString();
-        }
-
-        public String namespacePrefix() {
-            int delimIndex = name().indexOf(NS_PREFIX_DELIMITER);
-            return delimIndex == -1 ? null : name().substring(0, delimIndex);
-        }
-
-        public String nameWithoutNamespacePrefix() {
-            int delimIndex = name().indexOf(NS_PREFIX_DELIMITER);
-            return delimIndex == -1 ? name() : name().substring(delimIndex + 1);
-        }
-
-        public int nameOffset() {
-            return nameOffset;
-        }
-
-        public int valueOffset() {
-            return valueOffset;
-        }
-
-        public int unqotedValueOffset() {
-            return isValueQuoted() ? valueOffset + 1 : valueOffset;
-        }
-
-        public String value() {
-            return value.toString();
-        }
-
-        public String unquotedValue() {
-            return isValueQuoted() ? value().substring(1, value().length() - 1) : value();
-        }
-
-        public boolean isValueQuoted() {
-            if (value.length() < 2) {
-                return false;
-            } else {
-                return ((value.charAt(0) == '\'' || value.charAt(0) == '"')
-                        && (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
+    @Override
+    public Collection<Element> children(ElementType type) {
+        Collection<Element> filtered = new ArrayList<Element>();
+        for (Element child : children()) {
+            if (child.type() == type) {
+                filtered.add(child);
             }
         }
-
-        @Override
-        public String toString() {
-            return "Attr[" + name() + "(" + nameOffset() + ")=" + value + "(" + valueOffset() + ")]";
-        }
+        return filtered;
     }
 
-    static class RootAstNode extends AstNode {
+    @Override
+    public Collection<Attribute> attributes() {
+        return attributes.values();
+    }
 
-        private static String ROOT_NODE_NAME = "root"; //NOI18N
-        private DTD dtd;
+    @Override
+    public Collection<Attribute> attributes(AttributeFilter filter) {
+        Collection<Attribute> attrs = new ArrayList<Attribute>();
+        for(Attribute a : attributes()) {
+            if(filter.accepts(a)) {
+                attrs.add(a);
+            }
+        }
+        return attrs;
+    }
 
-        RootAstNode(int startOffset, int endOffset) {
-            super(ROOT_NODE_NAME, ElementType.ROOT, startOffset, endOffset, false);
-        }
-        
-        RootAstNode(int startOffset, int endOffset, DTD dtd) {
-            super(ROOT_NODE_NAME, ElementType.ROOT, startOffset, endOffset, false);
-            this.dtd = dtd;
-        }
+    @Override
+    public CloseTag matchingCloseTag() {
+        return (CloseTag)getMatchingTag();
+    }
 
-        @Override
-        public boolean isRootNode() {
-            return true;
-        }
+    @Override
+    public CharSequence namespacePrefix() {
+        return getNamespacePrefix();
+    }
 
-        @Override
-        public List<Element> getAllPossibleElements() {
-            return dtd == null ? Collections.emptyList() : dtd.getElementList(null);
-        }
+    @Override
+    public CharSequence unqualifiedName() {
+        return getNameWithoutPrefix();
     }
 }

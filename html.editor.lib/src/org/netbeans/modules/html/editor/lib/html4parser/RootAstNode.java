@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,65 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.editor.lib.html4parser;
 
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.html.editor.lib.api.ParseException;
-import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
-import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerElements;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.test.TestBase;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.dtd.DTD;
+import org.netbeans.modules.html.editor.lib.dtd.DTD.Element;
 
 /**
  *
  * @author marekfukala
  */
-public class XmlSyntaxTreeBuilderTest extends TestBase {
+public class RootAstNode extends AstNode {
     
-    public XmlSyntaxTreeBuilderTest(String name) {
-        super(name);
+    private static String ROOT_NODE_NAME = "root"; //NOI18N
+    private DTD dtd;
+
+    RootAstNode(int startOffset, int endOffset, DTD dtd) {
+        super(ROOT_NODE_NAME, ElementType.ROOT, startOffset, endOffset, false);
+        this.dtd = dtd;
     }
 
-    public void testBasic() {
-        String code = "<x></x>";
-        Node root = parse(code);
+    @Override
+    public boolean isRootNode() {
+        return true;
+    }
 
-        Element div = ElementUtils.query(root, "x"); 
-        assertNotNull(div);
+    @Override
+    public List<Element> getAllPossibleElements() {
+        return dtd == null ? Collections.emptyList() : dtd.getElementList(null);
     }
     
-     //Bug 197608 - Non-html tags offered as closing tags using code completion
-    public void testIssue197608() throws ParseException, BadLocationException {
-        String code = "<div></di";
-        Node root = parse(code);
-
-        Element div = ElementUtils.query(root, "div"); 
-        assertNotNull(div);
-//        AstNodeUtils.dumpTree(root);
-    }
-
-    private Node parse(String code) {
-        HtmlSource source = new HtmlSource(code);
-        SyntaxAnalyzer result = SyntaxAnalyzer.create(source);
-        SyntaxAnalyzerElements elements = result.elements();
-        
-//        for(SyntaxElement se : elements.items()) {
-//            System.out.print(se);
-//            List<ProblemDescription> problems = se.getProblems();
-//            if(problems == null || problems.isEmpty()) {
-//                System.out.println("OK");
-//            } else { 
-//                System.out.println(se.getProblems().get(0));
-//            }
-//            
-//        }
-        
-        return XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, elements.items());
-    }
-
 }
