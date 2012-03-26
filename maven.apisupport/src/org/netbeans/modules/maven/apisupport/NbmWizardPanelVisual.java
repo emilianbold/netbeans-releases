@@ -52,7 +52,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.api.MavenValidators;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
@@ -98,23 +97,28 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             cbAddModule.setVisible(false);
             txtAddModule.setVisible(false);
         }
-        RepositoryInfo info = MavenNbModuleImpl.netbeansRepo();
-        final Object key = this;
-        if (info == null) {
-            try {
-                RepositoryPreferences.getInstance().addTransientRepository(key, MavenNbModuleImpl.NETBEANS_REPO_ID, MavenNbModuleImpl.NETBEANS_REPO_ID, "http://bits.netbeans.org/maven2/");
-                info = MavenNbModuleImpl.netbeansRepo();
-            } catch (URISyntaxException x) {
-                assert false : x;
-            }
-        }
-        if (info != null) {
-            final RepositoryInfo fInfo = info;
-            versionCombo.setModel(new DefaultComboBoxModel(new Object[] {SEARCHING}));
-            RP.post(new Runnable() {
-                public @Override void run() {
+        RP.post(new Runnable() {
+            public @Override void run() {
+
+                RepositoryInfo info = MavenNbModuleImpl.netbeansRepo();
+                final Object key = this;
+                if (info == null) {
+                    try {
+                        RepositoryPreferences.getInstance().addTransientRepository(key, MavenNbModuleImpl.NETBEANS_REPO_ID, MavenNbModuleImpl.NETBEANS_REPO_ID, "http://bits.netbeans.org/maven2/");
+                        info = MavenNbModuleImpl.netbeansRepo();
+                    } catch (URISyntaxException x) {
+                        assert false : x;
+                    }
+                }
+                if (info != null) {
+                    EventQueue.invokeLater(new Runnable()  {
+                        public @Override void run() {
+                            versionCombo.setModel(new DefaultComboBoxModel(new Object[] {SEARCHING}));
+                        }
+                    });
+
                     final List<String> versions = new ArrayList<String>();
-                    final Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult("org.netbeans.cluster", "platform", Collections.singletonList(fInfo));
+                    final Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult("org.netbeans.cluster", "platform", Collections.singletonList(info));
                     for (NBVersionInfo version : result.getResults()) { // NOI18N
                         versions.add(version.getVersion());
                     }
@@ -132,27 +136,28 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                                     versions2.add(version.getVersion());
                                 }
                                 versions2.add("SNAPSHOT"); // NOI18N
-                                
+
                                 EventQueue.invokeLater(new Runnable()  {
-                                             public @Override void run() {
-                                                 versionCombo.setModel(new DefaultComboBoxModel(versions2.toArray()));
-                                                 versionComboActionPerformed(null);
-                                             }
-                                         });
+                                            public @Override void run() {
+                                                versionCombo.setModel(new DefaultComboBoxModel(versions2.toArray()));
+                                                versionComboActionPerformed(null);
+                                            }
+                                        });
                             }
                         });
                     } else {
                         RepositoryPreferences.getInstance().removeTransientRepositories(key);
                     }
                     EventQueue.invokeLater(new Runnable()  {
-                                             public @Override void run() {
-                                                 versionCombo.setModel(new DefaultComboBoxModel(versions.toArray()));
-                                                 versionComboActionPerformed(null);
-                                             }
-                                         });
-                }
-            });
-        }
+                                            public @Override void run() {
+                                                versionCombo.setModel(new DefaultComboBoxModel(versions.toArray()));
+                                                versionComboActionPerformed(null);
+                                            }
+                                        });
+                    }
+            }
+        });
+        
     }
 
     /** This method is called from within the constructor to
@@ -173,7 +178,6 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         versionLabel.setLabelFor(versionCombo);
         org.openide.awt.Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.versionLabel.text")); // NOI18N
 
-        versionCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "RELEASE123" }));
         versionCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 versionComboActionPerformed(evt);
@@ -203,7 +207,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(versionLabel)
                         .addGap(8, 8, 8)
-                        .addComponent(versionCombo, 0, 395, Short.MAX_VALUE))
+                        .addComponent(versionCombo, 0, 396, Short.MAX_VALUE))
                     .addComponent(cbOsgiDeps)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(cbAddModule)
