@@ -1836,7 +1836,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                             popExp();
                                             top2.addParameter(top);
                                             if (top2.getParameterCount() == 1 && CsmCompletionExpression.isValidType(top)
-                                                    && getValidExpID(top3) != PARENTHESIS) {
+                                                    && getValidExpID(top3) != PARENTHESIS && getValidExpID(top3) != TYPE) {
                                                 top2.setExpID(CONVERSION);
                                             } else {
                                                 top2.setExpID(PARENTHESIS);
@@ -1922,7 +1922,10 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 mtd = true;
                                 break;
 
-                            //              case PARENTHESIS_OPEN: // empty parenthesis
+                            case PARENTHESIS_OPEN: // empty parenthesis
+                                popExp();
+                                break;
+                                
                             default:
                                 errorState = true;
                                 break;
