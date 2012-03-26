@@ -68,6 +68,7 @@ public final class HistoryOptionsController extends OptionsPanelController imple
         panel = new HistoryOptionsPanel();
         panel.warningLabel.setVisible(false);
         panel.olderThanDaysTextField.getDocument().addDocumentListener(this);
+        panel.daysIncrementTextField.getDocument().addDocumentListener(this);
         panel.keepForeverRadioButton.addActionListener(this);
         panel.removeOlderRadioButton.addActionListener(this);
         panel.loadAllRadioButton.addActionListener(this);
@@ -120,6 +121,9 @@ public final class HistoryOptionsController extends OptionsPanelController imple
         try {       
             if(!panel.keepForeverRadioButton.isSelected()) {
                 Integer.parseInt(panel.olderThanDaysTextField.getText());
+            } 
+            if(panel.loadIncrementsRadioButton.isSelected()) {
+                Integer.parseInt(panel.daysIncrementTextField.getText());
             } 
         } catch (NumberFormatException e) {
             valid = false;
