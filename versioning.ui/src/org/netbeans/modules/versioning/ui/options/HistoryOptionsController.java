@@ -150,7 +150,7 @@ public final class HistoryOptionsController extends OptionsPanelController imple
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(getClass());
+        return new HelpCtx("org.netbeans.modules.localhistory.options.LocalHistoryOptionsController");
     }
 
     @Override
