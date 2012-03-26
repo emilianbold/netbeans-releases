@@ -148,7 +148,7 @@ class Model extends AbstractTableModel {
             items = documents;
         else if( columnIndex == viewCol )
             items = views;
-        if( null == items || rowIndex >= items.length )
+        if( null == items || rowIndex >= items.length || rowIndex < 0 )
             return null;
         return items[rowIndex];
     }
