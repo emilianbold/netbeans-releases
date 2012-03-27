@@ -79,4 +79,9 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug210191.cpp", 7, 28, "bug210191.cpp", 3, 5);
     }
     
+    public void testBug210192() throws Exception {
+        // Bug 210192 - Unresolved template functions
+        performTest("bug210192.cpp", 5, 36, "bug210192.cpp", 1, 1);
+    }    
+    
 }
