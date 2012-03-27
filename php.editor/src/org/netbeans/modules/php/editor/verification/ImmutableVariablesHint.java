@@ -69,6 +69,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
@@ -176,6 +177,13 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
 
         @Override
         public void visit(FunctionDeclaration node) {
+            parentNodes.push(node);
+            super.visit(node);
+            parentNodes.pop();
+        }
+
+        @Override
+        public void visit(LambdaFunctionDeclaration node) {
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
