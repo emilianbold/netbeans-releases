@@ -82,6 +82,7 @@ public class RefreshManager {
         private RefreshWorker(boolean expected) {
             this.expected = expected;
         }
+        @Override
         public void run() {
             long time = System.currentTimeMillis();
             int cnt = 0;
@@ -183,6 +184,7 @@ public class RefreshManager {
         public PathComparator(boolean childrenFirst) {
             this.childrenFirst = childrenFirst;
         }        
+        @Override
         public int compare(RemoteFileObjectBase o1, RemoteFileObjectBase o2) {
             int result = o1.getPath().compareTo(o2.getPath());
             return childrenFirst ? -result : result;
