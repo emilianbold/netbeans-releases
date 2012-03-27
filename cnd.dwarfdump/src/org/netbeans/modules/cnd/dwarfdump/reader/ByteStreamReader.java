@@ -45,11 +45,13 @@
 package org.netbeans.modules.cnd.dwarfdump.reader;
 
 import java.io.ByteArrayInputStream;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteOrder;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
 
 /**
  * I decided not to extend RandomAccessFile because in this case I cannot
@@ -79,7 +81,7 @@ public class ByteStreamReader implements DataInput {
             try {
                 file.close();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Dwarf.LOG.log(Level.INFO, "Cannot close "+fileName, ex); //NOI18N
             }
             file = null;
         }
@@ -133,7 +135,7 @@ public class ByteStreamReader implements DataInput {
         file.readFully(buffer, 0, size);
         
         for (int i = 0; i < size; i++) {
-            long u = 0;
+            long u;
             
             if (dataEncoding == LSB) {
                 u = (0xff & buffer[i]);

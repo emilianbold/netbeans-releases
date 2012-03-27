@@ -821,7 +821,13 @@ public final class CndLexerUtilities {
             CppTokenId._STDCALL,
             CppTokenId.__STDCALL,
             CppTokenId.__TRY,
-            CppTokenId.__W64,};
+            CppTokenId.__W64,
+            CppTokenId.__NULL,
+            CppTokenId.__ALIGNOF,
+            CppTokenId.__IS_CLASS,
+            CppTokenId.__IS_POD,
+            CppTokenId.__IS_BASE_OF,
+            CppTokenId.__HAS_TRIVIAL_CONSTRUCTOR,};
         addToFilter(ids, filterToModify);
     }
 
