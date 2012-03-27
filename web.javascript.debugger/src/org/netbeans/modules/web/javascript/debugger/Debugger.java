@@ -149,7 +149,12 @@ public class Debugger {
             urlToDebug = reformatFileURL(urlToDebug);
             List<? extends WipBrowser.WipTabConnector> tabs = browser.getTabs(backend);
             for (WipBrowser.WipTabConnector tabConnector : tabs) {
-                if (tabConnector.getUrl().equals(urlToDebug)) {
+                String tabUrl = tabConnector.getUrl();
+                // #210202
+                if (tabUrl.startsWith("file://localhost/")) {
+                    tabUrl = tabUrl.replace("file://localhost/", "file:///");
+                }
+                if (tabUrl.equals(urlToDebug)) {
                     BrowserDebugger.log(Bundle.ConnectionEstablished());
                     listener = new TabListener();
                     debugListener = listener.getDebugEventListenerImpl();
