@@ -846,16 +846,22 @@ public final class MatchingObject implements Comparable<MatchingObject>,
             return false;
         }
         final MatchingObject other = (MatchingObject) obj;
-        if (this.fileObject != other.fileObject && (this.fileObject == null || !this.fileObject.equals(other.fileObject))) {
+        if (this.resultModel == other.resultModel
+                || (this.resultModel != null
+                && this.resultModel.equals(other.resultModel))) {
+            return this.fileObject == other.fileObject
+                    || (this.fileObject != null
+                    && this.fileObject.equals(other.fileObject));
+        } else {
             return false;
         }
-        return true;
     }
 
     @Override
     public int hashCode() {
         int hash = 3;
         hash = 73 * hash + (this.fileObject != null ? this.fileObject.hashCode() : 0);
+        hash = 73 * hash + (this.resultModel != null ? this.resultModel.hashCode() : 0);
         return hash;
     }
 
