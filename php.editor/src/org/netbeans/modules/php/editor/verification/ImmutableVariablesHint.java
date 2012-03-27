@@ -60,6 +60,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
@@ -182,6 +183,13 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
 
         @Override
         public void visit(IfStatement node) {
+            parentNodes.push(node);
+            super.visit(node);
+            parentNodes.pop();
+        }
+
+        @Override
+        public void visit(CatchClause node) {
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
