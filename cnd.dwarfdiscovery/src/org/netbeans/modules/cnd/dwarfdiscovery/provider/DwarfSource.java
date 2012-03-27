@@ -58,17 +58,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
-import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
-import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
+import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
-import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
-import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -77,7 +78,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class DwarfSource implements SourceFileProperties{
-    private static final boolean FULL_TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.source"); // NOI18N
+    public static final Logger LOG = Logger.getLogger(DwarfSource.class.getName());
     private static final boolean CUT_LOCALHOST_NET_ADRESS = Boolean.getBoolean("cnd.dwarfdiscovery.cut.localhost.net.adress"); // NOI18N
     private static boolean ourGatherMacros = true;
     private static boolean ourGatherIncludes = true;
@@ -125,7 +126,9 @@ public class DwarfSource implements SourceFileProperties{
             fullName = fullName.replace('/', '\\');
         }
         fullName = PathCache.getString(fullName);
-        if (FULL_TRACE) {System.out.println("Compilation unit full name:"+fullName);} // NOI18N
+        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+            DwarfSource.LOG.log(Level.FINE, "Compilation unit full name:{0}", fullName); // NOI18N
+        }
     }
 
     private void initCompilerSettings(CompilerSettings compilerSettings, ItemProperties.LanguageKind lang){
@@ -139,7 +142,9 @@ public class DwarfSource implements SourceFileProperties{
            //    }
            //}
            if (compilerSettings.isWindows()) {
-               if (FULL_TRACE) {System.out.println("CompileFlavor:"+compilerSettings.getCompileFlavor());} // NOI18N
+               if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE, "CompileFlavor:{0}", compilerSettings.getCompileFlavor()); // NOI18N
+               }
                if (compilerSettings.getCompileFlavor() != null && compilerSettings.getCompileFlavor().isCygwinCompiler()) {
                    cygwinPath = compilerSettings.getCygwinDrive();
                    if (cygwinPath == null) {
@@ -155,7 +160,9 @@ public class DwarfSource implements SourceFileProperties{
                                        }
                                        cygwinPath+=""+c;
                                    }
-                                   if (FULL_TRACE) {System.out.println("Detect cygwinPath:"+cygwinPath);} // NOI18N
+                                   if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                                       DwarfSource.LOG.log(Level.FINE, "Detect cygwinPath:{0}", cygwinPath); // NOI18N
+                                   }
                                    break;
                                }
                            }
@@ -263,14 +270,18 @@ public class DwarfSource implements SourceFileProperties{
         }
         if (normilizeProvider.isWindows()) {
             //replace /cygdrive/<something> prefix with <something>:/ prefix:
-            if (FULL_TRACE) {System.out.println("Try to fix win name:"+fileName);} // NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "Try to fix win name:{0}", fileName); // NOI18N
+            }
             if (fileName.startsWith(CYG_DRIVE_UNIX)) {
                 fileName = fileName.substring(CYG_DRIVE_UNIX.length()); // NOI18N
                 fileName = "" + Character.toUpperCase(fileName.charAt(0)) + ':' + fileName.substring(1); // NOI18N
                 fileName = fileName.replace('\\', '/');
                 if (cygwinPath == null) {
                     cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + CYGWIN_PATH;
-                    if (FULL_TRACE) {System.out.println("Set cygwinPath:"+cygwinPath);} // NOI18N
+                    if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                        DwarfSource.LOG.log(Level.FINE, "Set cygwinPath:{0}", cygwinPath); // NOI18N
+                    }
                 }
             } else {
                 int i = fileName.indexOf(CYG_DRIVE_WIN);
@@ -278,14 +289,18 @@ public class DwarfSource implements SourceFileProperties{
                     //replace D:\cygdrive\c\<something> prefix with <something>:\ prefix:
                     if (cygwinPath == null) {
                         cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + CYGWIN_PATH; // NOI18N
-                        if (FULL_TRACE) {System.out.println("Set cygwinPath:"+cygwinPath);} // NOI18N
+                        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                            DwarfSource.LOG.log(Level.FINE, "Set cygwinPath:{0}", cygwinPath); // NOI18N
+                        }
                     }
                     fileName = fileName.substring(i+CYG_DRIVE_UNIX.length());
                     fileName = "" + Character.toUpperCase(fileName.charAt(0)) + ':' + fileName.substring(1); // NOI18N
                     fileName = fileName.replace('\\', '/');
                 }
             }
-            if (FULL_TRACE) {System.out.println("\t"+fileName);} // NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "\t{0}", fileName); // NOI18N
+            }
         } else if (CUT_LOCALHOST_NET_ADRESS && Utilities.isUnix()) {
             if (fileName.startsWith("/net/")){ // NOI18N
                 try {
@@ -430,7 +445,9 @@ public class DwarfSource implements SourceFileProperties{
 
     private void gatherLine(String line) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
-        if (FULL_TRACE) {System.out.println("Process command line "+line);} // NOI18N
+        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+            DwarfSource.LOG.log(Level.FINE, "Process command line {0}", line); // NOI18N
+        }
         Iterator<String> st = DiscoveryUtils.scanCommandLine(line).iterator();
         List<String> aUserIncludes = new ArrayList<String>();
         Map<String, String> aUserMacros = new HashMap<String, String>();
@@ -498,7 +515,9 @@ public class DwarfSource implements SourceFileProperties{
                 path = fixCygwinPath(path);
                 path = normalizePath(path);
                 addUserIncludePath(PathCache.getString(path));
-                if (FULL_TRACE) {System.out.println("\tuser:"+path);} // NOI18N
+                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE, "\tuser:{0}", path); // NOI18N
+                }
             }
         } else {
             if (path.startsWith("/usr")) { // NOI18N
@@ -508,12 +527,16 @@ public class DwarfSource implements SourceFileProperties{
                 if (!systemIncludes.contains(path)) {
                     systemIncludes.add(path);
                 }
-                if (FULL_TRACE) {System.out.println("\tsystem:"+path);} // NOI18N
+                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE, "\tsystem:{0}", path); // NOI18N
+                }
             } else {
                 path = fixCygwinPath(path);
                 path = normalizePath(path);
                 addUserIncludePath(PathCache.getString(path));
-                if (FULL_TRACE) {System.out.println("\tuser:"+path);} // NOI18N
+                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE, "\tuser:{0}", path); // NOI18N
+                }
             }
         }
     }
@@ -533,7 +556,9 @@ public class DwarfSource implements SourceFileProperties{
         }
         DwarfStatementList dwarfTable = cu.getStatementList();
         if (dwarfTable == null) {
-            if (FULL_TRACE) {System.out.println("Include paths not found");} // NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "Include paths not found"); // NOI18N
+            }
             return;
         }
         for (Iterator<String> it = dwarfTable.getIncludeDirectories().iterator(); it.hasNext();) {
@@ -557,16 +582,17 @@ public class DwarfSource implements SourceFileProperties{
         for(String path : dwarfIncludedFiles){
             processPath(path, list, dwarfTable, true);
         }
-        if (FULL_TRACE) {System.out.println("Include paths:"+userIncludes);} // NOI18N
+        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+            DwarfSource.LOG.log(Level.FINE, "Include paths:{0}", userIncludes); // NOI18N
+        }
     }
 
     private void processPath(String path, List<String> list, DwarfStatementList dwarfTable, boolean isPath) {
         String includeFullName = processPath(path);
         if (isPath) {
-            String userPath = null;
             int i = includeFullName.lastIndexOf('/'); // NOI18N
             if (i > 0) {
-                userPath = includeFullName.substring(0, i);
+                String userPath = includeFullName.substring(0, i);
                 if (!isSystemPath(userPath)) {
                     list = grepSourceFile(includeFullName).includes;
                     for (String included : list) {
@@ -579,17 +605,17 @@ public class DwarfSource implements SourceFileProperties{
             addpath(includeFullName);
         }
         includedFiles.add(PathCache.getString(includeFullName));
-        if (FULL_TRACE) {
-            System.out.println("Included file:" + includeFullName); // NOI18N
+        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+            DwarfSource.LOG.log(Level.FINE, "Included file:{0}", includeFullName); // NOI18N
         }
     }
 
     private String processPath(String path) {
         path = path.replace('\\', '/'); // NOI18N
-        String includeFullName = path;
-        if (FULL_TRACE) {
-            System.out.println("Included file original:" + path); // NOI18N
+        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+            DwarfSource.LOG.log(Level.FINE, "Included file original:{0}", path); // NOI18N
         }
+        String includeFullName;
         if (path.startsWith("./")) { // NOI18N
             includeFullName = compilePath + path.substring(1);
         } else if (path.startsWith("../")) { // NOI18N
@@ -616,9 +642,13 @@ public class DwarfSource implements SourceFileProperties{
             String relativeDir = path.substring(0,n);
             String dir = "/"+relativeDir; // NOI18N
             List<String> paths = dwarfTable.getPathsForFile(name);
-            if (FULL_TRACE) {System.out.println("Try to find new include paths for:"+name+" in folder "+dir);} // NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "Try to find new include paths for:{0} in folder {1}", new Object[]{name, dir}); // NOI18N
+            }
             for(String dwarfPath : paths){
-                if (FULL_TRACE) {System.out.println("    candidate:"+dwarfPath);} // NOI18N
+                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE, "    candidate:{0}", dwarfPath); // NOI18N
+                }
                 if (dwarfPath.endsWith(dir)){
                     String found = dwarfPath.substring(0,dwarfPath.length()-dir.length());
                     found = fixCygwinPath(found);
@@ -631,12 +661,16 @@ public class DwarfSource implements SourceFileProperties{
                                 system = systemIncludes.contains(found);
                             }
                             if (!system){
-                               if (FULL_TRACE) {System.out.println("    Find new include path:"+found);} // NOI18N
+                                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                                    DwarfSource.LOG.log(Level.FINE, "    Find new include path:{0}", found); // NOI18N
+                                }
                                 addUserIncludePath(PathCache.getString(found));
                             }
                         } else {
                             if (!dwarfPath.startsWith("/usr")){ // NOI18N
-                                if (FULL_TRACE) {System.out.println("    Find new include path:"+found);} // NOI18N
+                                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                                    DwarfSource.LOG.log(Level.FINE, "    Find new include path:{0}", found); // NOI18N
+                                }
                                 addUserIncludePath(PathCache.getString(found));
                             }
                         }
@@ -645,7 +679,9 @@ public class DwarfSource implements SourceFileProperties{
                 } else if (dwarfPath.equals(relativeDir)){
                     String found = "."; // NOI18N
                     if (!userIncludes.contains(found)) {
-                        if (FULL_TRACE) {System.out.println("    Find new include path:"+found);} // NOI18N
+                        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                            DwarfSource.LOG.log(Level.FINE, "    Find new include path:{0}", found); // NOI18N
+                        }
                         addUserIncludePath(PathCache.getString(found));
                     }
                     break;
@@ -680,7 +716,9 @@ public class DwarfSource implements SourceFileProperties{
         }
         DwarfMacinfoTable dwarfTable = cu.getMacrosTable();
         if (dwarfTable == null) {
-            if (FULL_TRACE) {System.out.println("Macros not found");} // NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "Macros not found"); // NOI18N
+            }
             return;
         }
         int firstMacroLine = grepSourceFile(fullName).firstMacroLine;
@@ -710,7 +748,9 @@ public class DwarfSource implements SourceFileProperties{
             }
             userMacros.put(macro,value);
         }
-        if (FULL_TRACE) {System.out.println("Macros:"+userMacros);} // NOI18N
+        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+            DwarfSource.LOG.log(Level.FINE, "Macros:{0}", userMacros); // NOI18N
+        }
     }
 
     private boolean equalValues(String sysValue, String value) {
@@ -843,12 +883,16 @@ public class DwarfSource implements SourceFileProperties{
                             if (c == '"') {
                                 if (line.indexOf('"',1)>0){
                                     res.includes.add(PathCache.getString(line.substring(1,line.indexOf('"',1))));
-                                    if (FULL_TRACE) {System.out.println("find in source:"+line.substring(1,line.indexOf('"',1)));} // NOI18N
+                                    if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                                        DwarfSource.LOG.log(Level.FINE, "find in source:{0}", line.substring(1,line.indexOf('"',1))); // NOI18N
+                                    }
                                 }
                             } else if (c == '<'){
                                 if (line.indexOf('>')>0){
                                     res.includes.add(PathCache.getString(line.substring(1,line.indexOf('>'))));
-                                    if (FULL_TRACE) {System.out.println("find in source:"+line.substring(1,line.indexOf('>')));} // NOI18N
+                                    if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                                        DwarfSource.LOG.log(Level.FINE, "find in source:{0}", line.substring(1,line.indexOf('>'))); // NOI18N
+                                    }
                                 }
                             }
                         }
@@ -874,10 +918,12 @@ public class DwarfSource implements SourceFileProperties{
                 }
                 in.close();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                DwarfSource.LOG.log(Level.INFO, "Cannot grep file: "+fileName, ex); // NOI18N
             }
         } else {
-            if (FULL_TRACE) {System.out.println("Cannot grep file:"+fileName);} // NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "Cannot grep file:{0}", fileName); // NOI18N
+            }
         }
         res.includes.trimToSize();
         grepBase.put(fileName,res);

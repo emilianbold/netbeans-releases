@@ -46,7 +46,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -63,6 +62,7 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf.CompilationUnitIterator;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -758,7 +758,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);
-            Iterator<CompilationUnit> units = dump.iteratorCompilationUnits();
+            CompilationUnitIterator units = dump.iteratorCompilationUnits();
             if (units != null && units.hasNext()) {
                 while (units.hasNext()) {
                     CompilationUnit cu = units.next();
