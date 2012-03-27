@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -618,7 +619,8 @@ public class AstRenderer {
             return false;
         }
         processedProjects.add(project);
-        if (project.findDeclaration(uname) != null) {
+        final CsmDeclaration decl = project.findDeclaration(uname);
+        if (decl != null && CsmIncludeResolver.getDefault().isObjectVisible(file, decl)) {
             return true;
         }
         for (CsmProject lib : project.getLibraries()) {
