@@ -563,7 +563,7 @@ public final class SearchBar extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!CLOSE_ON_ENTER && !searched) {
+                if (CLOSE_ON_ENTER && !searched) {
                     findNext();
                 }
                 if (!popupMenuWasCanceled)
