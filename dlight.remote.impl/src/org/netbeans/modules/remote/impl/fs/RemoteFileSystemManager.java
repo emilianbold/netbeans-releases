@@ -76,7 +76,13 @@ public class RemoteFileSystemManager {
 
     /*package*/ void resetFileSystem(ExecutionEnvironment execEnv) {
         synchronized(lock) {
-            fileSystems.remove(execEnv);
+            SoftReference<RemoteFileSystem> ref = fileSystems.remove(execEnv);
+            if (ref != null) {
+                RemoteFileSystem fs = ref.get();
+                if (fs != null) {
+                    fs.dispose();
+                }
+            }
         }
     }
 
