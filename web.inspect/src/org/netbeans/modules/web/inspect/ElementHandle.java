@@ -230,7 +230,7 @@ public class ElementHandle {
                 int index = 0;
                 String name = siblingTagNames[index].toLowerCase();
                 for (AstNode child : astParent.children()) {
-                    if (child.type() == AstNode.NodeType.OPEN_TAG) {
+                    if (isTag(child)) {
                         String astName = child.name().toLowerCase();
                         if (name.equals(astName)) {
                             if (index == indexInParent) {
@@ -251,7 +251,7 @@ public class ElementHandle {
         } else {
             String elemName = getTagName().toLowerCase();
             for (AstNode child : root.children()) {
-                if (child.type() == AstNode.NodeType.OPEN_TAG) {
+                if (isTag(child)) {
                     String astName = child.name().toLowerCase();
                     if (elemName.equals(astName)) {
                         return new AstNode[] {child, null};
@@ -261,6 +261,19 @@ public class ElementHandle {
             nearest = root;
         }
         return new AstNode[] {null, nearest};
+    }
+
+    /**
+     * Helper method (for {@code locateInAst()} method) that determines
+     * whether the specified node represents a tag.
+     * 
+     * @param node node to check.
+     * @return {@code true} when the specified node is a tag,
+     * returns {@code false} otherwise.
+     */
+    private boolean isTag(AstNode node) {
+        AstNode.NodeType type = node.type();
+        return (type == AstNode.NodeType.OPEN_TAG) || (type == AstNode.NodeType.UNKNOWN_TAG);
     }
 
     /**
