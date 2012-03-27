@@ -53,6 +53,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 
@@ -62,8 +63,6 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
  * @author Alexander Simon
  */
 public class CompileLineService {
-
-    private static final boolean TRACE_READ_EXCEPTIONS = false;
 
     private CompileLineService() {
     }
@@ -79,7 +78,7 @@ public class CompileLineService {
         try {
             dump(args[0], args[1], System.out);
         } catch (Throwable ex) {
-            ex.printStackTrace();
+            Dwarf.LOG.log(Level.INFO, "File "+args[1], ex);
         }
     }
 
@@ -108,7 +107,6 @@ public class CompileLineService {
         String line;
         String compileDir = null;
         String sourceFile = null;
-        String compileLine = null;
         int i = 0;
         while ((line=out.readLine())!= null){
             line = line.trim();
@@ -123,8 +121,7 @@ public class CompileLineService {
                     sourceFile = line;
                     break;
                 case 2:
-                    compileLine = line;
-                    list.add(createSourceFile(compileDir, sourceFile, compileLine));
+                    list.add(createSourceFile(compileDir, sourceFile, line));
                     break;
             }
             i++;
@@ -146,20 +143,20 @@ public class CompileLineService {
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);
-            Iterator<CompilationUnit> iterator = dump.iteratorCompilationUnits();
+            Dwarf.CompilationUnitIterator iterator = dump.iteratorCompilationUnits();
             while (iterator.hasNext()) {
                 CompilationUnit cu = iterator.next();
                 if (cu != null) {
                     if (cu.getRoot() == null || cu.getSourceFileName() == null) {
-                        if (TRACE_READ_EXCEPTIONS) {
-                            System.out.println("Compilation unit has broken name in file " + objFileName);  // NOI18N
+                        if (Dwarf.LOG.isLoggable(Level.FINE)) {
+                            Dwarf.LOG.log(Level.FINE, "Compilation unit has broken name in file {0}", objFileName);  // NOI18N
                         }
                         continue;
                     }
                     String lang = cu.getSourceLanguage();
                     if (lang == null) {
-                        if (TRACE_READ_EXCEPTIONS) {
-                            System.out.println("Compilation unit has unresolved language in file " + objFileName + "for " + cu.getSourceFileName());  // NOI18N
+                        if (Dwarf.LOG.isLoggable(Level.FINE)) {
+                            Dwarf.LOG.log(Level.FINE, "Compilation unit has unresolved language in file {0}for {1}", new Object[]{objFileName, cu.getSourceFileName()});  // NOI18N
                         }
                         continue;
                     }
@@ -167,33 +164,36 @@ public class CompileLineService {
                             || LANG.DW_LANG_C89.toString().equals(lang)
                             || LANG.DW_LANG_C99.toString().equals(lang)
                             || LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
-                        list.add(createSourceFile(cu));
+                        try {
+                            list.add(createSourceFile(cu));
+                        } catch (IOException ex){
+                            throw ex;
+                        } catch (Exception ex){
+                            if (Dwarf.LOG.isLoggable(Level.FINE)) {
+                                Dwarf.LOG.log(Level.FINE, "Compilation unit {0} {1}", new Object[]{cu.getSourceFileName(), ex.getMessage()});  // NOI18N
+                            }
+                            continue;
+                        }
                     } else {
-                        if (TRACE_READ_EXCEPTIONS) {
-                            System.out.println("Unknown language: " + lang);  // NOI18N
+                        if (Dwarf.LOG.isLoggable(Level.FINE)) {
+                            Dwarf.LOG.log(Level.FINE, "Unknown language: {0}", lang);  // NOI18N
                         }
                     }
                 }
             }
         } catch (FileNotFoundException ex) {
             // Skip Exception
-            if (TRACE_READ_EXCEPTIONS) {
-                System.out.println("File not found " + objFileName + ": " + ex.getMessage());  // NOI18N
+            if (Dwarf.LOG.isLoggable(Level.FINE)) {
+                Dwarf.LOG.log(Level.FINE, "File not found {0}: {1}", new Object[]{objFileName, ex.getMessage()});  // NOI18N
             }
         } catch (WrongFileFormatException ex) {
-            if (TRACE_READ_EXCEPTIONS) {
-                System.out.println("Unsuported format of file " + objFileName + ": " + ex.getMessage());  // NOI18N
+            if (Dwarf.LOG.isLoggable(Level.FINE)) {
+                Dwarf.LOG.log(Level.FINE, "Unsuported format of file {0}: {1}", new Object[]{objFileName, ex.getMessage()});  // NOI18N
             }
         } catch (IOException ex) {
-            if (TRACE_READ_EXCEPTIONS) {
-                System.err.println("Exception in file " + objFileName);  // NOI18N
-                ex.printStackTrace();
-            }
+            Dwarf.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
         } catch (Exception ex) {
-            if (TRACE_READ_EXCEPTIONS) {
-                System.err.println("Exception in file " + objFileName);  // NOI18N
-                ex.printStackTrace();
-            }
+            Dwarf.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
         } finally {
             if (dump != null) {
                 dump.dispose();
@@ -452,6 +452,7 @@ public class CompileLineService {
             try {
                 canPath = d.getCanonicalPath();
             } catch (IOException ex) {
+                Dwarf.LOG.log(Level.INFO, "File "+d.getAbsolutePath(), ex);
                 return;
             }
             if (!antiLoop.contains(canPath)){

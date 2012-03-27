@@ -1177,7 +1177,9 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     break;
                 case MakeConfiguration.TYPE_CUSTOM:
                     MakeProjectCustomizer makeProjectCustomizer = getProjectCustomizer(getProjectCustomizerId());
-                    icon = ImageUtilities.loadImageIcon(makeProjectCustomizer.getIconPath(), false); // NOI18N
+                    if (makeProjectCustomizer != null) {
+                        icon = ImageUtilities.loadImageIcon(makeProjectCustomizer.getIconPath(), false); // NOI18N
+                    }
                     break;
             }
             return icon;

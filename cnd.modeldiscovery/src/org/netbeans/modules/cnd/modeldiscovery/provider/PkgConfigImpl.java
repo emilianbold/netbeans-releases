@@ -166,22 +166,26 @@ public class PkgConfigImpl implements PkgConfig {
             }
             initPackages(envPaths(baseDirectory), true); // NOI18N
         } else {
-                //initPackages("/net/elif/export1/sside/as204739/pkgconfig/"); // NOI18N            
-            HostInfo hostinfo = null;
-            try {
-                if (HostInfoUtils.isHostInfoAvailable(pi.getExecutionEnvironment())) {
-                    hostinfo = HostInfoUtils.getHostInfo(pi.getExecutionEnvironment());
-                }                
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (CancellationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            if (hostinfo != null && hostinfo.getOS().getBitness() == HostInfo.Bitness._64) {
-                initPackages(envPaths("/usr/lib64/pkgconfig", "/usr/share/pkgconfig"), false); // NOI18N
+                //initPackages("/net/elif/export1/sside/as204739/pkgconfig/"); // NOI18N     
+            if (pi.isLinux()) {
+                HostInfo hostinfo = null;
+                try {
+                    if (HostInfoUtils.isHostInfoAvailable(pi.getExecutionEnvironment())) {
+                        hostinfo = HostInfoUtils.getHostInfo(pi.getExecutionEnvironment());
+                    }                
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (CancellationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (hostinfo != null && hostinfo.getOS().getBitness() == HostInfo.Bitness._64) {
+                    initPackages(envPaths("/usr/lib64/pkgconfig", "/usr/share/pkgconfig"), false); // NOI18N
+                } else {
+                    initPackages(envPaths("/usr/lib/pkgconfig", "/usr/share/pkgconfig"), false); // NOI18N
+                } 
             } else {
                 initPackages(envPaths("/usr/lib/pkgconfig", "/usr/share/pkgconfig"), false); // NOI18N
-            } 
+            }
         }
     }
 
