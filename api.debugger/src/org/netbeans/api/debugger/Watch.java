@@ -60,8 +60,9 @@ public final class Watch {
     public static final String PROP_EXPRESSION = "expression"; // NOI18N
     /** Name of the property for the value of the watched expression. This constant is not used at all. */
     public static final String PROP_VALUE = "value"; // NOI18N
-    /** Name of the property for the enabled status of the watch. */
-    static final String PROP_ENABLED = "enabled"; // NOI18N
+    /** Name of the property for the enabled status of the watch.
+     * @since 1.36 */
+    public static final String PROP_ENABLED = "enabled"; // NOI18N
 
     private String          expression;
     private boolean         enabled = true;
@@ -78,8 +79,9 @@ public final class Watch {
      *
      * @return <code>true</code> if the watch is enabled,
      *         <code>false</code> otherwise.
+     * @since 1.36
      */
-    synchronized boolean isEnabled () {
+    public synchronized boolean isEnabled () {
         return enabled;
     }
     
@@ -87,8 +89,9 @@ public final class Watch {
      * Set enabled state of the watch.
      * @param enabled <code>true</code> if this watch should be enabled,
      *                <code>false</code> otherwise
+     * @since 1.36
      */
-    void setEnabled(boolean enabled) {
+    public void setEnabled(boolean enabled) {
         synchronized(this) {
             if (enabled == this.enabled) return ;
             this.enabled = enabled;

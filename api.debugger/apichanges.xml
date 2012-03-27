@@ -75,6 +75,20 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="Watch_disableable">
+        <api name="DebuggerCoreAPI"/>
+        <summary>API for changing enabled state of a Watch</summary>
+        <version major="1" minor="36"/>
+        <date day="27" month="3" year="2012"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes" deletion="no"/>
+        <description>
+            Two method are added to Watch class: <code>isEnabled()</code> and <code>setEnabled(boolean)</code>.
+            When the enabled state changes, <code>PROP_ENABLED</code> event is fired.
+        </description>
+        <class package="org.netbeans.api.debugger" name="Watch"/>
+        <issue number="209783"/>
+    </change>
     <change id="generification">
         <api name="DebuggerCoreAPI"/>
         <summary>Use of some generic types in API; <code>ContextProvider</code> implemented more broadly; <code>DebuggerManager.join</code></summary>

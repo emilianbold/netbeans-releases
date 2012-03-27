@@ -47,7 +47,6 @@ package org.netbeans.modules.web.client.javascript.debugger.models;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Watch;
@@ -67,7 +66,6 @@ import static org.netbeans.spi.debugger.ui.Constants.LOCALS_VALUE_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.WATCH_TO_STRING_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.WATCH_TYPE_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.WATCH_VALUE_COLUMN_ID;
-import org.openide.util.Exceptions;
 
 public final class NbJSWatchesModel extends NbJSVariablesModel {
 
@@ -103,7 +101,7 @@ public final class NbJSWatchesModel extends NbJSVariablesModel {
             return false;
         } else if (node instanceof Watch) {
             Watch watch = (Watch)node;
-            if (!isWatchEnabled(watch)) {
+            if (!watch.isEnabled()) {
                 return true;
             }
             JSProperty property = eval(watch.getExpression());
@@ -165,7 +163,7 @@ public final class NbJSWatchesModel extends NbJSVariablesModel {
             return getMessage("CTL_CallstackModel.Column.Name.Desc");
         } else if (node instanceof Watch) {
             Watch watch = (Watch)node;
-            if (!isWatchEnabled(watch)) {
+            if (!watch.isEnabled()) {
                 return NbBundle.getMessage(NbJSWatchesModel.class, "CTL_WatchDisabled");
             }
             JSProperty property = eval(watch.getExpression());
@@ -183,7 +181,7 @@ public final class NbJSWatchesModel extends NbJSVariablesModel {
             UnknownTypeException {
         if(node instanceof Watch) {
             Watch watch = (Watch)node;
-            if (!isWatchEnabled(watch)) {
+            if (!watch.isEnabled()) {
                 return NbBundle.getMessage(NbJSWatchesModel.class, "CTL_WatchDisabled");
             }
             JSProperty property = eval(watch.getExpression());
@@ -214,7 +212,7 @@ public final class NbJSWatchesModel extends NbJSVariablesModel {
     public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
         if (WATCH_VALUE_COLUMN_ID.equals(columnID) && node instanceof Watch) {
             Watch watch = (Watch)node;
-            if (!isWatchEnabled(watch)) {
+            if (!watch.isEnabled()) {
                 return true;
             }
             JSProperty property = eval(watch.getExpression());
@@ -325,14 +323,4 @@ public final class NbJSWatchesModel extends NbJSVariablesModel {
         return NbBundle.getMessage(NbJSWatchesModel.class, key);
     }
     
-    private static boolean isWatchEnabled(Watch watch) {
-        try {
-            Method isEnabledMethod = watch.getClass().getDeclaredMethod("isEnabled");
-            isEnabledMethod.setAccessible(true);
-            return (Boolean) isEnabledMethod.invoke(watch);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            return true;
-        }
-    }
 }
