@@ -410,9 +410,8 @@
 <mapID target="org.netbeans.modules.java.hints.jackpot.refactoring.InvertBooleanRefactoringUI" url="refactor/csh/invert-boolean_db.html" />
 <!--Move Members dialog box: -->
 <mapID target="org.netbeans.modules.refactoring.java.ui.MoveMembersUI" url="refactor/csh/move-members_db.html" />
-
-
-
+<!--Introduce Local Extension dialog box: -->
+<mapID target="org.netbeans.modules.refactoring.java.ui.IntroduceLocalExtensionUI" url="refactor/csh/intro-local-extension_db.html" />
 
 
 
