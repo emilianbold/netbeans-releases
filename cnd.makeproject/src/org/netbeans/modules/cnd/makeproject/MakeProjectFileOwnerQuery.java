@@ -43,7 +43,7 @@
 package org.netbeans.modules.cnd.makeproject;
 
 import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -94,7 +94,7 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
 
         @Override
         protected Reference<Cache> initialValue() {
-            return new SoftReference<Cache>(new Cache());
+            return new WeakReference<Cache>(new Cache());
         }
     };
 
@@ -125,7 +125,7 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
             return out[0];
         } else {
             cachedValue = new Cache();
-            cache.set(new SoftReference<Cache>(cachedValue));
+            cache.set(new WeakReference<Cache>(cachedValue));
         }
         FileSystem fs;
         try {
