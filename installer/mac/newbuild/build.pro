@@ -142,6 +142,7 @@
     <property name="mysql_readme.name" value="NB_GF_MySQL_Bundle_Thirdparty_license_readme.txt"/>
 
     <!-- JDK Properties-->    
+    <property name="mpkg.name_nb_jdk" value="NetBeans 7.1.2"/> 
     <property name="mpkg.prefix_nb_jdk" value=" with JDK"/> 
     <property name="mpkg.version_jdk" value=" 7u4"/> 
     <property name="jdk.bundle.files.prefix" value="jdk-7u4"/>
