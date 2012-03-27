@@ -1266,9 +1266,12 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                 setEmphasizedFont(checkBoxPreloader, change);
                 setEmphasizedFont(labelPreloaderClass, change);
                 buttonPreloaderDefault.setEnabled( (activeConfig != null && change ) || (activeConfig == null && isPreloaderDefined(null)) );
-                buttonPreloaderDefault.setText(activeConfig == null ?
-                        NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.text.alt") :
-                        NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.text"));
+                if(activeConfig == null) {
+                    buttonPreloaderDefault.setText(NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.text.alt")); //NOI18N
+                } else {
+                    buttonPreloaderDefault.setText(NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.text")); //NOI18N
+                    buttonPreloaderDefault.setMnemonic(java.awt.event.KeyEvent.VK_F);
+                }
 
                 browserSelectionChanged(configs.getProperty(activeConfig, JFXProjectProperties.RUN_IN_BROWSER), configs.getDefaultProperty(JFXProjectProperties.RUN_IN_BROWSER));
             }
