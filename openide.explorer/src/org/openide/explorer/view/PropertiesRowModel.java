@@ -91,6 +91,7 @@ class PropertiesRowModel implements RowModel {
     
     /** listener on node properties changes, recreates displayed data */
     private PropertyChangeListener pcl = new PropertyChangeListener() {
+        @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             if (!SwingUtilities.isEventDispatchThread()) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -122,14 +123,19 @@ class PropertiesRowModel implements RowModel {
     
     NodeListener nl = new NodeListener() {
 
+        @Override
         public void childrenAdded(NodeMemberEvent ev) {}
 
+        @Override
         public void childrenRemoved(NodeMemberEvent ev) {}
 
+        @Override
         public void childrenReordered(NodeReorderEvent ev) {}
 
+        @Override
         public void nodeDestroyed(NodeEvent ev) {}
 
+        @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             if (!SwingUtilities.isEventDispatchThread()) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -154,6 +160,7 @@ class PropertiesRowModel implements RowModel {
         
         public void fireToolTipChanged(final Outline outline, final int row) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if (lastMouseMovedEvent != null) {
                         int r = outline.rowAtPoint(lastMouseMovedEvent.getPoint());
@@ -165,30 +172,37 @@ class PropertiesRowModel implements RowModel {
             });
         }
 
+        @Override
         public void mouseDragged(MouseEvent e) {
             lastMouseMovedEvent = null;
         }
 
+        @Override
         public void mouseMoved(MouseEvent e) {
             lastMouseMovedEvent = e;
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
             lastMouseMovedEvent = null;
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
             lastMouseMovedEvent = null;
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             lastMouseMovedEvent = null;
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
             lastMouseMovedEvent = null;
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
             lastMouseMovedEvent = null;
         }
@@ -226,14 +240,17 @@ class PropertiesRowModel implements RowModel {
         return -1;
     }
 
+    @Override
     public Class getColumnClass(int column) {
         return Node.Property.class;
     }
 
+    @Override
     public int getColumnCount() {
         return prop.length;
     }
 
+    @Override
     public String getColumnName(int column) {
         assert column < prop.length : column + " must be bellow " + prop.length;
         if (names [column] == null) {
@@ -260,6 +277,7 @@ class PropertiesRowModel implements RowModel {
         return prop[column].getDisplayName();
     }
 
+    @Override
     public Object getValueFor(Object node, int column) {
         Node n = Visualizer.findNode(node);
         if (n == null) {
@@ -277,6 +295,7 @@ class PropertiesRowModel implements RowModel {
         return theRealProperty;
     }
 
+    @Override
     public boolean isCellEditable(Object node, int column) {
         Node n = Visualizer.findNode(node);
         if (n == null) {
@@ -312,6 +331,7 @@ class PropertiesRowModel implements RowModel {
         this.ignoreSetValue = ignoreSetValue;
     }
 
+    @Override
     public void setValueFor(Object node, int column, Object value) {
         // Intentionally ignore this method when the cell editor components are
         // PropertyPanels that will propagate the change into the target
