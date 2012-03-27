@@ -1129,6 +1129,15 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private void showWaitCursor() {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    showWaitCursor();
+                }
+            });
+            return;
+        }
         if ((wizardPanel == null) || (wizardPanel.getRootPane() == null)) {
             // if none root pane --> don't set wait cursor
             return;
@@ -1153,6 +1162,15 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private void showNormalCursor() {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    showNormalCursor();
+                }
+            } );
+            return;
+        }
         if (waitingComponent == null) {
             // none waitingComponent --> don't change cursor to normal
             return;
@@ -1532,20 +1550,30 @@ public class WizardDescriptor extends DialogDescriptor {
             err.fine("is ProgressInstantiatingIterator");
             handle = ProgressHandleFactory.createHandle (PROGRESS_BAR_DISPLAY_NAME);
 
-            JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
-            if (wizardPanel != null) {
-                wizardPanel.setProgressComponent (progressComp, ProgressHandleFactory.createDetailLabelComponent (handle));
-            }
+            Mutex.EVENT.readAccess( new Runnable() {
+                @Override
+                public void run() {
+                    JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
+                    if (wizardPanel != null) {
+                        wizardPanel.setProgressComponent (progressComp, ProgressHandleFactory.createDetailLabelComponent (handle));
+                    }
+                }
+            });
 
             err.log (Level.FINE, "Show progressPanel controlled by iterator later.");
         } else if (panels instanceof AsynchronousInstantiatingIterator) {
             err.fine("is AsynchronousInstantiatingIterator");
             handle = ProgressHandleFactory.createHandle (PROGRESS_BAR_DISPLAY_NAME);
 
-            JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
-            if (wizardPanel != null) {
-                wizardPanel.setProgressComponent (progressComp, ProgressHandleFactory.createMainLabelComponent (handle));
-            }
+            Mutex.EVENT.readAccess( new Runnable() {
+                @Override
+                public void run() {
+                    JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
+                    if (wizardPanel != null) {
+                        wizardPanel.setProgressComponent (progressComp, ProgressHandleFactory.createMainLabelComponent (handle));
+                    }
+                }
+            });
 
             handle.start ();
             err.log (Level.FINE, "Show progressPanel later.");
@@ -2720,6 +2748,7 @@ public class WizardDescriptor extends DialogDescriptor {
         }
 
         private void setProgressComponent (JComponent progressComp, final JLabel progressLabel) {
+            assert SwingUtilities.isEventDispatchThread();
             if (progressComp == null) {
                 progressBarPanel.removeAll ();
                 progressBarPanel.setVisible (false);
