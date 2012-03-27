@@ -4346,9 +4346,13 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     scannedRootsCnt.incrementAndGet();
                 }
                 reportRootScan(root, time);
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format("Indexing of: %s took: %d ms", root.toExternalForm(), time)); //NOI18N
-                }
+                LOGGER.log(
+                    Level.FINE,
+                    "Indexing of: {0} took: {1} ms",    //NOI18N
+                    new Object[] {
+                        root,
+                        time
+                    });
             }
             return false;
         }
@@ -4413,16 +4417,30 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     if (LOGGER.isLoggable(Level.INFO)) {
                         File f = FileUtil.archiveOrDirForURL(source);
                         Object shown = f != null ? f : source;
-                        LOGGER.info(String.format("Indexing of: %s took: %d ms (New or modified files: %d, Deleted files: %d) [Adding listeners took: %d ms]", //NOI18N
-                                shown, time, outOfDateFiles[0], deletedFiles[0], recursiveListenersTime[0]));
+                        LOGGER.log(
+                            Level.INFO,
+                            "Indexing of: {0} took: {1} ms (New or modified files: {2}, Deleted files: {3}) [Adding listeners took: {4} ms]", //NOI18N
+                            new Object[] {
+                                shown,
+                                time,
+                                outOfDateFiles[0],
+                                deletedFiles[0],
+                                recursiveListenersTime[0]
+                            });
                     }
                 }
             }
 
-            if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info(String.format("Complete indexing of %d source roots took: %d ms (New or modified files: %d, Deleted files: %d) [Adding listeners took: %d ms]", //NOI18N
-                        scannedRootsCnt, completeTime, totalOutOfDateFiles, totalDeletedFiles, totalRecursiveListenersTime));
-            }
+            LOGGER.log(
+                Level.INFO,
+                "Complete indexing of {0} source roots took: {1} ms (New or modified files: {2}, Deleted files: {3}) [Adding listeners took: {4} ms]", //NOI18N
+                new Object[] {
+                    scannedRootsCnt,
+                    completeTime,
+                    totalOutOfDateFiles,
+                    totalDeletedFiles,
+                    totalRecursiveListenersTime
+                });
             TEST_LOGGER.log(Level.FINEST, "scanSources", ctx.newRootsToScan); //NOI18N
             return finished;
         }
