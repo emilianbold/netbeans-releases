@@ -83,7 +83,8 @@ public class BookmarksGotoDialogSupport extends GotoDialogSupport {
     }
 
     @EditorActionRegistration(
-            name = ExtKit.gotoAction
+            name = ExtKit.gotoAction,
+            weight = 100
     )
     public static final class BookmarksGotoAction extends ExtKit.GotoAction {
         
