@@ -91,25 +91,30 @@ class PropertiesRowModel implements RowModel {
     
     /** listener on node properties changes, recreates displayed data */
     private PropertyChangeListener pcl = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(final PropertyChangeEvent evt) {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        propertyChange(evt);
+                    }
+                });
+                return;
+            }
             //fireTableDataChanged();
-            final int row = rowForNode((Node)evt.getSource());
+            int row = rowForNode((Node)evt.getSource());
             if (row == -1) {
                 return;
             }
 
-            final int column = columnForProperty(evt.getPropertyName());
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    if (column == -1) {
-                        outline.tableChanged(new TableModelEvent(outline.getModel(), row, row,
-                                     TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE));
-                    } else {
-                        outline.tableChanged(new TableModelEvent(outline.getModel(), row, row,
-                                     column+1, TableModelEvent.UPDATE));
-                    }
-                }
-            });
+            int column = columnForProperty(evt.getPropertyName());
+            if (column == -1) {
+                outline.tableChanged(new TableModelEvent(outline.getModel(), row, row,
+                                TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE));
+            } else {
+                outline.tableChanged(new TableModelEvent(outline.getModel(), row, row,
+                                column+1, TableModelEvent.UPDATE));
+            }
         }
     };
 
@@ -125,7 +130,16 @@ class PropertiesRowModel implements RowModel {
 
         public void nodeDestroyed(NodeEvent ev) {}
 
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(final PropertyChangeEvent evt) {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        propertyChange(evt);
+                    }
+                });
+                return;
+            }
             if (Node.PROP_SHORT_DESCRIPTION.equals(evt.getPropertyName())) {
                 int row = rowForNode((Node)evt.getSource());
                 otu.fireToolTipChanged(outline, row);
