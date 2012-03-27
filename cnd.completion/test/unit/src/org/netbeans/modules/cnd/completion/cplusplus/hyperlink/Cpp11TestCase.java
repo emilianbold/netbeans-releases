@@ -73,5 +73,10 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug210019.cpp", 2, 50, "bug210019.cpp", 2, 10);
         performTest("bug210019.cpp", 2, 54, "bug210019.cpp", 2, 18);
     }
+
+    public void testBug210191() throws Exception {
+        // Bug 210191 - Unresolved class members in lambdas
+        performTest("bug210191.cpp", 7, 28, "bug210191.cpp", 3, 5);
+    }
     
 }
