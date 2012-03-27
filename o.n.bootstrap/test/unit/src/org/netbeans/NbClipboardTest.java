@@ -115,7 +115,8 @@ public class NbClipboardTest extends NbTestCase {
         NbClipboard ec = new NbClipboard();
         assertFalse("MAC seems to have fast clipboard", ec.slowSystemClipboard);
     }
-    
+
+    @RandomlyFails // hung in NB-Core-Build #8042
     public void testMemoryLeak89844() throws Exception {
         class Safe implements Runnable {
             WeakReference<Object> ref;
