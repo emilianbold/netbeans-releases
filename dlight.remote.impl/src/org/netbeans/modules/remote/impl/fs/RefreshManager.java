@@ -197,15 +197,19 @@ public class RefreshManager {
                 fileObjects.add(fo);
             }
         }
-        scheduleRefresh(fileObjects);
+        scheduleRefresh(fileObjects, true);
     }
        
-    public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects) {
-        Collection<RemoteFileObjectBase> toRefresh = new TreeSet<RemoteFileObjectBase>(new PathComparator(false));
-        for (RemoteFileObjectBase fo : fileObjects) {
-            addExistingChildren(fo, toRefresh);
+    public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects, boolean addExistingChildren) {
+        if (addExistingChildren) {
+            Collection<RemoteFileObjectBase> toRefresh = new TreeSet<RemoteFileObjectBase>(new PathComparator(false));
+            for (RemoteFileObjectBase fo : fileObjects) {
+                addExistingChildren(fo, toRefresh);
+            }
+            scheduleRefreshImpl(toRefresh, true);
+        } else {
+            scheduleRefreshImpl(fileObjects, true);
         }
-        scheduleRefreshImpl(toRefresh, true);
     }
     
     private void addExistingChildren(RemoteFileObjectBase fo, Collection<RemoteFileObjectBase> bag) {
