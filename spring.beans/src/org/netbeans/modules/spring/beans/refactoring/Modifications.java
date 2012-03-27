@@ -44,23 +44,9 @@
 
 package org.netbeans.modules.spring.beans.refactoring;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -77,7 +63,7 @@ import org.openide.text.PositionRef;
  *
  * @author Dusan Balek et al.
  */
-public final class Modifications {
+public final class Modifications implements org.netbeans.modules.refactoring.spi.ModificationResult {
 
     private final Map<FileObject, List<Difference>> diffs = new HashMap<FileObject, List<Difference>>();
 
@@ -260,6 +246,11 @@ public final class Modifications {
         commit(fileObject, diffs.get(fileObject), writer);
 
         return writer.toString();
+    }
+
+    @Override
+    public Collection<? extends File> getNewFiles() {
+        return Collections.EMPTY_LIST;
     }
 
     public static final class Difference {

@@ -90,6 +90,18 @@ public final class Manager {
     private final boolean lateWindowPromotion;
 
     private static final Logger LOGGER = Logger.getLogger(Manager.class.getName());
+    
+    public static final String JUNIT_TF = "junit"; // NOI18N
+    public static final String TESTNG_TF = "testng"; // NOI18N
+    private String testingFramework = ""; // NOI18N
+    
+    public void setTestingFramework(String testingFramework) {
+        this.testingFramework = testingFramework;
+    }
+
+    public String getTestingFramework() {
+        return testingFramework;
+    }
 
     /**
      * Returns a singleton instance of this class.

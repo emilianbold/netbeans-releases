@@ -49,7 +49,7 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.modules.editor.impl.SearchBar;
+import org.netbeans.modules.editor.search.SearchBar;
 
 /**
  *

@@ -358,7 +358,12 @@ public class CopyTestHidden extends AbstractCommandTestCase {
 
         assertTrue(filecopy.exists());
         assertStatus(SVNStatusKind.ADDED, filecopy);
-        assertNotifiedFiles(new File[] {filecopy});
+        if (isSvnkit()) {
+            // svnkit does not notify about files
+            assertNotifiedFiles(new File[] {});
+        } else {
+            assertNotifiedFiles(new File[] {filecopy});
+        }
     }
 
     public void testCopyURL2FilePrevRevision() throws Exception {
@@ -401,7 +406,12 @@ public class CopyTestHidden extends AbstractCommandTestCase {
         c.copy(getFileUrl(file), filecopy, prevRev);
 
         assertContents(filecopy, 1);
-        assertNotifiedFiles(new File[] {filecopy});
+        if (isSvnkit()) {
+            // svnkit does not notify about files
+            assertNotifiedFiles(new File[] {});
+        } else {
+            assertNotifiedFiles(new File[] {filecopy});
+        }
     }
     
 }

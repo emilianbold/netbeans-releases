@@ -105,8 +105,9 @@ public abstract class JavaRefactoringGlobalAction extends NodeAction {
 
     protected Lookup getLookup(Node[] n) {
         InstanceContent ic = new InstanceContent();
-        for (Node node:n)
+        for (Node node:n) {
             ic.add(node);
+        }
         if (n.length>0) {
             EditorCookie tc = getTextComponent(n[0]);
             if (tc != null) {

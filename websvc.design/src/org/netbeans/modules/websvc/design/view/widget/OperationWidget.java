@@ -62,6 +62,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.javamodel.ProjectService;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.view.DesignView;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
@@ -84,7 +85,7 @@ public class OperationWidget extends AbstractTitledWidget implements Flushable {
     private static final String IMAGE_NOTIFICATION  = 
             "org/netbeans/modules/websvc/design/view/resources/notification_operation.png"; // NOI18N   
 
-    private Service service;
+    private ProjectService service;
     private MethodModel operation;
     private ServiceModel serviceModel;
     
@@ -107,7 +108,9 @@ public class OperationWidget extends AbstractTitledWidget implements Flushable {
      * @param scene
      * @param operation
      */
-    public OperationWidget(ObjectScene scene, ServiceModel serviceModel, Service service, MethodModel operation) {
+    public OperationWidget(ObjectScene scene, ServiceModel serviceModel, 
+            ProjectService service, MethodModel operation) 
+    {
         super(scene,RADIUS,RADIUS,RADIUS/2,BORDER_COLOR);
         this.service = service;
         this.operation=operation;

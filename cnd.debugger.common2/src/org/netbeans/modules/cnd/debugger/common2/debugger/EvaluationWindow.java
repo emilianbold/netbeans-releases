@@ -111,7 +111,9 @@ public final class EvaluationWindow extends TopComponent {
     @Override
     public void requestActive() {
         super.requestActive();
-        exprList.requestFocusInWindow();
+        if (exprList != null) {
+            exprList.requestFocusInWindow();
+        }
     }
 
     @Override

@@ -46,6 +46,7 @@ package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
@@ -118,9 +119,12 @@ public class BuildFeedreaderTest extends TestBase {
         FileObject buildScript = feedreaderSuite.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         assertNotNull(buildScript);
         assertTrue(buildScript.isValid());
+
+        Properties p = new Properties();
+        p.setProperty("jnlp.sign.jars", "false");
         
         System.out.println("------------- BUILD OUTPUT --------------");
-        ExecutorTask et = ActionUtils.runTarget(buildScript, targets, null);
+        ExecutorTask et = ActionUtils.runTarget(buildScript, targets, p);
         et.waitFinished();
         System.out.println("-----------------------------------------");
         return et.result();

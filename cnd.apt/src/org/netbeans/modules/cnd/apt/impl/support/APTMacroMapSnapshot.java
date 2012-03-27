@@ -165,8 +165,11 @@ public final class APTMacroMapSnapshot {
     private APTMacro getMacroImpl(CharSequence key) {
         if (macros == NO_MACROS) {
             return null;
-        } else if (macros.equals(key)) {
-            return UNDEFINED_MACRO;
+        } else if (macros instanceof CharSequence) {
+            if (macros.equals(key)) {
+                return UNDEFINED_MACRO;
+            }
+            return null;
         } else if (macros instanceof APTMacro) {
             assert macros != UNDEFINED_MACRO;
             if (((APTMacro)macros).getName().equals(key)) {
@@ -201,7 +204,9 @@ public final class APTMacroMapSnapshot {
             }
             while(!stack.isEmpty()) {
                 snap = stack.removeLast();
-                if (snap.macros instanceof Map<?,?>) {
+                if (snap.macros == NO_MACROS) {
+                    // skip this snapshot
+                } else if (snap.macros instanceof Map<?,?>) {
                     @SuppressWarnings("unchecked")
                     final Map<CharSequence, APTMacro> map = (Map<CharSequence, APTMacro>)snap.macros;
                     for (Map.Entry<CharSequence, APTMacro> cur : map.entrySet()) {

@@ -62,6 +62,7 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
@@ -129,9 +130,17 @@ public class ClassParser extends Parser {
             info.addChangeListener(wl=WeakListeners.change(this.cpInfoListener, info));
         }
         final ClassPath bootPath = info.getClassPath(ClasspathInfo.PathKind.BOOT);
-        ClassPath compilePath = info.getClassPath(ClasspathInfo.PathKind.COMPILE);
-        ClassPath srcPath = info.getClassPath(ClasspathInfo.PathKind.SOURCE);
+        final ClassPath compilePath = info.getClassPath(ClasspathInfo.PathKind.COMPILE);
+        final ClassPath srcPath = info.getClassPath(ClasspathInfo.PathKind.SOURCE);
         final FileObject root = ClassPathSupport.createProxyClassPath(bootPath,compilePath,srcPath).findOwnerRoot(file);
+        if (root == null) {
+            throw new ParseException(
+                String.format("The file %s is not owned by provided classpaths, boot: %s, compile: %s, src: %s",    //NOI18N
+                    FileUtil.getFileDisplayName(file),
+                    bootPath.toString(),
+                    compilePath.toString(),
+                    srcPath.toString()));
+        }
         try {
             this.ciImpl = new CompilationInfoImpl(info,file,root);
         } catch (final IOException ioe) {

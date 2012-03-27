@@ -65,7 +65,9 @@ import org.netbeans.editor.ext.html.parser.XmlSyntaxTreeBuilder;
 import org.netbeans.editor.ext.html.parser.spi.DefaultParseResult;
 import org.netbeans.editor.ext.html.parser.spi.EmptyResult;
 import org.netbeans.editor.ext.html.parser.spi.UndeclaredContentResolver;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.CharSequences;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -322,7 +324,7 @@ public class SyntaxAnalyzerResult {
                     filtered.add(e);
                     //check for the xmlns attributes
                     for(SyntaxElement.TagAttribute a : tag.getAttributes()) {
-                        if(a.getName().startsWith("xmlns:")) { //NOI18N
+                        if(LexerUtils.startsWith(a.getName(), "xmlns:", true, false)) { //NOI18N
                             ignoredAreas.add(new IgnoredArea(a.getNameOffset(), a.getValueOffset() + a.getValueLength()));
                         }
                     }
@@ -530,7 +532,7 @@ public class SyntaxAnalyzerResult {
                 //look for the xmlns attribute only in the first tag
                 SyntaxElement.Tag tag = (SyntaxElement.Tag) se;
                 SyntaxElement.TagAttribute xmlns = tag.getAttribute("xmlns");
-                return xmlns != null ? dequote(xmlns.getValue()) : null;
+                return xmlns != null ? dequote(xmlns.getValue()).toString() : null;
             }
         }
         return null;
@@ -554,13 +556,13 @@ public class SyntaxAnalyzerResult {
                 if (se.type() == SyntaxElement.TYPE_TAG) {
                     SyntaxElement.Tag tag = (SyntaxElement.Tag) se;
                     for (SyntaxElement.TagAttribute attr : tag.getAttributes()) {
-                        String attrName = attr.getName();
+                        String attrName = attr.getName().toString();
                         if (attrName.startsWith("xmlns")) { //NOI18N
                             int colonIndex = attrName.indexOf(':'); //NOI18N
                             String nsPrefix = colonIndex == -1 ? null : attrName.substring(colonIndex + 1);
-                            String value = attr.getValue();
+                            String value = attr.getValue().toString();
                             //do not overwrite already existing entry
-                            String key = dequote(value);
+                            String key = dequote(value).toString();
                             Collection<String> prefixes = namespaces.get(key);
                             if (prefixes == null) {
                                 prefixes = new LinkedList<String>();
@@ -583,13 +585,13 @@ public class SyntaxAnalyzerResult {
         return namespaces;
     }
 
-    private static String dequote(String text) {
+    private static CharSequence dequote(CharSequence text) {
         if (text.length() < 2) {
             return text;
         } else {
             if ((text.charAt(0) == '\'' || text.charAt(0) == '"')
                     && (text.charAt(text.length() - 1) == '\'' || text.charAt(text.length() - 1) == '"')) {
-                return text.substring(1, text.length() - 1);
+                return text.subSequence(1, text.length() - 1);
             }
         }
         return text;

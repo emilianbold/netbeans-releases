@@ -50,12 +50,13 @@ import java.nio.charset.Charset;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMComponentFactory;
@@ -75,116 +76,34 @@ import org.openide.filesystems.FileUtil;
 public class SourcesPanel extends JPanel {
     
     
+    private String oldEncoding;
     private String encoding;
+    private final String sourceEncoding;
     private String defaultEncoding;
     private String sourceLevel;
-    private ModelHandle handle;
+    private ModelHandle2 handle;
 
-    public SourcesPanel( ModelHandle handle, NbMavenProjectImpl project ) {
-        initComponents();
-        this.handle = handle;
-        FileObject projectFolder = project.getProjectDirectory();
-        File pf = FileUtil.toFile( projectFolder );
-        txtProjectFolder.setText( pf == null ? "" : pf.getPath() ); // NOI18N
-        
-        // XXX use ComboBoxUpdater to boldface the label when not an inherited default
-        comSourceLevel.setEditable(false);
-        sourceLevel = SourceLevelQuery.getSourceLevel(project.getProjectDirectory());
-        comSourceLevel.setModel(new DefaultComboBoxModel(new String[] {
-            "1.3", "1.4", "1.5", "1.6", "1.7" //NOI18N
-        }));
-        
-        comSourceLevel.setSelectedItem(sourceLevel);
-        String enc = project.getOriginalMavenProject().getProperties().getProperty(Constants.ENCODING_PROP);
-        if (enc == null) {
-            enc = PluginPropertyUtils.getPluginProperty(project,
-                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.ENCODING_PARAM, null);
-        }
-        encoding = enc;
-        if (enc != null) {
-            try {
-                Charset chs = Charset.forName(enc);
-                encoding = chs.name();
-            } catch (Exception e) {
-                Logger.getLogger(this.getClass().getName()).info("IllegalCharsetName: " + enc); //NOI18N
-            }
-        }
-        // TODO oh well, we fallback to default platform encoding.. that's correct
-        // for times before the http://docs.codehaus.org/display/MAVENUSER/POM+Element+for+Source+File+Encoding
-        // proposal. this proposal defines the default value as ISO-8859-1
-        
-        if (encoding == null) {
-            encoding = Charset.defaultCharset().toString();
-        }
-        defaultEncoding = Charset.defaultCharset().toString();
-        
-        comEncoding.setModel(ProjectCustomizer.encodingModel(encoding));
-        comEncoding.setRenderer(ProjectCustomizer.encodingRenderer());
-        
-        comSourceLevel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleSourceLevelChange();
-            }
-        });
-        
-        comEncoding.addActionListener(new ActionListener () {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleEncodingChange();
-            }            
-        });
-        txtSrc.setText(project.getOriginalMavenProject().getBuild().getSourceDirectory());
-        txtTestSrc.setText(project.getOriginalMavenProject().getBuild().getTestSourceDirectory());
-    }
-    
-    private void handleSourceLevelChange() {
-        sourceLevel = (String)comSourceLevel.getSelectedItem();
-        String source = PluginPropertyUtils.getPluginProperty(handle.getProject(),
-                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.SOURCE_PARAM,
-                "compile"); //NOI18N
-        if (source != null && source./*XXX not equals?*/contains(sourceLevel)) {
-            return;
-        }
-        POMModel mdl = handle.getPOMModel();
-        ModelUtils.setSourceLevel(mdl, sourceLevel);
-        handle.markAsModified(mdl);
-    }
+    private ModelOperation<POMModel> sourceLevelOperation = new ModelOperation<POMModel>() {
 
-    
-    
-    private void handleEncodingChange () {
-        Charset enc = (Charset) comEncoding.getSelectedItem();
-        String encName;
-        if (enc != null) {
-            encName = enc.name();
-        } else {
-            encName = encoding;
+        @Override
+        public void performOperation(POMModel model) {
+            ModelUtils.setSourceLevel(model, sourceLevel);
         }
-        checkEncoding(handle, encName);
-        if (defaultEncoding.equals(encName)) {
-            lblEncoding.setFont(lblEncoding.getFont().deriveFont(Font.PLAIN));
-        } else { // XXX use ComboBoxUpdater for the standard technique
-            lblEncoding.setFont(lblEncoding.getFont().deriveFont(Font.BOLD));
-        }
-    }
+    };
     
-    private static void checkEncoding(ModelHandle handle, String enc) {
-        String source = handle.getProject().getProperties().getProperty(Constants.ENCODING_PROP);
-        if (enc.equals(source)) {
-            return;
-        }
+    private ModelOperation<POMModel> encodingOperation = new ModelOperation<POMModel>() {
+
+        @Override
+        public void performOperation(POMModel model) {
         //new approach, assume all plugins conform to the new setting.
-        POMModel model = handle.getPOMModel();
-        handle.markAsModified(model);
         POMComponentFactory fact = model.getFactory();
         Properties props = model.getProject().getProperties();
         if (props == null) {
             props = fact.createProperties();
             model.getProject().setProperties(props);
         }
-        props.setProperty(Constants.ENCODING_PROP, enc);
-        boolean createPlugins = source == null;
+        props.setProperty(Constants.ENCODING_PROP, encoding);
+        boolean createPlugins = sourceEncoding == null;
 
         //check if compiler/resources plugins are configured and update them to ${project.source.encoding expression
         Build bld = model.getProject().getBuild();
@@ -244,8 +163,103 @@ public class SourcesPanel extends JPanel {
                 conf.setSimpleParameter(Constants.ENCODING_PARAM, "${" + Constants.ENCODING_PROP + "}");
             }
         }
+            
+        }
+    };
+
+    public SourcesPanel( ModelHandle2 handle, NbMavenProjectImpl project ) {
+        initComponents();
+        this.handle = handle;
+        FileObject projectFolder = project.getProjectDirectory();
+        File pf = FileUtil.toFile( projectFolder );
+        txtProjectFolder.setText( pf == null ? "" : pf.getPath() ); // NOI18N
+        
+        // XXX use ComboBoxUpdater to boldface the label when not an inherited default
+        comSourceLevel.setEditable(false);
+        sourceLevel = SourceLevelQuery.getSourceLevel(project.getProjectDirectory());
+        comSourceLevel.setModel(new DefaultComboBoxModel(new String[] {
+            "1.3", "1.4", "1.5", "1.6", "1.7" //NOI18N
+        }));
+        
+        comSourceLevel.setSelectedItem(sourceLevel);
+        String enc = project.getOriginalMavenProject().getProperties().getProperty(Constants.ENCODING_PROP);
+        if (enc == null) {
+            enc = PluginPropertyUtils.getPluginProperty(project,
+                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.ENCODING_PARAM, null);
+        }
+        oldEncoding = enc;
+        if (enc != null) {
+            try {
+                Charset chs = Charset.forName(enc);
+                oldEncoding = chs.name();
+            } catch (Exception e) {
+                Logger.getLogger(this.getClass().getName()).info("IllegalCharsetName: " + enc); //NOI18N
+            }
+        }
+        // TODO oh well, we fallback to default platform encoding.. that's correct
+        // for times before the http://docs.codehaus.org/display/MAVENUSER/POM+Element+for+Source+File+Encoding
+        // proposal. this proposal defines the default value as ISO-8859-1
+        
+        defaultEncoding = Charset.defaultCharset().toString();
+        if (oldEncoding == null) {
+            oldEncoding = defaultEncoding;
+        }
+        sourceEncoding = handle.getProject().getProperties().getProperty(Constants.ENCODING_PROP);
+        
+        comEncoding.setModel(ProjectCustomizer.encodingModel(oldEncoding));
+        comEncoding.setRenderer(ProjectCustomizer.encodingRenderer());
+        
+        comSourceLevel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleSourceLevelChange();
+            }
+        });
+        
+        comEncoding.addActionListener(new ActionListener () {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleEncodingChange();
+            }            
+        });
+        txtSrc.setText(handle.getProject().getBuild().getSourceDirectory());
+        txtTestSrc.setText(handle.getProject().getBuild().getTestSourceDirectory());
+    }
+    
+    private void handleSourceLevelChange() {
+        sourceLevel = (String)comSourceLevel.getSelectedItem();
+        handle.removePOMModification(sourceLevelOperation);
+        String source = PluginPropertyUtils.getPluginProperty(handle.getProject(),
+                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.SOURCE_PARAM,
+                "compile"); //NOI18N
+        if (source != null && source./*XXX not equals?*/contains(sourceLevel)) {
+            return;
+        }
+        handle.addPOMModification(sourceLevelOperation);
     }
 
+    
+    
+    private void handleEncodingChange () {
+        Charset enc = (Charset) comEncoding.getSelectedItem();
+        String encName;
+        if (enc != null) {
+            encName = enc.name();
+        } else {
+            encName = oldEncoding;
+        }
+        encoding = encName;
+        handle.removePOMModification(encodingOperation);
+        if (!encoding.equals(sourceEncoding)) {
+            handle.addPOMModification(encodingOperation);
+        }
+        if (defaultEncoding.equals(encName)) {
+            lblEncoding.setFont(lblEncoding.getFont().deriveFont(Font.PLAIN));
+        } else { // XXX use ComboBoxUpdater for the standard technique
+            lblEncoding.setFont(lblEncoding.getFont().deriveFont(Font.BOLD));
+        }
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

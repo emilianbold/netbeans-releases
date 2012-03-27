@@ -28,6 +28,7 @@
                 <friend>org.netbeans.modules.debugger.jpda.ui</friend>
                 <friend>org.netbeans.modules.form</friend>
                 <friend>org.netbeans.modules.javacard.project</friend>
+                <friend>org.netbeans.modules.javafx2.scenebuilder</friend>
                 <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.profiler.options</friend>
                 <friend>org.netbeans.modules.vmd.componentssupport</friend>

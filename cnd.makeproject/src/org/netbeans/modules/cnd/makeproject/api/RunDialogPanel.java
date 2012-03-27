@@ -1019,7 +1019,6 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         lastSelectedProject = project;
         OpenProjects.getDefault().addPropertyChangeListener(this);
         OpenProjects.getDefault().open(new Project[]{project}, false);
-        OpenProjects.getDefault().setMainProject(project);
         return project;
     }
 
@@ -1085,7 +1084,6 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         }
         OpenProjects.getDefault().addPropertyChangeListener(this);
         OpenProjects.getDefault().open(new Project[]{project}, false);
-        OpenProjects.getDefault().setMainProject(project);
         return project;
     }
 

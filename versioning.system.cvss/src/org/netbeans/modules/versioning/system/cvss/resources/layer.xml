@@ -167,4 +167,16 @@ made subject to such option by the copyright holder.
         </file>
     </folder>
     
+    <folder name="Loaders">
+        <folder name="content">
+            <folder name="unknown">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-versioning-system-cvss-CvsMetadataFolderLoader.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
 </filesystem>

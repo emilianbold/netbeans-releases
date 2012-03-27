@@ -1183,24 +1183,28 @@ public final class LayoutInterval implements LayoutConstants {
     /**
      * Computes effective alignment of an interval's edge relatively to given
      * parent.
+     * @param interval the interval whose edge alignment should be determined
+     * @param parent the parent interval in which the alignment should be
+     *        determined; null can be used to go up to the root
      * @return effective alignment within parent, or DEFAULT in case of
      *         ambiguous alignment in sequential parent
      */
     static int getEffectiveAlignmentInParent(LayoutInterval interval, LayoutInterval parent, int edge) {
-        assert parent.isParentOf(interval);
+        assert parent == null || parent.isParentOf(interval);
         int alignment = edge;
         do {
             alignment = getEffectiveAlignment(interval, alignment, true);
             interval = interval.getParent();
             if (alignment != LEADING && alignment != TRAILING) {
-                while (interval != parent) {
-                    if (getEffectiveAlignment(interval) != alignment)
+                while (interval != parent && interval.getParent() != null) {
+                    if (getEffectiveAlignment(interval) != alignment) {
                         return DEFAULT;
+                    }
                     interval = interval.getParent();
                 }
             }
         }
-        while (interval != parent);
+        while (interval != parent && interval.getParent() != null);
         return alignment;
     }
 

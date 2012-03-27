@@ -131,7 +131,7 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
             platformPanel = new PlatformInstallPanel.WizardPanel(J2MEPlatform.SPECIFICATION_NAME);
             ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", create ? NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileApplication") : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileLibrary"));
         }
-        projectPanel = new ProjectPanel.WizardPanel(create, create);
+        projectPanel = new ProjectPanel.WizardPanel(create);
         ((JComponent)projectPanel.getComponent()).putClientProperty("NewProjectWizard_Title", create ? NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileApplication") : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileLibrary"));
         
         psPanel = new PlatformSelectionPanel();

@@ -53,7 +53,7 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.junit.GuiUtils;
+import org.netbeans.modules.java.testrunner.GuiUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;

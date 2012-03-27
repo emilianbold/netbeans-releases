@@ -54,6 +54,8 @@ import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.DialogDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -64,6 +66,8 @@ import org.openide.windows.TopComponent;
  *
  * @author  Lukas Tadial
  */
+@ActionID(id = "org.netbeans.modules.image.CustomZoomAction", category = "View")
+@ActionRegistration(lazy = false, displayName = "#LBL_CustomZoom")
 public class CustomZoomAction extends CallableSystemAction {
 
     

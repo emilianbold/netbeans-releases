@@ -52,9 +52,9 @@ made subject to such option by the copyright holder.
 
 <bindings>
     <bind actionName="abbrev-expand" key="S-SPACE"/>
-    <bind actionName="adjust-caret-bottom" key="OS-PAGE_DOWN"/>
+    <bind actionName="adjust-caret-bottom" key="OS-END"/>
     <bind actionName="adjust-caret-center" key="OS-INSERT"/>
-    <bind actionName="adjust-caret-top" key="OS-PAGE_UP"/>
+    <bind actionName="adjust-caret-top" key="OS-HOME"/>
 <!--    <bind actionName="adjust-window-bottom" key="O-U$B"/> -->
 <!--    <bind actionName="adjust-window-center" key="O-U$M"/> -->
 <!--    <bind actionName="adjust-window-top" key="O-U$T"/> -->
@@ -105,6 +105,7 @@ made subject to such option by the copyright holder.
     <bind actionName="find-previous" key="S-F3"/>
     <bind actionName="find-selection" key="D-F3"/>
     <bind actionName="generate-code" key="O-INSERT"/>
+    <bind actionName="remove-surrounding-code" key="O-DELETE"/>
     <bind actionName="in-place-refactoring" key="D-R"/>
     <bind actionName="incremental-search-forward" key="FIND"/>
     <bind actionName="incremental-search-forward" key="D-F"/>
@@ -133,12 +134,12 @@ made subject to such option by the copyright holder.
     <bind actionName="move-selection-else-line-up" key="OS-KP_UP"/>
     <bind actionName="move-selection-else-line-down" key="OS-DOWN"/>
     <bind actionName="move-selection-else-line-down" key="OS-KP_DOWN"/>
-    <bind actionName="move-code-element-up" key="DS-UP"/>
-    <bind actionName="move-code-element-up" key="DS-KP_UP"/>
-    <bind actionName="move-code-element-down" key="DS-DOWN"/>
-    <bind actionName="move-code-element-down" key="DS-KP_DOWN"/>
-    <bind actionName="copy-selection-else-line-up" key="DS-COMMA"/>
-    <bind actionName="copy-selection-else-line-down" key="DS-PERIOD"/>
+    <bind actionName="move-code-element-up" key="OS-PAGE_UP"/>
+    <bind actionName="move-code-element-down" key="OS-PAGE_DOWN"/>
+    <bind actionName="copy-selection-else-line-up" key="DS-UP"/>
+    <bind actionName="copy-selection-else-line-up" key="DS-KP_UP"/>
+    <bind actionName="copy-selection-else-line-down" key="DS-DOWN"/>
+    <bind actionName="copy-selection-else-line-down" key="DS-KP_DOWN"/>
     <!-- #47709 <bind actionName="remove-word" key="D-W"/> -->
     <bind actionName="remove-word-next" key="D-DELETE"/>
     <bind actionName="remove-word-previous" key="D-BACK_SPACE"/>

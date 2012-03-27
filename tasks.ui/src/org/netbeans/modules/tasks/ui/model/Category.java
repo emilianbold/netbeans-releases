@@ -84,6 +84,10 @@ public class Category {
         return tasks;
     }
 
+    public void setTasks(List<Issue> tasks) {
+        this.tasks = tasks;
+    }
+
     @Override
     public String toString() {
         return name;

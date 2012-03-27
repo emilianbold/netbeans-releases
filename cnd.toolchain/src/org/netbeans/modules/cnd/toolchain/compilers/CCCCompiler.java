@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetPreferences;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -487,14 +488,17 @@ public abstract class CCCCompiler extends AbstractCompiler {
     protected void completePredefinedMacros(Pair pair) {
         final CompilerDescriptor descriptor = getDescriptor();
         if (descriptor != null) {
-            for(ToolchainManager.PredefinedMacro macro : descriptor.getPredefinedMacros()) {
-                if (macro.getFlags() == null) {
-                    if (macro.isHidden()) {
-                        // remove macro
-                        removeUnique(pair.systemPreprocessorSymbolsList, macro.getMacro());
-                    } else {
-                        // add macro
-                        addUnique(pair.systemPreprocessorSymbolsList, macro.getMacro());
+            final List<PredefinedMacro> predefinedMacros = descriptor.getPredefinedMacros();
+            if (predefinedMacros != null) {
+                for(ToolchainManager.PredefinedMacro macro : predefinedMacros) {
+                    if (macro.getFlags() == null) {
+                        if (macro.isHidden()) {
+                            // remove macro
+                            removeUnique(pair.systemPreprocessorSymbolsList, macro.getMacro());
+                        } else {
+                            // add macro
+                            addUnique(pair.systemPreprocessorSymbolsList, macro.getMacro());
+                        }
                     }
                 }
             }

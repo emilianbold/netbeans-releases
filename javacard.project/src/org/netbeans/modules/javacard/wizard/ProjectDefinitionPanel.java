@@ -146,7 +146,6 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
         createdFolderLabel = new javax.swing.JLabel();
         createdFolderTextField = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
-        setAsMainProjectCheckBox = new javax.swing.JCheckBox();
         packageNameTextField = new javax.swing.JTextField();
         webContextPathLabel = new javax.swing.JLabel();
         webContextPathField = new javax.swing.JTextField();
@@ -232,15 +231,6 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 5, 0);
         add(jSeparator1, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(setAsMainProjectCheckBox, org.openide.util.NbBundle.getMessage(ProjectDefinitionPanel.class, "SET_AS_MAIN_PROJECT")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
-        add(setAsMainProjectCheckBox, gridBagConstraints);
 
         packageNameTextField.setText(org.openide.util.NbBundle.getMessage(ProjectDefinitionPanel.class, "yourpackagename")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -361,7 +351,6 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
     private javax.swing.JTextField projectNameTextField;
     private javax.swing.JTextField servletMappingField;
     private javax.swing.JLabel servletMappingLabel;
-    private javax.swing.JCheckBox setAsMainProjectCheckBox;
     private javax.swing.JTextField webContextPathField;
     private javax.swing.JLabel webContextPathLabel;
     // End of variables declaration//GEN-END:variables

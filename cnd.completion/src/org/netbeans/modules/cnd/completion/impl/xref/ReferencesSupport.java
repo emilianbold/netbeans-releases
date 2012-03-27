@@ -324,16 +324,18 @@ public final class ReferencesSupport {
                 }
             } while (repeat);
             csmItem = parameter;
-        } else if (false && CsmKindUtilities.isVariableDeclaration(objUnderOffset)) {
-            // turned off, due to the problems like
-            // Cpu MyCpu(type, 0, amount);
-            // initialization part is part of variable => we need info about name position exactly
-            CsmVariable var = (CsmVariable) objUnderOffset;
-            if (var.getName().length() > 0 && !var.isExtern()) {
-                // not work yet for arrays declarations IZ#130678
-                // not work yet for elements with init value IZ#130684
-                if ((var.getInitialValue() == null) && (var.getType() != null) && (var.getType().getArrayDepth() == 0)) {
-                    csmItem = var;
+            
+            if (csmItem == null && CsmKindUtilities.isVariableDeclaration(objUnderOffset)) {
+                // turned off, due to the problems like
+                // Cpu MyCpu(type, 0, amount);
+                // initialization part is part of variable => we need info about name position exactly
+                CsmVariable var = (CsmVariable) objUnderOffset;
+                if (var.getName().length() > 0 && tokenUnderOffset.text().toString().equals(var.getName().toString()) && !var.isExtern()) {
+                    // not work yet for arrays declarations IZ#130678
+                    // not work yet for elements with init value IZ#130684
+                    if ((var.getInitialValue() == null) && (var.getType() != null) && (var.getType().getArrayDepth() == 0)) {
+                        csmItem = var;
+                    }
                 }
             }
         } else if (CsmKindUtilities.isType(objUnderOffset)) {

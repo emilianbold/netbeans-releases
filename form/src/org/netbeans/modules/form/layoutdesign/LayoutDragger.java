@@ -47,7 +47,9 @@ package org.netbeans.modules.form.layoutdesign;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.BasicStroke;
+import java.awt.Rectangle;
 import java.util.*;
+import static org.netbeans.modules.form.layoutdesign.VisualState.GapInfo;
 
 /*
 Finding position procedure [sort of out of date]:
@@ -75,9 +77,11 @@ finding position in a dimension:
     by at least SNAP_DISTANCE/2
 */
 
-class LayoutDragger implements LayoutConstants {
+final class LayoutDragger implements LayoutConstants {
 
     private VisualMapper visualMapper;
+
+    private LayoutPainter layoutPainter;
 
     // fixed (initial) parameters of the operation ---
 
@@ -106,6 +110,9 @@ class LayoutDragger implements LayoutConstants {
     private int[] startCursorPosition;
 
     private SizeDef[] sizing;
+
+    // when resizing a gap directly (not resizing a component)
+    private GapInfo resizingGap;
 
     // parameters changed with each move step ---
 
@@ -152,7 +159,7 @@ class LayoutDragger implements LayoutConstants {
                                      LayoutRegion.ALL_POINTS };
 
     // length of tips of painted guiding lines
-    private static final int GL_TIP = 8;
+    private static final int GL_TIP = 10;
 
     // distance in which components are drawn to guiding line
     private static final int SNAP_DISTANCE = 8;
@@ -166,11 +173,13 @@ class LayoutDragger implements LayoutConstants {
     // -----
     // setup
 
+    // Constructor for component dragging (moving, resizing).
     LayoutDragger(LayoutComponent[] comps,
                   LayoutRegion[] compBounds,
                   int[] initialCursorPos,
                   int[] movingEdges,
-                  VisualMapper mapper)
+                  VisualMapper mapper,
+                  LayoutPainter painter)
     {
         for (int i=0; i < DIM_COUNT; i++) {
             if (movingEdges[i] == LEADING || movingEdges[i] == TRAILING) {
@@ -187,11 +196,12 @@ class LayoutDragger implements LayoutConstants {
         this.startCursorPosition = initialCursorPos;
         this.movingEdges = movingEdges;
         visualMapper = mapper;
+        layoutPainter = painter;
 
         movingBounds = new LayoutRegion[compBounds.length];
-        movingSpace = new LayoutRegion();
+        movingSpace = new LayoutRegion(); // TODO why here? it's set again in move
         for (int i=0; i < compBounds.length; i++) {
-            movingBounds[i] = new LayoutRegion();
+            movingBounds[i] = new LayoutRegion(); // TODO why here? it's set again in move
             movingSpace.expand(compBounds[i]);
         }
 
@@ -222,41 +232,37 @@ class LayoutDragger implements LayoutConstants {
         }
 
         if (operation == RESIZING) {
-            prepareResizing();
-        }
-    }
-
-    private void prepareResizing() {
-        sizing = new SizeDef[DIM_COUNT];
-        LayoutComponent comp = movingComponents[0]; // [limitation: only one component can be resized]
-        LayoutRegion space = movingFormation[0];
-        java.awt.Dimension prefSize = comp.isLayoutContainer()
-                ? visualMapper.getComponentMinimumSize(comp.getId())
-                : visualMapper.getComponentPreferredSize(comp.getId());
-        for (int i=0; i < DIM_COUNT; i++) {
-            if (isResizing(i)) {
-                SizeDef sizeDef = new SizeDef();
-                sizing[i] = sizeDef;
-                sizeDef.originalSize = space.size(i);
-                sizeDef.minSize = i == HORIZONTAL ? prefSize.width : prefSize.height;
-                if (comp.isLayoutContainer()) {
-                    // [TODO: ideally the resizing gap should be handled for each layer]
-                    sizeDef.contPrefSize = sizeDef.originalSize
-                            - LayoutInterval.getDiffToDefaultSize(comp.getLayoutInterval(i), true);
-                    LayoutInterval resGap = findResizingGap(comp.getDefaultLayoutRoot(i));
-                    if (resGap != null) {
-                        sizeDef.adjustingGap = resGap;
-                        sizeDef.originalGapSize = LayoutInterval.getCurrentSize(resGap, i);
-                        sizeDef.defaultGapSize = LayoutUtils.getSizeOfDefaultGap(resGap, visualMapper);
-                        if (LayoutInterval.canResize(resGap)) {
-                            sizeDef.minSizeWithDefaultGap = sizeDef.minSize;
-                            if (isZeroResizingGap(resGap)) {
-                                sizeDef.minSizeWithZeroGap = sizeDef.originalSize - sizeDef.originalGapSize;
-                            }
-                        } else {
-                            sizeDef.minSizeWithDefaultGap = sizeDef.minSize - sizeDef.originalGapSize + sizeDef.defaultGapSize;
-                            if (isZeroResizingGap(resGap)) {
-                                sizeDef.minSizeWithZeroGap = sizeDef.minSize - sizeDef.originalGapSize;
+            sizing = new SizeDef[DIM_COUNT];
+            LayoutComponent comp = movingComponents[0]; // [limitation: only one component can be resized]
+            LayoutRegion space = movingFormation[0];
+            java.awt.Dimension prefSize = comp.isLayoutContainer()
+                    ? visualMapper.getComponentMinimumSize(comp.getId())
+                    : visualMapper.getComponentPreferredSize(comp.getId());
+            for (int i=0; i < DIM_COUNT; i++) {
+                if (isResizing(i)) {
+                    SizeDef sizeDef = new SizeDef();
+                    sizing[i] = sizeDef;
+                    sizeDef.originalSize = space.size(i);
+                    sizeDef.minSize = i == HORIZONTAL ? prefSize.width : prefSize.height;
+                    if (comp.isLayoutContainer()) {
+                        // [TODO: ideally the resizing gap should be handled for each layer]
+                        sizeDef.contPrefSize = sizeDef.originalSize
+                                - LayoutInterval.getDiffToDefaultSize(comp.getLayoutInterval(i), true);
+                        LayoutInterval resGap = findContainerResizingGap(comp.getDefaultLayoutRoot(i));
+                        if (resGap != null) {
+                            sizeDef.adjustingGap = resGap;
+                            sizeDef.originalGapSize = LayoutInterval.getCurrentSize(resGap, i);
+                            sizeDef.defaultGapSize = LayoutUtils.getSizeOfDefaultGap(resGap, visualMapper);
+                            if (LayoutInterval.canResize(resGap)) {
+                                sizeDef.minSizeWithDefaultGap = sizeDef.minSize;
+                                if (isZeroResizingGap(resGap)) {
+                                    sizeDef.minSizeWithZeroGap = sizeDef.originalSize - sizeDef.originalGapSize;
+                                }
+                            } else {
+                                sizeDef.minSizeWithDefaultGap = sizeDef.minSize - sizeDef.originalGapSize + sizeDef.defaultGapSize;
+                                if (isZeroResizingGap(resGap)) {
+                                    sizeDef.minSizeWithZeroGap = sizeDef.minSize - sizeDef.originalGapSize;
+                                }
                             }
                         }
                     }
@@ -265,14 +271,36 @@ class LayoutDragger implements LayoutConstants {
         }
     }
 
-    private LayoutInterval findResizingGap(LayoutInterval group) {
+    // Constructor for gap resizing (no component manipulation).
+    LayoutDragger(GapInfo gapToResize, int resizingEdge, int[] initialCursorPos,
+                  VisualMapper mapper, LayoutPainter painter) {
+        resizingGap = gapToResize;
+        dimension = gapToResize.dimension;
+        movingEdges = new int[DIM_COUNT];
+        for (int dim=0; dim < DIM_COUNT; dim++) {
+            movingEdges[dim] = dim == dimension ? resizingEdge : LayoutRegion.NO_POINT;
+        }
+        operation = RESIZING;
+        startCursorPosition = initialCursorPos;
+        visualMapper = mapper;
+        layoutPainter = painter;
+        LayoutRegion gapSpace = new LayoutRegion();
+        gapSpace.set(gapToResize.paintRect, -1);
+        gapSpace.set(dimension, gapToResize.position, gapToResize.position+gapToResize.currentSize);
+        movingFormation = new LayoutRegion[] { gapSpace };
+        movingSpace = new LayoutRegion(gapSpace);
+        bestPositions[dimension] = new PositionDef();
+        bestPositions[dimension].alignment = resizingEdge;
+    }
+
+    private LayoutInterval findContainerResizingGap(LayoutInterval group) {
         for (Iterator it=group.getSubIntervals(); it.hasNext(); ) {
             LayoutInterval li = (LayoutInterval) it.next();
             if (li.isEmptySpace() && li.hasAttribute(LayoutInterval.ATTR_DESIGN_CONTAINER_GAP)) {
                 return li;
             }
             else if (li.isGroup()) {
-                LayoutInterval gap = findResizingGap(li);
+                LayoutInterval gap = findContainerResizingGap(li);
                 if (gap != null) {
                     return gap;
                 }
@@ -317,9 +345,21 @@ class LayoutDragger implements LayoutConstants {
         return movingComponents;
     }
 
+    GapInfo getResizingGap() {
+        return resizingGap;
+    }
+
     VisualMapper getVisualMapper() {
         return visualMapper;
     }
+
+    private boolean isComponentOperation() {
+        return movingComponents != null && resizingGap == null;
+    }
+
+//    private boolean isResizingGapOperation() {
+//        return operation == RESIZING && resizingGap != null;
+//    }
 
     // -----
     // results
@@ -349,7 +389,7 @@ class LayoutDragger implements LayoutConstants {
         return sizing;
     }
 
-    boolean snappedToDefaultSize(int dimension) {
+    boolean componentSnappedToDefaultSize(int dimension) {
         if (isResizing(dimension) && bestPositions[dimension] == null) {
             int size = movingSpace.size(dimension);
             SizeDef sizeDef = sizing[dimension];
@@ -392,70 +432,79 @@ class LayoutDragger implements LayoutConstants {
             }
         }
 
-        // check locked dimension
-        if (lockDimension) {
-            if (lockedDimension < 0) { // not set yet
-                lockedDimension = lockCandidate;
-            }
-        }
-        else lockedDimension = -1;
-
-        // compute actual position of the moving components
-        for (int i=0; i < movingBounds.length; i++) {
-            for (int j=0; j < DIM_COUNT; j++) {
-                if (j != lockedDimension) {
-                    movingBounds[i].set(j, movingFormation[i]);
-                    movingBounds[i].reshape(j, movingEdges[j], cursorPos[j]);
-                }
-                // for locked dimension the space is already set and not changing
-            }
-        }
-        movingSpace = new LayoutRegion();
-        for (int i=0; i<movingBounds.length; i++) {
-            movingSpace.expand(movingBounds[i]);
-        }
-        if (canSnapToBaseline) { // awfull, but working
-            int baselinePos = movingBounds[0].positions[VERTICAL][BASELINE];
-            if (baselinePos > 0) {
-                movingSpace.positions[VERTICAL][BASELINE] = baselinePos;
-            } else {
-                canSnapToBaseline = false;
-            }
-        }
-
-        // reset finding results
-        for (int i=0; i < DIM_COUNT; i++) {
-            if (i != lockedDimension) {
-                bestPositions[i] = null;
-                for (int j=0; j < LayoutRegion.POINT_COUNT[i]; j++) {
-                    findingsNextTo[i][j].reset();
-                    findingsAligned[i][j].reset();
-                }
-            }
-        }
-
-        // find position in the layout
         snapping = autoPositioning;
-        if (autoPositioning) {
-            // important: looking for vertical position first
-            for (dimension=DIM_COUNT-1; dimension >= 0; dimension--) {
-                if (dimension != lockedDimension
-                    && movingEdges[dimension] != LayoutRegion.NO_POINT)
-                {   // look for a suitable position in this dimension
-                    int snapDistance = findBestPosition();
-                    // snap effect
-                    if (snapDistance != LayoutRegion.UNKNOWN) {
-                        cursorPos[dimension] -= snapDistance;
-                        for (int i=0; i<movingBounds.length; i++) {
-                            movingBounds[i].reshape(dimension,
-                                            movingEdges[dimension],
-                                            -snapDistance);
-                        }
-                        movingSpace.reshape(dimension,
-                                            movingEdges[dimension],
-                                            -snapDistance);
+
+        if (isComponentOperation()) {
+            // check locked dimension
+            if (lockDimension) {
+                if (lockedDimension < 0) { // not set yet
+                    lockedDimension = lockCandidate;
+                }
+            }
+            else lockedDimension = -1;
+
+            // compute actual position of the moving components
+            for (int i=0; i < movingBounds.length; i++) {
+                for (int j=0; j < DIM_COUNT; j++) {
+                    if (j != lockedDimension) {
+                        movingBounds[i].set(j, movingFormation[i]);
+                        movingBounds[i].reshape(j, movingEdges[j], cursorPos[j]);
+                    }
+                    // for locked dimension the space is already set and not changing
+                }
+            }
+            movingSpace = new LayoutRegion();
+            for (int i=0; i<movingBounds.length; i++) {
+                movingSpace.expand(movingBounds[i]);
+            }
+            if (canSnapToBaseline) { // awfull, but working
+                int baselinePos = movingBounds[0].positions[VERTICAL][BASELINE];
+                if (baselinePos > 0) {
+                    movingSpace.positions[VERTICAL][BASELINE] = baselinePos;
+                } else {
+                    canSnapToBaseline = false;
+                }
+            }
+
+            // reset findings
+            for (int i=0; i < DIM_COUNT; i++) {
+                if (i != lockedDimension) {
+                    bestPositions[i] = null;
+                    for (int j=0; j < LayoutRegion.POINT_COUNT[i]; j++) {
+                        findingsNextTo[i][j].reset();
+                        findingsAligned[i][j].reset();
                     }
                 }
+            }
+
+            // find position in the layout
+            if (autoPositioning) {
+                // important: looking for vertical position first
+                for (dimension=DIM_COUNT-1; dimension >= 0; dimension--) {
+                    if (dimension != lockedDimension
+                        && movingEdges[dimension] != LayoutRegion.NO_POINT) {
+                        // look for a suitable position in this dimension
+                        int snapDistance = moveComponents();
+                        // snap effect
+                        if (snapDistance != LayoutRegion.UNKNOWN) {
+                            cursorPos[dimension] -= snapDistance;
+                            for (LayoutRegion mb : movingBounds) {
+                                mb.reshape(dimension, movingEdges[dimension], -snapDistance);
+                            }
+                            movingSpace.reshape(dimension, movingEdges[dimension], -snapDistance);
+                        }
+                    }
+                }
+            }
+        } else if (resizingGap != null) {
+            movingSpace.set(dimension, movingFormation[0]);
+            movingSpace.reshape(dimension, movingEdges[dimension], cursorPos[dimension]);
+
+            int snapDistance = resizeGap();
+
+            if (snapDistance != 0) { // snap effect
+                cursorPos[dimension] -= snapDistance;
+                movingSpace.reshape(dimension, movingEdges[dimension], -snapDistance);
             }
         }
 
@@ -466,7 +515,14 @@ class LayoutDragger implements LayoutConstants {
     }
 
     void paintMoveFeedback(Graphics2D g) {
-        final int OVERLAP = 10;
+        if (isComponentOperation()) {
+            paintComponents(g);
+        } else if (resizingGap != null) {
+            paintGap(g);
+        }
+    }
+
+    private void paintComponents(Graphics2D g) {
         for (int i=0; i < DIM_COUNT; i++) {    
             LayoutDragger.PositionDef position = bestPositions[i];
             if (position != null) {
@@ -502,14 +558,14 @@ class LayoutDragger implements LayoutConstants {
                 int conty1 = contRegion.positions[dir][LEADING];
                 int conty2 = contRegion.positions[dir][TRAILING];
                 int posx = posRegion.positions[i][(inRoot || !position.nextTo) ? align : 1-align];
-                int posy1 = posRegion.positions[dir][LEADING]-OVERLAP;
+                int posy1 = posRegion.positions[dir][LEADING]-GL_TIP;
                 posy1 = Math.max(posy1, conty1);
-                int posy2 = posRegion.positions[dir][TRAILING]+OVERLAP;
+                int posy2 = posRegion.positions[dir][TRAILING]+GL_TIP;
                 posy2 = Math.min(posy2, conty2);
                 int x = movingSpace.positions[i][align];
-                int y1 = movingSpace.positions[dir][LEADING]-OVERLAP;
+                int y1 = movingSpace.positions[dir][LEADING]-GL_TIP;
                 y1 = Math.max(y1, conty1);
-                int y2 = movingSpace.positions[dir][TRAILING]+OVERLAP;
+                int y2 = movingSpace.positions[dir][TRAILING]+GL_TIP;
                 y2 = Math.min(y2, conty2);
                 Stroke oldStroke = g.getStroke();
                 g.setStroke(dashedStroke);
@@ -570,7 +626,7 @@ class LayoutDragger implements LayoutConstants {
                 }
                 g.setStroke(oldStroke);
             }
-            else if (snappedToDefaultSize(i)) { // resizing snapped to default preferred size
+            else if (componentSnappedToDefaultSize(i)) { // resizing snapped to default preferred size
                 int align = movingEdges[i];
                 int x1 = movingSpace.positions[i][align];
                 int x2 = movingSpace.positions[i][align^1];
@@ -588,28 +644,86 @@ class LayoutDragger implements LayoutConstants {
         }
     }
 
+    private void paintGap(Graphics2D g) {
+        Rectangle r = movingSpace.toRectangle(new Rectangle());
+        if (dimension == HORIZONTAL) {
+            r.y = resizingGap.paintRect.y;
+            r.height = resizingGap.paintRect.height;
+        } else { // VERTICAL
+            r.x = resizingGap.paintRect.x;
+            r.width = resizingGap.paintRect.width;
+        }
+        layoutPainter.paintGapResizing(g, resizingGap, r, false);
+        PositionDef gapPos = bestPositions[dimension];
+        if (gapPos.snapped) {
+            paintGapResizingSnap(g, resizingGap, movingSpace.positions[dimension], gapPos.alignment, gapPos.paddingType, false);
+        }
+    }
+
+    private static void paintGapResizingSnap(Graphics2D g, GapInfo gapInfo,
+            int[] paintPos, int resEdge, PaddingType resPaddingType,
+            boolean atContainerBorder) {
+        Stroke oldStroke = g.getStroke();
+        g.setStroke(dashedStroke);
+        int d = resEdge == LEADING ? -1 : 1;
+        int start = paintPos[resEdge^1];
+        int ortPos1 = gapInfo.ortPositions[LEADING] - GL_TIP;
+        int ortPos2 = gapInfo.ortPositions[TRAILING] + GL_TIP;
+        for (PaddingType p : PaddingType.values()) {
+            if (p == PaddingType.INDENT) {
+                continue;
+            }
+            int pos = start + (gapInfo.defaultGapSizes[p.ordinal()]*d);
+            if (atContainerBorder) {
+                pos--; // not to get repainted with container selection border
+            }
+            if (gapInfo.dimension == HORIZONTAL) {
+                g.drawLine(pos, ortPos1, pos, ortPos2);
+            } else { // VERTICAL
+                g.drawLine(ortPos1, pos, ortPos2, pos);
+            }
+            if (p == resPaddingType || resPaddingType == null) {
+                break;
+            }
+        }
+        g.setStroke(oldStroke);
+    }
+
+    static void paintGapResizingSnap(Graphics2D g, GapInfo gapInfo) {
+        // TODO set color?
+        int edge = gapInfo.resizeTrailing ? TRAILING : LEADING;
+        PaddingType pt = gapInfo.gap.getPaddingType();
+        boolean atContainerBorder = edge==TRAILING && pt == null
+                && gapInfo.defaultGapSizes.length == 1 && gapInfo.defaultGapSizes[0] > 0;
+        paintGapResizingSnap(g, gapInfo,
+                new int[] { gapInfo.position, gapInfo.position+gapInfo.currentSize },
+                edge, pt, atContainerBorder);
+    }
+
     String[] positionCode() {
         String[] code = new String[DIM_COUNT];
-        for (int i=0; i < DIM_COUNT; i++) {    
-            LayoutDragger.PositionDef position = bestPositions[i];
-            if (position != null) {
-                int alignment = position.alignment;
-                if (position.nextTo) { // adding next to
-                    String paddingCode = position.interval.getParent() == null// == targetContainer.getLayoutRoot(i)
-                        ? "Container" : paddingTypeCode(position.paddingType); // NOI18N
-                    code[i] = "nextTo" + paddingCode // NOI18N
-                            + dimensionCode(i) + alignmentCode(alignment);
-                } else { // adding aligned
-                    int x = movingSpace.positions[i][alignment];
-                    int posx = position.interval.getCurrentSpace().positions[i][alignment];
-                    if (x == posx) {
-                        code[i] = "align" + dimensionCode(i) + alignmentCode(alignment); // NOI18N
-                    } else {
-                        code[i] = "indent"; // NOI18N
+        if (isComponentOperation()) {
+            for (int i=0; i < DIM_COUNT; i++) {    
+                LayoutDragger.PositionDef position = bestPositions[i];
+                if (position != null) {
+                    int alignment = position.alignment;
+                    if (position.nextTo) { // adding next to
+                        String paddingCode = position.interval.getParent() == null// == targetContainer.getLayoutRoot(i)
+                            ? "Container" : paddingTypeCode(position.paddingType); // NOI18N
+                        code[i] = "nextTo" + paddingCode // NOI18N
+                                + dimensionCode(i) + alignmentCode(alignment);
+                    } else { // adding aligned
+                        int x = movingSpace.positions[i][alignment];
+                        int posx = position.interval.getCurrentSpace().positions[i][alignment];
+                        if (x == posx) {
+                            code[i] = "align" + dimensionCode(i) + alignmentCode(alignment); // NOI18N
+                        } else {
+                            code[i] = "indent"; // NOI18N
+                        }
                     }
+                } else if (componentSnappedToDefaultSize(i)) {
+                    code[i] = "snappedToDefault" + dimensionCode(i); // NOI18N
                 }
-            } else if (snappedToDefaultSize(i)) {
-                code[i] = "snappedToDefault" + dimensionCode(i); // NOI18N
             }
         }
         if (code[0] == null) {
@@ -620,6 +734,35 @@ class LayoutDragger implements LayoutConstants {
             code[0] = isResizing() ? "generalResizing" : "generalPosition"; // NOI18N
         }
         return code;
+    }
+
+    String getToolTipText() {
+        String hint = null;
+        if (isResizing()) {
+            if (isComponentOperation()) {
+                StringBuilder sb = new StringBuilder();
+                for (int dim=0; dim < DIM_COUNT; dim++) {
+                    if (isResizing(dim)) {
+                        String size = componentSnappedToDefaultSize(dim)
+                                ? "default" // TODO internationalize
+                                : Integer.toString(movingSpace.size(dim));
+                        if (sb.length() > 0) {
+                            sb.append(", "); // TODO internationalize
+                        }
+                        sb.append(size);
+                    }
+                }
+                hint = sb.toString();
+            } else if (resizingGap != null) {
+                PositionDef gapPos = bestPositions[dimension];
+                if (gapPos.snapped) {
+                    hint = VisualState.getDefaultGapDisplayName(gapPos.paddingType);
+                } else {
+                    hint = Integer.toString(gapPos.distance);
+                }
+            }
+        }
+        return hint;
     }
 
     private static String dimensionCode(int dim) {
@@ -654,7 +797,7 @@ class LayoutDragger implements LayoutConstants {
      * most suitable position the component could be placed to. Works in the
      * dimension defined by 'dimension' field.
      */
-    private int findBestPosition() {
+    private int moveComponents() {
         PositionDef best;
         int snapDistance = LayoutRegion.UNKNOWN;
 
@@ -770,8 +913,8 @@ class LayoutDragger implements LayoutConstants {
                 assert distance != LayoutRegion.UNKNOWN;
                 if (snapping) {
                     // PENDING consider the resulting interval when moving more components
-                    int pad = findPaddings(null, movingComponents[0].getLayoutInterval(dimension),
-                                           null, dimension, i)[0];
+                    int[] pads = findPaddings(null, movingComponents[0].getLayoutInterval(dimension), null, dimension, i);
+                    int pad = (pads != null && pads.length > 0) ? pads[0] : 0;
                     distance += (i == LEADING ? -pad : pad);
                 }
 
@@ -975,12 +1118,13 @@ class LayoutDragger implements LayoutConstants {
                 // PENDING consider the resulting interval when moving more components
                 pads = findPaddings(sub, movingComponents[0].getLayoutInterval(dimension),
                                           paddingType, dimension, i);
+                int padsCount = pads != null ? pads.length : 0;
                 int orient = (i == LEADING ? -1 : 1);
-                int padDst = distance + (orient * pads[0]);
+                int padDst = distance + (padsCount > 0 ? orient * pads[0] : 0);
                 if (paddingType == null) {
                     // find out the closest padding position and adjust the distance
                     paddingType = PaddingType.RELATED;
-                    for (int j=1; j < pads.length; j++) {
+                    for (int j=1; j < padsCount; j++) {
                         if (PADDINGS[j] != PaddingType.INDENT) {
                             int d = distance + (orient * pads[j]);
                             if (Math.abs(d) < Math.abs(padDst)) {
@@ -1704,10 +1848,43 @@ class LayoutDragger implements LayoutConstants {
     }
 
     // -----
+    // gap resizing
+
+    private int resizeGap() {
+        PositionDef gapPos = bestPositions[dimension];
+        int resSize = movingSpace.size(dimension);
+        int newSize = resSize; //resizingGap.currentSize + sizeChange;
+        int[] defaultGapSizes = resizingGap.defaultGapSizes;
+        gapPos.snapped = false;
+        gapPos.paddingType = null;
+        if (snapping && defaultGapSizes != null) {
+            int bestDefaultIndex = -1;
+            int bestDefaultDiff = Integer.MAX_VALUE;
+            for (int i=0; i < defaultGapSizes.length; i++) {
+                if (i == PaddingType.INDENT.ordinal()) {
+                    continue;
+                }
+                int diff = Math.abs(newSize - defaultGapSizes[i]);
+                if (diff < SNAP_DISTANCE && diff < bestDefaultDiff) {
+                    bestDefaultIndex = i;
+                    bestDefaultDiff = diff;
+                }
+            }
+            if (bestDefaultIndex > -1) {
+                newSize = defaultGapSizes[bestDefaultIndex];
+                gapPos.snapped = true;
+                gapPos.paddingType = defaultGapSizes.length > 1 ? PaddingType.values()[bestDefaultIndex] : null;
+            }
+        }
+        gapPos.distance = newSize;
+        return (gapPos.alignment == LEADING) ? (newSize - resSize) : (resSize - newSize);
+    }
+
+    // -----
     // innerclasses
 
     static class PositionDef {
-        private int distance = LayoutRegion.UNKNOWN;
+        int distance = LayoutRegion.UNKNOWN;
 
         LayoutInterval interval;
         int alignment = LayoutRegion.NO_POINT;
@@ -1737,6 +1914,12 @@ class LayoutDragger implements LayoutConstants {
         }
     }
 
+    /**
+     * Keeps various information about original size of the resized component
+     * (for one dimension). In case it is a container, it also keeps info about
+     * the "container resizing gap" (if there is a resizing gap in the container
+     * layout that follows the container resizing).
+     */
     static class SizeDef {
         private int originalSize;
         private int minSize;
@@ -1747,11 +1930,11 @@ class LayoutDragger implements LayoutConstants {
         private int originalGapSize;
         private int defaultGapSize;
 
-        LayoutInterval getResizingGap() {
+        LayoutInterval getResizedGap() {
             return adjustingGap;
         }
 
-        int getResizingGapSize(int currentSize) {
+        int getResizedGapSize(int currentSize) {
             if (adjustingGap == null) {
                 return LayoutRegion.UNKNOWN;
             }

@@ -119,6 +119,8 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     public static final String PROP_GAP_WIDTH = "gapWidth"; // NOI18N
     /** Property name of the GridDesigner gap support gap height property. */
     public static final String PROP_GAP_HEIGHT = "gapHeight"; // NOI18N
+    /** Property name of the Free Design's layout visualization setting. */
+    public static final String PROP_PAINT_ADVANCED_LAYOUT = "paintAdvancedLayout"; // NOI18N
 
     /** Name of the property for automatic resources/i18n management.
      * The name refers only to i18n for compatibility reasons. */
@@ -617,7 +619,19 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     public void setGapHeight(int gapHeight) {
         getPreferences().putInt(PROP_GAP_HEIGHT, gapHeight);
     }
-   
+
+    /**
+     * @return 0: don't paint anything, 1: paint anchors and alignment,
+     *         2: paint gaps, 3: paint everything (anchors, alignment, gaps)
+     */
+    public int getPaintAdvancedLayoutInfo() {
+        return getPreferences().getInt(PROP_PAINT_ADVANCED_LAYOUT, 0);
+    }
+
+    public void setPaintAdvancedLayoutInfo(int paintLevel) {
+        getPreferences().putInt(PROP_PAINT_ADVANCED_LAYOUT, paintLevel);
+    }
+
     private static String[] toArray(String esp) {
         return esp.split(" , ");//NOI18N
     }

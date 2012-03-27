@@ -262,7 +262,7 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
             ItemConfiguration itemConf = item.getItemConfiguration(conf);
             if (conf.getCompilerSet().getCompilerSet() != null && itemConf != null) {
                 AbstractCompiler compiler = (AbstractCompiler) conf.getCompilerSet().getCompilerSet().getTool(itemConf.getTool());
-                if (compiler != null) {
+                if (compiler != null && compiler.getDescriptor() != null) {
                     suffix = compiler.getDescriptor().getPrecompiledHeaderSuffix();
                     append = compiler.getDescriptor().getPrecompiledHeaderSuffixAppend();
                 }

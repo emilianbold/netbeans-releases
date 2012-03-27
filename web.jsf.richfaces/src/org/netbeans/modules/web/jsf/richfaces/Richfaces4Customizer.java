@@ -44,9 +44,8 @@ package org.netbeans.modules.web.jsf.richfaces;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -150,10 +149,11 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
     }
 
     public static boolean isValidRichfacesLibrary(List<URL> libraryContent) {
-        Set<Entry<String, String>> entrySet = Richfaces4Implementation.RF_LIBRARIES.entrySet();
-        for (Entry<String, String> entry : entrySet) {
+        Iterator<String> iterator = Richfaces4Implementation.RF_LIBRARIES.iterator();
+        while (iterator.hasNext()) {
+            String libraryName = iterator.next();
             try {
-                if (!Util.containsClass(libraryContent, entry.getKey())) {
+                if (!Util.containsClass(libraryContent, libraryName)) {
                     return false;
                 }
             } catch (IOException ex) {

@@ -73,6 +73,7 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.design.javamodel.ProjectService;
 import org.netbeans.modules.websvc.design.loader.JaxWsDataLoader;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.util.Lookup;
@@ -85,7 +86,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
 
     static final long serialVersionUID = 1L;
     private DataObject dataObject;
-    private Service service;
+    private ProjectService service;
     //private DataObject wsdlDo;
     public static String SOURCE_UNSAFE_CLOSE = "SOURCE_UNSAFE_CLOSE";
     //private static String DESIGN_UNSAFE_CLOSE = "DESIGN_UNSAFE_CLOSE";
@@ -124,10 +125,10 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * @param displayName
      * @param dataObject
      */
-    public MultiViewSupport(Service service, DataObject dataObject) {
+    public MultiViewSupport(ProjectService service, DataObject dataObject) {
         this.dataObject = dataObject;
         this.service = service;
-        initWsdlDO();
+        //initWsdlDO();
     }
 
     public void open() {
@@ -150,7 +151,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
         return dataObject.getLookup().lookup(DataEditorSupport.class);
     }
 
-    Service getService() {
+    ProjectService getService() {
         return service;
     }
 
@@ -276,7 +277,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      *  Method, preparing DataObject for processing by WSDL Preview element
      * @param service - web service object, initialized by class constructor
      */
-    private void initWsdlDO() {
+    /*private void initWsdlDO() {
 
         if (service == null) {
             return;
@@ -306,7 +307,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
 
         }           
         //wsdlDo = dataObj;
-    }
+    }*/
 
     /**
      * Implementation of CloseOperationHandler for multiview. Ensures the

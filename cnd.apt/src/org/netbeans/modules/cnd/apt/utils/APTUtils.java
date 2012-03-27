@@ -284,8 +284,6 @@ public class APTUtils {
                 // Include strings
             case APTTokenTypes.INCLUDE_STRING:
             case APTTokenTypes.SYS_INCLUDE_STRING:
-                //Other
-            case APTTokenTypes.END_PREPROC_DIRECTIVE:
                 return APTTraceFlags.USE_APT_TEST_TOKEN ? (APTToken)new APTTestToken() : new APTBaseToken();
                 
                 // Comments

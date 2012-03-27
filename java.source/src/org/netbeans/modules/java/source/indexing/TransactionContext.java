@@ -86,8 +86,20 @@ public final class TransactionContext {
             throw new IllegalStateException();
         }
         try {
+            Throwable cause = null;
             for (Service s : services.values()) {
-                s.commit();
+                try {
+                    s.commit();
+                } catch (Throwable t) {
+                    if (t instanceof ThreadDeath) {
+                        throw (ThreadDeath) t;
+                    } else if (cause == null) {
+                        cause = t;
+                    }
+                }
+            }
+            if (cause != null) {
+                throw new IOException(cause);
             }
         } finally {
             services.clear();
@@ -100,15 +112,27 @@ public final class TransactionContext {
      * The {@link TransactionContext#rollBack} calls {@link TransactionContext.Service#rollBack}
      * on all registered {@link TransactionContext.Service}s in order they were registered.
      * @throws IOException in case of error.
-     * @throws IllegalStateException when no scan transaction was started or it was already commited.
+     * @throws IllegalStateException when no scan transaction was started or it was already committed.
      */
     public final void rollBack() throws IOException, IllegalStateException {
         if (ctx.get() != this) {
             throw new IllegalStateException();
         }
         try {
-            for (Service s : services.values()) {
-                s.rollBack();
+            Throwable cause = null;
+            for (Service s : services.values()) {                
+                try {
+                    s.rollBack();
+                } catch (Throwable t) {
+                    if (t instanceof ThreadDeath) {
+                        throw (ThreadDeath) t;
+                    } else if (cause == null) {
+                        cause = t;
+                    }
+                }
+            }
+            if (cause != null) {
+                throw new IOException(cause);
             }
         } finally {
             services.clear();

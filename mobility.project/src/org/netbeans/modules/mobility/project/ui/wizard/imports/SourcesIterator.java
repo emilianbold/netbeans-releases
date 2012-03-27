@@ -128,7 +128,7 @@ public class SourcesIterator implements TemplateWizard.Iterator {
         }
         sourcesPanel = new SourcesPanel.WizardPanel();
         ((JComponent)sourcesPanel.getComponent()).putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(SourcesIterator.class, "TXT_ExistingImport"));
-        projectPanel = new ProjectPanel.WizardPanel(false, true);
+        projectPanel = new ProjectPanel.WizardPanel(false);
         psPanel = new PlatformSelectionPanel();
         templateWizard.putProperty(PlatformSelectionPanel.REQUIRED_CONFIGURATION, null);
         templateWizard.putProperty(PlatformSelectionPanel.REQUIRED_PROFILE, null);

@@ -48,8 +48,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.sendopts.OptionAnnotationProcessor;
 import org.netbeans.spi.sendopts.Arg;
 import org.netbeans.spi.sendopts.Description;
 import org.netbeans.spi.sendopts.Env;
@@ -127,6 +129,15 @@ public final class StandaloneTest extends NbTestCase {
         methodProcess.invoke(cli, param);
         
         assertEquals("defaultValue", System.getProperty("serviceloadervalue"));
+    }
+    
+    public void testStandaloneProcessor() throws Exception {
+        for (Object p : ServiceLoader.load(javax.annotation.processing.Processor.class, loader)) {
+            if (p.getClass().getName().equals(OptionAnnotationProcessor.class.getName())) {
+                return;
+            }
+        }
+        fail("Our annotation processor not found!");
     }
     
     public static final class Options implements Runnable {

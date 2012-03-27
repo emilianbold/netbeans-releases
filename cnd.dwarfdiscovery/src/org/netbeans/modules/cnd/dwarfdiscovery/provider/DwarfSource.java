@@ -548,7 +548,10 @@ public class DwarfSource implements SourceFileProperties{
         if (dwarfMacroTable != null) {
             List<Integer> commandLineIncludedFiles = dwarfMacroTable.getCommandLineIncludedFiles();
             for(int i : commandLineIncludedFiles) {
-                processPath(dwarfTable.getFilePath(i), list, dwarfTable, false);
+                String includedSource = processPath(dwarfTable.getFilePath(i));
+                if (!fullName.replace('\\', '/').equals(includedSource)) {
+                    processPath(dwarfTable.getFilePath(i), list, dwarfTable, false);
+                }
             }
         }
         for(String path : dwarfIncludedFiles){
@@ -558,24 +561,7 @@ public class DwarfSource implements SourceFileProperties{
     }
 
     private void processPath(String path, List<String> list, DwarfStatementList dwarfTable, boolean isPath) {
-        path = path.replace('\\', '/'); // NOI18N
-        String includeFullName = path;
-        if (FULL_TRACE) {
-            System.out.println("Included file original:" + path); // NOI18N
-        }
-        if (path.startsWith("./")) { // NOI18N
-            includeFullName = compilePath + path.substring(1);
-        } else if (path.startsWith("../")) { // NOI18N
-            includeFullName = compilePath + File.separator + path;
-        } else if (!path.startsWith("/")) { // NOI18N
-            includeFullName = compilePath + File.separator + path;
-        } else {
-            includeFullName = fixCygwinPath(path);
-        }
-        if (normilizeProvider.isWindows()) {
-            includeFullName = includeFullName.replace('\\', '/'); // NOI18N
-        }
-        includeFullName = normalizePath(includeFullName);
+        String includeFullName = processPath(path);
         if (isPath) {
             String userPath = null;
             int i = includeFullName.lastIndexOf('/'); // NOI18N
@@ -596,6 +582,28 @@ public class DwarfSource implements SourceFileProperties{
         if (FULL_TRACE) {
             System.out.println("Included file:" + includeFullName); // NOI18N
         }
+    }
+
+    private String processPath(String path) {
+        path = path.replace('\\', '/'); // NOI18N
+        String includeFullName = path;
+        if (FULL_TRACE) {
+            System.out.println("Included file original:" + path); // NOI18N
+        }
+        if (path.startsWith("./")) { // NOI18N
+            includeFullName = compilePath + path.substring(1);
+        } else if (path.startsWith("../")) { // NOI18N
+            includeFullName = compilePath + File.separator + path;
+        } else if (!(path.startsWith("/") || path.length()>2 && path.charAt(1)==':')) { // NOI18N
+            includeFullName = compilePath + File.separator + path;
+        } else {
+            includeFullName = fixCygwinPath(path);
+        }
+        if (normilizeProvider.isWindows()) {
+            includeFullName = includeFullName.replace('\\', '/'); // NOI18N
+        }
+        includeFullName = normalizePath(includeFullName);
+        return includeFullName;
     }
 
     private void cutFolderPrefix(String path, final DwarfStatementList dwarfTable) {

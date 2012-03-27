@@ -133,7 +133,7 @@ tokens {
         FUN_LIKE_MACRO_LPAREN;
         GRAVE_ACCENT;
 
-        //END_PREPROC_DIRECTIVE;
+        END_PREPROC_DIRECTIVE;
 
         // marker for last const text token
         LAST_CONST_TEXT_TOKEN;
@@ -174,7 +174,7 @@ tokens {
     // preprocessor specific tokens
     INCLUDE_STRING;
     SYS_INCLUDE_STRING;
-    END_PREPROC_DIRECTIVE;
+//    END_PREPROC_DIRECTIVE; // was moved into const tokens part
 
     // preprocessor directives
     INCLUDE;
@@ -317,6 +317,12 @@ tokens {
     LITERAL_char16_t="char16_t"; // NOI18N
     LITERAL_char32_t="char32_t"; // NOI18N
     LITERAL_noexcept="noexcept"; // NOI18N
+    LITERAL___decltype="__decltype"; // NOI18N
+    LITERAL___complex="__complex"; // NOI18N
+    LITERAL___forceinline="__forceinline"; // NOI18N
+    LITERAL___clrcall="__clrcall"; // NOI18N
+    LITERAL___try="__try"; // NOI18N
+    LITERAL___finally="__finally"; // NOI18N
     LAST_LITERAL_TOKEN;
 
     // Extension points

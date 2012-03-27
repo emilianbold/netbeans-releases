@@ -123,6 +123,7 @@ public final class NbMavenProjectImpl implements Project {
     private FileObject folderFileObject;
     private final File projectFile;
     private final Lookup basicLookup;
+    private final Lookup completeLookup;
     private final Lookup lookup;
     private final Updater projectFolderUpdater;
     private final Updater userFolderUpdater;
@@ -161,6 +162,19 @@ public final class NbMavenProjectImpl implements Project {
         this.projectFile = FileUtil.normalizeFile(FileUtil.toFile(projectFO));
         fileObject = projectFO;
         folderFileObject = folder;
+        lookup = Lookups.proxy(new Lookup.Provider() {
+            @Override
+            public Lookup getLookup() {
+                if (completeLookup == null) {
+                    //not fully initialized constructor
+                    LOG.log(Level.FINE, "accessing project's lookup before the instance is fully initialized", new Exception());
+                    assert basicLookup != null;
+                    return basicLookup;
+                } else {
+                    return completeLookup;
+                }
+            }
+        });
         watcher = ACCESSOR.createWatcher(this);
         projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml"); //NOI18N
         userFolderUpdater = new Updater("settings.xml");//NOI18N
@@ -171,7 +185,7 @@ public final class NbMavenProjectImpl implements Project {
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
         // @PSP's and the like, and PackagingProvider impls, may check project lookup for e.g. NbMavenProject, so init lookup in two stages:
         basicLookup = createBasicLookup(projectState, auxiliary);
-        lookup = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, basicLookup), "Projects/org-netbeans-modules-maven/Lookup");//NOI18N
+        completeLookup = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, basicLookup), "Projects/org-netbeans-modules-maven/Lookup");//NOI18N
     }
 
     public File getPOMFile() {
@@ -602,7 +616,7 @@ public final class NbMavenProjectImpl implements Project {
 
     @Override
     public Lookup getLookup() {
-        return lookup != null ? lookup : basicLookup;
+        return lookup;
     }
 
     private static class PackagingTypeDependentLookup extends ProxyLookup implements PropertyChangeListener {

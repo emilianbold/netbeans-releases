@@ -48,6 +48,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -90,7 +91,7 @@ class ActionsUtil {
          */
         // #74161: do not cache
         // First find out whether there is a project directly in the Lookup
-        Set<Project> result = new HashSet<Project>();
+        Set<Project> result = new LinkedHashSet<Project>(); // XXX or use OpenProjectList.projectByDisplayName?
         for (Project p : lookup.lookupAll(Project.class)) {
             result.add(p);
         }

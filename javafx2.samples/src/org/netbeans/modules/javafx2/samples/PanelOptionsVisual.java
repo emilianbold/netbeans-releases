@@ -116,15 +116,9 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setAsMainCheckBox = new javax.swing.JCheckBox();
         lblPlatform = new javax.swing.JLabel();
         platformComboBox = new javax.swing.JComboBox();
         btnManagePlatforms = new javax.swing.JButton();
-
-        setAsMainCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
-        setAsMainCheckBox.setSelected(true);
-        setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
-        setAsMainCheckBox.setActionCommand("Set as Main Project");
 
         lblPlatform.setLabelFor(platformComboBox);
         lblPlatform.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_Platform_ComboBox")); // NOI18N
@@ -150,12 +144,9 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(setAsMainCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblPlatform)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(platformComboBox, 0, 315, Short.MAX_VALUE)))
+                .addComponent(lblPlatform)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(platformComboBox, 0, 315, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnManagePlatforms))
         );
@@ -167,12 +158,8 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
                     .addComponent(lblPlatform)
                     .addComponent(platformComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnManagePlatforms))
-                .addGap(18, 18, 18)
-                .addComponent(setAsMainCheckBox)
-                .addContainerGap(198, Short.MAX_VALUE))
+                .addContainerGap(239, Short.MAX_VALUE))
         );
-
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManagePlatformsActionPerformed
@@ -209,7 +196,6 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     }
 
     void store(WizardDescriptor d) {
-        d.putProperty(WizardProperties.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE);
         String platformName = getSelectedPlatform().getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         d.putProperty(JavaFXProjectUtils.PROP_JAVA_PLATFORM_NAME, platformName);
     }
@@ -224,7 +210,6 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     private javax.swing.JButton btnManagePlatforms;
     private javax.swing.JLabel lblPlatform;
     private javax.swing.JComboBox platformComboBox;
-    private javax.swing.JCheckBox setAsMainCheckBox;
     // End of variables declaration//GEN-END:variables
 
     private void checkPlatforms() {

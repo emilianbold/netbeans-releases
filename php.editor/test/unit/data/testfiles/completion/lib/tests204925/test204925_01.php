@@ -8,6 +8,8 @@ namespace Test204925_01_C {
     class Test204925_01_B extends Test204925_01_A { function bar(){} }
 }
 
-$test = new \Test204925_01_C\Test204925_01_B();
-$test->
+namespace {
+    $test = new \Test204925_01_C\Test204925_01_B();
+    $test->
+}
 ?>

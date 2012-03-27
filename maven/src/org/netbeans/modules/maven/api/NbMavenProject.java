@@ -54,19 +54,19 @@ import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.options.MavenSettings.DownloadStrategy;
 import org.netbeans.modules.maven.spi.PackagingProvider;
@@ -122,10 +122,12 @@ public final class NbMavenProject {
              }
          }
     
+        @Override
         public NbMavenProject createWatcher(NbMavenProjectImpl proj) {
             return new NbMavenProject(proj);
         }
         
+        @Override
         public void doFireReload(NbMavenProject watcher) {
             watcher.doFireReload();
         }
@@ -137,26 +139,32 @@ public final class NbMavenProject {
     private class FCHSL implements FileChangeListener {
 
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             fireChange(FileUtil.toFile(fe.getFile()).toURI());
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             fireChange(FileUtil.toFile(fe.getFile()).toURI());
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             fireChange(FileUtil.toFile(fe.getFile()).toURI());
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             fireChange(FileUtil.toFile(fe.getFile()).toURI());
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             fireChange(FileUtil.toFile(fe.getFile()).toURI());
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
         
@@ -173,6 +181,7 @@ public final class NbMavenProject {
 
     private RequestProcessor.Task createBinaryDownloadTask(RequestProcessor rp) {
         return rp.create(new Runnable() {
+            @Override
             public void run() {
                     //#146171 try the hardest to avoid NPE for files/directories that
                     // seemed to have been deleted while the task was scheduled.
@@ -383,6 +392,7 @@ public final class NbMavenProject {
 
     public void triggerSourceJavadocDownload(final boolean javadoc) {
         NONBINARYRP.post(new Runnable() {
+            @Override
             public void run() {
                 Set<Artifact> arts = project.getOriginalMavenProject().getArtifacts();
                 ProgressContributor[] contribs = new ProgressContributor[arts.size()];

@@ -54,11 +54,6 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="400"/>
                 <attr name="misplaced.action.allowed" boolvalue="true"/>
             </file>
-            <file name="UndoSeparator.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="1900"/>
-            </file>
-            
         </folder>
         
         <folder name="Window">

@@ -67,6 +67,7 @@ public class ProgressDialog {
     private Dialog dialog;
 
     public ProgressDialog(String title) {
+        assert SwingUtilities.isEventDispatchThread();
         createDialog(title);
     }
 
@@ -82,12 +83,17 @@ public class ProgressDialog {
     }
 
     public void close() {
-        if (dialog != null) {
-            Dialog oldDialog = dialog;
-            dialog = null;
-            oldDialog.setVisible(false);
-            oldDialog.dispose();
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (dialog != null) {
+                    Dialog oldDialog = dialog;
+                    dialog = null;
+                    oldDialog.setVisible(false);
+                    oldDialog.dispose();
+                }
+            }
+        });
     }
 
     public ProgressHandle getProgressHandle() {

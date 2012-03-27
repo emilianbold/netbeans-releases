@@ -133,6 +133,10 @@ public class TestVCS extends VersioningSystem {
         super.fireStatusChanged(file);
     }
     
+    public void setVCSInterceptor(VCSInterceptor externalyMovedInterceptor) {
+        interceptor = externalyMovedInterceptor;
+    }
+    
     @ActionID(id = "vcs.delegatetest.init", category = "TestVCS")
     @ActionRegistration(displayName = "InitAction", popupText="InitActionPopup", menuText="InitActionMenu")
     @ActionReferences({@ActionReference(path="Versioning/TestVCS/Actions/Unversioned")})

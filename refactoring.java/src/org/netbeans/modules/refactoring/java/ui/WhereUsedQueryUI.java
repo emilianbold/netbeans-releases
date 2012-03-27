@@ -143,8 +143,9 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         } else if (kind.isClass() || kind.isInterface()) {
             setForClass();
             return query.checkParameters();
-        } else
+        } else {
             return null;
+        }
     }
     
     private void setForMethod() {
@@ -168,8 +169,9 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         } else if (kind.isClass() || kind.isInterface()) {
             setForClass();
             return query.fastCheckParameters();
-        } else
+        } else {
             return null;
+        }
     }
 
     @Override

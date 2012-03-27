@@ -171,6 +171,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug195283.cpp", 7, 7, "bug195283.cpp", 4, 1);
     }
     
+    public void testBug209513() throws Exception {
+        // Bug 209513 - a lot of renderer exceptions in log
+        performTest("bug209513.cpp", 4, 37, "bug209513.cpp", 2, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

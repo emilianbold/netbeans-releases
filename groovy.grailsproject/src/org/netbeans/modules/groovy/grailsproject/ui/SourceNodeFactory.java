@@ -60,6 +60,7 @@ import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 
@@ -73,24 +74,25 @@ public class SourceNodeFactory implements NodeFactory {
     public SourceNodeFactory() {
     }
 
+    @Override
     public NodeList<?> createNodes(Project p) {
 
         GrailsProject project = p.getLookup().lookup(GrailsProject.class);
         assert project != null;
         return new SourcesNodeList(project);
-
     }
 
     private static class SourcesNodeList implements NodeList<SourceGroupKey>, ChangeListener {
 
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         private GrailsProject project;
 
-        private final ChangeSupport changeSupport = new ChangeSupport(this);
-
+        
         public SourcesNodeList(GrailsProject proj) {
             this.project = proj;
         }
 
+        @Override
         public List<SourceGroupKey> keys() {
             FileObject projectDir = project.getProjectDirectory();
             if (projectDir == null || !projectDir.isValid()) {
@@ -110,30 +112,42 @@ public class SourceNodeFactory implements NodeFactory {
             return result;
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
         }
 
+        @Override
         public Node node(SourceGroupKey key) {
-            return new TreeRootNode(key.group, project);
+            try {
+                DataFolder folder = DataFolder.findFolder(key.fileObject);
+                return new TreeRootNode(folder, key.group, project);
+            } catch (IllegalArgumentException ex) {
+                return null; // It might happened sometimes - see issue 208426
+            }
         }
 
+        @Override
         public void addNotify() {
             getSources().addChangeListener(this);
         }
 
+        @Override
         public void removeNotify() {
             getSources().removeChangeListener(this);
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             // setKeys(getKeys());
             // The caller holds ProjectManager.mutex() read lock
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     changeSupport.fireChange();
                 }
@@ -143,32 +157,35 @@ public class SourceNodeFactory implements NodeFactory {
         private Sources getSources() {
             return ProjectUtils.getSources(project);
         }
-
     }
 
     private static class SourceGroupKey implements Comparable<SourceGroupKey> {
 
-        public final SourceGroup group;
-        public final FileObject fileObject;
-        public final FileObject projectDir;
+        private final SourceGroup group;
+        private final FileObject projectDir;
+        private final FileObject fileObject;
+        
 
         SourceGroupKey(SourceGroup group, FileObject projectDir) {
             this.group = group;
-            this.fileObject = group.getRootFolder();
             this.projectDir = projectDir;
+            this.fileObject = group.getRootFolder();
         }
 
+        @Override
         public int hashCode() {
             return fileObject.hashCode();
         }
 
 
+        @Override
         public int compareTo(SourceGroupKey o) {
             String relativePath1 = FileUtil.getRelativePath(projectDir, fileObject);
             String relativePath2 = FileUtil.getRelativePath(projectDir, o.fileObject);
             return relativePath1.compareTo(relativePath2);
         }
 
+        @Override
         public boolean equals(Object obj) {
 
             if (!(obj instanceof SourceGroupKey)) {
@@ -181,14 +198,11 @@ public class SourceNodeFactory implements NodeFactory {
                 return fileObject.equals(otherKey.fileObject) &&
                         thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName);
             }
-
         }
 
         @Override
         public String toString() {
             return group.toString();
         }
-
     }
-
 }

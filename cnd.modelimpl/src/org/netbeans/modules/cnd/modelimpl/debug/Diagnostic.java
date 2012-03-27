@@ -143,7 +143,8 @@ public class Diagnostic {
                             add = true;
                         } else {
                             if (add) {
-                                iterator.add(new Entry(parseTime, file.getAbsolutePath()));
+                                iterator.add(new Entry(parseTime, file.getBuffer().getUrl()));
+                                add = false;
                                 break;
                             }
                         }

@@ -94,7 +94,7 @@ public class AmazonJ2EEServerWizardPanel implements WizardDescriptor.Asynchronou
     
     @Override
     public HelpCtx getHelp() {
-        return null;
+        return new HelpCtx(AmazonJ2EEServerWizardPanel.class);
     }
 
     @Override

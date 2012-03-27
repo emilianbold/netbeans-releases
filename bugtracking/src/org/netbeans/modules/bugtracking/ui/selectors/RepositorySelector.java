@@ -66,7 +66,7 @@ public class RepositorySelector {
         // init connector cbo
     }
 
-    public RepositoryImpl create() {
+    public RepositoryImpl create(boolean selectNode) {
         DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         connectors = addJiraProxyIfNeeded(connectors);
         selectorPanel.setConnectors(connectors);
@@ -81,12 +81,14 @@ public class RepositorySelector {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             return null;
         }        
-        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
-            @Override
-            public void run() {
-                BugtrackingRootNode.selectNode(repo.getDisplayName());
-            }
-        });
+        if(selectNode) {
+            BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    BugtrackingRootNode.selectNode(repo.getDisplayName());
+                }
+            });
+        }
         return repo;
     }
 

@@ -2468,7 +2468,8 @@ widthcheck:  {
     }
 
     /** Provides support for parts of the system that deal with classnames
-     * (use <code>Class.forName</code>, <code>NbObjectInputStream</code>, etc.).
+     * (use <code>Class.forName</code>, <code>NbObjectInputStream</code>, etc.) or filenames
+     * in layers.
      * <P>
      * Often class names (especially package names) changes during lifecycle
      * of a module. When some piece of the system stores the name of a class
@@ -2513,8 +2514,21 @@ widthcheck:  {
      * className is not listed as one that is to be renamed, the returned
      * string == className, if the className is registered to be renamed
      * than the className != returned value, even in a case when className.equals (retValue)
+     * <p/>
+     * Similar behaviour applies to <b>filenames</b> provided by layers (system filesystem). Filenames
+     * can be also translated to adapt to location changes e.g. in action registrations. Note that 
+     * <b>no spaces or special characters</b> are allowed in both translated filenames or translation 
+     * results. Filenames must conform to regexp {@code ^[/a-zA-Z0-9$_.+-]+$}. Keys and values are treated
+     * as paths from fs root.
+     * 
+     * <p/>
+     * Example of file path translation (action registration file has moved):
+     * <pre>
+     * # registration ID has changed
+     * Actions/Refactoring/RefactoringWhereUsed.instance=Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance
+     * </pre>
      *
-     * @param className fully qualified name of a class to translate
+     * @param className fully qualified name of a class, or file path to translate
      * @return new name of the class according to renaming rules.
      */
     public static String translate(final String className) {

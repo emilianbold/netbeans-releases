@@ -295,8 +295,17 @@ public class LogReader {
     private String convertWindowsRelativePath(String path) {
         if (Utilities.isWindows()) {
             if (path.startsWith("/") || path.startsWith("\\")) { // NOI18N
-                if (root.length()>1 && root.charAt(1)== ':') {
-                    path = root.substring(0,2)+path;
+                if (path.length() > 3 && (path.charAt(2) == '/' || path.charAt(2) == '\\') && Character.isLetter(path.charAt(1))) {
+                    // MinGW path:
+                    //make[1]: Entering directory `/c/Test/qlife-qt4-0.9/build'
+                    path = ""+path.charAt(1)+":"+path.substring(2); // NOI18N
+                } else if (path.startsWith("/cygdrive/")) { // NOI18N
+                    path = path.substring("/cygdrive/".length()); // NOI18N
+                    path = "" + path.charAt(0) + ':' + path.substring(1); // NOI18N
+                } else {
+                    if (root.length()>1 && root.charAt(1)== ':') {
+                        path = root.substring(0,2)+path;
+                    }
                 }
                 
             }
@@ -945,7 +954,7 @@ public class LogReader {
                 } else {
                     if (subFolder == null) {
                         String path = s;
-                        if (path.endsWith(relativeFolder)) {
+                        if (path.endsWith(relativeFolder) && path.length() > relativeFolder.length() + 1) {
                             path = path.substring(0,path.length()-relativeFolder.length()-1);
                             res.add(path);
                             if (res.size() > 1) {

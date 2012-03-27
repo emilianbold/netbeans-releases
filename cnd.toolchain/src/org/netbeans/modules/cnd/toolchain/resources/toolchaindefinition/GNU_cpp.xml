@@ -78,6 +78,7 @@ made subject to such option by the copyright holder.
         <strip flags="-s"/>
         <cpp_standard>
             <default flags="" default="true"/>
+            <cpp98 flags=""/>
             <cpp11 flags="-std=c++11"/>
         </cpp_standard>
         <output_object_file flags="-o " />

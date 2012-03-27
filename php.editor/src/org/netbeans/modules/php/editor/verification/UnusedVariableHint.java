@@ -513,11 +513,6 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
         }
 
         @Override
-        public void visit(SwitchCase node) {
-            scan(node.getActions());
-        }
-
-        @Override
         public void visit(WhileStatement node) {
             forceVariableAsUsed = true;
             scan(node.getCondition());

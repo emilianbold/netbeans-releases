@@ -105,7 +105,7 @@ public final class BugtrackingFactory<R, Q, I> {
     }
     
     public UndoRedoSupport getUndoRedoSupport(Repository repository, I i) {
-        return UndoRedoSupport.getSupport(getIssueImpl(null, i));
+        return UndoRedoSupport.getSupport(getIssueImpl(repository, i));
     }
     
     private Query getQuery(Repository repository, Q q) {

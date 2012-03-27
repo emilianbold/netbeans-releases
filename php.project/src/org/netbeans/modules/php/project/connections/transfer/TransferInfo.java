@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.project.connections.transfer;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -67,19 +66,19 @@ public final class TransferInfo {
 
 
     public Set<TransferFile> getTransfered() {
-        return Collections.unmodifiableSet(transfered);
+        return transfered;
     }
 
     public Map<TransferFile, String> getFailed() {
-        return Collections.unmodifiableMap(failed);
+        return failed;
     }
 
     public Map<TransferFile, String> getPartiallyFailed() {
-        return Collections.unmodifiableMap(partiallyFailed);
+        return partiallyFailed;
     }
 
     public Map<TransferFile, String> getIgnored() {
-        return Collections.unmodifiableMap(ignored);
+        return ignored;
     }
 
     public long getRuntime() {

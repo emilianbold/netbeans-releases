@@ -272,6 +272,10 @@ public class HistoryRootNode extends AbstractNode {
                     return NbBundle.getMessage(HistoryRootNode.class, "LBL_ShowingAllVCSRevisions", vcsName); // NOI18N
                 }
             }
+            @Override
+            public String toString() {
+                return getDisplayValue();
+            }
         }
     }
 
@@ -299,6 +303,12 @@ public class HistoryRootNode extends AbstractNode {
         public String getName() {
             return NODE_WAIT;
         }
+
+        @Override
+        public String toString() {
+            return getDisplayName();
+        }
+        
     }    
     
     private class BaseProperty extends PropertySupport.ReadOnly<TableEntry> {

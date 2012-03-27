@@ -44,14 +44,13 @@
 
 package org.netbeans.core.windows.view.ui.popupswitcher;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.event.*;
-import javax.swing.AbstractAction;
-import javax.swing.JWindow;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
+import javax.swing.*;
+import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.actions.RecentViewListAction;
 import org.openide.awt.StatusDisplayer;
@@ -149,6 +148,13 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             return true;
         }
         if ((isCtrlTab || isCtrlShiftTab)) { // && !KeyboardPopupSwitcher.isShown()
+            if( !Switches.isCtrlTabWindowSwitchingInJTableEnabled() ) {
+                Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+                if( c instanceof JTabbedPane || c instanceof JTable ) {
+                    return false;
+                }
+            }
+
             if (KeyboardPopupSwitcher.isAlive()) {
                 KeyboardPopupSwitcher.processInterruption(kev);
             } else {

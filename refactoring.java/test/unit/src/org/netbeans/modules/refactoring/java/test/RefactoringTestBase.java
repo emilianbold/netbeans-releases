@@ -214,7 +214,9 @@ public class RefactoringTestBase extends NbTestCase {
                         }
                         @Override
                         public Project loadProject(final FileObject projectDirectory, ProjectState state) throws IOException {
-                if (!isProject(projectDirectory)) return null;
+                if (!isProject(projectDirectory)) {
+                    return null;
+                }
                             return new Project() {
                                 @Override
                                 public FileObject getProjectDirectory() {

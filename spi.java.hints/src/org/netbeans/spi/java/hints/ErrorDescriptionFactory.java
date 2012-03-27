@@ -89,6 +89,7 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -111,12 +112,19 @@ public class ErrorDescriptionFactory {
     }
     
     public static ErrorDescription forTree(HintContext context, Tree tree, String text, Fix... fixes) {
-        int start = (int) context.getInfo().getTrees().getSourcePositions().getStartPosition(context.getInfo().getCompilationUnit(), tree);
-        int end = (int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree);
+        int start;
+        int end;
+
+        if (context.getHintMetadata().kind == Hint.Kind.INSPECTION) {
+            start = (int) context.getInfo().getTrees().getSourcePositions().getStartPosition(context.getInfo().getCompilationUnit(), tree);
+            end = (int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree);
+        } else {
+            start = end = context.getCaretLocation();
+        }
 
         if (start != (-1) && end != (-1)) {
-            List<Fix> fixesForED = resolveDefaultFixes(context, fixes);
-            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription(context.getSeverity(), text, fixesForED, context.getInfo().getFileObject(), start, end);
+            LazyFixList fixesForED = org.netbeans.spi.editor.hints.ErrorDescriptionFactory.lazyListForFixes(resolveDefaultFixes(context, fixes));
+            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription("text/x-java:" + context.getHintMetadata().id, context.getSeverity(), text, context.getHintMetadata().description, fixesForED, context.getInfo().getFileObject(), start, end);
         }
 
         return null;
@@ -127,11 +135,17 @@ public class ErrorDescriptionFactory {
     }
 
     public static ErrorDescription forName(HintContext context, Tree tree, String text, Fix... fixes) {
-        int[] span = computeNameSpan(tree, context);
+        int[] span;
+        
+        if (context.getHintMetadata().kind == Hint.Kind.INSPECTION) {
+            span = computeNameSpan(tree, context);
+        } else {
+            span = new int[] {context.getCaretLocation(), context.getCaretLocation()};
+        }
         
         if (span != null && span[0] != (-1) && span[1] != (-1)) {
-            List<Fix> fixesForED = resolveDefaultFixes(context, fixes);
-            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription(context.getSeverity(), text, fixesForED, context.getInfo().getFileObject(), span[0], span[1]);
+            LazyFixList fixesForED = org.netbeans.spi.editor.hints.ErrorDescriptionFactory.lazyListForFixes(resolveDefaultFixes(context, fixes));
+            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription("text/x-java:" + context.getHintMetadata().id, context.getSeverity(), text, context.getHintMetadata().description, fixesForED, context.getInfo().getFileObject(), span[0], span[1]);
         }
 
         return null;
@@ -178,7 +192,6 @@ public class ErrorDescriptionFactory {
         }
     }
 
-    //XXX: should not be public:
     static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
         List<Fix> auxiliaryFixes = new LinkedList<Fix>();
         HintMetadata hm = SPIAccessor.getINSTANCE().getHintMetadata(ctx);

@@ -41,6 +41,7 @@ PACKAGE    Test204925_08_C                 [PUBLIC]   null
 PACKAGE    Test204925_08_P                 [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
+PACKAGE    delme                           [PUBLIC]   null
 ------------------------------------
 PACKAGE    Application                     [PUBLIC]   Nette
 PACKAGE    BNS                             [PUBLIC]   ANS

@@ -564,7 +564,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
         TableProvider tableProvider = null;
 
         if (sourceSchemaElement != null) {
-            tableProvider = new DBSchemaTableProvider(sourceSchemaElement, persistenceGen);
+            tableProvider = new DBSchemaTableProvider(sourceSchemaElement, persistenceGen, project);
         } else {
             tableProvider = new EmptyTableProvider();
         }
@@ -592,6 +592,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
 
     private void updateButtons() {
         Set<Table> addTables = TableUISupport.getSelectedTables(availableTablesList, true);
+        Set<Table> allSelectedTables = TableUISupport.getSelectedTables(availableTablesList, false);
         addButton.setEnabled(tableClosure.canAddAllTables(addTables));
 
         addAllButton.setEnabled(TableUISupport.getEnabledTables(availableTablesList).size()>0);
@@ -601,7 +602,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
 
         removeAllButton.setEnabled(tableClosure.getSelectedTables().size() > 0);
         String problems = "";
-        for (Table t : addTables) {
+        for (Table t : allSelectedTables) {
             if (t.isDisabled()) {
                 if (t.getDisabledReason() instanceof Table.ExistingDisabledReason) {
                     String existingClass = ((Table.ExistingDisabledReason) t.getDisabledReason()).getFQClassName();
@@ -610,6 +611,9 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
                     } else {
                         problems += (problems.length()>0 ? "\n" : "") + NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_Already_Mapped_UpdateAllowed", new Object[] {t.getName(), existingClass});
                     }
+                } else if (t.getDisabledReason() instanceof Table.ExistingNotInSourceDisabledReason) {
+                    String existingClass = ((Table.ExistingNotInSourceDisabledReason) t.getDisabledReason()).getFQClassName();
+                    problems += (problems.length()>0 ? "\n" : "") + NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_Already_Mapped_NotInSource", new Object[] {t.getName(), existingClass});
                 } else if (t.getDisabledReason() instanceof Table.NoPrimaryKeyDisabledReason) {
                     problems += (problems.length()>0 ? "\n" : "") + NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_No_Primary_Key", new Object[] {t.getName()});
                 }

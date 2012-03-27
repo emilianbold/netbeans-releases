@@ -45,27 +45,29 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
 
 /**
- * Used to call "Debug|Toggle Breakpoint" main menu item, "Toggle Breakpoint"
- * popup menu item or CTRL+F8 shortcut.
+ * Used to call "Debug|Toggle Line Breakpoint" main menu item, "Toggle Line
+ * Breakpoint" popup menu item or CTRL+F8 shortcut.
  *
  * @see org.netbeans.jellytools.actions.Action
  * @author Jiri Skrivanek
  */
 public class ToggleBreakpointAction extends Action {
 
-    // "Toggle Breakpoint"
+    // "Toggle Line Breakpoint"
     private static final String toggleBreakpointItem = Bundle.getStringTrimmed(
             "org.netbeans.modules.debugger.ui.actions.Bundle",
             "CTL_Toggle_breakpoint");
-    // "Run"
-    private static final String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
-    // "Run|Toggle Breakpoint"
-    private static final String mainMenuPath = runItem + "|" + toggleBreakpointItem;
+    // "Debug"
+    private static final String debugItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
+    // "Debug|Toggle Line Breakpoint"
+    private static final String mainMenuPath = debugItem + "|" + toggleBreakpointItem;
     private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1
             ? KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.META_MASK)
             : KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.CTRL_MASK);
 
-    /** Creates new ToggleBreakpointAction instance. */
+    /**
+     * Creates new ToggleBreakpointAction instance.
+     */
     public ToggleBreakpointAction() {
         super(mainMenuPath, toggleBreakpointItem, keystroke);
     }

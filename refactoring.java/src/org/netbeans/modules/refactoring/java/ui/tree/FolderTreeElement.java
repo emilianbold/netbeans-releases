@@ -101,8 +101,9 @@ public class FolderTreeElement implements TreeElement {
         } else {
             if (getJavaSourceGroup(fo)!=null) {
                 String name = cp.getResourceName(fo).replace('/','.');
-                if ("".equals(name)) // NOI18N
+                if ("".equals(name)) {
                     return NbBundle.getMessage(FolderTreeElement.class, "LBL_DefaultPackage_PDU");
+                }
                 return name;
             } else {
                 return fo.getPath();
@@ -112,8 +113,9 @@ public class FolderTreeElement implements TreeElement {
 
     static SourceGroup getSourceGroup(FileObject file) {
         Project prj = FileOwnerQuery.getOwner(file);
-        if (prj == null)
+        if (prj == null) {
             return null;
+        }
         Sources src = ProjectUtils.getSources(prj);
         //TODO: needs to be generified
         SourceGroup[] javagroups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -129,22 +131,25 @@ public class FolderTreeElement implements TreeElement {
         System.arraycopy(javagroups,0,allgroups,0,javagroups.length);
         System.arraycopy(xmlgroups,0,allgroups,allgroups.length-1,xmlgroups.length);
         for(int i=0; i<allgroups.length; i++) {
-            if (allgroups[i].getRootFolder().equals(file) || FileUtil.isParentOf(allgroups[i].getRootFolder(), file))
+            if (allgroups[i].getRootFolder().equals(file) || FileUtil.isParentOf(allgroups[i].getRootFolder(), file)) {
                 return allgroups[i];
+            }
         }
         return null;
     }
     
     private static SourceGroup getJavaSourceGroup(FileObject file) {
         Project prj = FileOwnerQuery.getOwner(file);
-        if (prj == null)
+        if (prj == null) {
             return null;
+        }
         Sources src = ProjectUtils.getSources(prj);
         SourceGroup[] javagroups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         
         for(int i=0; i<javagroups.length; i++) {
-            if (javagroups[i].getRootFolder().equals(file) || FileUtil.isParentOf(javagroups[i].getRootFolder(), file))
+            if (javagroups[i].getRootFolder().equals(file) || FileUtil.isParentOf(javagroups[i].getRootFolder(), file)) {
                 return javagroups[i];
+            }
         }
         return null;
     }

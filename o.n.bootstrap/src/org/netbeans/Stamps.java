@@ -44,7 +44,7 @@ package org.netbeans;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -886,7 +886,7 @@ public final class Stamps {
         return cluster.getName().replaceAll("\\.\\.", "__");
     }
     
-    static String readRelativePath(DataInputStream dis) throws IOException {
+    static String readRelativePath(DataInput dis) throws IOException {
         String index = dis.readUTF();
         if (index.isEmpty()) {
             return index;
@@ -897,6 +897,9 @@ public final class Stamps {
         }
         if ("home".equals(index)) { // NOI18N
             return System.getProperty("netbeans.home").concat(relative); // NOI18N
+        }
+        if ("abs".equals(index)) { // NOI18N
+            return relative;
         }
         int indx = Integer.parseInt(index);
         return dirs()[indx].concat(relative); // NOI18N
@@ -914,7 +917,7 @@ public final class Stamps {
             }
             return;
         }
-        if (testWritePath(path, System.getProperty("netbeans.user"), "user", out)) {
+        if (testWritePath(path, System.getProperty("netbeans.user"), "user", out)) { // NOI18N
             return;
         }
         int cnt = 0;
@@ -924,10 +927,11 @@ public final class Stamps {
             }
             cnt++;
         }
-        if (testWritePath(path, System.getProperty("netbeans.home"), "home", out)) {
+        if (testWritePath(path, System.getProperty("netbeans.home"), "home", out)) { // NOI18N
             return;
         }
-        throw new IOException("Can't find relative path for '" + path + "'");
+        LOG.log(Level.FINE, "Cannot find relative path for {0}", path); // NOI18N
+        doWritePath("abs", path, out); // NOI18N
     }
 
     private static boolean testWritePath(String path, String prefix, String codeName, Object out) throws IOException {
@@ -936,19 +940,23 @@ public final class Stamps {
         }
         if (path.startsWith(prefix)) {
             final String relPath = path.substring(prefix.length());
-            if (out instanceof DataOutput) {
-                DataOutput dos = (DataOutput)out;
-                dos.writeUTF(codeName);
-                dos.writeUTF(relPath);
-            } else {
-                Collection coll = (Collection)out;
-                coll.add(codeName);
-                coll.add(relPath);
-            }
+            doWritePath(codeName, relPath, out);
             return true;
         }
         return false;
     }
+    private static void doWritePath(String codeName, String relPath, Object out) throws IOException {
+        if (out instanceof DataOutput) {
+            DataOutput dos = (DataOutput) out;
+            dos.writeUTF(codeName);
+            dos.writeUTF(relPath);
+        } else {
+            Collection coll = (Collection) out;
+            coll.add(codeName);
+            coll.add(relPath);
+        }
+    }
+
     static String findRelativePath(String file) {
         List<String> arrayList = new ArrayList<String>();
         try {

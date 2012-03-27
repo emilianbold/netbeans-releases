@@ -42,13 +42,13 @@
 
 package org.netbeans.modules.cnd.completion.doxygensupport;
 
-import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 
 /**
  *
@@ -77,7 +77,6 @@ public class DoxygenDocumentationTest {
 
     @Test
     public void doxygen2HTMLDefault() {
-        System.out.println("doxygen2HTMLDefault");
         String doxygen =
  "/**\n" +
  "* Document main(int,char**) here...\n" +
@@ -87,14 +86,13 @@ public class DoxygenDocumentationTest {
  "* @return ...\n" +
  "* @author thp\n" +
  "*/";
-        String expResult = "<html><body><p>Document main(int,char**) here...\n</p><p>\n<strong>Parameter:</strong><br>&nbsp;  <i>argc</i>\n</p><p>\n<strong>Parameter:</strong><br>&nbsp;  <i>argv</i>\n</p><p>\n<strong>Returns:</strong><br>&nbsp;  ...\n</p><p>\n<strong>Author:</strong><br>&nbsp;  thp</p>";
+        String expResult = "<p>Document main(int,char**) here...\n</p><p>\n<strong>Parameter:</strong><br>&nbsp;  <i>argc</i>\n</p><p>\n<strong>Parameter:</strong><br>&nbsp;  <i>argv</i>\n</p><p>\n<strong>Returns:</strong><br>&nbsp;  ...\n</p><p>\n<strong>Author:</strong><br>&nbsp;  thp</p>";
         String result = DoxygenDocumentation.doxygen2HTML(doxygen, CppTokenId.DOXYGEN_COMMENT);
         assertEquals(expResult, result);
     }
 
     @Test
     public void doxygen2HTMLVerbatim() {
-        System.out.println("doxygen2HTMLVerbatim");
         String doxygen =
  "/**\n" +
  "* abc def\n" +
@@ -109,7 +107,19 @@ public class DoxygenDocumentationTest {
  "* jkl lmn\n" +
  "* opq\n" +
  "*/";
-        String expResult = "<html><body><p>abc def ghi\n</p><p>\n<pre>111\n  333\n444\n</pre>\n</p><p>\n jkl lmn opq</p>";
+        String expResult = "<p>abc def ghi\n</p><p>\n<pre>111\n  333\n444\n</pre>\n</p><p>\n jkl lmn opq</p>";
+        String result = DoxygenDocumentation.doxygen2HTML(doxygen, CppTokenId.DOXYGEN_COMMENT);
+        assertEquals(expResult, result);
+    }
+
+    @Test
+    public void doxygen2HTMLdoxygen2HTMLVerbatim2() {
+        String doxygen =
+ "/**\\verbatim\n" +
+ "* 2<1>3\n" +
+ "* \\endverbatim\n" +
+ "*/";
+        String expResult = "<p><pre>2&lt;1&gt;3\n</pre></p>";
         String result = DoxygenDocumentation.doxygen2HTML(doxygen, CppTokenId.DOXYGEN_COMMENT);
         assertEquals(expResult, result);
     }
@@ -124,7 +134,52 @@ public class DoxygenDocumentationTest {
  "* @unimplemented xyz\n" +
  "* @author thp\n" +
  "*/";
-        String expResult = "<html><body><p>Document...\n</p><p>\n<strong>unimplemented:</strong><br>&nbsp;  xyz\n</p><p>\n<strong>Author:</strong><br>&nbsp;  thp</p>";
+        String expResult = "<p>Document...\n</p><p>\n<strong>unimplemented:</strong><br>&nbsp;  xyz\n</p><p>\n<strong>Author:</strong><br>&nbsp;  thp</p>";
+        String result = DoxygenDocumentation.doxygen2HTML(doxygen, CppTokenId.DOXYGEN_COMMENT);
+        assertEquals(expResult, result);
+    }
+
+    @Test
+    public void doxygen2HTMLCode() {
+        String doxygen =
+ "/**\n" +
+ "* abc def\n" +
+ "* ghi\n" +
+ "*\n" +
+ "* \\code\n" +
+ "* 111\n" +
+ "*   333\n" +
+ "* 444\n" +
+ "* \\endcode\n" +
+ "*\n" +
+ "* jkl lmn\n" +
+ "* opq\n" +
+ "*/";
+        String expResult = "<p>abc def ghi\n</p><p>\n<pre>111\n  333\n444\n</pre>\n</p><p>\n jkl lmn opq</p>";
+        String result = DoxygenDocumentation.doxygen2HTML(doxygen, CppTokenId.DOXYGEN_COMMENT);
+        assertEquals(expResult, result);
+    }
+
+    @Test
+    public void doxygen2HTMLCode2() {
+        String doxygen =
+ "/**\\code\n" +
+ "*  2<1>3\n" +
+ "* \\endcode\n" +
+ "*/";
+        String expResult = "<p><pre> 2&lt;1&gt;3\n</pre></p>";
+        String result = DoxygenDocumentation.doxygen2HTML(doxygen, CppTokenId.DOXYGEN_COMMENT);
+        assertEquals(expResult, result);
+    }
+
+    @Test
+    public void doxygen2HTMLEscaped() {
+        String doxygen =
+ "/**\n" +
+ "* 2\\<1\\>3\n" +
+ "* \n" +
+ "*/";
+        String expResult = "<p>2&lt;<1&gt;>3</p>";
         String result = DoxygenDocumentation.doxygen2HTML(doxygen, CppTokenId.DOXYGEN_COMMENT);
         assertEquals(expResult, result);
     }

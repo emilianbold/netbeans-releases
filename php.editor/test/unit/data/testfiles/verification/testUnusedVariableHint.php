@@ -93,7 +93,16 @@ if ($ins instanceof $instanceOf) {
 
 }
 
-//END
+$omg = 60;
+$gom = 60;
+switch ($omg) {
+    case $gom: break;
+}
+
 ?>
 
 <?= $usedShortEcho; ?>
+
+<?php
+//END
+?>

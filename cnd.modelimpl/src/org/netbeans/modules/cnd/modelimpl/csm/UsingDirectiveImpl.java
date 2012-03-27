@@ -116,13 +116,15 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
             CsmNamespace referencedNamespace = UIDCsmConverter.UIDtoNamespace(referencedNamespaceUID);
             if (referencedNamespaceUID == null) {
                 FileImpl file = (FileImpl) getContainingFile();
-                CsmReference typeReference = file.getResolvedReference(new CsmUsingReferenceImpl(this));
-                if (typeReference != null) {
-                    CsmObject referencedObject = typeReference.getReferencedObject();
-                    if (CsmKindUtilities.isNamespace(referencedObject)) {
-                        referencedNamespace =  (CsmNamespace) referencedObject;
-                        referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
-                        //System.out.println("Hit "+referencedNamespace);
+                if(file != null) {
+                    CsmReference typeReference = file.getResolvedReference(new CsmUsingReferenceImpl(this));
+                    if (typeReference != null) {
+                        CsmObject referencedObject = typeReference.getReferencedObject();
+                        if (CsmKindUtilities.isNamespace(referencedObject)) {
+                            referencedNamespace =  (CsmNamespace) referencedObject;
+                            referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
+                            //System.out.println("Hit "+referencedNamespace);
+                        }
                     }
                 }
             }

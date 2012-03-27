@@ -507,6 +507,9 @@ public class ExtKit extends BaseKit {
 
     }
 
+    /**
+     * @deprecated Without any replacement.
+     */
     public static class ReplaceAction extends BaseKitLocalizedAction {
 
         static final long serialVersionUID =1828017436079834384L;

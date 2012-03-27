@@ -46,8 +46,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.api.project.libraries.LibraryManagerTest;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.libraries.LibrariesStorageTest.TestEntityCatalog;
 import org.netbeans.modules.project.libraries.LibrariesStorageTest.TestLibraryTypeProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -76,6 +76,7 @@ public class LibrariesStorageDeadlock166109Test extends NbTestCase {
         assertNotNull("storageFolder found", storageFolder);
     }
 
+    @RandomlyFails
     public void testDeadlock() throws Exception {
         Library[] arr = LibraryManager.getDefault().getLibraries();
         assertEquals("Empty", 0, arr.length);

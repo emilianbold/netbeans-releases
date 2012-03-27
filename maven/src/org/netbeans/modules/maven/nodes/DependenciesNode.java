@@ -290,11 +290,16 @@ public class DependenciesNode extends AbstractNode {
 
         @Override public void actionPerformed(ActionEvent event) {
             String typeString = type == Type.RUNTIME ? "runtime" : (type == Type.TEST ? "test" : "compile"); //NOI18N
-            String[] data = AddDependencyPanel.show(project, true, typeString);
+            final String[] data = AddDependencyPanel.show(project, true, typeString);
             if (data != null) {
-                ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
-                       data[0], data[1], data[2], data[4], data[3], data[5], false);
-                project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource(false);
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
+                               data[0], data[1], data[2], data[4], data[3], data[5], false);
+                        project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource(false);
+                    }
+                });
             }
         }
     }

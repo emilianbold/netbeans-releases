@@ -95,7 +95,6 @@ public class CommentsPanel extends JPanel {
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private NbJiraIssue issue;
-    private JiraIssueFinder issueFinder;
     private HyperlinkSupport.Link issueLink;
     private NewCommentHandler newCommentHandler;
 
@@ -106,11 +105,10 @@ public class CommentsPanel extends JPanel {
     
     public CommentsPanel() {
         setBackground(UIManager.getColor("TextArea.background")); // NOI18N
-        issueFinder = Lookup.getDefault().lookup(JiraIssueFinder.class);
         issueLink = new HyperlinkSupport.Link() {
             @Override
             public void onClick(String linkText) {
-                final String issueKey = issueFinder.getIssueId(linkText);
+                final String issueKey = JiraIssueFinder.getInstance().getIssueId(linkText);
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
@@ -122,7 +120,6 @@ public class CommentsPanel extends JPanel {
                 });
             }
         };
-        assert issueFinder != null;
     }
 
     public void setIssue(NbJiraIssue issue) {
@@ -283,7 +280,7 @@ public class CommentsPanel extends JPanel {
         HyperlinkSupport.getInstance().registerForTypes(textPane);
         HyperlinkSupport.getInstance().registerForStacktraces(textPane);
         HyperlinkSupport.getInstance().registerForURLs(textPane);
-        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, issueFinder);
+        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, JiraIssueFinder.getInstance());
         
         textPane.setBackground(BLUE_BACKGROUND);
         textPane.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));

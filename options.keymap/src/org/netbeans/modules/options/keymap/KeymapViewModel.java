@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -311,6 +312,19 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
     public ShortcutAction findActionForShortcut (String shortcut) {
         return findActionForShortcut (shortcut, "", false, null, "");
     }
+    
+    /**
+     * Filters the actions and retains only those which come from the same KeymapManager
+     * as the 'anchor' action. Actions from the same keymap manager are typically not allowed
+     * to have the same key binding
+     * 
+     * @param actions actions to filter
+     * @param anchor action that identifies the KeymapManager
+     * @return filtered action list, as a new collection
+     */
+    Collection<ShortcutAction> filterSameScope(Set<ShortcutAction> actions, ShortcutAction anchor) {
+        return model.filterSameScope(actions, anchor);
+    }
 
     /**
      * Finds action with conflicting shortcut (or a prefix, for a multi-keybinding)
@@ -482,11 +496,6 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
     void addShortcut (ShortcutAction action, String shortcut) {
         // delete old shortcut
         ShortcutAction act = findActionForShortcut (shortcut);
-        if (act != null && act != action) {
-            removeShortcut (act, shortcut);
-            this.fireTableDataChanged();
-            update();
-        }
         Set<String> s = new LinkedHashSet<String> ();
         s.addAll (Arrays.asList (getShortcuts (action)));
         s.add (shortcut);

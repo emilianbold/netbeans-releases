@@ -148,7 +148,9 @@ public class PackageNode extends ContainerNode {
         
         this.pkg = pkg;
         if (pkg != null) {
-            this.signature = new SourceCodeSelection(pkg.getBinaryName() + ".**", null, null); // NOI18N
+            String classPattern = pkg.getBinaryName();
+            classPattern = classPattern + (classPattern.isEmpty() ? "" : ".**"); // NOI18N
+            this.signature = new SourceCodeSelection(classPattern, null, null); // NOI18N
         }
     }
 

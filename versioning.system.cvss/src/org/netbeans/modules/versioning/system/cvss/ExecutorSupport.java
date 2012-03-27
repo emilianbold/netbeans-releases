@@ -74,6 +74,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
+import java.util.logging.Level;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -658,7 +659,13 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         Map fileBuckets = new HashMap();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
-            String root = Utils.getCVSRootFor(file);
+            String root;
+            try {
+                root = Utils.getCVSRootFor(file);
+            } catch (IOException ex) {
+                CvsVersioningSystem.LOG.log(Level.INFO, "No CVS root found for " + file, ex); //NOI18N
+                continue;
+            }
             Set bucket = (Set) fileBuckets.get(root);
             if (bucket == null) {
                 bucket = new HashSet();

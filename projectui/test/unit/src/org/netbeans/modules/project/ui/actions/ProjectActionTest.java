@@ -47,11 +47,11 @@ package org.netbeans.modules.project.ui.actions;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import javax.swing.KeyStroke;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.filesystems.FileObject;
@@ -77,6 +77,7 @@ public class ProjectActionTest extends NbTestCase {
     private DataObject d2_1;
     private DataObject d2_2;
     private TestSupport.TestProject project1;
+    private TestActionProvider tap1;
     private TestSupport.TestProject project2;
 
     @Override protected boolean runInEQ() {
@@ -98,7 +99,8 @@ public class ProjectActionTest extends NbTestCase {
         d1_2 = DataObject.find(f1_2);
                
         project1 = (TestSupport.TestProject)ProjectManager.getDefault().findProject( p1 );
-        project1.setLookup( Lookups.fixed( new Object[] { new TestActionProvider() } ) );  
+        tap1 = new TestActionProvider();
+        project1.setLookup(Lookups.singleton(tap1));
         
         p2 = TestSupport.createTestProject( workDir, "project2" );
         f2_1 = p2.createData("f2_1.java");
@@ -125,6 +127,24 @@ public class ProjectActionTest extends NbTestCase {
         assertEnablement(action, false);
         lookup.change(d1_1, d2_1);
         assertEnablement(action, false);
+        TestActionProvider tap2 = new TestActionProvider();
+        project2.setLookup(Lookups.singleton(tap2));
+        lookup.change(d2_1);
+        assertEnablement(action, true);
+        lookup.change(d1_1, d2_1);
+        assertEnablement(action, true);
+        action.actionPerformed(null);
+        assertEquals("[COMMAND]", tap1.invocations.toString());
+        assertEquals("[COMMAND]", tap2.invocations.toString());
+        tap1.listenerSuccess = true;
+        tap2.listenerSuccess = true;
+        action.actionPerformed(null);
+        assertEquals("[COMMAND, COMMAND]", tap1.invocations.toString());
+        assertEquals("[COMMAND, COMMAND]", tap2.invocations.toString());
+        tap1.listenerSuccess = false;
+        action.actionPerformed(null);
+        assertEquals("[COMMAND, COMMAND, COMMAND]", tap1.invocations.toString());
+        assertEquals("[COMMAND, COMMAND]", tap2.invocations.toString());
     }
     
     public void testProviderEnablement() throws Exception {
@@ -177,6 +197,7 @@ public class ProjectActionTest extends NbTestCase {
         private String[] ACTIONS = new String[] { COMMAND };
         
         private List<String> invocations = new ArrayList<String>();
+        Boolean listenerSuccess;
         
         public String[] getSupportedActions() {
             return ACTIONS;
@@ -186,6 +207,9 @@ public class ProjectActionTest extends NbTestCase {
             
             if ( COMMAND.equals( command ) ) {
                 invocations.add( command );
+                if (listenerSuccess != null) {
+                    ActionProgress.start(context).finished(listenerSuccess);
+                }
             }            
             else {
                 throw new IllegalArgumentException();

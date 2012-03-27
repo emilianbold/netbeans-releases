@@ -65,9 +65,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-// #207763 - add InternalWebServers that holds all running web servers and:
-//   - before running, verify that no other server with same hostname and port is running; or
-//   - before running, stop all other servers
 /**
  * Manager of internal web server (available in PHP 5.4+)
  * for the given {@link PhpProject}.
@@ -75,6 +72,9 @@ import org.openide.util.NbBundle;
 public final class InternalWebServer implements PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(InternalWebServer.class.getName());
+
+    // @GuardedBy("InternalWebServer.class")
+    private static InternalWebServer runningInstance;
 
     private static final String WEB_SERVER_PARAM = "-S"; // NOI18N
     private static final String DOCUMENT_ROOT_PARAM = "-t"; // NOI18N
@@ -104,6 +104,21 @@ public final class InternalWebServer implements PropertyChangeListener {
         return server;
     }
 
+    // #207763
+    static synchronized void startingInstance(InternalWebServer serverToBeStarted) {
+        if (runningInstance != null
+                && runningInstance != serverToBeStarted) {
+            runningInstance.stop();
+        }
+        runningInstance = serverToBeStarted;
+    }
+
+    static synchronized void stoppingInstance(InternalWebServer serverToBeStopped) {
+        if (serverToBeStopped == runningInstance) {
+            runningInstance = null;
+        }
+    }
+
     public synchronized boolean isRunning() {
         return process != null && !process.isDone();
     }
@@ -128,6 +143,7 @@ public final class InternalWebServer implements PropertyChangeListener {
                     Bundle.InternalWebServer_error_cancelProcess(project.getName()),
                     NotifyDescriptor.WARNING_MESSAGE));
         }
+        stoppingInstance(this);
         reset();
     }
 
@@ -180,7 +196,14 @@ public final class InternalWebServer implements PropertyChangeListener {
                 .controllable(true)
                 .frontWindow(true)
                 .frontWindowOnError(true)
-                .optionsPath(UiUtils.OPTIONS_PATH + "/" + UiUtils.GENERAL_OPTIONS_SUBCATEGORY); // NOI18N
+                .optionsPath(UiUtils.OPTIONS_PATH + "/" + UiUtils.GENERAL_OPTIONS_SUBCATEGORY) // NOI18N
+                .preExecution(new Runnable() {
+                    @Override
+                    public void run() {
+                        // needs to be called even from the output window (rerun button)
+                        startingInstance(InternalWebServer.this);
+                    }
+                });
         return PhpInterpreter.executeLater(externalProcessBuilder, executionDescriptor, Bundle.InternalWebServer_output_title(project.getName()));
     }
 

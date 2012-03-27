@@ -147,7 +147,7 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
             groups = sources.getSourceGroups( Sources.TYPE_GENERIC ); 
             groups = checkNotNull (groups, sources);
             return new WizardDescriptor.Panel[] {            
-                Templates.createSimpleTargetChooser( project, groups ),
+                Templates.buildSimpleTargetChooser(project, groups).create(),
             };
         }
         else {

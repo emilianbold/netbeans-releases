@@ -44,8 +44,8 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
-import org.netbeans.modules.versioning.util.FileUtils;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -59,6 +59,7 @@ public class RelocateTestHidden extends AbstractCommandTestCase {
     }
     
     public void testRelocateFile() throws Exception {
+        // relocate must be called on the checkout root, there are no metadata in folders in 1.7
         File file = createFile("file");
         add(file);
         commit(file);
@@ -67,73 +68,20 @@ public class RelocateTestHidden extends AbstractCommandTestCase {
         assertInfo(file, getFileUrl(file));
 
         ISVNClientAdapter c = getNbClient();
-        c.relocate(getRepoUrl().toString(), repo2Url.toString(), file.getAbsolutePath(), false);
-
+        try {
+            c.relocate(getRepoUrl().toString(), repo2Url.toString(), file.getParentFile().getAbsolutePath(), false);
+        } catch (SVNClientException ex) {
+            if (isCommandLine() && ex.getMessage().contains("--relocate and --non-recursive (-N) are mutually exclusive")) {
+                // commandline client 1.7 does not allow non-recursive relocate, obviously it's nonsense because metadata are only in the top folder
+                c.relocate(getRepoUrl().toString(), repo2Url.toString(), file.getParentFile().getAbsolutePath(), true);
+            } else {
+                throw ex;
+            }
+        }
         assertInfo(file, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(file.getName()));
 
-        //assertNotifiedFiles(file); // XXX no notif fromthe cli
-    }
-
-    public void testRelocateFolderRecursively() throws Exception {
-        File folder = createFolder("folder");
-        File folder1 = createFolder(folder, "folder1");
-        File file = createFile(folder, "folder");
-        File file1 = createFile(folder1, "file1");
-
-        add(folder);
-        add(file);
-        add(folder1);
-        add(file1);
-        commit(folder);
-        SVNUrl repo2Url = copyRepo();
-
-        assertInfo(folder, getFileUrl(folder));
-        assertInfo(file, getFileUrl(folder).appendPath(file.getName()));
-        assertInfo(folder1, getFileUrl(folder).appendPath(folder1.getName()));
-        assertInfo(file1, getFileUrl(folder).appendPath(folder1.getName()).appendPath(file1.getName()));
-
-        ISVNClientAdapter c = getNbClient();
-        c.relocate(getRepoUrl().toString(), repo2Url.toString(), folder.getAbsolutePath(), true);
-
-        assertInfo(folder, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()));
-        assertInfo(file, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(file.getName()));
-        assertInfo(folder1, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(folder1.getName()));
-        assertInfo(file1, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(folder1.getName()).appendPath(file1.getName()));
-    }
-    
-    public void testRelocateFolderNonRecursively() throws Exception {
-        File folder = createFolder("folder");
-        File folder1 = createFolder(folder, "folder1");
-        File file = createFile(folder, "folder");
-        File file1 = createFile(folder1, "file1");
-        
-        add(folder);
-        add(file);
-        add(folder1);
-        add(file1);
-        commit(folder);
-        SVNUrl repo2Url = copyRepo();
-
-        SVNUrl folderUrl = getFileUrl(folder);
-        SVNUrl fileUrl = getFileUrl(folder).appendPath(file.getName());
-        SVNUrl folder1Url = getFileUrl(folder).appendPath(folder1.getName());
-        SVNUrl file1Url = getFileUrl(folder).appendPath(folder1.getName()).appendPath(file1.getName());
-        
-        assertInfo(folder, folderUrl);
-        assertInfo(file, fileUrl);
-        assertInfo(folder1, folder1Url);        
-        assertInfo(file1,file1Url);
-        
-        ISVNClientAdapter c = getNbClient();
-        c.relocate(getRepoUrl().toString(), repo2Url.toString(), folder.getAbsolutePath(), false);
-
-        SVNUrl folderNewUrl = repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName());
-        SVNUrl fileNewUrl = repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(file.getName());
-        
-        assertInfo(folder, folderNewUrl);        
-        assertInfo(file, fileNewUrl);        
-        assertInfo(folder1, folder1Url);        
-        assertInfo(file1, file1Url);        
+        c.relocate(repo2Url.toString(), getRepoUrl().toString(), file.getParentFile().getAbsolutePath(), true);
+        assertInfo(file, getRepoUrl().appendPath(getName()).appendPath(getWC().getName()).appendPath(file.getName()));
     }
 
 }

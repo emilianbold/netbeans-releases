@@ -207,7 +207,7 @@ public class ModifiersCheckHint extends AbstractRule {
             invalidModifier = "final"; //NOI18N
             fixes = Collections.<HintFix>singletonList(new RemoveModifierFix(doc, invalidModifier, methodScope.getOffset()));
             hints.add(new SimpleHint(Bundle.InvalidIfaceMethod(methodScope.getName(), invalidModifier), methodScope.getNameRange(), fixes));
-        } else if (methodScope.getBlockRange() != null) {
+        } else if (methodScope.getBlockRange() != null && methodScope.getBlockRange().getLength() != 1) {
             fixes = Collections.<HintFix>singletonList(new RemoveBodyFix(doc, methodScope));
             hints.add(new SimpleHint(Bundle.IfaceMethodWithBlock(methodScope.getName()), methodScope.getNameRange(), fixes));
         }

@@ -74,7 +74,7 @@ public class MylynUtils {
     }
 
     public static void setCredentials (TaskRepository repository, String user, char[] password, String httpUser, char[] httpPassword) {
-        logCredentials(repository, user, new String(password), "Setting credentials: ");    // NOI18N
+        logCredentials(repository, user, password, "Setting credentials: ");    // NOI18N
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user != null ? user : "", password != null ? new String(password) : ""); // NOI18N
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
 
@@ -85,7 +85,7 @@ public class MylynUtils {
             if(httpPassword == null) {
                 httpPassword = new char[0];  
             }
-            logCredentials(repository, httpUser, new String(httpPassword), "Setting http credentials: ");   // NOI18N
+            logCredentials(repository, httpUser, httpPassword, "Setting http credentials: ");   // NOI18N
             authenticationCredentials = new AuthenticationCredentials(httpUser, new String(httpPassword));
             repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
         }
@@ -125,16 +125,20 @@ public class MylynUtils {
         }
     }
     
+    public static void logCredentials(TaskRepository repository, String user, char[] psswd, String msg) {
+        logCredentials(repository, user, psswd != null ? new String(psswd) : null, msg);
+    }
+    
     public static void logCredentials(TaskRepository repository, String user, String psswd, String msg) {
         LOG.log(
-            Level.FINEST,
-            msg + "[{0}, user={1}, password={2}]",                               // NOI18N
-            new Object[]{
-                repository.getUrl(),
-                user,
-                getPasswordLog(psswd)
-            }
-        );
+                Level.FINEST,
+                msg + "[{0}, user={1}, password={2}]",                               // NOI18N
+                new Object[]{
+                    repository.getUrl(),
+                    user,
+                    getPasswordLog(psswd)
+                }
+                );
     }
 
     private static boolean isNonProxyHost (String nonProxyHosts, String host) {

@@ -469,14 +469,15 @@ public class CommitAction extends ContextAction {
                     // try to locate a deleted source
                     FileInformation fi = cache.getCachedStatus(f);
                     ISVNStatus st;
+                    SVNUrl copiedUrl;
                     if (fi != null && (fi.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0 && (st = fi.getEntry(f)) != null 
-                            && st.getUrlCopiedFrom() != null && !deletedCandidates.containsKey(st.getUrlCopiedFrom())) {
+                            && st.isCopied() && (copiedUrl = SvnUtils.getCopiedUrl(f)) != null && !deletedCandidates.containsKey(copiedUrl)) {
                         // file is copied, it means it has a source file copied from
-                        File copiedFrom = getCopiedFromFile(st, f); 
+                        File copiedFrom = getCopiedFromFile(st, f, copiedUrl); 
                         fi = cache.getCachedStatus(copiedFrom);
                         // if the source is deleted add it into the candidate list
                         if (fi != null && (fi.getStatus() & (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) != 0) {
-                            deletedCandidates.put(st.getUrlCopiedFrom(), copiedFrom);
+                            deletedCandidates.put(copiedUrl, copiedFrom);
                         }
                     }
                 }
@@ -490,10 +491,10 @@ public class CommitAction extends ContextAction {
                 return added;
             }
 
-            private File getCopiedFromFile (ISVNStatus st, File f) {
+            private File getCopiedFromFile (ISVNStatus st, File f, SVNUrl copiedUrl) {
                 String relativized = "."; //NOI18N
                 String[] urlSegments = SvnUtils.decode(st.getUrl()).getPathSegments();
-                String[] copiedUrlSegments = SvnUtils.decode(st.getUrlCopiedFrom()).getPathSegments();
+                String[] copiedUrlSegments = SvnUtils.decode(copiedUrl).getPathSegments();
                 int i = 0;
                 for (; i < Math.min(urlSegments.length, copiedUrlSegments.length); ++i) {
                     if (!urlSegments[i].equals(copiedUrlSegments[i])) {
@@ -1002,7 +1003,7 @@ public class CommitAction extends ContextAction {
         }
         if(dirsToAdd.size() > 0) {
             for (File file : dirsToAdd) {
-                client.addFile(file);
+                client.addDirectory(file, false);
             }
         }
         if(support.isCanceled()) {

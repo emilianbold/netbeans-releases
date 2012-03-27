@@ -77,6 +77,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -939,6 +940,30 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         return false;
     }
 
+    private boolean isBracket(final char ch) {
+        return isOpeningBracket(ch) || isClosingBracket(ch);
+    }
+
+    private boolean isOpeningBracket(final char ch) {
+        return ch == '(' || ch == '{' || ch == '[';
+    }
+
+    private boolean isClosingBracket(final char ch) {
+        return ch == ')' || ch == '}' || ch == ']';
+    }
+
+    private boolean isQuote(final char ch) {
+        return ch == '"' || ch == '\'';
+    }
+
+    private boolean isQuote(final Token<?extends PHPTokenId> token) {
+        return isQuote(token.text().charAt(0));
+    }
+
+    private boolean doNotAutoComplete(final BaseDocument baseDocument, final char ch) {
+        return (!isInsertMatchingEnabled(baseDocument) && isBracket(ch)) || (isQuote(ch) && !OptionsUtils.autoCompletionSmartQuotes());
+    }
+
     @Override
     public boolean beforeCharInserted(Document document, int caretOffset, JTextComponent target, char ch)
         throws BadLocationException {
@@ -946,7 +971,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
 
-        if (!isInsertMatchingEnabled(doc)) {
+        if (doNotAutoComplete(doc, ch)) {
             return false;
         }
 
@@ -1136,6 +1161,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 caret.setDot(caretOffset + 1);
                 return true;
             } else {
+                caret.setDot(caretOffset);
                 return false;
             }
         }
@@ -1817,8 +1843,8 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(doc, dotPos, sectionEnd);
                 if (firstNonWhiteFwd != -1) {
                     char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
-                    insert = chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N
-                             chr == ';' || chr == ']' || chr == '.'; //NOI18N
+                    insert = (chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N
+                             chr == ';' || chr == ']' || chr == '.') && !isStringToken(previousToken) && !isQuote(token); //NOI18N
                 }
             }
 

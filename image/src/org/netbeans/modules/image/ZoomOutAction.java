@@ -46,6 +46,8 @@
 package org.netbeans.modules.image;
 
 
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
@@ -57,6 +59,8 @@ import org.openide.util.NbBundle;
  *
  * @author  Lukas Tadial
  */
+@ActionID(id = "org.netbeans.modules.image.ZoomOutAction", category = "View")
+@ActionRegistration(lazy = false, displayName = "#LBL_ZoomOut")
 public class ZoomOutAction extends CallableSystemAction {
 
     /** Generated serial version UID. */

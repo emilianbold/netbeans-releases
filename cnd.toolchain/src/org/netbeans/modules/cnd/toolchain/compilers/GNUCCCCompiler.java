@@ -148,7 +148,8 @@ import org.openide.util.NbBundle;
                            line = line.substring(0, line.lastIndexOf('(')).trim();
                        }
                        addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(line));
-                       if (getDescriptor().getRemoveIncludePathPrefix()!=null && line.startsWith("/usr/lib")) { // NOI18N
+                       
+                       if (getDescriptor() != null && getDescriptor().getRemoveIncludePathPrefix()!=null && line.startsWith("/usr/lib")) { // NOI18N
                            // TODO: if we are fixing cygwin's include location (C:\Cygwin\lib) it seems
                            // we shouldn't add original dir (fix later to avoid regression before release)
                            addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(line.substring(4)));

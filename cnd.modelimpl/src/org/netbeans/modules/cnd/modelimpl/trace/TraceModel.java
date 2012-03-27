@@ -892,7 +892,7 @@ public class TraceModel extends TraceModelBase {
         APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
         TokenStream ts = walker.getTokenStream();
         if (expand) {
-            ts = new APTMacroExpandedStream(ts, macroMap);
+            ts = new APTMacroExpandedStream(ts, macroMap, false);
         }
         if (filter) {
             ts = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP).getFilteredStream(new APTCommentsFilter(ts));

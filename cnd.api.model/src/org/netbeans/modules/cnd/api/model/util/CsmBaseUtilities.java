@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -197,7 +198,14 @@ public class CsmBaseUtilities {
             }
         } else if (CsmKindUtilities.isClass(target)) {
             CsmClass cls = (CsmClass)target;
-            CsmClassifier c = cls.getContainingFile().getProject().findClassifier(cls.getQualifiedName());
+            CsmClassifier c = null;
+            CsmFile file = cls.getContainingFile();
+            if(file != null) {
+                CsmProject project = file.getProject();
+                if(project != null) {
+                    c = project.findClassifier(cls.getQualifiedName());
+                }
+            }
             if (cls.equals(c)) {
                 decl = target;
                 def = null;

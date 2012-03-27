@@ -708,7 +708,8 @@ template_explicit_specialization
     (LITERAL___extension__!)? LITERAL_template LESSTHAN GREATERTHAN
     (
         // Template explicit specialisation function definition (VK 30/05/06)
-        (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
+        ((LITERAL_template LESSTHAN GREATERTHAN)? declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | literal_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
+        (LITERAL_template LESSTHAN GREATERTHAN)?
         {if(statementTrace >= 1) printf("external_declaration_0a[%d]: template " + "explicit-specialisation function definition\n", LT(1).getLine());}
         function_definition
         { #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
@@ -883,7 +884,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 			{ #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #external_declaration_template); }
     |
         // Templated function definition
-        ((template_head)? declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
+        ((template_head)? declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | literal_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
         {if (statementTrace>=1) printf("external_declaration_template_11d[%d]: Function template " + "definition\n", LT(1).getLine());}
         (template_head)? function_definition
         { #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #external_declaration_template); }
@@ -929,13 +930,15 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                         // If this alternative is before function declaration
                         // then code like "template<T> int foo(T);" incorrectly
                         // becomes a CSM_TEMPL_FWD_CL_OR_STAT_MEM.
-			(declaration_specifiers[true, false]
+                        
+			((template_head)? declaration_specifiers[true, false]
 				(init_declarator_list[declOther])? SEMICOLON /*{end_of_stmt();}*/)=>
 			//{beginTemplateDeclaration();}
 			{ if (statementTrace>=1) 
 				printf("external_declaration_template_10[%d]: Class template declaration\n",
 					LT(1).getLine());
 			}
+                        (template_head)?
 			declaration_specifiers[true, false]
 				(init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
 			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
@@ -1006,7 +1009,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             |   cv_qualifier
             |   LITERAL_typedef
             )*
-            LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
+            LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
         ) =>
         {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)?
@@ -1137,7 +1140,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             (options {greedy=true;} :function_attribute_specification!)?
             declaration_specifiers[false, false]
             (options {greedy=true;} :function_attribute_specification!)? 
-            function_declarator[true, false, false] (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete))
+            function_declarator[true, false, false] (LCURLY | literal_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete))
         ) =>
         {if (statementTrace>=1) printf("external_declaration_8[%d]: Function definition\n", LT(1).getLine());}
         (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? function_definition
@@ -1335,7 +1338,7 @@ member_declaration_template
     |
         // Templated function definition
         // Function definition DW 2/6/97
-        (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
+        (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | literal_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
         {if (statementTrace>=1) printf("member_declaration_13c[%d]: Function template " + "definition\n", LT(1).getLine());}
         function_definition
         { #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #member_declaration_template); }
@@ -1441,7 +1444,7 @@ member_declaration
             ctor_declarator[true]
             (COLON        // DEFINITION :ctor_initializer
             |LCURLY       // DEFINITION (compound Statement) ?
-            |LITERAL_try  // DEFINITION try ... catch ...
+            |literal_try  // DEFINITION try ... catch ...
             | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
             )
         )=>
@@ -1499,7 +1502,7 @@ member_declaration
         (   (LITERAL___extension__)?
             declaration_specifiers[false, false]
             function_declarator[true, false, false]
-            (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete))
+            (LCURLY | literal_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete))
         ) =>
         {beginFieldDeclaration(); if(statementTrace>=1) printf("member_declaration_7[%d]: Function definition\n", LT(1).getLine());}
         function_definition
@@ -1784,6 +1787,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
         |   LITERAL_friend {fd=true;}
         |   LITERAL_constexpr
         |   literal_stdcall
+        |   literal_clrcall
         |   (options {greedy=true;} : type_attribute_specification!)
         )*
     ) 
@@ -1801,7 +1805,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
         (options {greedy=true;} :type_attribute_specification)?
 //  |   LITERAL_typename	{td=true;}	direct_declarator 
     |   literal_typeof LPAREN typeof_param RPAREN
-    )                
+    )
+    ({allowTypedef}? LITERAL_typedef {td=true;})?
 )
 {declarationSpecifier(td, fd, sc, tq, ts, ds);}
 ;
@@ -1890,7 +1895,7 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
         | LITERAL__Imaginary    {ts |= tsIMAGINARY;}
         | LITERAL_bit           {ts |= tsBOOL;}
         | LITERAL__BUILT_IN_TYPE__ {ts |= tsOTHER;}
-        | LITERAL_decltype LPAREN expression RPAREN {ts |= tsOTHER;}
+        | literal_decltype LPAREN expression RPAREN {ts |= tsOTHER;}
 
     ;
 
@@ -2046,6 +2051,7 @@ qualified_id returns [String q = ""]
 	    StringBuilder qitem = new StringBuilder();
 	}
 	:
+        (literal_cdecl)?
 	so =  scope_override { qitem.append(so); }
 	(  
 		id:IDENT	(options{warnWhenFollowAmbig = false;}:
@@ -2066,6 +2072,40 @@ qualified_id returns [String q = ""]
 	)
 	{q = qitem.toString(); #qualified_id = #(#[CSM_QUALIFIED_ID, q], #qualified_id);}
 	;
+
+unqualified_id returns [String q = ""]
+	{
+	    String so;
+	    StringBuilder qitem = new StringBuilder();
+	}
+	:
+	so =  scope_override { qitem.append(so); }
+	(  
+		id:IDENT	(options{warnWhenFollowAmbig = false;}:
+				 LESSTHAN template_argument_list GREATERTHAN)?
+		{qitem.append(id.getText());}
+		|  
+		LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
+				 LESSTHAN template_argument_list GREATERTHAN)?
+		{qitem.append("operator"); qitem.append("NYI");} // TODO: understand
+		|
+		LITERAL_OPERATOR STRING_LITERAL IDENT (options{warnWhenFollowAmbig = false;}:
+				 LESSTHAN template_argument_list GREATERTHAN)?
+		{qitem.append("operator"); qitem.append("NYI");} // TODO: understand
+		|
+		LITERAL_this  // DW 21/07/03 fix to pass test8.i
+		|
+		(LITERAL_true|LITERAL_false)	// DW 21/07/03 fix to pass test8.i
+                |
+                LITERAL_OPERATOR declaration_specifiers[false, false]
+                (ptr_operator)?
+                (options{warnWhenFollowAmbig = false;}:
+                    LESSTHAN template_parameter_list GREATERTHAN)?
+                {qitem.append("operator"); qitem.append("NYI");} // TODO: understand
+	)
+	{q = qitem.toString(); #unqualified_id = #(#[CSM_QUALIFIED_ID, q], #unqualified_id);}
+	;
+
 
 class_qualified_id returns [String q = ""]
 {
@@ -2258,7 +2298,7 @@ conversion_function_decl_or_def returns [boolean definition = false]
                 (ptr_operator)*
                 (LESSTHAN template_parameter_list GREATERTHAN)?
 		LPAREN (parameter_list[false])? RPAREN	
-		(tq = cv_qualifier)?
+		(tq = cv_qualifier)*
 		(exception_specification)?
 		(	compound_statement { definition = true; }
 		|	SEMICOLON! //{end_of_stmt();}
@@ -2477,10 +2517,19 @@ trailing_type
     :
         POINTERTO 
         (tq=cv_qualifier)*
-        ts=type_specifier[dsInvalid, false]
+        ts=trailing_type_specifier
         (options {greedy=true;} : ptr_operator)*
         (LSQUARE (constant_expression)? RSQUARE)*
     ;
+
+trailing_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
+{String id;}
+:   
+        ts = simple_type_specifier[false]
+    |   
+        (LITERAL_class|LITERAL_struct|LITERAL_union|LITERAL_enum|LITERAL_typename)
+        id = qualified_id
+;
 
 protected
 function_direct_declarator_2 [boolean definition, boolean symTabCheck] 
@@ -2749,15 +2798,15 @@ parameter_list [boolean symTabCheck]
 
 parameter_declaration_list [boolean symTabCheck]
 	:	
-	({!symTabCheck || action.isType(LT(1).getText())}?	parameter_declaration 
+	({!symTabCheck || action.isType(LT(1).getText())}?	parameter_declaration[false]
 		(// Have not been able to find way of stopping warning of
 		 // non-determinism between alt 1 and exit branch of block
-		 COMMA! parameter_declaration
+		 COMMA! parameter_declaration[false]
 		)*
 	)
 	;
 
-parameter_declaration
+parameter_declaration[boolean inTemplateParams]
 	:	{beginParameterDeclaration();}
 		(
 			{!((LA(1)==SCOPE) && (LA(2)==STAR||LA(2)==LITERAL_OPERATOR)) &&
@@ -2774,8 +2823,12 @@ parameter_declaration
 		|
 			ELLIPSIS
 		)
-		(ASSIGNEQUAL 
-		 assignment_expression
+		(ASSIGNEQUAL
+                    (   
+                        {inTemplateParams}? template_param_expression
+                    |
+                        assignment_expression
+                    )
 		)?
 		{ #parameter_declaration = #(#[CSM_PARAMETER_DECLARATION, "CSM_PARAMETER_DECLARATION"], #parameter_declaration); }
 	;
@@ -2848,7 +2901,7 @@ exception_type_id
 	{ /*TypeSpecifier*/int ts; String so; }
 	:
 	//( (so = scope_override IDENT) | built_in_type ) (STAR | AMPERSAND)*
-        parameter_declaration
+        parameter_declaration[false]
 	;
 
 protected
@@ -2994,7 +3047,7 @@ template_parameter
 	|
 		template_template_parameter
 	|	
-		parameter_declaration	// DW 30/06/03 This doesn't seem to match the
+		parameter_declaration[true]	// DW 30/06/03 This doesn't seem to match the
 					// current standard
 	)
 	;
@@ -3273,11 +3326,15 @@ compound_statement
 function_try_block[boolean constructor]
     :
         {isLazyCompound()}?
-        LITERAL_try
+        literal_try
         ({(constructor)}?((COLON) => ctor_initializer)?)?
         balanceCurlies
-        (options {greedy=true;} : LITERAL_catch
-        LPAREN exception_declaration RPAREN
+        (options {greedy=true;} : 
+        (  
+            LITERAL_catch LPAREN exception_declaration RPAREN
+        |
+            literal_finally
+        )
         balanceCurlies)*
         {#function_try_block = #(#[CSM_TRY_CATCH_STATEMENT_LAZY, "CSM_TRY_CATCH_STATEMENT_LAZY"], #function_try_block);}
     |
@@ -3437,7 +3494,7 @@ jump_statement
 
 try_block[boolean constructor]
     :
-    LITERAL_try
+    literal_try
     ({(constructor)}?((COLON) => ctor_initializer)?)?
     compound_statement (options {greedy=true;} : handler)*
     {#try_block = #(#[CSM_TRY_STATEMENT, "CSM_TRY_STATEMENT"], #try_block);}
@@ -3445,11 +3502,12 @@ try_block[boolean constructor]
 
 
 handler
-	:	LITERAL_catch
-		//{exceptionBeginHandler();}
-		//{declaratorParameterList(true);}
-		LPAREN exception_declaration RPAREN
-		//{declaratorEndParameterList(true);}
+	:	
+                (  
+                    LITERAL_catch LPAREN exception_declaration RPAREN
+                |
+                    literal_finally
+                )
 		compound_statement
 		{/*exceptionEndHandler();*/{#handler = #(#[CSM_CATCH_CLAUSE, "CSM_CATCH_CLAUSE"], #handler);}}
 	;
@@ -3474,7 +3532,8 @@ using_declaration
 	:	u:LITERAL_using
 		(LITERAL_namespace qid = qualified_id	// Using-directive
 		    {#using_declaration = #[CSM_USING_DIRECTIVE, qid]; #using_declaration.addChild(#u);}
-		|qid = qualified_id				// Using-declaration
+		|
+                    qid = unqualified_id				// Using-declaration
 		    {#using_declaration = #[CSM_USING_DECLARATION, qid]; #using_declaration.addChild(#u);}
 		)
 		SEMICOLON! //{end_of_stmt();}
@@ -3621,7 +3680,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LESSTHAN
             |   LESSTHANOREQUALTO
             |   GREATERTHANOREQUALTO
-            |   QUESTIONMARK (expression)? COLON assignment_expression
+            |   QUESTIONMARK (expression | LITERAL_throw (assignment_expression)? )? COLON (assignment_expression | LITERAL_throw (options {greedy=true;}: assignment_expression)?)
             |   SHIFTLEFT 
             |   SHIFTRIGHT
             |   PLUS 
@@ -3671,6 +3730,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   literal_far 
             |   literal_pascal 
             |   literal_stdcall
+            |   literal_clrcall
 
             |   ts=builtin_type[0] (options {greedy=true;}: balanceSquaresInExpression)* (balanceCurlies)?
 
@@ -3722,8 +3782,40 @@ protected
 isGreaterthanInTheRestOfExpression
     :
         (lazy_expression[true, true])?
+        (options {greedy=true;}:	
+            ( ASSIGNEQUAL              
+            | TIMESEQUAL
+            | DIVIDEEQUAL
+            | MINUSEQUAL
+            | PLUSEQUAL
+            | MODEQUAL
+            | SHIFTLEFTEQUAL
+            | SHIFTRIGHTEQUAL
+            | BITWISEANDEQUAL
+            | BITWISEXOREQUAL
+            | BITWISEOREQUAL
+            )
+            (lazy_expression[true, true]
+            | array_initializer)
+        )*
         (   COMMA 
             lazy_expression[true, true]
+            (options {greedy=true;}:	
+                ( ASSIGNEQUAL              
+                | TIMESEQUAL
+                | DIVIDEEQUAL
+                | MINUSEQUAL
+                | PLUSEQUAL
+                | MODEQUAL
+                | SHIFTLEFTEQUAL
+                | SHIFTRIGHTEQUAL
+                | BITWISEANDEQUAL
+                | BITWISEXOREQUAL
+                | BITWISEOREQUAL
+                )
+                (lazy_expression[true, true]
+                | array_initializer)
+            )*
         )*
         GREATERTHAN
     ;
@@ -3834,7 +3926,7 @@ lazy_expression_predicate
     |   LESSTHAN
     |   LESSTHANOREQUALTO
     |   GREATERTHANOREQUALTO
-    |   QUESTIONMARK expression COLON assignment_expression
+    |   QUESTIONMARK (expression | LITERAL_throw (assignment_expression)?) COLON (assignment_expression | LITERAL_throw (options {greedy=true;}:assignment_expression)?)
     |   SHIFTLEFT 
     |   SHIFTRIGHT
     |   PLUS 
@@ -3873,6 +3965,7 @@ lazy_expression_predicate
     |   literal_far 
     |   literal_pascal 
     |   literal_stdcall
+    |   literal_clrcall
 
     |   ts = builtin_type[0]
 
@@ -3928,7 +4021,8 @@ unnamed_ptr_operator
 		|	literal_far 
 		|	LITERAL___interrupt 
 		|	literal_pascal 
-		|	literal_stdcall 
+		|	literal_stdcall
+                |       literal_clrcall
 		|	STAR 
 		)	
    ;
@@ -3941,7 +4035,8 @@ ptr_operator
 		|	literal_far 
 		|	LITERAL___interrupt 
 		|	literal_pascal 
-		|	literal_stdcall 
+		|	literal_stdcall
+                |       literal_clrcall
 		|	ptr_to_member	// e.g. STAR 
 		)	
 		{#ptr_operator=#(#[CSM_PTR_OPERATOR,"CSM_PTR_OPERATOR"], #ptr_operator);}
@@ -4099,7 +4194,7 @@ protected
 literal_far : LITERAL__far|LITERAL___far;
 
 protected
-literal_inline : LITERAL_inline|LITERAL__inline|LITERAL___inline|LITERAL___inline__;
+literal_inline : LITERAL_inline | LITERAL__inline | LITERAL___inline | LITERAL___inline__ | LITERAL___forceinline;
 
 protected
 literal_int64 : LITERAL__int64|LITERAL___int64;
@@ -4120,6 +4215,9 @@ protected
 literal_stdcall : LITERAL__stdcall|LITERAL___stdcall;
 
 protected
+literal_clrcall : LITERAL___clrcall;
+
+protected
 literal_volatile : LITERAL_volatile|LITERAL___volatile|LITERAL___volatile__;
 
 protected
@@ -4129,8 +4227,17 @@ protected
 literal_restrict : LITERAL_restrict | LITERAL___restrict;
 
 protected
-literal_complex : LITERAL__Complex | LITERAL___complex__;
+literal_complex : LITERAL__Complex | LITERAL___complex__ | LITERAL___complex;
 
 protected
 literal_attribute : LITERAL___attribute | LITERAL___attribute__;
+
+protected
+literal_try : LITERAL_try | LITERAL___try;
+
+protected
+literal_finally : LITERAL___finally;
+
+protected
+literal_decltype : LITERAL_decltype | LITERAL___decltype;
 

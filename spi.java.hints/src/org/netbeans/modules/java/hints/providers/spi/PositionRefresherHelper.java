@@ -66,7 +66,9 @@ public abstract class PositionRefresherHelper<V extends DocumentVersion> {
     /**XXX: should be protected*/public abstract List<ErrorDescription> getErrorDescriptionsAt(CompilationInfo info, Context context, Document doc) throws Exception;
 
     protected final void setVersion(Document doc, V version) {
-        doc.putProperty(documentKey, version);
+        if (doc != null) {
+            doc.putProperty(documentKey, version);
+        }
     }
 
     /**XXX*/ public boolean upToDateCheck(Context context, Document doc) {
@@ -87,7 +89,7 @@ public abstract class PositionRefresherHelper<V extends DocumentVersion> {
         private final long version;
 
         public DocumentVersion(Document doc) {
-            this.version = DocumentUtilities.getDocumentVersion(doc);
+            this.version = doc != null ? DocumentUtilities.getDocumentVersion(doc) : 0;
         }
 
     }

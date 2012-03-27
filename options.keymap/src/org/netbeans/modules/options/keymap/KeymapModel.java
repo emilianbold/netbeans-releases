@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -359,6 +360,25 @@ public class KeymapModel {
         return result;
     }
     
+    Collection<ShortcutAction> filterSameScope(Set<ShortcutAction> actions, ShortcutAction anchor) {
+        KeymapManager mgr = findOriginator(anchor);
+        if (mgr == null) {
+            return Collections.EMPTY_SET;
+        }
+        Collection<ShortcutAction> sameActions = null;
+        
+        for (ShortcutAction sa : actions) {
+            KeymapManager m2 = findOriginator(sa);
+            if (mgr == m2) {
+                if (sameActions == null) {
+                    sameActions = new LinkedList<ShortcutAction>();
+                }
+                sameActions.add(sa);
+            }
+        }
+        return sameActions == null ? Collections.EMPTY_LIST : sameActions;
+    }
+
     /**
      * Tries to determince where the action originates.
      */

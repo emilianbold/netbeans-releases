@@ -48,6 +48,7 @@ import java.awt.EventQueue;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -62,7 +63,8 @@ public class ExplorerUtilsTest extends NbTestCase {
     public ExplorerUtilsTest(String testName) {
         super(testName);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #8019 hung in waitActionsFinished
     public void testIsEnabledOnDelete() {
         ExplorerManager em = new ExplorerManager();
         Action a = ExplorerUtils.actionDelete(em, true);

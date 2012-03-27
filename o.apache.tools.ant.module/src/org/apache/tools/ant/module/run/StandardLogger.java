@@ -234,7 +234,11 @@ public final class StandardLogger extends AntLogger {
                 break;
             }
             cmd.add("-f");
-            cmd.add(session.getOriginatingScript().getAbsolutePath());
+            File script = session.getOriginatingScript();
+            if (script.getName().equals("build.xml")) {
+                script = script.getParentFile();
+            }
+            cmd.add(script.getAbsolutePath());
             for (Map.Entry<String,String> prop : session.getProperties().entrySet()) {
                 if (prop.getKey().equals("build.compiler.emacs")) {
                     continue; // uninteresting

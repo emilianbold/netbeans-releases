@@ -407,26 +407,36 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         for (Description description : original) {
 
             if (description.isConstructor()) {
-                if(description.getSelected() == Boolean.TRUE) warn |= true;
+                if(description.getSelected() == Boolean.TRUE) {
+                    warn |= true;
+                }
                 continue;
             }
             if (!inherited && description.isInherited()) {
-                if(description.getSelected() == Boolean.TRUE) warn |= true;
+                if(description.getSelected() == Boolean.TRUE) {
+                    warn |= true;
+                }
                 continue;
             }
             if (!non_public
                     && !description.getModifiers().contains(Modifier.PUBLIC)) {
-                if(description.getSelected() == Boolean.TRUE) warn |= true;
+                if(description.getSelected() == Boolean.TRUE) {
+                    warn |= true;
+                }
                 continue;
             }
 
             if (!statik && description.getModifiers().contains(Modifier.STATIC)) {
-                if(description.getSelected() == Boolean.TRUE) warn |= true;
+                if(description.getSelected() == Boolean.TRUE) {
+                    warn |= true;
+                }
                 continue;
             }
 
             if (!fields && description.getKind() == ElementKind.FIELD) {
-                if(description.getSelected() == Boolean.TRUE) warn |= true;
+                if(description.getSelected() == Boolean.TRUE) {
+                    warn |= true;
+                }
                 continue;
             }
             result.add(description);

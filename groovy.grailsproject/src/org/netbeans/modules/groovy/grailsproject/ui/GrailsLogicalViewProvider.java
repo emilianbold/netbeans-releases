@@ -160,7 +160,6 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_TestAction_Name"), null));
             actions.add(null);
-            actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.closeProjectAction());
             actions.add(null);
             actions.add(SystemAction.get(FindAction.class));

@@ -77,7 +77,7 @@ public class MemoryView extends Helper {
 
     public void updateConsumption() {
         for (int i = 0; i < 180; i++) {
-            updateStatus ();
+            updateStatus ();            
             try {
                 Thread.sleep(UPDATE_TIME++);
             }

@@ -44,13 +44,6 @@
 
 package org.netbeans.modules.websvc.design.javamodel;
 
-import com.sun.javadoc.Doc;
-import com.sun.javadoc.Tag;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -58,10 +51,15 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.jws.WebParam.Mode;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -70,18 +68,26 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.xml.soap.*;
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.MimeHeaders;
+import javax.xml.soap.Name;
+import javax.xml.soap.SOAPBody;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPHeader;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.soap.SOAPPart;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import org.apache.tools.ant.module.api.support.ActionUtils;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
@@ -89,6 +95,8 @@ import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -97,14 +105,25 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
+import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.openide.ErrorManager;
-import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import static org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+
+import com.sun.javadoc.Doc;
+import com.sun.javadoc.Tag;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.openide.execution.ExecutorTask;
 
 /**
  *
@@ -117,7 +136,92 @@ public class Utils {
         else return str1.equals(str2);
     }
     
-    public static void populateModel(final FileObject implClass, final ServiceModel serviceModel) {
+    public static ProjectService getProjectService(DataObject dataObject){
+        FileObject fileObject = dataObject.getPrimaryFile();
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        if(project==null) {
+            return null;
+        }
+        String implClass = getImplClass(fileObject);
+        JaxWsModel model = project.getLookup().lookup(JaxWsModel.class);
+        if(model==null) {
+            JAXWSLightSupport support = JAXWSLightSupport.getJAXWSLightSupport(
+                    fileObject);
+            if ( support == null ){
+                return null;
+            }
+            List<JaxWsService> services = support.getServices();
+            for (JaxWsService service : services) {
+                String implementationClass = service.getImplementationClass();
+                if ( implClass.equals( implementationClass )){
+                    return new LightProjectService( support , service , dataObject );
+                }
+            }
+            return null;
+        }
+        else {
+            JAXWSSupport support = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
+            Service service = model.findServiceByImplementationClass(implClass);
+            return new ConfigProjectService( support , service , dataObject);
+        }
+    }
+    
+    public static boolean isService( FileObject fileObject ){
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        if(project==null) {
+            return false;
+        }
+        JaxWsModel model = project.getLookup().lookup(JaxWsModel.class);
+        if ( model == null ){
+            JAXWSLightSupport support = JAXWSLightSupport.getJAXWSLightSupport(
+                    fileObject);
+            if ( support == null ){
+                return false;
+            }
+            List<JaxWsService> services = support.getServices();
+            for (JaxWsService service : services) {
+                String implementationClass = service.getImplementationClass();
+                if ( getImplClass(fileObject).equals( implementationClass )){
+                    return service.isServiceProvider();
+                }
+            }
+            return false;
+        }
+        else {
+            if ( fileObject.getAttribute("jax-ws-service")!=null && 
+                    fileObject.getAttribute("jax-ws-service-provider")==null)       // NOI18N
+            {
+                
+                return true;
+            }
+            return false;
+        }
+    }
+    
+    private static String getImplClass( FileObject fileObject ){
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        if(project==null) {
+            return null;
+        }
+        ClassPath classPath = ClassPath.getClassPath(fileObject,
+                ClassPath.SOURCE);
+        if (classPath == null) {
+            return null;
+        }
+        String implClass = classPath.getResourceName(fileObject, '.', false);
+        return implClass;
+    }
+    
+    public static Service getService(ProjectService projectService){
+        if ( projectService instanceof ConfigProjectService ){
+            return ((ConfigProjectService)projectService).getService();
+        }
+        return null;
+    }
+    
+    public static ServiceModel populateModel(final FileObject implClass) 
+    {
+        final ServiceModel[] model = new ServiceModel[1]; 
         JavaSource javaSource = JavaSource.forFileObject(implClass);
         if (javaSource != null) {
             CancellableTask<CompilationController> task = 
@@ -128,6 +232,8 @@ public class Utils {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     //CompilationUnitTree cut = controller.getCompilationUnit();
 
+                    ServiceModel serviceModel = ServiceModel.getServiceModel();
+                    model[0] = serviceModel;
                     TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
                     if (classEl !=null) {
                         //ClassTree javaClass = srcUtils.getClassTree();
@@ -313,11 +419,24 @@ public class Utils {
             };
 
             try {
-                javaSource.runWhenScanFinished(task, true);
-            } catch (IOException ex) {
+                Future<Void> future = javaSource.runWhenScanFinished(task, true);
+                future.get();
+                return model[0];
+            } 
+            catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+            catch( CancellationException ex ){
+                ErrorManager.getDefault().notify(ex);
+            }
+            catch( ExecutionException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+            catch( InterruptedException ex){
                 ErrorManager.getDefault().notify(ex);
             }
         }
+        return null;
     }
     
     private static void populateOperation(CompilationController controller, ExecutableElement methodEl, ElementHandle methodHandle, MethodModel methodModel, String targetNamespace) {

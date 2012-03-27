@@ -44,6 +44,7 @@
 package org.netbeans.spi.editor.hints;
 
 import java.io.IOException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 
@@ -56,7 +57,9 @@ import org.openide.text.PositionBounds;
  */
 public final class ErrorDescription {
 
+    private final String id;
     private final String description;
+    private final CharSequence details;
     private final Severity severity;
     private final LazyFixList fixes;
     private final PositionBounds span;
@@ -66,8 +69,10 @@ public final class ErrorDescription {
      * The constructor is intentionally not public. Use 
      * {@link ErrorDescriptionFactory} when you need an instance of this class.
      */
-    ErrorDescription(FileObject file, String description, Severity severity, LazyFixList fixes, PositionBounds span) {
+    ErrorDescription(FileObject file, String id, String description, CharSequence details, Severity severity, LazyFixList fixes, PositionBounds span) {
+        this.id = id;
         this.description = description;
+        this.details = details;
         this.severity    = severity;
         this.fixes       = fixes;
         this.span        = span;
@@ -75,10 +80,28 @@ public final class ErrorDescription {
     }
 
     /**
+     * @return the id specified when constructing this {@link ErrorDescription},
+     *         or null if none was specified
+     * @since 1.22
+     */
+    public @CheckForNull String getId() {
+        return id;
+    }
+
+    /**
      * @return description of the error that is displayed to the user.
      */
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * @return the details specified when constructing this {@link ErrorDescription},
+     *         or null if none was specified
+     * @since 1.22
+     */
+    public @CheckForNull CharSequence getDetails() {
+        return details;
     }
 
     /**

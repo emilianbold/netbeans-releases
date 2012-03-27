@@ -61,6 +61,7 @@ import javax.swing.JPopupMenu;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
+import org.apache.tools.ant.module.loader.AntProjectDataObject;
 import org.openide.ErrorManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -84,7 +85,7 @@ import org.openide.util.actions.SystemAction;
 @ActionRegistration(displayName = "#LBL_run_targets_action", lazy=false)
 @ActionReferences(value = {
     @ActionReference(position = 900, path = "Editors/text/x-ant+xml/Popup"),
-    @ActionReference(position = 200, path = "Loaders/text/x-ant+xml/Actions")})
+    @ActionReference(position = 200, path = AntProjectDataObject.ACTIONS)})
 public final class RunTargetsAction extends SystemAction implements ContextAwareAction {
 
     @Override

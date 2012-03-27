@@ -2087,6 +2087,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         constExp.setType("char"); // NOI18N
                         break;
 
+                    case RAW_STRING_LITERAL:
                     case STRING_LITERAL:
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType(CsmCompletion.CONST_STRING_TYPE.format(true)); // NOI18N

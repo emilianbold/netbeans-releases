@@ -832,6 +832,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     static final class XmlCloneableEditor extends CloneableEditor {
         public XmlCloneableEditor(XmlMultiViewEditorSupport s) {
             super(s);
+            initializeBySupport();
         }
 
         protected void componentActivated() {

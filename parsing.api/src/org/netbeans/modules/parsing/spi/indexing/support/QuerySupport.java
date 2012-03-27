@@ -265,7 +265,7 @@ public final class QuerySupport {
                             LinkedList<URL> list = new LinkedList<URL>();
                             for (String staleFile : staleFiles) {
                                 try {
-                                    list.add(Util.resolveUrl(root, staleFile));
+                                    list.add(Util.resolveUrl(root, staleFile, false));
                                 } catch (MalformedURLException ex) {
                                     LOG.log(Level.WARNING, null, ex);
                                 }

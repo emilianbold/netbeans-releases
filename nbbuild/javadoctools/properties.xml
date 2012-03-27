@@ -213,3 +213,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-libs-git" value="${javadoc.web.root}/org-netbeans-libs-git"/>
 <property name="javadoc.docs.org-netbeans-modules-sampler" value="${javadoc.web.root}/org-netbeans-modules-sampler"/>
 <property name="javadoc.docs.org-netbeans-api-search" value="${javadoc.web.root}/org-netbeans-api-search"/>
+<property name="javadoc.docs.org-netbeans-modules-code-analysis" value="${javadoc.web.root}/org-netbeans-modules-code-analysis"/>

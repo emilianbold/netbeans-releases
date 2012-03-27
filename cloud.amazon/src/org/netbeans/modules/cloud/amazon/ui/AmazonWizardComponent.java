@@ -45,12 +45,13 @@ package org.netbeans.modules.cloud.amazon.ui;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cloud.amazon.AmazonInstance;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  */
-public class AmazonWizardComponent extends javax.swing.JPanel implements DocumentListener {
+public class AmazonWizardComponent extends javax.swing.JPanel implements DocumentListener, HelpCtx.Provider {
 
     private AmazonWizardPanel panel;
     
@@ -151,5 +152,10 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
         if (panel != null) {
             panel.fireChange();
         }
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(AmazonWizardComponent.class);
     }
 }

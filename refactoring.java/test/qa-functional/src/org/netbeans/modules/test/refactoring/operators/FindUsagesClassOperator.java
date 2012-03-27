@@ -161,6 +161,8 @@ public class FindUsagesClassOperator extends ParametersPanelOperator {
             ComboBoxModel model = scopeOperator.getModel();            
             scopeOperator.selectItem(getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_AllProjects"));
         }
-        else scopeOperator.selectItem(projectName);
+        else {
+            scopeOperator.selectItem(projectName);
+        }
     }
 }

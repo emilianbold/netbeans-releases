@@ -122,8 +122,7 @@ class GraphicalSearchListener<R> extends SearchListener {
                 Savable.REGISTRY.lookupAll(Savable.class);
         if (unsaved.size() > 0) {
             String msg = NbBundle.getMessage(ResultView.class,
-                    "TEXT_INFO_WARNING_UNSAVED",
-                    unsaved.iterator().next().toString(), unsaved.size());
+                    "TEXT_INFO_WARNING_UNSAVED");
             eventChildren.addEvent(new EventNode(EventType.WARNING, msg));
         }
     }
@@ -208,36 +207,10 @@ class GraphicalSearchListener<R> extends SearchListener {
     @Override
     public void fileSkipped(FileObject fileObject,
             SearchFilterDefinition filter, String message) {
-        String fileName = fileObject.getNameExt();
-        if (filter == null) {
-            String infoMsg;
-            if (message == null) {
-                infoMsg = NbBundle.getMessage(ResultView.class,
-                        "TEXT_INFO_SKIPPED", fileName);                 //NOI18N
-            } else {
-                infoMsg = NbBundle.getMessage(ResultView.class,
-                        "TEXT_INFO_SKIPPED_MESSAGE", fileName, message);//NOI18N
-            }
-            eventChildren.addEvent(new FileObjectEventNode(EventType.WARNING,
-                    infoMsg, fileObject));
-        } else if (!SearchInfoDefinitionFactory.DEFAULT_FILTER_DEFS.contains(
-                filter)) {
-            String infoMsg = NbBundle.getMessage(ResultView.class,
-                    "TEXT_INFO_SKIPPED_FILTER", //NOI18N
-                    fileName, getFilterName(filter));
-            eventChildren.addEvent(new FileObjectEventNode(EventType.INFO,
-                    infoMsg, fileObject));
-        }
         LOG.log(Level.INFO, "{0} skipped {1} {2}", new Object[]{ //NOI18N
                     fileObject.getPath(),
                     filter != null ? filter.getClass().getName() : "", //NOI18N
                     message != null ? message : ""});                   //NOI18N
-    }
-
-    private String getFilterName(SearchFilterDefinition filter) {
-        return filter.getClass().getSimpleName().isEmpty()
-                ? filter.getClass().getName()
-                : filter.getClass().getSimpleName();
     }
 
     public Node getInfoNode() {

@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.image.ImageDataLoader;
 import org.netbeans.modules.image.ImageDataObject;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileChangeAdapter;
@@ -61,10 +62,10 @@ import org.openide.util.*;
  * @author jpeska
  */
 @NavigatorPanel.Registrations({
-    @NavigatorPanel.Registration(mimeType="image/png", displayName="#Navigator_DisplayName"),
-    @NavigatorPanel.Registration(mimeType="image/jpeg", displayName="#Navigator_DisplayName"),
-    @NavigatorPanel.Registration(mimeType="image/bmp", displayName="#Navigator_DisplayName"),
-    @NavigatorPanel.Registration(mimeType="image/gif", displayName="#Navigator_DisplayName")
+    @NavigatorPanel.Registration(mimeType=ImageDataLoader.PNG_MIME_TYPE, displayName="#Navigator_DisplayName"),
+    @NavigatorPanel.Registration(mimeType=ImageDataLoader.JPEG_MIME_TYPE, displayName="#Navigator_DisplayName"),
+    @NavigatorPanel.Registration(mimeType=ImageDataLoader.BMP_MIME_TYPE, displayName="#Navigator_DisplayName"),
+    @NavigatorPanel.Registration(mimeType=ImageDataLoader.GIF_MIME_TYPE, displayName="#Navigator_DisplayName")
 })
 public class ImageNavigatorPanel implements NavigatorPanel {
 

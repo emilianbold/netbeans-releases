@@ -252,6 +252,9 @@ public class TemplateUtils {
                             break;                                    
                         }                                
                     }
+                    while (varDecl != null && varDecl.getNextSibling() != null && varDecl.getNextSibling().getType() == CPPTokenTypes.CSM_PTR_OPERATOR) {
+                        varDecl = varDecl.getNextSibling();
+                    }                    
                     // check for existense of CSM_VARIABLE_DECLARATION branch
                     if (varDecl != null && varDecl.getNextSibling() != null &&
                             varDecl.getNextSibling().getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
@@ -262,6 +265,9 @@ public class TemplateUtils {
                         switch (varDecl.getType()) {
                             case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
                                 AST pn = varDecl.getFirstChild();
+                                if (pn != null && pn.getType() == CPPTokenTypes.ELLIPSIS) {
+                                    pn = pn.getNextSibling();
+                                }
                                 if (pn != null) {
                                     res.add(new TemplateParameterImpl(parameterStart, AstUtil.getText(pn), file, scope, global));
                                 }

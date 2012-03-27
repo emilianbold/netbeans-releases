@@ -61,6 +61,7 @@ import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.javamodel.ProjectService;
 import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
@@ -90,33 +91,42 @@ public class OperationsWidget extends FlushableWidget {
      * @param service
      * @param serviceModel
      */
-    public OperationsWidget(ObjectScene scene, final Service service, final ServiceModel serviceModel) {
+    public OperationsWidget(ObjectScene scene, final ProjectService service, 
+            final ServiceModel serviceModel) 
+    {
         super(scene,RADIUS,BORDER_COLOR);
         this.serviceModel = serviceModel;
         serviceModel.addServiceChangeListener(new ServiceChangeListener() {
             
+            @Override
             public void propertyChanged(String propertyName, String oldValue,
                     String newValue) {
             }
             
+            @Override
             public void operationAdded(final MethodModel method) {
                 if(!EventQueue.isDispatchThread()) {
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            OperationWidget operationWidget = new OperationWidget(getObjectScene(), serviceModel,service, method);
+                            OperationWidget operationWidget = 
+                                new OperationWidget(getObjectScene(), 
+                                        serviceModel,service, method);
                             getContentWidget().addChild(operationWidget);
                             updateHeaderLabel();
                             getScene().validate();
                         }
                     });
                 } else {
-                    OperationWidget operationWidget = new OperationWidget(getObjectScene(), serviceModel,service, method);
+                    OperationWidget operationWidget = 
+                        new OperationWidget(getObjectScene(), serviceModel,
+                                service, method);
                     getContentWidget().addChild(operationWidget);
                     updateHeaderLabel();
                     getScene().validate();
                 }
             }
             
+            @Override
             public void operationRemoved(MethodModel method) {
                 final Widget operationWidget = getObjectScene().findWidget(method);
                 if(operationWidget!=null) {
@@ -136,9 +146,13 @@ public class OperationsWidget extends FlushableWidget {
                 }
             }
             
-            public void operationChanged(final MethodModel oldMethod, final MethodModel newMethod) {
+            @Override
+            public void operationChanged(final MethodModel oldMethod, 
+                    final MethodModel newMethod) 
+            {
                 if(!EventQueue.isDispatchThread()) {
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             operationRemoved(oldMethod);
                             operationAdded(newMethod);
@@ -159,8 +173,10 @@ public class OperationsWidget extends FlushableWidget {
         createContent(service);
     }
     
-    private void createContent(Service service) {
-        if (serviceModel==null) return;
+    private void createContent(ProjectService service) {
+        if (serviceModel==null) {
+            return;
+        }
         
         headerLabelWidget = new ImageLabelWidget(getScene(), null,
                 NbBundle.getMessage(OperationWidget.class, "LBL_Operations"));
@@ -191,7 +207,8 @@ public class OperationsWidget extends FlushableWidget {
         getContentWidget().setBorder(BorderFactory.createEmptyBorder(RADIUS));
         if(serviceModel.getOperations()!=null) {
             for(MethodModel operation:serviceModel.getOperations()) {
-                OperationWidget operationWidget = new OperationWidget(getObjectScene(), serviceModel, service, operation);
+                OperationWidget operationWidget = new OperationWidget(getObjectScene(), 
+                        serviceModel, service, operation);
                 getContentWidget().addChild(operationWidget);
             }
         }

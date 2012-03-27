@@ -522,11 +522,11 @@ public class SyntaxTreeBuilder {
         List<TagAttribute> existingAttrs = element.getAttributes();
         List<String> existingAttrNames = new ArrayList<String>(existingAttrs.size());
         for (TagAttribute ta : existingAttrs) {
-            String tagName = ta.getName().toLowerCase(Locale.ENGLISH);
-            existingAttrNames.add(ta.getName().toLowerCase(Locale.ENGLISH));
+            String tagName = ta.getName().toString().toLowerCase(Locale.ENGLISH);
+            existingAttrNames.add(ta.getName().toString().toLowerCase(Locale.ENGLISH));
             DTD.Attribute attr = dtdElement.getAttribute(tagName);
             if (attr == null) {
-                if (!isIgnoredTagAttribute(ta.getName())) {
+                if (!isIgnoredTagAttribute(ta.getName().toString())) {
                     //unknown attribute
                     ProblemDescription desc = ProblemDescription.create(UNKNOWN_ATTRIBUTE_KEY, NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNKNOWN_ATTRIBUTE", //NOI18N
                             new Object[]{ta.getName(), element.getName()}), ProblemDescription.WARNING, ta.getNameOffset(), ta.getNameOffset() + ta.getName().length());

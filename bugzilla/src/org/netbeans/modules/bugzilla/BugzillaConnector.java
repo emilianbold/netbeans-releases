@@ -53,14 +53,14 @@ import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueFinder;
+import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -75,13 +75,14 @@ public class BugzillaConnector extends KenaiBugtrackingConnector {
 
     public static final String ID = "org.netbeans.modules.bugzilla";
 
-    private BugzillaIssueFinder issueFinder;
-
     public BugzillaConnector() {}
     
     @Override
     public Repository createRepository(RepositoryInfo info) {
         BugzillaRepository bugzillaRepository = new BugzillaRepository(info);
+        if(BugzillaUtil.isNbRepository(bugzillaRepository)) {
+            NBRepositorySupport.getInstance().setNBBugzillaRepository(bugzillaRepository);
+        }
         return Bugzilla.getInstance().getBugtrackingFactory().
                 createRepository(
                     bugzillaRepository, 
@@ -108,12 +109,15 @@ public class BugzillaConnector extends KenaiBugtrackingConnector {
 
     @Override
     public IssueFinder getIssueFinder() {
-        if (issueFinder == null) {
-            issueFinder = Lookup.getDefault().lookup(BugzillaIssueFinder.class);
-        }
-        return issueFinder;
+        return BugzillaIssueFinder.getInstance();
     }
 
+    @Override
+    public TaskListIssueProvider getTasklistProvder() {
+        return BugzillaTaskListProvider.getInstance();
+    }
+
+    
     /******************************************************************************
      * Kenai
      ******************************************************************************/

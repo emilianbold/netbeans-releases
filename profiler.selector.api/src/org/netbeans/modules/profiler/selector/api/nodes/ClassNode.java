@@ -112,22 +112,24 @@ public class ClassNode extends ContainerNode {
         super((cInfo != null ? cInfo.getQualifiedName() : Bundle.LBL_Unknown()), displayName, icon, parent, Lookups.singleton(cInfo)); // NOI8N
         this.cInfo = cInfo;
         
-        if (isAnonymous()) {
-            String implementing = null;
-            Set<SourceClassInfo> ifcs = cInfo.getInterfaces();
-            if (ifcs.size() == 1) {
-                implementing = ifcs.iterator().next().getQualifiedName();
-            } else {
-                SourceClassInfo superType = cInfo.getSuperType();
-                if (!superType.getQualifiedName().equals(Object.class.getName())) {
-                    implementing = superType.getQualifiedName();
+        if (cInfo != null) {
+            if (isAnonymous()) {
+                String implementing = null;
+                Set<SourceClassInfo> ifcs = cInfo.getInterfaces();
+                if (ifcs.size() == 1) {
+                    implementing = ifcs.iterator().next().getQualifiedName();
+                } else {
+                    SourceClassInfo superType = cInfo.getSuperType();
+                    if (!superType.getQualifiedName().equals(Object.class.getName())) {
+                        implementing = superType.getQualifiedName();
+                    }
+                }
+                if (implementing != null) {
+                    updateDisplayName(displayName + " [" + implementing + "]");
                 }
             }
-            if (implementing != null) {
-                updateDisplayName(displayName + " [" + implementing + "]");
-            }
+            this.signature = new ClientUtils.SourceCodeSelection(cInfo.getQualifiedName() + "$**", null, null); // NOI18N
         }
-        this.signature = new ClientUtils.SourceCodeSelection(cInfo.getQualifiedName() + "$**", null, null); // NOI18N
     }
 
     public ClassNode(SourceClassInfo cInfo, final ContainerNode parent) {
@@ -150,7 +152,7 @@ public class ClassNode extends ContainerNode {
      *
      */
     final public boolean isAnonymous() {
-        return cInfo.isAnonymous();
+        return cInfo != null ? cInfo.isAnonymous() : false;
     }
     
     final public SourceClassInfo getClassInfo() {
@@ -167,9 +169,11 @@ public class ClassNode extends ContainerNode {
             @Override
             protected List<SelectorNode> getConstructorNodes(final ConstructorsNode parent) {
                 final List<SelectorNode> constructorNodes = new ArrayList<SelectorNode>();
-                for(SourceMethodInfo mi : cInfo.getConstructors()) {
-                    ConstructorNode cn = new ConstructorNode(mi, parent);
-                    constructorNodes.add(cn);
+                if (cInfo != null) {
+                    for(SourceMethodInfo mi : cInfo.getConstructors()) {
+                        ConstructorNode cn = new ConstructorNode(mi, parent);
+                        constructorNodes.add(cn);
+                    }
                 }
                 return constructorNodes;
             }
@@ -186,10 +190,11 @@ public class ClassNode extends ContainerNode {
             @Override
             protected List<MethodNode> getMethodNodes(final MethodsNode parent) {
                 final List<MethodNode> methodNodes = new ArrayList<MethodNode>();
-                for(SourceMethodInfo smi : cInfo.getMethods(false)) {
-                    methodNodes.add(new MethodNode(smi, parent));
+                if (cInfo != null) {
+                    for(SourceMethodInfo smi : cInfo.getMethods(false)) {
+                        methodNodes.add(new MethodNode(smi, parent));
+                    }
                 }
-
                 return methodNodes;
             }
         };
@@ -205,12 +210,14 @@ public class ClassNode extends ContainerNode {
             protected Set<ClassNode> getInnerClassNodes(final InnerClassesNode parent) {
                 final Set<ClassNode> innerClassNodes = new HashSet<ClassNode>();
 
-                try {
-                    for (SourceClassInfo inner : cInfo.getInnerClases()) {
-                        innerClassNodes.add(new ClassNode(inner, parent));
+                if (cInfo != null) {
+                    try {
+                        for (SourceClassInfo inner : cInfo.getInnerClases()) {
+                            innerClassNodes.add(new ClassNode(inner, parent));
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
 
                 return innerClassNodes;

@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -79,8 +80,8 @@ public class TestJ2eeModuleImpl implements J2eeModuleImplementation2 {
         return null;
     }
     
-    public Iterator getArchiveContents() {
-        return new java.util.Vector(0).iterator();
+    @Override public Iterator<J2eeModule.RootedEntry> getArchiveContents() {
+        return Collections.<J2eeModule.RootedEntry>emptySet().iterator();
     }
     
     public FileObject getContentDirectory() {

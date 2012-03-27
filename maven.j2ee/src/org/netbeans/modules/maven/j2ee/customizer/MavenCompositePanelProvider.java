@@ -46,7 +46,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -105,7 +105,7 @@ public class MavenCompositePanelProvider implements ProjectCustomizer.CompositeC
     @Override
     public JComponent createComponent(Category category, Lookup context) {
         String name = category.getName();
-        ModelHandle handle = context.lookup(ModelHandle.class);
+        ModelHandle2 handle = context.lookup(ModelHandle2.class);
         Project project = context.lookup(Project.class);
 
         category.setOkButtonListener(listenerAWT);

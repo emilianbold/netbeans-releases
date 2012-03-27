@@ -206,7 +206,7 @@ public class testFormatting extends formatting {
 
         int count = category.getItemCount();
         window.close();
-        assertEquals(6, count);
+        assertEquals(7, count); // +1 for uses
         endTest();
 
     }

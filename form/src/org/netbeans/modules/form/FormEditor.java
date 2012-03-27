@@ -61,6 +61,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.actions.EditContainerAction;
 import org.netbeans.modules.form.actions.EditFormAction;
 import org.netbeans.modules.form.assistant.AssistantModel;
+import org.netbeans.modules.form.layoutdesign.LayoutDesigner;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.spi.palette.PaletteController;
 
@@ -971,6 +972,17 @@ public class FormEditor {
                         if (designer != null) {
                             designer.getFormToolBar().showPaletteButton(
                                 FormLoaderSettings.getInstance().isPaletteInToolBar());
+                        }
+                    } else if (FormLoaderSettings.PROP_PAINT_ADVANCED_LAYOUT.equals(propName)) {
+                        FormDesigner designer = getFormDesigner(formModel);
+                        if (designer != null) {
+                            LayoutDesigner layoutDesigner = designer.getLayoutDesigner();
+                            if (layoutDesigner != null) {
+                                int paintLayout = FormLoaderSettings.getInstance().getPaintAdvancedLayoutInfo();
+                                layoutDesigner.setPaintAlignment((paintLayout&1) != 0);
+                                layoutDesigner.setPaintGaps((paintLayout&2) != 0);
+                                designer.getHandleLayer().repaint();
+                            }
                         }
                     }
                 }
