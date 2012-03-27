@@ -187,8 +187,10 @@ public class Debugger {
     }
     
     public void stopDebugger() {
-        javascriptVm.detach();
-        javascriptVm = null;
+        if (javascriptVm != null) {
+            javascriptVm.detach();
+            javascriptVm = null;
+        }
     }
 
     private void activateBreakpoints() {
