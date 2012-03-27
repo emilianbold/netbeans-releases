@@ -78,6 +78,7 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
@@ -259,12 +260,17 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         initClosedProjectHook();
         initComponents();
         initTasks();
-        SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    initTaskChooserSize();
-                    initPreferredSize();
-                }
-            });
+        Runnable r = new Runnable() {
+            public void run() {
+                initTaskChooserSize();
+                initPreferredSize();
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
     }
     
     private static void initColors() {
@@ -384,38 +390,45 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
 
     // --- Public interface ------------------------------------------------------
-    public static Configuration selectProfileProjectTask(Lookup.Provider project, FileObject profiledFile, boolean enableOverride) {
+    public static Configuration selectProfileProjectTask(final Lookup.Provider project, final FileObject profiledFile, final boolean enableOverride) {
         // Running this code in EDT would cause deadlock
-        assert !SwingUtilities.isEventDispatchThread();
+//        assert !SwingUtilities.isEventDispatchThread();
         
-        final SelectProfilingTask spt = getDefault();
-        spt.setSubmitButton(spt.runButton);
-        spt.setupProfileProject(project, profiledFile, enableOverride);
-
-        String targetName = Utils.getProjectName(project) + ((profiledFile == null) ? "" : (": " + profiledFile.getNameExt())); // NOI18N
-        spt.dd = new DialogDescriptor(spt, Bundle.SelectProfilingTask_ProfileDialogCaption(targetName), true,
-                                      new Object[] { spt.runButton, spt.cancelButton }, spt.runButton, 0, null, null);
+        final SelectProfilingTask[] spt = new SelectProfilingTask[1];
 
         final CountDownLatch latch = new CountDownLatch(1);
 
-        SwingUtilities.invokeLater(new Runnable() {
+        Runnable r = new Runnable() {
 
             public void run() {
-                Dialog d = DialogDisplayer.getDefault().createDialog(spt.dd);
+                spt[0] = getDefault();
+                spt[0].setSubmitButton(spt[0].runButton);
+                spt[0].setupProfileProject(project, profiledFile, enableOverride);
+
+                String targetName = Utils.getProjectName(project) + ((profiledFile == null) ? "" : (": " + profiledFile.getNameExt())); // NOI18N
+                spt[0].dd = new DialogDescriptor(spt, Bundle.SelectProfilingTask_ProfileDialogCaption(targetName), true,
+                                            new Object[] { spt[0].runButton, spt[0].cancelButton }, spt[0].runButton, 0, null, null);
+                Dialog d = DialogDisplayer.getDefault().createDialog(spt[0].dd);
                 d.getAccessibleContext().setAccessibleDescription(d.getTitle());
                 d.pack();
                 d.setVisible(true);
                 latch.countDown();
             }
-        });
+        };
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
 
         try {
             latch.await();
 
             Configuration result = null;
 
-            if (spt.dd.getValue() == spt.runButton) {
-                ProfilingSettings settings = spt.createFinalSettings();
+            if (spt[0].dd.getValue() == spt[0].runButton) {
+                ProfilingSettings settings = spt[0].createFinalSettings();
                 if (settings.getOverrideGlobalSettings()) {
                     String workDir = settings.getWorkingDir().trim();
                     if (workDir.length() != 0 && !new java.io.File(workDir).exists()) {
@@ -428,7 +441,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 
             }
             
-            spt.cleanup(result != null);
+            spt[0].cleanup(result != null);
             
             return result;
         } catch (InterruptedException e) {

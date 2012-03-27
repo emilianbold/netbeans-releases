@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.profiler.j2ee.impl;
 
-package org.netbeans.modules.maven.profiler;
-
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.extexecution.startup.StartupExtender.StartMode;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
+import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
 import org.openide.util.Lookup;
 
 /**
  *
- * @author mkleint
+ * @author Jaroslav Bachorik <jaroslav.bachorik@oracle.com>
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=72)
-public class ProfilerActionsProvider extends AbstractMavenActionsProvider {
-    final private Set<String> supportedTypes = new HashSet<String>() {
-        {
-            add(NbMavenProject.TYPE_JAR);
-            add(NbMavenProject.TYPE_WAR);
-            add(NbMavenProject.TYPE_EJB);
-            add(NbMavenProject.TYPE_NBM);
-            add(NbMavenProject.TYPE_NBM_APPLICATION);
-        }
-    };
+@StartupExtenderImplementation.Registration(position=100, displayName="#DESC_Profiler",
+        startMode=StartMode.PROFILE)
+public class ServerProfilerArgsProvider implements StartupExtenderImplementation {
 
     @Override
-    public boolean isActionEnable(String action, Project project, Lookup lookup) {
-        if (!(action.equals(ActionProvider.COMMAND_PROFILE) || action.startsWith(ActionProvider.COMMAND_PROFILE_SINGLE) || action.equals(ActionProvider.COMMAND_PROFILE_TEST_SINGLE))) {
-            return false;
+    public List<String> getArguments(Lookup context, StartMode mode) {
+        if (context.lookup(Project.class) == null) { // project related execution is handled elsewhere
+            Profiler p = Lookup.getDefault().lookup(Profiler.class);
+            ServerInstance server = context.lookup(ServerInstance.class);
+            if (server != null) {
+                InstanceProperties ip = server.getLookup().lookup(InstanceProperties.class);
+                if (ip != null) {
+                    return Arrays.asList(p.getSettings(ip.getProperty("url"), false).getJvmArgs()); //NOI18N
+                }
+            }
         }
-        NbMavenProject mavenprj = project.getLookup().lookup(NbMavenProject.class);
-        String type = mavenprj.getPackagingType();
-        if (supportedTypes.contains(type)) {
-            return super.isActionEnable(action, project, lookup);
-        }
-        return false;
+        return Collections.EMPTY_LIST;
     }
 
-    @Override
-    protected InputStream getActionDefinitionStream() {
-        String path = "/org/netbeans/modules/maven/profiler/ActionMappings.xml"; //NOI18N
-        InputStream in = getClass().getResourceAsStream(path);
-        assert in != null : "no instream for " + path; //NOI18N
-        return in;
-    }
 }
