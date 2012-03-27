@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!bash -x
 
 if test ! -e /space/hudsonserver/master 
 then
