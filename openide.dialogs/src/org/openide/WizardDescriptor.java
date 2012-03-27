@@ -1549,13 +1549,13 @@ public class WizardDescriptor extends DialogDescriptor {
         } else if (panels instanceof ProgressInstantiatingIterator) {
             err.fine("is ProgressInstantiatingIterator");
             handle = ProgressHandleFactory.createHandle (PROGRESS_BAR_DISPLAY_NAME);
-
+            final JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
+            final JLabel detailComp = ProgressHandleFactory.createDetailLabelComponent (handle);
             Mutex.EVENT.readAccess( new Runnable() {
                 @Override
                 public void run() {
-                    JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
                     if (wizardPanel != null) {
-                        wizardPanel.setProgressComponent (progressComp, ProgressHandleFactory.createDetailLabelComponent (handle));
+                        wizardPanel.setProgressComponent (progressComp, detailComp);
                     }
                 }
             });
@@ -1565,12 +1565,13 @@ public class WizardDescriptor extends DialogDescriptor {
             err.fine("is AsynchronousInstantiatingIterator");
             handle = ProgressHandleFactory.createHandle (PROGRESS_BAR_DISPLAY_NAME);
 
+            final JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
+            final JLabel mainLabelComp = ProgressHandleFactory.createMainLabelComponent (handle);
             Mutex.EVENT.readAccess( new Runnable() {
                 @Override
                 public void run() {
-                    JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
                     if (wizardPanel != null) {
-                        wizardPanel.setProgressComponent (progressComp, ProgressHandleFactory.createMainLabelComponent (handle));
+                        wizardPanel.setProgressComponent (progressComp, mainLabelComp);
                     }
                 }
             });
