@@ -84,4 +84,11 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug210192.cpp", 5, 36, "bug210192.cpp", 1, 1);
     }    
     
+    public void testBug210194() throws Exception {
+        // Bug 210194 - Unresolved instantiations with function pointers
+        performTest("bug210194.cpp", 19, 77, "bug210194.cpp", 6, 3);
+        performTest("bug210194.cpp", 20, 82, "bug210194.cpp", 6, 3);
+        performTest("bug210194.cpp", 21, 88, "bug210194.cpp", 6, 3);
+    }    
+    
 }
