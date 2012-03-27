@@ -53,7 +53,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.EmptyStackException;
 import java.util.WeakHashMap;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -207,12 +206,7 @@ class PropertiesRowModel implements RowModel {
             }
             Collections.reverse(al);
             TreePath tp = new TreePath(al.toArray());
-            int row = -1;
-            try {
-                row = outline.getLayoutCache().getRowForPath(tp);
-            } catch (EmptyStackException ese) {
-                // ignore; see issue 157888
-            }
+            int row = outline.getLayoutCache().getRowForPath(tp);
             return row;
         }
         return -1;
