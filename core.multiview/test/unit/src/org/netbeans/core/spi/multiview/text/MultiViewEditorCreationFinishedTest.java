@@ -78,7 +78,6 @@ public class MultiViewEditorCreationFinishedTest extends CloneableEditorCreation
     
     @MultiViewElement.Registration(
             displayName="editor",
-            iconBase="none",
             mimeType="text/x-compat-test",
             persistenceType=TopComponent.PERSISTENCE_NEVER,
             preferredID="editor"

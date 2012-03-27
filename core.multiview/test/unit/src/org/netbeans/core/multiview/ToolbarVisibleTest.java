@@ -228,7 +228,6 @@ implements Lookup.Provider, Serializable {
     
     @MultiViewElement.Registration(
         displayName="Contextual",
-        iconBase="none",
         mimeType="text/toolbar",
         persistenceType=TopComponent.PERSISTENCE_ALWAYS,
         preferredID="context"
@@ -249,7 +248,6 @@ implements Lookup.Provider, Serializable {
 
     @MultiViewElement.Registration(
         displayName="Source",
-        iconBase="none",
         mimeType="text/toolbar",
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="source"

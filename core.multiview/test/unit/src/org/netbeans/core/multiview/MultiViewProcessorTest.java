@@ -427,7 +427,6 @@ public class MultiViewProcessorTest extends NbTestCase {
 
     @MultiViewElement.Registration(
         displayName="org.netbeans.core.multiview.TestBundle#FIGARO",
-        iconBase="empty.png",
         mimeType="text/figaro",
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="figaro"
@@ -504,7 +503,6 @@ public class MultiViewProcessorTest extends NbTestCase {
     
     @MultiViewElement.Registration(
         displayName="Contextual",
-        iconBase="empty.png",
         mimeType="text/context",
         persistenceType=TopComponent.PERSISTENCE_ALWAYS,
         preferredID="context"
@@ -528,7 +526,6 @@ public class MultiViewProcessorTest extends NbTestCase {
 
     @MultiViewElement.Registration(
         displayName="Source",
-        iconBase="empty.png",
         mimeType="text/plaintest",
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="source"
