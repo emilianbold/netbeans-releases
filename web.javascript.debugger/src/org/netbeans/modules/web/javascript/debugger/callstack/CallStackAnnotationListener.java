@@ -44,6 +44,7 @@ package org.netbeans.modules.web.javascript.debugger.callstack;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.modules.web.javascript.debugger.Debugger;
 import org.netbeans.modules.web.javascript.debugger.DebuggerConstants;
 import org.netbeans.spi.viewmodel.TreeModel;
 
@@ -56,6 +57,10 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter {
     
     @Override
     public void engineAdded(DebuggerEngine engine) {
+        Debugger d = engine.lookupFirst("", Debugger.class);
+        if (d == null) {
+            return;
+        }
         // force init of CallStackModel and its listeners which will
         // update call stack annotations:
         CallStackModel model = (CallStackModel)engine.lookupFirst(

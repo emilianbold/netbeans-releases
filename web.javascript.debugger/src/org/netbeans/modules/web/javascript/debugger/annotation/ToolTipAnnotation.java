@@ -124,7 +124,7 @@ public class ToolTipAnnotation extends Annotation
         String selectedText = getSelectedText( ep, offset);
         if ( selectedText != null ){
             Debugger d = getDebugger();
-            if (d.getState() == DebuggerState.SUSPENDED) {
+            if (d != null && d.getState() == DebuggerState.SUSPENDED) {
                 List<? extends CallFrame> l = d.getCurrentStackTrace();
                 if (l == null || l.isEmpty()) {
                     return;

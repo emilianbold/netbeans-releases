@@ -69,10 +69,15 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
      */
     @Override
     public void breakpointAdded( Breakpoint breakpoint ) {
+        if (!(breakpoint instanceof AbstractBreakpoint)) {
+            return;
+        }
         breakpoint.addPropertyChangeListener(Breakpoint.PROP_ENABLED, this);
         for (DebuggerEngine de: DebuggerManager.getDebuggerManager().getDebuggerEngines()) {
             Debugger d = de.lookupFirst("", Debugger.class);
-            d.addBreakpoint(breakpoint);
+            if (d != null) {
+                d.addBreakpoint(breakpoint);
+            }
         }
     }
 
@@ -81,10 +86,15 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
      */
     @Override
     public void breakpointRemoved( Breakpoint breakpoint ) {
+        if (!(breakpoint instanceof AbstractBreakpoint)) {
+            return;
+        }
         breakpoint.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
         for (DebuggerEngine de: DebuggerManager.getDebuggerManager().getDebuggerEngines()) {
             Debugger d = de.lookupFirst("", Debugger.class);
-            d.removeBreakpoint(breakpoint);
+            if (d != null) {
+                d.removeBreakpoint(breakpoint);
+            }
         }
     }
 
@@ -97,10 +107,15 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
             return;
         }
         Breakpoint b = (Breakpoint)event.getSource();
+        if (!(b instanceof AbstractBreakpoint)) {
+            return;
+        }
         for (DebuggerEngine de: DebuggerManager.getDebuggerManager().getDebuggerEngines()) {
             Debugger d = de.lookupFirst("", Debugger.class);
-            d.removeBreakpoint(b);
-            d.addBreakpoint(b);
+            if (d != null) {
+                d.removeBreakpoint(b);
+                d.addBreakpoint(b);
+            }
         }
     }
 
