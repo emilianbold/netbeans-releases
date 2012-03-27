@@ -588,6 +588,15 @@ public abstract class VariableModel extends ModelListenerSupport
         return Action_OUTPUT_FORMAT;
     }
     
+    public static Action getWatchAction(final Variable var) {
+        return new AbstractAction(Catalog.get("ACT_Variable_Watch")) { //NOI18N
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                var.createWatch();
+            }
+        };
+    }
+    
     private static class OutputFormatAction extends SystemAction
 			implements Presenter.Popup {
 

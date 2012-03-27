@@ -50,7 +50,7 @@ import java.net.MalformedURLException;
 import java.util.List;
 import java.util.logging.Logger;
 import org.openide.awt.ActionID;
-import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 @ActionID(category = "Images",
 id = "org.netbeans.modules.image.action.ExternalEditAction")
 @ActionRegistration(displayName = "#LBL_ExternalEdit")
-@ActionReferences({})
+@ActionReference(path="Loaders/image/png-gif-jpeg-bmp/Actions", position=200)
 public final class ExternalEditAction implements ActionListener {
     private final List<FileObject> list;
 

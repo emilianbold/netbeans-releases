@@ -1023,6 +1023,21 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 203212 - Autocompletion does not work if usign namespaces
         performTest("bug203212.cpp", 28, 54, "bug203212.cpp", 21, 1);
     }    
+
+    public void testBug207148() throws Exception {
+        // Bug 207148 - C++ structs marked as erroneus code
+        performTest("bug207148.cpp", 8, 9, "bug207148.cpp", 2, 4);
+    }    
+
+    public void testBug206220() throws Exception {
+        // Bug 206220 - friend and nested class
+        performTest("bug206220.cpp", 14, 17, "bug206220.cpp", 4, 5);
+    }    
+
+    public void testBug206460() throws Exception {
+        // Bug 206460 - unresolved field of structure in case of typedef is based on forward decl and decl has the same name
+        performTest("bug206460.cpp", 11, 17, "bug206460.cpp", 4, 5);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

@@ -50,10 +50,12 @@ public class FormatException extends Exception {
     private final boolean expexted;
 
     public FormatException(String text, boolean expected) {
+        super(text);
         this.expexted = expected;
     }
 
     public FormatException(String string, Throwable thrwbl) {
+        super(string, thrwbl);
         expexted = false;
     }
 

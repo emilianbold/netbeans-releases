@@ -45,13 +45,7 @@
 package org.netbeans.modules.spring.beans.ui.customizer;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -63,6 +57,7 @@ import org.netbeans.modules.spring.util.ConfigFiles;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -76,8 +71,10 @@ public class SpringCustomizerPanel extends javax.swing.JPanel implements HelpCtx
     private final Project project;
     private final List<File> files;
     private final List<ConfigFileGroup> groups;
-    private final File basedir;
     private final FileDisplayName fileDisplayName;
+
+    // made static to be able to remember last location
+    private static File basedir;
 
     private ConfigFileGroup currentGroup;
     private int currentGroupIndex;
@@ -385,7 +382,7 @@ public class SpringCustomizerPanel extends javax.swing.JPanel implements HelpCtx
                     .addComponent(groupFilesLabel)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, configFileGroupsPanelLayout.createSequentialGroup()
                         .addGroup(configFileGroupsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(groupFilesScrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
+                            .addComponent(groupFilesScrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
                             .addComponent(groupsLabel, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(groupsScrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -433,28 +430,41 @@ public class SpringCustomizerPanel extends javax.swing.JPanel implements HelpCtx
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(springConfigPane, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
+            .addComponent(springConfigPane)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(springConfigPane, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
+            .addComponent(springConfigPane)
         );
     }// </editor-fold>//GEN-END:initComponents
 
 private void addFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFileButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setDialogTitle(NbBundle.getMessage(SpringCustomizerPanel.class, "LBL_ChooseFile"));
+        chooser.setMultiSelectionEnabled(true);
+        chooser.setDialogTitle(NbBundle.getMessage(SpringCustomizerPanel.class, "LBL_ChooseFile")); //NOI18N
         chooser.setCurrentDirectory(basedir);
         int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(groupFilesList));
         if (option == JFileChooser.APPROVE_OPTION) {
-            File newFile = chooser.getSelectedFile();
-            if (files.contains(newFile)) {
-                String message = NbBundle.getMessage(SpringCustomizerPanel.class, "LBL_FileAlreadyAdded");
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-            } else {
-                addFiles(Collections.singletonList(newFile));
+            boolean showDialog = false;
+            List<File> newFiles = new LinkedList<File>();
+            StringBuilder existing = new StringBuilder(
+                    NbBundle.getMessage(SpringCustomizerPanel.class, "LBL_FileAlreadyAdded")).append("\n"); //NOI18N
+            for (File file : chooser.getSelectedFiles()) {
+                if (files.contains(file)) {
+                    existing.append(file.getAbsolutePath()).append("\n"); //NOI18N
+                    showDialog = true;
+                } else {
+                    newFiles.add(file);
+                }
+            }
+
+            // remember last location
+            basedir = chooser.getCurrentDirectory();
+            addFiles(newFiles);
+            if (showDialog) {
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(existing.toString(), NotifyDescriptor.ERROR_MESSAGE));
             }
         }
 }//GEN-LAST:event_addFileButtonActionPerformed

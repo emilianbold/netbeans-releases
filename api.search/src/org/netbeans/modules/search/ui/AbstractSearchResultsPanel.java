@@ -42,6 +42,7 @@
 package org.netbeans.modules.search.ui;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.HierarchyEvent;
@@ -56,6 +57,7 @@ import org.netbeans.spi.search.provider.SearchProvider;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.openide.explorer.ExplorerManager;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -202,8 +204,13 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     }
 
     public void searchFinished() {
-        btnModifySearch.setEnabled(true);
-        btnStop.setEnabled(false);
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override
+            public void run() {
+                btnModifySearch.setEnabled(true);
+                btnStop.setEnabled(false);
+            }
+        });
     }
 
     protected void modifyCriteria() {

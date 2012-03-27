@@ -41,10 +41,10 @@
  */
 
 package org.netbeans.modules.maven.customizer;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import javax.swing.JComponent;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -56,21 +56,23 @@ import org.openide.util.Lookup;
 @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=300)
 public class RunJarPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
+    @Override
     public Category createCategory(Lookup context) {
         NbMavenProjectImpl project = context.lookup(NbMavenProjectImpl.class);
         NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
         
         if (NbMavenProject.TYPE_JAR.equalsIgnoreCase(watcher.getPackagingType())) {
             return ProjectCustomizer.Category.create(
-                    ModelHandle.PANEL_RUN,
+                    ModelHandle2.PANEL_RUN,
                     org.openide.util.NbBundle.getMessage(RunJarPanelProvider.class, "TIT_Run"),
                     null);
         }
         return null;
     }
     
+    @Override
     public JComponent createComponent(Category category, Lookup context) {
-        ModelHandle handle = context.lookup(ModelHandle.class);
+        ModelHandle2 handle = context.lookup(ModelHandle2.class);
         NbMavenProjectImpl project = context.lookup(NbMavenProjectImpl.class);
         final RunJarPanel panel = new RunJarPanel(handle, project);
         return panel;

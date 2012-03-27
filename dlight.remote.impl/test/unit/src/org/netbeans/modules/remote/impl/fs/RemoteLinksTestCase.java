@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import junit.framework.Test;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -142,7 +141,6 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
         }
     }
 
-    @RandomlyFails
     @ForAllEnvironments
     public void testDirectoryLinkExternalUpdate() throws Exception {
         String baseDir = null;

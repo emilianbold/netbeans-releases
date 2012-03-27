@@ -42,10 +42,7 @@
 
 package org.netbeans.modules.maven.customizer;
 
-import org.codehaus.plexus.util.StringUtils;
-import javax.swing.text.BadLocationException;
 import java.awt.Component;
-import javax.swing.JList;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -69,6 +66,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
@@ -78,22 +76,24 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import org.codehaus.plexus.util.StringUtils;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.ActionProviderImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.TestChecker;
 import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
-import org.netbeans.modules.maven.ActionProviderImpl;
-import org.netbeans.modules.maven.TestChecker;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.options.DontShowAgainSettings;
+import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -112,7 +112,7 @@ public class ActionMappings extends javax.swing.JPanel {
 
     private static final RequestProcessor RP = new RequestProcessor(ActionMappings.class);
     private NbMavenProjectImpl project;
-    private ModelHandle handle;
+    private ModelHandle2 handle;
     private HashMap<String, String> titles = new HashMap<String, String>();
     
     private final GoalsListener goalsListener;
@@ -175,7 +175,7 @@ public class ActionMappings extends javax.swing.JPanel {
     }
     
     /** Creates new form ActionMappings */
-    public ActionMappings(ModelHandle hand, NbMavenProjectImpl proj) {
+    public ActionMappings(ModelHandle2 hand, NbMavenProjectImpl proj) {
         this();
         project = proj;
         handle = hand;
@@ -729,7 +729,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     private ActionToGoalMapping getActionMappings() {
         assert handle != null || actionmappings != null;
         if (handle != null) {
-            return handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
+            return handle.getActionMappings((ModelHandle2.Configuration) comConfiguration.getSelectedItem());
         }
         return actionmappings;
     }
@@ -964,7 +964,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             lblConfiguration.setVisible(true);
             comConfiguration.setVisible(true);
             DefaultComboBoxModel comModel = new DefaultComboBoxModel();
-            for (ModelHandle.Configuration conf : handle.getConfigurations()) {
+            for (ModelHandle2.Configuration conf : handle.getConfigurations()) {
                 comModel.addElement(conf);
             }
             comConfiguration.setModel(comModel);

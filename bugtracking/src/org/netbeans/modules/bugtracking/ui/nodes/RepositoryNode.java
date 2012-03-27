@@ -115,7 +115,6 @@ public class RepositoryNode extends AbstractNode implements PropertyChangeListen
                         RequestProcessor.getDefault().post(new Runnable() {
                             public void run() {
                                 repository.remove();
-                                RepositoryRegistry.getInstance().removeRepository(repository);
                             }
                         });
                     }

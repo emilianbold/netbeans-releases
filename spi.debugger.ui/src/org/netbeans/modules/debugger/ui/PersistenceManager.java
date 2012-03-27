@@ -71,10 +71,13 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     public void initWatches () {
         // As a side-effect, creates the watches. WatchesReader is triggered.
         Properties p = Properties.getDefault ().getProperties ("debugger");
-        p.getArray (
+        Watch[] watches = (Watch[]) p.getArray (
             DebuggerManager.PROP_WATCHES, 
             new Watch [0]
         );
+        for (Watch watch : watches) {
+            watch.addPropertyChangeListener (this);
+        }
     }
     
     public String[] getProperties () {

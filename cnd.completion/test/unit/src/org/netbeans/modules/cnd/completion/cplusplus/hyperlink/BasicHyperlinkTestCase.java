@@ -883,6 +883,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug201237_2.cpp", 16, 8, "bug201237_2.cpp", 6, 5);
         performTest("bug201237_2.cpp", 17, 8, "bug201237_2.cpp", 9, 5);
     }
+
+    public void testBug207843() throws Exception {
+        // Bug 207843 - incorrect find usages result
+        performTest("bug207843.cpp", 12, 11, "bug207843.cpp", 12, 5);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

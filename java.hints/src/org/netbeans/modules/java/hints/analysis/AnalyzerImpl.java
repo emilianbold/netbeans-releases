@@ -100,7 +100,13 @@ public class AnalyzerImpl implements Analyzer {
             hints.addAll(e.getValue());
         }
 
-        BatchResult candidates = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(Folder.convert(ctx.getScope().getSourceRoots()/*XXX: other content!!!*/)), w);
+        List todo = new ArrayList();
+
+        todo.addAll(ctx.getScope().getSourceRoots());
+        todo.addAll(ctx.getScope().getFolders());
+        todo.addAll(ctx.getScope().getFiles());
+
+        BatchResult candidates = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(Folder.convert(todo)), w);
         List<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
 
         BatchSearch.getVerifiedSpans(candidates, w, new BatchSearch.VerifiedSpansCallBack() {

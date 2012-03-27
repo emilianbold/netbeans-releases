@@ -1178,6 +1178,7 @@ public final class ParseProjectXml extends Task {
       public void addDependency(TestDep dep) {
           dependencies.add(dep);
           fullySpecified |= dep.cnb.equals("org.netbeans.libs.junit4");
+          fullySpecified |= dep.cnb.equals("org.netbeans.libs.testng");
       }
       public void addOptionalDependency(TestDep dep) {
           if (dep.modulesParser.findByCodeNameBase(dep.cnb) != null) {

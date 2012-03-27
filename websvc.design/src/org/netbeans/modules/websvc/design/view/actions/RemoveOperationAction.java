@@ -70,6 +70,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.MethodGenerator;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.javamodel.ProjectService;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -87,10 +88,10 @@ import org.openide.util.Task;
 public class RemoveOperationAction extends AbstractAction{
 
     private Set<MethodModel> methods;
-    private Service service;
+    private ProjectService service;
 
     /** Creates a new instance of RemoveOperationAction */
-    public RemoveOperationAction(Service service) {
+    public RemoveOperationAction(ProjectService service) {
         super(getName());
         putValue(SHORT_DESCRIPTION, NbBundle.getMessage(RemoveOperationAction.class, "Hint_RemoveOperation"));
         putValue(MNEMONIC_KEY, Integer.valueOf(NbBundle.getMessage(AddOperationAction.class, "LBL_RemoveOperation_mnem_pos")));

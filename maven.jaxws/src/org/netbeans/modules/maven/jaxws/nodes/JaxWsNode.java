@@ -61,6 +61,7 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -105,6 +106,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -145,30 +147,36 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         this.implBeanClass = implBeanClass;
         project = FileOwnerQuery.getOwner(srcRoot);
         
-        /*if (implBeanClass.getAttribute("jax-ws-service") == null ||
-                service.isServiceProvider() && 
-                implBeanClass.getAttribute("jax-ws-service-provider") == null)  // NOI18N
+        if (service.isServiceProvider() )
+              // isServiceProvider() means class is WS not a client
+                /*|| service.isServiceProvider() && 
+                implBeanClass.getAttribute("jax-ws-service-provider") == null)  // NOI18N*/
         {
-            try {
-                if (implBeanClass.getAttribute("jax-ws-service") == null) {     // NOI18N
-                    implBeanClass.setAttribute("jax-ws-service", Boolean.TRUE); // NOI18N
+            Runnable runnable = new Runnable() {
+                
+                @Override
+                public void run() {
+                    try {
+                        EditorCookie cookie = getDataObject().getCookie(EditorCookie.class);
+                        JEditorPane[] panes = cookie.getOpenedPanes();
+                        getDataObject().setValid(false);
+                        if ( panes != null && panes.length >0 ){
+                            getDataObject().getCookie(EditorCookie.class).open();
+                        }
+                    }
+                    catch (PropertyVetoException ex) {
+                        LOG.log( Level.WARNING, null , ex);
+                    } 
                 }
-                if (service.isServiceProvider() && 
-                        implBeanClass.getAttribute("jax-ws-service-provider") == null) // NOI18N
-                {
-                    implBeanClass.setAttribute("jax-ws-service-provider",       // NOI18N
-                            Boolean.TRUE);
-                }
-                getDataObject().setValid(false);
-                getDataObject();
-            } 
-            catch (PropertyVetoException ex) {
-                LOG.log( Level.WARNING, null , ex);
-            } 
-            catch (IOException ex) {
-                LOG.log( Level.WARNING, null , ex);
+            };
+            if ( SwingUtilities.isEventDispatchThread() ){
+                runnable.run();
             }
-        }*/
+            else {
+                SwingUtilities.invokeLater( runnable );
+            }
+            
+        }
         
         String serviceName = service.getServiceName();
         setName(serviceName);

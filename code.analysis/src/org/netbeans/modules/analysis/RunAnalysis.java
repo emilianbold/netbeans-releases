@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -59,6 +60,8 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -86,6 +89,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -103,7 +107,7 @@ public class RunAnalysis {
     public static void showDialogAndRunAnalysis() {
         final Collection<? extends AnalyzerFactory> analyzers = Lookup.getDefault().lookupAll(AnalyzerFactory.class);
         final ProgressHandle progress = ProgressHandleFactory.createHandle("Analyzing...", null, null);
-        final RunAnalysisPanel rap = new RunAnalysisPanel(progress, analyzers);
+        final RunAnalysisPanel rap = new RunAnalysisPanel(progress, Utilities.actionsGlobalContext(),analyzers);
         final JButton runAnalysis = new JButton(Bundle.BN_Inspect());
         JButton cancel = new JButton(Bundle.BN_Cancel());
         HelpCtx helpCtx = new HelpCtx(RunAnalysis.class);
@@ -126,37 +130,7 @@ public class RunAnalysis {
 
                 WORKER.post(new Runnable() {
                     @Override public void run() {
-                        List<FileObject> sourceRoots = new ArrayList<FileObject>();
-                        List<NonRecursiveFolder> nonRecursiveFolders = new ArrayList<NonRecursiveFolder>();
-                        List<FileObject> files = new ArrayList<FileObject>();
-                        Map<Project, Map<FileObject, ClassPath>> projects2RegisteredContent = projects2RegisteredContent(doCancel);
-
-                        if (doCancel.get()) return ;
-                        
-                        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-                            Scope projectScope = p.getLookup().lookup(Scope.class);
-
-                            if (projectScope != null) {
-                                sourceRoots.addAll(projectScope.getSourceRoots());
-                                nonRecursiveFolders.addAll(projectScope.getFolders());
-                                files.addAll(projectScope.getFiles());
-                                continue;
-                            }
-
-                            Map<FileObject, ClassPath> roots = projects2RegisteredContent.get(p);
-
-                            if (roots != null) {
-                                for (Entry<FileObject, ClassPath> e : roots.entrySet()) {
-                                    if (doCancel.get()) return;
-                                    sourceRoots.add(e.getKey());
-                                }
-                            } else {
-                                for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
-                                    if (doCancel.get()) return;
-                                    sourceRoots.add(sg.getRootFolder());
-                                }
-                            }
-                        }
+                        Scope scope = rap.getSelectedScope(doCancel);
 
                         progress.switchToDeterminate(MAX_WORK);
 
@@ -167,11 +141,11 @@ public class RunAnalysis {
                             int bucketSize = MAX_WORK / analyzers.size();
                             for (AnalyzerFactory analyzer : analyzers) {
                                 if (doCancel.get()) break;
-                                doRunAnalyzer(analyzer, sourceRoots, nonRecursiveFolders, files, progress, doneSoFar, bucketSize, result);
+                                doRunAnalyzer(analyzer, scope, progress, doneSoFar, bucketSize, result);
                                 doneSoFar += bucketSize;
                             }
                         } else if (!doCancel.get()) {
-                            doRunAnalyzer(toRun, sourceRoots, nonRecursiveFolders, files, progress, 0, MAX_WORK, result);
+                            doRunAnalyzer(toRun, scope, progress, 0, MAX_WORK, result);
                         }
 
                         SwingUtilities.invokeLater(new Runnable() {
@@ -188,9 +162,8 @@ public class RunAnalysis {
                         });
                     }
 
-                    private void doRunAnalyzer(AnalyzerFactory analyzer, List<FileObject> sourceRoots, List<NonRecursiveFolder> nonRecursiveFolders, List<FileObject> files, ProgressHandle handle, int bucketStart, int bucketSize, final Map<AnalyzerFactory, List<ErrorDescription>> result) {
+                    private void doRunAnalyzer(AnalyzerFactory analyzer, Scope scope, ProgressHandle handle, int bucketStart, int bucketSize, final Map<AnalyzerFactory, List<ErrorDescription>> result) {
                         List<ErrorDescription> current = new ArrayList<ErrorDescription>();
-                        Scope scope = Scope.create(sourceRoots, nonRecursiveFolders, files);
                         Preferences settings = configuration != null ? getConfigurationSettingsRoot(configuration).node(SPIAccessor.ACCESSOR.getAnalyzerId(analyzer)) : null;
                         Analyzer a = analyzer.createAnalyzer(SPIAccessor.ACCESSOR.createContext(scope, settings, singleWarningId, handle, bucketStart, bucketSize));
                         currentlyRunning.set(a);
@@ -250,7 +223,7 @@ public class RunAnalysis {
     }
 
     
-    private static Map<Project, Map<FileObject, ClassPath>> projects2RegisteredContent(AtomicBoolean cancel) {
+    static Map<Project, Map<FileObject, ClassPath>> projects2RegisteredContent(AtomicBoolean cancel) {
         Set<String> sourceIds = new HashSet<String>();
 
         for (PathRecognizer pr : Lookup.getDefault().lookupAll(PathRecognizer.class)) {
@@ -283,5 +256,47 @@ public class RunAnalysis {
         }
 
         return sourceRoots;
+    }
+
+    static Scope addProjectToScope(Project p, Scope target, AtomicBoolean cancel, Map<Project, Map<FileObject, ClassPath>> projects2RegisteredContent) {
+        Scope projectScope = p.getLookup().lookup(Scope.class);
+
+        if (projectScope != null) {
+            return augment(target, projectScope.getSourceRoots(), projectScope.getFolders(), projectScope.getFiles());
+        }
+
+        Map<FileObject, ClassPath> roots = projects2RegisteredContent.get(p);
+
+        if (roots != null) {
+            for (Entry<FileObject, ClassPath> e : roots.entrySet()) {
+                if (cancel.get()) return null;
+                target = augment(target, Collections.singletonList(e.getKey()), null, null);
+            }
+        } else {
+            for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
+                if (cancel.get()) return null;
+                target = augment(target, Collections.singletonList(sg.getRootFolder()), null, null);
+            }
+        }
+
+        return target;
+    }
+
+    private static @NonNull Scope augment(@NonNull Scope source, @NullAllowed Collection<FileObject> sourceRoots,
+                                        @NullAllowed Collection<NonRecursiveFolder> folders,
+                                        @NullAllowed Collection<FileObject> files) {
+        Collection<FileObject> sourceRootsSet = new HashSet<FileObject>(source.getSourceRoots());
+        if (sourceRoots != null) {
+            sourceRootsSet.addAll(sourceRoots);
+        }
+        Collection<FileObject> filesSet = new HashSet<FileObject>(source.getFiles());
+        if (files != null) {
+            filesSet.addAll(files);
+        }
+        Collection<NonRecursiveFolder> foldersSet = new HashSet<NonRecursiveFolder>(source.getFolders());
+        if (folders != null) {
+            foldersSet.addAll(folders);
+        }
+        return Scope.create(sourceRootsSet, foldersSet, filesSet);
     }
 }

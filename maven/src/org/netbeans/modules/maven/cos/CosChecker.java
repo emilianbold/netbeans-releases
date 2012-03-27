@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.maven.cos;
 
-import org.codehaus.plexus.util.DirectoryScanner;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -64,12 +64,11 @@ import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.execute.ExecutionContext;
-import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
-import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -77,17 +76,24 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
+import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
+import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
+import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.classpath.AbstractProjectClassPathImpl;
 import org.netbeans.modules.maven.classpath.RuntimeClassPathImpl;
 import org.netbeans.modules.maven.classpath.TestRuntimeClassPathImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
+import static org.netbeans.modules.maven.cos.Bundle.*;
+import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.customizer.RunJarPanel;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -95,10 +101,15 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -318,9 +329,11 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 
     private boolean checkRunTest(RunConfig config) {
         String actionName = config.getActionName();
-        if (RunUtils.hasTestCompileOnSaveEnabled(config) &&
-                (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
+        if (!(ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
                 ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
+            return true;
+        }
+        if (RunUtils.hasTestCompileOnSaveEnabled(config)) {
             String testng = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
                     Constants.PLUGIN_SUREFIRE, "testNGArtifactName", "test"); //NOI18N
             if (testng == null) {
@@ -535,6 +548,8 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 }
                 return false;
             }
+        } else {
+            warnNoTestCoS(config);
         }
         return true;
     }
@@ -757,6 +772,36 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 deleteCoSTimeStamp(mvn, true);
             }
         }
+    }
+
+    @StaticResource private static final String SUGGESTION = "org/netbeans/modules/maven/resources/suggestion.png";
+    private static boolean warned;
+    @Messages({
+        "CosChecker.no_test_cos.title=Not using Compile on Save",
+        "CosChecker.no_test_cos.details=Compile on Save mode can speed up single test execution for many projects."
+    })
+    private static void warnNoTestCoS(RunConfig config) {
+        if (warned) {
+            return;
+        }
+        final Project project = config.getProject();
+        if (project == null) {
+            return;
+        }
+        final Notification n = NotificationDisplayer.getDefault().notify(CosChecker_no_test_cos_title(), ImageUtilities.loadImageIcon(SUGGESTION, true), CosChecker_no_test_cos_details(), new ActionListener() {
+            @Override public void actionPerformed(ActionEvent e) {
+                CustomizerProviderImpl prv = project.getLookup().lookup(CustomizerProviderImpl.class);
+                if (prv != null) {
+                    prv.showCustomizer(ModelHandle2.PANEL_COMPILE);
+                }
+            }
+        }, NotificationDisplayer.Priority.LOW);
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override public void run() {
+                n.clear();
+            }
+        }, 15 * 1000);
+        warned = true;
     }
 
     @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-maven")

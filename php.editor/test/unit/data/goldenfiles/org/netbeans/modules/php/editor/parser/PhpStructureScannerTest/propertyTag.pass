@@ -1,5 +1,5 @@
 |-Shape [163, 278] : ESCAPED{Shape}
-|--draw [269, 273] : ESCAPED{draw}ESCAPED{(}ESCAPED{)}<font color="#999999">:ESCAPED{string}</font>
+|--draw [269, 276] : ESCAPED{draw}ESCAPED{(}ESCAPED{)}<font color="#999999">:ESCAPED{string}</font>
 |-Point [360, 534] : ESCAPED{Point}<font color="#999999">:ESCAPED{Shape}</font>
 |--$x [328, 329] : ESCAPED{$x}<font color="#999999">:ESCAPED{int}</font>
 |--$y [348, 349] : ESCAPED{$y}<font color="#999999">:ESCAPED{int}</font>

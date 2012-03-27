@@ -123,8 +123,9 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
             String pkgName = null;
             if (targetFolder != null) {
                 ClassPath cp = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE);
-                if (cp != null)
+                if (cp != null) {
                     pkgName = cp.getResourceName(targetFolder, '.', false);
+                }
             }
             panel = new MoveClassPanel (parent, 
                     pkgName != null ? pkgName : getDOPackageName(javaObjects.iterator().next().getParent()),
@@ -158,8 +159,9 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
     }
     
     private Problem setParameters(boolean checkOnly) {
-        if (panel==null) 
+        if (panel==null) {
             return null;
+        }
         URL url = URLMapper.findURL(panel.getRootFolder(), URLMapper.EXTERNAL);
         try {
             refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + panel.getPackageName().replace('.', '/')))); // NOI18N
@@ -202,8 +204,9 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         LinkedList<FileObject> q = new LinkedList<FileObject>(javaObjects);
         while (!q.isEmpty()) {
             FileObject f = q.removeFirst();
-            if (!VisibilityQuery.getDefault().isVisible(f))
+            if (!VisibilityQuery.getDefault().isVisible(f)) {
                 continue;
+            }
             DataObject d = null;
             try {
                 d = DataObject.find(f);

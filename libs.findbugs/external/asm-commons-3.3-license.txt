@@ -3,7 +3,6 @@ Version: 3.3
 Description: Library for bytecode manipulation
 License: BSD
 Origin: http://repo1.maven.org/maven2/asm/asm-commons/3.3/asm-commons-3.3.jar
-Files: asm-commons-3.3.jar
 
 Use of ASM 3.3 is governed by the terms of the license below:
 

@@ -45,11 +45,17 @@
 package org.netbeans.modules.gsf.testrunner.api;
 
 import java.awt.BorderLayout;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -60,6 +66,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -77,6 +84,9 @@ final class StatisticsPanel extends JPanel {
     private JToggleButton btnShowPassed;
     private JToggleButton btnShowFailed;
     private JToggleButton btnShowError;
+    private JToggleButton btnShowPassedWithErrors;
+    private JToggleButton btnShowIgnored;
+    private JToggleButton btnShowSkipped;
 
     /**
      * Rerun button for running (all) tests again.
@@ -98,7 +108,7 @@ final class StatisticsPanel extends JPanel {
                             ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/rerun.png"), //NOI18N
                             ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error-badge.gif"), //NOI18N
                             8, 8));
-
+    
     /**
      */
     public StatisticsPanel(final ResultDisplayHandler displayHandler) {
@@ -122,14 +132,24 @@ final class StatisticsPanel extends JPanel {
         createShowButtons();
         createRerunButtons();
         createNextPrevFailureButtons();
+        String testingFramework = Manager.getInstance().getTestingFramework();
 
         JToolBar toolbar = new JToolBar(SwingConstants.VERTICAL);
         toolbar.add(rerunButton);
         toolbar.add(rerunFailedButton);
         toolbar.add(new JToolBar.Separator());
         toolbar.add(btnShowPassed);
+        if(testingFramework.equals(Manager.TESTNG_TF)) {
+            toolbar.add(btnShowPassedWithErrors);
+        }
         toolbar.add(btnShowFailed);
         toolbar.add(btnShowError);
+        if(testingFramework.equals(Manager.TESTNG_TF) || testingFramework.equals(Manager.JUNIT_TF)) {
+            toolbar.add(btnShowIgnored);
+        }
+        if(testingFramework.equals(Manager.TESTNG_TF)) {
+            toolbar.add(btnShowSkipped);
+        }
         toolbar.add(new JToolBar.Separator());
         toolbar.add(previousFailure);
         toolbar.add(nextFailure);
@@ -196,6 +216,11 @@ final class StatisticsPanel extends JPanel {
                "StatisticsPanel.btnShowPassed",
                "ACSN_ShowPassedButton",
                Status.PASSED);
+        btnShowPassedWithErrors = newShowButton(
+               "org/netbeans/modules/gsf/testrunner/resources/ok_withErrors_16.png",
+               "StatisticsPanel.btnShowPassedWithErrors",
+               "ACSN_ShowPassedWithErrorsButton",
+               Status.PASSEDWITHERRORS);
         btnShowFailed = newShowButton(
                "org/netbeans/modules/gsf/testrunner/resources/warning_16.png",
                "StatisticsPanel.btnShowFailed",
@@ -206,6 +231,16 @@ final class StatisticsPanel extends JPanel {
                "StatisticsPanel.btnShowError",
                "ACSN_ShowErrorButton",
                Status.ERROR);
+        btnShowIgnored = newShowButton(
+               "org/netbeans/modules/gsf/testrunner/resources/ignored_16.png",
+               "StatisticsPanel.btnShowIgnored",
+               "ACSN_ShowIgnoredButton",
+               Status.IGNORED);
+        btnShowSkipped = newShowButton(
+               "org/netbeans/modules/gsf/testrunner/resources/skipped_16.png",
+               "StatisticsPanel.btnShowSkipped",
+               "ACSN_ShowSkippedButton",
+               Status.SKIPPED);
     }
 
     private JToggleButton newShowButton(String iconId,
@@ -229,8 +264,11 @@ final class StatisticsPanel extends JPanel {
 
     private void updateShowButtons() {
         btnShowPassed.setSelected((filterMask & Status.PASSED.getBitMask()) == 0);
+        btnShowPassedWithErrors.setSelected((filterMask & Status.PASSEDWITHERRORS.getBitMask()) == 0);
         btnShowFailed.setSelected((filterMask & Status.FAILED.getBitMask()) == 0);
         btnShowError.setSelected((filterMask & Status.ERROR.getBitMask()) == 0);
+        btnShowIgnored.setSelected((filterMask & Status.IGNORED.getBitMask()) == 0);
+        btnShowSkipped.setSelected((filterMask & Status.SKIPPED.getBitMask()) == 0);
     }
 
     private void createNextPrevFailureButtons() {

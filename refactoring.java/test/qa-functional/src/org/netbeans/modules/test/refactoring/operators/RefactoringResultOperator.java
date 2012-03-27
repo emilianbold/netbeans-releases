@@ -105,7 +105,9 @@ public class RefactoringResultOperator extends TopComponentOperator{
     
     public int getTabCount() {
         JTabbedPane tabbedPane = getTabbedPane();
-        if(tabbedPane==null) return 0;
+        if(tabbedPane==null) {
+            return 0;
+        }
         return tabbedPane.getTabCount();
     }
     
@@ -123,15 +125,23 @@ public class RefactoringResultOperator extends TopComponentOperator{
     
     public JTabbedPane getTabbedPane() {
         JComponent component = getContent();
-        if(component instanceof JTabbedPane) return (JTabbedPane) component;
-        else return null;        
+        if(component instanceof JTabbedPane) {
+            return (JTabbedPane) component;
+        }
+        else {
+            return null;
+        }
     }
             
     public JPanel getRefactoringPanel() {
         JComponent content = getContent();
         
-        if("org.netbeans.modules.refactoring.spi.impl.RefactoringPanel".equals(content.getClass().getName())) return (JPanel) content;
-        if("org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer".equals(content.getClass().getName())) return ((RefactoringPanelContainer) content).getCurrentPanel();
+        if("org.netbeans.modules.refactoring.spi.impl.RefactoringPanel".equals(content.getClass().getName())) {
+            return (JPanel) content;
+        }
+        if("org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer".equals(content.getClass().getName())) {
+            return ((RefactoringPanelContainer) content).getCurrentPanel();
+        }
         if(content instanceof JTabbedPane) {
             JTabbedPane tab = (JTabbedPane) content;
             return (JPanel) tab.getSelectedComponent();
@@ -149,30 +159,44 @@ public class RefactoringResultOperator extends TopComponentOperator{
     
     private void dumpChilds(Object root, int indentation,JTreeOperator jto) {
         Object[] children = jto.getChildren(root);
-        if(children.length==0) return;
+        if(children.length==0) {
+            return;
+        }
         for (int i = 0; i < children.length; i++) {
             Object child = children[i];
-            for (int j = 0; j < indentation; j++) System.out.print(" ");
+            for (int j = 0; j < indentation; j++) {
+                System.out.print(" ");
+            }
             System.out.println(child.toString());     
             dumpChilds(child, indentation+4, jto);                           
         }
     }
            
     public void test(Component source,int level,int no) { 
-        if(level==0) System.out.println("--------------------------");
-        for(int j = 0;j<level;j++) System.out.print("  ");
+        if(level==0) {
+            System.out.println("--------------------------");
+        }
+        for(int j = 0;j<level;j++) {
+            System.out.print("  ");
+        }
         System.out.print(no);
         System.out.print(source.getClass().getName());
-        if(source.getClass().getName().endsWith("JButton")) System.out.print(((JButton)source).getText());
+        if(source.getClass().getName().endsWith("JButton")) {
+            System.out.print(((JButton)source).getText());
+        }
         System.out.println("");
-        if(!(source instanceof JComponent)) return;                    
+        if(!(source instanceof JComponent)) {
+            return;
+        }
         Component[] components = ((JComponent) source).getComponents();        
         for (int i = 0; i < components.length; i++) {
             Component component = components[i];            
             test(component, level+1,i);
             
         }                                
-        if(level==0) System.out.println("--------------------------");
+        if(level==0) {
+            System.out.println("--------------------------");
+        }
     }
     
     public JToolBar getJToolbar() {

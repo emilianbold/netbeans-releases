@@ -175,7 +175,7 @@ public class InitialServerFileDistributor extends ServerProgress {
         return deleted;
     }
     
-    private void _distribute(Iterator rootedEntries, File dir, String childModuleUri) {
+    private void _distribute(Iterator<J2eeModule.RootedEntry> rootedEntries, File dir, String childModuleUri) {
         FileLock lock = null;
 
         try {
@@ -202,7 +202,7 @@ public class InitialServerFileDistributor extends ServerProgress {
             }
             
             while(rootedEntries.hasNext()) {
-                J2eeModule.RootedEntry entry = (J2eeModule.RootedEntry) rootedEntries.next();
+                J2eeModule.RootedEntry entry = rootedEntries.next();
                 String relativePath = entry.getRelativePath();
                 FileObject sourceFO = entry.getFileObject();
                 FileObject destFolder = ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);

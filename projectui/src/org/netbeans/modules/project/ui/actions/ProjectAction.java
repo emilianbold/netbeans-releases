@@ -44,11 +44,17 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.Toolkit;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.awt.Actions;
@@ -58,6 +64,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /** Action sensitive to current project
  * 
@@ -118,26 +125,56 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
     @Override
     protected void actionPerformed( Lookup context ) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
-        
-        if ( projects.length == 1 ) {
-            if ( command != null ) {
-                ActionProvider ap = projects[0].getLookup().lookup(ActionProvider.class);
-                LogRecord r = new LogRecord(Level.FINE, "PROJECT_ACTION"); // NOI18N
-                r.setResourceBundle(NbBundle.getBundle(ProjectAction.class));
-                r.setParameters(new Object[] {
-                    getClass().getName(),
-                    projects[0].getClass().getName(),
-                    getValue(NAME)
-                });
-                r.setLoggerName(UILOG.getName());
-                UILOG.log(r);
-                ap.invokeAction( command, Lookup.EMPTY );        
-            }
-            else if ( performer != null ) {
-                performer.perform( projects[0] );
-            }
+        if (command != null && projects.length > 0) {
+            runSequentially(new LinkedList<Project>(Arrays.asList(projects)), this, command);
+        } else if (performer != null && projects.length == 1) {
+            performer.perform(projects[0]);
         }
-        
+    }
+    static void runSequentially(final Queue<Project> queue, final LookupSensitiveAction a, final String command) {
+        Project p = queue.remove();
+        final ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+        if (ap == null) {
+            return;
+        }
+        if (!Arrays.asList(ap.getSupportedActions()).contains(command)) {
+            // #47160: was a supported command (e.g. on a freeform project) but was then removed.
+            Toolkit.getDefaultToolkit().beep();
+            a.resultChanged(null);
+            return;
+        }
+        LogRecord r = new LogRecord(Level.FINE, "PROJECT_ACTION"); // NOI18N
+        r.setResourceBundle(NbBundle.getBundle(ProjectAction.class));
+        r.setParameters(new Object[] {
+            a.getClass().getName(),
+            p.getClass().getName(),
+            a.getValue(NAME)
+        });
+        r.setLoggerName(UILOG.getName());
+        UILOG.log(r);
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override public void run() {
+                final AtomicBoolean started = new AtomicBoolean();
+                ap.invokeAction(command, Lookups.singleton(new ActionProgress() {
+                    @Override protected void started() {
+                        started.set(true);
+                    }
+                    @Override public void finished(boolean success) {
+                        if (success && !queue.isEmpty()) { // OK, next...
+                            runSequentially(queue, a, command);
+                        } else { // stopping now; restore natural action enablement state
+                            a.resultChanged(null);
+                        }
+                    }
+                }));
+                if (started.get()) {
+                    a.setEnabled(false);
+                } else if (!queue.isEmpty()) {
+                    // Did not run action for some reason; try others?
+                    runSequentially(queue, a, command);
+                }
+            }
+        });
     }
     
     @Override
@@ -147,7 +184,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
         final boolean enable;
         if ( command != null ) {
-            enable = projects.length == 1;
+            enable = projects.length > 0;
         } else if ( performer != null && projects.length == 1 ) {
             enable = performer.enable(projects[0]);
         } else {

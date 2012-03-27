@@ -58,6 +58,7 @@ import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.ui.commit.ConflictResolvedAction;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -199,7 +200,7 @@ public class ResolveConflictsAction extends ContextAction {
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
                 for (File file : files) {
                     if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT_TREE) != 0) {
-                        ISVNStatus status = client.getSingleStatus(file);
+                        ISVNStatus status = SvnUtils.getSingleStatus(client, file);
                         if (status.hasTreeConflict()) {
                             treeConflicts.put(file, status);
                         }
@@ -220,7 +221,7 @@ public class ResolveConflictsAction extends ContextAction {
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
                 for (File file : files) {
                     if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT) != 0) {
-                        ISVNStatus status = client.getSingleStatus(file);
+                        ISVNStatus status = SvnUtils.getSingleStatus(client, file);
                         if (status.getPropStatus() == SVNStatusKind.CONFLICTED) {
                             propertyConflicts.put(file, status);
                         }

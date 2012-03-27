@@ -67,5 +67,11 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
     public void testRangeBasedForLoop() throws Exception {
         performTest("rangefor.cpp", 4, 9, "rangefor.cpp", 3, 9);
     }
+
+    public void testBug210019() throws Exception {
+        // Bug 210019 - Unresolved variadic template parameter
+        performTest("bug210019.cpp", 2, 50, "bug210019.cpp", 2, 10);
+        performTest("bug210019.cpp", 2, 54, "bug210019.cpp", 2, 18);
+    }
     
 }

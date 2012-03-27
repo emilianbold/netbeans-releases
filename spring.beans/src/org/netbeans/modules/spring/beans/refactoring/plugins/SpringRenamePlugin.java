@@ -46,21 +46,19 @@ package org.netbeans.modules.spring.beans.refactoring.plugins;
 
 import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
+import java.util.Collections;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.spring.api.beans.SpringScope;
-import org.netbeans.modules.spring.beans.refactoring.Modifications;
-import org.netbeans.modules.spring.beans.refactoring.Occurrences;
+import org.netbeans.modules.spring.beans.refactoring.*;
 import org.netbeans.modules.spring.beans.refactoring.Occurrences.Occurrence;
-import org.netbeans.modules.spring.beans.refactoring.ModificationTransaction;
-import org.netbeans.modules.spring.beans.refactoring.SpringRefactoringElement;
-import org.netbeans.modules.spring.beans.refactoring.SpringRefactorings;
 import org.netbeans.modules.spring.beans.refactoring.SpringRefactorings.RenamedClassName;
 import org.netbeans.modules.spring.beans.refactoring.SpringRefactorings.RenamedProperty;
 import org.openide.filesystems.FileObject;
@@ -142,7 +140,7 @@ public class SpringRenamePlugin implements RefactoringPlugin {
                         for (Occurrence occurrence : Occurrences.getJavaClassOccurrences(oldBinaryName, scope)) {
                             refactoringElements.add(refactoring, SpringRefactoringElement.createJavaElementRefModification(occurrence, mods, clazz.getOldSimpleName(), newBinaryName));
                         }
-                        refactoringElements.registerTransaction(new ModificationTransaction(mods));
+                        refactoringElements.registerTransaction(new RefactoringCommit(Collections.singleton(mods)));
                     }
                 }
             } else if (fo.isFolder()) {
@@ -154,7 +152,7 @@ public class SpringRenamePlugin implements RefactoringPlugin {
                     for (Occurrence occurrence : Occurrences.getJavaPackageOccurrences(oldPackageName, recursive, scope)) {
                         refactoringElements.add(refactoring, SpringRefactoringElement.createJavaElementRefModification(occurrence, mods, null, newPackageName));
                     }
-                    refactoringElements.registerTransaction(new ModificationTransaction(mods));
+                    refactoringElements.registerTransaction(new RefactoringCommit(Collections.singleton(mods)));
                 }
             }
         } catch (IOException e) {
@@ -187,7 +185,7 @@ public class SpringRenamePlugin implements RefactoringPlugin {
                         refactoringElements.add(refactoring,
                                 SpringRefactoringElement.createPropertyRefModification(occurrence, mods, prop.getOldName(), prop.getNewName()));
                     }
-                    refactoringElements.registerTransaction(new ModificationTransaction(mods));
+                    refactoringElements.registerTransaction(new RefactoringCommit(Collections.singleton(mods)));
                 }
             }
         } catch (IOException ex) {

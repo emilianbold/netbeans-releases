@@ -495,6 +495,23 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (file.endsWith("org-netbeans-modules-nbjunit.jar") || file.endsWith("org-netbeans-libs-junit4.jar")) {
             return false;
         }
+        /* NB-Core-Build #7998, #8006:
+        java.lang.Exception: checkRead: .../nbbuild/netbeans/ide/modules/org-netbeans-modules-projectui.jar
+            at org.netbeans.modules.netbinox.CountingSecurityManager.checkRead(CountingSecurityManager.java:178)
+            at java.util.zip.ZipFile.<init>(ZipFile.java:122)
+            ...
+            at java.lang.ClassLoader.loadClass(ClassLoader.java:247)
+            at org.netbeans.modules.project.ui.actions.ProjectAction.refresh(ProjectAction.java:145)
+            at org.netbeans.modules.project.ui.actions.LookupSensitiveAction.doRefresh(LookupSensitiveAction.java:193)
+            at org.netbeans.modules.project.ui.actions.LookupSensitiveAction.isEnabled(LookupSensitiveAction.java:136)
+            at org.netbeans.modules.project.ui.actions.ProjectAction.isEnabled(ProjectAction.java:66)
+            at org.netbeans.modules.debugger.jpda.projects.MainProjectManager$1.run(MainProjectManager.java:106)
+            at java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:209)
+        (where MPM is initialized from registration of DebuggerAction.createKillAction)
+        */
+        if (file.endsWith("org-netbeans-modules-projectui.jar")) {
+            return false;
+        }
         if (file.startsWith(System.getProperty("java.home").replaceAll("[/\\\\][^/\\\\]*$", ""))) {
             return false;
         }

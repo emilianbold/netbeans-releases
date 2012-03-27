@@ -285,10 +285,13 @@ public class JPDABreakpoint extends Breakpoint {
      * @param event a event to be fired
      */
     void fireJPDABreakpointChange (JPDABreakpointEvent event) {
-        Iterator<JPDABreakpointListener> i =
-                new HashSet<JPDABreakpointListener>(breakpointListeners).iterator();
-        while (i.hasNext ())
-            i.next().breakpointReached (event);
+        JPDABreakpointListener[] listeners;
+        synchronized (this) {
+            listeners = breakpointListeners.toArray(new JPDABreakpointListener[0]);
+        }
+        for (JPDABreakpointListener l : listeners) {
+            l.breakpointReached (event);
+        }
     }
 
     void enginePropertyChange(PropertyChangeEvent evt) {

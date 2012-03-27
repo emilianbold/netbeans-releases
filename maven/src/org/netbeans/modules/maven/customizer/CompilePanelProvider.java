@@ -41,9 +41,9 @@
  */
 
 package org.netbeans.modules.maven.customizer;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -55,18 +55,19 @@ import org.openide.util.Lookup;
 @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", category="Build", position=100)
 public class CompilePanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
+    @Override
     public Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
-                ModelHandle.PANEL_COMPILE,
+                ModelHandle2.PANEL_COMPILE,
                 org.openide.util.NbBundle.getMessage(CompilePanelProvider.class, "TIT_Compile"),
                 null);
     }
     
+    @Override
     public JComponent createComponent(Category category, Lookup context) {
-        ModelHandle handle = context.lookup(ModelHandle.class);
+        ModelHandle2 handle = context.lookup(ModelHandle2.class);
         Project prj = context.lookup(Project.class);
-        final CompilePanel panel = new CompilePanel(handle, prj);
-        return panel;
+        return new CompilePanel(handle, prj);
     }
     
 }

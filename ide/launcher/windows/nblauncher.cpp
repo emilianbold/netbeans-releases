@@ -475,7 +475,10 @@ bool NbLauncher::areWeOn32bits() {
         pGNSI(&siSysInfo);
     else
         GetSystemInfo(&siSysInfo);
-    return (siSysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL);
+    logMsg("NbLauncher::areWeOn32bits returns (0=false, 1=true)? %i", ((siSysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL) ||
+            (strstr(NBEXEC_FILE_PATH, "64") == NULL)));
+    return ((siSysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL) ||
+            (strstr(NBEXEC_FILE_PATH, "64") == NULL));
 }
 
 // Search if -Xmx and -XX:MaxPermSize are specified in existing arguments
@@ -499,6 +502,7 @@ void NbLauncher::adjustHeapAndPermGenSize() {
         }
         char tmp[32];
         snprintf(tmp, 32, " -J-Xmx%dm", memory);
+        logMsg("Memory settings: -J-Xmx%dm", memory);
         nbOptions += tmp;
     }
     if (nbOptions.find("-J-XX:MaxPermSize") == string::npos) {
@@ -508,6 +512,7 @@ void NbLauncher::adjustHeapAndPermGenSize() {
         else
             memory = 384;
         char tmp[32];
+        logMsg("Memory settings: -J-XX:MaxPermSize=%dm", memory);
         snprintf(tmp, 32, " -J-XX:MaxPermSize=%dm", memory);
         nbOptions += tmp;
     }

@@ -70,6 +70,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.web.common.api.FileReference;
@@ -221,7 +222,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
         }
 
         //commit the transaction and add the differences to the result
-        refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
+        refactoringElements.registerTransaction(new RefactoringCommit(Collections.singletonList(modificationResult)));
         for (FileObject fo : modificationResult.getModifiedFileObjects()) {
             for (Difference diff : modificationResult.getDifferences(fo)) {
                 refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));

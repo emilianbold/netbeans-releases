@@ -462,6 +462,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
             }
         }
         final Map<String,String> properties = Util.getProperties(library);
+        assert properties != null : "LibraryImplementation: " + library + " returned null properties."; //NOI18N
         final Element propertiesNode = (Element) libraryE.appendChild(doc.createElementNS(LIBRARY_NS3, PROPERTIES));
         for (Map.Entry<String,String> e : properties.entrySet()) {
             final Element propertyNode = (Element)propertiesNode.appendChild(doc.createElementNS(LIBRARY_NS3, PROPERTY));

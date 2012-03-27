@@ -425,7 +425,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             final AddModulePanel addPanel = new AddModulePanel(props);
             String title = testType.equals("unit") ? CTL_AddTestDependency_unit() : CTL_AddTestDependency_qa_functional();
             final DialogDescriptor descriptor = new DialogDescriptor(addPanel, title);
-            descriptor.setHelpCtx(new HelpCtx(AddModulePanel.class));
+            descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel"));
             descriptor.setClosingOptions(new Object[0]);
             final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
             descriptor.setButtonListener(new ActionListener() {
@@ -627,7 +627,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             final EditTestDependencyPanel editTestPanel = new EditTestDependencyPanel(testDep);
             DialogDescriptor descriptor = new DialogDescriptor(editTestPanel,
                     CTL_EditModuleDependencyTitle(testDep.getModule().getLocalizedName()));
-            descriptor.setHelpCtx(new HelpCtx(EditTestDependencyPanel.class));
+            descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.apisupport.project.ui.customizer.EditTestDependencyPanel"));
             Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
             d.setVisible(true);
             if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {

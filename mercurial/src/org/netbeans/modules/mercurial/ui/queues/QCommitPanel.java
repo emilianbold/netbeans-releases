@@ -383,15 +383,26 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
         public QFileNode[] getNodes (File repository, File[] roots, boolean[] refreshFinished) {
             try {
                 if (parent != null && parent != HgLogMessage.HgRevision.EMPTY) {
+                    Map<File, FileInformation> patchChanges = HgCommand.getStatus(repository, Collections.singletonList(repository), parent.getRevisionNumber(), QPatch.TAG_QTIP);
                     FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-                    cache.refreshAllRoots(Collections.<File, Set<File>>singletonMap(repository, new HashSet<File>(Arrays.asList(roots))));
+                    Set<File> toRefresh = new HashSet<File>(Arrays.asList(roots));
+                    toRefresh.addAll(patchChanges.keySet());
+                    cache.refreshAllRoots(Collections.<File, Set<File>>singletonMap(repository, toRefresh));
+                    
                     Map<File, FileInformation> statuses = getLocalChanges(roots, cache);
                     statuses.keySet().retainAll(HgUtils.flattenFiles(roots, statuses.keySet()));
-                    Map<File, FileInformation> patchChanges = HgCommand.getStatus(repository, Arrays.asList(roots), parent.getRevisionNumber(), QPatch.TAG_QTIP);
-                    patchChanges.keySet().retainAll(HgUtils.flattenFiles(roots, patchChanges.keySet()));
+                    Set<File> patchChangesUnderSelection = getPatchChangesUnderSelection(patchChanges, roots);
+                    
                     for (Map.Entry<File, FileInformation> e : patchChanges.entrySet()) {
-                        if (!statuses.containsKey(e.getKey())) {
-                            statuses.put(e.getKey(), new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, null, false));
+                        if (patchChangesUnderSelection.contains(e.getKey())) {
+                            if (!statuses.containsKey(e.getKey())) {
+                                statuses.put(e.getKey(), new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, null, false));
+                            }
+                        } else {
+                            FileInformation info = cache.getCachedStatus(e.getKey());
+                            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                                statuses.put(e.getKey(), info);
+                            }
                         }
                     }
 
@@ -420,6 +431,26 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
                 Mercurial.LOG.log(Level.INFO, null, ex);
             }
             return null;
+        }
+
+        // should contain only patch changes that apply to current selection
+        private Set<File> getPatchChangesUnderSelection(Map<File, FileInformation> patchChanges, File[] roots) {
+            Set<File> patchChangesUnderSelection = new HashSet<File>(patchChanges.keySet());
+            for (Iterator<File> it = patchChangesUnderSelection.iterator(); it.hasNext(); ) {
+                File f = it.next();
+                boolean isUnderRoots = false;
+                for (File root : roots) {
+                    if (Utils.isAncestorOrEqual(root, f)) {
+                        isUnderRoots = true;
+                        break;
+                    }
+                }
+                if (!isUnderRoots) {
+                    it.remove();
+                }
+            }
+            patchChangesUnderSelection = HgUtils.flattenFiles(roots, patchChangesUnderSelection);
+            return patchChangesUnderSelection;
         }
 
         private Map<File, FileInformation> getLocalChanges (File[] roots, FileStatusCache cache) {

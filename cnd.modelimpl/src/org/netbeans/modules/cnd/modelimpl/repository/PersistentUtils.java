@@ -652,7 +652,8 @@ public class PersistentUtils {
             output.writeInt(EMPTY_COMPOUND_STATEMENT_IMPL);
             ((EmptyCompoundStatementImpl) body).write(output);
         } else if (body instanceof CompoundStatementImpl) {
-            output.writeInt(COMPOUND_STATEMENT_IMPL);
+            // will be deserialized as lazy compound statement
+            output.writeInt(LAZY_COMPOUND_STATEMENT_IMPL);
             ((CompoundStatementImpl) body).write(output);
         } else {
             throw new IllegalArgumentException("unknown compound statement " + body);  //NOI18N

@@ -154,7 +154,7 @@ public class RemoteFileObjectFactory {
         return fo;
     }
 
-    private RemoteDirectory createRemoteDirectory(RemoteFileObjectBase parent, String remotePath, File cacheFile, RemoteFileObject owner) {
+    private RemoteFileObjectBase createRemoteDirectory(RemoteFileObjectBase parent, String remotePath, File cacheFile, RemoteFileObject owner) {
         cacheRequests++;
         if (fileObjectsCache.size() == 0) {
             scheduleCleanDeadEntries(); // schedule on 1-st request
@@ -181,10 +181,10 @@ public class RemoteFileObjectFactory {
                 return (RemoteDirectory)result;
             }
         }
-        return (RemoteDirectory) fo;
+        return fo;
     }
 
-    private RemotePlainFile createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType, RemoteFileObject owner) {
+    private RemoteFileObjectBase createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType, RemoteFileObject owner) {
         cacheRequests++;
         if (fileObjectsCache.size() == 0) {
             scheduleCleanDeadEntries(); // schedule on 1-st request
@@ -211,10 +211,10 @@ public class RemoteFileObjectFactory {
                 return (RemotePlainFile)result;
             }
         }
-        return (RemotePlainFile) fo;
+        return fo;
     }
 
-    private SpecialRemoteFileObject createSpecialFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType, RemoteFileObject owner) {
+    private RemoteFileObjectBase createSpecialFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType, RemoteFileObject owner) {
         cacheRequests++;
         if (fileObjectsCache.size() == 0) {
             scheduleCleanDeadEntries(); // schedule on 1-st request
@@ -241,11 +241,11 @@ public class RemoteFileObjectFactory {
                 return (SpecialRemoteFileObject)result;
             }
         }
-        return (SpecialRemoteFileObject) fo;
+        return fo;
     }
 
 
-    private RemoteLink createRemoteLink(RemoteFileObjectBase parent, String remotePath, String link, RemoteFileObject owner) {
+    private RemoteFileObjectBase createRemoteLink(RemoteFileObjectBase parent, String remotePath, String link, RemoteFileObject owner) {
         if (owner == null) {
             owner = new RemoteFileObject(fileSystem);
         }
@@ -258,10 +258,10 @@ public class RemoteFileObjectFactory {
                 ((RemoteLink) result).initListeners();
             }
         }
-        return (RemoteLink) result;
+        return result;
     }
 
-    public RemoteLinkChild createRemoteLinkChild(RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
+    public RemoteFileObjectBase createRemoteLinkChild(RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
         RemoteLinkChild fo = new RemoteLinkChild(new RemoteFileObject(fileSystem), fileSystem, env, parent, remotePath, delegate);
         RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
         if (result instanceof RemoteLinkChild) {
@@ -279,11 +279,14 @@ public class RemoteFileObjectFactory {
                     // recreate
                     fo = new RemoteLinkChild(ownerFileObject, fileSystem, env, parent, remotePath, delegate);
                     result = putIfAbsent(remotePath, fo);
+                    if (result == fo) {
+                        ((RemoteLinkChild) result).initListeners(); // fo.initListeners() is quite the same :)
+                    }
                     // TODO: is it possible that somebody has just placed another one? of different kind?
                 }
             }
         }
-        return (RemoteLinkChild) result;
+        return result;
     }
 
     private RemoteFileObjectBase putIfAbsent(String remotePath, RemoteFileObjectBase fo) {

@@ -80,17 +80,11 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Ondra Vrabec
  */
-@ServiceProviders({
-    @ServiceProvider(service=org.netbeans.modules.bugtracking.spi.TaskListIssueProvider.class),
-    @ServiceProvider(service=JiraTaskListProvider.class)
-})
 public final class JiraTaskListProvider extends TaskListIssueProvider implements PropertyChangeListener {
 
     private static JiraTaskListProvider instance;
@@ -109,12 +103,12 @@ public final class JiraTaskListProvider extends TaskListIssueProvider implements
 
     public static synchronized JiraTaskListProvider getInstance() {
         if (instance == null) {
-            instance = Lookup.getDefault().lookup(JiraTaskListProvider.class);
+            instance = new JiraTaskListProvider();
         }
         return instance;
     }
 
-    public JiraTaskListProvider () {
+    private JiraTaskListProvider () {
         // initialization
         support = new PropertyChangeSupport(this);
         reloadAsync();

@@ -96,7 +96,9 @@ import org.openide.util.Lookup;
  * @see RefactoringElementsBag#addFileChange
  * @see BackupFacility.Handle
  * @author Jan Becicka
+ * @deprecated 
  */
+@Deprecated
 public abstract class BackupFacility {
     
     private BackupFacility() {

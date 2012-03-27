@@ -153,114 +153,135 @@ public class JavaCustomIndexer extends CustomIndexer {
                 JavaIndex.LOG.fine("Ignoring annotation processor build generated folder"); //NOI18N
                 return;
             }
-            final List<Indexable> javaSources = new ArrayList<Indexable>();
-            final Collection<? extends CompileTuple> virtualSourceTuples = translateVirtualSources (
+            if (!files.iterator().hasNext() && !context.isAllFilesIndexing()) {
+                boolean success = false;
+                try {
+                    final JavaParsingContext javaContext = new JavaParsingContext(
+                            context,
+                            bootPath,
+                            compilePath,
+                            sourcePath,
+                            Collections.<CompileTuple>emptySet());
+                    try {
+                        javaContext.getClassIndexImpl().setDirty(null);
+                    } finally {
+                        javaContext.finish();
+                    }
+                    success = true;
+                } finally {
+                    if (!success) {
+                        JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
+                    }
+                }
+                
+            } else {
+                final List<Indexable> javaSources = new ArrayList<Indexable>();
+                final Collection<? extends CompileTuple> virtualSourceTuples = translateVirtualSources (
                     splitSources(files,javaSources),
                     context.getRootURI());
-            final JavaParsingContext javaContext;
-            try {
-                //todo: Ugly hack, the ClassIndexManager.createUsagesQuery has to be called before the root is set to dirty mode.
-                javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
-            } finally {
-                JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
-            }
-            boolean finished = false;
-            final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
-            final Set<File> removedFiles = new HashSet<File> ();
-            final List<CompileTuple> toCompile = new ArrayList<CompileTuple>(javaSources.size()+virtualSourceTuples.size());
-            CompileWorker.ParsingOutput compileResult = null;
-            try {
-                if (context.isAllFilesIndexing()) {
-                    cleanUpResources(context.getRootURI());
-                }
-                if (javaContext.getClassIndexImpl() == null)
-                    return; //IDE is exiting, indeces are already closed.
-
-                javaContext.getClassIndexImpl().setDirty(null);
-                for (Indexable i : javaSources) {
-                    final CompileTuple tuple = createTuple(context, javaContext, i);
-                    if (tuple != null) {
-                        toCompile.add(tuple);
-                    }
-                    clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
-                }
-                for (CompileTuple tuple : virtualSourceTuples) {
-                    clear(context, javaContext, tuple.indexable, removedTypes, removedFiles, fmTx);
-                }
-                toCompile.addAll(virtualSourceTuples);
-                List<CompileTuple> toCompileRound = toCompile;
-                int round = 0;
-                while (round++ < 2) {
-                    CompileWorker[] WORKERS = {
-                        toCompileRound.size() < TRESHOLD ? new SuperOnePassCompileWorker() : new OnePassCompileWorker(),
-                        new MultiPassCompileWorker()
-                    };
-                    for (CompileWorker w : WORKERS) {
-                        compileResult = w.compile(compileResult, context, javaContext, toCompileRound);
-                        if (compileResult == null || context.isCancelled()) {
-                            return; // cancelled, IDE is sutting down
-                        }
-                        if (compileResult.success) {
-                            break;
-                        }
-                    }
-                    if (compileResult.aptGenerated.isEmpty()) {
-                        round++;
-                    } else {
-                        toCompileRound = new ArrayList<CompileTuple>(compileResult.aptGenerated.size());
-                        for (CompileTuple ct : compileResult.aptGenerated) {
-                            toCompileRound.add(ct);
-                            toCompile.add(ct);
-                        }
-                        compileResult.aptGenerated.clear();
-                    }
-                }
-                finished = compileResult.success;
-            } finally {
+                final JavaParsingContext javaContext;
                 try {
-                    javaContext.finish();
+                    //todo: Ugly hack, the ClassIndexManager.createUsagesQuery has to be called before the root is set to dirty mode.
+                    javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
                 } finally {
-                    if (finished) {
-                        JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, null);
-                    }
+                    JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                 }
-            }
-            assert compileResult != null;
-
-            Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added types
-            Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed types
-            _at.removeAll(removedTypes);
-            _rt.removeAll(compileResult.addedTypes);
-            compileResult.addedTypes.retainAll(removedTypes); //Changed types
-
-            if (!context.isSupplementaryFilesIndexing() && !context.isCancelled()) {
-                compileResult.modifiedTypes.addAll(_rt);
-                Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), compileResult.modifiedTypes, !_at.isEmpty());
-                Set<URL> urls = root2Rebuild.get(context.getRootURI());
-                if (urls != null) {
+                boolean finished = false;
+                final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
+                final Set<File> removedFiles = new HashSet<File> ();
+                final List<CompileTuple> toCompile = new ArrayList<CompileTuple>(javaSources.size()+virtualSourceTuples.size());
+                CompileWorker.ParsingOutput compileResult = null;
+                try {
                     if (context.isAllFilesIndexing()) {
-                        root2Rebuild.remove(context.getRootURI());
-                    } else {
-                        for (CompileTuple ct : toCompile)
-                            urls.remove(ct.indexable.getURL());
-                        if (urls.isEmpty())
-                            root2Rebuild.remove(context.getRootURI());
+                        cleanUpResources(context.getRootURI());
+                    }
+                    if (javaContext.getClassIndexImpl() == null)
+                        return; //IDE is exiting, indeces are already closed.
+
+                    javaContext.getClassIndexImpl().setDirty(null);
+                    for (Indexable i : javaSources) {
+                        final CompileTuple tuple = createTuple(context, javaContext, i);
+                        if (tuple != null) {
+                            toCompile.add(tuple);
+                        }
+                        clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
+                    }
+                    for (CompileTuple tuple : virtualSourceTuples) {
+                        clear(context, javaContext, tuple.indexable, removedTypes, removedFiles, fmTx);
+                    }
+                    toCompile.addAll(virtualSourceTuples);
+                    List<CompileTuple> toCompileRound = toCompile;
+                    int round = 0;
+                    while (round++ < 2) {
+                        CompileWorker[] WORKERS = {
+                            toCompileRound.size() < TRESHOLD ? new SuperOnePassCompileWorker() : new OnePassCompileWorker(),
+                            new MultiPassCompileWorker()
+                        };
+                        for (CompileWorker w : WORKERS) {
+                            compileResult = w.compile(compileResult, context, javaContext, toCompileRound);
+                            if (compileResult == null || context.isCancelled()) {
+                                return; // cancelled, IDE is sutting down
+                            }
+                            if (compileResult.success) {
+                                break;
+                            }
+                        }
+                        if (compileResult.aptGenerated.isEmpty()) {
+                            round++;
+                        } else {
+                            toCompileRound = new ArrayList<CompileTuple>(compileResult.aptGenerated.size());
+                            for (CompileTuple ct : compileResult.aptGenerated) {
+                                toCompileRound.add(ct);
+                                toCompile.add(ct);
+                            }
+                            compileResult.aptGenerated.clear();
+                        }
+                    }
+                    finished = compileResult.success;
+                } finally {
+                    try {
+                        javaContext.finish();
+                    } finally {
+                        if (finished) {
+                            JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, null);
+                        }
                     }
                 }
-                for (Map.Entry<URL, Set<URL>> entry : root2Rebuild.entrySet()) {
-                    context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                assert compileResult != null;
+
+                Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added types
+                Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed types
+                _at.removeAll(removedTypes);
+                _rt.removeAll(compileResult.addedTypes);
+                compileResult.addedTypes.retainAll(removedTypes); //Changed types
+
+                if (!context.isSupplementaryFilesIndexing() && !context.isCancelled()) {
+                    compileResult.modifiedTypes.addAll(_rt);
+                    Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), compileResult.modifiedTypes, !_at.isEmpty());
+                    Set<URL> urls = root2Rebuild.get(context.getRootURI());
+                    if (urls != null) {
+                        if (context.isAllFilesIndexing()) {
+                            root2Rebuild.remove(context.getRootURI());
+                        } else {
+                            for (CompileTuple ct : toCompile)
+                                urls.remove(ct.indexable.getURL());
+                            if (urls.isEmpty())
+                                root2Rebuild.remove(context.getRootURI());
+                        }
+                    }
+                    for (Map.Entry<URL, Set<URL>> entry : root2Rebuild.entrySet()) {
+                        context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                    }
+                }
+                javaContext.store();
+                ciTx.addedTypes(context.getRootURI(), _at);
+                ciTx.removedTypes(context.getRootURI(), _rt);
+                ciTx.changedTypes(context.getRootURI(), compileResult.addedTypes);
+                if (!context.checkForEditorModifications()) { // #152222
+                    ciTx.addedCacheFiles(context.getRootURI(), compileResult.createdFiles);
+                    ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
                 }
             }
-            javaContext.store();
-            ciTx.addedTypes(context.getRootURI(), _at);
-            ciTx.removedTypes(context.getRootURI(), _rt);
-            ciTx.changedTypes(context.getRootURI(), compileResult.addedTypes);
-            if (!context.checkForEditorModifications()) { // #152222
-                ciTx.addedCacheFiles(context.getRootURI(), compileResult.createdFiles);
-                ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
-            }
-        } catch (NoSuchAlgorithmException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
@@ -348,8 +369,6 @@ public class JavaCustomIndexer extends CustomIndexer {
             } finally {
                 javaContext.finish();
             }
-        } catch (NoSuchAlgorithmException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

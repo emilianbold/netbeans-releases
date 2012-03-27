@@ -59,7 +59,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
@@ -401,23 +400,6 @@ public class MavenProjectSupport {
         return readSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, false);
     }
     
-    /**
-     * Read compileOnSave property for the given project
-     * Possible values are:
-     * <ul>
-     * <li>all - both tests and application gets run by netbeans quick run infrastructure</li>
-     * <li>test - only tests are run by netbeans quick run infrastructure, not application - default value</li>
-     * <li>app - only application is run by netbeans quick run infrastructure, not tests</li>
-     * <li>none - no compile on save
-     * </ul>
-     * 
-     * @param project project for which we want to get CoS value
-     * @return one of possible CoS values
-     */
-    public static String isCompileOnSave(Project project) {
-        return readSettings(project, Constants.HINT_COMPILE_ON_SAVE, true);
-    }
-    
     private static String readSettings(Project project, String propertyName, boolean shared) {
         return project.getLookup().lookup(AuxiliaryProperties.class).get(propertyName, shared);
     }
@@ -438,10 +420,6 @@ public class MavenProjectSupport {
     
     public static void setServerInstanceID(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, value, false);
-    }
-    
-    public static void setCompileOnSave(Project project, String value) {
-        setSettings(project, Constants.HINT_COMPILE_ON_SAVE, value, true);
     }
     
     private static void setSettings(Project project, String key, String value, boolean shared) {

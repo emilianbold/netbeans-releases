@@ -180,8 +180,9 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         //TODO:Do you want to just use Arrays.asList?
-        if(panel == null)
+        if(panel == null) {
             panel = new SafeDeletePanel(refactoring, regulardelete, parent);
+        }
         return panel;
     }
     

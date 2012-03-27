@@ -129,7 +129,7 @@ public final class ResultModel {
      * Clean the allocated resources. Do not rely on GC there as we are often
      * referenced from various objects. So keep leak as small as possible.
      * */
-    synchronized void close() {
+    public synchronized void close() {
         if ((matchingObjects != null) && !matchingObjects.isEmpty()) {
             for (MatchingObject matchingObj : matchingObjects) {
                 matchingObj.cleanup();

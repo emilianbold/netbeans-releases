@@ -113,8 +113,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if ((dob instanceof DataFolder) && 
                 RefactoringUtils.isFileInOpenProject(fo) && 
                 JavaRefactoringUtils.isOnSourceClasspath(fo) &&
-                !RefactoringUtils.isClasspathRoot(fo))
+                !RefactoringUtils.isClasspathRoot(fo)) {
             return true;
+        }
         return false;
     }
     
@@ -134,10 +135,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         ExplorerContext drop = lookup.lookup(ExplorerContext.class);
         FileObject fo = getTarget(lookup);
         if (fo != null) {
-            if (!fo.isFolder())
+            if (!fo.isFolder()) {
                 return false;
-            if (!JavaRefactoringUtils.isOnSourceClasspath(fo)) 
+            }
+            if (!JavaRefactoringUtils.isOnSourceClasspath(fo)) {
                 return false;
+            }
             
             //it is drag and drop
             Set<DataFolder> folders = new HashSet<DataFolder>();
@@ -151,15 +154,17 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     return false;
                 }
                 if (dob instanceof DataFolder) {
-                    if (FileUtil.getRelativePath(dob.getPrimaryFile(), fo)!=null)
+                    if (FileUtil.getRelativePath(dob.getPrimaryFile(), fo)!=null) {
                         return false;
+                    }
                     folders.add((DataFolder)dob);
                 } else if (RefactoringUtils.isJavaFile(dob.getPrimaryFile())) {
                     jdoFound = true;
                 }
             }
-            if (jdoFound)
+            if (jdoFound) {
                 return true;
+            }
             for (DataFolder fold:folders) {
                 for (Enumeration<DataObject> e = (fold).children(true); e.hasMoreElements();) {
                     if (RefactoringUtils.isJavaFile(e.nextElement().getPrimaryFile())) {
@@ -277,27 +282,33 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     
     public static FileObject getTarget(Lookup look) {
         ExplorerContext drop = look.lookup(ExplorerContext.class);
-        if (drop==null)
+        if (drop==null) {
             return null;
+        }
         Node n = drop.getTargetNode();
-        if (n==null)
+        if (n==null) {
             return null;
+        }
         DataObject dob = n.getCookie(DataObject.class);
-        if (dob!=null)
+        if (dob!=null) {
             return dob.getPrimaryFile();
+        }
         return null;
     }
     
     public static PasteType getPaste(Lookup look) {
         ExplorerContext drop = look.lookup(ExplorerContext.class);
-        if (drop==null)
+        if (drop==null) {
             return null;
+        }
         Transferable orig = drop.getTransferable();
-        if (orig==null)
+        if (orig==null) {
             return null;
+        }
         Node n = drop.getTargetNode();
-        if (n==null)
+        if (n==null) {
             return null;
+        }
         PasteType[] pt = n.getPasteTypes(orig);
         if (pt.length==1) {
             return null;
@@ -307,8 +318,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     
     static String getName(Lookup look) {
         ExplorerContext ren = look.lookup(ExplorerContext.class); 
-        if (ren==null) 
+        if (ren==null) {
             return null;
+        }
         return ren.getNewName(); //NOI18N
     }
     
@@ -322,10 +334,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         ExplorerContext drop = lookup.lookup(ExplorerContext.class);
         FileObject fo = getTarget(lookup);
         if (fo != null) {
-            if (!fo.isFolder())
+            if (!fo.isFolder()) {
                 return false;
-            if (!JavaRefactoringUtils.isOnSourceClasspath(fo)) 
+            }
+            if (!JavaRefactoringUtils.isOnSourceClasspath(fo)) {
                 return false;
+            }
             
             //it is drag and drop
             Set<DataFolder> folders = new HashSet<DataFolder>();
@@ -339,15 +353,17 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     return false;
                 }
                 if (dob instanceof DataFolder) {
-                    if (FileUtil.getRelativePath(dob.getPrimaryFile(), fo)!=null)
+                    if (FileUtil.getRelativePath(dob.getPrimaryFile(), fo)!=null) {
                         return false;
+                    }
                     folders.add((DataFolder)dob);
                 } else if (RefactoringUtils.isJavaFile(dob.getPrimaryFile())) {
                     jdoFound = true;
                 }
             }
-            if (jdoFound)
+            if (jdoFound) {
                 return true;
+            }
             for (DataFolder fold:folders) {
                 for (Enumeration<DataObject> e = (fold).children(true); e.hasMoreElements();) {
                     if (RefactoringUtils.isJavaFile(e.nextElement().getPrimaryFile())) {

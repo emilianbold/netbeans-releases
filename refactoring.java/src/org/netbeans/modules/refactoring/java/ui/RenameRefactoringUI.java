@@ -232,8 +232,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
     
     @Override
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
-        if (!panel.isUpdateReferences()) 
+        if (!panel.isUpdateReferences()) {
             return null;
+        }
         newName = panel.getNameValue();
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);

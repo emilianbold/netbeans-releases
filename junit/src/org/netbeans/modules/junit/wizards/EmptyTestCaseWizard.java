@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.junit.wizards;
 
-import org.netbeans.modules.junit.GuiUtils;
+import org.netbeans.modules.java.testrunner.GuiUtils;
 import org.netbeans.modules.junit.JUnitSettings;
 import org.openide.loaders.TemplateWizard;
 

@@ -167,6 +167,12 @@ ${cursor}]]>
         </code>
     </codetemplate>
 
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.ifnc" abbreviation="ifnc" contexts="php-code">
+        <code>
+<![CDATA[public function ${functionName}($$${param});]]>
+        </code>
+    </codetemplate>
+
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.foreach" abbreviation="fore" contexts="php-code">
         <code>
 <![CDATA[foreach (${ARRAY variableFromPreviousAssignment instanceof="array" default="$array"} as $$${value}) {

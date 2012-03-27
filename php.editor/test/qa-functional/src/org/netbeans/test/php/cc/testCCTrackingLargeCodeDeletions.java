@@ -69,8 +69,8 @@ public class testCCTrackingLargeCodeDeletions extends cc
   {
     return NbModuleSuite.create(
       NbModuleSuite.createConfiguration( testCCTrackingLargeCodeDeletions.class ).addTest(
-          "CreateApplication",
-          "Issue141992"
+          "CreateApplication"
+      //    "Issue141992" // see #209795
         )
         .enableModules( ".*" )
         .clusters( ".*" )

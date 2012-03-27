@@ -103,7 +103,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                 if ((fi.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) &&
                      fi.getEntry(file).isCopied()) 
                 {
-                    ISVNInfo info = client.getInfoFromWorkingCopy(file);
+                    ISVNInfo info = SvnUtils.getInfoFromWorkingCopy(client, file);
                     SVNUrl copyUrl = info.getCopyUrl();
                     repoUrl = info.getRepository();
                     

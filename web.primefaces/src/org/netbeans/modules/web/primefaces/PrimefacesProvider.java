@@ -55,7 +55,7 @@ public class PrimefacesProvider implements JsfComponentProvider {
 
     @Override
     public Set<JsfComponentImplementation> getJsfComponents() {
-        JsfComponentImplementation descriptor = new Primefaces2Implementation();
+        JsfComponentImplementation descriptor = new PrimefacesImplementation();
         return Collections.singleton(descriptor);
     }
 

@@ -371,14 +371,30 @@ public class BuildArtifactMapperImpl {
         List<File> updatedFiles = new LinkedList<File>();
 
         for (File deletedFile : deleted) {
-            File toDelete = resolveFile(targetFolder, relativizeFile(cacheRoot, deletedFile));
+            final String relPath = relativizeFile(cacheRoot, deletedFile);
+            if (relPath == null) {
+                throw new IllegalArgumentException (String.format(
+                    "Deleted file: %s is not under cache root: %s, (normalized file: %s).", //NOI18N
+                    deletedFile.getAbsolutePath(),
+                    cacheRoot.getAbsolutePath(),
+                    FileUtil.normalizeFile(deletedFile).getAbsolutePath()));
+            }
+            File toDelete = resolveFile(targetFolder, relPath);
             
             toDelete.delete();
             updatedFiles.add(toDelete);
         }
 
         for (File updatedFile : updated) {
-            File target = resolveFile(targetFolder, relativizeFile(cacheRoot, updatedFile));
+            final String relPath = relativizeFile(cacheRoot, updatedFile);
+            if (relPath == null) {
+                throw new IllegalArgumentException (String.format(
+                    "Updated file: %s is not under cache root: %s, (normalized file: %s).", //NOI18N
+                    updatedFile.getAbsolutePath(),
+                    cacheRoot.getAbsolutePath(),
+                    FileUtil.normalizeFile(updatedFile).getAbsolutePath()));
+            }
+            File target = resolveFile(targetFolder, relPath);                        
 
             try {
                 copyFile(updatedFile, target);

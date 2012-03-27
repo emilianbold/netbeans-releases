@@ -103,8 +103,8 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         } else {
             childAbsPath = RemoteFileSystemUtils.normalize(getPath() + '/' + relativePath);
         }
-        RemoteLinkChild result = getFileSystem().getFactory().createRemoteLinkChild(this, childAbsPath, fo.getImplementor());
-        result.initListeners();
+        // NB: here it can become not a remote link child (in the case it changed remotely and refreshed concurrently)
+        RemoteFileObjectBase result = getFileSystem().getFactory().createRemoteLinkChild(this, childAbsPath, fo.getImplementor());
         return result.getOwnerFileObject();
     }
 
@@ -347,8 +347,9 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
                 return this.getOwnerFileObject();
             }
             if (originalFO.getParent() == delegate) {
-                String path = RemoteLinkBase.this.getPath() + '/' + fo.getNameExt();                
-                RemoteLinkChild linkChild = getFileSystem().getFactory().createRemoteLinkChild(this, path, originalFO);
+                String path = RemoteLinkBase.this.getPath() + '/' + fo.getNameExt();
+                // NB: here it can become not a remote link child (in the case it changed remotely and refreshed concurrently)
+                RemoteFileObjectBase linkChild = getFileSystem().getFactory().createRemoteLinkChild(this, path, originalFO);
                 return linkChild.getOwnerFileObject();
             }
         }

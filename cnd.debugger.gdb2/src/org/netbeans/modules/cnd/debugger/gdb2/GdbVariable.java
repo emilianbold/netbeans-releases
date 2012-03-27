@@ -105,6 +105,9 @@ class GdbVariable extends Variable {
 
     public void setInScope(boolean inScope) {
 	this.inScope = inScope;
+        if (!inScope) {
+            setNumChild("0"); //NOI18N
+        }
     }
 
     public boolean isInScope() {
@@ -286,6 +289,7 @@ class GdbVariable extends Variable {
             return new Action[] {
 		// LATER VariableModel.Action_INHERITED_MEMBERS,
                 // LATER VariableModel.Action_DYNAMIC_TYPE,
+                VariableModel.getWatchAction(this),
                 VariableModel.getOutputFormatAction(this),
                 null,
             };
@@ -310,6 +314,11 @@ class GdbVariable extends Variable {
     @Override
     public String getFormat() {
 	return mi_format;
+    }
+
+    @Override
+    public void createWatch() {
+        debugger.createWatchFromVariable(this);
     }
     
     //////////////

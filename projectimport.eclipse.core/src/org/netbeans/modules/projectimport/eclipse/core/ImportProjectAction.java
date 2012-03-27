@@ -77,14 +77,10 @@ public class ImportProjectAction implements ActionListener {
             return;
         }
         performImport(eclProjects, destination, wizard.getExtraPanels(), 
-                wizard.getNumberOfImportedProject(), false, true, true, null, null);
+                wizard.getNumberOfImportedProject(), true, true, null, null);
     }
     
-    public static void performImport(List<EclipseProject> eclProjects, String destination, 
-            List<WizardDescriptor.Panel<WizardDescriptor>> extraPanels, int numberOfImportedProject, 
-            final boolean setMain, final boolean showReport, 
-            final boolean openProjects, final List<String> importProblems, 
-            final List<Project> createdProjects) {
+    public static void performImport(List<EclipseProject> eclProjects, String destination, List<WizardDescriptor.Panel<WizardDescriptor>> extraPanels, int numberOfImportedProject, final boolean showReport, final boolean openProjects, final List<String> importProblems, final List<Project> createdProjects) {
         
         final Importer importer = new Importer(eclProjects, destination, extraPanels);
         
@@ -120,9 +116,6 @@ public class ImportProjectAction implements ActionListener {
                         }
                         if (openProjects) {
                             OpenProjects.getDefault().open(importer.getProjects(), true);
-                            if (setMain) {
-                                OpenProjects.getDefault().setMainProject(importer.getProjects()[importer.getProjects().length-1]);
-                            }
                         }
                     }
                 }

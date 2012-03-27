@@ -54,7 +54,9 @@ import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.netbeans.modules.jira.issue.JiraIssueFinder;
+import org.netbeans.modules.jira.issue.JiraTaskListProvider;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.Exceptions;
@@ -118,12 +120,14 @@ public class JiraConnector extends KenaiBugtrackingConnector {
 
     @Override
     public IssueFinder getIssueFinder() {
-        if (issueFinder == null) {
-            issueFinder = Lookup.getDefault().lookup(JiraIssueFinder.class);
-        }
-        return issueFinder;
+        return JiraIssueFinder.getInstance();
     }
 
+    @Override
+    public TaskListIssueProvider getTasklistProvder() {
+        return JiraTaskListProvider.getInstance();
+    }
+    
     /******************************************************************************
      * Kenai
      ******************************************************************************/

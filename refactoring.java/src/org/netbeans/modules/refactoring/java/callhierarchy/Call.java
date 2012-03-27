@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -45,12 +45,10 @@ package org.netbeans.modules.refactoring.java.callhierarchy;
 import com.sun.source.util.TreePath;
 import java.awt.EventQueue;
 import java.awt.Image;
-import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.swing.Icon;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -59,8 +57,6 @@ import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -68,7 +64,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionBounds;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -77,7 +72,7 @@ import org.openide.util.NbBundle;
  * @author Jan Pokorsky
  */
 final class Call implements CallDescriptor {
-    
+
     private static final String TYPE_COLOR = "#707070"; // NOI18N
 
     private List<Call> references;
@@ -100,7 +95,7 @@ final class Call implements CallDescriptor {
 
     private Call() {
     }
-    
+
     public List<Call> getReferences() {
         return references != null ? references : Collections.<Call>emptyList();
     }
@@ -146,13 +141,13 @@ final class Call implements CallDescriptor {
             this.state = State.CANCELED;
         }
     }
-    
+
     void setIncomplete(boolean state) {
         if (state) {
             this.state = State.INCOMPLETE;
         }
     }
-    
+
     public boolean isIncomplete() {
         return this.state == State.INCOMPLETE;
     }
@@ -164,7 +159,7 @@ final class Call implements CallDescriptor {
     public boolean isBroken() {
         return this.state == State.BROKEN;
     }
-    
+
     TreePathHandle getSourceToQuery() {
         return overridden != null
                 ? overridden
@@ -177,10 +172,10 @@ final class Call implements CallDescriptor {
             occurrences.get(0).open();
         }
     }
-    
+
     /**
      * Creates an empty Call, which will be eventually replaced by the real item
-     * 
+     *
      * @return empty Call node, which must be replaced by the real one.
      */
     public static Call createEmpty() {
@@ -188,15 +183,15 @@ final class Call implements CallDescriptor {
         c.setIncomplete(true);
         return c;
     }
-    
+
     public static Call createRoot(CompilationInfo javac, TreePath selection, Element selectionElm, boolean isCallerGraph) {
         return createReference(javac, selection, selectionElm, null, isCallerGraph, Collections.<TreePath>emptyList());
     }
-    
+
     public static Call createUsage(CompilationInfo javac, TreePath selection, Element selectionElm, Call parent, List<TreePath> occurrences) {
         return createReference(javac, selection, selectionElm, parent, parent.model.getType() == CallHierarchyModel.HierarchyType.CALLER, occurrences);
     }
-    
+
     private static Call createReference(CompilationInfo javac, TreePath selection, Element selectionElm, Call parent, boolean isCallerGraph, List<TreePath> occurrences) {
         Call c = new Call();
         if (selectionElm.getKind() == ElementKind.INSTANCE_INIT || selectionElm.getKind() == ElementKind.STATIC_INIT) {
@@ -207,9 +202,9 @@ final class Call implements CallDescriptor {
             c.identity = ElementHandle.create(selectionElm);
         }
         c.htmlDisplayName = createHtmlHeader(selectionElm, occurrences.size(), javac);
-        
+
         Icon i = ElementIcons.getElementIcon(selectionElm.getKind(), selectionElm.getModifiers());
-        
+
         if (isCallerGraph) {
             if (parent != null) {
                 c.icon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(ImageUtilities.icon2Image(i), ImageUtilities.loadImage("org/netbeans/modules/refactoring/java/resources/up.png"), 0, 0));
@@ -235,14 +230,14 @@ final class Call implements CallDescriptor {
                 c.identity = ElementHandle.create(next);
             }
         }
-        
+
         if (wanted != null) {
             TreePath declarationPath = javac.getTrees().getPath(wanted);
             if (declarationPath != null) {
                 c.declaration = TreePathHandle.create(declarationPath, javac);
             }
         }
-        
+
         if (c.identity != null) {
             boolean[] recursion = {false};
             c.leaf = isLeaf(selectionElm, c.identity, parent, isCallerGraph, recursion);
@@ -277,7 +272,7 @@ final class Call implements CallDescriptor {
         if (!isCallerGraph && elm.getModifiers().contains(Modifier.ABSTRACT)) {
             return true;
         }
-        while (parent != null) {                
+        while (parent != null) {
             if (handle.equals(parent.identity)) {
                 recursion[0] = true;
                 return true;
@@ -286,7 +281,7 @@ final class Call implements CallDescriptor {
         }
         return false;
     }
-    
+
     private static String createHtmlHeader(Element e, int occurrences, CompilationInfo javac) {
         String member;
         switch (e.getKind()) {
@@ -301,10 +296,10 @@ final class Call implements CallDescriptor {
             default:
                 member = ElementHeaders.getHeader(e, javac, ElementHeaders.NAME);
         }
-        
+
         String encloser = String.format("<font color=%s>%s</font>", TYPE_COLOR, // NOI18N
                 javac.getElements().getBinaryName((TypeElement) e.getEnclosingElement()).toString());
-        
+
         return NbBundle.getMessage(Call.class, "Call.htmlHeader", member, encloser, occurrences);
     }
     /**
@@ -312,7 +307,7 @@ final class Call implements CallDescriptor {
      * @see org.netbeans.modules.java.navigation.ElementScanningTask
      */
     private static String createHtmlHeader(ExecutableElement e, CompilationInfo javac) {
-        
+
         boolean isDeprecated = javac.getElements().isDeprecated(e);
 
         StringBuilder sb = new StringBuilder();
@@ -350,10 +345,10 @@ final class Call implements CallDescriptor {
 //        if (e.getKind() != ElementKind.CONSTRUCTOR) {
 //            TypeMirror rt = e.getReturnType();
 //            if (rt.getKind() != TypeKind.VOID) {
-//                sb.append(" : "); // NOI18N     
+//                sb.append(" : "); // NOI18N
 //                sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
 //                sb.append(print(e.getReturnType()));
-//                sb.append("</font>"); // NOI18N                    
+//                sb.append("</font>"); // NOI18N
 //            }
 //        }
 
@@ -407,56 +402,32 @@ final class Call implements CallDescriptor {
                 return tm.toString();
         }
     }
-    
+
     static boolean doOpen(FileObject fo, PositionBounds bounds) {
         try {
             final int begin = bounds.getBegin().getOffset();
             final int end = bounds.getEnd().getOffset();
             DataObject od = DataObject.find(fo);
-            final EditorCookie ec = od.getCookie(org.openide.cookies.EditorCookie.class);
-            LineCookie lc = od.getCookie(org.openide.cookies.LineCookie.class);
+            final EditorCookie ec = od.getLookup().lookup(org.openide.cookies.EditorCookie.class);
+            boolean opened = NbDocument.openDocument(od, begin, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            if (opened) {
+                EventQueue.invokeLater(new Runnable() {
 
-            if (ec != null && lc != null && begin != -1) {                
-                StyledDocument doc = ec.openDocument();                
-                if (doc != null) {
-                    int line = NbDocument.findLineNumber(doc, begin);
-                    int lineOffset = NbDocument.findLineOffset(doc, line);
-                    int column = begin - lineOffset;
-
-                    if (line != -1) {
-                        Line l = lc.getLineSet().getCurrent(line);
-
-                        if (l != null) {
-                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
-
-                            EventQueue.invokeLater(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    ec.getOpenedPanes()[0].setSelectionStart(begin);
-                                    ec.getOpenedPanes()[0].setSelectionEnd(end);
-                                }
-                            });
-                            return true;
-                        }
+                    @Override
+                    public void run() {
+                        ec.getOpenedPanes()[0].setSelectionStart(begin);
+                        ec.getOpenedPanes()[0].setSelectionEnd(end);
                     }
-                }
-            }
-
-            OpenCookie oc = od.getCookie(org.openide.cookies.OpenCookie.class);
-
-            if (oc != null) {
-                oc.open();                
+                });
                 return true;
             }
+            return opened;
         } catch (DataObjectNotFoundException e) {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                     Call.class, "Call.open.warning", FileUtil.getFileDisplayName(fo))); // NOI18N
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
         }
 
         return false;
     }
-    
+
 }

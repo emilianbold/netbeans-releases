@@ -194,10 +194,10 @@ public final class FilterRepository {
             filter.setTypesFilter( types );
             filter.setKeywordsFilter( new KeywordsFilter() );
             filters.add( filter );
-            setActive( filter );
+            //setActive( filter );
             shouldSave = true;
         }
-            
+        //TODO remove this filter after dahboard is introduced
         if( prefs.getBoolean( "firstTimeStartWithIssue", true ) ) { //NOI18N
             prefs.putBoolean( "firstTimeStartWithIssue", false ); //NOI18N
             TaskFilter filter = createNewFilter();

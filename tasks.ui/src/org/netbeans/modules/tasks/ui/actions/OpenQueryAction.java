@@ -61,6 +61,6 @@ public class OpenQueryAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        new DummyAction().actionPerformed(e);
+        query.open(false);
     }
 }

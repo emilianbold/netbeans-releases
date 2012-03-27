@@ -58,7 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.modules.junit.DefaultPlugin;
-import org.netbeans.modules.junit.GuiUtils;
+import org.netbeans.modules.java.testrunner.GuiUtils;
 import org.netbeans.modules.junit.JUnitSettings;
 import org.netbeans.modules.junit.TestUtil;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;

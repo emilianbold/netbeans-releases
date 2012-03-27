@@ -77,7 +77,9 @@ public final class EmbedderFactory {
     private static final Logger LOG = Logger.getLogger(EmbedderFactory.class.getName());
 
     private static MavenEmbedder project;
+    private static final Object PROJECT_LOCK = new Object();
     private static MavenEmbedder online;
+    private static final Object ONLINE_LOCK = new Object();
 
     private EmbedderFactory() {
     }
@@ -85,9 +87,13 @@ public final class EmbedderFactory {
     /**
      * embedder seems to cache some values..
      */
-    public synchronized static void resetCachedEmbedders() {
-        project = null;
-        online = null;
+    public static void resetCachedEmbedders() {
+        synchronized (PROJECT_LOCK) {
+            project = null;
+        }
+        synchronized (ONLINE_LOCK) {
+            online = null;
+        }
     }
 
     public static File getDefaultMavenHome() {
@@ -207,29 +213,32 @@ public final class EmbedderFactory {
         }
     }
 
-    public synchronized static @NonNull MavenEmbedder getProjectEmbedder() {
-        if (project == null) {
-            try {
-                project = createProjectLikeEmbedder();
-            } catch (PlexusContainerException ex) {
-                rethrowThreadDeath(ex);
-                throw new IllegalStateException(ex);
+    public static @NonNull MavenEmbedder getProjectEmbedder() {
+        synchronized (PROJECT_LOCK) {
+            if (project == null) {
+                try {
+                    project = createProjectLikeEmbedder();
+                } catch (PlexusContainerException ex) {
+                    rethrowThreadDeath(ex);
+                    throw new IllegalStateException(ex);
+                }
             }
+            return project;
         }
-        return project;
     }
 
-    public synchronized static @NonNull MavenEmbedder getOnlineEmbedder() {
-        if (online == null) {
-            try {
-                online = createOnlineEmbedder();
-            } catch (PlexusContainerException ex) {
-                rethrowThreadDeath(ex);
-                throw new IllegalStateException(ex);
+    public static @NonNull MavenEmbedder getOnlineEmbedder() {
+        synchronized (ONLINE_LOCK) {
+            if (online == null) {
+                try {
+                    online = createOnlineEmbedder();
+                } catch (PlexusContainerException ex) {
+                    rethrowThreadDeath(ex);
+                    throw new IllegalStateException(ex);
+                }
             }
+            return online;
         }
-        return online;
-
     }
 
     /*public*/ @NonNull static MavenEmbedder createOnlineEmbedder() throws PlexusContainerException {

@@ -566,6 +566,7 @@ public class RefactoringUtils {
      * @param files
      * @return
      */
+    @SuppressWarnings("CollectionContainsUrl")
     public static ClasspathInfo getClasspathInfoFor(boolean dependencies, boolean backSource, FileObject... files) {
         assert files.length > 0;
         Set<URL> dependentRoots = new HashSet();
@@ -639,8 +640,9 @@ public class RefactoringUtils {
      */
     public static FileObject getFileObject(TreePathHandle handle) {
         ElementHandle elementHandle = handle.getElementHandle();
-        if (elementHandle == null )
+        if (elementHandle == null ) {
             return handle.getFileObject();
+        }
        ClasspathInfo info = getClasspathInfoFor(false, handle.getFileObject()); 
        return SourceUtils.getFile(elementHandle, info);
     }    
@@ -979,5 +981,8 @@ public class RefactoringUtils {
             return "public"; //NOI18N
         }
         return "<default>"; //NOI18N
+    }
+
+    private RefactoringUtils() {
     }
 }

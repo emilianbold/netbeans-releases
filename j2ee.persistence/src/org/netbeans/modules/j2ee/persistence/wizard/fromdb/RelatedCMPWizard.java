@@ -139,14 +139,17 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         this.type = type;
     }
     
+    @Override
     public String name() {
         return null;
     }
     
+    @Override
     public boolean hasPrevious() {
         return currentPanel > 0;
     }
     
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -154,10 +157,12 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         currentPanel--;
     }
     
+    @Override
     public boolean hasNext() {
         return currentPanel < panels.length - 1;
     }
     
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -166,13 +171,16 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
     }
     
     @SuppressWarnings("unchecked")
+    @Override
     public Panel<WizardDescriptor> current() {
         return panels[currentPanel];
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
     
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
     
@@ -244,6 +252,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         return TYPE_CMP.equals(type);
     }
     
+    @Override
     public final void initialize(TemplateWizard wiz) {
         wizardDescriptor = wiz;
 
@@ -260,19 +269,21 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         helper = new RelatedCMPHelper(project, configFilesFolder, generator);
         
         wiz.putProperty(PROP_HELPER, helper);
-        wiz.putProperty(PROP_CMP, new Boolean(isCMP()));
+        wiz.putProperty(PROP_CMP, isCMP());
         
         generator.init(wiz);
     }
     
+    @Override
     public final void uninitialize(TemplateWizard wiz) {
         generator.uninit();
     }
     
+    @Override
     public Set<DataObject> instantiate(final TemplateWizard wiz) throws IOException {
         // create the pu first if needed
         if(helper.isCreatePU()) {
-            Util.addPersistenceUnitToProject(project, Util.buildPersistenceUnitUsingData(project, null, helper.getTableSource().getName(), null, null));
+            Util.addPersistenceUnitToProject(project, Util.buildPersistenceUnitUsingData(project, null, helper.getDatabaseConnection()!=null ? helper.getTableSource().getName():null, null, null));
        }
         
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "TXT_EjbGeneration" : "TXT_EntityClassesGeneration");
@@ -284,6 +295,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         
         final Runnable r = new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     handle.start();
@@ -315,6 +327,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
 
         SwingUtilities.invokeLater(new Runnable() {
             private boolean first = true;
+            @Override
             public void run() {
                 if (!first) {
                     RP.post(r);
@@ -383,6 +396,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         } finally {
             handle.finish();
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     progressPanel.close();
                 }

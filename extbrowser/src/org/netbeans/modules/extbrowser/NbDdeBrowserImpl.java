@@ -191,20 +191,17 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     return ExtWebBrowser.IEXPLORE;
                 }
 
-                if (cmd.toUpperCase ().indexOf ("NETSCP") >= 0) { // NOI18N
-                    return ExtWebBrowser.NETSCAPE6;
+                if (cmd.toUpperCase ().indexOf ("CHROME") >= 0) { // NOI18N
+                    return ExtWebBrowser.CHROME;
                 }
-                
-                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.NETSCAPE) >= 0) {
-                    return ExtWebBrowser.NETSCAPE;
+
+                // check FF before Mozilla becuase FF is Mozilla but Mozills itself is old one
+                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.FIREFOX) >= 0) {
+                    return ExtWebBrowser.FIREFOX;
                 }
                 
                 if (cmd.toUpperCase ().indexOf (ExtWebBrowser.MOZILLA) >= 0) {
                     return ExtWebBrowser.MOZILLA;
-                }
-
-                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.FIREFOX) >= 0) {
-                    return ExtWebBrowser.FIREFOX;
                 }
             }
         } catch (Exception ex) {

@@ -205,7 +205,7 @@ public class BlameAction extends ContextAction {
         // fetch log messages
         ISVNLogMessage [] logs;
         try {
-            logs = client.getLogMessages(file, new SVNRevision.Number(1), revision, false, false);
+            logs = client.getLogMessages(file, revision, new SVNRevision.Number(1), revision, false, false, 0, false);
         } catch (SVNClientException e) {
             progress.annotate(e);
             return;

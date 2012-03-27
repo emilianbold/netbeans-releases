@@ -141,7 +141,6 @@ Other names may be trademarks of their respective owners.
     <tocitem text="Configuring the IDE's Workspace">
       <tocitem text="Managing IDE Windows" target="workspace.window.managing"/>
       <tocitem text="Customizing Toolbars in the IDE" target="configure.tbcustomize" />
-      <tocitem text="Customizing the Display of Commands in a Toolbar" target="configure.tbcommands" />
     </tocitem>
 
   <tocitem text="Accessibility" >

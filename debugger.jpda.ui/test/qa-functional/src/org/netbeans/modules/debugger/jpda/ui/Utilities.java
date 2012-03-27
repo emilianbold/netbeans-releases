@@ -340,6 +340,11 @@ public class Utilities {
         new EventTool().waitNoEvent(500);
         return dialog;
     }
+    
+    public static void toggleInvalidBreakpoint(EditorOperator eo, final int line) {
+        setCaret(eo, line);
+        new ToggleBreakpointAction().perform();
+    }
 
     public static void toggleBreakpoint(EditorOperator eo, final int line) {
         toggleBreakpoint(eo, line, true);

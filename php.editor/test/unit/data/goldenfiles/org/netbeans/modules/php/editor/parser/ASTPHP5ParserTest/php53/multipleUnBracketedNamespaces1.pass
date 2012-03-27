@@ -123,11 +123,11 @@
                     </FunctionDeclaration>
                 </Block>
             </NamespaceDeclaration>
-            <NamespaceDeclaration start='53' end='103' isBracketed='true'>
+            <NamespaceDeclaration start='53' end='99' isBracketed='true'>
                 <NamespaceName start='63' end='66' isCurrent='false' isGlobal='false'>
                     <Identifier start='63' end='66' name='NS2'/>
                 </NamespaceName>
-                <Block start='67' end='103' isCurly='true'>
+                <Block start='67' end='99' isCurly='true'>
                     <ClassDeclaration start='69' end='79' modifier='NONE'>
                         <ClassName>
                             <Identifier start='75' end='76' name='A'/>
@@ -146,8 +146,6 @@
                         <Block start='95' end='97' isCurly='true'>
                         </Block>
                     </FunctionDeclaration>
-                    <EmptyStatement start='100' end='102'/>
-                    <InLineHtml start='102' end='103'/>
                 </Block>
             </NamespaceDeclaration>
         </Statements>

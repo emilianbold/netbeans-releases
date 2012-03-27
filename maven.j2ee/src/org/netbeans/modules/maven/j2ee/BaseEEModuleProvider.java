@@ -49,8 +49,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 
@@ -80,7 +80,7 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
     
     @Override
     public boolean isOnlyCompileOnSaveEnabled() {
-        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !CustomizerRunWeb.isDeployOnSave(project);
+        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !isDeployOnSave(project);
     }
     
     @Override
@@ -167,4 +167,15 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
         }
         return ExecutionChecker.DEV_NULL;
     }   
+
+    public static boolean isDeployOnSave(Project project) {
+        AuxiliaryProperties prop = project.getLookup().lookup(AuxiliaryProperties.class);
+        String deployOnSave = prop.get(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
+        if (deployOnSave != null) {
+            return Boolean.parseBoolean(deployOnSave);
+        } else {
+            return true;
+        }
+    }
+
 }

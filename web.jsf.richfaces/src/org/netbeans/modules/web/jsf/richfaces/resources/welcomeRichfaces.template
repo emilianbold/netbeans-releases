@@ -4,7 +4,7 @@
       xmlns:rich="http://richfaces.org/rich"
       xmlns:h="http://java.sun.com/jsf/html">
     <h:head>
-        <title>Facelet Title</title>
+        <title>Richfaces Welcome Page</title>
     </h:head>
     <h:body>
         <rich:panel header="Welcome to Richfaces">

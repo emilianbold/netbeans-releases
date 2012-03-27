@@ -61,15 +61,12 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  * @author  David Konecny
  */
 public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx.Provider{
 
-    private static final String SET_AS_MAIN_PREF = "setAsMain"; // NOI18N
-    
     private DocumentListener documentListener;
     private ChangeListener listener;
     /** Was antScript property edited by user? */
@@ -84,7 +81,6 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
     public BasicProjectInfoPanel(String projectLocation, String antScript, String projectName, String projectFolder,
             ChangeListener listener) {
         initComponents();
-        mainProject.setSelected(NbPreferences.forModule(BasicProjectInfoPanel.class).getBoolean(SET_AS_MAIN_PREF, true));
         this.projectLocation.setText(projectLocation);
         this.antScript.setText(antScript);
         this.projectName.setText(projectName);
@@ -127,12 +123,6 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
 
     public File getProjectFolder() {
         return getAsFile(projectFolder.getText());
-    }
-
-    public boolean getMainProject() {
-        boolean b = mainProject.isSelected();
-        NbPreferences.forModule(BasicProjectInfoPanel.class).putBoolean(SET_AS_MAIN_PREF, b);
-        return b;
     }
 
     public String[] getError() {
@@ -310,7 +300,6 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         jLabel6 = new javax.swing.JLabel();
         browseProjectLocation = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
-        mainProject = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         jTextArea2 = new javax.swing.JTextArea();
@@ -452,15 +441,6 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 10, 0);
         add(jSeparator1, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(mainProject, org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_mainProject")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(mainProject, gridBagConstraints);
-        mainProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "ACSD_BasicProjectInfoPanel_mainProject")); // NOI18N
-
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Label.disabledForeground")));
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -564,7 +544,6 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
     private javax.swing.JPanel jPanel2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextArea jTextArea2;
-    private javax.swing.JCheckBox mainProject;
     private javax.swing.JTextField projectFolder;
     private javax.swing.JTextField projectLocation;
     private javax.swing.JTextField projectName;

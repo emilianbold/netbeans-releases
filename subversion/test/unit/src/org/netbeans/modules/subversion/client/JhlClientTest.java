@@ -48,7 +48,7 @@ import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 /**
- *
+ * Subversion 1.7
  * @author tomas
  */
 public class JhlClientTest extends NbTestCase {
@@ -69,12 +69,13 @@ public class JhlClientTest extends NbTestCase {
 
         TestSuite suite = new TestSuite();        
         suite.addTestSuite(AddTestHidden.class);
+        // TODO stabilize test
         suite.addTestSuite(BlameTestHidden.class);
-          // suite.addTestSuite(CancelTest.class); XXX works only for cli
         suite.addTestSuite(CatTestHidden.class);
         suite.addTestSuite(CheckoutTestHidden.class);
         suite.addTestSuite(CommitTestHidden.class);
         suite.addTestSuite(CopyTestHidden.class);
+        suite.addTestSuite(DifferentWorkingDirsTestHidden.class);
         suite.addTestSuite(ImportTestHidden.class);
         suite.addTestSuite(InfoTestHidden.class);
         suite.addTestSuite(ListTestHidden.class);
@@ -88,6 +89,7 @@ public class JhlClientTest extends NbTestCase {
         suite.addTestSuite(RemoveTestHidden.class);
         suite.addTestSuite(ResolvedTestHidden.class);
         suite.addTestSuite(RevertTestHidden.class);
+        // TODO stabilize test
         suite.addTestSuite(StatusTestHidden.class);
         suite.addTestSuite(TreeConflictsTestHidden.class);
         suite.addTestSuite(SwitchToTestHidden.class);

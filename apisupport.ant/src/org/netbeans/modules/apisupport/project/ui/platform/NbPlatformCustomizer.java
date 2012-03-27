@@ -109,7 +109,7 @@ public final class NbPlatformCustomizer extends JPanel {
                 new Object[] {closeButton},
                 closeButton,
                 DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(NbPlatformCustomizer.class),
+                new HelpCtx("org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer"),
                 null);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         dlg.setVisible(true);

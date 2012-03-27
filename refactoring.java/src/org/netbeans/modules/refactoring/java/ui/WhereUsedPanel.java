@@ -162,7 +162,9 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     
     @Override
     public void initialize() {
-        if (initialized) return;
+        if (initialized) {
+            return;
+        }
         JavaSource source = JavaSource.forFileObject(element.getFileObject());
         final Project p = FileOwnerQuery.getOwner(element.getFileObject());
         CancellableTask<CompilationController> task =new CancellableTask<CompilationController>() {

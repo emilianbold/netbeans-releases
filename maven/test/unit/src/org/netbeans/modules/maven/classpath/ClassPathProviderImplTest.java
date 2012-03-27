@@ -55,8 +55,11 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
+import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -132,13 +135,12 @@ public class ClassPathProviderImplTest extends NbTestCase {
     }
 
     public void testEndorsedClassPath() throws Exception {
-        MockLookup.setInstances(new RepositoryIndexerImplementation() { // need to suppress RepositoryQueries.findBySHA1 for test
-            public @Override Lookup getCapabilityLookup() {
-                return Lookup.EMPTY;
+        MockLookup.setInstances(new ChecksumQueries() {
+
+            @Override
+            public Result<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos) {
+                return new Result<NBVersionInfo>();
             }
-            public @Override void indexRepo(RepositoryInfo repo) {}
-            public @Override void updateIndexWithArtifacts(RepositoryInfo repo, Collection<Artifact> artifacts) {}
-            public @Override void deleteArtifactFromIndex(RepositoryInfo repo, Artifact artifact) {}
         });
         TestFileUtils.writeFile(d,
                 "pom.xml",

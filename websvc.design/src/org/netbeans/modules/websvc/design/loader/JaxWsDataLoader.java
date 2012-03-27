@@ -44,7 +44,12 @@
 
 package org.netbeans.modules.websvc.design.loader;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.netbeans.api.java.loaders.JavaDataSupport;
+import org.netbeans.modules.websvc.design.javamodel.Utils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -119,11 +124,8 @@ public final class JaxWsDataLoader extends MultiFileLoader {
             return null;
         }
         
-        if (fo.getExt().equals(JAVA_EXTENSION) && 
-                fo.getAttribute("jax-ws-service")!=null && 
-                fo.getAttribute("jax-ws-service-provider")==null) 
-        {
-            return fo;
+        if ( fo.getExt().equals(JAVA_EXTENSION) && Utils.isService(fo)){
+            return fo;    
         }
         return null;
     }

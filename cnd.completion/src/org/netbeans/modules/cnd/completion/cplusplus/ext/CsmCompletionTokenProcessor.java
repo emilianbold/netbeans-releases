@@ -1032,6 +1032,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             case TYPE:
                             case TYPE_REFERENCE:
                             case GENERIC_TYPE:
+                            case SCOPE_OPEN:
                                 // we have type or type reference and then * or &,
                                 // join into TYPE_REFERENCE
                                 popExp();
@@ -1756,6 +1757,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             case GENERIC_TYPE_OPEN:// a < (
                             case MEMBER_POINTER_OPEN:// *(
                             case UNARY_OPERATOR: // !(
+                            case TYPE: // int(a*)()                                
                                 pushExp(createTokenExp(PARENTHESIS_OPEN));
                                 break;
 
@@ -1833,7 +1835,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                         } else {
                                             popExp();
                                             top2.addParameter(top);
-                                            if (top2.getParameterCount() == 1 && CsmCompletionExpression.isValidType(top)) {
+                                            if (top2.getParameterCount() == 1 && CsmCompletionExpression.isValidType(top)
+                                                    && getValidExpID(top3) != PARENTHESIS && getValidExpID(top3) != TYPE) {
                                                 top2.setExpID(CONVERSION);
                                             } else {
                                                 top2.setExpID(PARENTHESIS);
@@ -1919,7 +1922,10 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 mtd = true;
                                 break;
 
-                            //              case PARENTHESIS_OPEN: // empty parenthesis
+                            case PARENTHESIS_OPEN: // empty parenthesis
+                                popExp();
+                                break;
+                                
                             default:
                                 errorState = true;
                                 break;
@@ -2087,6 +2093,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         constExp.setType("char"); // NOI18N
                         break;
 
+                    case RAW_STRING_LITERAL:
                     case STRING_LITERAL:
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType(CsmCompletion.CONST_STRING_TYPE.format(true)); // NOI18N

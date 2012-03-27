@@ -235,6 +235,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="tns:default" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:cpp98" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:cpp11" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:complexType>
@@ -255,6 +256,13 @@
     </xs:element>
 
     <xs:element name="cpp11">
+        <xs:complexType>
+            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="default" type="xs:string" use="optional" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="cpp98">
         <xs:complexType>
             <xs:attribute name="flags" type="xs:string" use="optional" />
             <xs:attribute name="default" type="xs:string" use="optional" />

@@ -114,12 +114,14 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                                 FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
                                 if (doc.getDocumentElement().getElementsByTagName("*").getLength() > 0) {
                                     OutputStream out = config == null ? project.getProjectDirectory().createAndOpen(CONFIG_FILE_NAME) : config.getOutputStream();
+                                    LOG.log(Level.FINEST, "Write configuration file for {0}", project.getProjectDirectory());
                                     try {
                                         XMLUtil.write(doc, out, "UTF-8"); //NOI18N
                                     } finally {
                                         out.close();
                                     }
                                 } else if (config != null) {
+                                    LOG.log(Level.FINEST, "Delete empty configuration file for {0}", project.getProjectDirectory());
                                     config.delete();
                                 }
                             }
@@ -282,6 +284,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 if (scheduledDocument == null) {
                     scheduledDocument = doc;
                 }
+                LOG.log(Level.FINEST, "Schedule saving of configuration fragment for " + project.getProjectDirectory(), new Exception());
                 savingTask.schedule(SAVING_DELAY);
             } else {
                 try {
@@ -345,6 +348,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 if (scheduledDocument == null) {
                     scheduledDocument = doc;
                 }
+                LOG.log(Level.FINEST, "Schedule saving of configuration fragment for " + project.getProjectDirectory(), new Exception());
                 savingTask.schedule(SAVING_DELAY);
             } else {
                 try {
@@ -374,7 +378,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             if (fo != null) {
                 try {
                     DataObject dobj = DataObject.find(fo);
-                    EditCookie edit = dobj.getCookie(EditCookie.class);
+                    EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
                     edit.edit();
                 } catch (DataObjectNotFoundException ex) {
                     ex.printStackTrace();

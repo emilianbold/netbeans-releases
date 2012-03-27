@@ -364,7 +364,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
         }
 
         Element el = info.getTrees().getElement(method);
-        if (el == null && !(el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
+        if (el != null && !(el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
             preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_ChangeParamsWrongType")); //NOI18N
             return preCheckProblem;
         }

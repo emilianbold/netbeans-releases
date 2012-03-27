@@ -214,8 +214,12 @@ public class BugtrackingUtil {
     }
 
     public static RepositoryImpl createRepository() {
+        return createRepository(true);
+    }
+    
+    public static RepositoryImpl createRepository(boolean selectNode) {
         RepositorySelector rs = new RepositorySelector();
-        RepositoryImpl repo = rs.create();
+        RepositoryImpl repo = rs.create(selectNode);
         return repo;
     }
 

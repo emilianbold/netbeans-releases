@@ -480,7 +480,6 @@ public class SelectModePanel extends javax.swing.JPanel {
     void store(WizardDescriptor wizardDescriptor) {
         if (simpleMode.isSelected()) {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SET_AS_MAIN,  Boolean.TRUE);
         } else {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
         }

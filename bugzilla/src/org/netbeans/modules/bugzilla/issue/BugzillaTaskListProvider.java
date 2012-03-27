@@ -74,21 +74,14 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Ondra Vrabec
  */
-@ServiceProviders({
-    @ServiceProvider(service=org.netbeans.modules.bugtracking.spi.TaskListIssueProvider.class),
-    @ServiceProvider(service=BugzillaTaskListProvider.class)
-})
 public final class BugzillaTaskListProvider extends TaskListIssueProvider implements PropertyChangeListener {
 
     private static BugzillaTaskListProvider instance;
@@ -107,12 +100,12 @@ public final class BugzillaTaskListProvider extends TaskListIssueProvider implem
 
     public static synchronized BugzillaTaskListProvider getInstance() {
         if (instance == null) {
-            instance = Lookup.getDefault().lookup(BugzillaTaskListProvider.class);
+            instance = new BugzillaTaskListProvider();
         }
         return instance;
     }
 
-    public BugzillaTaskListProvider () {
+    private BugzillaTaskListProvider () {
         // initialization
         support = new PropertyChangeSupport(this);
         reloadAsync();

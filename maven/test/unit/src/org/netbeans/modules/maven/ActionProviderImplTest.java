@@ -65,17 +65,28 @@ public class ActionProviderImplTest extends NbTestCase {
                 + "<version>1.0</version>"
                 + "<build><plugins><plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>2.7</version></plugin></plugins></build>"
                 + "<dependencies><dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>3.8.2</version><scope>test</scope></dependency></dependencies>"
+                + "<properties><netbeans.compile.on.save>all</netbeans.compile.on.save></properties>"
                 + "</project>");
         assertSupportsRunSingleMethod(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), true);
     }
 
-    public void testRunSingleMethodDisabledWhenDoNotHaveCoS() throws Exception {
+    public void testRunSingleMethodDisabledWhenDoNotHaveCoSExplicit() throws Exception {
         TestFileUtils.writeFile(new File(getWorkDir(), "pom.xml"), "<project><modelVersion>4.0.0</modelVersion>"
                 + "<groupId>test</groupId><artifactId>prj</artifactId>"
                 + "<version>1.0</version>"
                 + "<build><plugins><plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>2.7</version></plugin></plugins></build>"
                 + "<dependencies><dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>4.8.2</version><scope>test</scope></dependency></dependencies>"
                 + "<properties><netbeans.compile.on.save>none</netbeans.compile.on.save></properties>"
+                + "</project>");
+        assertSupportsRunSingleMethod(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), false);
+    }
+
+    public void testRunSingleMethodDisabledWhenDoNotHaveCoSImplicit() throws Exception {
+        TestFileUtils.writeFile(new File(getWorkDir(), "pom.xml"), "<project><modelVersion>4.0.0</modelVersion>"
+                + "<groupId>test</groupId><artifactId>prj</artifactId>"
+                + "<version>1.0</version>"
+                + "<build><plugins><plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>2.7</version></plugin></plugins></build>"
+                + "<dependencies><dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>4.8.2</version><scope>test</scope></dependency></dependencies>"
                 + "</project>");
         assertSupportsRunSingleMethod(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), false);
     }

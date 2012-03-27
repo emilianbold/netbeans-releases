@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.FileObject;
@@ -68,8 +70,8 @@ import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
+import org.tigris.subversion.svnclientadapter.SVNStatusUnversioned;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
-import org.tigris.subversion.svnclientadapter.utils.Depth;
 
 /**
  *
@@ -85,12 +87,13 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
     private String repoPath;
     protected static final String SUBVERSION_1_5 = "1.5";
     protected static final String SUBVERSION_1_6 = "1.6";
+    protected static final String SUBVERSION_1_7 = "1.7";
     protected String clientVersion;
     private final static String JAVAHL = "javahl";
         
     public AbstractSvnTestCase(String testName) throws MalformedURLException, SVNClientException {
         super(testName);
-        clientVersion = SUBVERSION_1_6;
+        clientVersion = SUBVERSION_1_7;
         System.setProperty("work.dir", getWorkDirPath());
         workDir = new File(System.getProperty("work.dir")); 
         FileUtil.refreshFor(workDir);          
@@ -222,7 +225,7 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
                 }
             }
         }
-        if(file.isFile()) {
+        if(file.isFile() || status.getTextStatus().equals(SVNStatusKind.IGNORED)) {
             return; 
         }
         File[] files = file.listFiles();
@@ -299,12 +302,8 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
             if(files != null) {
                 for (File file : files) {
                     if(!file.getName().equals("cache")) { // do not delete the cache
-                        FileObject fo = FileUtil.toFileObject(file);
-                        if (fo != null) {
-                            fo.delete();
-                            if (file.exists()) {
-                                Utils.deleteRecursively(file);
-                            }
+                        if (file.exists()) {
+                            Utils.deleteRecursively(file);
                         }
                     }                    
                 }
@@ -313,21 +312,39 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
     }
 
     protected void assertStatus(SVNStatusKind status, File file) throws SVNClientException {
-        ISVNStatus[] values = getFullWorkingClient().getStatus(new File[]{file});
+        ISVNStatus[] values;
+        try {
+            values = getFullWorkingClient().getStatus(new File[]{file});
+        } catch (SVNClientException ex) {
+            if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+                values = new ISVNStatus[] { new SVNStatusUnversioned(file) };
+            } else {
+                throw ex;
+            }
+        }
         for (ISVNStatus iSVNStatus : values) {
             assertEquals(status, iSVNStatus.getTextStatus());
         }
     }
     
     protected void assertPropertyStatus(SVNStatusKind status, File file) throws SVNClientException {
-        ISVNStatus[] values = getFullWorkingClient().getStatus(new File[]{file});
+        ISVNStatus[] values;
+        try {
+            values = getFullWorkingClient().getStatus(new File[]{file});
+        } catch (SVNClientException ex) {
+            if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+                values = new ISVNStatus[] { new SVNStatusUnversioned(file) };
+            } else {
+                throw ex;
+            }
+        }
         for (ISVNStatus iSVNStatus : values) {
             assertEquals(status, iSVNStatus.getPropStatus());
         }
     }
  
     protected ISVNStatus getSVNStatus(File file) throws SVNClientException {
-        return getFullWorkingClient().getSingleStatus(file);
+        return SvnUtils.getSingleStatus(getFullWorkingClient(), file);
     }
 
     private boolean containsParent(String message, File parent) {
@@ -340,7 +357,7 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
         return false;
     }
 
-    protected ISVNClientAdapter getFullWorkingClient() throws SVNClientException {
+    protected SvnClient getFullWorkingClient() throws SVNClientException {
         return SvnClientFactory.getInstance().createSvnClient();
     }   
     
@@ -443,7 +460,7 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
     }
     
     protected ISVNLogMessage[] getCompleteLog(SVNUrl url) throws SVNClientException {
-        return getFullWorkingClient().getLogMessages(url, new SVNRevision.Number(0), new SVNRevision.Number(0), SVNRevision.HEAD, true, false, 0L);
+        return getFullWorkingClient().getLogMessages(url, SVNRevision.HEAD, new SVNRevision.Number(0), SVNRevision.HEAD, true, false, 0L);
     }
     
     protected ISVNLogMessage[] getLog(SVNUrl url) throws SVNClientException {
@@ -558,6 +575,10 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
 
     protected boolean isJavahl () {
         return SvnClientFactory.isJavaHl();
+    }
+
+    protected boolean isSvnkit () {
+        return SvnClientFactory.isSvnKit();
     }
 
     protected boolean isCommandLine () {

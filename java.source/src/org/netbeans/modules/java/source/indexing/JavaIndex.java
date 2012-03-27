@@ -50,6 +50,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -76,6 +78,14 @@ public final class JavaIndex {
     private static final String CLASSES = "classes"; //NOI18N
     private static final String APT_SOURCES = "sources";    //NOI18N
     private static final String ATTR_FILE_NAME = "attributes.properties"; //NOI18N
+    
+    //Single line cache for index properties
+    private static final Object cacheLock = new Object();
+    //@GuardedBy("cacheLock")
+    private static URL cacheRoot;
+    //@GuardedBy("cacheLock")
+    private static Reference<Properties> cacheValue;
+    
 
     public static File getIndex(Context c) {
         return FileUtil.toFile(c.getIndexFolder());
@@ -190,8 +200,17 @@ public final class JavaIndex {
     }
 
     private static Properties loadProperties(URL root) throws IOException {
+        Properties result;
+        synchronized (cacheLock) {
+            if (cacheRoot != null && cacheRoot.equals(root)) {
+                result = cacheValue == null ? null : cacheValue.get();
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
         File f = getAttributeFile(root);
-        Properties result = new Properties();
+        result = new Properties();
         if (!f.exists())
             return result;
         InputStream in = new BufferedInputStream(new FileInputStream(f));
@@ -202,9 +221,13 @@ public final class JavaIndex {
             //Return newly constructed Properties, the result
             //may already contain some pairs.
             LOG.warning("Broken attribute file: " + f.getAbsolutePath()); //NOI18N
-            return new Properties();
+            result = new Properties();
         } finally {
             in.close();
+        }
+        synchronized (cacheLock) {
+            cacheRoot = root;
+            cacheValue = new SoftReference<Properties>(result);
         }
         return result;
     }
@@ -216,6 +239,10 @@ public final class JavaIndex {
             p.store(out, ""); //NOI18N
         } finally {
             out.close();
+        }
+        synchronized (cacheLock) {
+            cacheRoot = root;
+            cacheValue = new SoftReference<Properties>(p);
         }
     }
 

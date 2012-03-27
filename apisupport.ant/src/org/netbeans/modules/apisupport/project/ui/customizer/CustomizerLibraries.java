@@ -713,7 +713,7 @@ public final class CustomizerLibraries extends NbPropertyPanel.Single {
                 origDep, getProperties().getActivePlatform());
         DialogDescriptor descriptor = new DialogDescriptor(editPanel,
                 CTL_EditModuleDependencyTitle());
-        descriptor.setHelpCtx(new HelpCtx(EditDependencyPanel.class));
+        descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel"));
         Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
         d.setVisible(true);
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {

@@ -46,8 +46,6 @@
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -113,11 +111,9 @@ class CustomComponentVisualPanel extends JPanel {
     void store(WizardDescriptor d) {
         String name = projectNameTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
-        Boolean setAsMain = mainProject.isSelected();
 
         d.putProperty(CustomComponentWizardIterator.PROJECT_DIR, new File(folder));
         d.putProperty(CustomComponentWizardIterator.PROJECT_NAME, name);
-        d.putProperty(CustomComponentWizardIterator.SET_AS_MAIN, setAsMain);
     }
 
     void read(WizardDescriptor settings) {
@@ -138,9 +134,6 @@ class CustomComponentVisualPanel extends JPanel {
         // invoke store to have changes in mySettings
         //typeChooserPanel.store(mySettings);
 
-        if (getIsMainProject() != null){
-            this.mainProject.setSelected(getIsMainProject());
-        }
         setLocation(getProjectLocation().getAbsolutePath());
 
         this.projectNameTextField.setText(getProjectName());
@@ -165,18 +158,12 @@ class CustomComponentVisualPanel extends JPanel {
                 checkValidity();
             }
         };
-        isMainAL = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                mainProjectTouched = true;
-            }
-        };
     }
     
     private void attachDocumentListeners() {
         if (!listenersAttached) {
             projectNameTextField.getDocument().addDocumentListener(nameDL);
             projectLocationTextField.getDocument().addDocumentListener(locationDL);
-            mainProject.addActionListener(isMainAL);
             listenersAttached = true;
         }
     }
@@ -185,7 +172,6 @@ class CustomComponentVisualPanel extends JPanel {
         if (listenersAttached) {
             projectNameTextField.getDocument().removeDocumentListener(nameDL);
             projectLocationTextField.getDocument().removeDocumentListener(locationDL);
-            mainProject.removeActionListener(isMainAL);
             listenersAttached = false;
         }
     }
@@ -209,9 +195,6 @@ class CustomComponentVisualPanel extends JPanel {
             return;
         }
         
-        if (!mainProjectTouched) {
-            mainProject.setSelected(isStandAlone);
-        }
         if (!locationUpdated) {
             setLocation(computeInitialLocationValue());
         }
@@ -405,12 +388,6 @@ class CustomComponentVisualPanel extends JPanel {
         return projectName;
     }
 
-    Boolean getIsMainProject(){
-        Boolean isMain = (Boolean) getSettings()
-                .getProperty(CustomComponentWizardIterator.SET_AS_MAIN);
-        return isMain;
-    }
-
     /*
      * is invoked from myPanel.validate()
      * which implements WizardDescriptor.ValidatingPanel
@@ -428,7 +405,6 @@ class CustomComponentVisualPanel extends JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        mainProject = new javax.swing.JCheckBox();
         infoPanel = new javax.swing.JPanel();
         projectNameLabel = new javax.swing.JLabel();
         projectNameTextField = new javax.swing.JTextField();
@@ -441,17 +417,6 @@ class CustomComponentVisualPanel extends JPanel {
         fillerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
-
-        mainProject.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(mainProject, org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "LBL_SetAsMainProject")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(mainProject, gridBagConstraints);
-        mainProject.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSN_SetAsMainProject")); // NOI18N
-        mainProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSD_SetAsMainProject")); // NOI18N
 
         infoPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -588,7 +553,6 @@ class CustomComponentVisualPanel extends JPanel {
     private javax.swing.JTextField createdFolderTextField;
     private javax.swing.JPanel fillerPanel;
     private javax.swing.JPanel infoPanel;
-    private javax.swing.JCheckBox mainProject;
     private javax.swing.JLabel projectLocationLabel;
     private javax.swing.JTextField projectLocationTextField;
     private javax.swing.JLabel projectNameLabel;
@@ -648,12 +612,10 @@ class CustomComponentVisualPanel extends JPanel {
     private CustomComponentWizardPanel myPanel;
     private JComponent typeChooserPanel;
     private boolean locationUpdated;
-    private boolean mainProjectTouched;
 
     private boolean listenersAttached;
     private DocumentListener nameDL;
     private DocumentListener locationDL;
-    private ActionListener isMainAL;
 
     static boolean isIllegalName(final String name) {
         return name.length() == 0      || 

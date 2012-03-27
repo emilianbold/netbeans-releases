@@ -233,6 +233,7 @@ public final class JavaSource {
             throw new IllegalArgumentException ("fileObject == null");  //NOI18N
         }
         if (!fileObject.isValid()) {
+            LOGGER.log(Level.FINE, "FileObject ({0}) passed to JavaSource.forFileObject is invalid", fileObject.toURI().toString());
             return null;
         }
 
@@ -242,6 +243,7 @@ public final class JavaSource {
             if (   fileObject.getFileSystem().isDefault()
                 && fileObject.getAttribute("javax.script.ScriptEngine") != null
                 && fileObject.getAttribute("template") == Boolean.TRUE) {
+                LOGGER.log(Level.FINE, "FileObject ({0}) passed to JavaSource.forFileObject is a template", fileObject.toURI().toString());
                 return null;
             }
             DataObject od = DataObject.find(fileObject);
@@ -252,6 +254,7 @@ public final class JavaSource {
                 //allow creation of JavaSource for .class files:
                 mimeType = FileUtil.getMIMEType(fileObject, supportedMIMETypes);
                 if (!("application/x-class-file".equals(mimeType) || "class".equals(fileObject.getExt()))) {
+                    LOGGER.log(Level.FINE, "DataObject ({1}) created for FileObject ({0}) passed to JavaSource.forFileObject does not provide CloneableEditorSupport and is not a classfile", new Object[] {fileObject.toURI().toString(), od.getClass().getName()});
                     return null;
                 }
             }
@@ -284,6 +287,7 @@ public final class JavaSource {
                 final ClasspathInfo info = ClasspathInfo.create(bootPath, compilePath, srcPath);
                 FileObject root = ClassPathSupport.createProxyClassPath(bootPath,compilePath,srcPath).findOwnerRoot(fileObject);
                 if (root == null) {
+                    LOGGER.log(Level.FINE, "FileObject ({0}) passed to JavaSource.forFileObject of mimeType classfile does not have a corresponding root", fileObject.toURI().toString());
                     return null;
                 }
                 try {
@@ -294,6 +298,7 @@ public final class JavaSource {
             } 
             else {
                 if (!"text/x-java".equals(mimeType) && !"java".equals(fileObject.getExt())) {  //NOI18N
+                    LOGGER.log(Level.FINE, "FileObject ({0}) passed to JavaSource.forFileObject is not a Java source file (mimetype: {1})", new Object[] {fileObject.toURI().toString(), mimeType});
                     return null;
                 }
                 js = _create(null, Collections.singletonList(fileObject));

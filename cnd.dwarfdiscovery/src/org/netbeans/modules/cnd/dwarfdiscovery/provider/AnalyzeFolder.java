@@ -57,10 +57,10 @@ import java.util.Set;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
-import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
-import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
+import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
+import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -72,10 +72,10 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.discovery.api.DiscoveryProvider.class)
 public class AnalyzeFolder extends BaseDwarfProvider {
     private Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
     public static final String FOLDER_KEY = "folder"; // NOI18N
+    public static final String FOLDER_PROVIDER_ID = "dwarf-folder"; // NOI18N
     
     public AnalyzeFolder() {
         clean();
@@ -163,7 +163,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     
     @Override
     public String getID() {
-        return "dwarf-folder"; // NOI18N
+        return FOLDER_PROVIDER_ID; // NOI18N
     }
     
     @Override

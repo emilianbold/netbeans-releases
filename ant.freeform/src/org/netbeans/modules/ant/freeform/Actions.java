@@ -72,7 +72,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.ant.freeform.ui.TargetMappingPanel;
 import org.netbeans.modules.ant.freeform.ui.UnboundTargetAlert;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -85,6 +87,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -92,6 +95,8 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.Union2;
 import org.openide.util.actions.Presenter;
 import org.openide.xml.XMLUtil;
@@ -479,7 +484,7 @@ public final class Actions implements ActionProvider {
                 // Run default target.
                 targetNameArray = null;
             }
-            TARGET_RUNNER.runTarget(scriptFile.first(), targetNameArray, props);
+            TARGET_RUNNER.runTarget(scriptFile.first(), targetNameArray, props, ActionProgress.start(context));
         } else {
             assert scriptFile.hasSecond();
             //#57011: if the script does not exist, show a warning:
@@ -618,11 +623,16 @@ public final class Actions implements ActionProvider {
     
     static class TargetRunner {
         public TargetRunner() {}
-        public void runTarget(FileObject scriptFile, String[] targetNameArray, Properties props) {
+        public void runTarget(FileObject scriptFile, String[] targetNameArray, Properties props, final ActionProgress listener) {
             try {
-                ActionUtils.runTarget(scriptFile, targetNameArray, props);
+                ActionUtils.runTarget(scriptFile, targetNameArray, props).addTaskListener(new TaskListener() {
+                    @Override public void taskFinished(Task task) {
+                        listener.finished(((ExecutorTask) task).result() == 0);
+                    }
+                });
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
+                listener.finished(false);
             }
         }
     }

@@ -50,10 +50,12 @@ import java.beans.PropertyVetoException;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.AbstractButton;
+import javax.swing.ActionMap;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.BasicSearchCriteria;
+import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.Manager;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.PrintDetailsTask;
@@ -65,6 +67,9 @@ import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -90,6 +95,8 @@ public abstract class BasicAbstractResultsPanel
             "org/netbeans/modules/search/res/logical_view.png";         //NOI18N
     private static final String FOLDER_VIEW_ICON =
             "org/netbeans/modules/search/res/file_view.png";            //NOI18N
+    private static final String MODE_FLAT = "flat";                     //NOI18N
+    private static final String MODE_TREE = "tree";                     //NOI18N
     protected ResultModel resultModel;
     private JButton nextButton;
     private JButton prevButton;
@@ -99,6 +106,7 @@ public abstract class BasicAbstractResultsPanel
     protected boolean details;
     private BasicComposition composition;
     protected final ResultsOutlineSupport resultsOutlineSupport;
+    private NodeListener resultsNodeAdditionListener;
 
     public BasicAbstractResultsPanel(ResultModel resultModel,
             BasicComposition composition, boolean details,
@@ -113,6 +121,12 @@ public abstract class BasicAbstractResultsPanel
         getExplorerManager().setRootContext(
                 resultsOutlineSupport.getRootNode());
         initSelectionListeners();
+        initActions();
+        initResultNodeAdditionListener();
+        if (MODE_TREE.equals(
+                FindDialogMemory.getDefault().getResultsViewMode())) {
+            resultsOutlineSupport.setFolderTreeMode();
+        }
     }
 
     private void initSelectionListeners() {
@@ -128,6 +142,12 @@ public abstract class BasicAbstractResultsPanel
                 });
     }
 
+    private void initActions() {
+        ActionMap map = getActionMap();
+
+        map.put("jumpNext", new PrevNextAction(1));                    // NOI18N
+        map.put("jumpPrev", new PrevNextAction(-1));                   // NOI18N
+    }
     public void update() {
         if (details && expandButton != null && !expandButton.isEnabled()) {
             expandButton.setEnabled(resultModel.size() > 0);
@@ -152,6 +172,7 @@ public abstract class BasicAbstractResultsPanel
 
     @Override
     protected AbstractButton[] createButtons() {
+        final FindDialogMemory memory = FindDialogMemory.getDefault();
         toggleViewButton = new JToggleButton();
         toggleViewButton.setEnabled(true);
         toggleViewButton.setIcon(ImageUtilities.loadImageIcon(FOLDER_VIEW_ICON,
@@ -160,18 +181,21 @@ public abstract class BasicAbstractResultsPanel
                 FLAT_VIEW_ICON, true));
         toggleViewButton.setToolTipText(UiUtils.getText(
                 "TEXT_BUTTON_TOGGLE_VIEW"));                            //NOI18N
-        toggleViewButton.setSelected(false);
+        toggleViewButton.setSelected(
+                MODE_TREE.equals(memory.getResultsViewMode()));
         toggleViewButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (toggleViewButton.isSelected()) {
                     resultsOutlineSupport.setFolderTreeMode();
+                    memory.setResultsViewMode(MODE_TREE);
                 } else {
                     resultsOutlineSupport.setFlatMode();
+                    memory.setResultsViewMode(MODE_FLAT);
                 }
                 try {
                     getExplorerManager().setSelectedNodes(new Node[]{
-                                getExplorerManager().getRootContext()});
+                                resultsOutlineSupport.getResultsNode()});
                 } catch (PropertyVetoException ex) {
                 }
             }
@@ -212,7 +236,7 @@ public abstract class BasicAbstractResultsPanel
         expandButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                toggleExpand(expandButton.isSelected());
+                toggleExpandNodeChildren(expandButton.isSelected());
             }
         });
         showDetailsButton = new JButton();
@@ -255,7 +279,7 @@ public abstract class BasicAbstractResultsPanel
         Node[] selected = getExplorerManager().getSelectedNodes();
         Node n = null;
         if (selected == null || selected.length == 0) {
-            n = getExplorerManager().getRootContext();
+            n = resultsOutlineSupport.getResultsNode();
         } else if (selected.length == 1) {
             n = selected[0];
         }
@@ -358,20 +382,22 @@ public abstract class BasicAbstractResultsPanel
         }
     }
 
-    private void toggleExpand(boolean expand) {
-        Node rootNode = getExplorerManager().getRootContext();
-        getOutlineView().expandNode(rootNode);
-        toggleExpand(rootNode, expand);
+    private void toggleExpandNodeChildren(boolean expand) {
+        Node resultsNode = resultsOutlineSupport.getResultsNode();
+        for (Node n : resultsNode.getChildren().getNodes()) {
+            toggleExpand(n, expand);
+        }
     }
 
     public void toggleExpand(Node root, boolean expand) {
+        if (expand) {
+            getOutlineView().expandNode(root);
+        }
         for (Node n : root.getChildren().getNodes()) {
-            if (expand) {
-                getOutlineView().expandNode(n);
-            } else {
-                getOutlineView().collapseNode(n);
-            }
             toggleExpand(n, expand);
+        }
+        if (!expand) {
+            getOutlineView().collapseNode(root);
         }
     }
 
@@ -405,7 +431,7 @@ public abstract class BasicAbstractResultsPanel
         updateRootNodeText();
     }
 
-    public OutlineView getOutlineView() {
+    public final OutlineView getOutlineView() {
         return resultsOutlineSupport.getOutlineView();
     }
 
@@ -467,11 +493,11 @@ public abstract class BasicAbstractResultsPanel
         if (details) {
             Integer detailsCount = resultModel.getTotalDetailsCount();
             setRootDisplayName(NbBundle.getMessage(ResultView.class,
-                    "TXT_RootSearchedNodes", //NOI18N
+                    "TXT_RootSearchedNodesFulltext", //NOI18N
                     objectsCount, detailsCount));
         } else {
             setRootDisplayName(NbBundle.getMessage(ResultView.class,
-                    "TXT_RootSearchedNodesFulltext", objectsCount));    //NOI18N
+                    "TXT_RootSearchedNodes", objectsCount));            //NOI18N
         }
     }
 
@@ -533,5 +559,66 @@ public abstract class BasicAbstractResultsPanel
             }
         }
         return false;
+    }
+
+    private void initResultNodeAdditionListener() {
+        resultsNodeAdditionListener = new NodeAdapter() {
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                if (expandButton != null) {
+                    for (final Node n : ev.getDelta()) {
+                        if (expandButton.isSelected()) {
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    toggleExpand(n, true);
+                                }
+                            });
+                        }
+                        addChildAdditionListener(n);
+                    }
+                }
+            }
+
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+                if (expandButton != null) {
+                    for (Node removedChild : ev.getDelta()) {
+                        removeChildAdditionListener(removedChild);
+                    }
+                }
+            }
+        };
+        resultsOutlineSupport.getResultsNode().getChildren().getNodes(true);
+        resultsOutlineSupport.getResultsNode().addNodeListener(
+                resultsNodeAdditionListener);
+    }
+
+    private void addChildAdditionListener(Node addedNode) {
+        for (Node n : addedNode.getChildren().getNodes(true)) {
+            addChildAdditionListener(n);
+        }
+        addedNode.addNodeListener(resultsNodeAdditionListener);
+
+    }
+
+    private void removeChildAdditionListener(Node removedNode) {
+        for (Node n : removedNode.getChildren().getNodes(true)) {
+            removeChildAdditionListener(n);
+        }
+        removedNode.removeNodeListener(resultsNodeAdditionListener);
+    }
+
+    private final class PrevNextAction extends javax.swing.AbstractAction {
+
+        private int direction;
+
+        public PrevNextAction(int direction) {
+            this.direction = direction;
+        }
+
+        public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
+            shift(direction);
+        }
     }
 }

@@ -84,7 +84,6 @@ public class SvnWcParserTest extends NbTestCase {
         assertTrue(myFile.exists());
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/Main.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
         assertEquals(2, parsedStatus.getRevision().getNumber());
@@ -108,7 +107,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/new-format-no-changes/testapp/Main.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/Main.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
         assertEquals(16, parsedStatus.getRevision().getNumber());
@@ -132,7 +130,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/file-changes/testapp/Main.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/Main.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.MODIFIED, parsedStatus.getTextStatus());
         assertEquals(2, parsedStatus.getRevision().getNumber());
@@ -156,7 +153,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/new-format-file-changes/testapp/AnotherMain.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/AnotherMain.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.MODIFIED, parsedStatus.getTextStatus());
         assertEquals(16, parsedStatus.getRevision().getNumber());
@@ -180,7 +176,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/file-unknown/testapp/ReadMe.txt");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/ReadMe.txt", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.UNVERSIONED, parsedStatus.getTextStatus());
         assertEquals(0, parsedStatus.getRevision().getNumber());
@@ -203,7 +198,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/new-format-file-unknown/testapp/readme.txt");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/readme.txt", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.UNVERSIONED, parsedStatus.getTextStatus());
         assertEquals(0, parsedStatus.getRevision().getNumber());
@@ -230,7 +224,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/no-changes/testapp/ReadMe.txt");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/ReadMe.txt", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.UNVERSIONED, parsedStatus.getTextStatus());
         assertEquals(0, parsedStatus.getRevision().getNumber());
@@ -258,7 +251,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/new-format-no-changes/testapp/readme.txt");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/readme.txt", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.UNVERSIONED, parsedStatus.getTextStatus());
         assertEquals(0, parsedStatus.getRevision().getNumber());
@@ -281,7 +273,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/file-added/testapp/ReadMe.txt");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/ReadMe.txt", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.ADDED, parsedStatus.getTextStatus());
         assertEquals(0, parsedStatus.getRevision().getNumber());
@@ -304,7 +295,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/new-format-file-added/testapp/ReadMe.txt");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/ReadMe.txt", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.ADDED, parsedStatus.getTextStatus());
         assertEquals(0, parsedStatus.getRevision().getNumber());
@@ -327,7 +317,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/file-conflicts/testapp/ReadMe.txt");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/ReadMe.txt", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.CONFLICTED, parsedStatus.getTextStatus());
         assertEquals(5, parsedStatus.getRevision().getNumber());
@@ -352,7 +341,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/new-format-file-conflicts/testapp/ReadMe.txt");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/ReadMe.txt", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.CONFLICTED, parsedStatus.getTextStatus());
         assertEquals(18, parsedStatus.getRevision().getNumber());
@@ -377,7 +365,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/file-removed/testapp/ReadMe.txt");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/ReadMe.txt", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.DELETED, parsedStatus.getTextStatus());
         assertEquals(6, parsedStatus.getRevision().getNumber());
@@ -401,7 +388,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/new-format-file-removed/testapp/ReadMe.txt");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/ReadMe.txt", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.DELETED, parsedStatus.getTextStatus());
         assertEquals(18, parsedStatus.getRevision().getNumber());
@@ -425,7 +411,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/file-copied1/testapp/AnotherMain.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertTrue(parsedStatus.isCopied());
-        assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/Main.java", parsedStatus.getUrlCopiedFrom().toString());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/AnotherMain.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.ADDED, parsedStatus.getTextStatus());
         assertEquals(5, parsedStatus.getRevision().getNumber());        
@@ -448,7 +433,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/new-format-file-copied1/testapp/AnotherAnotherMain.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertTrue(parsedStatus.isCopied());
-        assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/Main.java", parsedStatus.getUrlCopiedFrom().toString());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/AnotherAnotherMain.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.ADDED, parsedStatus.getTextStatus());
         assertEquals(18, parsedStatus.getRevision().getNumber());        
@@ -471,7 +455,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/file-copied2/testapp/AnotherMain.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertTrue(parsedStatus.isCopied());
-        assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/Main.java", parsedStatus.getUrlCopiedFrom().toString());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/AnotherMain.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.ADDED, parsedStatus.getTextStatus());
         assertEquals(5, parsedStatus.getRevision().getNumber());
@@ -494,7 +477,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/new-format-file-copied2/testapp/AnotherAnotherMain.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertTrue(parsedStatus.isCopied());
-        assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/Main.java", parsedStatus.getUrlCopiedFrom().toString());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/AnotherAnotherMain.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.ADDED, parsedStatus.getTextStatus());
         assertEquals(18, parsedStatus.getRevision().getNumber());
@@ -517,7 +499,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/prop-added/testapp/AnotherMain.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/AnotherMain.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
         assertEquals(8, parsedStatus.getRevision().getNumber());
@@ -541,7 +522,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/new-format-prop-added/testapp/AnotherMain.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/AnotherMain.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
         assertEquals(19, parsedStatus.getRevision().getNumber());
@@ -565,7 +545,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/prop-modified/testapp/AnotherMain.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/AnotherMain.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
         assertEquals(9, parsedStatus.getRevision().getNumber());
@@ -589,7 +568,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/new-format-prop-modified/testapp/AnotherMain.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/AnotherMain.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
         assertEquals(19, parsedStatus.getRevision().getNumber());
@@ -613,7 +591,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/file-locked/testapp/Main.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/Main.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
         assertEquals(10, parsedStatus.getRevision().getNumber());
@@ -638,7 +615,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/new-format-file-locked/testapp/AnotherMain.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/AnotherMain.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
         assertEquals(19, parsedStatus.getRevision().getNumber());
@@ -663,7 +639,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/new-format-file-locked-with-comment/testapp/AnotherMain.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/AnotherMain.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
         assertEquals(19, parsedStatus.getRevision().getNumber());
@@ -688,7 +663,6 @@ public class SvnWcParserTest extends NbTestCase {
         File myFile = new File(dataRootDir + "/SvnWcParser/no-changes-keywords/testapp/Main.java");
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
-        assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("file:///data/subversion/trunk/testapp/Main.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
         assertEquals(989, parsedStatus.getRevision().getNumber());

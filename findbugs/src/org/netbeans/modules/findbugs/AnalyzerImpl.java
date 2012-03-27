@@ -51,11 +51,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.findbugs.options.FindBugsPanel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
@@ -77,29 +80,67 @@ public class AnalyzerImpl implements Analyzer {
 
     @Override
     public Iterable<? extends ErrorDescription> analyze() {
-        Collection<? extends FileObject> sourceRoots = ctx.getScope().getSourceRoots();//XXX: other Scope content!!!
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         int i = 0;
 
-        ctx.start(sourceRoots.size());
+        ctx.start(ctx.getScope().getSourceRoots().size() + ctx.getScope().getFolders().size() + ctx.getScope().getFiles().size());
 
-        for (FileObject sr : sourceRoots) {
+        for (FileObject sr : ctx.getScope().getSourceRoots()) {
             if (cancel.get()) return Collections.emptyList();
-            Thread.interrupted();//clear interrupted flag
-            synchronized (this) {
-                processingThread = Thread.currentThread();
+            result.addAll(doRunFindBugs(sr));
+            ctx.progress(++i);
+        }
+
+        for (FileObject file : ctx.getScope().getFiles()) {
+            if (cancel.get()) return Collections.emptyList();
+            ClassPath source = ClassPath.getClassPath(file, ClassPath.SOURCE);
+            FileObject sr = source.findOwnerRoot(file);
+            if (sr == null) {
+                //XXX: what can be done?
+                continue;
             }
-            result.addAll(RunFindBugs.runFindBugs(null, ctx.getSettings(), ctx.getSingleWarningId(), sr, null, null));
-            synchronized(this) {
-                processingThread = null;
+            for (ErrorDescription ed : doRunFindBugs(sr)) {
+                if (FileUtil.isParentOf(file, ed.getFile()) || file == ed.getFile()) {
+                    result.add(ed);
+                }
             }
-            Thread.interrupted();//clear interrupted flag
+            ctx.progress(++i);
+        }
+
+        for (NonRecursiveFolder nrf : ctx.getScope().getFolders()) {
+            if (cancel.get()) return Collections.emptyList();
+            ClassPath source = ClassPath.getClassPath(nrf.getFolder(), ClassPath.SOURCE);
+            FileObject sr = source.findOwnerRoot(nrf.getFolder());
+            if (sr == null) {
+                //XXX: what can be done?
+                continue;
+            }
+            for (ErrorDescription ed : doRunFindBugs(sr)) {
+                if (nrf.getFolder() == ed.getFile().getParent()) {
+                    result.add(ed);
+                }
+            }
             ctx.progress(++i);
         }
 
         ctx.finish();
 
         return result;
+    }
+
+    private List<ErrorDescription> doRunFindBugs(FileObject sourceRoot) {
+        Thread.interrupted();//clear interrupted flag
+        synchronized (this) {
+            processingThread = Thread.currentThread();
+        }
+        try {
+            return RunFindBugs.runFindBugs(null, ctx.getSettings(), ctx.getSingleWarningId(), sourceRoot, null, null);
+        } finally {
+            synchronized(this) {
+                processingThread = null;
+            }
+            Thread.interrupted();//clear interrupted flag
+        }
     }
 
     @Override

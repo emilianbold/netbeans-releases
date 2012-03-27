@@ -59,6 +59,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Map.Entry;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -82,6 +83,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.util.*;
@@ -92,7 +95,7 @@ import org.openide.windows.TopComponent;
  *
  * @author  Pavel Flaska, Martin Matula
  */
-public class RefactoringPanel extends JPanel implements InvalidationListener {
+public class RefactoringPanel extends JPanel {
     private static final RequestProcessor RP = new RequestProcessor(RefactoringPanel.class.getName(), 1, false, false);
     
     // PRIVATE FIELDS
@@ -519,6 +522,18 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
      */
     private void refactor() {
         checkEventThread();
+        if (!checkTimeStamps()) {
+            if (JOptionPane.showConfirmDialog(
+                    this,
+                    NbBundle.getMessage(RefactoringPanel.class, "MSG_ConfirmRefresh"),
+                    NbBundle.getMessage(RefactoringPanel.class, "MSG_FileModified"),
+                    JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+                refresh(true);
+                return;
+            }   else {
+            return;
+            }
+        }
         disableComponents(RefactoringPanel.this);
         progressListener = new ProgressL();
         RP.post(new Runnable() {
@@ -620,7 +635,10 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         requestFocus();
     }
     
-    @Override
+    /**
+     * TODO: probably useless
+     * remove
+     */
     public void invalidateObject() {
         if (isQuery) {
             return;
@@ -701,7 +719,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    Set<CloneableEditorSupport> editorSupports = new HashSet<CloneableEditorSupport>();
+                    Set<FileObject> fileObjects = new HashSet<FileObject>();
                     int errorsNum = 0;
                     if (!isQuery) {
                         for (Iterator iter = elements.iterator(); iter.hasNext(); ) {
@@ -778,10 +796,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                                     }
                                 }
                                 PositionBounds pb = e.getPosition();
-                                if (pb != null) {
-                                    CloneableEditorSupport ces = pb.getBegin().getCloneableEditorSupport();
-                                    editorSupports.add(ces);
-                                }
+                                fileObjects.add(e.getParentFile());
                                 
                                 if (i % 10 == 0)
                                     progressHandle.progress(i/10);
@@ -790,7 +805,8 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                             //[retouche]                        JavaModel.getJavaRepository().endTrans();
                         }
                        
-                        UndoManager.getDefault().watch(editorSupports, RefactoringPanel.this);
+                        //UndoManager.getDefault().watch(editorSupports, RefactoringPanel.this);
+                        storeTimeStamps(fileObjects);
                     } catch (RuntimeException t) {
                         cleanupTreeElements();
                         throw t;
@@ -885,6 +901,46 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             }
         });
     }
+    
+     private Map<FileObject, Long> timeStamps = new HashMap<FileObject, Long>();
+     
+     private void storeTimeStamps(Set<FileObject> fileObjects) {
+         timeStamps.clear();
+         for (FileObject fo:fileObjects) {
+             timeStamps.put(fo, fo.lastModified().getTime());
+         }
+     }
+     
+     /**
+      * @return true if timestamps are OK
+      */
+     private boolean checkTimeStamps() {
+         Set<FileObject> modified = getModifiedFileObjects();
+         for (Entry<FileObject, Long> entry: timeStamps.entrySet()) {
+             if (modified.contains(entry.getKey()))
+                 return false;
+             if (!entry.getKey().isValid())
+                 return false;
+             if (entry.getKey().lastModified().getTime() != entry.getValue())
+                 return false;
+         }
+         return true;
+     }
+     
+     private Set<FileObject> getModifiedFileObjects() {
+         Set<FileObject> result = new HashSet();
+         for (DataObject dob: DataObject.getRegistry().getModified()) {
+             result.add(dob.getPrimaryFile());
+         }
+         return result;
+     }
+     
+     private void clearTimeStamps() {
+         timeStamps.clear();
+     }
+ 
+ 
+     
     
     private void createTree(TreeNode root) throws MissingResourceException {
         if (tree == null) {
@@ -1102,7 +1158,8 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     } */
     
     protected void closeNotify() {
-        UndoWatcher.stopWatching(this);
+        clearTimeStamps();
+        //UndoWatcher.stopWatching(this);
         if (tree!=null) {
             ToolTipManager.sharedInstance().unregisterComponent(tree);
             scrollPane.getViewport().remove(tree);
@@ -1159,6 +1216,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     handle.start(event.getCount());
                     d.setVisible(true);
                 }
+
             });
         }
         

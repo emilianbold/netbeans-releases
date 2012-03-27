@@ -63,7 +63,6 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.ApisupportAntUIUtils;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -247,8 +246,6 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
             ApisupportAntUIUtils.setProjectChooserDirParent(projectFolder);
         }
 
-        Templates.setDefinesMainProject(settings, data.isMainProject());
-        
         return resultSet;
     }
     

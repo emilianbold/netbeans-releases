@@ -134,7 +134,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
             File clazzFolder = builder.folder("org-netbeans-modules-java-hints/code-hints/" + getFQN(clazz).replace('.', '-') + ".class");
 
             for (AnnotationMirror am : clazz.getAnnotationMirrors()) {
-                dumpAnnotation(builder, clazzFolder, clazz, am);
+                dumpAnnotation(builder, clazzFolder, clazz, am, true);
             }
 
             for (ExecutableElement ee : ElementFilter.methodsIn(clazz.getEnclosedElements())) {
@@ -142,7 +142,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
                     File methodFolder = builder.folder(clazzFolder.getPath() + "/" + ee.getSimpleName() + ".method");
 
                     for (AnnotationMirror am : ee.getAnnotationMirrors()) {
-                        dumpAnnotation(builder, methodFolder, ee, am);
+                        dumpAnnotation(builder, methodFolder, ee, am, true);
                     }
 
                     methodFolder.write();
@@ -154,7 +154,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
                     File fieldFolder = builder.folder(clazzFolder.getPath() + "/" + var.getSimpleName() + ".field");
 
                     for (AnnotationMirror am : var.getAnnotationMirrors()) {
-                        dumpAnnotation(builder, fieldFolder, var, am);
+                        dumpAnnotation(builder, fieldFolder, var, am, true);
                     }
 
                     if (var.getConstantValue() instanceof String) {
@@ -191,8 +191,9 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
 
     }
 
-    private void dumpAnnotation(LayerBuilder builder, File folder, Element errElement, AnnotationMirror annotation) {
+    private void dumpAnnotation(LayerBuilder builder, File folder, Element errElement, AnnotationMirror annotation, boolean topLevel) {
         String fqn = getFQN(((TypeElement) annotation.getAnnotationType().asElement())).replace('.', '-');
+        if (topLevel && !fqn.startsWith("org-netbeans-spi-java-hints")) return ;
         final File   annotationFolder = builder.folder(folder.getPath() + "/" + fqn + ".annotation");
 
         for (Entry<? extends ExecutableElement, ? extends AnnotationValue> e : annotation.getElementValues().entrySet()) {
@@ -542,7 +543,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
         public Void visitAnnotation(AnnotationMirror a, Void p) {
             File f = builder.folder(annotationFolder.getPath() + "/" + attrName);
             
-            dumpAnnotation(builder, f, errElement, a);
+            dumpAnnotation(builder, f, errElement, a, false);
 
             f.write();
             return null;

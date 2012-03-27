@@ -41,6 +41,7 @@ PACKAGE    Test204925_08_C                 [PUBLIC]   null
 PACKAGE    Test204925_08_P                 [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
+PACKAGE    delme                           [PUBLIC]   null
 CLASS      Book                            [PUBLIC]   issue153707.php
 VARIABLE   ? $name                         [PUBLIC]   issue153707.php
 KEYWORD    Book $this->                               null
@@ -83,6 +84,7 @@ CLASS      A                               [PUBLIC]   classConstructorOptionalPa
 CLASS      A                               [PUBLIC]   test.php
 CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
+CLASS      Abc                             [PUBLIC]   issue209405.php
 CLASS      Admin                           [PUBLIC]   Admin
 CLASS      AdminPresenter                  [PUBLIC,   AdminModule
 CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
@@ -110,6 +112,7 @@ CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
 CLASS      ChildClass                      [PUBLIC]   class_member_visibility.php
 CLASS      ChildInterface                  [PUBLIC]   interfaces.php
 CLASS      ClassName                       [PUBLIC]   issue194300.php
+CLASS      ClassName123                    [PUBLIC]   issue209608.php
 CLASS      Cls1                            [PUBLIC]   TestCase.php
 CLASS      Cls136188                       [PUBLIC]   issue136188.php
 CLASS      Cls149519                       [PUBLIC]   issue149519.php
@@ -126,6 +129,8 @@ CLASS      ComplexObject                   [PUBLIC]   issue159970.php
 CLASS      Control                         [PUBLIC]   Nette\Application\UI
 CLASS      Controller                      [PUBLIC]   Brite\Controller
 CLASS      DatabaseRecord                  [PUBLIC]   DatabaseRecord.php
+CLASS      Delme1                          [PUBLIC]   delme
+CLASS      Delme2                          [PUBLIC]   Delme2.php
 CLASS      EmptyClass                      [PUBLIC]   issue194875.php
 CLASS      EmptyClass                      [PUBLIC]   issue201310.php
 CLASS      EmptyClassFromNs                [PUBLIC]   Extra

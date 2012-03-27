@@ -41,10 +41,18 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import javax.swing.text.Document;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -136,6 +144,26 @@ public class PHPCodeTemplateFilterTest extends PHPTestBase {
     public void testFcomInsideFunction() throws Exception {
         String source = "<?php\nclass Foo { \n function foo() { ^ } \n} \n?>";
         checkTemplate(source, true, "fcom");
+    }
+
+    public void testIfncInIface() throws Exception {
+        String source = "<?php\ninterface IFace { \n ^ \n} \n?>";
+        checkTemplate(source, true, "ifnc");
+    }
+
+    public void testIfncInCls() throws Exception {
+        String source = "<?php\nclass MyCls { \n ^ \n} \n?>";
+        checkTemplate(source, false, "ifnc");
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/codeTemplateFilter"))
+            })
+        );
     }
 
 }

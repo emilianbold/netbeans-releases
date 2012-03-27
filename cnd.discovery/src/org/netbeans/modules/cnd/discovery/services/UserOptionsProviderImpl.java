@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -119,10 +120,17 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     }
 
     private void convertOptionsToMacros(AbstractCompiler compiler, String options, List<String> res) {
+        if (compiler == null || compiler.getDescriptor() == null) {
+            return;
+        }
+        final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
+        if (predefinedMacros == null || predefinedMacros.isEmpty()) {
+            return;
+        }
         String[] split = options.split(" "); //NOI18N
         for(String s : split) {
             if (s.startsWith("-")) { //NOI18N
-                for(ToolchainManager.PredefinedMacro macro :compiler.getDescriptor().getPredefinedMacros()){
+                for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
                     if (macro.getFlags() != null && macro.getFlags().equals(s)) {
                         if (macro.isHidden()) {
                             // TODO remove macro

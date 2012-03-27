@@ -44,9 +44,8 @@
 
 package org.netbeans.modules.groovy.grailsproject.classpath;
 
-import java.io.File;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -62,7 +61,6 @@ import org.openide.filesystems.FileUtil;
 public final class ClassPathProviderImpl implements ClassPathProvider {
 
     private final GrailsProject project;
-    private final File projectDirectory;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
 
@@ -84,10 +82,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
 
     private final Map<String, FileObject> dirCache = new HashMap<String, FileObject>();
 
-    public ClassPathProviderImpl(SourceRoots sourceRoots, SourceRoots testSourceRoots, File projectDirectory, GrailsProject project) {
+    public ClassPathProviderImpl(SourceRoots sourceRoots, SourceRoots testSourceRoots, GrailsProject project) {
         this.project = project;
-        this.projectDirectory = projectDirectory;
-        assert this.projectDirectory != null;
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
     }
@@ -225,6 +221,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return cp;
     }
 
+    @Override
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(ClassPath.COMPILE)) {
             return getCompileTimeClasspath(file);
@@ -280,6 +277,5 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         assert false;
         return null;
     }
-
 }
 

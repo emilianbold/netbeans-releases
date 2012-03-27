@@ -52,11 +52,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -67,6 +64,7 @@ import org.openide.awt.UndoRedo;
 import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -86,6 +84,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Property;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -127,6 +126,19 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         activatedNodesContent = new InstanceContent();
     }
     
+    public HistoryComponent(File... files) {
+        this();
+        
+        VCSFileProxy[] proxies = new VCSFileProxy[files.length];
+        for (int i = 0; i < proxies.length; i++) {
+            proxies[i] = VCSFileProxy.createFileProxy(files[i]);
+        }
+        this.files = proxies;
+        VersioningSystem vs = files.length > 0 ? Utils.getOwner(proxies[0]) : null;
+        History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{proxies[0], vs != null ? vs.getDisplayName() : null});
+        init(vs, true, proxies);
+    }
+    
     public HistoryComponent(Lookup context) {
         this();
         DataObject dataObject = context.lookup(DataObject.class);
@@ -142,18 +154,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         files = filesList.toArray(new VCSFileProxy[filesList.size()]);
         VersioningSystem vs = files.length > 0 ? Utils.getOwner(files[0]) : null;
         History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{files[0], vs != null ? vs.getDisplayName() : null});
-        init(vs, files);    
-    }
-    
-    public void setFiles(File... files) {   
-        VCSFileProxy[] proxies = new VCSFileProxy[files.length];
-        for (int i = 0; i < proxies.length; i++) {
-            proxies[i] = VCSFileProxy.createFileProxy(files[i]);
-        }
-        this.files = proxies;
-        VersioningSystem vs = files.length > 0 ? Utils.getOwner(proxies[0]) : null;
-        History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{proxies[0], vs != null ? vs.getDisplayName() : null});
-        init(vs, true, proxies);
+        init(vs, false, files);    
     }
     
     private Collection<VCSFileProxy> toFileCollection(Collection<? extends FileObject> fileObjects) {
@@ -165,10 +166,6 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         return ret;
     }        
 
-    private void init(VersioningSystem vs, final VCSFileProxy... files) {   
-        init(vs, false, files);
-    }
-    
     private void init(VersioningSystem vs, boolean refresh, final VCSFileProxy... files) {   
         this.versioningSystem = vs;
         if(toolBar == null) {
@@ -346,6 +343,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         getToolbar().containsLabel.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
         getToolbar().containsField.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
         masterView.setFilter(getSelectedFilter());
+        getToolbar().containsField.setText(""); // NOI18N
         getToolbar().containsField.requestFocus();
     }
 
@@ -626,6 +624,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         }
         @Override
         public boolean accept(Object value) {
+            if(HistoryRootNode.isLoadNext(value) || HistoryRootNode.isWait(value)) return true;
+            
             HistoryEntry e = getEntry(value);
             if(e != null) {
                 if(!e.isLocalHistory()) return true;
@@ -653,7 +653,14 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }       
     private class ByUserFilter extends Filter {
         @Override
+        public boolean filtersProperty(Property property) {
+            return property instanceof RevisionNode.UserProperty;
+        }
+                
+        @Override
         public boolean accept(Object value) {
+            if(HistoryRootNode.isLoadNext(value) || HistoryRootNode.isWait(value)) return true;
+            
             String byUser = getToolbar().containsField.getText();
             if(byUser == null || "".equals(byUser)) return true;                // NOI18N
             
@@ -674,8 +681,16 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         }        
     }           
     private class ByMsgFilter extends Filter {
+
+        @Override
+        public boolean filtersProperty(Property property) {
+            return property instanceof RevisionNode.MessageProperty;
+        }
+        
         @Override
         public boolean accept(Object value) {
+            if(HistoryRootNode.isLoadNext(value) || HistoryRootNode.isWait(value)) return true;
+            
             String byMsg = getToolbar().containsField.getText();
             if(byMsg == null || "".equals(byMsg)) return true;
             
@@ -700,10 +715,28 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private String getFilteredRendererValue(String value) {
         String contains = getToolbar().containsField.getText();
         if(contains == null || "".equals(contains)) { // NOI18N
-            return value;
+            return HistoryUtils.escapeForHTMLLabel(value);
         }            
+        
         StringBuilder sb = new StringBuilder();
-        sb.append(value.replace(contains, "<b>" + contains + "</b>")); // NOI18N
+        int startIdx = 0;
+        int endIdx = value.indexOf(contains);
+        if(endIdx < 0) {
+            return HistoryUtils.escapeForHTMLLabel(value);
+        }
+        while(endIdx > -1 ) {
+            String t = value.substring(startIdx, endIdx);
+            sb.append(HistoryUtils.escapeForHTMLLabel(t)); 
+            sb.append("<b>"); // NOI18N 
+            sb.append(HistoryUtils.escapeForHTMLLabel(contains)); 
+            sb.append("</b>"); // NOI18N
+            startIdx = endIdx + contains.length();
+            endIdx = value.indexOf(contains, endIdx + 1);
+        }
+        if(startIdx < value.length()) {
+            String t = value.substring(startIdx, value.length());
+            sb.append(HistoryUtils.escapeForHTMLLabel(t)); 
+        }
         return sb.toString();
     }
     

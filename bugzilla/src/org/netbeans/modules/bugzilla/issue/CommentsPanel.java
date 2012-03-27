@@ -113,7 +113,6 @@ public class CommentsPanel extends JPanel {
     private final static Color GREY_FOREGROUND = new Color(0x999999);
     
     private final JPopupMenu commentsPopup = new PopupMenu();
-    private final BugzillaIssueFinder issueFinder;
     private BugzillaIssue issue;
     private List<BugzillaIssue.Attachment> attachments;
     private List<String> attachmentIds;
@@ -128,20 +127,18 @@ public class CommentsPanel extends JPanel {
         issueLink = new HyperlinkSupport.Link() {
             @Override
             public void onClick(String linkText) {
-                final String issueKey = issueFinder.getIssueId(linkText);
+                final String issueKey = BugzillaIssueFinder.getInstance().getIssueId(linkText);
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
                         BugzillaIssue is = issue.getRepository().getIssue(issueKey);
                         if (is != null) {
-                            BugzillaUtil.openIssue(issue);
+                            BugzillaUtil.openIssue(is);
                         }
                     }
                 });
             }
         };
-        issueFinder = Lookup.getDefault().lookup(BugzillaIssueFinder.class);
-        assert issueFinder != null;
     }
 
     void setIssue(BugzillaIssue issue,
@@ -310,7 +307,7 @@ public class CommentsPanel extends JPanel {
         HyperlinkSupport.getInstance().registerForTypes(textPane);
         HyperlinkSupport.getInstance().registerForStacktraces(textPane);
         HyperlinkSupport.getInstance().registerForURLs(textPane);
-        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, issueFinder);
+        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, BugzillaIssueFinder.getInstance());
         
         Caret caret = textPane.getCaret();
         if (caret instanceof DefaultCaret) {

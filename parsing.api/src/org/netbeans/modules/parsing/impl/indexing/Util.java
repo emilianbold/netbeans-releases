@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -134,16 +135,42 @@ public final class Util {
         return null;
     }
 
-    public static URL resolveUrl(URL root, String relativePath) throws MalformedURLException {
+    /**
+     * Resolves URL within a root.
+     * @param root the root to resolve the URL in.
+     * @param relativePath the relative path under the root.
+     * @param isDirectory true if the relativePath is known to point to directory,
+     * false if the relativePath is known to point to file, null if nothing is known
+     * about the target.
+     * @return
+     * @throws MalformedURLException 
+     */
+    public static URL resolveUrl(
+            @NonNull final URL root,
+            @NonNull final String relativePath,
+            @NullAllowed final Boolean isDirectory) throws MalformedURLException {
         try {
             if ("file".equals(root.getProtocol())) { //NOI18N
                 // The assertion is needed for the perf. optimization bellow, making sure the file is not a directory
-                assert ! relativePath.endsWith(File.separator);
+                assert isDirectory == Boolean.FALSE && !relativePath.endsWith(File.separator);
+                // Performance optimization for File.toURI() which calls this method
+                // and the original implementation calls into native method
                 return new File(new File(root.toURI()), relativePath) {
-                    @Override public boolean isDirectory() {
-                        // Performance optimization for File.toURI() which calls this method
-                        // and the original implementation calls into native method
-                        return false;
+                    
+                    @Override
+                    public File getAbsoluteFile() {
+                        if (isAbsolute()) {
+                            return this;
+                        } else {
+                            return super.getAbsoluteFile();
+                        }
+                    }
+                                                            
+                    @Override
+                    public boolean isDirectory() {
+                        return isDirectory == null ?
+                            super.isDirectory() :
+                            isDirectory;
                     }
                 }.toURI().toURL();
             } else {

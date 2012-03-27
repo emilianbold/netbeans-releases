@@ -626,7 +626,9 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         group.addBarrier(new Runnable() {
             @Override
             public void run() {
-                if (!group.isFailed()) {
+                if (group.isFailed()) {
+                    executed();
+                } else {
                     refreshTask.schedule(0);
                 }
             }
@@ -646,7 +648,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             currentModelIndex = fileTable.getSelectedModelIndex();
         }
 
-        DiffController view = setups[currentModelIndex].getView();
+        DiffController view = currentModelIndex > -1 ? setups[currentModelIndex].getView() : null;
         if (view != null) {
             int currentDifferenceIndex = view.getDifferenceIndex();
             if (++currentDifferenceIndex >= view.getDifferenceCount()) {

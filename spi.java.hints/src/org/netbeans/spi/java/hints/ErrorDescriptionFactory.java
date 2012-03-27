@@ -112,8 +112,15 @@ public class ErrorDescriptionFactory {
     }
     
     public static ErrorDescription forTree(HintContext context, Tree tree, String text, Fix... fixes) {
-        int start = (int) context.getInfo().getTrees().getSourcePositions().getStartPosition(context.getInfo().getCompilationUnit(), tree);
-        int end = (int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree);
+        int start;
+        int end;
+
+        if (context.getHintMetadata().kind == Hint.Kind.INSPECTION) {
+            start = (int) context.getInfo().getTrees().getSourcePositions().getStartPosition(context.getInfo().getCompilationUnit(), tree);
+            end = (int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree);
+        } else {
+            start = end = context.getCaretLocation();
+        }
 
         if (start != (-1) && end != (-1)) {
             LazyFixList fixesForED = org.netbeans.spi.editor.hints.ErrorDescriptionFactory.lazyListForFixes(resolveDefaultFixes(context, fixes));
@@ -128,7 +135,13 @@ public class ErrorDescriptionFactory {
     }
 
     public static ErrorDescription forName(HintContext context, Tree tree, String text, Fix... fixes) {
-        int[] span = computeNameSpan(tree, context);
+        int[] span;
+        
+        if (context.getHintMetadata().kind == Hint.Kind.INSPECTION) {
+            span = computeNameSpan(tree, context);
+        } else {
+            span = new int[] {context.getCaretLocation(), context.getCaretLocation()};
+        }
         
         if (span != null && span[0] != (-1) && span[1] != (-1)) {
             LazyFixList fixesForED = org.netbeans.spi.editor.hints.ErrorDescriptionFactory.lazyListForFixes(resolveDefaultFixes(context, fixes));

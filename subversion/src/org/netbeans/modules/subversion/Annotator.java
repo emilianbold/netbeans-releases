@@ -77,12 +77,13 @@ import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.diff.PatchAction;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.options.AnnotationColorProvider;
-import org.netbeans.modules.subversion.ui.cleanup.CleanupAction;
+import org.netbeans.modules.subversion.ui.wcadmin.CleanupAction;
 import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.subversion.ui.export.ExportAction;
 import org.netbeans.modules.subversion.ui.lock.LockAction;
 import org.netbeans.modules.subversion.ui.lock.UnlockAction;
 import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
+import org.netbeans.modules.subversion.ui.wcadmin.UpgradeAction;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
@@ -471,6 +472,7 @@ public class Annotator {
                 }
                 actions.add(null);
                 actions.add(SystemAction.get(CleanupAction.class));
+                actions.add(SystemAction.get(UpgradeAction.class));
                 actions.add(SystemAction.get(VersioningInfoAction.class));
                 actions.add(SystemAction.get(SvnPropertiesAction.class));
             }

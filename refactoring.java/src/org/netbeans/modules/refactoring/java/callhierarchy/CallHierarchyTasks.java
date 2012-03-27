@@ -109,10 +109,10 @@ final class CallHierarchyTasks {
             Document doc = ec.getDocument();
             js = JavaSource.forDocument(doc);
             resolver = new RootResolver(openedPanes[0].getCaretPosition(), isCallerGraph);
-        } else {
-            // XXX resolve Node.class
-            
         }
+//        else {
+            // XXX resolve Node.class
+//        }
         postResolveRoot(js, resolver, rootCallback);
     }   
     

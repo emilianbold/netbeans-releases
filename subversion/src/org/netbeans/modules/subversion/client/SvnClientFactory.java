@@ -132,18 +132,6 @@ public class SvnClientFactory {
         }
     }
     
-    /**
-     * Switches to commandline client.
-     * Call this as a fallback when no integrated svn clients work with some working copies
-     */
-    static void switchToCLI () {
-        LOG.log(Level.INFO, "Switching forcefully to a commandline client"); //NOI18N
-        System.setProperty(FACTORY_PROP, FACTORY_TYPE_COMMANDLINE); //NOI18N
-        SvnModuleConfig.getDefault().setForceCommnandlineClient(true);
-        instance = null;
-        Subversion.getInstance().svnClientChanged();
-    }
-
     public static boolean isCLI() {
         if(!isClientAvailable()) return false;
         assert factory != null;
@@ -215,12 +203,7 @@ public class SvnClientFactory {
             // ping config file copying
             SvnConfigFiles.getInstance();
 
-            if ((factoryType == null || factoryType.trim().isEmpty())
-                    && SvnModuleConfig.getDefault().isForcedCommandlineClient()) {
-                // fallback to commandline only if factoryType is not set explicitely
-                factoryType = FACTORY_TYPE_COMMANDLINE;
-                LOG.log(Level.INFO, "setup: using commandline as the client - saved in preferences");
-            }
+            SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
             
             if(factoryType == null ||
                factoryType.trim().equals("")) {
@@ -235,24 +218,20 @@ public class SvnClientFactory {
                 setupCommandline();
             } else if (factoryType.trim().equals("javahl")) {
                 if(setupJavaHl()) {
-                    SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
                     return;
                 }
                 LOG.log(Level.INFO, "JavaHL not available. Falling back on SvnKit.");
                 if(setupSvnKit()) {
-                    SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
                     return;
                 }          
                 LOG.log(Level.INFO, "SvnKit not available. Falling back on commandline.");
                 setupCommandline();
             } else if(factoryType.trim().equals("svnkit")) {
                 if(setupSvnKit()) {
-                    SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
                     return;
                 }
                 LOG.log(Level.INFO, "SvnKit not available. Falling back on javahl.");
                 if(setupJavaHl()) {
-                    SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
                     return;
                 }
                 LOG.log(Level.INFO, "JavaHL not available. Falling back on comandline.");

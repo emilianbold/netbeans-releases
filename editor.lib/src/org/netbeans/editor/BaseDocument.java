@@ -45,7 +45,6 @@
 package org.netbeans.editor;
 
 import java.awt.Font;
-import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.Hashtable;
 import java.util.Dictionary;
@@ -56,6 +55,7 @@ import java.io.IOException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.Set;
@@ -112,11 +112,10 @@ import org.netbeans.modules.editor.lib2.document.LineElementRoot;
 import org.netbeans.modules.editor.lib2.document.ReadWriteBuffer;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
 import org.netbeans.modules.editor.lib2.document.StableCompoundEdit;
+import org.netbeans.spi.editor.document.UndoableEditWrapper;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.spi.lexer.TokenHierarchyControl;
 import org.openide.filesystems.FileObject;
-import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 
 /**
@@ -345,6 +344,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private CharSequence text;
     
     private UndoableEdit removeUpdateLineUndo;
+    
+    private Collection<? extends UndoableEditWrapper> undoEditWrappers;
 
     private DocumentFilter.FilterBypass filterBypass;
 
@@ -564,6 +565,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         findSupportChange(null); // update doc by find settings
 
         TrailingWhitespaceRemove.install(this);
+        
+        undoEditWrappers = MimeLookup.getLookup(mimeType).lookupAll(UndoableEditWrapper.class);
 
         if (weakPrefsListener == null) {
             // the listening could have already been initialized from setMimeType(), which
@@ -1571,6 +1574,18 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     }
 
     protected @Override void fireUndoableEditUpdate(UndoableEditEvent e) {
+        // Possibly wrap contained edit
+        if (undoEditWrappers != null) {
+            UndoableEdit origEdit = e.getEdit();
+            UndoableEdit edit = origEdit;
+            for (UndoableEditWrapper wrapper : undoEditWrappers) {
+                edit = wrapper.wrap(edit, this);
+            }
+            if (edit != origEdit) {
+                e = new UndoableEditEvent(this, edit);
+            }
+        }
+        
 	// Fire to the list of listeners that was used before the atomic lock started
         // This fixes issue #47881 and appears to be somewhat more logical
         // than the default approach to fire all the current listeners

@@ -1,5 +1,5 @@
 Name: Subversion client for windows
-Version: 1.6.x
+Version: 1.7.x
 Description: Subversion client for windows
 License: Subversion license
 OSR: 9185

@@ -64,7 +64,6 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.config.PasswordFile;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.filesystems.FileUtil;
@@ -115,8 +114,6 @@ public class Subversion {
     private Annotator                           annotator;
     private HashMap<String, RequestProcessor>   processorsToUrl;
 
-    private SvnClient noUrlClientWithoutListeners;
-    private SvnClient noUrlClientWithListeners;
     private List<ISVNNotifyListener> svnNotifyListeners;
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -339,18 +336,11 @@ public class Subversion {
      */
     public SvnClient getClient(boolean attachListeners) throws SVNClientException {
         cleanupFilesystem();
+        SvnClient client = SvnClientFactory.getInstance().createSvnClient();
         if(attachListeners) {
-            if(noUrlClientWithListeners == null) {
-                noUrlClientWithListeners = SvnClientFactory.getInstance().createSvnClient();
-                attachListeners(noUrlClientWithListeners);
-            }
-            return noUrlClientWithListeners;
-        } else {
-            if(noUrlClientWithoutListeners == null) {
-                noUrlClientWithoutListeners = SvnClientFactory.getInstance().createSvnClient();
-            }
-            return noUrlClientWithoutListeners;
+            attachListeners(client);
         }
+        return client;
     }
 
     public void versionedFilesChanged() {
@@ -658,13 +648,5 @@ public class Subversion {
         List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
-    }
-
-    /**
-     * DO NOT call the method unless you really know what you're doing.
-     */
-    public void svnClientChanged () {
-        LOG.log(Level.INFO, "svnClientChanged: Flushing cached shared clients"); //NOI18N
-        noUrlClientWithListeners = noUrlClientWithoutListeners = null;
     }
 }

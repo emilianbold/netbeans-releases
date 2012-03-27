@@ -49,9 +49,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -81,17 +79,24 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
     }
 
     private static class TypedTextInterceptorImpl implements TypedTextInterceptor {
-
+        private CppTypingCompletion.ExtraText rawStringText = null;
         public TypedTextInterceptorImpl() {
         }
 
         @Override
         public boolean beforeInsert(Context context) throws BadLocationException {
+            // reset flag
+            rawStringText = null;
             return false;
         }
 
         @Override
         public void insert(MutableContext context) throws BadLocationException {
+            BaseDocument doc = (BaseDocument) context.getDocument();
+            if (!BracketCompletion.completionSettingEnabled(doc)) {
+                return;
+            }
+            rawStringText = CppTypingCompletion.checkRawStringInsertion(context);
         }
 
         @Override
@@ -101,44 +106,67 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
 
                 @Override
                 public void run() {
-                    int offset = context.getOffset();
-                    String typedText = context.getText();
-                    if (HotCharIndent.INSTANCE.getKeywordBasedReformatBlock(doc, offset, typedText)) {
-                        Indent indent = Indent.get(doc);
-                        indent.lock();
-                        try {
-                            doc.putProperty("abbrev-ignore-modification", Boolean.TRUE); // NOI18N
-                            indent.reindent(offset);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } finally {
-                            doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
-                            indent.unlock();
+                    if (rawStringText != null) {
+                        int caretPosition = rawStringText.getCaretPosition();
+                        if (caretPosition != -1) {
+                            String txt = rawStringText.getExtraText();
+                            if (txt != null) {
+                                try {
+                                    // to have correct undo we have to insert in caret position
+                                    // and then in extra text position
+                                    int shift = caretPosition < rawStringText.getExtraTextPostion() ? 1 : 0;
+                                    doc.insertString(rawStringText.getCaretPosition(), txt, null);
+                                    doc.insertString(rawStringText.getExtraTextPostion() + shift, txt, null);
+                                    // put cursor after inserted text
+                                    caretPosition++;
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                            if (context.getOffset() != caretPosition) {
+                                context.getComponent().setCaretPosition(caretPosition);
+                            }
                         }
                     } else {
-                        Caret caret = context.getComponent().getCaret();
-                        boolean blockCommentStart = false;
-                        if (offset > 0 && typedText.charAt(0) == '*') { //NOI18N
-                            TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset - 1, true, false);
-                            if (ts != null) {
-                                // this is begin of block comment
-                                if (ts.token().id() == CppTokenId.BLOCK_COMMENT) {
-                                    blockCommentStart = true;
-                                     // check if it's begin of line
-                                    while (ts.movePrevious()) {
-                                        TokenId id = ts.token().id();
-                                        if (id != CppTokenId.WHITESPACE) {
-                                            blockCommentStart = (id == CppTokenId.NEW_LINE) || (id == CppTokenId.ESCAPED_LINE);
-                                            break;
+                        int offset = context.getOffset();
+                        String typedText = context.getText();
+                        if (HotCharIndent.INSTANCE.getKeywordBasedReformatBlock(doc, offset, typedText)) {
+                            Indent indent = Indent.get(doc);
+                            indent.lock();
+                            try {
+                                doc.putProperty("abbrev-ignore-modification", Boolean.TRUE); // NOI18N
+                                indent.reindent(offset);
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } finally {
+                                doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
+                                indent.unlock();
+                            }
+                        } else {
+                            Caret caret = context.getComponent().getCaret();
+                            boolean blockCommentStart = false;
+                            if (offset > 0 && typedText.charAt(0) == '*') { //NOI18N
+                                TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset - 1, true, false);
+                                if (ts != null) {
+                                    // this is begin of block comment
+                                    if (ts.token().id() == CppTokenId.BLOCK_COMMENT) {
+                                        blockCommentStart = true;
+                                        // check if it's begin of line
+                                        while (ts.movePrevious()) {
+                                            TokenId id = ts.token().id();
+                                            if (id != CppTokenId.WHITESPACE) {
+                                                blockCommentStart = (id == CppTokenId.NEW_LINE) || (id == CppTokenId.ESCAPED_LINE);
+                                                break;
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                        try {
-                            BracketCompletion.charInserted(doc, offset, caret, typedText.charAt(0), blockCommentStart);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
+                            try {
+                                BracketCompletion.charInserted(doc, offset, caret, typedText.charAt(0), blockCommentStart);
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
                     }
                 }

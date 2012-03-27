@@ -120,7 +120,7 @@ public class ConfigurationMakefileWriter {
     }
 
     public void write() {
-        Collection<MakeConfiguration> okConfs = getOKConfigurations(true);
+        Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
         cleanup();
         if (isMakefileProject()) {
             for (MakeConfiguration conf : okConfs) {
@@ -435,9 +435,11 @@ public class ConfigurationMakefileWriter {
                     return compiler.getName();
                 } else {
                     // Fake tool, get name from the descriptor (see IZ#174566).
-                    String[] names = compiler.getDescriptor().getNames();
-                    if (names != null && names.length > 0) {
-                        return names[0];
+                    if (compiler.getDescriptor() != null) {
+                        String[] names = compiler.getDescriptor().getNames();
+                        if (names != null && names.length > 0) {
+                            return names[0];
+                        }
                     }
                 }
             }

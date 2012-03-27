@@ -119,7 +119,7 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
         return FileUtil.toFileObject(FileUtil.normalizeFile(artifact.getFile()));
     }
     
-    public Iterator getArchiveContents() throws IOException {
+    public Iterator<J2eeModule.RootedEntry> getArchiveContents() throws IOException {
 //        System.out.println("NPJM: get archive content..");
         FileObject fo = getArchive();
         return new ContentIterator(FileUtil.getArchiveRoot(fo));
@@ -272,7 +272,7 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
     
     // inspired by netbeans' webmodule codebase, not really sure what is the point
     // of the iterator..
-    private static final class ContentIterator implements Iterator {
+    private static final class ContentIterator implements Iterator<J2eeModule.RootedEntry> {
         private ArrayList<FileObject> ch;
         private FileObject root;
         
@@ -286,7 +286,7 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
             return ! ch.isEmpty();
         }
         
-        public Object next() {
+        public J2eeModule.RootedEntry next() {
             FileObject f = ch.get(0);
             ch.remove(0);
             if (f.isFolder()) {

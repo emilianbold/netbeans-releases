@@ -3,7 +3,6 @@ Version: 2.4
 Description: Enhanced standard libraries
 License: Apache-2.0
 Origin: http://repo1.maven.org/maven2/commons-lang/commons-lang/2.4/commons-lang-2.4.jar
-Files: asm-tree-3.3.jar
 
 Use of BCEL 2.0.0 is governed by the terms of the license below:
 

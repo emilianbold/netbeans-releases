@@ -66,7 +66,7 @@ WizardDescriptor.AsynchronousValidatingPanel<Clusterize>, Runnable {
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(ClusterizeVisualPanel1.class);
+        return new HelpCtx("org.netbeans.modules.apisupport.project.ui.customizer.ClusterizeVisualPanel1");
     }
 
     @Override

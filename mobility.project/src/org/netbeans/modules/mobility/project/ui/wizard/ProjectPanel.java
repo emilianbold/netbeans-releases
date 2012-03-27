@@ -78,7 +78,6 @@ public class ProjectPanel extends javax.swing.JPanel {
     public static final String PROJECT_NAME = "ProjectName"; // NOI18N
     public static final String PROJECTS_HOME = "ProjectsHome"; // NOI18N
     public static final String PROJECT_LOCATION = "ProjectLocation"; // NOI18N
-    public static final String PROJECT_MAIN = "setAsMain"; // NOI18N
     public static final String PROJECT_CREATE_MIDLET = "CreateMidlet"; // NOI18N
     public static final String PROJECT_COPY_SOURCES = "CopySources"; //NOI18N
 
@@ -86,12 +85,10 @@ public class ProjectPanel extends javax.swing.JPanel {
     private static final int WINDOWS_MAX_PATH_LENGTH = 255;
     
     /** Creates new form ProjectPanel */
-    public ProjectPanel(boolean showCreateMIDlet, boolean showSetAsMain, boolean showCopySources) {
+    public ProjectPanel(boolean showCreateMIDlet, boolean showCopySources) {
         initComponents();
         initAccessibility();
         cCreateMIDlet.setVisible(showCreateMIDlet);
-        cMainProject.setVisible(showSetAsMain);
-        cMainProject.setSelected(true);
         jLabel4.setVisible(showCopySources);
         jRadioCopySrc.setVisible(showCopySources);
         jRadioEmptySrc.setVisible(showCopySources);
@@ -106,14 +103,12 @@ public class ProjectPanel extends javax.swing.JPanel {
     public void addListeners(final DocumentListener documentListener, final ItemListener itemListener) {
         tName.getDocument().addDocumentListener(documentListener);
         tHome.getDocument().addDocumentListener(documentListener);
-        cMainProject.addItemListener(itemListener);
         cCreateMIDlet.addItemListener(itemListener);
     }
     
     public void removeListeners(final DocumentListener documentListener, final ItemListener itemListener) {
         tName.getDocument().removeDocumentListener(documentListener);
         tHome.getDocument().removeDocumentListener(documentListener);
-        cMainProject.removeItemListener(itemListener);
         cCreateMIDlet.removeItemListener(itemListener);
     }
     
@@ -165,9 +160,6 @@ public class ProjectPanel extends javax.swing.JPanel {
             tName.selectAll();
         }
 
-        b = (Boolean) object.getProperty(PROJECT_MAIN);
-        cMainProject.setSelected(b == null ? true : b.booleanValue());
-        
         b = (Boolean) object.getProperty(PROJECT_CREATE_MIDLET);
         cCreateMIDlet.setSelected(b == null ? true : b.booleanValue());
         
@@ -190,7 +182,6 @@ public class ProjectPanel extends javax.swing.JPanel {
         object.putProperty(PROJECT_NAME, tName.getText().trim());
         object.putProperty(PROJECTS_HOME, tHome.getText());
         object.putProperty(PROJECT_LOCATION, new File(tCreated.getText()).getAbsoluteFile());
-        object.putProperty(PROJECT_MAIN, cMainProject.isVisible()  &&  cMainProject.isSelected());
         object.putProperty(PROJECT_CREATE_MIDLET, cCreateMIDlet.isVisible()  &&  cCreateMIDlet.isSelected());
         object.putProperty(PROJECT_COPY_SOURCES, jRadioCopySrc.isVisible()  &&  jRadioCopySrc.isSelected());
     }
@@ -229,7 +220,6 @@ public class ProjectPanel extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         tCreated = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
-        cMainProject = new javax.swing.JCheckBox();
         cCreateMIDlet = new javax.swing.JCheckBox();
         jLabel4 = new javax.swing.JLabel();
         jRadioEmptySrc = new javax.swing.JRadioButton();
@@ -307,16 +297,6 @@ public class ProjectPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
         add(jSeparator1, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(cMainProject, org.openide.util.NbBundle.getMessage(ProjectPanel.class, "LBL_Project_SetAsMainProject")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 6, 0);
-        add(cMainProject, gridBagConstraints);
-
         cCreateMIDlet.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cCreateMIDlet, org.openide.util.NbBundle.getMessage(ProjectPanel.class, "LBL_Project_CreateMIDlet")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -385,7 +365,6 @@ public class ProjectPanel extends javax.swing.JPanel {
     private javax.swing.JButton bBrowse;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox cCreateMIDlet;
-    private javax.swing.JCheckBox cMainProject;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -406,15 +385,13 @@ public class ProjectPanel extends javax.swing.JPanel {
         Collection<ChangeListener> listeners = new ArrayList<ChangeListener>();
         boolean valid = false;
         boolean showCreateMIDlet;
-        boolean showSetAsMain;
         boolean showCopySources;
         
-        public WizardPanel(boolean showCreateMIDlet, boolean showSetAsMain) {
-            this(showCreateMIDlet, showSetAsMain, false);
+        public WizardPanel(boolean showCreateMIDlet) {
+            this(showCreateMIDlet, false);
         }
-        public WizardPanel(boolean showCreateMIDlet, boolean showSetAsMain, boolean showCopySources) {
+        public WizardPanel(boolean showCreateMIDlet, boolean showCopySources) {
             this.showCreateMIDlet = showCreateMIDlet;
-            this.showSetAsMain = showSetAsMain;
             this.showCopySources = showCopySources;
         }
         
@@ -428,7 +405,7 @@ public class ProjectPanel extends javax.swing.JPanel {
         
         public java.awt.Component getComponent() {
             if (component == null) {
-                component = new ProjectPanel(showCreateMIDlet, showSetAsMain, showCopySources); // NOI18N
+                component = new ProjectPanel(showCreateMIDlet, showCopySources); // NOI18N
                 component.addListeners(this, this);
                 checkValid();
             }

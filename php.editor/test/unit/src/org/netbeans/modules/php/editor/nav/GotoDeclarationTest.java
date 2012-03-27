@@ -732,6 +732,18 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "class User extends M^an {", "class ^Man implements Person {");
     }
 
+    public void testIssue209888_01() throws Exception {
+        checkDeclaration(getTestPath(), "$this->type = Types::B^AR;", "const ^BAR = 2;");
+    }
+
+    public void testIssue209888_02() throws Exception {
+        checkDeclaration(getTestPath(), "private static $foo = array(self::CS^S_CLASS => \"\");", "const ^CSS_CLASS = 'datepicker';");
+    }
+
+    public void testIssue209888_03() throws Exception {
+        checkDeclaration(getTestPath(), "$this->controlPrototype->class(self::CS^S_CLASS);", "const ^CSS_CLASS = 'datepicker';");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

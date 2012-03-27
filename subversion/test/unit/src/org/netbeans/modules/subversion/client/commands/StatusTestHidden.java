@@ -126,7 +126,8 @@ public class StatusTestHidden extends AbstractCommandTestCase {
         ISVNStatus[] sNb = getNbClient().getStatus(files);        
         
         assertEquals(10, sNb.length);
-        fail("implement status assert against expected values");
+        ISVNStatus[] sRef = getFullWorkingClient().getStatus(files);
+        assertStatus(sRef, sNb);
     }
 
     /**
@@ -294,7 +295,8 @@ public class StatusTestHidden extends AbstractCommandTestCase {
     private void status(File file, boolean descend, boolean getAll, boolean contactServer, boolean ignoreExternals, int c) throws Exception {        
         ISVNStatus[] sNb  = getNbClient().getStatus(file, descend, getAll, contactServer, ignoreExternals);
         assertEquals(c, sNb.length);
-        fail("implement status assert against expected values");
+        ISVNStatus[] sRef = getFullWorkingClient().getStatus(file, descend, getAll, contactServer, ignoreExternals);
+        assertStatus(sRef, sNb);
     }
 
     private void assertStatus(ISVNStatus[] refs, ISVNStatus[] nbs) {
@@ -321,7 +323,6 @@ public class StatusTestHidden extends AbstractCommandTestCase {
             assertEquals(refs[i].getRevision(),             nbs[i].getRevision());
             assertEquals(refs[i].getTextStatus(),           nbs[i].getTextStatus());
             assertEquals(refs[i].getUrl(),                  nbs[i].getUrl());
-            assertEquals(refs[i].getUrlCopiedFrom(),        nbs[i].getUrlCopiedFrom());
             assertEquals(refs[i].getUrlString(),            nbs[i].getUrlString());                       
         }
     } 

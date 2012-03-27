@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.debugger.ui;
 
+import java.lang.reflect.Method;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Watch;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -62,18 +64,44 @@ public class WatchesReader implements Properties.Reader {
         };
     }
     public Object read (String typeID, Properties properties) {
-        if (typeID.equals (Watch.class.getName ()))
-            return DebuggerManager.getDebuggerManager ().createWatch (
+        if (typeID.equals (Watch.class.getName ())) {
+            Watch watch = DebuggerManager.getDebuggerManager ().createWatch (
                 properties.getString (Watch.PROP_EXPRESSION, null)
             );
+            setWatchEnabled(watch, properties.getBoolean("enabled", true));
+            return watch;
+        }
         return null;
     }
     
     public void write (Object object, Properties properties) {
-        if (object instanceof Watch)
+        if (object instanceof Watch) {
             properties.setString (
                 Watch.PROP_EXPRESSION, 
                 ((Watch) object).getExpression ()
             );
+            properties.setBoolean("enabled", isWatchEnabled((Watch) object));
+        }
+    }
+    
+    public static void setWatchEnabled(Watch watch, boolean enabled) {
+        try {
+            Method setEnabledMethod = watch.getClass().getDeclaredMethod("setEnabled", Boolean.TYPE);
+            setEnabledMethod.setAccessible(true);
+            setEnabledMethod.invoke(watch, enabled);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    public static boolean isWatchEnabled(Watch watch) {
+        try {
+            Method isEnabledMethod = watch.getClass().getDeclaredMethod("isEnabled");
+            isEnabledMethod.setAccessible(true);
+            return (Boolean) isEnabledMethod.invoke(watch);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return true;
+        }
     }
 }

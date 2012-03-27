@@ -136,8 +136,6 @@ public final class ResultView extends TopComponent {
         pop.add(new CloseAllButCurrent());
         popL = new PopupListener();
         closeL = new CloseListener();
-
-        initActions();
         
         emptyPanel = new JPanel();
         add(emptyPanel, BorderLayout.CENTER);
@@ -147,14 +145,6 @@ public final class ResultView extends TopComponent {
             setOpaque(true);
         }
     }
-    
-    private void initActions() {
-        ActionMap map = getActionMap();
-
-        map.put("jumpNext", new PrevNextAction (false)); // NOI18N
-        map.put("jumpPrev", new PrevNextAction (true)); // NOI18N
-    }
-    
 
     @Deprecated
     final public static class ResolvableHelper implements java.io.Serializable {
@@ -564,21 +554,6 @@ public final class ResultView extends TopComponent {
         }
         public void actionPerformed(ActionEvent e) {
             closeAll(true);
-        }
-    }
-
-    private final class PrevNextAction extends javax.swing.AbstractAction {
-        private boolean prev;
-
-        public PrevNextAction (boolean prev) {
-            this.prev = prev;
-        }
-
-        public void actionPerformed (java.awt.event.ActionEvent actionEvent) {
-            ResultViewPanel panel = getCurrentResultViewPanel();
-            if (panel != null) {
-                panel.goToNext(!prev);
-            }
         }
     }
 

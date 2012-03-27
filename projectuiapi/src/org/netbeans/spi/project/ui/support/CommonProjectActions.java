@@ -73,7 +73,9 @@ public class CommonProjectActions {
      * You might include this in the context menu of a logical view.
      * </p>
      * @return an action
+     * @deprecated No longer recommended for use in logical views.
      */
+    @Deprecated
     public static Action setAsMainProjectAction() {
         return Utilities.getActionsFactory().setAsMainProjectAction();
     }
