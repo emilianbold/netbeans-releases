@@ -5328,38 +5328,43 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return instance;
         }
 
-        @org.netbeans.api.annotations.common.SuppressWarnings(
-        value={"DMI_COLLECTION_OF_URLS","DMI_BLOCKING_METHODS_ON_URL"}
-        /*,justification="URLs have never host part"*/)
-        public FileObject findFileObject(URL url) {
-            FileObject f = null;
-            synchronized (cache) {
-                Reference<FileObject> ref = cache.get(url);
-                if (ref != null) {
-                    f = ref.get();
-                }
-            }
-
+        @CheckForNull
+        public FileObject findFileObject(final @NonNull URL url) {
+            URI uri = null;
             try {
-                if (f != null && f.isValid() && url.equals(f.getURL())) {
+                uri  = url.toURI();
+            } catch (URISyntaxException e) {
+                Exceptions.printStackTrace(e);
+            }
+            FileObject f = null;
+            if (uri != null) {
+                synchronized (cache) {
+                    Reference<FileObject> ref = cache.get(uri);
+                    if (ref != null) {
+                        f = ref.get();
+                    }
+                }
+
+                if (f != null && f.isValid() && url.equals(f.toURL())) {
                     return f;
                 }
-            } catch (FileStateInvalidException fsie) {
-                // ignore
             }
+
             f = URLMapper.findFileObject(url);
 
-            synchronized (cache) {
-                if (f != null && f.isValid()) {
-                    cache.put(url, new WeakReference<FileObject>(f));
+            if (uri != null) {
+                synchronized (cache) {
+                    if (f != null && f.isValid()) {
+                        cache.put(uri, new WeakReference<FileObject>(f));
+                    }
                 }
-
-                return f;
             }
+            
+            return f;
         }
 
         private static URLCache instance = null;
-        private final Map<URL, Reference<FileObject>> cache = new WeakHashMap<URL, Reference<FileObject>>();
+        private final Map<URI, Reference<FileObject>> cache = new WeakHashMap<URI, Reference<FileObject>>();
 
         private URLCache() {
 
