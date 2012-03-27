@@ -52,11 +52,13 @@
 
 package org.netbeans.modules.cnd.dwarfdump.section;
 
-import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 
 /**
  *
@@ -74,13 +76,9 @@ public class DwarfArangesSection extends ElfSection {
         addressRangeSets.add(addressRangeSet);
     }
     
-    public List<AddressRangeSet> getAddressRangeSets() {
+    public List<AddressRangeSet> getAddressRangeSets() throws IOException {
         if (addressRangeSets.isEmpty()) {
-            try {
-                read();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            read();
         }
         
         return addressRangeSets;
@@ -129,9 +127,12 @@ public class DwarfArangesSection extends ElfSection {
     @Override
     public void dump(PrintStream out) {
         super.dump(out);
-        
-        for (AddressRangeSet addressRangeSet : getAddressRangeSets()) {
-            addressRangeSet.dump(out);
+        try {
+            for (AddressRangeSet addressRangeSet : getAddressRangeSets()) {
+                addressRangeSet.dump(out);
+            }
+        } catch (IOException ex) {
+            Dwarf.LOG.log(Level.INFO, "Cannot read adress range "+reader.getFileName(), ex); //NOI18N
         }
         
         out.println();

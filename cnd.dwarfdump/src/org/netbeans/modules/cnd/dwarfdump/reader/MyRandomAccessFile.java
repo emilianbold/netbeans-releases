@@ -46,6 +46,8 @@ import java.io.RandomAccessFile;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 
 /**
  *
@@ -62,9 +64,11 @@ public final class MyRandomAccessFile extends RandomAccessFile {
     private final FileChannel channel;
     private boolean doSeek = false;
     private long postponedSeek = 0;
+    private final String fileName;
 
     public MyRandomAccessFile(String fileName) throws IOException {
         super(fileName, "r"); // NOI18N
+        this.fileName = fileName;
         channel = getChannel();
         bufferSize = Math.min(channel.size(), MAX_BUF_SIZE - 1);
         bufferShift = 0;
@@ -190,7 +194,7 @@ public final class MyRandomAccessFile extends RandomAccessFile {
             channel.close();
             close();
         } catch (IOException ex) {
-            ex.printStackTrace(System.err);
+            Dwarf.LOG.log(Level.INFO, "Cannot close file "+fileName, ex);
         }
     }
 }

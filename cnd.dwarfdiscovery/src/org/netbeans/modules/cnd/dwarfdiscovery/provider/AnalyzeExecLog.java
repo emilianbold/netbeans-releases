@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -306,7 +307,6 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     }
 
     private static final class ExecLogReader {
-        private static final boolean TRACE = false;
         private final String root;
         private final String fileName;
         private List<SourceFileProperties> result;
@@ -409,12 +409,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                                     addSources(tool, params, storage);
                                 } catch (Throwable ex) {
                                     // ExecSource constructor can throw IllegalArgumentException for non source exec
-                                    if (TRACE) {
-                                        ex.printStackTrace(System.err);
-                                        System.err.println("\tTool:"+tool); //NOI18N
-                                        for(String p : params) {
-                                            System.err.println("\t"+p); //NOI18N
-                                        }
+                                    DwarfSource.LOG.log(Level.INFO, "Tool:"+tool, ex);
+                                    for(String p : params) {
+                                        DwarfSource.LOG.log(Level.INFO, "\t{0}", p); //NOI18N
                                     }
                                 }
                                 tool = null;
@@ -429,7 +426,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     }
                     in.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
+                    DwarfSource.LOG.log(Level.INFO, "Cannot read file "+fileName, ex);
                 }
             }
         }
