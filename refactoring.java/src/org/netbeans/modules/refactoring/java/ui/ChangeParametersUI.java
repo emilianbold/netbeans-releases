@@ -208,6 +208,6 @@ public class ChangeParametersUI implements RefactoringUI, JavaRefactoringUIFacto
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ChangeParametersUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.ChangeParametersUI"); // NOI18N
     }
 }

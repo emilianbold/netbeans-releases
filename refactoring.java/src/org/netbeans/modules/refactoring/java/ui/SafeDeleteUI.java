@@ -167,8 +167,7 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
     
     @Override
     public org.openide.util.HelpCtx getHelpCtx() {
-        
-        return new HelpCtx(SafeDeleteUI.class.getName());
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.SafeDeleteUI"); // NOI18N
     }
     
     @Override

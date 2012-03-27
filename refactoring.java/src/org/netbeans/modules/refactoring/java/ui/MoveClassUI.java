@@ -219,7 +219,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(MoveClassUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.MoveClassUI"); // NOI18N
     }
 
     @Override

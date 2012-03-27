@@ -258,7 +258,7 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(WhereUsedQueryUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI"); // NOI18N
     }
 
     @Override
