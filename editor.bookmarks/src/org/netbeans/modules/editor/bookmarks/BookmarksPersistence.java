@@ -213,13 +213,13 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
             projects = new ArrayList<Project>(lastOpenProjects);
         }
         for (Project project : projects) {
-            getProjectBookmarks(project, false);
+            getProjectBookmarks(project, true, false); // Force project's bookmarks loading
         }
     }
     
     public BookmarkInfo findBookmarkByNameOrKey(String name, boolean byKey) {
         for (Project p : allProjectsWithBookmarks()) {
-            ProjectBookmarks projectBookmarks = getProjectBookmarks(p, false);
+            ProjectBookmarks projectBookmarks = getProjectBookmarks(p, true, false);
             if (projectBookmarks != null) {
                 for (URL url : projectBookmarks.allURLs()) {
                     URLBookmarks urlBookmarks = projectBookmarks.get(url);
@@ -335,19 +335,21 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
         if (fo != null) {
             Project project = FileOwnerQuery.getOwner(fo);
             if (project != null) {
-                ret = getProjectBookmarks(project, true);
+                ret = getProjectBookmarks(project, true, true);
             }
         }
         return ret;
     }
     
-    public ProjectBookmarks getProjectBookmarks(Project project, boolean forceCreation) {
+    public ProjectBookmarks getProjectBookmarks(Project project, boolean load, boolean forceCreation) {
         ProjectBookmarks projectBookmarks;
         synchronized (project2Bookmarks) {
             projectBookmarks = project2Bookmarks.get(project);
         }
         if (projectBookmarks == null) {
-            projectBookmarks = loadProjectBookmarks (project);
+            if (load) {
+                projectBookmarks = loadProjectBookmarks (project);
+            }
             if (projectBookmarks == null && forceCreation) {
                 projectBookmarks = new ProjectBookmarks();
             }
@@ -373,7 +375,16 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                     EDITOR_BOOKMARKS_2_NAMESPACE_URI,
                     false
                 );
-                if (bookmarksElement == null) { // Attempt older version
+                int lastBookmarkId = 0;
+                if (bookmarksElement != null) {
+                    String lastBookmarkIdText = bookmarksElement.getAttribute("lastBookmarkId");
+                    try {
+                        lastBookmarkId = Integer.parseInt(lastBookmarkIdText);
+                    } catch (NumberFormatException ex) {
+                        // Leave lastBookmarkId == 0
+                    }
+
+                } else { // Attempt older version
                     version = 1;
                     bookmarksElement = ac.getConfigurationFragment(
                         "editor-bookmarks",
@@ -385,7 +396,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                     }
                 }
 
-                ProjectBookmarks projectBookmarks = new ProjectBookmarks();
+                ProjectBookmarks projectBookmarks = new ProjectBookmarks(lastBookmarkId);
                 URL projectFolderURL = project.getProjectDirectory().toURL();
                 Node fileElem = skipNonElementNode (bookmarksElement.getFirstChild ());
                 while (fileElem != null) {
@@ -400,6 +411,21 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                             BookmarkInfo bookmarkInfo;
                             if (version == 2) {
                                 assert "bookmark".equals(nodeName);
+                                assert (lineOrBookmarkElem.getNodeType() == Node.ELEMENT_NODE);
+                                Element bookmarkElem = (Element) lineOrBookmarkElem;
+                                int id = -1;
+                                if (bookmarkElem.hasAttributes()) {
+                                    String idText = bookmarkElem.getAttribute("id");
+                                    try {
+                                        id = Integer.parseInt(idText);
+                                        projectBookmarks.ensureBookmarkIdSkip(id);
+                                    } catch (NumberFormatException ex) {
+                                        // Leave id == -1
+                                    }
+                                }
+                                if (id == -1) {
+                                    id = projectBookmarks.generateBookmarkId();
+                                }
                                 Node nameElem = skipNonElementNode(lineOrBookmarkElem.getFirstChild());
                                 assert "name".equals(nameElem.getNodeName());
                                 Node nameTextNode = nameElem.getFirstChild();
@@ -409,10 +435,11 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                                 Node keyElem = skipNonElementNode(lineElem.getNextSibling());
                                 Node keyTextNode = keyElem.getFirstChild();
                                 String key = (keyTextNode != null) ? keyTextNode.getNodeValue() : "";
-                                bookmarkInfo = BookmarkInfo.create(name, lineIndex, key);
+                                bookmarkInfo = BookmarkInfo.create(id, name, lineIndex, key);
                             } else {
                                 int lineIndex = parseLineIndex(lineOrBookmarkElem);
-                                bookmarkInfo = BookmarkInfo.create("", lineIndex, "");
+                                int id = projectBookmarks.getLastBookmarkId();
+                                bookmarkInfo = BookmarkInfo.create(id, "", lineIndex, "");
                             }
                             bookmarkInfos.add(bookmarkInfo);
                             
@@ -490,16 +517,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
         if (fo != null) {
             URL url = fo.toURL ();
             Project project = FileOwnerQuery.getOwner (fo);
-            ProjectBookmarks projectBookmarks;
-            synchronized (project2Bookmarks) {
-                projectBookmarks = project2Bookmarks.get (project);
-            }
-            if (projectBookmarks == null) {
-                projectBookmarks = new ProjectBookmarks ();
-                synchronized (project2Bookmarks) {
-                    project2Bookmarks.put (project, projectBookmarks);
-                }
-            }
+            ProjectBookmarks projectBookmarks = getProjectBookmarks(project, false, true);
             URLBookmarks newURLBookmarks = new URLBookmarks(projectBookmarks, url, bookmarkInfos);
             projectBookmarks.put (url, newURLBookmarks);
             return newURLBookmarks;
@@ -525,7 +543,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
             // Use global urls in such case
             baseURI = null;
         }
-        ProjectBookmarks projectBookmarks = getProjectBookmarks(project, false);
+        ProjectBookmarks projectBookmarks = getProjectBookmarks(project, true, false);
         if (projectBookmarks == null) return;
         boolean legacy = false;
         
@@ -537,6 +555,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                     ? EDITOR_BOOKMARKS_1_NAMESPACE_URI
                     : EDITOR_BOOKMARKS_2_NAMESPACE_URI;
             Element bookmarksElem = document.createElementNS(namespaceURI, "editor-bookmarks");
+            bookmarksElem.setAttribute("lastBookmarkId", String.valueOf(projectBookmarks.getLastBookmarkId()));
             for (URL url : projectBookmarks.allURLs()) {
                 List<BookmarkInfo> bookmarkInfos = projectBookmarks.get(url).getBookmarkInfos();
                 if (bookmarkInfos.isEmpty()) {
@@ -571,6 +590,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                         Element keyElem = document.createElementNS(namespaceURI, "key");
                         keyElem.appendChild(document.createTextNode(String.valueOf(bookmarkInfo.getKey())));
                         Element bookmarkElem = document.createElementNS(namespaceURI, "bookmark");
+                        bookmarkElem.setAttribute("id", String.valueOf(bookmarkInfo.getId()));
                         bookmarkElem.appendChild(nameElem);
                         bookmarkElem.appendChild(lineElem);
                         bookmarkElem.appendChild(keyElem);
@@ -617,7 +637,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
         StringBuilder sb = new StringBuilder(200);
         for (Project p : allProjectsWithBookmarks()) {
             sb.append("Project ").append(p).append('\n');
-            ProjectBookmarks projectBookmarks = getProjectBookmarks(p, false);
+            ProjectBookmarks projectBookmarks = getProjectBookmarks(p, false, false);
             if (p != null) {
                 for (URL url : projectBookmarks.allURLs()) {
                     sb.append("    ").append(url).append("\n");

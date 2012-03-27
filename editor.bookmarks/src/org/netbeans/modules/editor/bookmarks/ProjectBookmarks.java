@@ -54,10 +54,29 @@ import java.util.Map;
  */
 public final class ProjectBookmarks {
 
-    private final Map<URL,URLBookmarks> url2Bookmars;
+    private volatile int lastBookmarkId;
 
+    private final Map<URL,URLBookmarks> url2Bookmars;
+    
     public ProjectBookmarks() {
+        this(0);
+    }
+    
+    public ProjectBookmarks(int lastBookmarkId) {
+        this.lastBookmarkId = lastBookmarkId;
         url2Bookmars = new HashMap<URL, URLBookmarks>();
+    }
+    
+    public int getLastBookmarkId() {
+        return lastBookmarkId;
+    }
+
+    public int generateBookmarkId() {
+        return ++lastBookmarkId;
+    }
+    
+    public void ensureBookmarkIdSkip(int bookmarkId) {
+        lastBookmarkId = Math.max(lastBookmarkId, bookmarkId);
     }
 
     public URLBookmarks get(URL url) {

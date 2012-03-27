@@ -51,12 +51,23 @@ import java.net.URL;
  */
 public final class BookmarkInfo {
     
-    public static BookmarkInfo create(String name, int lineIndex, String key) {
-        return create(name, lineIndex, key, null);
+    public static BookmarkInfo create(int id, String name, int lineIndex, String key) {
+        return create(id, name, lineIndex, key, null);
     }
 
-    public static BookmarkInfo create(String name, int lineIndex, String key, URL url) {
-        return new BookmarkInfo(name, lineIndex, key, url);
+    /**
+     * Create new bookmark info.
+     * @param name name of bookmark consisting of characters satisfying
+     *   {@link Character#isJavaIdentifierPart(char) }.
+     * @param lineIndex zero-based index of line on which the bookmark will be placed.
+     * @param key Current implementation returns a single char [0-9a-z] used for jumping
+     * to the bookmark by a keystroke in a Goto dialog or an empty string
+     * when no shortcut was assigned yet.
+     * @param url explicit url to which this bookmark belongs; but usually it's null
+     * which means to take the URL from URLBookmarks object which contains this info.
+     */
+    public static BookmarkInfo create(int id, String name, int lineIndex, String key, URL url) {
+        return new BookmarkInfo(id, name, lineIndex, key, url);
     }
 
     public static BookmarkInfo create(BookmarkInfo info, URL url) {
@@ -78,8 +89,10 @@ public final class BookmarkInfo {
         if (lineIndex == -1) {
             lineIndex = info.getLineIndex();
         }
-        return new BookmarkInfo(info.getName(), lineIndex, info.getKey(), url);
+        return new BookmarkInfo(info.getId(), info.getName(), lineIndex, info.getKey(), url);
     }
+    
+    private final int id;
     
     private String name;
 
@@ -89,11 +102,16 @@ public final class BookmarkInfo {
 
     private URL url;
     
-    private BookmarkInfo(String name, int lineIndex, String key, URL url) {
+    private BookmarkInfo(int id, String name, int lineIndex, String key, URL url) {
+        this.id = id;
         this.name = name;
         this.lineIndex = lineIndex;
         this.key = key;
         this.url = url;
+    }
+    
+    public int getId() {
+        return id;
     }
 
     public String getName() {
@@ -152,7 +170,8 @@ public final class BookmarkInfo {
 
     @Override
     public String toString() {
-        return "name=\"" + name + "\", key='" + key + "' at line=" + lineIndex + ", url=" + url; // NOI18N
+        return "id=" + id + ", name=\"" + name + "\", key='" + key + // NOI18N
+                "' at line=" + lineIndex + ", url=" + url; // NOI18N
     }
 
 }

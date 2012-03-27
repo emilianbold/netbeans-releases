@@ -117,15 +117,14 @@ public final class BookmarkList {
         this.bookmarks = new ArrayList<Bookmark> ();
         lastUrlBookmarkInfos = BookmarksPersistence.get().getURLBookmarks(document);
         if (lastUrlBookmarkInfos != null) {
-            for (BookmarkInfo bookmarkDescription : lastUrlBookmarkInfos.getBookmarkInfos()) {
+            for (BookmarkInfo bookmarkInfo : lastUrlBookmarkInfos.getBookmarkInfos()) {
                 try {
-                    int lineIndex = bookmarkDescription.getLineIndex();
-                    int offset = BookmarksPersistence.lineIndex2Offset(document, lineIndex);
-                    addBookmark(bookmarkDescription.getName(), offset, lineIndex, bookmarkDescription.getKey());
+                    addBookmark(bookmarkInfo, -1, false);
                 } catch (IndexOutOfBoundsException ex) {
                     // line does not exists now (some external changes)
                 }
             }
+            fireChange();
         }
         
         DataObject dataObject = NbEditorUtilities.getDataObject (document);
@@ -346,38 +345,32 @@ public final class BookmarkList {
      * @param offset offset where the bookmark will be created.
      */
     public synchronized Bookmark addBookmark (int offset) {
-        return addBookmark("", offset, -1, "");
+        int id = BookmarksPersistence.get().getProjectBookmarks(document).generateBookmarkId();
+        BookmarkInfo info = BookmarkInfo.create(id, "", offset, "");
+        return addBookmark(info, offset, true);
     }
 
-    /**
-     * Add an unnamed bookmark to this bookmark list on given line.
-     * @param name name of the bookmark consisting of characters satisfying
-     *   {@link Character#isJavaIdentifierPart(char) }.
-     * @param offset offset where the bookmark will be created.
-     * @param lineIndex zero-based index of line on which the bookmark will be placed.
-     * @param key Current implementation returns a single char [0-9a-z] used for jumping
-     * to the bookmark by a keystroke in a Goto dialog or an empty string
-     * when no shortcut was assigned yet.
-     * @throws IllegalArgumentException if name or key are null or name contains non-allowed chars.
-
-     * @since 1.21
-     */
-    private @NonNull Bookmark addBookmark (String name, int offset, int lineIndex, String key) {
-        // Compute the index from increased offset to ensure to add the bookmark
-        // after all the possible bookmarks with the same offset
-        if (lineIndex == -1) {
+    private @NonNull Bookmark addBookmark(BookmarkInfo bookmarkInfo, int offset, boolean fireChange) {
+        int lineIndex = bookmarkInfo.getLineIndex();
+        if (offset == -1) {
+            offset = BookmarksPersistence.lineIndex2Offset(document, lineIndex);
+        } else {
             lineIndex = BookmarksPersistence.offset2LineIndex(document, offset);
+            bookmarkInfo.setLineIndex(lineIndex);
         }
-        BookmarkInfo info = BookmarkInfo.create(name, lineIndex, key);
-        Bookmark bookmark = new Bookmark (this, info, offset);
+        Bookmark bookmark = new Bookmark (this, bookmarkInfo, offset);
         bookmarks.add (bookmark);
         Collections.sort (bookmarks, bookmarksComparator);
+        fireChange();
+        return bookmark;
+    }
+        
+    private void fireChange() {
         SwingUtilities.invokeLater (new Runnable () {
             public void run() {
                 propertyChangeSupport.firePropertyChange (PROP_BOOKMARKS, null, null);
             }
         });
-        return bookmark;
     }
     
     private void checkOffsetNonNegative(int offset) {

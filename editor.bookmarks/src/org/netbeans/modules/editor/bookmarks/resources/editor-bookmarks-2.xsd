@@ -54,6 +54,7 @@ made subject to such option by the copyright holder.
             <xsd:sequence>
                 <xsd:element name="file" minOccurs="0" maxOccurs="unbounded" type="file-bookmark-list"/>
             </xsd:sequence>
+            <xsd:attribute name="lastBookmarkId" type="xsd:nonNegativeInteger"/>
         </xsd:complexType>
     </xsd:element>
 
@@ -71,6 +72,7 @@ made subject to such option by the copyright holder.
             <xsd:element name="line" type="xsd:nonNegativeInteger"/>
             <xsd:element name="key" type="xsd:string"/>
         </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:nonNegativeInteger"/>
     </xsd:complexType>
 
 </xsd:schema>

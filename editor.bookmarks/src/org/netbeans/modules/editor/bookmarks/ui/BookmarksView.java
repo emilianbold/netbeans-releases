@@ -616,7 +616,7 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
         
         ProjectBookmarksChildren(Project prj) {
             prjDisplayName = ProjectUtils.getInformation(prj).getDisplayName();
-            this.projectBookmarks = BookmarksPersistence.get().getProjectBookmarks(prj, true);
+            this.projectBookmarks = BookmarksPersistence.get().getProjectBookmarks(prj, true, true);
             FileObject[] fos = BookmarksPersistence.get().getSortedFileObjects(projectBookmarks);
             setKeys(fos);
         }
