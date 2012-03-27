@@ -82,6 +82,7 @@ public class RefreshManager {
         private RefreshWorker(boolean expected) {
             this.expected = expected;
         }
+        @Override
         public void run() {
             long time = System.currentTimeMillis();
             int cnt = 0;
@@ -183,6 +184,7 @@ public class RefreshManager {
         public PathComparator(boolean childrenFirst) {
             this.childrenFirst = childrenFirst;
         }        
+        @Override
         public int compare(RemoteFileObjectBase o1, RemoteFileObjectBase o2) {
             int result = o1.getPath().compareTo(o2.getPath());
             return childrenFirst ? -result : result;
@@ -197,15 +199,19 @@ public class RefreshManager {
                 fileObjects.add(fo);
             }
         }
-        scheduleRefresh(fileObjects);
+        scheduleRefresh(fileObjects, true);
     }
        
-    public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects) {
-        Collection<RemoteFileObjectBase> toRefresh = new TreeSet<RemoteFileObjectBase>(new PathComparator(false));
-        for (RemoteFileObjectBase fo : fileObjects) {
-            addExistingChildren(fo, toRefresh);
+    public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects, boolean addExistingChildren) {
+        if (addExistingChildren) {
+            Collection<RemoteFileObjectBase> toRefresh = new TreeSet<RemoteFileObjectBase>(new PathComparator(false));
+            for (RemoteFileObjectBase fo : fileObjects) {
+                addExistingChildren(fo, toRefresh);
+            }
+            scheduleRefreshImpl(toRefresh, true);
+        } else {
+            scheduleRefreshImpl(fileObjects, true);
         }
-        scheduleRefreshImpl(toRefresh, true);
     }
     
     private void addExistingChildren(RemoteFileObjectBase fo, Collection<RemoteFileObjectBase> bag) {

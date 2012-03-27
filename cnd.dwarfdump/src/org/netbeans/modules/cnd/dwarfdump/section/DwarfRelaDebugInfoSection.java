@@ -45,8 +45,6 @@ package org.netbeans.modules.cnd.dwarfdump.section;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 
@@ -59,20 +57,16 @@ public class DwarfRelaDebugInfoSection extends ElfSection {
     private int abbrTableIndex = -1;
     private final Map<Long, Long> abbrTable = new HashMap<Long,Long>();
 
-    public DwarfRelaDebugInfoSection(DwarfReader reader, int sectionIdx) {
+    public DwarfRelaDebugInfoSection(DwarfReader reader, int sectionIdx) throws IOException {
         super(reader, sectionIdx);
-        try {
-            Integer section = reader.getSectionIndex(SECTIONS.DEBUG_ABBREV);
-            if (section != null) {
-                Integer symtabSectionIndex = reader.getSymtabSectionIndex(section);
-                if (symtabSectionIndex != null) {
-                    abbrTableIndex = symtabSectionIndex;
-                }
+        Integer section = reader.getSectionIndex(SECTIONS.DEBUG_ABBREV);
+        if (section != null) {
+            Integer symtabSectionIndex = reader.getSymtabSectionIndex(section);
+            if (symtabSectionIndex != null) {
+                abbrTableIndex = symtabSectionIndex;
             }
-            read();
-        } catch (IOException ex) {
-            Logger.getLogger(DwarfRelaDebugInfoSection.class.getName()).log(Level.SEVERE, null, ex);
         }
+        read();
     }
 
     public Long getAddend(long offset){

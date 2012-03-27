@@ -46,14 +46,14 @@ package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
-import org.netbeans.modules.cnd.dwarfdump.section.DwarfAttribute;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
+import org.netbeans.modules.cnd.dwarfdump.section.DwarfAttribute;
 
 /**
  *
@@ -122,7 +122,7 @@ public class DwarfAbbriviationTableEntry {
                     out.println("\tQualified Name: " + qname); // NOI18N
                 }
             } catch (IOException ex) {
-                Logger.getLogger(DwarfAbbriviationTableEntry.class.getName()).log(Level.SEVERE, null, ex);
+                Dwarf.LOG.log(Level.SEVERE, null, ex);
             }
             dumpAttributes(out, dwarfEntry.getValues());
         }
