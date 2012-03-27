@@ -42,6 +42,7 @@
 package org.netbeans.core.multiview;
 
 import java.awt.FlowLayout;
+import java.awt.GraphicsEnvironment;
 import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -53,6 +54,8 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -75,6 +78,11 @@ import org.openide.windows.TopComponent;
  */
 public class ToolbarVisibleTest extends NbTestCase 
 implements Lookup.Provider, Serializable {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ToolbarVisibleTest.class);
+    }
+
     private static final Preferences editorSettingsPreferences;
     static {
         final String n = "test.toolbar.visible";

@@ -45,6 +45,7 @@
 
 package org.netbeans.core.multiview;
 
+import java.awt.GraphicsEnvironment;
 import javax.swing.JComponent;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -55,7 +56,8 @@ import java.awt.Image;
 import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
-import javax.swing.JPanel;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -73,6 +75,10 @@ import org.openide.windows.*;
  */
 public class MultiViewCloneableTopComponentTest extends AbstractMultiViewTopComponentTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(MultiViewCloneableTopComponentTest.class);
+    }
+
     public MultiViewCloneableTopComponentTest(String name) {
         super (name);
     }
