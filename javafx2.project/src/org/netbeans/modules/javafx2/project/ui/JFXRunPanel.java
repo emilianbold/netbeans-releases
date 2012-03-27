@@ -394,7 +394,6 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 20, 0);
         mainPanel.add(labelAppClass, gridBagConstraints);
 
         textFieldAppClass.addActionListener(new java.awt.event.ActionListener() {
@@ -409,7 +408,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 20, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 15, 0);
         mainPanel.add(textFieldAppClass, gridBagConstraints);
 
         buttonAppClass.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonAppClass.text")); // NOI18N
@@ -417,8 +416,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 20, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonAppClass, gridBagConstraints);
 
         labelParams.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelParams.text")); // NOI18N
@@ -426,7 +425,6 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(labelParams, gridBagConstraints);
 
         textFieldParams.setEditable(false);
@@ -451,7 +449,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonParams, gridBagConstraints);
 
         labelVMOptions.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptions.text")); // NOI18N
@@ -476,7 +474,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 10, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 8, 0);
         mainPanel.add(labelVMOptionsRemark, gridBagConstraints);
 
         checkBoxPreloader.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.checkBoxPreloader.text")); // NOI18N
@@ -490,7 +488,6 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(checkBoxPreloader, gridBagConstraints);
 
         textFieldPreloader.setEditable(false);
@@ -516,7 +513,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonPreloader, gridBagConstraints);
 
         labelPreloaderClass.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelPreloaderClass.text")); // NOI18N
@@ -547,7 +544,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         mainPanel.add(jSeparator2, gridBagConstraints);
 
         labelRunAs.setFont(labelRunAs.getFont().deriveFont(labelRunAs.getFont().getStyle() | java.awt.Font.BOLD));
@@ -641,8 +638,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 20, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 7, 0, 0);
         mainPanel.add(labelWorkDir, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -651,7 +648,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 20, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 16, 0);
         mainPanel.add(textFieldWorkDir, gridBagConstraints);
 
         buttonWorkDir.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWorkDir.text")); // NOI18N
@@ -665,7 +662,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 20, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonWorkDir, gridBagConstraints);
 
         labelWSBAProps.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWSBAProps.text")); // NOI18N
@@ -682,7 +679,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         mainPanel.add(labelWidth, gridBagConstraints);
 
         textFieldWidth.setMinimumSize(new java.awt.Dimension(70, 20));
@@ -699,7 +696,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 20, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 0);
         mainPanel.add(labelHeight, gridBagConstraints);
 
         textFieldHeight.setMinimumSize(new java.awt.Dimension(70, 20));
@@ -749,7 +746,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 13;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 10, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 8, 0);
         mainPanel.add(labelWebPageRemark, gridBagConstraints);
 
         labelWebBrowser.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebBrowser.text")); // NOI18N
@@ -757,7 +754,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 14;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         mainPanel.add(labelWebBrowser, gridBagConstraints);
 
         comboBoxWebBrowser.addActionListener(new java.awt.event.ActionListener() {
@@ -786,7 +783,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 14;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonWebBrowser, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1290,9 +1287,14 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
         jfxProps.resetBrowserPaths();
         for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {
             list.add(browser.getDisplayName());
-            NbProcessDescriptor proc = browser.getInstance().getBrowserExecutable();
-            String path = proc.getProcessName();
-            jfxProps.getBrowserPaths().put(browser.getDisplayName(), path);
+            ExtWebBrowser instance = browser.getInstance();
+            if(instance != null) {
+                NbProcessDescriptor proc = instance.getBrowserExecutable();
+                if(proc != null) {
+                    String path = proc.getProcessName();
+                    jfxProps.getBrowserPaths().put(browser.getDisplayName(), path);
+                }
+            }
         }
         final String config = jfxProps.getActiveConfig();
         final String sel = configs.get(config).get(JFXProjectProperties.RUN_IN_BROWSER);
