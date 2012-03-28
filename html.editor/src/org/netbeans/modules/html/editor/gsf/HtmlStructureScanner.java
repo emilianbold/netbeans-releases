@@ -41,12 +41,6 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +51,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
@@ -212,8 +206,8 @@ public class HtmlStructureScanner implements StructureScanner {
             formatter.appendHtml(getName());
 
             Element node = handle.node();
-            String idAttr = getAttributeValue(node, "id"); //NOI18N
-            String classAttr = getAttributeValue(node, "class"); //NOI18N
+            CharSequence idAttr = getAttributeValue(node, "id"); //NOI18N
+            CharSequence classAttr = getAttributeValue(node, "class"); //NOI18N
 
             if (idAttr != null) {
                 formatter.appendHtml("&nbsp;<font color=808080>id=" + idAttr + "</font>"); //NOI18N
@@ -225,8 +219,8 @@ public class HtmlStructureScanner implements StructureScanner {
             return formatter.getText();
         }
 
-        private String getAttributeValue(Element node, String key) {
-            String value = _getAttributeValue(node, key.toUpperCase(Locale.ENGLISH));
+        private CharSequence getAttributeValue(Element node, String key) {
+            CharSequence value = _getAttributeValue(node, key.toUpperCase(Locale.ENGLISH));
             if (value == null) {
                 return _getAttributeValue(node, key.toLowerCase(Locale.ENGLISH));
             } else {
@@ -234,7 +228,7 @@ public class HtmlStructureScanner implements StructureScanner {
             }
         }
 
-        private String _getAttributeValue(Element node, String key) {
+        private CharSequence _getAttributeValue(Element node, String key) {
             if (node.type() != ElementType.OPEN_TAG) {
                 return null;
             }
@@ -243,7 +237,7 @@ public class HtmlStructureScanner implements StructureScanner {
             if (attr == null) {
                 return null;
             }
-            return ElementUtils.unquotedValue(attr).toString();
+            return attr.unquotedValue();
         }
 
         @Override

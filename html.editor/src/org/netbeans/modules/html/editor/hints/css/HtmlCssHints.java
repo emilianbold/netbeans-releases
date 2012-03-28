@@ -149,8 +149,12 @@ public class HtmlCssHints {
         }
 
         private void processElements(Attribute attribute, CssElementType elementType, Map<String, Collection<FileObject>> elements2files) {
+            CharSequence value = attribute.unquotedValue();
+            if(value == null) {
+                return ;
+            }
             //all files containing the id declaration
-            Collection<FileObject> filesWithTheId = elements2files.get(ElementUtils.unquotedValue(attribute).toString());
+            Collection<FileObject> filesWithTheId = elements2files.get(value.toString());
 
             //all referred files with the id declaration
             Collection<FileObject> referredFilesWithTheId = new LinkedList<FileObject>();
@@ -171,9 +175,9 @@ public class HtmlCssHints {
     }
 
     private static OffsetRange getAttributeValueOffsetRange(Attribute attr, RuleContext context) {
-        boolean quoted = ElementUtils.isValueQuoted(attr);
+        boolean quoted = attr.isValueQuoted();
         int from = attr.valueOffset() + (quoted ? 1 : 0);
-        int to = from + ElementUtils.unquotedValue(attr).length();
+        int to = from + attr.unquotedValue().length();
         return EmbeddingUtil.convertToDocumentOffsets(from, to, context.parserResult.getSnapshot());
     }
 }

@@ -45,7 +45,7 @@ package org.netbeans.modules.html.editor.lib.api.elements;
  *
  * @author marekfukala
  */
-public interface CloseTag extends NamedElement {
+public interface CloseTag extends Named {
     
     public OpenTag matchingOpenTag();
     

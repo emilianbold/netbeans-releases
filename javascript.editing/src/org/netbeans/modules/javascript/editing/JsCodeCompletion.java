@@ -71,7 +71,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.html.editor.lib.plain.AbstractElement;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -79,6 +80,7 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
 import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
@@ -807,18 +809,14 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     @Override
                     void run(ResultIterator resultIterator) throws Exception {
                         HtmlParserResult htmlResult = (HtmlParserResult) resultIterator.getParserResult();
-                        List<AbstractElement> elementsList = htmlResult.getSyntaxAnalyzerResult().getElements().items();
+                        Collection<org.netbeans.modules.html.editor.lib.api.elements.Element> elementsList = htmlResult.getSyntaxAnalyzerResult().getElements().items();
                         Set<String> classes = new HashSet<String>();
-                        for (AbstractElement s : elementsList) {
-                            if (s.type() == AbstractElement.TYPE_TAG) {
-                                String element = s.text().toString();
-                                int classIdx = element.indexOf("class=\""); // NOI18N
-                                if (classIdx != -1) {
-                                    int classIdxEnd = element.indexOf('"', classIdx + 7);
-                                    if (classIdxEnd != -1 && classIdxEnd > classIdx + 1) {
-                                        String clz = element.substring(classIdx + 7, classIdxEnd);
-                                        classes.add(clz);
-                                    }
+                        for (org.netbeans.modules.html.editor.lib.api.elements.Element s : elementsList) {
+                            if (s.type() == ElementType.OPEN_TAG) {
+                                OpenTag ot = (OpenTag)s;
+                                Attribute classA = ot.getAttribute("class");
+                                if(classA != null) {
+                                    classes.add(classA.value().toString());
                                 }
                             }
                         }
@@ -848,18 +846,12 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     @Override
                     void run(ResultIterator resultIterator) throws Exception {
                         HtmlParserResult htmlResult = (HtmlParserResult) resultIterator.getParserResult();
-                        List<AbstractElement> elementsList = htmlResult.getSyntaxAnalyzerResult().getElements().items();
+                        Collection<org.netbeans.modules.html.editor.lib.api.elements.Element> elementsList = htmlResult.getSyntaxAnalyzerResult().getElements().items();
                         Set<String> tagNames = new HashSet<String>();
-                        for (AbstractElement s : elementsList) {
-                            if (s.type() == AbstractElement.TYPE_TAG) {
-                                String element = s.text().toString();
-                                int start = 1;
-                                int end = element.indexOf(' ');
-                                if (end == -1) {
-                                    end = element.length() - 1;
-                                }
-                                String tag = element.substring(start, end);
-                                tagNames.add(tag);
+                        for (org.netbeans.modules.html.editor.lib.api.elements.Element s : elementsList) {
+                            if (s.type() == ElementType.OPEN_TAG) {
+                                OpenTag ot = (OpenTag)s;
+                                tagNames.add(ot.name().toString());
                             }
                         }
 
@@ -906,27 +898,21 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                         
                     }
                     if (htmlResult != null) {
-                        Set<AbstractElement.TagAttribute> elementIds = new HashSet<AbstractElement.TagAttribute>();
-                        for (AbstractElement element : htmlResult.getSyntaxAnalyzerResult().getElements().items()) {
-                            if (element.type() == AbstractElement.TYPE_TAG) {
-                                AbstractElement.TagAttribute attr = ((AbstractElement.Tag) element).getAttribute("id"); //NOI18N
+                        Set<Attribute> elementIds = new HashSet<Attribute>();
+                        for (org.netbeans.modules.html.editor.lib.api.elements.Element element : htmlResult.getSyntaxAnalyzerResult().getElements().items()) {
+                            if (element.type() == ElementType.OPEN_TAG) {
+                                OpenTag ot = (OpenTag)element;
+                                Attribute attr = ot.getAttribute("id"); //NOI18N
                                 if (attr != null) {
                                     elementIds.add(attr);
                                 }
                             }
                         }
                         String filename = request.fileObject.getNameExt();
-                        for (AbstractElement.TagAttribute tag : elementIds) {
-                            String elementId = tag.getValue().toString();
-                            // Strip "'s surrounding value, if any
-                            if (elementId.length() > 2 && elementId.startsWith("\"") && // NOI18N
-                                    elementId.endsWith("\"")) { // NOI18N
-                                elementId = elementId.substring(1, elementId.length() - 1);
-                            }
-
-                            System.out.println("~~~ elementId: '" + elementId + "'");
-                            if (startsWith(elementId, prefix)) {
-                                GenericItem item = new GenericItem(elementId, filename, request, ElementKind.TAG);
+                        for (Attribute tag : elementIds) {
+                            String id = tag.unquotedValue().toString();
+                            if (startsWith(id, prefix)) {
+                                GenericItem item = new GenericItem(id, filename, request, ElementKind.TAG);
                                 proposals.add(item);
                             }
                         }

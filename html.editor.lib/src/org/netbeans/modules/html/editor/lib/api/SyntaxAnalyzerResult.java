@@ -187,7 +187,7 @@ public class SyntaxAnalyzerResult {
         LocalSourceContext context = createLocalContext(new TagsFilter() {
 
             @Override
-            public boolean accepts(NamedElement tag, CharSequence prefix) {
+            public boolean accepts(Named tag, CharSequence prefix) {
                 if (prefix == null) {
                     return true; //default namespace, should be html in most cases
                 }
@@ -238,7 +238,7 @@ public class SyntaxAnalyzerResult {
         LocalSourceContext context = createLocalContext(new TagsFilter() {
 
             @Override
-            public boolean accepts(NamedElement tag, CharSequence prefix) {
+            public boolean accepts(Named tag, CharSequence prefix) {
                 return prefix != null && prefixes.contains(prefix.toString());
             }
         });
@@ -276,7 +276,7 @@ public class SyntaxAnalyzerResult {
         LocalSourceContext context = createLocalContext(new TagsFilter() {
 
             @Override
-            public boolean accepts(NamedElement tag, CharSequence prefix) {
+            public boolean accepts(Named tag, CharSequence prefix) {
                 return prefix != null && !prefixes.contains(prefix.toString());
             }
         });
@@ -308,7 +308,7 @@ public class SyntaxAnalyzerResult {
 
         for (Element e : getElements().items()) {
             if (e.type() == ElementType.OPEN_TAG || e.type() == ElementType.CLOSE_TAG) {
-                NamedElement tag = (NamedElement) e;
+                Named tag = (Named) e;
                 CharSequence tagNamePrefix = tag.namespacePrefix();
 
                 if (filter.accepts(tag, tagNamePrefix)) {
@@ -612,7 +612,7 @@ public class SyntaxAnalyzerResult {
 
     private static interface TagsFilter {
 
-        public boolean accepts(NamedElement tag, CharSequence prefix);
+        public boolean accepts(Named tag, CharSequence prefix);
         
     }
 

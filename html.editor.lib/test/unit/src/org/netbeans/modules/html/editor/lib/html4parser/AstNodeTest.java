@@ -90,16 +90,22 @@ public class AstNodeTest extends TestBase {
     }
 
     public void testAttribute() {
-        AstAttribute attr = new AstAttribute("name", "value", 0, 6);
+        String source = "name=value";
+        //               012345678901
+        AstAttribute attr = new AstAttribute(source, "name", "value", 0, 5);
         assertEquals("name", attr.name());
         assertEquals("name", attr.nameWithoutNamespacePrefix());
+        assertEquals(0, attr.from());
+        assertEquals(10, attr.to());
+        assertEquals(source, attr.image());
         assertNull(attr.namespacePrefix());
 
-        attr = new AstAttribute("xmlns:h", "value", 0, 6);
+        source = "xmlns:h=value";
+        //        01234567890123
+        attr = new AstAttribute(source, "xmlns:h", "value", 0, 6);
         assertEquals("xmlns:h", attr.name());
         assertEquals("h", attr.nameWithoutNamespacePrefix());
         assertEquals("xmlns", attr.namespacePrefix());
-
 
     }
 

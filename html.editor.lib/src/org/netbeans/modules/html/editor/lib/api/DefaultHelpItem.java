@@ -75,7 +75,7 @@ public class DefaultHelpItem implements HelpItem {
         return helpResolver;
     }
 
-    @Override
+    @Override 
     public String getHelpHeader() {
         return header;
     }

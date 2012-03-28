@@ -46,10 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.FeaturedNode;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 
 /**
  *
@@ -68,7 +65,7 @@ public class RootNode implements FeaturedNode {
         this.source = source;
         this.children = children;
     }
-    
+
     @Override
     public Collection<Element> children() {
         return children;
@@ -77,14 +74,14 @@ public class RootNode implements FeaturedNode {
     @Override
     public Collection<Element> children(ElementType type) {
         Collection<Element> filtered = new ArrayList<Element>();
-        for(Element child : children()) {
-            if(child.type() == type) {
+        for (Element child : children()) {
+            if (child.type() == type) {
                 filtered.add(child);
             }
         }
         return filtered;
     }
-    
+
     @Override
     public Node parent() {
         return null;
@@ -124,5 +121,26 @@ public class RootNode implements FeaturedNode {
     public CharSequence id() {
         return type().name();
     }
-    
+
+    @Override
+    public Collection<Element> children(ElementFilter filter) {
+        Collection<Element> filtered = new ArrayList<Element>();
+        for (Element e : children()) {
+            if (filter.accepts(e)) {
+                filtered.add(e);
+            }
+        }
+        return filtered;
+    }
+
+    @Override
+    public <T extends Element> Collection<T> children(Class<T> type) {
+        Collection<T> filtered = new ArrayList<T>();
+        for (Element child : children()) {
+            if (type.isAssignableFrom(child.getClass())) {
+                filtered.add(type.cast(child));
+            }
+        }
+        return filtered;
+    }
 }

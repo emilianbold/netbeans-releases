@@ -45,14 +45,16 @@ package org.netbeans.modules.html.editor.lib.api.elements;
  *
  * @author marekfukala
  */
-public interface Attribute {
+public interface Attribute extends Named {
     
     public int nameOffset();
-    
-    public CharSequence name();
     
     public int valueOffset();
     
     public CharSequence value();
+    
+    public boolean isValueQuoted();
+    
+    public CharSequence unquotedValue();
     
 }

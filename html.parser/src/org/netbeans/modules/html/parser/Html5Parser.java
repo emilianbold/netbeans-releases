@@ -60,14 +60,18 @@ import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.ParseException;
 import org.netbeans.modules.html.editor.lib.api.DefaultHtmlParseResult;
 import org.netbeans.modules.html.editor.lib.api.HelpResolver;
+import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
 import org.netbeans.modules.html.editor.lib.api.HtmlParseResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlParser;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.html.editor.lib.api.model.NamedCharRef;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.netbeans.modules.html.parser.model.NamedCharacterReference;
 import org.openide.util.Lookup;
@@ -86,7 +90,6 @@ public class Html5Parser implements HtmlParser {
 
     private static final String PARSER_NAME = String.format("validator.nu html5 parser (%s).", Html5Parser.class); //NOI18N
     private static final HtmlModel HTML5MODEL = new Html5Model();
-
     private static final Pattern TEMPLATING_MARKS_PATTERN = Pattern.compile("@@@"); //NOI18N
     private static final String TEMPLATING_MARKS_MASK = "   "; //NOI18N
 
@@ -95,19 +98,18 @@ public class Html5Parser implements HtmlParser {
         String code = maskTemplatingMarks(source.getSourceCode().toString());
         try {
             InputSource is = new InputSource(new StringReader(code));
-            final NodeTreeBuilder treeBuilder = new NodeTreeBuilder(NodeFactory.shared().createRootNode(0, code.length()));
+            final ParseTreeBuilder treeBuilder = new ParseTreeBuilder(code);
             final Tokenizer tokenizer = new ErrorReportingTokenizer(treeBuilder);
 
             Driver driver = new Driver(tokenizer);
             driver.setTransitionHandler(treeBuilder);
-            
+
             final Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
             driver.setErrorHandler(new ErrorHandler() {
-
                 @Override
                 public void warning(SAXParseException saxpe) throws SAXException {
                     reportProblem(saxpe.getLocalizedMessage(), ProblemDescription.WARNING);
-                    
+
                 }
 
                 @Override
@@ -119,16 +121,15 @@ public class Html5Parser implements HtmlParser {
                 public void fatalError(SAXParseException saxpe) throws SAXException {
                     reportProblem(saxpe.getLocalizedMessage(), ProblemDescription.FATAL);
                 }
-                
+
                 private void reportProblem(String message, int type) {
                     problems.add(ProblemDescription.create(
-                            "html5.parser",  //NOI18N
-                            message, 
-                            type, 
-                            treeBuilder.getOffset(), 
+                            "html5.parser", //NOI18N
+                            message,
+                            type,
+                            treeBuilder.getOffset(),
                             treeBuilder.getOffset()));
                 }
-                
             });
             driver.tokenize(is);
             Node root = treeBuilder.getRoot();
@@ -144,17 +145,18 @@ public class Html5Parser implements HtmlParser {
             //in these cases the problem is more likely in the parser itself than in netbeans
             //To minimalize the user impact on non-fcs version (assertions enabled), 
             //just log the assertion error and return fake parser result
-            
+
             StringBuilder msg = new StringBuilder();
             msg.append("An internal parser error occured"); //NOI18N
-            if(source.getSourceFileObject() != null) {
+            if (source.getSourceFileObject() != null) {
                 msg.append(" when parsing "); //NOI18N
                 msg.append(source.getSourceFileObject().getPath());
             }
-            
+
             Logger.getAnonymousLogger().log(Level.INFO, msg.toString(), e);
-            
-            return new Html5ParserResult(source, NodeFactory.shared().createRootNode(0, code.length()), 
+
+            ElementsFactory factory = new ElementsFactory(source.getSourceCode());
+            return new Html5ParserResult(source, factory.createRoot(),
                     Collections.<ProblemDescription>emptyList(), preferedVersion);
         }
     }
@@ -217,8 +219,14 @@ public class Html5Parser implements HtmlParser {
         }
 
         @Override
-        public Collection<HtmlTag> getPossibleOpenTags(Node afterNode) {
-            HtmlTag tag = model().getTag(afterNode.getNameWithoutPrefix());
+        public Collection<HtmlTag> getPossibleOpenTags(Element afterNode) {
+            if (afterNode.type() != ElementType.OPEN_TAG) {
+                return Collections.emptyList();
+            }
+
+            OpenTag openTag = (OpenTag) afterNode;
+
+            HtmlTag tag = model().getTag(openTag.unqualifiedName().toString());
             if (tag == null) {
                 return Collections.emptyList();
             }
@@ -231,7 +239,11 @@ public class Html5Parser implements HtmlParser {
                 if (afterNode == null) {
                     return Collections.emptyList();
                 }
-                tag = model().getTag(afterNode.getNameWithoutPrefix());
+                if (afterNode.type() != ElementType.OPEN_TAG) {
+                    return Collections.emptyList();
+                }
+                OpenTag ot = (OpenTag) afterNode;
+                tag = model().getTag(ot.unqualifiedName().toString());
             }
             if (tag == null) {
                 return Collections.emptyList();
@@ -243,36 +255,39 @@ public class Html5Parser implements HtmlParser {
         }
 
         @Override
-        public Map<HtmlTag, Node> getPossibleEndTags(Node node) {
+        public Map<HtmlTag, OpenTag> getPossibleCloseTags(Element node) {
             //Bug 197608 - Non-html tags offered as closing tags using code completion
             //XXX define of what type can be the node argument
-            if(node.type() != Node.NodeType.OPEN_TAG) {
+            if (node.type() != ElementType.OPEN_TAG) {
                 node = node.parent();
-                if(node == null) {
+                if (node == null) {
                     return Collections.emptyMap();
                 }
             }
             //<<<
-            
-            HtmlTag tag = model().getTag(node.getNameWithoutPrefix());
+
+            OpenTag openTag = (OpenTag) node;
+            String openTagName = openTag.unqualifiedName().toString();
+
+            HtmlTag tag = model().getTag(openTagName);
             if (tag == null) {
                 return Collections.emptyMap();
             }
 
-           Map<HtmlTag, Node> possible = new LinkedHashMap<HtmlTag, Node> ();
+            Map<HtmlTag, OpenTag> possible = new LinkedHashMap<HtmlTag, OpenTag>();
             //end tags
             do {
-                if(!node.isVirtual()) {
-                    tag = HtmlTagProvider.getTagForElement(node.name());
+                if (!ElementUtils.isVirtualNode(node)) {
+                    tag = HtmlTagProvider.getTagForElement(((OpenTag)node).unqualifiedName().toString());
                     if (!tag.isEmpty()) {
-                        possible.put(tag, node);
+                        possible.put(tag, (OpenTag)node);
                     }
-                    if(!tag.hasOptionalEndTag()) {
+                    if (!tag.hasOptionalEndTag()) {
                         //since the end tag is required, the parent elements cannot be closed here
                         break;
                     }
                 }
-            } while ((node = node.parent()) != null && !node.isRootNode());
+            } while ((node = node.parent()) != null && node.type() == ElementType.OPEN_TAG);
 
             return possible;
 

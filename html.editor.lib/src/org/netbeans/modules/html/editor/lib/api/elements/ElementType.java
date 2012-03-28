@@ -50,6 +50,8 @@ package org.netbeans.modules.html.editor.lib.api.elements;
  */
 public enum ElementType {
 
+    ATTRIBUTE,
+    
     /**
      * Root element of each parse tree. 
      * 

@@ -208,22 +208,25 @@ public final class SyntaxAnalyzer {
 
             if (values == null) {
                 //attribute has no value
+                assert key.token.length() < Byte.MAX_VALUE;
                 Attribute ta = new AttributeElement(
+                        sourceCode,
                         key.offset,
-                        -1,
-                        key.token.text(),
-                        null);
+                        (byte)key.token.length());
                 attributes.add(ta);
             } else {
                 if (values.size() == 1) {
                     //one part value
                     TokenInfo ti = values.get(0);
 
+                    assert key.token.length() < Byte.MAX_VALUE;
+                    assert ti.token.length() < Short.MAX_VALUE;
                     Attribute ta = new AttributeElement(
+                            sourceCode,
                             key.offset,
                             ti.offset,
-                            key.token.text(),
-                            ti.token.text());
+                            (byte)key.token.length(),
+                            (short)ti.token.length());
 
                     attributes.add(ta);
 
@@ -236,14 +239,13 @@ public final class SyntaxAnalyzer {
                     TokenInfo firstValuePart = values.get(0);
                     TokenInfo lastValuePart = values.get(values.size() - 1);
 
-                    Attribute ta = new AttributeElement(
+                    Attribute ta = new AttributeElement.AttributeElementWithJoinedValue(
+                            sourceCode,
                             key.offset,
+                            (byte)key.token.length(),
                             firstValuePart.offset,
-                            key.token.text(),
                             joinedValue.toString().intern());
-//                                , 
-//                                
-//                                lastValuePart.offset + lastValuePart.token.length() - firstValuePart.offset);
+
                     attributes.add(ta);
                 }
             }

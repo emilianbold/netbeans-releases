@@ -519,11 +519,6 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         return attributes == null ? null : attributes.get(attributeName);
     }
 
-    public String getUnqotedAttributeValue(String attributeName) {
-        AstAttribute a = (AstAttribute) getAttribute(attributeName);
-        return a == null ? null : a.unquotedValue();
-    }
-
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
@@ -673,4 +668,16 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
     public CharSequence unqualifiedName() {
         return getNameWithoutPrefix();
     }
+
+    @Override
+    public <T extends Element> Collection<T> children(Class<T> type) {
+        Collection<T> filtered = new ArrayList<T>();
+        for(Element child : children()) {
+            if(type.isAssignableFrom(child.getClass())) {
+                filtered.add(type.cast(child));
+            }
+        }
+        return filtered;
+    }
+    
 }

@@ -200,8 +200,8 @@ public class HtmlFileModel {
                     ValueCompletion<HtmlCompletionItem> avc = completions.get(attr.name().toString());
                     if(AttrValuesCompletion.FILE_NAME_SUPPORT == avc) {
                         //found file reference
-                        CharSequence unquotedValue = ElementUtils.unquotedValue(attr);
-                        boolean isQuoted = ElementUtils.isValueQuoted(attr);
+                        CharSequence unquotedValue = attr.unquotedValue();
+                        boolean isQuoted = attr.isValueQuoted();
                         int offset = attr.valueOffset() + (isQuoted ? 1 : 0);
                         
                         getReferencesCollectionInstance().add(

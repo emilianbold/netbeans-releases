@@ -43,12 +43,7 @@ package org.netbeans.modules.web.jsf.editor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -58,21 +53,19 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.SelectionRule;
-import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -306,12 +299,14 @@ public class InjectCompositeComponent {
 				continue; //no facelets stuff, skip it
 			    }
 
-			    AstNode root = result.root(libUri);
-			    AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+			    Node root = result.root(libUri);
+			    ElementUtils.visitChildren(root, new ElementVisitor() {
 
-				public void visit(AstNode node) {
-				    int node_logical_from = node.logicalStartOffset();
-				    int node_logical_to = node.logicalEndOffset();
+                                @Override
+				public void visit(Element node) {
+                                    OpenTag ot = (OpenTag)node;
+				    int node_logical_from = ot.from();
+				    int node_logical_to = ot.semanticEnd();
 
 				    if (node_logical_from >= astFrom && node_logical_from <= astTo
 					    || node_logical_to >= astFrom && node_logical_to <= astTo) {
@@ -331,10 +326,10 @@ public class InjectCompositeComponent {
 				    }
 
 				    //and the offset must not fall into the tag itself
-				    AstNode closeTag = node.getMatchingTag();
+				    CloseTag closeTag = ot.matchingCloseTag();
 				    if (closeTag == null) {
 					//broken source, error
-					if (!node.isEmpty()) {
+					if (!ot.isEmpty()) {
 					    fail();
 					}
 				    }
@@ -345,15 +340,15 @@ public class InjectCompositeComponent {
 
 				}
 
-				private boolean isInTagItself(AstNode node, int offset) {
-				    return node != null && node.startOffset() < offset && node.endOffset() > offset;
+				private boolean isInTagItself(Element node, int offset) {
+				    return node != null && node.from() < offset && node.to() > offset;
 				}
 
 				private void fail() {
 				    context.setValid(false);
 				    throw new AstTreeVisitingBreakException();
 				}
-			    }, AstNode.NodeType.OPEN_TAG);
+                            }, ElementType.OPEN_TAG);
 			}
 
 		    } catch (AstTreeVisitingBreakException e) {

@@ -54,19 +54,19 @@ import org.openide.util.CharSequences;
  * @author marekfukala
  */
 public class XmlSTElements {
-    
-    static abstract class Named implements NamedElement {
+
+    static abstract class NamedElement implements Named, Element {
 
         private CharSequence name;
         private int from, to;
         private Node parent;
 
-        public Named(CharSequence name, int from, int to) {
+        public NamedElement(CharSequence name, int from, int to) {
             this.name = name;
             this.from = from;
             this.to = to;
         }
-        
+
         @Override
         public CharSequence name() {
             return name;
@@ -108,7 +108,7 @@ public class XmlSTElements {
         public Collection<ProblemDescription> problems() {
             return Collections.emptyList();
         }
-        
+
         void setParent(Node parent) {
             this.parent = parent;
         }
@@ -120,21 +120,11 @@ public class XmlSTElements {
 
         @Override
         public String toString() {
-            return new StringBuilder()
-                    .append(name())
-                    .append("(")
-                    .append(type().name())
-                    .append(")")
-                    .append("; ")
-                    .append(from())
-                    .append("-")
-                    .append(to())
-                    .toString();
+            return new StringBuilder().append(name()).append("(").append(type().name()).append(")").append("; ").append(from()).append("-").append(to()).toString();
         }
-
     }
-    
-    static class EmptyOT extends Named implements OpenTag {
+
+    static class EmptyOT extends NamedElement implements OpenTag {
 
         private Collection<Attribute> attrs;
 
@@ -142,7 +132,7 @@ public class XmlSTElements {
             super(name, from, to);
             this.attrs = attrs;
         }
-        
+
         @Override
         public Collection<Attribute> attributes() {
             return attrs;
@@ -151,8 +141,8 @@ public class XmlSTElements {
         @Override
         public Collection<Attribute> attributes(AttributeFilter filter) {
             Collection<Attribute> filtered = new ArrayList<Attribute>(1);
-            for(Attribute a : attributes()) {
-                if(filter.accepts(a)) {
+            for (Attribute a : attributes()) {
+                if (filter.accepts(a)) {
                     filtered.add(a);
                 }
             }
@@ -162,8 +152,8 @@ public class XmlSTElements {
         @Override
         public Attribute getAttribute(String name) {
             //typically very low number of attrs so the linear search doesn't hurt
-            for(Attribute a : attributes()) {
-                if(LexerUtils.equals(name, a.name(), true, false)) {
+            for (Attribute a : attributes()) {
+                if (LexerUtils.equals(name, a.name(), true, false)) {
                     return a;
                 }
             }
@@ -185,7 +175,6 @@ public class XmlSTElements {
             return to();
         }
 
-
         @Override
         public Collection<Element> children() {
             return Collections.emptyList();
@@ -200,15 +189,24 @@ public class XmlSTElements {
         public ElementType type() {
             return ElementType.OPEN_TAG;
         }
-        
+
+        @Override
+        public Collection<Element> children(ElementFilter filter) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public <T extends Element> Collection<T> children(Class<T> type) {
+            return Collections.emptyList();
+        }
     }
-    
+
     static class OT extends EmptyOT {
-        
+
         private Collection<Element> children;
         private CloseTag matchingEndTag;
         private int logicalEndOffset;
-        
+
         public OT(Collection<Attribute> attrs, CharSequence name, int from, int to) {
             super(attrs, name, from, to);
             logicalEndOffset = to;
@@ -218,7 +216,7 @@ public class XmlSTElements {
         public boolean isEmpty() {
             return false;
         }
-        
+
         void setMatchingEndTag(CloseTag endTag) {
             this.matchingEndTag = endTag;
         }
@@ -227,14 +225,14 @@ public class XmlSTElements {
         public CloseTag matchingCloseTag() {
             return matchingEndTag;
         }
-        
+
         void addChild(Element child) {
-            if(children == null) {
+            if (children == null) {
                 children = new ArrayList<Element>(1);
             }
             children.add(child);
         }
-        
+
         @Override
         public Collection<Element> children() {
             return children == null ? Collections.<Element>emptyList() : children;
@@ -243,9 +241,31 @@ public class XmlSTElements {
         @Override
         public Collection<Element> children(ElementType type) {
             Collection<Element> filtered = new ArrayList<Element>();
-            for(Element e : children()) {
-                if(e.type() == type) {
+            for (Element e : children()) {
+                if (e.type() == type) {
                     filtered.add(e);
+                }
+            }
+            return filtered;
+        }
+
+        @Override
+        public Collection<Element> children(ElementFilter filter) {
+            Collection<Element> filtered = new ArrayList<Element>();
+            for (Element e : children()) {
+                if (filter.accepts(e)) {
+                    filtered.add(e);
+                }
+            }
+            return filtered;
+        }
+
+        @Override
+        public <T extends Element> Collection<T> children(Class<T> type) {
+            Collection<T> filtered = new ArrayList<T>();
+            for (Element child : children()) {
+                if (type.isAssignableFrom(child.getClass())) {
+                    filtered.add(type.cast(child));
                 }
             }
             return filtered;
@@ -254,18 +274,17 @@ public class XmlSTElements {
         void setLogicalEndOffset(int to) {
             this.logicalEndOffset = to;
         }
-        
+
         @Override
         public int semanticEnd() {
             return logicalEndOffset;
         }
-        
     }
-    
-    static class ET extends Named implements CloseTag {
+
+    static class ET extends NamedElement implements CloseTag {
 
         private OpenTag matchingOpenTag;
-        
+
         public ET(CharSequence name, int from, int to) {
             super(name, from, to);
         }
@@ -279,17 +298,16 @@ public class XmlSTElements {
         public OpenTag matchingOpenTag() {
             return matchingOpenTag;
         }
-        
+
         void setMatchingOpenTag(OpenTag openTag) {
             this.matchingOpenTag = openTag;
         }
-        
     }
-    
+
     public static class Root extends OT implements FeaturedNode {
 
         private String namespace;
-        
+
         public Root(String namespace, int sourceLength) {
             super(null, "root", 0, sourceLength); //NOI18N
             this.namespace = namespace;
@@ -302,12 +320,11 @@ public class XmlSTElements {
 
         @Override
         public Object getProperty(String propertyName) {
-            if(propertyName.equalsIgnoreCase("namespace")) { //NOI18N
+            if (propertyName.equalsIgnoreCase("namespace")) { //NOI18N
                 return namespace;
             }
-            
+
             return null;
         }
-        
     }
 }

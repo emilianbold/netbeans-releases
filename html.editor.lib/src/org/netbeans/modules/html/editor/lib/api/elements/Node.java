@@ -54,4 +54,8 @@ public interface Node extends Element {
     
     public Collection<Element> children(ElementType type);
     
+    public Collection<Element> children(ElementFilter filter);
+    
+    public <T extends Element> Collection<T> children(Class<T> type);
+    
 }

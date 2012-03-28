@@ -621,7 +621,7 @@ public class HtmlCompletionQuery extends UserTask {
             switch(e.type()) {
                 case OPEN_TAG:
                 case CLOSE_TAG:
-                    NamedElement te = (NamedElement)e;
+                    Named te = (Named)e;
                     char first = te.name().charAt(0);
                     return Character.isLowerCase(first);
             }
@@ -680,11 +680,11 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private Collection<CompletionItem> getPossibleEndTags(HtmlParseResult htmlResult, Element leaf, int offset, String prefix, HtmlModel model) {
-        Map<HtmlTag, OpenTag> possible = htmlResult.getPossibleEndTags(leaf);
+        Map<HtmlTag, OpenTag> possible = htmlResult.getPossibleCloseTags(leaf);
         Collection<CompletionItem> items = new ArrayList<CompletionItem>();
         for(Entry<HtmlTag, OpenTag> entry : possible.entrySet()) {
             HtmlTag tag = entry.getKey();
-            Node node = entry.getValue();
+            OpenTag node = entry.getValue();
             
             //distance from the caret position - lower number, higher precedence
             //this will ensure the two end tags list from html and undeclared content being properly ordered

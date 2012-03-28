@@ -47,7 +47,7 @@ import java.util.Collection;
  *
  * @author marekfukala
  */
-public interface OpenTag extends NamedElement, Node {
+public interface OpenTag extends Named, Node {
     
     public Collection<Attribute> attributes();
     

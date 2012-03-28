@@ -55,23 +55,28 @@ import nu.validator.htmlparser.common.TransitionHandler;
 import nu.validator.htmlparser.impl.CoalescingTreeBuilder;
 import nu.validator.htmlparser.impl.ElementName;
 import nu.validator.htmlparser.impl.HtmlAttributes;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Named;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import static org.netbeans.modules.html.parser.ElementsFactory.*;
 import static nu.validator.htmlparser.impl.Tokenizer.*;
 import nu.validator.htmlparser.impl.TreeBuilder;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.xml.sax.SAXException;
 
 /**
- * An implementation of {@link TreeBuilder} building a tree of {@link AstNode}s
+ * An implementation of {@link TreeBuilder} building a tree of {@link Node}s
  *
  * In contrary to the default implementations of the {@link TreeBuilder} this
  * builder also puts end tags to the tree of nodes.
  *
  * @author marekfukala
  */
-public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implements TransitionHandler {
+public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements TransitionHandler {
 
-    //use AstNodeTreeBuilder.setLoggerLevel(Level.FINE);
-    static final Logger LOGGER = Logger.getLogger(HtmlNodeTreeBuilder.class.getName());
+    //use NodeTreeBuilder.setLoggerLevel(Level.FINE);
+    static final Logger LOGGER = Logger.getLogger(ParseTreeBuilder.class.getName());
     static boolean LOG, LOG_FINER;
 
     static {
@@ -83,32 +88,33 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
         LOG_FINER = LOGGER.isLoggable(Level.FINER);
     }
 
-    private final HtmlNodeFactory factory;
-    private AstNode root;
+    private final ElementsFactory factory;
+    private Root root;
     //element's internall offsets
     private int offset;
     private int tag_lt_offset;
     private boolean self_closing_starttag;
     //stack of opened tags
-    private Stack<AstNode> stack = new Stack<AstNode>();
+    private Stack<CommonOpenTag> stack = new Stack<CommonOpenTag>();
     //stack of encountered end tags
-    LinkedList<AstNode> physicalEndTagsQueue = new LinkedList<AstNode>();
+    LinkedList<ModifiableCloseTag> physicalEndTagsQueue = new LinkedList<ModifiableCloseTag>();
     private ElementName startTag;
     //holds found attributes of an open tag
     private Stack<AttrInfo> attrs = new Stack<AttrInfo>();
 
-    private AstNode currentTag;
+    private ModifiableOpenTag currentOpenTag;
+    private ModifiableCloseTag currentCloseTag;
 
-    public HtmlNodeTreeBuilder(AstNode rootNode) {
-        this.root = rootNode;
-        factory = HtmlNodeFactory.instance();
+    public ParseTreeBuilder(CharSequence sourceCode) {
+        factory = new ElementsFactory(sourceCode);
+        root = factory.createRoot();
     }
 
-    public AstNode getRoot() {
+    public Node getRoot() {
         return root;
     }
 
-    public AstNode getCurrentNode() {
+    public Node getCurrentNode() {
         return stack.peek();
     }
 
@@ -116,18 +122,23 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
         return offset;
     }
     
+    private boolean isVirtual(Named named) {
+        return named instanceof VirtualOpenTag;
+    }
+    
     @Override
-    protected void elementPopped(String namespace, String name, AstNode t) throws SAXException {
+    protected void elementPopped(String namespace, String name, Named t) throws SAXException {
         if (LOG) {
-            LOGGER.fine(String.format("- %s %s; stack: %s", t, t.isVirtual() ? "[virtual]" : "", dumpStack())); //NOI18N
+            LOGGER.fine(String.format("- %s %s; stack: %s", t, isVirtual(t) ? "[virtual]" : "", dumpStack())); //NOI18N
         }
-
+        
+        ModifiableOpenTag openTag = (ModifiableOpenTag)t;
 
         //normally the stack.pop() == t, but under some circumstances when the code is broken
         //this doesn't need to be true. In such case drop all the nodes from top
         //of the stack until we find t node.
-        AstNode top = null;
-        Stack<AstNode> removedFromStack = new Stack<AstNode>();
+        CommonOpenTag top = null;
+        Stack<CommonOpenTag> removedFromStack = new Stack<CommonOpenTag>();
         while(!stack.isEmpty()) {
             top = stack.pop();
             removedFromStack.push(top);
@@ -146,8 +157,8 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
 
         assert !stack.isEmpty();
 
-        AstNode match = null;
-        for (AstNode n : physicalEndTagsQueue) {
+        ModifiableCloseTag match = null;
+        for (ModifiableCloseTag n : physicalEndTagsQueue) {
             if (n.name().equals(t.name())) {
                 match = n;
                 break;
@@ -156,12 +167,12 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
 
         if (match != null) {
             //remove all until the found element
-            List<AstNode> toremove = physicalEndTagsQueue.subList(0, physicalEndTagsQueue.indexOf(match) + 1);
+            List<ModifiableCloseTag> toremove = physicalEndTagsQueue.subList(0, physicalEndTagsQueue.indexOf(match) + 1);
 
             if (toremove.size() > 1) {
                 //there are some stray end tags, add them to the current open tag node
-                for (AstNode n : toremove.subList(0, toremove.size() - 1)) {
-                    t.addChild(n);
+                for (ModifiableCloseTag n : toremove.subList(0, toremove.size() - 1)) {
+                    openTag.addChild(n);
                 }
             }
             //and remove all the end tags
@@ -173,23 +184,23 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
             }
 
             //set matching node
-            t.setMatchingNode(match);
-            match.setMatchingNode(t);
+            openTag.setMatchingCloseTag(match);
+            match.setMatchingOpenTag(openTag);
 
             //set logical end of the paired open tag
-            t.setLogicalEndOffset(match.endOffset());
+            openTag.setSemanticEndOffset(match.to());
         } else {
             //no match found, the open tag node's logical range should be set to something meaningful -
             //to the latest end tag found likely causing this element to be popped
-            AstNode latestEndTag = physicalEndTagsQueue.peek();
+            CloseTag latestEndTag = physicalEndTagsQueue.peek();
             if(latestEndTag != null) {
-                t.setLogicalEndOffset(latestEndTag.startOffset());
+                openTag.setSemanticEndOffset(latestEndTag.to());
             } else if(startTag != null) {
                 //or to an open tag which implies this tag to be closed
-                t.setLogicalEndOffset(tag_lt_offset);
+                openTag.setSemanticEndOffset(tag_lt_offset);
             } else {
                 //the rest - simply current token offset
-                t.setLogicalEndOffset(offset);
+                openTag.setSemanticEndOffset(offset);
             }
 
         }
@@ -200,9 +211,9 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
                 LOGGER.fine(String.format("LEFT in stack of end tags: %s", dumpEndTags()));//NOI18N
             }
             //attach all the stray end tags to the currently popped node
-            for (ListIterator<AstNode> leftEndTags = physicalEndTagsQueue.listIterator(); leftEndTags.hasNext();) {
-                AstNode left = leftEndTags.next();
-                t.addChild(left);
+            for (ListIterator<ModifiableCloseTag> leftEndTags = physicalEndTagsQueue.listIterator(); leftEndTags.hasNext();) {
+                ModifiableCloseTag left = leftEndTags.next();
+                openTag.addChild(left);
                 leftEndTags.remove();
             }
 
@@ -213,16 +224,18 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
     }
 
     @Override
-    protected void elementPushed(String namespace, String name, AstNode t) throws SAXException {
+    protected void elementPushed(String namespace, String name, Named t) throws SAXException {
 
         if (LOG) {
-            LOGGER.fine(String.format("+ %s %s; stack: %s", t, t.isVirtual() ? "[virtual]" : "", dumpStack())); //NOI18N
+            LOGGER.fine(String.format("+ %s %s; stack: %s", t, isVirtual(t) ? "[virtual]" : "", dumpStack())); //NOI18N
         }
+        
+        CommonOpenTag openTag = (CommonOpenTag)t;
 
-        stack.push(t);
+        stack.push(openTag);
 
         //stray end tags - add them to the current node
-        AstNode head;
+        ModifiableCloseTag head;
         while ((head = physicalEndTagsQueue.poll()) != null) {
             stack.peek().addChild(head);
         }
@@ -238,11 +251,11 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
         return collectionOfNodesToString(physicalEndTagsQueue);
     }
 
-    private String collectionOfNodesToString(Collection<AstNode> col) {
+    private String collectionOfNodesToString(Collection<? extends Named> col) {
         StringBuilder b = new StringBuilder();
         b.append('[');
-        for (Iterator<AstNode> i = col.iterator(); i.hasNext();) {
-            AstNode en = i.next();
+        for (Iterator<? extends Named> i = col.iterator(); i.hasNext();) {
+            Named en = i.next();
             b.append(en.name());
             b.append(", ");
         }
@@ -251,6 +264,7 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
 
     }
 
+    @Override
     public void transition(int from, int to, boolean reconsume, int offset) throws SAXException {
         if (LOG_FINER) {
             LOGGER.finer(String.format("%s -> %s at %s", Util.TOKENIZER_STATE_NAMES[from], Util.TOKENIZER_STATE_NAMES[to], offset));//NOI18N
@@ -340,20 +354,25 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
         //set the current tag end offset:
         //the transition for the closing tag symbol are done AFTER the element for the tag is created,
         //so it needs to be additionaly set to the latest element
-        if(tag_gt_offset != -1 && currentTag != null) {
-            currentTag.setEndOffset(tag_gt_offset);
-            currentTag.setLogicalEndOffset(tag_gt_offset);
-
-            //refresh the matching open tag's logical end offset
-            if(currentTag.type() == AstNode.NodeType.ENDTAG) {
-                AstNode pair = currentTag.getMatchingTag();
-                if(pair != null) {
-                    pair.setLogicalEndOffset(tag_gt_offset);
+        if(tag_gt_offset != -1) {
+            
+            if(currentOpenTag != null) {
+                currentOpenTag.setEndOffset(tag_gt_offset);
+                currentOpenTag.setSemanticEndOffset(tag_gt_offset);
+            }
+            
+            if(currentCloseTag != null) {
+                currentCloseTag.setEndOffset(tag_gt_offset);
+                //refresh the matching open tag's logical end offset
+                OpenTag match = currentCloseTag.matchingOpenTag();
+                if(match != null) {
+                    ((ModifiableOpenTag)match).setSemanticEndOffset(tag_gt_offset);
                 }
             }
 
-            currentTag = null;
-            tag_gt_offset = -1;
+            //always remove both 
+            currentOpenTag = null;
+            currentCloseTag = null;
         }
 
     }
@@ -375,7 +394,9 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
             LOGGER.fine(String.format("close tag %s at %s", en.name, tag_lt_offset));//NOI18N
         }
 
-        physicalEndTagsQueue.add(currentTag = factory.createEndTag(en.name, tag_lt_offset, -1));
+        ModifiableCloseTag closeTag = factory.createCloseTag(tag_lt_offset);
+        currentCloseTag = closeTag;
+        physicalEndTagsQueue.add(closeTag);
 
         if (LOG) {
             LOGGER.fine(String.format("end tags: %s", dumpEndTags()));//NOI18N
@@ -391,12 +412,12 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
     }
 
     @Override
-    protected void appendCharacters(AstNode t, String string) throws SAXException {
+    protected void appendCharacters(Named t, String string) throws SAXException {
         //no-op
     }
 
     @Override
-    protected void appendComment(AstNode t, String string) throws SAXException {
+    protected void appendComment(Named t, String string) throws SAXException {
         //no-op
     }
 
@@ -406,25 +427,31 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
     }
 
     @Override
-    protected void insertFosterParentedCharacters(String string, AstNode t, AstNode t1) throws SAXException {
+    protected void insertFosterParentedCharacters(String string, Named t, Named t1) throws SAXException {
         //???????
     }
 
+    //create open tag element
     @Override
-    protected AstNode createElement(String namespace, String name, HtmlAttributes attributes) throws SAXException {
+    protected Named createElement(String namespace, String name, HtmlAttributes attributes) throws SAXException {
         if(LOG) {
             LOGGER.fine(String.format("createElement(%s)", name));//NOI18N
         }
 
-        AstNode node;
+        ModifiableOpenTag node;
         if (startTag != null && startTag.name.equals(name)) {
-            currentTag = node = factory.createOpenTag(name, tag_lt_offset, -1, self_closing_starttag);
+            
+            if(self_closing_starttag) {
+                currentOpenTag = node = factory.createEmptyOpenTag(tag_lt_offset, -1, (byte)name.length());
+            } else {
+                currentOpenTag = node = factory.createOpenTag(tag_lt_offset, -1, (byte)name.length());
+            }
             addAttributesToElement(node, attributes);
             resetIntenallPositions();
 
         } else {
             //virtual element
-            node = factory.createOpenTag(name, -1, -1, false);
+            node = factory.createVirtualOpenTag(name);
             addAttributesToElement(node, attributes);
         }
 
@@ -432,12 +459,12 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
     }
 
     @Override
-    protected AstNode createHtmlElementSetAsRoot(HtmlAttributes attributes) throws SAXException {
+    protected Named createHtmlElementSetAsRoot(HtmlAttributes attributes) throws SAXException {
         if (LOG) {
             LOGGER.fine("createHtmlElementSetAsRoot()");//NOI18N
         }
 
-        AstNode rootTag = createElement("http://www.w3.org/1999/xhtml", "html", attributes);//NOI18N
+        Named rootTag = createElement("http://www.w3.org/1999/xhtml", "html", attributes);//NOI18N
         stack.push(root);
 
         root.addChild(rootTag);
@@ -446,41 +473,43 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
     }
 
     @Override
-    protected void detachFromParent(AstNode node) throws SAXException {
-        node.detachFromParent();
+    protected void detachFromParent(Named node) throws SAXException {
+        ((ModifiableElement)node).detachFromParent();
     }
 
     @Override
-    protected boolean hasChildren(AstNode node) throws SAXException {
-        return !node.children().isEmpty();
+    protected boolean hasChildren(Named node) throws SAXException {
+        OpenTag ot = (OpenTag)node;
+        return !ot.children().isEmpty();
     }
 
     @Override
-    protected void appendElement(AstNode child, AstNode parent) throws SAXException {
-        parent.addChild(child);
+    protected void appendElement(Named child, Named parent) throws SAXException {
+        ((ModifiableOpenTag)parent).addChild(child);
     }
 
     @Override
     //move node's children to another node
-    protected void appendChildrenToNewParent(AstNode from, AstNode to) throws SAXException {
-        List<AstNode> children = from.children();
-        from.removeChildren(children);
-        to.addChildren(children);
+    protected void appendChildrenToNewParent(Named from, Named to) throws SAXException {
+        Collection<Element> children = ((OpenTag)from).children();
+        ((ModifiableOpenTag)from).removeChildren(children);
+        ((ModifiableOpenTag)to).addChildren(children);
     }
 
     //http://www.whatwg.org/specs/web-apps/current-work/multipage/tokenization.html#foster-parenting
     @Override
-    protected void insertFosterParentedChild(AstNode child, AstNode table, AstNode stackParent) throws SAXException {
-        AstNode parent = table.parent();
+    protected void insertFosterParentedChild(Named child, Named table, Named stackParent) throws SAXException {
+        Node parent = table.parent();
         if (parent != null) { // always an element if not null
-            parent.insertBefore(child, table);
+            ((ModifiableOpenTag)parent).insertChildBefore(child, table);
         } else {
-            stackParent.addChild(child);
+            ((ModifiableOpenTag)stackParent).addChild(child);
         }
     }
 
     @Override
-    protected void addAttributesToElement(AstNode node, HtmlAttributes attributes) throws SAXException {
+    protected void addAttributesToElement(Named node, HtmlAttributes attributes) throws SAXException {
+        ModifiableOpenTag mot = (ModifiableOpenTag)node;
         //there are situations (when the code is corrupted) when 
         //the attributes recorded during lexing (lexical states switching)
         //do not contain all the attrs from HtmlAttributes.
@@ -495,13 +524,13 @@ public class HtmlNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implemen
             value.append(attributes.getValue(i));
             appendQuotation(value, attrInfo.valueQuotationType);
             
-            AstNode.Attribute attr = factory.createAttribute(
-                    attributes.getLocalName(i),
-                    value.toString(),
+            Attribute attr = factory.createAttribute(
                     attrInfo.nameOffset,
-                    attrInfo.valueOffset);
-
-            node.setAttribute(attr);
+                    attrInfo.valueOffset,
+                    (byte)attributes.getLocalName(i).length(),
+                    (short)value.length());
+                    
+            mot.setAttribute(attr);
         }
     }
     

@@ -45,7 +45,7 @@ package org.netbeans.modules.html.editor.lib.api.elements;
  *
  * @author marekfukala
  */
-public interface NamedElement extends Element {
+public interface Named extends Element {
 
     /**
      * Name of the element possibly with a namespace prefix

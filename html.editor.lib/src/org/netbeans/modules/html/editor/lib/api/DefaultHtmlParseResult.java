@@ -56,7 +56,7 @@ public abstract class DefaultHtmlParseResult extends DefaultParseResult implemen
     public DefaultHtmlParseResult(HtmlSource source, Node root, Collection<ProblemDescription> problems, HtmlVersion version) {
         super(source, root, problems);
         this.version = version;
-    }
+    } 
 
     @Override
     public HtmlVersion version() {

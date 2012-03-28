@@ -41,7 +41,12 @@
  */
 package org.netbeans.modules.html.editor.lib.html4parser;
 
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
 
 /**
  *
@@ -51,12 +56,15 @@ public class AstAttribute implements Attribute {
     
     private static final char NS_PREFIX_DELIMITER = ':';
     
+    private CharSequence source;
+    
     protected CharSequence name;
     protected CharSequence value;
     protected int nameOffset;
     protected int valueOffset;
 
-    public AstAttribute(CharSequence name, CharSequence value, int nameOffset, int valueOffset) {
+    public AstAttribute(CharSequence source, CharSequence name, CharSequence value, int nameOffset, int valueOffset) {
+        this.source = source;
         this.name = name;
         this.value = value;
         this.nameOffset = nameOffset;
@@ -97,10 +105,7 @@ public class AstAttribute implements Attribute {
         return value.toString();
     }
 
-    public String unquotedValue() {
-        return isValueQuoted() ? value().substring(1, value().length() - 1) : value();
-    }
-
+    @Override
     public boolean isValueQuoted() {
         if (value.length() < 2) {
             return false;
@@ -112,6 +117,51 @@ public class AstAttribute implements Attribute {
     @Override
     public String toString() {
         return "Attr[" + name() + "(" + nameOffset() + ")=" + value + "(" + valueOffset() + ")]";
+    }
+
+    @Override
+    public CharSequence unquotedValue() {
+        return isValueQuoted() ? value().substring(1, value().length() - 1) : value();
+    }
+
+    @Override
+    public CharSequence unqualifiedName() {
+        return nameWithoutNamespacePrefix();
+    }
+
+    @Override
+    public int from() {
+        return nameOffset();
+    }
+
+    @Override
+    public int to() {
+        return valueOffset() + value().length();
+    }
+
+    @Override
+    public ElementType type() {
+        return ElementType.ATTRIBUTE;
+    }
+
+    @Override
+    public CharSequence image() {
+        return source.subSequence(from(), to());
+    }
+
+    @Override
+    public CharSequence id() {
+        return type().name();
+    }
+
+    @Override
+    public Collection<ProblemDescription> problems() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Node parent() {
+        return null;
     }
     
 }

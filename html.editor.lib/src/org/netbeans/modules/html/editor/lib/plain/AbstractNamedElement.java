@@ -48,7 +48,7 @@ import org.openide.util.CharSequences;
  *
  * @author marekfukala
  */
-public abstract class AbstractNamedElement extends AbstractElement implements NamedElement {
+public abstract class AbstractNamedElement extends AbstractElement implements Named {
 
     private CharSequence name;
 

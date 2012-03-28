@@ -139,5 +139,15 @@ public class OpenTagElement extends AbstractNamedElement implements OpenTag {
     public Collection<Element> children(ElementType type) {
         return null;
     }
+
+    @Override
+    public Collection<Element> children(ElementFilter filter) {
+        return null;
+    }
+
+    @Override
+    public <T extends Element> Collection<T> children(Class<T> type) {
+        return null;
+    }
     
 }

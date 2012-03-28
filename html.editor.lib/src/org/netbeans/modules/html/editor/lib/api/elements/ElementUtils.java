@@ -58,18 +58,9 @@ public class ElementUtils {
     private ElementUtils() {
     }
 
-    public static CharSequence unquotedValue(Attribute attribute) {
-        return isValueQuoted(attribute) ? attribute.value().subSequence(1, attribute.value().length() - 1) : attribute.value();
-    }
-
-    public static boolean isValueQuoted(Attribute attr) {
-        CharSequence value = attr.value();
-        if (value.length() < 2) {
-            return false;
-        } else {
-            return ((value.charAt(0) == '\'' || value.charAt(0) == '"')
-                    && (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
-        }
+    public static String getNamespace(Element element) {
+        FeaturedNode root = getRoot(element);
+        return (String) root.getProperty("namespace");
     }
 
     /**
@@ -187,18 +178,18 @@ public class ElementUtils {
             buf.append(")");
         }
         buf.append('\n');
-        if(element instanceof Node) {
-            Node node = (Node)element;
+        if (element instanceof Node) {
+            Node node = (Node) element;
             for (Element child : node.children()) {
                 dump(child, prefix + INDENT, buf, source);
             }
         }
     }
 
-    public static Node getRoot(Element node) {
+    public static FeaturedNode getRoot(Element node) {
         for (;;) {
             if (node.parent() == null) {
-                return (Node)node; //root
+                return (FeaturedNode) node; //root
             } else {
                 node = node.parent();
             }
@@ -230,11 +221,11 @@ public class ElementUtils {
     }
 
     private static void getChildrenRecursivelly(List<Element> found, Element element, ElementFilter filter, boolean recurseOnlyMatching) {
-        if(!(element instanceof Node)) {
-            return ;
+        if (!(element instanceof Node)) {
+            return;
         }
-        
-        Node node = (Node)element;
+
+        Node node = (Node) element;
         for (Element child : node.children()) {
             if (filter.accepts(child)) {
                 found.add(child);
@@ -247,7 +238,7 @@ public class ElementUtils {
         }
     }
 
-    public static Element query(Node base, String path) {
+    public static OpenTag query(Node base, String path) {
         return query(base, path, false);
     }
 
@@ -257,7 +248,7 @@ public class ElementUtils {
      *
      * note: queries OPEN TAGS ONLY!
      */
-    public static Element query(Node base, String path, boolean caseInsensitive) {
+    public static OpenTag query(Node base, String path, boolean caseInsensitive) {
         StringTokenizer st = new StringTokenizer(path, "/");
         Node found = base;
         while (st.hasMoreTokens()) {
@@ -275,7 +266,7 @@ public class ElementUtils {
             OpenTag foundLocal = null;
             for (Element child : found.children(ElementType.OPEN_TAG)) {
                 OpenTag openTag = (OpenTag) child;
-                if(LexerUtils.equals(openTag.name(), nodeName, caseInsensitive, false) && count++ == index) {
+                if (LexerUtils.equals(openTag.name(), nodeName, caseInsensitive, false) && count++ == index) {
                     foundLocal = openTag;
                     break;
                 }
@@ -285,9 +276,9 @@ public class ElementUtils {
 
                 if (!st.hasMoreTokens()) {
                     //last token, we may return
-                    OpenTag openTag = (OpenTag)found;
+                    OpenTag openTag = (OpenTag) found;
                     assert LexerUtils.equals(openTag.name(), nodeName, false, false);
-                    return found;
+                    return openTag;
                 }
 
             } else {
@@ -312,10 +303,10 @@ public class ElementUtils {
     }
 
     public static void visitChildren(Element element, ElementVisitor visitor, ElementType nodeType) {
-        if(!(element instanceof Node)) {
-            return ;
+        if (!(element instanceof Node)) {
+            return;
         }
-        Node node = (Node)element;
+        Node node = (Node) element;
         for (Element n : node.children()) {
             if (nodeType == null || n.type() == nodeType) {
                 visitor.visit(n);

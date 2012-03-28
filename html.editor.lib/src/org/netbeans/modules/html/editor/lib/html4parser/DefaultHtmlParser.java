@@ -43,6 +43,7 @@ package org.netbeans.modules.html.editor.lib.html4parser;
 
 import java.util.*;
 import org.netbeans.modules.html.editor.lib.api.*;
+import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
@@ -117,7 +118,7 @@ public class DefaultHtmlParser implements HtmlParser {
             }
 
             @Override
-            public Map<HtmlTag, OpenTag> getPossibleEndTags(Element context) {
+            public Map<HtmlTag, OpenTag> getPossibleCloseTags(Element context) {
                 Collection<AstNode> possibleEndTags = AstNodeUtils.getPossibleEndTagElements((AstNode)context);
                 Map<HtmlTag, OpenTag> result = new LinkedHashMap<HtmlTag, OpenTag>();
                 for (AstNode node : possibleEndTags) {

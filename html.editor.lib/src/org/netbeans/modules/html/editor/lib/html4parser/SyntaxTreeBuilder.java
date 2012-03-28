@@ -157,7 +157,7 @@ public class SyntaxTreeBuilder {
                 }
 
                 //add existing tag attributes
-                setTagAttributes(openTagNode, tagElement);
+                setTagAttributes(sourceCode, openTagNode, tagElement);
 
                 //check if the last open tag allows this tag as its content, do not do that for root node
                 if (lNode != rootNode && !lNode.reduce(currentNodeDtdElement)) {
@@ -566,10 +566,10 @@ public class SyntaxTreeBuilder {
 
     }
 
-    protected static void setTagAttributes(AstNode node, OpenTag tag) {
+    protected static void setTagAttributes(CharSequence sourceCode, AstNode node, OpenTag tag) {
         for (Attribute ta : tag.attributes()) {
             if (ta != null) {
-                AstAttribute nodeAttribute = new AstAttribute(ta.name(),
+                AstAttribute nodeAttribute = new AstAttribute(sourceCode, ta.name(),
                         ta.value(), ta.nameOffset(), ta.valueOffset());
 
                 node.setAttribute(nodeAttribute);
