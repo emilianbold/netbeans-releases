@@ -41,41 +41,32 @@
  */
 package org.netbeans.modules.cnd.source.spi;
 
-import java.util.Collection;
 import javax.swing.text.StyledDocument;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public abstract class CndSourcePropertiesProvider {
+public interface CndSourcePropertiesProvider {
+    // constant to be used for registration of provider
+    // i.e. @ServiceProvider(path=CndSourcePropertiesProvider.REGISTRATION_PATH, service=CndSourcePropertiesProvider.class, position=100)
+    public static final String REGISTRATION_PATH = "CND/CndSourcePropertiesProvider"; // NOI18N
 
-    public abstract void addProperty(DataObject dob, StyledDocument doc);
-
-    private static CndSourcePropertiesProvider DEFAULT;
-
-    public static synchronized CndSourcePropertiesProvider getDefault() {
-        if (DEFAULT == null) {
-            DEFAULT = new Default();
-        }
-        return DEFAULT;
-    }
-
-    private static final class Default extends CndSourcePropertiesProvider {
-
-        private final Collection<? extends CndSourcePropertiesProvider> providers;
-
-        public Default() {
-            providers = Lookup.getDefault().lookupAll(CndSourcePropertiesProvider.class);
-        }
-
-        @Override
-        public void addProperty(DataObject dob, StyledDocument doc) {
-            for (CndSourcePropertiesProvider provider : providers) {
-                provider.addProperty(dob, doc);
-            }
-        }
-    }
+    /**
+     * Add extra document properties if needed. Method is called out of EDT
+     * Language and InputAttributes are already in document's properties.
+     * <code>
+     * Language<?> language = (Language<?>) doc.getProperty(Language.class);
+     * InputAttributes lexerAttrs = (InputAttributes)doc.getProperty(InputAttributes.class);
+     * </code>
+     * For instance, if someone need to set extra lexing attributes it can be done like
+     * <code>
+     * Filter<?> flt = CndLexerUtilities.getGccCpp11Filter();
+     * lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, flt, true);  // NOI18N
+     * </code>
+     * @param dob C/C++/Fortran data object
+     * @param doc C/C++/Fortran document associated with data object
+     */
+    public void addProperty(DataObject dob, StyledDocument doc);
 }

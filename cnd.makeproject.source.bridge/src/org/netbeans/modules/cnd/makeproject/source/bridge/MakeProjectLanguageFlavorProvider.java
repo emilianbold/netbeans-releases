@@ -41,29 +41,31 @@
  */
 package org.netbeans.modules.cnd.makeproject.source.bridge;
 
-import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
-import org.netbeans.cnd.spi.lexer.CndLexerLanguageFilterProvider;
 import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
+import org.openide.loaders.DataObject;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
+ * bridge which affects editor bahavior based on options from makeproject.
  * @author Vladimir Voskresensky
  */
-@ServiceProvider(path=CndLexerLanguageFilterProvider.REGISTRATION_PATH, service=CndLexerLanguageFilterProvider.class, position=1000)
-public class MakeProjectLanguageFlavorProvider implements CndLexerLanguageFilterProvider {
+@ServiceProvider(path=CndSourcePropertiesProvider.REGISTRATION_PATH, service=CndSourcePropertiesProvider.class, position=1000)
+public final class MakeProjectLanguageFlavorProvider implements CndSourcePropertiesProvider {
 
     @Override
-    public Filter<?> getFilter(org.netbeans.api.lexer.Language<?> language, Document doc) {
-        if (language == CppTokenId.languageCpp()) {
-            // check if it should have C++11 flavor
-            if (DebugUtils.getBoolean("cnd.modelimpl.cpp11", false)) {
-                return CndLexerUtilities.getGccCpp11Filter();
-            }
+    public void addProperty(DataObject dob, StyledDocument doc) {
+        // check if it should have C++11 flavor
+        if (DebugUtils.getBoolean("cnd.modelimpl.cpp11", false)) {
+            Language<?> language = (Language<?>) doc.getProperty(Language.class);
+            InputAttributes lexerAttrs = (InputAttributes)doc.getProperty(InputAttributes.class);
+            Filter<?> flt = CndLexerUtilities.getGccCpp11Filter();
+            lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, flt, true);  // NOI18N
         }
-        return null;
     }
 }
