@@ -121,12 +121,12 @@ public class RunAnalysis {
             @Override public void actionPerformed(ActionEvent e) {
                 runAnalysis.setEnabled(false);
 
-                rap.started();
-                progress.start();
-
                 final AnalyzerFactory toRun = rap.getSelectedAnalyzer();
                 final String configuration = rap.getConfiguration();
                 final String singleWarningId = rap.getSingleWarningId();
+
+                rap.started();
+                progress.start();
 
                 WORKER.post(new Runnable() {
                     @Override public void run() {

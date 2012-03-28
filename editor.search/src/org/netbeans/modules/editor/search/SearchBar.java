@@ -154,7 +154,6 @@ public final class SearchBar extends JPanel {
         incSearchTextFieldListener = createIncSearchTextFieldListener(incSearchTextField);
         addEnterKeystrokeFindNextTo(incSearchTextField);
         addShiftEnterKeystrokeFindPreviousTo(incSearchTextField);
-        incSearchTextField.getActionMap().remove("toggle-componentOrientation"); // NOI18N
         if (getCurrentKeyMapProfile().startsWith("Emacs")) { // NOI18N
             emacsProfileFix(incSearchTextField);
         }
@@ -241,6 +240,7 @@ public final class SearchBar extends JPanel {
     void updateIncSearchComboBoxHistory(String incrementalSearchText) {
         EditorFindSupport.getInstance().addToHistory(new EditorFindSupport.SPW(incrementalSearchText, 
                 wholeWordsCheckBox.isSelected(), matchCaseCheckBox.isSelected(), regexpCheckBox.isSelected()));
+        incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
         // Add the text to the top of the list
         for (int i = incSearchComboBox.getItemCount() - 1; i >= 0; i--) {
             String item = (String) incSearchComboBox.getItemAt(i);
@@ -345,7 +345,7 @@ public final class SearchBar extends JPanel {
             }
         });
     }
-
+ 
     private void addEnterKeystrokeFindNextTo(JTextComponent incSearchTextField) {
         incSearchTextField.getInputMap().put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
@@ -563,7 +563,7 @@ public final class SearchBar extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!CLOSE_ON_ENTER && !searched) {
+                if (CLOSE_ON_ENTER && !searched) {
                     findNext();
                 }
                 if (!popupMenuWasCanceled)
@@ -576,8 +576,8 @@ public final class SearchBar extends JPanel {
 
     public void gainFocus() {
         SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) incSearchTextField);
+        addEnterKeystrokeFindNextTo(incSearchTextField);
         
-//        ((JEditorPane) incSearchTextField).setEditorKit(kit);
         hadFocusOnIncSearchTextField = true;
         setVisible(true);
         MutableComboBoxModel comboBoxModelIncSearch = ((MutableComboBoxModel) incSearchComboBox.getModel());
@@ -806,6 +806,7 @@ public final class SearchBar extends JPanel {
             pcl.propertyChange(new PropertyChangeEvent(this, "actualTextComponent", getActualTextComponent(), component));
         }
         actualTextComponent = new WeakReference<JTextComponent>(component);
+        EditorFindSupport.getInstance().setFocusedTextComponent(getActualTextComponent());
     }
 
     void addActualComponentListener(PropertyChangeListener propertyChangeListener) {

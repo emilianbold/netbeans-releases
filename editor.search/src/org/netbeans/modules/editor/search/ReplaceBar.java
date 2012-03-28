@@ -114,14 +114,6 @@ public final class ReplaceBar extends JPanel {
         add(replaceLabel);
         replaceTextField = scb.getEditorPane();
         replaceTextField.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceText")); // NOI18N
-        // flatten the action map for the text field to allow removal
-//        ActionMap origActionMap = replaceTextField.getActionMap();
-//        ActionMap newActionMap = new ActionMap();
-//        for (Object key : origActionMap.allKeys()) {
-//            newActionMap.put(key, origActionMap.get(key));
-//        }
-//        replaceTextField.setActionMap(newActionMap);
-        replaceTextField.getActionMap().remove("toggle-componentOrientation"); // NOI18N
         replaceTextField.addFocusListener(new FocusAdapter() {
 
             @Override
@@ -370,6 +362,7 @@ public final class ReplaceBar extends JPanel {
             changeSearchBarToBePartOfReplaceBar();
             setVisible(true);
             SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) replaceTextField);
+            addEnterKeystrokeReplaceTo(replaceTextField);
         }
         searchBar.gainFocus();
         searchBar.getIncSearchTextField().requestFocusInWindow();

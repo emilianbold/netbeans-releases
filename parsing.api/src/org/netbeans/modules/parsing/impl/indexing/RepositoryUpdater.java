@@ -2282,12 +2282,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 final SourceIndexers indexers,
                 final Map<SourceIndexerFactory, Boolean> votes,
                 @NonNull final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts,
-                @NonNull final UsedIndexables usedIterables,
-                final long [] recursiveListenersTime
+                @NonNull final UsedIndexables usedIterables
         ) throws IOException {
             return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Boolean>() {
                 public @Override Boolean run() throws IOException {
-                    return doIndex(resources, allResources, root, sourceForBinaryRoot, indexers, votes, contexts, usedIterables, recursiveListenersTime);
+                    return doIndex(resources, allResources, root, sourceForBinaryRoot, indexers, votes, contexts, usedIterables);
                 }
             });
         }
@@ -2300,17 +2299,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 SourceIndexers indexers,
                 Map<SourceIndexerFactory, Boolean> votes,
                 @NonNull final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts,
-                @NonNull final UsedIndexables usedIterables,
-                long [] recursiveListenersTime
+                @NonNull final UsedIndexables usedIterables
         ) throws IOException {
-            long tm = System.currentTimeMillis();
-            if (!RepositoryUpdater.getDefault().rootsListeners.add(root, true)) {
-                //Do not call the expensive recursive listener if exiting
-                return false;
-            }
-            if (recursiveListenersTime != null) {
-                recursiveListenersTime[0] = System.currentTimeMillis() - tm;
-            }
 
             final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<Iterable<Indexable>>();
             SourceAccessor.getINSTANCE().suppressListening(true, !checkEditor);
@@ -2785,7 +2775,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         delete(crawler.getDeletedResources(), ctxToFinish, usedIterables);
                         boolean indexResult=true;
                         try {
-                            indexResult=index(resources, crawler.getAllResources(), root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, usedIterables, null);
+                            indexResult=index(resources, crawler.getAllResources(), root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, usedIterables);
                             if (indexResult) {
                                 crawler.storeTimestamps();
                                 return true;
@@ -4645,22 +4635,29 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         try {
                             delete(deleted, ctxToFinish, usedIterables);
                             invalidateSources(resources);
-                            if (index(resources, allResources, root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, usedIterables, recursiveListenersTime)) {
-                                crawler.storeTimestamps();
-                                outOfDateFiles[0] = resources.size();
-                                deletedFiles[0] = deleted.size();
-                                if (logStatistics) {
-                                    logStatistics = false;
-                                    if (SFEC_LOGGER.isLoggable(Level.INFO)) {
-                                        LogRecord r = new LogRecord(Level.INFO, "STATS_SCAN_SOURCES"); //NOI18N
-                                        r.setParameters(new Object [] { Boolean.valueOf(outOfDateFiles[0] > 0 || deletedFiles[0] > 0)});
-                                        r.setResourceBundle(NbBundle.getBundle(RepositoryUpdater.class));
-                                        r.setResourceBundleName(RepositoryUpdater.class.getPackage().getName() + ".Bundle"); //NOI18N
-                                        r.setLoggerName(SFEC_LOGGER.getName());
-                                        SFEC_LOGGER.log(r);
+                            final long tm = System.currentTimeMillis();
+                            final boolean rlAdded = RepositoryUpdater.getDefault().rootsListeners.add(root, true);
+                            if (recursiveListenersTime != null) {
+                                recursiveListenersTime[0] = System.currentTimeMillis() - tm;
+                            }
+                            if (rlAdded) {
+                                if (index(resources, allResources, root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, usedIterables)) {
+                                    crawler.storeTimestamps();
+                                    outOfDateFiles[0] = resources.size();
+                                    deletedFiles[0] = deleted.size();
+                                    if (logStatistics) {
+                                        logStatistics = false;
+                                        if (SFEC_LOGGER.isLoggable(Level.INFO)) {
+                                            LogRecord r = new LogRecord(Level.INFO, "STATS_SCAN_SOURCES"); //NOI18N
+                                            r.setParameters(new Object [] { Boolean.valueOf(outOfDateFiles[0] > 0 || deletedFiles[0] > 0)});
+                                            r.setResourceBundle(NbBundle.getBundle(RepositoryUpdater.class));
+                                            r.setResourceBundleName(RepositoryUpdater.class.getPackage().getName() + ".Bundle"); //NOI18N
+                                            r.setLoggerName(SFEC_LOGGER.getName());
+                                            SFEC_LOGGER.log(r);
+                                        }
                                     }
+                                    return true;
                                 }
-                                return true;
                             }
                         } finally {
                             scanFinished(ctxToFinish.values(), usedIterables);

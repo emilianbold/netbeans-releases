@@ -43,6 +43,7 @@ package org.netbeans.modules.java.hints.analysis;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -78,6 +79,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class AnalyzerImpl implements Analyzer {
 
+    private static final String ID_JAVA_HINTS_PREFIX = "text/x-java:";
+
     private final AtomicBoolean cancel = new AtomicBoolean();
     private final Context ctx;
 
@@ -87,6 +90,14 @@ public class AnalyzerImpl implements Analyzer {
 
     @Override
     public Iterable<? extends ErrorDescription> analyze() {
+        String singleWarning;
+        if (ctx.getSingleWarningId() != null) {
+            if (!ctx.getSingleWarningId().startsWith(ID_JAVA_HINTS_PREFIX))
+                return Collections.emptyList();
+            singleWarning = ctx.getSingleWarningId().substring(ID_JAVA_HINTS_PREFIX.length());
+        } else {
+            singleWarning = null;
+        }
         final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         ProgressHandleWrapper w = new ProgressHandleWrapper(ctx, 10, 90);
         Collection<HintDescription> hints = new ArrayList<HintDescription>();
@@ -95,7 +106,11 @@ public class AnalyzerImpl implements Analyzer {
             //XXX: should check settings, whether this hint is enabled or not
             if (e.getKey().kind != Kind.INSPECTION) continue;
             if (e.getKey().options.contains(Options.NO_BATCH)) continue;
-            if (!HintsSettings.isEnabled(e.getKey())) continue;
+            if (singleWarning != null) {
+                if (!singleWarning.equals(e.getKey().id)) continue;
+            } else if (ctx.getSettings() != null) {
+                if (!HintsSettings.isEnabled(e.getKey(), ctx.getSettings())) continue;
+            } else if (!HintsSettings.isEnabled(e.getKey())) continue;
 
             hints.addAll(e.getValue());
         }
@@ -150,7 +165,7 @@ public class AnalyzerImpl implements Analyzer {
                 FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + category);
                 String categoryDisplayName = catFO != null ? getFileObjectLocalizedName(catFO) : "Unknown";
 
-                result.add(WarningDescription.create("text/x-java:" + e.getKey().id, displayName, category, categoryDisplayName));
+                result.add(WarningDescription.create(ID_JAVA_HINTS_PREFIX + e.getKey().id, displayName, category, categoryDisplayName));
             }
 
             return result;
