@@ -42,8 +42,10 @@
 package org.openide.util.lookup;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.concurrent.Callable;
@@ -213,12 +215,31 @@ public class NamedServiceDefinitionTest extends NbTestCase {
             fail("The error messages should say something about missing where\n" + err);
         }
     }
+    public void testMissingRetention() throws Exception {
+        String content = "import org.openide.util.lookup.NamedServiceDefinition;\n"
+            + "@NamedServiceDefinition(path=\"fixed\",serviceType=Object.class)\n"
+            + "public @interface Test {\n"
+            + "}\n";
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.Test", content);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        assertFalse("Compilation fails",
+            AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os)
+        );
+        String err = new String(os.toByteArray(), "UTF-8");
+        if (err.indexOf("specify @Retention") == -1) {
+            fail("The error messages should say something about missing where\n" + err);
+        }
+        if (err.indexOf("specify @Target") == -1) {
+            fail("The error messages should say something about missing where\n" + err);
+        }
+    }
     
     @NamedServiceDefinition(
         path="runtest/@when()/below",
         serviceType={ Runnable.class, Callable.class }
     )
     @Retention(RetentionPolicy.SOURCE)
+    @Target(ElementType.TYPE)
     public static @interface RunTestReg {
         public int position();
         public String when();
@@ -227,6 +248,7 @@ public class NamedServiceDefinitionTest extends NbTestCase {
         path="runtest/@array()",
         serviceType={ Runnable.class, Callable.class }
     )
+    @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.SOURCE)
     public static @interface RunTestArray {
         public int position();
