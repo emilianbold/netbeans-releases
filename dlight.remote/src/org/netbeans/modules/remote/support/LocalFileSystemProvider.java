@@ -281,6 +281,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     public FileObject fileToFileObject(File file) {
+        file = FileUtil.normalizeFile(file); // caller can not do this
         return FileUtil.toFileObject(file);
     }
 
