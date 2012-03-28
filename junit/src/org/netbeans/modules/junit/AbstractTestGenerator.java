@@ -1419,7 +1419,9 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                     srcMethodExType,
                                     getTestSkeletonVarNames(srcMethod.getParameters()));
             statements.add(sout);
-            statements.addAll(paramVariables);
+            if(paramVariables != null) {
+                statements.addAll(paramVariables);
+            }
 
             if (!isStatic) {
 
@@ -1574,6 +1576,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             if (param.getKind() == TypeKind.TYPEVAR){
                 param = getSuperType(workingCopy, param);
             }
+            if (param.getKind() == TypeKind.DECLARED) {
+                boolean typeVar = containsTypeVar((DeclaredType) param, false);
+                if (typeVar) {
+                    return null;
+                }
+            }
             paramVariables.add(
                     maker.Variable(maker.Modifiers(noModifiers),
                                    varNames[index++],
@@ -1581,6 +1589,19 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                    getDefaultValue(maker, param)));
         }
         return paramVariables;
+    }
+
+    private boolean containsTypeVar(DeclaredType dt, boolean typeVar) {
+        List<? extends TypeMirror> args = dt.getTypeArguments();
+        for (TypeMirror arg : args) {
+            if (arg.getKind() == TypeKind.TYPEVAR) {
+                typeVar = true;
+            }
+            if (arg.getKind() == TypeKind.DECLARED) {
+                typeVar = typeVar || containsTypeVar((DeclaredType) arg, typeVar);
+            }
+        }
+        return typeVar;
     }
 
     /**
@@ -1600,7 +1621,10 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                             TreeMaker maker,
                                             List<VariableTree> variables) {
         List<IdentifierTree> identifiers;
-        if (variables.isEmpty()) {
+        if (variables == null) {
+            identifiers = new ArrayList<IdentifierTree>(1);
+            identifiers.add(maker.Identifier("null".toString()));
+        } else if (variables.isEmpty()) {
             identifiers = Collections.<IdentifierTree>emptyList();
         } else {
             identifiers = new ArrayList<IdentifierTree>(variables.size());
