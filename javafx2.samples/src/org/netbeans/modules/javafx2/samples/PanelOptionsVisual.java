@@ -119,6 +119,7 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
         lblPlatform = new javax.swing.JLabel();
         platformComboBox = new javax.swing.JComboBox();
         btnManagePlatforms = new javax.swing.JButton();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -159,6 +160,12 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 0);
         add(btnManagePlatforms, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weighty = 0.1;
+        add(filler1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManagePlatformsActionPerformed
@@ -207,6 +214,7 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnManagePlatforms;
+    private javax.swing.Box.Filler filler1;
     private javax.swing.JLabel lblPlatform;
     private javax.swing.JComboBox platformComboBox;
     // End of variables declaration//GEN-END:variables
