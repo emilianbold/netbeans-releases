@@ -1,0 +1,6 @@
+$test = "ok";
+ ----
+HINT:Too many assignments (2) into variable $test
+$test = "2 - should fail";
+ ----
+HINT:Too many assignments (2) into variable $test

@@ -59,11 +59,12 @@ import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
  * @author sherold
  */
 public class WLModuleConfigurationFactory implements ModuleConfigurationFactory2 {
-    
+
     /** Creates a new instance of JBModuleConfigurationFactory */
     public WLModuleConfigurationFactory() {
     }
-    
+
+    @Override
     public ModuleConfiguration create(J2eeModule j2eeModule) throws ConfigurationException {
         if (J2eeModule.Type.WAR.equals(j2eeModule.getType())) {
             return new WarDeploymentConfiguration(j2eeModule);

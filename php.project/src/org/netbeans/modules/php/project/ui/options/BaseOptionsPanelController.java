@@ -46,7 +46,6 @@ import java.beans.PropertyChangeSupport;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
 
 /**
  * Common functionality of {@link OptionsPanelController}.
@@ -99,11 +98,6 @@ abstract class BaseOptionsPanelController extends OptionsPanelController impleme
     @Override
     public final boolean isChanged() {
         return changed;
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(getClass());
     }
 
     @Override
