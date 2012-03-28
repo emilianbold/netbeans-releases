@@ -84,7 +84,7 @@ public class ReplaceAction extends AbstractEditorAction {
 
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        if (target != null) {
+            if (target != null) {
             if ((target instanceof JEditorPane) && ((JEditorPane) target).getEditorKit() instanceof SearchNbEditorKit)
                 target = SearchBar.getInstance().getActualTextComponent();
             EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);

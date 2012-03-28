@@ -355,7 +355,7 @@ public final class EditorFindSupport {
                             );
                         }
 
-                        ensureVisible(comp, pos, pos);
+                        selectText(comp, pos, pos + len, back);
                         return true;
                     }
                 }

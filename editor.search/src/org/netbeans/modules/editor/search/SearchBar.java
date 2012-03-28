@@ -590,6 +590,7 @@ public final class SearchBar extends JPanel {
         }
         for (EditorFindSupport.SPW spw : EditorFindSupport.getInstance().getHistory())
             comboBoxModelIncSearch.addElement(spw.getSearchExpression());
+        incSearchTextField.setText("");
         initBlockSearch();
         EditorFindSupport.getInstance().setFocusedTextComponent(getActualTextComponent());
 
@@ -641,8 +642,7 @@ public final class SearchBar extends JPanel {
         findSupport.putFindProperties(getFindProps());
 
         // search starting at current caret position
-        int caretPosition = getActualTextComponent().getCaretPosition();
-
+        int caretPosition = getActualTextComponent().getSelectionStart();
         if (regexpCheckBox.isSelected()) {
             Pattern pattern;
             String patternErrorMsg = null;
@@ -711,7 +711,7 @@ public final class SearchBar extends JPanel {
 
     @SuppressWarnings("unchecked")
     void initBlockSearch() {
-        JTextComponent c = EditorRegistry.lastFocusedComponent();
+        JTextComponent c = getActualTextComponent();
         String selText;
         int startSelection;
         int endSelection;
@@ -744,16 +744,7 @@ public final class SearchBar extends JPanel {
                         selText = selText.substring(0, n);
                     }
                     incSearchTextField.setText(selText);
-                    // findWhat.getEditor().setItem(selText);
-                    // changeFindWhat(true);
-                } else {
-                    String findWhat = (String) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_WHAT);
-                    if (findWhat != null && findWhat.length() > 0) {
-                        incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
-                        incSearchTextField.setText(findWhat);
-                        incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
-                    }
-                }
+                } 
             }
 
             int blockSearchStartOffset = blockSearchVisible ? startSelection : 0;
