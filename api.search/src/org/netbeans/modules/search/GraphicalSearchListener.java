@@ -187,7 +187,11 @@ class GraphicalSearchListener<R> extends SearchListener {
         String msg = NbBundle.getMessage(ResultView.class,
                 "TEXT_INFO_ERROR_MATCHING", fileName(path), //NOI18N
                 t.getMessage());
-        eventChildren.addEvent(new PathEventNode(EventType.ERROR, msg, path));
+        String tooltip = NbBundle.getMessage(ResultView.class,
+                "TEXT_INFO_ERROR_MATCHING", path, //NOI18N
+                t.getMessage());
+        eventChildren.addEvent(new PathEventNode(EventType.ERROR, msg, path,
+                tooltip));
         LOG.log(Level.INFO, path + ": " + t.getMessage(), t);           //NOI18N
     }
 
@@ -323,10 +327,18 @@ class GraphicalSearchListener<R> extends SearchListener {
     private class PathEventNode extends EventNode {
 
         private String path;
+        private String tooltip;
 
-        public PathEventNode(EventType type, String message, String path) {
+        public PathEventNode(EventType type, String message, String path,
+                String tooltip) {
             super(type, message);
             this.path = path;
+            this.tooltip = tooltip;
+        }
+
+        @Override
+        public String getShortDescription() {
+            return tooltip;
         }
 
         @Override
