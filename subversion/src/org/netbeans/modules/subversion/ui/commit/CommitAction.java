@@ -462,7 +462,9 @@ public class CommitAction extends ContextAction {
                     FileInformation fi = cache.getCachedStatus(f);
                     ISVNStatus st;
                     if (fi != null && (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 && (st = fi.getEntry(null)) != null) {
-                        deletedCandidates.put(st.getUrl(), f);
+                        if (checkUrl(st, f)) {
+                            deletedCandidates.put(st.getUrl(), f);
+                        }
                     }
                 }
                 for (File f : fileSet) {
@@ -472,12 +474,14 @@ public class CommitAction extends ContextAction {
                     SVNUrl copiedUrl;
                     if (fi != null && (fi.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0 && (st = fi.getEntry(f)) != null 
                             && st.isCopied() && (copiedUrl = SvnUtils.getCopiedUrl(f)) != null && !deletedCandidates.containsKey(copiedUrl)) {
-                        // file is copied, it means it has a source file copied from
-                        File copiedFrom = getCopiedFromFile(st, f, copiedUrl); 
-                        fi = cache.getCachedStatus(copiedFrom);
-                        // if the source is deleted add it into the candidate list
-                        if (fi != null && (fi.getStatus() & (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) != 0) {
-                            deletedCandidates.put(copiedUrl, copiedFrom);
+                        if (checkUrl(st, f)) {
+                            // file is copied, it means it has a source file copied from
+                            File copiedFrom = getCopiedFromFile(st, f, copiedUrl); 
+                            fi = cache.getCachedStatus(copiedFrom);
+                            // if the source is deleted add it into the candidate list
+                            if (fi != null && (fi.getStatus() & (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) != 0) {
+                                deletedCandidates.put(copiedUrl, copiedFrom);
+                            }
                         }
                     }
                 }
@@ -509,6 +513,14 @@ public class CommitAction extends ContextAction {
                 }
                 File copiedFrom = FileUtil.normalizeFile(new File(f, relativized.replace("/", File.separator))); //NOI18N
                 return copiedFrom;
+            }
+
+            private boolean checkUrl (ISVNStatus st, File f) {
+                if (st.getUrl() == null) {
+                    Subversion.LOG.log(Level.INFO, null, new IllegalStateException("Null URL for: " + f.getAbsolutePath() + ", " + st));
+                    return false;
+                }
+                return true;
             }
         };
         return support;
