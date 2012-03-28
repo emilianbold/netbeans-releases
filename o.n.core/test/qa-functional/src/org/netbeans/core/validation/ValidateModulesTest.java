@@ -199,8 +199,7 @@ public class ValidateModulesTest extends NbTestCase {
             if ("true".equals(m.getAttribute("OpenIDE-Module-Deprecated"))) {
                 String cnb = m.getCodeNameBase();
                 if (cnb.equals("org.jdesktop.layout") || cnb.equals("org.netbeans.modules.editor.deprecated.pre65formatting") ||
-                    cnb.equals("org.netbeans.modules.java.hints.legacy.spi") ||
-                    cnb.equals("org.openidex.util")) {
+                    cnb.equals("org.netbeans.modules.java.hints.legacy.spi")) {
                     // Will take a while to fix, don't report as error now.
                     continue;
                 }
