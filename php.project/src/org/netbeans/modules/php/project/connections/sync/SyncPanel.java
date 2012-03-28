@@ -138,7 +138,7 @@ public final class SyncPanel extends JPanel {
     private Boolean rememberShowSummary = null;
 
 
-    SyncPanel(PhpProject project, String remoteConfigurationName, List<SyncItem> items, RemoteClient remoteClient, boolean showSummary) {
+    SyncPanel(PhpProject project, String remoteConfigurationName, List<SyncItem> items, RemoteClient remoteClient, boolean forProject) {
         assert SwingUtilities.isEventDispatchThread();
         assert items != null;
 
@@ -151,12 +151,12 @@ public final class SyncPanel extends JPanel {
 
         initComponents();
         viewCheckBoxes = getViewCheckBoxes();
-        initViewButtons();
+        initViewCheckBoxes();
         initTable();
         initOperationButtons();
         initDiffButton();
         initInfos();
-        initShowSummaryCheckBox(showSummary);
+        initShowSummaryCheckBox(forProject);
     }
 
     private JCheckBox createViewCheckBox() {
@@ -218,7 +218,7 @@ public final class SyncPanel extends JPanel {
         "SyncPanel.view.warning=W&arning",
         "SyncPanel.view.error=E&rror"
     })
-    private void initViewButtons() {
+    private void initViewCheckBoxes() {
         // operations
         initViewCheckBox(viewNoopCheckBox, SyncItem.Operation.NOOP);
         initViewCheckBox(viewDownloadCheckBox, EnumSet.of(SyncItem.Operation.DOWNLOAD, SyncItem.Operation.DOWNLOAD_REVIEW));
