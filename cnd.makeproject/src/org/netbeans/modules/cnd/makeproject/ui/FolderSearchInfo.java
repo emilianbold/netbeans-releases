@@ -51,7 +51,6 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
 /**
  *
