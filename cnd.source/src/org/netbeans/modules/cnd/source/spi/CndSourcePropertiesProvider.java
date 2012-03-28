@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,35 +34,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-/** C++ editor kit with appropriate document */
-package org.netbeans.modules.cnd.editor.cplusplus;
+package org.netbeans.modules.cnd.source.spi;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.cnd.api.lexer.Filter;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.utils.MIMENames;
+import java.util.Collection;
+import javax.swing.text.StyledDocument;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 
-public class HKit extends CCKit {
+/**
+ *
+ * @author Vladimir Voskresensky
+ */
+public abstract class CndSourcePropertiesProvider {
 
-    public HKit() {
-        // default constructor needed to be created from services
-    }
-    
-    @Override
-    public String getContentType() {
-        return MIMENames.HEADER_MIME_TYPE;
-    }
+    public abstract void addProperty(DataObject dob, StyledDocument doc);
 
-    @Override
-    protected Language<CppTokenId> getLanguage() {
-        return CppTokenId.languageHeader();
+    private static CndSourcePropertiesProvider DEFAULT;
+
+    public static synchronized CndSourcePropertiesProvider getDefault() {
+        if (DEFAULT == null) {
+            DEFAULT = new Default();
+        }
+        return DEFAULT;
     }
 
-    @Override
-    protected Filter<?> getFilter(Language<?> language, BaseDocument doc) {
-        return CndLexerUtilities.getHeaderFilter();
+    private static final class Default extends CndSourcePropertiesProvider {
+
+        private final Collection<? extends CndSourcePropertiesProvider> providers;
+
+        public Default() {
+            providers = Lookup.getDefault().lookupAll(CndSourcePropertiesProvider.class);
+        }
+
+        @Override
+        public void addProperty(DataObject dob, StyledDocument doc) {
+            for (CndSourcePropertiesProvider provider : providers) {
+                provider.addProperty(dob, doc);
+            }
+        }
     }
 }

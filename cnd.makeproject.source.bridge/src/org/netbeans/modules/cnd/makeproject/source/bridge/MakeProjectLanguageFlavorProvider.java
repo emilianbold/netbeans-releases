@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,35 +34,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-/** C++ editor kit with appropriate document */
-package org.netbeans.modules.cnd.editor.cplusplus;
+package org.netbeans.modules.cnd.makeproject.source.bridge;
 
-import org.netbeans.api.lexer.Language;
+import javax.swing.text.Document;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.cnd.spi.lexer.CndLexerLanguageFilterProvider;
+import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.openide.util.lookup.ServiceProvider;
 
-public class HKit extends CCKit {
-
-    public HKit() {
-        // default constructor needed to be created from services
-    }
-    
-    @Override
-    public String getContentType() {
-        return MIMENames.HEADER_MIME_TYPE;
-    }
+/**
+ *
+ * @author Vladimir Voskresensky
+ */
+@ServiceProvider(path=CndLexerLanguageFilterProvider.REGISTRATION_PATH, service=CndLexerLanguageFilterProvider.class, position=1000)
+public class MakeProjectLanguageFlavorProvider implements CndLexerLanguageFilterProvider {
 
     @Override
-    protected Language<CppTokenId> getLanguage() {
-        return CppTokenId.languageHeader();
-    }
-
-    @Override
-    protected Filter<?> getFilter(Language<?> language, BaseDocument doc) {
-        return CndLexerUtilities.getHeaderFilter();
+    public Filter<?> getFilter(org.netbeans.api.lexer.Language<?> language, Document doc) {
+        if (language == CppTokenId.languageCpp()) {
+            // check if it should have C++11 flavor
+            if (DebugUtils.getBoolean("cnd.modelimpl.cpp11", false)) {
+                return CndLexerUtilities.getGccCpp11Filter();
+            }
+        }
+        return null;
     }
 }
