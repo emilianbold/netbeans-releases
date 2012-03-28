@@ -426,7 +426,9 @@ public final class CndLexerUtilities {
     private static Filter<CppTokenId> FILTER_STD_C;
     private static Filter<CppTokenId> FILTER_GCC_C;
     private static Filter<CppTokenId> FILTER_STD_CPP;
+    private static Filter<CppTokenId> FILTER_STD_CPP11;
     private static Filter<CppTokenId> FILTER_GCC_CPP;
+    private static Filter<CppTokenId> FILTER_GCC_CPP11;
     private static Filter<CppTokenId> FILTER_HEADER;
     private static Filter<CppTokenId> FILTER_PREPRPOCESSOR;
     private static Filter<CppTokenId> FILTER_OMP;
@@ -493,25 +495,25 @@ public final class CndLexerUtilities {
     }
 
     public synchronized static Filter<CppTokenId> getStdCpp11Filter() {
-        if (FILTER_STD_CPP == null) {
-            FILTER_STD_CPP = new Filter<CppTokenId>();
-            addCommonCCKeywords(FILTER_STD_CPP);
-            addCppOnlyKeywords(FILTER_STD_CPP);
-            addCpp11OnlyKeywords(FILTER_STD_CPP);
+        if (FILTER_STD_CPP11 == null) {
+            FILTER_STD_CPP11 = new Filter<CppTokenId>();
+            addCommonCCKeywords(FILTER_STD_CPP11);
+            addCppOnlyKeywords(FILTER_STD_CPP11);
+            addCpp11OnlyKeywords(FILTER_STD_CPP11);
         }
-        return FILTER_STD_CPP;
+        return FILTER_STD_CPP11;
     }
 
     public synchronized static Filter<CppTokenId> getGccCpp11Filter() {
-        if (FILTER_GCC_CPP == null) {
-            FILTER_GCC_CPP = new Filter<CppTokenId>();
-            addCommonCCKeywords(FILTER_GCC_CPP);
-            addCppOnlyKeywords(FILTER_GCC_CPP);
-            addCpp11OnlyKeywords(FILTER_GCC_CPP);
-            addGccOnlyCommonCCKeywords(FILTER_GCC_CPP);
-            addGccOnlyCppOnlyKeywords(FILTER_GCC_CPP);
+        if (FILTER_GCC_CPP11 == null) {
+            FILTER_GCC_CPP11 = new Filter<CppTokenId>();
+            addCommonCCKeywords(FILTER_GCC_CPP11);
+            addCppOnlyKeywords(FILTER_GCC_CPP11);
+            addCpp11OnlyKeywords(FILTER_GCC_CPP11);
+            addGccOnlyCommonCCKeywords(FILTER_GCC_CPP11);
+            addGccOnlyCppOnlyKeywords(FILTER_GCC_CPP11);
         }
-        return FILTER_GCC_CPP;
+        return FILTER_GCC_CPP11;
     }
     
     public synchronized static Filter<CppTokenId> getHeaderFilter() {

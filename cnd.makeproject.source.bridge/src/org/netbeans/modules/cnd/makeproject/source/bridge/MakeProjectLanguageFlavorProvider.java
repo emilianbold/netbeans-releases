@@ -44,10 +44,15 @@ package org.netbeans.modules.cnd.makeproject.source.bridge;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
-import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -61,11 +66,30 @@ public final class MakeProjectLanguageFlavorProvider implements CndSourcePropert
     @Override
     public void addProperty(DataObject dob, StyledDocument doc) {
         // check if it should have C++11 flavor
-        if (DebugUtils.getBoolean("cnd.modelimpl.cpp11", false)) {
-            Language<?> language = (Language<?>) doc.getProperty(Language.class);
-            InputAttributes lexerAttrs = (InputAttributes)doc.getProperty(InputAttributes.class);
-            Filter<?> flt = CndLexerUtilities.getGccCpp11Filter();
-            lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, flt, true);  // NOI18N
+        Language<?> language = (Language<?>) doc.getProperty(Language.class);
+        if (language != CppTokenId.languageCpp()) {
+            return;
+        }
+        FileObject primaryFile = dob.getPrimaryFile();
+        if (primaryFile == null) {
+            return;
+        }
+        Project owner = FileOwnerQuery.getOwner(primaryFile);
+        if (owner == null) {
+            return;
+        }
+        NativeProject np = owner.getLookup().lookup(NativeProject.class);
+        if (np == null) {
+            return;
+        }
+        NativeFileItem nfi = np.findFileItem(primaryFile);
+        if (nfi == null) {
+            return;
+        }
+        if (nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11) {
+            InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
+            Filter<?> filter = CndLexerUtilities.getGccCpp11Filter();
+            lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
         }
     }
 }
