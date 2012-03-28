@@ -96,7 +96,16 @@ public final class ContextAnalyzer {
 
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement, int startOffset, int endOffset, final CompilationInfo info) {
-                    return factory.create(info, new TreePathHandle[]{selectedElement}, new FileObject[]{selectedElement.getFileObject()}, new NonRecursiveFolder[0]);
+                    TreePathHandle[] handles;
+                    FileObject[] file;
+                    if(selectedElement != null) {
+                        handles = new TreePathHandle[]{selectedElement};
+                        file = new FileObject[]{selectedElement.getFileObject()};
+                    } else {
+                        handles = new TreePathHandle[0];
+                        file = new FileObject[]{info.getFileObject()};
+                    }
+                    return factory.create(info, handles, file, new NonRecursiveFolder[0]);
                 }
             };
         } else if (nodeHandle(context)) {
@@ -350,9 +359,11 @@ public final class ContextAnalyzer {
                     if (path!=null && cc.getTrees().getElement(path)!=null) {
                         selectedElement = path;
                     }
+                } else {
+                    selectedElement = null;
                 }
             }
-            ui = createRefactoringUI(TreePathHandle.create(selectedElement, cc), start, end, cc);
+            ui = createRefactoringUI(selectedElement != null ? TreePathHandle.create(selectedElement, cc) : null, start, end, cc);
         }
         
         @Override
