@@ -633,7 +633,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(RemoteConnectionsPanel.class);
+        return new HelpCtx("org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel"); // NOI18N
     }
 
     public static class ConfigListRenderer extends JLabel implements ListCellRenderer, UIResource {

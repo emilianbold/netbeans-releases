@@ -46,17 +46,15 @@ Other names may be trademarks of their respective owners.
       xmlns:ui="http://java.sun.com/jsf/facelets">
 
     <composite:interface>
-        <composite:valueHolder name="label"  />
-        <composite:valueHolder name="destination" />
+        <composite:attribute name="label"  />
+        <composite:attribute name="destination" />
     </composite:interface>
 
     <composite:implementation>
-
         <li>
-            <h:outputLink  value="#{destination}" rendered="#{label!=''}">
-                <h:outputText value="#{label}" />
+            <h:outputLink  value="#{cc.attrs.destination}" rendered="#{cc.attrs.label != ''}">
+                <h:outputText value="#{cc.attrs.label}" />
             </h:outputLink>
         </li>
-
     </composite:implementation>
 </html>
