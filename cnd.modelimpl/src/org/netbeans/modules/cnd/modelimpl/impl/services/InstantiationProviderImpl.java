@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionEvaluator;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -106,6 +107,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider;
+import org.netbeans.modules.cnd.spi.model.services.CsmVisibilityQueryProvider;
 
 /**
  * Service that provides template instantiations
@@ -371,14 +373,14 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     StringBuilder fqn = new StringBuilder(cls.getUniqueName());
                     fqn.append(Instantiation.getInstantiationCanonicalText(params));
                     CsmDeclaration decl = ((ProjectBase) proj).findDeclaration(fqn.toString());
-                    if(decl instanceof ClassImplSpecialization) {
+                    if(decl instanceof ClassImplSpecialization && CsmIncludeResolver.getDefault().isObjectVisible(contextFile, decl)) {
                         specialization = (CsmClassifier) decl;
                     }
                     if (specialization == null && !proj.isArtificial()) {
                         for(CsmProject lib : proj.getLibraries()) {
                             if (lib instanceof ProjectBase) {
                                 decl = ((ProjectBase) lib).findDeclaration(fqn.toString());
-                                if(decl instanceof ClassImplSpecialization) {
+                                if(decl instanceof ClassImplSpecialization && CsmIncludeResolver.getDefault().isObjectVisible(contextFile, decl)) {
                                     specialization = (CsmClassifier) decl;
                                     break;
                                 }
@@ -397,7 +399,13 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         fqn.append(cls.getQualifiedName());
                         fqn.append('<'); // NOI18N
                         specs.addAll(((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString()));
-                        specialization = findBestSpecialization(specs, params, cls);
+                        Collection<CsmOffsetableDeclaration> visibleSpecs = new ArrayList<CsmOffsetableDeclaration>();
+                        for (CsmOffsetableDeclaration spec : specs) {
+                            if(CsmIncludeResolver.getDefault().isObjectVisible(contextFile, spec)) {
+                                visibleSpecs.add(spec);
+                            }
+                        }
+                        specialization = findBestSpecialization(visibleSpecs, params, cls);
                     }
                 }
             }
