@@ -73,6 +73,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JTree;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -86,6 +87,7 @@ import org.netbeans.modules.findbugs.RunFindBugs;
 import org.netbeans.modules.findbugs.RunInEditor;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -251,6 +253,12 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         jSplitPane1.setLeftComponent(jScrollPane1);
 
         description.setContentType(org.openide.util.NbBundle.getMessage(FindBugsPanel.class, "FindBugsPanel.description.contentType")); // NOI18N
+        description.setEditable(false);
+        description.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
+            public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
+                descriptionHyperlinkUpdate(evt);
+            }
+        });
         jScrollPane2.setViewportView(description);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(FindBugsPanel.class, "FindBugsPanel.jLabel1.text")); // NOI18N
@@ -297,6 +305,12 @@ public final class FindBugsPanel extends javax.swing.JPanel {
                 .addComponent(jSplitPane1))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void descriptionHyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_descriptionHyperlinkUpdate
+        if (evt.getEventType() == EventType.ACTIVATED && evt.getURL() != null) {
+            URLDisplayer.getDefault().showURL(evt.getURL());
+        }
+    }//GEN-LAST:event_descriptionHyperlinkUpdate
 
     void load() {
         this.runInEditor.setSelected(NbPreferences.forModule(FindBugsPanel.class).getBoolean(RunInEditor.RUN_IN_EDITOR, RunInEditor.RUN_IN_EDITOR_DEFAULT));
