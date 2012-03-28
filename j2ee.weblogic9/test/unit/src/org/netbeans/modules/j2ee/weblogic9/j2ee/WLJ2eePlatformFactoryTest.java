@@ -86,12 +86,12 @@ public class WLJ2eePlatformFactoryTest extends NbTestCase {
         File file = new File(baseFolder, "test.jar");
         createJar(file, "Class-Path: some/jars/a.jar some/jars/b.jar c.jar d.jar");
         
-        List<URL> urls = WLJ2eePlatformFactory.getJarClassPath(file);
+        List<URL> urls = WLJ2eePlatformFactory.getJarClassPath(file, null);
         checkJars(urls, fileA, fileB, fileC);
         
         File fileD = new File(baseFolder, "d.jar");
         createJar(fileD);         
-        urls = WLJ2eePlatformFactory.getJarClassPath(file);
+        urls = WLJ2eePlatformFactory.getJarClassPath(file, null);
         checkJars(urls, fileA, fileB, fileC, fileD);        
     }
     
@@ -110,7 +110,7 @@ public class WLJ2eePlatformFactoryTest extends NbTestCase {
         File file = new File(baseFolder, "test.jar");
         createJar(file, "Class-Path: some/jars/a.jar " + absolutePathB);
         
-        List<URL> urls = WLJ2eePlatformFactory.getJarClassPath(file);
+        List<URL> urls = WLJ2eePlatformFactory.getJarClassPath(file, null);
         checkJars(urls, fileA, fileB);        
     }
     
@@ -128,7 +128,7 @@ public class WLJ2eePlatformFactoryTest extends NbTestCase {
         createJar(file, "Class-Path: some/jars/a.jar some/jars/b.jar");
         
         List<URL> urls = WLJ2eePlatformFactory.getJarClassPath(
-                FileUtil.getArchiveRoot(file.toURI().toURL()));
+                FileUtil.getArchiveRoot(file.toURI().toURL()), null);
         checkJars(urls, fileA, fileB);        
     }    
 
