@@ -75,14 +75,15 @@ public class TreeListModel extends AbstractListModel implements TreeListListener
      * Add given node at root position. If the node is expanded then its
      * children are also added to the model.
      *
-     * @param index Index into the list of all current nodes (including non-root
+     * @param rootIndex Index into the list of all root nodes (excluding non-root
      * ones).
      * @param root Node to be added
      */
-    public void addRoot(int index, TreeListNode root) {
+    public void addRoot(int rootIndex, TreeListNode root) {
         int firstIndex = -1;
         int lastIndex = -1;
         synchronized (nodes) {
+            int index = getAllNodesIndex(rootIndex);
             if (index < 0 || index >= nodes.size()) {
                 nodes.add(root);
             } else {
@@ -311,5 +312,16 @@ public class TreeListModel extends AbstractListModel implements TreeListListener
         } else {
             super.fireIntervalRemoved(source, index0, index1);
         }
+    }
+
+    private int getAllNodesIndex(int rootIndex) {
+        List<TreeListNode> rootNodes = getRootNodes();
+        if (rootIndex < 0 || rootIndex >= rootNodes.size()) {
+                return -1;
+            } else {
+                TreeListNode rootNode = rootNodes.get(rootIndex);
+                int index = nodes.indexOf(rootNode);
+                return index;
+            }
     }
 }
