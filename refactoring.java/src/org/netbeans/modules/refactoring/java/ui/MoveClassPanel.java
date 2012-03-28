@@ -403,6 +403,14 @@ private void bypassRefactoringCheckBoxItemStateChanged(java.awt.event.ItemEvent 
     public boolean isRefactoringBypassRequired() {
         return bypassRefactoringCheckBox.isVisible() && bypassRefactoringCheckBox.isSelected();
     }
+
+    public void setRefactoringBypassRequired(boolean needsByPass) {
+        if(needsByPass) {
+            bypassRefactoringCheckBox.setVisible(true);
+        }
+        bypassRefactoringCheckBox.setSelected(needsByPass);
+        bypassRefactoringCheckBox.setEnabled(!needsByPass);
+    }
     
     private void updateRoots() {
         Sources sources = ProjectUtils.getSources(project);

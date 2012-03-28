@@ -148,7 +148,7 @@ public class InspectAndRefactorUI implements RefactoringUI {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(InspectAndRefactorUI.class.getName());
+        return new HelpCtx("org.netbeans.modules.java.hints.jackpot.impl.refactoring.InspectAndRefactorUI");
     }
 
     public static void openRefactoringUI(Lookup context) {

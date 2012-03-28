@@ -47,6 +47,9 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkEvent.EventType;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import org.netbeans.api.settings.ConvertAsProperties;
@@ -55,6 +58,7 @@ import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
@@ -129,6 +133,14 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
                     ErrorDescription ed = selectedNodes[0].getLookup().lookup(ErrorDescription.class);
                     CharSequence description = ed != null ? ed.getDetails() : null;
                     descriptionPanel.setText(description != null ? description.toString() : null);
+                }
+            }
+        });
+
+        descriptionPanel.addHyperlinkListener(new HyperlinkListener() {
+            @Override public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType() == EventType.ACTIVATED && e.getURL() != null) {
+                    URLDisplayer.getDefault().showURL(e.getURL());
                 }
             }
         });

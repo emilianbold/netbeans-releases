@@ -1195,6 +1195,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         if (laysup == null) {
             Point p = convertPointToComponent(e.getPoint(), formDesigner.getTopDesignComponentView());
             if (formDesigner.getLayoutDesigner().selectInside(p)) {
+                FormEditor.getAssistantModel(getFormModel()).setContext("layoutGaps", "selectedLayoutGaps"); // NOI18N
                 repaint();
                 mouseHint = formDesigner.getLayoutDesigner().getToolTipText(p);
                 showToolTip(e);
@@ -1987,8 +1988,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                         }
                         // Shift+left is reserved for interval or area selection,
                         // applied on mouse release or mouse dragged; ignore it here.
-                        else if (resizeType == 0 // no resizing
-                                 && (e.getClickCount() != 2 || !processDoubleClick(e)) // no doubleclick
+                        else if ((e.getClickCount() != 2 || !processDoubleClick(e)) // no doubleclick
+                                 && resizeType == 0 // no resizing
                                  && (!e.isShiftDown() || e.isAltDown())) {
                             RADComponent hitMetaComp = selectComponent(e, true); 
                             if (!modifier) { // plain single click
