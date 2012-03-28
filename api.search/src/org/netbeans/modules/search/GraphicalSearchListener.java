@@ -192,7 +192,12 @@ class GraphicalSearchListener<R> extends SearchListener {
                 t.getMessage());
         eventChildren.addEvent(new PathEventNode(EventType.ERROR, msg, path,
                 tooltip));
-        LOG.log(Level.INFO, path + ": " + t.getMessage(), t);           //NOI18N
+        String logMsg = path + ": " + t.getMessage();                   //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, logMsg, t);
+        } else {
+            LOG.log(Level.INFO, logMsg);
+        }
     }
 
     /**
