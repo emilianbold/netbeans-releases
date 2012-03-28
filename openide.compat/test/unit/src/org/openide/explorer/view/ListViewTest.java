@@ -48,12 +48,15 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 import junit.textui.TestRunner;
 
@@ -71,6 +74,10 @@ import org.openide.nodes.Children.Array;
  */
 public class ListViewTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ListViewTest.class);
+    }
+
     private static final int NO_OF_NODES = 3;
 
     

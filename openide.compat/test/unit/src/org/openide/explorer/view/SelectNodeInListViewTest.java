@@ -45,7 +45,10 @@
 
 package org.openide.explorer.view;
 
+import java.awt.GraphicsEnvironment;
 import javax.swing.ListSelectionModel;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 import org.netbeans.junit.NbTestCase;
 
@@ -65,6 +68,10 @@ import org.openide.nodes.Children.Array;
  */
 public class SelectNodeInListViewTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(SelectNodeInListViewTest.class);
+    }
+
     public SelectNodeInListViewTest (java.lang.String testName) {
         super (testName);
     }
