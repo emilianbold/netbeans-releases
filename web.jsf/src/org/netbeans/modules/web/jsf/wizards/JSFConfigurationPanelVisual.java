@@ -1709,6 +1709,8 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 }
             };
             dialogDescriptor.setButtonListener(buttonsListener);
+            // set appropriate state of opened dialog - issue #206424
+            fireJsfDialogUpdate(jsfCustomizer, dialogDescriptor);
             DialogDisplayer.getDefault().notify(dialogDescriptor);
         }
 
