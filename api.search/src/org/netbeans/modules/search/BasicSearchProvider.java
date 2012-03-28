@@ -52,6 +52,7 @@ import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.modules.search.IgnoreListPanel.IgnoreListManager;
 import org.netbeans.modules.search.MatchingObject.Def;
+import org.netbeans.modules.search.matcher.AbstractMatcher;
 import org.netbeans.modules.search.matcher.DefaultMatcher;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.SearchFilterDefinition;
@@ -209,10 +210,11 @@ public class BasicSearchProvider extends SearchProvider {
                 so.addFilter(new IgnoreListFilter());
             }
             SearchInfo ssi = form.getSearchInfo();
+            AbstractMatcher am = new DefaultMatcher(
+                    basicSearchCriteria.getSearchPattern());
+            am.setStrict(isReplacing());
             return new BasicComposition(
-                    ssi,
-                    new DefaultMatcher(basicSearchCriteria.getSearchPattern()),
-                    basicSearchCriteria, form.getSelectedScopeName());
+                    ssi, am, basicSearchCriteria, form.getSelectedScopeName());
         }
 
         @Override

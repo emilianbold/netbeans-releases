@@ -673,7 +673,7 @@ public class TargetServer {
                 trackDeployProgressObject(ui, po, false);
             } else {  // standard DM.distribute
                 if (getApplication() == null) {
-                    throw new IllegalArgumentException(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
+                    throw new NoArchiveException(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
                 }
 
                 ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_Distributing", application, Arrays.asList(targetz)));
@@ -1008,5 +1008,12 @@ public class TargetServer {
 
         public abstract DeploymentContext createDeploymentContext(J2eeModule module, File moduleFile,
                     File deploymentPlan, File[] requiredLibraries, AppChangeDescriptor changes);
+    }
+
+    public static class NoArchiveException extends IllegalArgumentException {
+
+        public NoArchiveException(String s) {
+            super(s);
+        }
     }
 }

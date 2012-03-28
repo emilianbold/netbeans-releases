@@ -101,7 +101,7 @@ public class MultiLineStreamMatcher extends AbstractMatcher {
         List<TextDetail> txtDetails;
         try {
 
-            bcs = new BufferedCharSequence(fo, lastCharset.newDecoder(),
+            bcs = new BufferedCharSequence(fo, prepareDecoder(lastCharset),
                     fo.getSize());
             bcs.setSearchListener(listener);
             registerProcessedSequence(bcs);

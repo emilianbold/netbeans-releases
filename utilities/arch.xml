@@ -67,30 +67,6 @@
 
     <h4>API &amp; SPI:</h4>
 
-    <p>
-    <api name="Search_Types"
-         group="java"
-         type="import"
-         category="stable">
-
-    Registered search types must be subclasses of class
-    <code>org.openidex.search.SearchType</code>, which is defined in
-    OpenAPI extensions
-    (<a href="http://openidex.netbeans.org/">OpenideX</a>).<br />
-    <em>Registration:</em><br />
-    A search type is registered by adding an <code>.instance</code>
-    file to (a subfolder of) folder <em>Services</em> of the NetBeans
-    system file system, which is done be adding an entry to an
-    <a href="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/modules/doc-files/api.html#how-layer">
-    installation layer file</a>.
-    The registered search types are then
-    accessible via the
-    <a href="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/services-api.html#lookup">
-    Lookup
-    </a> mechanism.
-    </api>
-    </p>
-
     <!--
     <p>
     <api name="OpenFileImpl"
@@ -167,7 +143,6 @@
          category="official"
          url="http://www.netbeans.org/download/dev/javadoc/">
     <code>org.openide</code>,
-    <code>org.openidex.util/2</code>,
     <code>org.netbeans.modules.javahelp/1</code>,
     <code>org.netbeans.modules.settings/1</code>,
     <code>org.openide.io</code>,

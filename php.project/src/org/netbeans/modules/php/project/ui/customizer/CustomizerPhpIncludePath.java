@@ -164,7 +164,7 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(CustomizerPhpIncludePath.class);
+        return new HelpCtx("org.netbeans.modules.php.project.ui.customizer.CustomizerPhpIncludePath"); // NOI18N
     }
 
 }
