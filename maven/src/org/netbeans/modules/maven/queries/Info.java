@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
@@ -73,7 +74,7 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
 
     @Override public String getName() {
         final NbMavenProject nb = project.getLookup().lookup(NbMavenProject.class);
-        if (!nb.isMavenProjectLoaded()) {
+        if (SwingUtilities.isEventDispatchThread() && !nb.isMavenProjectLoaded()) {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
@@ -93,7 +94,7 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
     })
     @Override public @NonNull String getDisplayName() {
         final NbMavenProject nb = project.getLookup().lookup(NbMavenProject.class);
-        if (!nb.isMavenProjectLoaded()) {
+        if (SwingUtilities.isEventDispatchThread() && !nb.isMavenProjectLoaded()) {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
@@ -124,7 +125,7 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
     
     @Override public Icon getIcon() {
         final NbMavenProject nb = project.getLookup().lookup(NbMavenProject.class);
-        if (!nb.isMavenProjectLoaded()) {
+        if (SwingUtilities.isEventDispatchThread() && !nb.isMavenProjectLoaded()) {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
