@@ -624,7 +624,7 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
         assertTrue(taskCalled.await(5000, TimeUnit.MILLISECONDS));
     }
 
-    @RandomlyFails // in fact always for jglick
+    @RandomlyFails
     public void testSlowCancelSampler() throws Exception {
         //Enable sampling
         TaskProcessor.SAMPLING_ENABLED = true;
