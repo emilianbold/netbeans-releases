@@ -42,10 +42,19 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.util.ImageUtilities;
 
@@ -57,10 +66,15 @@ public class JsStructureScanner implements StructureScanner {
 
     //private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY";
     
-    private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
+    private static final String FOLD_FUNCTION = "codeblocks"; //NOI18N
+    private static final String FOLD_JSDOC = "comments"; //NOI18N
+    private static final String FOLD_COMMENT = "initial-comment"; //NOI18N
+    private static final String FOLD_OTHER_CODE_BLOCKS = "othercodeblocks"; //NOI18N
     
     private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
     private static final String CLOSE_FONT = "</font>";                   //NOI18N
+    
+    private static final Logger LOGGER = Logger.getLogger(JsStructureScanner.class.getName());
     
     @Override
     public List<? extends StructureItem> scan(ParserResult info) {
@@ -104,33 +118,59 @@ public class JsStructureScanner implements StructureScanner {
         return collectedItems;
     }
 
-//    private JsFunctionStructureItem createItem(FunctionScope scope, List<StructureItem> children) {
-//        return new JsFunctionStructureItem(scope, children);
-//    }
-//    
-//    private JsObjectStructureItem createItem(ObjectScope scope, List<StructureItem> children) {
-//        return new JsObjectStructureItem(scope, children);
-//    }
-     
+    private static class FoldingItem {
+        String kind;
+        int start;
+
+        public FoldingItem(String kind, int start) {
+            this.kind = kind;
+            this.start = start;
+        }
+        
+    }
+    
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
+        long start = System.currentTimeMillis();
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
          
-        JsParserResult result = (JsParserResult) info;
-        final Model model = result.getModel();
-//        DeclarationScope fileScope = model.getGlobalObject();
-//        
-//        
-//            
-//            List<Scope> scopes = getEmbededScopes(fileScope, null);
-//            for (Scope scope : scopes) {
-//                OffsetRange offsetRange = scope.getBlockRange();
-//                if (offsetRange == null) continue;
-//                    
-//                getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
-//                
-//            }
-       return folds;
+        TokenHierarchy th = info.getSnapshot().getTokenHierarchy();
+        TokenSequence ts = th.tokenSequence(JsTokenId.language());
+        List<TokenSequence<?>> list = th.tokenSequenceList(ts.languagePath(), 0, info.getSnapshot().getText().length());
+        List<FoldingItem> stack = new ArrayList<FoldingItem>();
+
+        for (TokenSequenceIterator tsi = new TokenSequenceIterator(list, false); tsi.hasMore();) {
+            ts = tsi.getSequence();
+
+            TokenId tokenId;
+            JsTokenId lastContextId = null;
+            while (ts.moveNext()) {
+                tokenId = ts.token().id();
+                if (tokenId == JsTokenId.DOC_COMMENT) {
+                    getRanges(folds, FOLD_JSDOC).add(new OffsetRange(ts.offset(), ts.offset() + ts.token().length()));
+                } else if (tokenId == JsTokenId.BLOCK_COMMENT) {
+                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(ts.offset(), ts.offset() + ts.token().length()));
+                } else if (((JsTokenId) tokenId).isKeyword()) {
+                    lastContextId = (JsTokenId) tokenId;
+                } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
+                    String kind;
+                    if (lastContextId == JsTokenId.KEYWORD_FUNCTION) {
+                        kind = FOLD_FUNCTION;
+                    } else {
+                        kind = FOLD_OTHER_CODE_BLOCKS;
+                    }
+                    stack.add(new FoldingItem(kind, ts.offset()));
+                } else if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY) {
+                    FoldingItem fromStack = stack.remove(stack.size() - 1);
+                    getRanges(folds, fromStack.kind).add(new OffsetRange(
+                            info.getSnapshot().getOriginalOffset(fromStack.start),
+                            info.getSnapshot().getOriginalOffset(ts.offset() + 1)));
+                }
+            }
+        }
+        long end = System.currentTimeMillis();
+        LOGGER.log(Level.FINE, "Folding took %s ms", (end - start));
+        return folds;
     }
     
     private List<OffsetRange> getRanges(Map<String, List<OffsetRange>> folds, String kind) {
@@ -140,20 +180,6 @@ public class JsStructureScanner implements StructureScanner {
             folds.put(kind, ranges);
         }
         return ranges;
-    }
-    
-    private List<DeclarationScope>  getEmbededScopes(DeclarationScope scope, List<DeclarationScope> collectedScopes) {
-        if (collectedScopes == null) {
-            collectedScopes = new ArrayList<DeclarationScope>();
-        }
-//        List<? extends ModelElement> elements = scope.getElements();
-//        for (ModelElement element : elements) {
-//            if (element instanceof Scope) {
-//                collectedScopes.add((Scope) element);
-//                getEmbededScopes((Scope) element, collectedScopes);
-//            }
-//        }
-        return collectedScopes;
     }
 
     @Override
@@ -395,4 +421,74 @@ public class JsStructureScanner implements StructureScanner {
         
     }
     
+    private static final class TokenSequenceIterator {
+
+        private final List<TokenSequence<?>> list;
+        private final boolean backward;
+
+        private int index;
+
+        public TokenSequenceIterator(List<TokenSequence<?>> list, boolean backward) {
+            this.list = list;
+            this.backward = backward;
+            this.index = -1;
+        }
+
+        public boolean hasMore() {
+            return backward ? hasPrevious() : hasNext();
+        }
+
+        public TokenSequence<?> getSequence() {
+            assert index >= 0 && index < list.size() : "No sequence available, call hasMore() first."; //NOI18N
+            return list.get(index);
+        }
+
+        private boolean hasPrevious() {
+            boolean anotherSeq = false;
+
+            if (index == -1) {
+                index = list.size() - 1;
+                anotherSeq = true;
+            }
+
+            for( ; index >= 0; index--) {
+                TokenSequence<?> seq = list.get(index);
+                if (anotherSeq) {
+                    seq.moveEnd();
+                }
+
+                if (seq.movePrevious()) {
+                    return true;
+                }
+
+                anotherSeq = true;
+            }
+
+            return false;
+        }
+
+        private boolean hasNext() {
+            boolean anotherSeq = false;
+
+            if (index == -1) {
+                index = 0;
+                anotherSeq = true;
+            }
+
+            for( ; index < list.size(); index++) {
+                TokenSequence<?> seq = list.get(index);
+                if (anotherSeq) {
+                    seq.moveStart();
+                }
+
+                if (seq.moveNext()) {
+                    return true;
+                }
+
+                anotherSeq = true;
+            }
+
+            return false;
+        }
+    }
 }

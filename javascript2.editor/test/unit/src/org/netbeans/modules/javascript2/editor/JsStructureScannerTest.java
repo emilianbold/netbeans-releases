@@ -60,8 +60,12 @@ public class JsStructureScannerTest extends JsTestBase {
         super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
     }
     
-    public void testFolds1() throws Exception {
+    public void testFolds01() throws Exception {
         checkFolds("testfiles/simple.js");
+    }
+    
+    public void testFolds02() throws Exception {
+        checkFolds("testfiles/coloring/czechChars.js");
     }
     
     public void testSimpleMethodChain() throws Exception {
