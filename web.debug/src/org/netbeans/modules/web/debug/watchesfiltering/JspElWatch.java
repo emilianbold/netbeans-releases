@@ -52,8 +52,6 @@ import org.openide.util.WeakListeners;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.lang.reflect.Method;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,6 +79,9 @@ public class JspElWatch implements PropertyChangeListener {
     }
 
     public String getType() {
+        if (!watch.isEnabled()) {
+            return "";
+        }
         if (!evaluated) {
             evaluate();
         }
@@ -88,7 +89,7 @@ public class JspElWatch implements PropertyChangeListener {
     }
 
     public String getValue() {
-        if (!isWatchEnabled(watch)) {
+        if (!watch.isEnabled()) {
             return NbBundle.getMessage(JspElWatch.class, "CTL_WatchDisabled");
         }
         if (!evaluated) {
@@ -98,6 +99,9 @@ public class JspElWatch implements PropertyChangeListener {
     }
 
     public String getExceptionDescription() {
+        if (!watch.isEnabled()) {
+            return null;
+        }
         if (!evaluated) {
             evaluate();
         }
@@ -137,14 +141,4 @@ public class JspElWatch implements PropertyChangeListener {
         evaluated = false;
     }
     
-    private static boolean isWatchEnabled(Watch watch) {
-        try {
-            Method isEnabledMethod = watch.getClass().getDeclaredMethod("isEnabled");
-            isEnabledMethod.setAccessible(true);
-            return (Boolean) isEnabledMethod.invoke(watch);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            return true;
-        }
-    }
 }

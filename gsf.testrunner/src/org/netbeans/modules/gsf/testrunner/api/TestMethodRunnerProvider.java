@@ -54,6 +54,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -89,7 +90,8 @@ public abstract class TestMethodRunnerProvider {
             caret = -1;
         }
 
-        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+        Mutex.EVENT.writeAccess(new Runnable() {
+            
             @Override
             public void run() {
                 SingleMethod sm = activeNode.getLookup().lookup(SingleMethod.class);
@@ -105,8 +107,7 @@ public abstract class TestMethodRunnerProvider {
                     }
                 }
             }
-        },
-        NbBundle.getMessage(TestMethodRunnerProvider.class, "LBL_Action_RunTestMethod"), new AtomicBoolean(), false);
+        });
     }
 
     static ActionProvider getActionProvider(FileObject fileObject) {
