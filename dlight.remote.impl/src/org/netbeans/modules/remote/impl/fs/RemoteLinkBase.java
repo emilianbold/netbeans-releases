@@ -76,7 +76,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         if (add) {
             getFileSystem().getFactory().addFileChangeListener(getDelegateNormalizedPath(), this);
         } else {
-            getFileSystem().getFactory().remoteFileChangeListener(getDelegateNormalizedPath(), this);
+            getFileSystem().getFactory().removeFileChangeListener(getDelegateNormalizedPath(), this);
         }
     }
 

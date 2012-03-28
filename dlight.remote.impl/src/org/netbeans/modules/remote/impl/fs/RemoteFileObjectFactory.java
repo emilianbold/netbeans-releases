@@ -326,7 +326,7 @@ public class RemoteFileObjectFactory {
         }
     }
     
-    public void remoteFileChangeListener(String path, FileChangeListener listener) {
+    public void removeFileChangeListener(String path, FileChangeListener listener) {
         RemoteFileObjectBase fo = getCachedFileObject(path);
         if (fo == null) {
             synchronized (lock) {
