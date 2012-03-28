@@ -34,10 +34,10 @@ work_dir=$1
 prefix=$2
 buildnumber=$3
 ml_build=$4
-build.jdk7=$BUILD_NBJDK7
 if [ -n "$5" ] ; then
   nb_locales="$5"
 fi
+build_jdk7=$BUILD_NBJDK7
 
 basename=`dirname "$0"`
 . "$basename"/build-private.sh
@@ -52,12 +52,12 @@ else
     target="build-jdk-bundle-dmg"
 fi
 
-ant -f $basename/build.xml $target -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='false' -Dbuild.jdk7=$build.jdk7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
+ant -f $basename/build.xml $target -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='false' -Dbuild.jdk7=$build_jdk7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
 
 rm -rf "$basename"/dist_en
 mv -f "$basename"/dist "$basename"/dist_en
 
 if [ 1 -eq $ml_build ] ; then
-commonname_ml=$work_dir/zip-ml/moduleclusters/$prefix-$buildnumber
-ant -f $basename/build.xml $target -Dnb.locales=$nb_locales -Dcommon.name=$commonname_ml -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='true' -Dbuild.jdk7=$build.jdk7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
+    commonname_ml=$work_dir/zip-ml/moduleclusters/$prefix-$buildnumber
+    ant -f $basename/build.xml $target -Dnb.locales=$nb_locales -Dcommon.name=$commonname_ml -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='true' -Dbuild.jdk7=$build_jdk7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
 fi
