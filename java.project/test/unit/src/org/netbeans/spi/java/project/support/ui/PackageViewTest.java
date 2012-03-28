@@ -62,18 +62,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -1145,6 +1141,7 @@ public class PackageViewTest extends NbTestCase {
         assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, spi.stuff.support{AbstractStuffImplementation.java}}}", n);
     }
 
+    /* XXX #210107
     @RandomlyFails // NB-Core-Build #7974
     public void testReducedTreeRename() throws Exception {
         final AtomicReference<Node> node = new AtomicReference<Node>();
@@ -1178,6 +1175,7 @@ public class PackageViewTest extends NbTestCase {
         assertEquals("org.netbeans.api.stuph", newName.get());
         assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, modulez.stuph{resources{stuff.png}, Bundle.properties, StuffUtils.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
     }
+    */
 
     public void testReducedTreeDelete() throws Exception {
         SourceGroup g = sampleGroup();
