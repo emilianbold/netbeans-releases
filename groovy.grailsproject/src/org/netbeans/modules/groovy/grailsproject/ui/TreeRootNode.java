@@ -86,39 +86,29 @@ import org.openide.util.lookup.ProxyLookup;
 public final class TreeRootNode extends FilterNode implements PropertyChangeListener {
 
     private static Image PACKAGE_BADGE = ImageUtilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/packageBadge.gif"); // NOI18N
-    private final SourceGroup g;
+    private final SourceGroup group;
 
-
-    static String getDirName(SourceGroup g){
-        // Source Groups always use a slash as file-separator, no matter
-        // whether we are dealing with unix or windows:
-
-        String pathName = g.getName();
-        int lastSlash = pathName.lastIndexOf("/");
-        String dirName = pathName.substring(lastSlash + 1);
-        return dirName;
-    }
 
 
     public TreeRootNode(DataFolder folder, SourceGroup g, GrailsProject project) {
         this(new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter(g))), g, project);
     }
 
-    private TreeRootNode(Node originalNode, SourceGroup g, GrailsProject project) {
+    private TreeRootNode(Node originalNode, SourceGroup group, GrailsProject project) {
         super(originalNode, new PackageFilterChildren(originalNode),
                 new ProxyLookup(
                 originalNode.getLookup(),
-                Lookups.fixed(  new PathFinder(g),  // no need for explicit search info
+                Lookups.fixed(  new PathFinder(group),  // no need for explicit search info
                                 // Adding TemplatesImpl to Node's lookup to narrow-down
                                 // number of displayed templates with the NewFile action.
                                 // see # 122942
-                                new TemplatesImpl(project, g)
+                                new TemplatesImpl(project, group)
                                 )
                 ));
-        String pathName = g.getName();
+        String pathName = group.getName();
         setShortDescription(pathName.substring(project.getProjectDirectory().getPath().length() + 1));
-        this.g = g;
-        g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
+        this.group = group;
+        group.addPropertyChangeListener(WeakListeners.propertyChange(this, group));
     }
 
     @Override
@@ -128,7 +118,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
 
     /** Copied from PackageRootNode with modifications. */
     private Image computeIcon(boolean opened, int type) {
-        Icon icon = g.getIcon(opened);
+        Icon icon = group.getIcon(opened);
         if (icon == null) {
             Image image = opened ? super.getOpenedIcon(type) : super.getIcon(type);
             return ImageUtilities.mergeImages(image, PACKAGE_BADGE, 7, 7);
@@ -149,12 +139,12 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
 
     @Override
     public String getName() {
-        return g.getName();
+        return group.getName();
     }
 
     @Override
     public String getDisplayName() {
-        return g.getDisplayName();
+        return group.getDisplayName();
     }
 
     @Override
