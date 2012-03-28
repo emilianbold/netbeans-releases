@@ -48,10 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ComboBoxModel;
-import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
@@ -101,7 +98,9 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     
     private void postInitComponents() {
         // copied from CustomizerLibraries
-        platformComboBox.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N
+        if (!UIManager.getLookAndFeel().getClass().getName().toUpperCase().contains("AQUA")) {  //NOI18N
+            platformComboBox.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N
+        }
         jpcl = new JavaPlatformChangeListener();
         JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(jpcl, JavaPlatformManager.getDefault()));
         
@@ -145,10 +144,11 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(lblPlatform)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(platformComboBox, 0, 315, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnManagePlatforms))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(platformComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btnManagePlatforms)
+                .addContainerGap(26, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
