@@ -419,7 +419,7 @@ public class Reformatter implements ReformatTask {
         private int lastNewLineOffset;
         private boolean afterAnnotation;
         private boolean wrapAnnotation;
-        private boolean checkWrap;
+        private WrapAbort checkWrap;
         private boolean fieldGroup;
         private boolean templateEdit;
         private LinkedList<Diff> diffs = new LinkedList<Diff>();
@@ -1125,10 +1125,9 @@ public class Reformatter implements ReformatTask {
             spaces(cs.spaceBeforeAnnotationParen() ? 1 : 0);
             accept(LPAREN);
             if (args != null && !args.isEmpty()) {
-                spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
                 boolean oldInsideAnnotation = insideAnnotation;
                 insideAnnotation = true;
-                wrapList(cs.wrapAnnotationArgs(), cs.alignMultilineAnnotationArgs(), false, COMMA, args);
+                wrapList(cs.wrapAnnotationArgs(), cs.alignMultilineAnnotationArgs(), cs.spaceWithinAnnotationParens(), COMMA, args);
                 insideAnnotation = oldInsideAnnotation;
                 spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
             }
@@ -1481,8 +1480,8 @@ public class Reformatter implements ReformatTask {
                         int c = col;
                         Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                         int o = tokens.offset();
-                        boolean oldCheckWrap = checkWrap;
-                        checkWrap = true;
+                        WrapAbort oldCheckWrap = checkWrap;
+                        checkWrap = new WrapAbort(o);
                         try {
                             accept(DOT);
                             scanMethodCall(node);
@@ -2447,8 +2446,8 @@ public class Reformatter implements ReformatTask {
         }
 
         private JavaTokenId accept(JavaTokenId first, JavaTokenId... rest) {
-            if (checkWrap && col > rightMargin) {
-                throw new WrapAbort();
+            if (checkWrap != null && col > rightMargin && checkWrap.pos >= lastNewLineOffset) {
+                throw checkWrap;
             }
             lastBlankLines = -1;
             lastBlankLinesTokenIndex = -1;
@@ -2600,8 +2599,8 @@ public class Reformatter implements ReformatTask {
         }
         
         private boolean spaces(int count, boolean preserveNewline) {
-            if (checkWrap && col > rightMargin) {
-                throw new WrapAbort();
+            if (checkWrap != null && col > rightMargin && checkWrap.pos >= lastNewLineOffset) {
+                throw checkWrap;
             }
             Token<JavaTokenId> lastWSToken = null;
             boolean containedNewLine = false;
@@ -2783,8 +2782,8 @@ public class Reformatter implements ReformatTask {
         }
 
         private void blankLines(int count) {
-            if (checkWrap && col > rightMargin) {
-                throw new WrapAbort();
+            if (checkWrap != null && col > rightMargin && checkWrap.pos >= lastNewLineOffset) {
+                throw checkWrap;
             }
             if (count >= 0) {
                 if (lastBlankLinesTokenIndex < 0) {
@@ -2806,7 +2805,7 @@ public class Reformatter implements ReformatTask {
                 }
             }
             lastNewLineOffset = tokens.offset();
-            checkWrap = false;
+            checkWrap = null;
             Token<JavaTokenId> lastToken = null;
             int after = 0;
             do {
@@ -3011,8 +3010,8 @@ public class Reformatter implements ReformatTask {
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
                     int o = tokens.offset();
-                    boolean oldCheckWrap = checkWrap;
-                    checkWrap = true;
+                    WrapAbort oldCheckWrap = checkWrap;
+                    checkWrap = new WrapAbort(o);
                     try {
                         if (alignIndent >= 0)
                             indent = alignIndent;
@@ -3064,8 +3063,8 @@ public class Reformatter implements ReformatTask {
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
                     int o = tokens.offset();
-                    boolean oldCheckWrap = checkWrap;
-                    checkWrap = true;
+                    WrapAbort oldCheckWrap = checkWrap;
+                    checkWrap = new WrapAbort(o);
                     try {
                         if (alignIndent >= 0)
                             indent = alignIndent;
@@ -3124,8 +3123,8 @@ public class Reformatter implements ReformatTask {
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
                     int o = tokens.offset();
-                    boolean oldCheckWrap = checkWrap;
-                    checkWrap = true;
+                    WrapAbort oldCheckWrap = checkWrap;
+                    checkWrap = new WrapAbort(o);
                     try {
                         if (alignIndent >= 0)
                             indent = alignIndent;
@@ -4021,7 +4020,13 @@ public class Reformatter implements ReformatTask {
         }
         
         private static class WrapAbort extends Error {
+            
+            private int pos;
 
+            public WrapAbort(int pos) {
+                this.pos = pos;
+            }
+            
             @Override
             public synchronized Throwable fillInStackTrace() {
                 return null;
