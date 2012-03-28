@@ -45,6 +45,7 @@
 package org.openide.awt;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,13 +57,19 @@ import java.net.URLStreamHandler;
 import java.util.concurrent.Semaphore;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  *
  * @author Radim
  */
 public class SwingBrowserTest extends TestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(SwingBrowserTest.class);
+    }
 
     public SwingBrowserTest(String testName) {
         super(testName);
