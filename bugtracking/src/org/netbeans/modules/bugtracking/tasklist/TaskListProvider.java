@@ -137,7 +137,7 @@ public final class TaskListProvider extends PushTaskScanner {
                 for (DelegatingConnector c : connectors) {
                     Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories(c.getID());
                     if(!repos.isEmpty()) {
-                        providers.add(c.getTasklistProvder());
+                        providers.add(c.getTasklistProvider());
                     }
                 }
                 
