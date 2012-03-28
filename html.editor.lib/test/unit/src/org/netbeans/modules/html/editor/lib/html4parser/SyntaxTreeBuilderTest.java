@@ -50,11 +50,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.html.editor.lib.api.*;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 import org.openide.filesystems.FileObject;
 
@@ -327,7 +323,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
 
     public void testOptinalHtmlEndTags() throws Exception{
         String code = "<html><head><title></title></head><body></body>";
-        AstNode root = assertAST(code);
+        Node root = assertAST(code);
 
         //check the logical range e.g. end offset which should be the end of the code
         //(html unterminated, but optional end tag)
@@ -339,7 +335,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
         String code = "<html><head><title></title></head><body><table><tr><td><tr><td></table></body></html>";
         //             012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
         //             0         1         2         3         4         5         6         7         8
-        AstNode root = assertAST(code);
+        Node root = assertAST(code);
 //        AstNodeUtils.dumpTree(root);
 
         assertLogicalRange(root, "html", 0, code.length());
@@ -355,7 +351,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
         String code = "<html><head><title></title></head><body><table><tr><td><p><style></style><tr></table></body></html>";
         //             012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
         //             0         1         2         3         4         5         6         7         8
-        AstNode root = assertAST(code,
+        Node root = assertAST(code,
                 desc(SyntaxTreeBuilder.MISSING_REQUIRED_ATTRIBUTES, 58, 65, ProblemDescription.WARNING), //style attr type required
                 desc(SyntaxTreeBuilder.UNEXPECTED_TAG_KEY, 58, 65, ProblemDescription.ERROR), //style should be here
                 desc(SyntaxTreeBuilder.UNMATCHED_TAG, 65, 73, ProblemDescription.ERROR), // </style> is unmatched
@@ -415,16 +411,19 @@ public class SyntaxTreeBuilderTest extends TestBase {
     public void testLogicalEndOfUnclosedTag() throws BadLocationException, ParseException {
         String code = "<div></";
         //             01234567
-        AstNode root = parse(code, null);
+        Node root = parse(code, null);
 
-        AstNode divNode = (AstNode)root.children().iterator().next();
-        AstNode errorNode = (AstNode)divNode.children().iterator().next();
+        Element divNode = root.children().iterator().next();
+        assertEquals(ElementType.OPEN_TAG, divNode.type());
+        
+        OpenTag divOpenTag = (OpenTag)divNode;
+        Element errorNode = divOpenTag.children().iterator().next();
 
         assertEquals(5, errorNode.from());
         assertEquals(7, errorNode.to());
 
         //check div logical end
-        assertEquals(7, divNode.getLogicalRange()[1]);
+        assertEquals(7, divOpenTag.semanticEnd());
     }
 
     public void testErrorDescriptionsOnOpenTags() throws Exception {
@@ -440,32 +439,37 @@ public class SyntaxTreeBuilderTest extends TestBase {
 
     public void testTagsMatching() throws Exception {
         String code = "<table><tr><td></tr></table>";
-        AstNode root = parse(code, null);
+        Node root = parse(code, null);
 
         Iterator<Element> ch = root.children().iterator();
-        AstNode otable = (AstNode)ch.next();
-        AstNode ctable = (AstNode)ch.next();
+        Element otable = ch.next();
+        assertEquals(ElementType.OPEN_TAG, otable.type());
+        OpenTag otableOpenTag = (OpenTag)otable;
+        
+        Element ctable = ch.next();
+        assertEquals(ElementType.CLOSE_TAG, ctable.type());
+        CloseTag ctableOpenTag = (CloseTag)ctable;
 
-        assertEquals(ctable, otable.getMatchingTag());
-        assertEquals(otable, ctable.getMatchingTag());
+        assertEquals(ctable, otableOpenTag.matchingCloseTag());
+        assertEquals(otable, ctableOpenTag.matchingOpenTag());
 
-        assertTrue(otable.needsToHaveMatchingTag());
-        assertTrue(ctable.needsToHaveMatchingTag());
+        Iterator<Element> tch = otableOpenTag.children().iterator();
+        Element otr = tch.next();
+        assertEquals(ElementType.OPEN_TAG, otr.type());
+        OpenTag otrOpenTag = (OpenTag)otr;
+        
+        Element ctr = tch.next();
+        assertEquals(ElementType.CLOSE_TAG, ctr.type());
+        CloseTag ctrOpenTag = (CloseTag)ctr;
 
-        Iterator<Element> tch = otable.children().iterator();
-        AstNode otr = (AstNode)tch.next();
-        AstNode ctr = (AstNode)tch.next();
+        assertEquals(otr, ctrOpenTag.matchingOpenTag());
+        assertEquals(ctr, otrOpenTag.matchingCloseTag());
 
-        assertEquals(otr, ctr.getMatchingTag());
-        assertEquals(ctr, otr.getMatchingTag());
+        Element otd = otrOpenTag.children().iterator().next();
+        assertEquals(ElementType.OPEN_TAG, otd.type());
+        OpenTag otdOpenTag = (OpenTag)otd;
 
-        assertFalse(otr.needsToHaveMatchingTag());
-        assertTrue(ctr.needsToHaveMatchingTag());
-
-        AstNode otd = (AstNode)otr.children().iterator().next();
-
-        assertNull(otd.getMatchingTag());
-        assertFalse(otd.needsToHaveMatchingTag());
+        assertNull(otdOpenTag.matchingCloseTag());
 
     }
 
@@ -475,7 +479,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
 
     public void testComment() throws BadLocationException, ParseException {
         String code = "<!-- comment -->";
-        AstNode root = parse(code, null);
+        Node root = parse(code, null);
 
         assertEquals(1, root.children().size());
         AstNode commentNode = (AstNode)root.children().iterator().next();
@@ -543,7 +547,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
         return buf.toString();
     }
 
-    private void assertLogicalRange(AstNode base, String pathToTheNode, int logicalStart, int logicalEnd) {
+    private void assertLogicalRange(Node base, String pathToTheNode, int logicalStart, int logicalEnd) {
         AstNode node = (AstNode)ElementUtils.query(base, pathToTheNode);
         assertNotNull("Node " + pathToTheNode + " couldn't be found!", node);
 
@@ -556,16 +560,16 @@ public class SyntaxTreeBuilderTest extends TestBase {
         assertEquals(logicalEnd, logicalRange[1]); //assert the end offset
     }
 
-    private AstNode assertAST(final String code) throws Exception {
+    private Node assertAST(final String code) throws Exception {
         return assertAST(code,0);
     }
 
-    private AstNode assertAST(final String code, int expectedErrorsNumber) throws Exception {
+    private Node assertAST(final String code, int expectedErrorsNumber) throws Exception {
         return assertAST(code, null, expectedErrorsNumber);
     }
 
-    private AstNode assertAST(final String code, String publicId, int expectedErrorsNumber) throws Exception {
-        AstNode root = parse(code, publicId);
+    private Node assertAST(final String code, String publicId, int expectedErrorsNumber) throws Exception {
+        Node root = parse(code, publicId);
 //        System.out.println("AST for code: " + code);
 //        AstNodeUtils.dumpTree(root);
 
@@ -573,6 +577,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
         errors[0] = 0;
         final List<ProblemDescription> errorslist = new ArrayList<ProblemDescription>();
         ElementVisitor visitor = new ElementVisitor() {
+            @Override
             public void visit(Element node) {
                 for(ProblemDescription d : node.problems()) {
                     errorslist.add(d);
@@ -587,12 +592,12 @@ public class SyntaxTreeBuilderTest extends TestBase {
         return root;
     }
 
-    private AstNode assertAST(final String code, ProblemDescription... expectedErrors) throws Exception {
+    private Node assertAST(final String code, ProblemDescription... expectedErrors) throws Exception {
         return assertAST(code, null, expectedErrors);
     }
 
-    private AstNode assertAST(final String code, String publicId, ProblemDescription... expectedErrors) throws Exception {
-        AstNode root = parse(code, publicId);
+    private Node assertAST(final String code, String publicId, ProblemDescription... expectedErrors) throws Exception {
+        Node root = parse(code, publicId);
 //        System.out.println("AST for code: " + code);
 //        AstNodeUtils.dumpTree(root);
 
@@ -618,11 +623,11 @@ public class SyntaxTreeBuilderTest extends TestBase {
 
     }
 
-    private AstNode parse(String code, String publicId) throws BadLocationException, ParseException {
+    private Node parse(String code, String publicId) throws BadLocationException, ParseException {
         HtmlSource source = new HtmlSource(code);
 //        HtmlVersion version = HtmlVersion.findByPublicId(publicId);
         SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
-        return (AstNode)result.parseHtml().root();
+        return result.parseHtml().root();
     }
 
 //    private AstNode parseUnchecked(String code) throws BadLocationException {

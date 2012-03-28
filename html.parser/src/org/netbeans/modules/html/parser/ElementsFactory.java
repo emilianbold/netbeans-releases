@@ -62,8 +62,8 @@ public class ElementsFactory {
         this.source = source;
     }
 
-    ModifiableCloseTag createCloseTag(int startOffset) {
-        return new CommonCloseTag(source, startOffset);
+    ModifiableCloseTag createCloseTag(int startOffset, int endOffset, byte nameLen) {
+        return new CommonCloseTag(source, startOffset, endOffset, nameLen);
     }
 
     ModifiableOpenTag createOpenTag(int startOffset, int endOffset, byte nameLen) {
@@ -95,6 +95,8 @@ public class ElementsFactory {
         public void detachFromParent();
         
         public void setEndOffset(int endOffset);
+        
+        public void setParent(Node parent);
     }
     
     static interface ModifiableCloseTag extends ModifiableElement, CloseTag {
@@ -140,6 +142,8 @@ public class ElementsFactory {
 
         //sum (32bit JVM): 120bits=15bytes
         public TagElement(CharSequence source, int startOffset, int endOffset, byte nameLen) {
+            assert nameLen >= 0;
+            
             this.source = source;
             this.startOffset = startOffset;
             setEndOffset(endOffset);
@@ -152,6 +156,7 @@ public class ElementsFactory {
         }
 
         protected void setNameLen(byte nameLen) {
+            assert nameLen >= 0;
             this.nameLen = nameLen;
         }
 
@@ -204,7 +209,8 @@ public class ElementsFactory {
             return Collections.emptyList();
         }
 
-        void setParent(Node parent) {
+        @Override
+        public void setParent(Node parent) {
             this.parent = parent;
         }
 
@@ -220,8 +226,8 @@ public class ElementsFactory {
 
         @Override
         public void detachFromParent() {
-            ModifiableOpenTag mot = (ModifiableOpenTag) parent();
-            mot.removeChild(this);
+//            ModifiableOpenTag mot = (ModifiableOpenTag) parent();
+//            mot.removeChild(this);
             setParent(null);
         }
     }
@@ -235,16 +241,22 @@ public class ElementsFactory {
         }
 
         void addAttribute(Attribute attr) {
+            if(attrs == null) {
+                attrs = new ArrayList<Attribute>();
+            }
             attrs.add(attr);
         }
 
         void addAttributes(Collection<Attribute> attributes) {
+            if(attrs == null) {
+                attrs = new ArrayList<Attribute>();
+            }
             attrs.addAll(attributes);
         }
 
         @Override
         public Collection<Attribute> attributes() {
-            return attrs;
+            return attrs == null ? Collections.<Attribute>emptyList() : attrs;
         }
 
         @Override
@@ -317,11 +329,13 @@ public class ElementsFactory {
         @Override
         public void addChild(Element element) {
             //no-op
+//            throw new IllegalStateException();
         }
 
         @Override
         public void removeChild(Element element) {
             //no-op
+//            throw new IllegalStateException();
         }
 
         @Override
@@ -337,21 +351,25 @@ public class ElementsFactory {
         @Override
         public void removeChildren(Collection<Element> children) {
             //no-op
+//            throw new IllegalStateException();
         }
 
         @Override
         public void addChildren(Collection<Element> element) {
             //no-op
+//            throw new IllegalStateException();
         }
 
         @Override
         public void insertChildBefore(Element toInsert, Element element) {
             //no-op
+//            throw new IllegalStateException();
         }
 
         @Override
         public void setMatchingCloseTag(CloseTag closeTag) {
             //no-op
+//            throw new IllegalStateException();
         }
     }
 
@@ -386,14 +404,14 @@ public class ElementsFactory {
                 children = new ArrayList<Element>(1);
             }
             children.add(child);
+            ((ModifiableElement)child).setParent(this);
         }
 
         @Override
-        public void addChildren(Collection<Element> element) {
-            if (children == null) {
-                children = new ArrayList<Element>(1);
+        public void addChildren(Collection<Element> elements) {
+            for(Element e : elements) {
+                addChild(e);
             }
-            children.addAll(element);
         }
 
         @Override
@@ -405,15 +423,15 @@ public class ElementsFactory {
             if (children.isEmpty()) {
                 children = null;
             }
+            
+            ((ModifiableElement)element).setParent(null);
         }
 
         @Override
         public void removeChildren(Collection<Element> children) {
-            if (children == null) {
-                return;
+            for(Element e : children) {
+                removeChild(e);
             }
-            children.removeAll(children);
-            children = null;
         }
 
         @Override
@@ -423,6 +441,7 @@ public class ElementsFactory {
                 return ;
             }
             children.add(index, toInsert);
+            ((ModifiableElement)toInsert).setParent(this);
         }
 
         @Override
@@ -478,8 +497,8 @@ public class ElementsFactory {
 
         private OpenTag matchingOpenTag;
 
-        public CommonCloseTag(CharSequence source, int startOffset) {
-            super(source, startOffset, -1, (byte) -1);
+        public CommonCloseTag(CharSequence source, int startOffset, int endOffset, byte nameLen) {
+            super(source, startOffset, endOffset, nameLen);
         }
 
         @Override
@@ -495,13 +514,6 @@ public class ElementsFactory {
         @Override
         public void setMatchingOpenTag(OpenTag openTag) {
             this.matchingOpenTag = openTag;
-        }
-
-        @Override
-        public void setEndOffset(int endOffset) {
-            super.setEndOffset(endOffset);
-            //set the tag name len as well - derive it from the tag end offset
-            setNameLen((byte) (endOffset - 1 - from() - nameOffsetToStartOffsetDiff()));
         }
 
         @Override
@@ -665,34 +677,56 @@ public class ElementsFactory {
         
         @Override
         public void insertChildBefore(Element toInsert, Element element) {
+            if(children == null) {
+                children = new ArrayList<Element>();
+            }
             int index = children.indexOf(element);
             if(index == -1) {
                 return ;
             }
             children.add(index, toInsert);
+            ((ModifiableElement)toInsert).setParent(this);
         }
 
+        @Override
         public void setParent(Node parent) {
             this.parent = parent;
         }
 
+       @Override
+        public void addChild(Element child) {
+            if (children == null) {
+                children = new ArrayList<Element>(1);
+            }
+            children.add(child);
+            ((ModifiableElement)child).setParent(this);
+        }
+
         @Override
-        public void addChild(Element element) {
-            children.add(element);
+        public void addChildren(Collection<Element> elements) {
+            for(Element e : elements) {
+                addChild(e);
+            }
         }
 
         @Override
         public void removeChild(Element element) {
+            if (children == null) {
+                return;
+            }
             children.remove(element);
+            if (children.isEmpty()) {
+                children = null;
+            }
+            
+            ((ModifiableElement)element).setParent(null);
         }
 
         @Override
         public void removeChildren(Collection<Element> children) {
-            if (children == null) {
-                return;
+            for(Element e : children) {
+                removeChild(e);
             }
-            children.removeAll(children);
-            children = null;
         }
 
         @Override
@@ -718,14 +752,6 @@ public class ElementsFactory {
         }
 
         @Override
-        public void addChildren(Collection<Element> element) {
-            if (children == null) {
-                children = new ArrayList<Element>(1);
-            }
-            children.addAll(element);
-        }
-
-        @Override
         public void setMatchingCloseTag(CloseTag closeTag) {
             this.matchingCloseTag = closeTag;
         }
@@ -740,7 +766,7 @@ public class ElementsFactory {
         private String namespace;
 
         public Root(CharSequence source, String namespace) {
-            super(source, 0, source.length(), (byte) -1);
+            super(source, 0, source.length(), (byte) 0);
             this.namespace = namespace;
         }
 

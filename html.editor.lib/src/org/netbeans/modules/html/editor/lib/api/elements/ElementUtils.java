@@ -104,18 +104,17 @@ public class ElementUtils {
     }
 
     private static Element findByLogicalRange(Node node, int offset, boolean forward) {
-        for (Element child : node.children()) {
-            Node achild = (Node) child;
-            if (isVirtualNode(achild)) {
+        for (OpenTag child : node.children(OpenTag.class)) {
+            if (isVirtualNode(child)) {
                 //we need to recurse into every virtual branch blindly hoping there might by some
                 //real nodes fulfilling our constrains
-                Element n = findByLogicalRange(achild, offset, forward);
+                Element n = findByLogicalRange(child, offset, forward);
                 if (n != null) {
                     return n;
                 }
             }
-            if (matchesNodeRange(achild, offset, forward, false)) {
-                return findByLogicalRange(achild, offset, forward);
+            if (matchesNodeRange(child, offset, forward, false)) {
+                return findByLogicalRange(child, offset, forward);
             }
         }
         return isVirtualNode(node) ? null : node;

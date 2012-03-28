@@ -63,6 +63,7 @@ import static org.netbeans.modules.html.parser.ElementsFactory.*;
 import static nu.validator.htmlparser.impl.Tokenizer.*;
 import nu.validator.htmlparser.impl.TreeBuilder;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.xml.sax.SAXException;
 
 /**
@@ -95,7 +96,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
     private int tag_lt_offset;
     private boolean self_closing_starttag;
     //stack of opened tags
-    private Stack<CommonOpenTag> stack = new Stack<CommonOpenTag>();
+    private Stack<ModifiableOpenTag> stack = new Stack<ModifiableOpenTag>();
     //stack of encountered end tags
     LinkedList<ModifiableCloseTag> physicalEndTagsQueue = new LinkedList<ModifiableCloseTag>();
     private ElementName startTag;
@@ -137,8 +138,8 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
         //normally the stack.pop() == t, but under some circumstances when the code is broken
         //this doesn't need to be true. In such case drop all the nodes from top
         //of the stack until we find t node.
-        CommonOpenTag top = null;
-        Stack<CommonOpenTag> removedFromStack = new Stack<CommonOpenTag>();
+        ModifiableOpenTag top = null;
+        Stack<ModifiableOpenTag> removedFromStack = new Stack<ModifiableOpenTag>();
         while(!stack.isEmpty()) {
             top = stack.pop();
             removedFromStack.push(top);
@@ -159,7 +160,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
 
         ModifiableCloseTag match = null;
         for (ModifiableCloseTag n : physicalEndTagsQueue) {
-            if (n.name().equals(t.name())) {
+            if (LexerUtils.equals(n.name(), t.name(), false, false)) {
                 match = n;
                 break;
             }
@@ -194,7 +195,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
             //to the latest end tag found likely causing this element to be popped
             CloseTag latestEndTag = physicalEndTagsQueue.peek();
             if(latestEndTag != null) {
-                openTag.setSemanticEndOffset(latestEndTag.to());
+                openTag.setSemanticEndOffset(latestEndTag.from());
             } else if(startTag != null) {
                 //or to an open tag which implies this tag to be closed
                 openTag.setSemanticEndOffset(tag_lt_offset);
@@ -230,7 +231,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
             LOGGER.fine(String.format("+ %s %s; stack: %s", t, isVirtual(t) ? "[virtual]" : "", dumpStack())); //NOI18N
         }
         
-        CommonOpenTag openTag = (CommonOpenTag)t;
+        ModifiableOpenTag openTag = (ModifiableOpenTag)t;
 
         stack.push(openTag);
 
@@ -394,7 +395,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
             LOGGER.fine(String.format("close tag %s at %s", en.name, tag_lt_offset));//NOI18N
         }
 
-        ModifiableCloseTag closeTag = factory.createCloseTag(tag_lt_offset);
+        ModifiableCloseTag closeTag = factory.createCloseTag(tag_lt_offset, -1, (byte)en.name.length());
         currentCloseTag = closeTag;
         physicalEndTagsQueue.add(closeTag);
 

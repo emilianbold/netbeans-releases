@@ -82,8 +82,8 @@ public class Html5ParserTest extends NbTestCase {
         super(name);
     }
 
-    public static Test Xsuite() {
-        String testName = "testIsAttributeQuoted";
+    public static Test xsuite() {
+        String testName = "testScriptTagInBody";
 
         System.err.println("Only " + testName + " test is going to be run!!!!");
         System.err.println("******************************************************\n");
@@ -741,42 +741,52 @@ public class Html5ParserTest extends NbTestCase {
 
     }
 
-    //Bug 193268 - AssertionError: Unexpected node type ENDTAG
-    public void testScriptTagInBody() throws ParseException {
-        String scriptOpenTag = "<script type=\"text/javascript\" src=\"test.js\">";
-        //                   0123456789012 3456789012345678 901234 56789012 345678901234567890123456789
-        //                   0         1          2          3          4          5
-        String code = "<!doctype html>"
-                + "<html>"
-                + "<head>"
-                + "<title></title>"
-                + "</head>"
-                + "<body>"
-                + "<canvas>"
-                + "<a/>"
-                + "</canvas>"
-                + scriptOpenTag + "</script>"
-                + "</body>"
-                + "</html>";
-
-        ParseTreeBuilder.setLoggerLevel(Level.FINER);
-        HtmlParseResult result = parse(code);
-        Node root = result.root();
-
-        assertNotNull(root);
-//        NodeUtils.dumpTree(root);
-
-        OpenTag scriptOpen = ElementUtils.query(root, "html/body/script");
-        assertNotNull(scriptOpen);
-
-        assertEquals(76, scriptOpen.from());
-        assertEquals(76 + 45, scriptOpen.to());
-
-        CloseTag scriptEnd = scriptOpen.matchingCloseTag();
-        assertEquals(121, scriptEnd.from());
-        assertEquals(130, scriptEnd.to());
-
-    }
+//    //Bug 193268 - AssertionError: Unexpected node type ENDTAG
+//    public void testScriptTagInBody() throws ParseException {
+//        String scriptOpenTag = "<script type=\"text/javascript\" src=\"test.js\">";
+//        //                   0123456789012 3456789012345678 901234 56789012 345678901234567890123456789
+//        //                   0         1          2          3          4          5
+//        String code = "<!doctype html>"
+//                + "<html>"
+//                + "<head>"
+//                + "<title></title>"
+//                + "</head>"
+//                + "<body>"
+//                + "<canvas>"
+//                + "<a/>"
+//                + "</canvas>"
+//                + scriptOpenTag + "</script>"
+//                + "</body>"
+//                + "</html>";
+//
+////        ParseTreeBuilder.setLoggerLevel(Level.FINER);
+//        HtmlParseResult result = parse(code);
+//        Node root = result.root();
+//
+//        assertNotNull(root);
+//        ElementUtils.dumpTree(root);
+//
+//        OpenTag title = ElementUtils.query(root, "html/head/title");
+//        assertNotNull(title);
+//        assertNotNull(title.matchingCloseTag());
+//        
+//        OpenTag a = ElementUtils.query(root, "html/body/canvas/a");
+//        assertNotNull(a);
+//        assertTrue(a.isEmpty());
+//        
+//        OpenTag scriptOpen = ElementUtils.query(root, "html/body/script");
+//        assertNotNull(scriptOpen);
+//
+//        assertEquals(76, scriptOpen.from());
+//        assertEquals(76 + 45, scriptOpen.to());
+//
+//        CloseTag scriptEnd = scriptOpen.matchingCloseTag();
+//        assertNotNull(scriptEnd);
+//        
+//        assertEquals(121, scriptEnd.from());
+//        assertEquals(130, scriptEnd.to());
+//
+//    }
 
     //[Bug 195103] Refactoring changes a changed filename incorrectly in the html <script> tag
     public void testIsAttributeQuoted() throws ParseException {
@@ -840,7 +850,7 @@ public class Html5ParserTest extends NbTestCase {
         Node root = result.root();
 
         assertNotNull(root);
-        ElementUtils.dumpTree(root);
+//        ElementUtils.dumpTree(root);
 
         Node style = ElementUtils.query(root, "html/head/style");
         assertNotNull(style);
@@ -864,7 +874,7 @@ public class Html5ParserTest extends NbTestCase {
         root = result.root();
 
         assertNotNull(root);
-        ElementUtils.dumpTree(root);
+//        ElementUtils.dumpTree(root);
 
         style = ElementUtils.query(root, "html/head/style");
         assertNotNull(style);
@@ -885,7 +895,7 @@ public class Html5ParserTest extends NbTestCase {
         Node root = result.root();
 
         assertNotNull(root);
-        ElementUtils.dumpTree(root);
+//        ElementUtils.dumpTree(root);
 
         Collection<ProblemDescription> problems = result.getProblems();
         assertNotNull(problems);

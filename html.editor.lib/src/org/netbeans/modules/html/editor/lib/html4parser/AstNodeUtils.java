@@ -121,28 +121,28 @@ public class AstNodeUtils {
         return false;
     }
 
-    public static AstNode getTagNode(AstNode node, int astOffset) {
-        if (node.type() == ElementType.OPEN_TAG) {
-            if (astOffset >= node.from() && astOffset < node.endOffset()) {
-                //the offset falls directly to the tag
-                return node;
-            }
-
-            AstNode match = (AstNode)node.getMatchingTag();
-            if (match != null && match.type() == ElementType.CLOSE_TAG) {
-                //end tag is possibly the searched node
-                if (astOffset >= match.from() && astOffset < match.endOffset()) {
-                    return match;
-                }
-            }
-
-            //offset falls somewhere inside the logical range but outside of
-            //the open or end tag ranges.
-            return null;
-        }
-
-        return node;
-    }
+//    public static AstNode getTagNode(AstNode node, int astOffset) {
+//        if (node.type() == ElementType.OPEN_TAG) {
+//            if (astOffset >= node.from() && astOffset < node.endOffset()) {
+//                //the offset falls directly to the tag
+//                return node;
+//            }
+//
+//            AstNode match = (AstNode)node.getMatchingTag();
+//            if (match != null && match.type() == ElementType.CLOSE_TAG) {
+//                //end tag is possibly the searched node
+//                if (astOffset >= match.from() && astOffset < match.endOffset()) {
+//                    return match;
+//                }
+//            }
+//
+//            //offset falls somewhere inside the logical range but outside of
+//            //the open or end tag ranges.
+//            return null;
+//        }
+//
+//        return node;
+//    }
 
   
     public static Collection<AstNode> getPossibleEndTagElements(AstNode leaf) {
@@ -364,16 +364,16 @@ public class AstNodeUtils {
         return node.getDTDElement() != null ? node.getDTDElement().isEmpty() : false;
     }
 
-    /** finds closest physical preceeding node to the offset */
-    public static AstNode getClosestNodeBackward(AstNode context, int offset, ElementFilter filter) {
-        for (Element child : context.children(filter)) {
-            if (child.from() >= offset) {
-                 return context;
-            }
-            context = getClosestNodeBackward((AstNode)child, offset, filter);
-        }
-        return context;
-    }
+//    /** finds closest physical preceeding node to the offset */
+//    public static AstNode getClosestNodeBackward(AstNode context, int offset, ElementFilter filter) {
+//        for (Element child : context.children(filter)) {
+//            if (child.from() >= offset) {
+//                 return context;
+//            }
+//            context = getClosestNodeBackward((AstNode)child, offset, filter);
+//        }
+//        return context;
+//    }
 //
 //    /**
 //     * @return an Iterator of nodes preceeding the given node to the root.
