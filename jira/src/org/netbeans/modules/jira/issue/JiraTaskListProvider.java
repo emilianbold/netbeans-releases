@@ -845,7 +845,7 @@ public final class JiraTaskListProvider extends TaskListIssueProvider implements
                 try {
                     LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for: " + projectName);
                     Repository repository = KenaiUtil.getRepository(getUrl().toString(), projectName);
-                    repo = provider.jiraRepositories.get(repository.getId());
+                    repo = repository != null ? provider.jiraRepositories.get(repository.getId()) : null;
                 } catch (IOException ex) {
                     LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for " + projectName, ex);
                 }
