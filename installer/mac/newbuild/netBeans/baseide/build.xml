@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="appdir" value="${builddir}/app/${appname}.app"/>
     <property name="scriptsdir" value="${builddir}/scripts"/>
 
-    <target name="clean" depends="clean-servicetag">
+    <target name="clean">
         <delete dir="${builddir}"/>
     </target>
 
@@ -81,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>    
     
     
-    <target name="build-pkg" depends="init, build-app,build-servicetag">
+    <target name="build-pkg" depends="init, build-app">
         <echo file="${scriptsdir}/env.sh"><![CDATA[
 NETBEANS_INSTALL_DIR="${app.name}"
 NETBEANS_BUILDNUMBER="${buildnumber}"
