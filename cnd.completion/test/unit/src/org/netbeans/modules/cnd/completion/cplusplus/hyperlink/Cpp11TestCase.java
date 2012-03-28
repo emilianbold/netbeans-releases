@@ -91,4 +91,9 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug210194.cpp", 21, 88, "bug210194.cpp", 6, 3);
     }    
     
+    public void testBug210257() throws Exception {
+        // Bug 210257 - Ellipsis breaks hyperlink
+        performTest("bug210257.cpp", 9, 52, "bug210257.cpp", 6, 3);
+    }    
+    
 }
