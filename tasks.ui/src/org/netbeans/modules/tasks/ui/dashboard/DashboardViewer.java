@@ -385,13 +385,13 @@ public final class DashboardViewer {
             if (node instanceof AbstractCategoryNode) {
                 AbstractCategoryNode displNode = (AbstractCategoryNode) node;
                 if (categoryNode.compareTo(displNode) < 0) {
-                    model.addRoot(model.getAllNodes().indexOf(node), categoryNode);
+                    model.addRoot(model.getRootNodes().indexOf(node), categoryNode);
                     added = true;
                     break;
                 }
             } else {
                 // the end of category list, add
-                model.addRoot(model.getAllNodes().indexOf(node), categoryNode);
+                model.addRoot(model.getRootNodes().indexOf(node), categoryNode);
                 added = true;
                 break;
             }
@@ -503,13 +503,13 @@ public final class DashboardViewer {
             if (node instanceof AbstractRepositoryNode) {
                 AbstractRepositoryNode displNode = (AbstractRepositoryNode) node;
                 if (repositoryNode.compareTo(displNode) < 0) {
-                    model.addRoot(model.getAllNodes().indexOf(node), repositoryNode);
+                    model.addRoot(model.getRootNodes().indexOf(node), repositoryNode);
                     added = true;
                     break;
                 }
             } else {
                 // the end of category list, add
-                model.addRoot(model.getAllNodes().indexOf(node), repositoryNode);
+                model.addRoot(model.getRootNodes().indexOf(node), repositoryNode);
                 added = true;
                 break;
             }
