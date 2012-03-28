@@ -1482,6 +1482,8 @@ public class WizardDescriptor extends DialogDescriptor {
 
                     validationRuns = false;
                     err.log (Level.FINE, "validation failed", wve); // NOI18N
+                    if( FINISH_OPTION.equals( getValue() ) )
+                        setValue( getDefaultValue() );
                     updateState ();
                     // cannot continue, notify user
                     if (wizardPanel != null) {

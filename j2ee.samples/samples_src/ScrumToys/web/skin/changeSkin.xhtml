@@ -62,11 +62,8 @@ Other names may be trademarks of their respective owners.
                     <h:outputLabel value=""></h:outputLabel>
                     <ui:repeat value="#{skinValuesManager.names}" var="name">
                         <td>
-                        <scrum:postitLink color="#{name}" url="changeSkin"
-                            paramName="skin" paramValue="#{name}">
-                            <ui:param name="postitLabel" value=""></ui:param>
-                            <ui:param name="postitText" value="#{name}"></ui:param>
-                        </scrum:postitLink>
+                        <scrum:postitLink color="#{name}" paramName="skin" paramValue="#{name}"
+                                          postitLabel="" postitText="#{name}" url="changeSkin" />
                         </td>
                     </ui:repeat>
                 </h:panelGrid>

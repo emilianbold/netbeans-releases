@@ -165,7 +165,8 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
                 }
             }
         }
-        cachedValue.cacheQuery(fo, null);
+        // either do not cache failed result or implement listening about opened projects
+        if (false) cachedValue.cacheQuery(fo, null);
         return null;
     }
     
