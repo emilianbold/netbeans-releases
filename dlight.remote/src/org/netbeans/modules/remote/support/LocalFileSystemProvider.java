@@ -183,6 +183,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         return new File(absPath).getCanonicalPath();
     }
     
+    @Override
     public String getCanonicalPath(ExecutionEnvironment env, String absPath) throws IOException {
         RemoteLogger.assertTrueInConsole(env.isLocal(), getClass().getSimpleName() + ".getCanonicalPath is called for REMOTE env: " + env); //NOI18N
         return new File(absPath).getCanonicalPath();
@@ -280,20 +281,24 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         return absPath;
     }
 
+    @Override
     public FileObject fileToFileObject(File file) {
         file = FileUtil.normalizeFile(file); // caller can not do this
         return FileUtil.toFileObject(file);
     }
 
+    @Override
     public boolean isMine(File file) {
         return file.getClass() == java.io.File.class;
     }
 
+    @Override
     public void scheduleRefresh(FileObject fileObject) {
         final File file = FileUtil.toFile(fileObject);
         scheduleRefresh(file);
     }
 
+    @Override
     public void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
         RemoteLogger.assertTrue(env.isLocal());
         File[] files = new File[paths.size()];
@@ -306,6 +311,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     
     private void scheduleRefresh(final File... files) {
         lastRefreshTask = RP.post(new Runnable() {
+            @Override
             public void run() {
                 FileUtil.refreshFor(files);
             }
@@ -324,15 +330,18 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         FileUtil.removeRecursiveListener(listener, file);
     }
 
+    @Override
     public boolean canExecute(FileObject fileObject) {
         File file = FileUtil.toFile(fileObject);
         return (file == null) ?  false : file.canExecute();
     }
 
+    @Override
     public void addFileChangeListener(FileChangeListener listener, FileSystem fileSystem, String path) {
         addFileChangeListener(path, listener);
     }
 
+    @Override
     public void addFileChangeListener(FileChangeListener listener, ExecutionEnvironment env, String path) {
         addFileChangeListener(path, listener);
     }
@@ -343,10 +352,12 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         FileUtil.addFileChangeListener(listener, file);
     }
 
+    @Override
     public void addFileChangeListener(FileChangeListener listener) {
         FileUtil.addFileChangeListener(listener);
     }
 
+    @Override
     public void removeFileChangeListener(FileChangeListener listener) {
         FileUtil.removeFileChangeListener(listener);
     }
@@ -364,9 +375,11 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         return File.separatorChar;
     }
 
+    @Override
     public void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
     }
 
+    @Override
     public void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
     }
 }
