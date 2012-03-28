@@ -1373,7 +1373,9 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         private void addFolder(Set<FileObject> res, FileObject fo) {
             if (fo != null && fo.isFolder() && fo.isValid()) {
                 for (FileObject f : fo.getChildren()) {
-                    res.add(f);
+                    if (f.isData()) {
+                        res.add(f);
+                    }
                 }
             }
         }
