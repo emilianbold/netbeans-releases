@@ -72,8 +72,12 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         super(wrapper, fileSystem, execEnv, parent, remotePath, null);
     }
     
-    protected final void initListeners() {
-        getFileSystem().getFactory().addFileChangeListener(getDelegateNormalizedPath(), this);
+    protected final void initListeners(boolean add) {
+        if (add) {
+            getFileSystem().getFactory().addFileChangeListener(getDelegateNormalizedPath(), this);
+        } else {
+            getFileSystem().getFactory().remoteFileChangeListener(getDelegateNormalizedPath(), this);
+        }
     }
 
     public abstract RemoteFileObjectBase getDelegate();
