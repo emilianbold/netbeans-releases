@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,42 +34,20 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.maven.indexer.spi;
 
-package org.netbeans.modules.project.ui.actions;
-
-import javax.swing.Action;
-import org.netbeans.modules.project.ui.actions.TestSupport.TestProject;
-import org.openide.util.Lookup;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 
 /**
- *
- * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
+ * used internally by the repository indexing/searching engine(s)
+ * @author mkleint
  */
-public class SetMainPrjTest extends LookupSensitiveActionBase {
-    public SetMainPrjTest(String testName) {
-        super(testName);
-    }            
+public interface Redo<T> {
+    void run(RepositoryQueries.Result<T> result);
+}    
 
-    @Override
-    protected Action create(Lookup context) {
-        return new SetMainProject(context);
-    }
-
-    @Override
-    protected void enhanceProject(TestProject prj) {
-    }
-
-
-    // disable these tests as the menu item is completely different
-    @Override
-    public void testNoNeedToRefreshWhenNotVisibleMenu() {
-    }
-    @Override
-    public void testCloneNoNeedToRefreshWhenNotVisibleMenu() {
-    }
-}

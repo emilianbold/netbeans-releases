@@ -46,12 +46,15 @@
 package org.openide.text;
 
 
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 import org.netbeans.junit.NbTestCase;
 
@@ -68,6 +71,11 @@ import org.openide.windows.WindowManager;
  * @author  Jarda Tulach
  */
 public class InitializeOnBackgroundTest extends NbTestCase implements CloneableEditorSupport.Env {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(InitializeOnBackgroundTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

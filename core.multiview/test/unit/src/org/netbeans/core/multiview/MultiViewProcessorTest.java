@@ -43,6 +43,7 @@ package org.netbeans.core.multiview;
 
 import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
@@ -61,6 +62,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.core.api.multiview.MultiViewHandler;
@@ -98,6 +101,10 @@ import org.openide.windows.TopComponent;
  */
 public class MultiViewProcessorTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(MultiViewProcessorTest.class);
+    }
+
     public MultiViewProcessorTest(String n) {
         super(n);
     }
@@ -427,7 +434,6 @@ public class MultiViewProcessorTest extends NbTestCase {
 
     @MultiViewElement.Registration(
         displayName="org.netbeans.core.multiview.TestBundle#FIGARO",
-        iconBase="empty.png",
         mimeType="text/figaro",
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="figaro"
@@ -504,7 +510,6 @@ public class MultiViewProcessorTest extends NbTestCase {
     
     @MultiViewElement.Registration(
         displayName="Contextual",
-        iconBase="empty.png",
         mimeType="text/context",
         persistenceType=TopComponent.PERSISTENCE_ALWAYS,
         preferredID="context"
@@ -528,7 +533,6 @@ public class MultiViewProcessorTest extends NbTestCase {
 
     @MultiViewElement.Registration(
         displayName="Source",
-        iconBase="empty.png",
         mimeType="text/plaintest",
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="source"

@@ -47,10 +47,13 @@ package org.openide;
 import org.netbeans.junit.NbTestSuite;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.JLabel;
 import javax.swing.event.ChangeListener;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.*;
 import org.openide.util.HelpCtx;
@@ -63,7 +66,10 @@ import org.openide.util.HelpCtx;
  */
 public class WizardDescriptorOrderTest extends NbTestCase {
 
-    
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(WizardDescriptorOrderTest.class);
+    }
+
     public WizardDescriptorOrderTest (String name) {
         super(name);
     }
