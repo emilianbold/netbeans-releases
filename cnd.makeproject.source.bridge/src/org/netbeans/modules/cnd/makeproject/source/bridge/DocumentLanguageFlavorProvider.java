@@ -61,7 +61,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Vladimir Voskresensky
  */
 @ServiceProvider(path=CndSourcePropertiesProvider.REGISTRATION_PATH, service=CndSourcePropertiesProvider.class, position=1000)
-public final class MakeProjectLanguageFlavorProvider implements CndSourcePropertiesProvider {
+public final class DocumentLanguageFlavorProvider implements CndSourcePropertiesProvider {
 
     @Override
     public void addProperty(DataObject dob, StyledDocument doc) {
