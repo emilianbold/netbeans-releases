@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.groovy.editor.options;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.settings.SimpleValueNames;
