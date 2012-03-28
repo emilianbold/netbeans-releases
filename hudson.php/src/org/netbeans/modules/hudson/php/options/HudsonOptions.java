@@ -119,7 +119,7 @@ public final class HudsonOptions {
         if (config == null) {
             String configFile = getDefaultJobConfig();
             if (configFile != null) {
-                setJobConfig(config);
+                setJobConfig(configFile);
             }
         }
         return config;
