@@ -43,9 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
-import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
-import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
-import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -53,14 +50,15 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -76,27 +74,33 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.api.search.SearchRoot;
+import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -118,6 +122,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -137,10 +142,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
-import org.openidex.search.SearchInfo;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 /**
@@ -316,7 +320,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new NativeProjectSettingsImpl(this, this.kind.getPrimaryConfigurationDataElementNamespace(false), false),
                     new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
-                    new FolderSearchInfo(projectDescriptorProvider),
+                    new MakeProjectSearchInfo(projectDescriptorProvider),
                     kind,
                     new MakeProjectEncodingQueryImpl(this),
                     new RemoteProjectImpl(),
@@ -1337,11 +1341,11 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
     }
 
-    private static class FolderSearchInfo implements SearchInfo {
+    private static class MakeProjectSearchInfo extends SearchInfoDefinition {
 
         private ConfigurationDescriptorProvider projectDescriptorProvider;
 
-        FolderSearchInfo(ConfigurationDescriptorProvider projectDescriptorProvider) {
+        MakeProjectSearchInfo(ConfigurationDescriptorProvider projectDescriptorProvider) {
             this.projectDescriptorProvider = projectDescriptorProvider;
         }
 
@@ -1351,28 +1355,25 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
 
         @Override
-        public Iterator<DataObject> objectsToSearch() {
+        public List<SearchRoot> getSearchRoots() {
+            return Collections.<SearchRoot>emptyList();
+        }
+
+        @Override
+        public Iterator<FileObject> filesToSearch(SearchScopeOptions options, SearchListener listener, AtomicBoolean terminated) {
             MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             Folder rootFolder = projectDescriptor.getLogicalFolders();
-            Set<DataObject> res = rootFolder.getAllItemsAsDataObjectSet(false, "text/"); // NOI18N
+            Set<FileObject> res = rootFolder.getAllItemsAsFileObjectSet(false, "text/"); // NOI18N
             FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
             addFolder(res, baseDirFileObject.getFileObject("nbproject")); // NOI18N
             addFolder(res, baseDirFileObject.getFileObject("nbproject/private")); // NOI18N
             return res.iterator();
-
         }
 
-        private void addFolder(Set<DataObject> res, FileObject fo) {
+        private void addFolder(Set<FileObject> res, FileObject fo) {
             if (fo != null && fo.isFolder() && fo.isValid()) {
                 for (FileObject f : fo.getChildren()) {
-                    DataObject dataObject;
-                    try {
-                        dataObject = DataObject.find(f);
-                        if (dataObject != null) {
-                            res.add(dataObject);
-                        }
-                    } catch (DataObjectNotFoundException ex) {
-                    }
+                    res.add(f);
                 }
             }
         }
