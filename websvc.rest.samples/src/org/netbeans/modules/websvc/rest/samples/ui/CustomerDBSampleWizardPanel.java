@@ -45,6 +45,8 @@
 
 package org.netbeans.modules.websvc.rest.samples.ui;
 
+import org.openide.util.HelpCtx;
+
 /**
  * Panel just asking for basic info.
  */
@@ -62,5 +64,10 @@ public class CustomerDBSampleWizardPanel extends SampleWizardPanel {
             myComponent = new CustomerDBSamplePanelVisual(this);
         }
         return myComponent;
+    }
+
+    @Override
+    public HelpCtx getHelp() {
+        return null;
     }
 }
