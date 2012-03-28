@@ -1680,7 +1680,10 @@ abstract public class CsmCompletionQuery {
                     break;
 
                 case CsmCompletionExpression.GENERIC_TYPE: {
-                    CsmType typ = resolveType(item.getParameter(0));
+                    CsmType typ = null;
+                    if(first) {
+                        typ = resolveType(item.getParameter(0));
+                    }
                     if(typ == null) {
                         boolean oldFindType = findType;
                         findType = true;
