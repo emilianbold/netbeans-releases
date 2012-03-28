@@ -344,6 +344,7 @@ Microsystems, Inc. All Rights Reserved.
             <ant target="build-dmg">
                  <property name="dmg.name" value="${dmg.prefix.name}${ml.suffix}${bundle.type}-macosx"/>  
                  <property name="mpkg.name" value="${mpkg.name_nb}"/>
+                 <property name="background.name" value="bgimage.tif"/>
                  <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
             </ant>     
         </for-each>         
@@ -356,7 +357,7 @@ Microsystems, Inc. All Rights Reserved.
             <ant target="build-dmg">
                  <property name="dmg.name" value="${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx"/>
                  <property name="mpkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_jdk}"/>
-                 <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
+                 <property name="background.name" value="background-jdk.tif"/>
             </ant>     
         </for-each>
         <delete file="${basedir}/build/sizes.pro"/>
@@ -560,10 +561,10 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Building dmg for ${dmg.name}.dmg..."/>                    
         <property name="mpkg.file" value="${basedir}/dist_dmg/${mpkg.name}.mpkg"/>   
        
-        <copy file="${basedir}/dmg/Resources/bgimage.tif" 
+        <copy file="${basedir}/dmg/Resources/${background.name}" 
               tofile="${mpkg.file}/Contents/Resources/background.tif"/>  
         <copy file="${license.file}" 
-              tofile="${mpkg.file}/Contents/Resources/License.txt" />                         
+              tofile="${mpkg.file}/Contents/Resources/License.txt" failonerror="false"/>                         
                          
         <ant target="prepare-lproj-dirs"/>
         
