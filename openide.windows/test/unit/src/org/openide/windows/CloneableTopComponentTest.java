@@ -41,11 +41,18 @@
  */
 package org.openide.windows;
 
+import java.awt.GraphicsEnvironment;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.windows.CloneableTopComponent.Ref;
 
 public class CloneableTopComponentTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(CloneableTopComponentTest.class);
+    }
+
     public CloneableTopComponentTest(String n) {
         super(n);
     }

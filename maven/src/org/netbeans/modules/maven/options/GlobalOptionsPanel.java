@@ -68,6 +68,7 @@ public class GlobalOptionsPanel extends javax.swing.JPanel {
         }
         jList1.setModel(dlm);
         jList1.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 String val = (String) jList1.getSelectedValue();
                 if (val != null) {

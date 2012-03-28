@@ -45,8 +45,11 @@
 package org.openide.text;
 
 
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import javax.swing.JEditorPane;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.*;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
@@ -62,6 +65,11 @@ import org.openide.windows.CloneableTopComponent;
  * @author Jaroslav Tulach
  */
 public class CloneableEditorSupportPaneTest extends NbTestCase implements CloneableEditorSupport.Env {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(CloneableEditorSupportPaneTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

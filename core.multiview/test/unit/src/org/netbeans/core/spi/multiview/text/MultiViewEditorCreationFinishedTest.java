@@ -44,7 +44,10 @@
 
 package org.netbeans.core.spi.multiview.text;
 
+import java.awt.GraphicsEnvironment;
 import java.io.Serializable;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.text.CloneableEditorCreationFinishedTest;
@@ -58,6 +61,10 @@ import org.openide.windows.TopComponent;
 /** Ensuring compatible behavior between 
  */
 public class MultiViewEditorCreationFinishedTest extends CloneableEditorCreationFinishedTest {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(MultiViewEditorCreationFinishedTest.class);
+    }
 
     public MultiViewEditorCreationFinishedTest(String s) {
         super(s);
@@ -78,7 +85,6 @@ public class MultiViewEditorCreationFinishedTest extends CloneableEditorCreation
     
     @MultiViewElement.Registration(
             displayName="editor",
-            iconBase="none",
             mimeType="text/x-compat-test",
             persistenceType=TopComponent.PERSISTENCE_NEVER,
             preferredID="editor"

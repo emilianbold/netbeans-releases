@@ -44,6 +44,9 @@
 
 package org.netbeans.core.multiview;
 
+import java.awt.GraphicsEnvironment;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
@@ -59,6 +62,10 @@ import org.openide.windows.*;
  */
 public class MultiViewFactoryTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(MultiViewFactoryTest.class);
+    }
+
     public MultiViewFactoryTest(String name) {
         super (name);
     }

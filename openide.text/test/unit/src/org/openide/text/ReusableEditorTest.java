@@ -44,10 +44,13 @@
 
 package org.openide.text;
 
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JEditorPane;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -59,6 +62,11 @@ import org.openide.util.lookup.Lookups;
  * @author Petr Nejedly
  */
 public class ReusableEditorTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ReusableEditorTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

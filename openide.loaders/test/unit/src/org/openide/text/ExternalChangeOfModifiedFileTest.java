@@ -43,6 +43,7 @@
  */
 
 package org.openide.text;
+import java.awt.GraphicsEnvironment;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +51,8 @@ import java.util.Stack;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 
@@ -67,6 +70,11 @@ import org.openide.util.UserQuestionException;
  * @author Jaroslav Tulach
  */
 public class ExternalChangeOfModifiedFileTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ExternalChangeOfModifiedFileTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

@@ -45,8 +45,11 @@
 package org.openide.loaders;
 
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
@@ -65,6 +68,11 @@ import org.openide.windows.TopComponent;
  * @author  Jaroslav Tulach
  */
 public class DefaultDataObjectHasNodeInLookupTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(DefaultDataObjectHasNodeInLookupTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

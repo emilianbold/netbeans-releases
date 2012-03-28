@@ -80,6 +80,7 @@ import org.openide.LifecycleManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
+import org.openide.modules.Places;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
@@ -1980,7 +1981,7 @@ public final class ModuleManager extends Modules {
                 toWi = readCnbs(dis, new ArrayList<String>());
                 dis.close();
             } catch (IOException ex) {
-                Util.err.log(Level.INFO, "Cannot read all-modules.dat", ex);
+                Util.err.log(Level.INFO, "Cannot read " + Places.getCacheSubfile(CACHE), ex);
                 map = null;
                 osgi = null;
                 cnbs = null;

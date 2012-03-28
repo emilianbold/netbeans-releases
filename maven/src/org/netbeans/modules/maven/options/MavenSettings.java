@@ -69,6 +69,7 @@ import org.openide.util.NbPreferences;
  * @author mkleint
  */
 public final class MavenSettings  {
+    //same prop constant in Embedderfactory.java    
     private static final String PROP_DEFAULT_OPTIONS = "defaultOptions"; // NOI18N
     private static final String PROP_SOURCE_DOWNLOAD = "sourceDownload"; //NOI18N
     private static final String PROP_JAVADOC_DOWNLOAD = "javadocDownload"; //NOI18N
@@ -224,7 +225,12 @@ public final class MavenSettings  {
     }
 
     public void setDefaultOptions(String options) {
+        String old = getDefaultOptions();
         putProperty(PROP_DEFAULT_OPTIONS, options);
+        if (!old.equals(options)) {
+            //options could contain -Dkey=value, then the MavenEmbedder instances need to be reloaded
+            EmbedderFactory.resetCachedEmbedders();
+        }        
     }
     
 

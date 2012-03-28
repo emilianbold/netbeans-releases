@@ -54,12 +54,18 @@ import org.netbeans.api.visual.router.ConnectionWidgetCollisionsCollector;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * Test for #99054 - CollisionsCollector context
  * @author David Kaspar
  */
 public class ConnectionWidgetCollisionsCollectorTest extends VisualTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ConnectionWidgetCollisionsCollectorTest.class);
+    }
 
     public ConnectionWidgetCollisionsCollectorTest (String name) {
         super (name);

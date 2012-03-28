@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.search;
 
-import java.util.Collection;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -64,11 +63,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -177,22 +173,6 @@ public class BasicSearchProvider extends SearchProvider {
         }
 
         private String chooseSearchScope(String preferredscopeId) {
-            Collection<? extends Node> nodes =
-                    Utilities.actionsGlobalContext().lookupAll(Node.class);
-            boolean onlyFolders = true;
-            for (Node n : nodes) {
-                FileObject fo = n.getLookup().lookup(FileObject.class);
-                if (fo != null && fo.isFolder()) {
-                    continue;
-                } else if (n.getLookup().lookup(DataFolder.class) != null) {
-                    continue;
-                }
-                onlyFolders = false;
-                break;
-            }
-            if (onlyFolders && !nodes.isEmpty()) {
-                return "node selection";                                //NOI18N
-            }
             return preferredscopeId == null
                     ? FindDialogMemory.getDefault().getScopeTypeId()
                     : preferredscopeId;

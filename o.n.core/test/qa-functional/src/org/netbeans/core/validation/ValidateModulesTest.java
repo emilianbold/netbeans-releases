@@ -234,7 +234,7 @@ public class ValidateModulesTest extends NbTestCase {
             }
         }
         if (!foundJUnit) { // hack - pretend that this module is still in the platform cluster
-            manifests.add(new Manifest(new ByteArrayInputStream("OpenIDE-Module: org.netbeans.libs.junit4\nOpenIDE-Module-Specification-Version: 1.13\n\n".getBytes())));
+            manifests.add(new Manifest(new ByteArrayInputStream("OpenIDE-Module: org.netbeans.libs.junit4\nOpenIDE-Module-Specification-Version: 1.14\n\n".getBytes())));
         }
         return manifests;
     }
