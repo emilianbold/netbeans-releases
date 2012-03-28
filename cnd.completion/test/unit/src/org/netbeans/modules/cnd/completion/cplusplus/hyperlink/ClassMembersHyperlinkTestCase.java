@@ -1038,6 +1038,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 206460 - unresolved field of structure in case of typedef is based on forward decl and decl has the same name
         performTest("bug206460.cpp", 11, 17, "bug206460.cpp", 4, 5);
     }    
+
+    public void testBug210299() throws Exception {
+        // Bug 210299 - Unresolved static field
+        performTest("bug210299.cpp", 9, 39, "bug210299.cpp", 3, 3);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 
