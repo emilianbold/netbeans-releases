@@ -45,10 +45,13 @@
 package org.openide.text;
 
 
+import java.awt.GraphicsEnvironment;
 import java.beans.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.JEditorPane;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -58,6 +61,11 @@ import org.openide.windows.*;
 
 public class CloneableEditorTest extends NbTestCase
 implements CloneableEditorSupport.Env {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(CloneableEditorTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
