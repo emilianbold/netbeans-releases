@@ -557,10 +557,6 @@ public class BugzillaIssue {
         return getFieldValue(IssueField.SUMMARY, taskData);
     }
 
-    TaskRepository getTaskRepository() {
-        return repository.getTaskRepository();
-    }
-
     public BugzillaRepository getRepository() {
         return repository;
     }
