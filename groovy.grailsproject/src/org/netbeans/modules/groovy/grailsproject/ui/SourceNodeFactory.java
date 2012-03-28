@@ -138,11 +138,18 @@ public class SourceNodeFactory implements NodeFactory {
             if (treeViewBag.contains(groupName)) {
                 try {
                     DataFolder folder = DataFolder.findFolder(key.fileObject);
-                    return new TreeRootNode(folder, key.group, project);
+
+                    if ("lib".equals(groupName)) {
+                        return new TreeRootNode(folder, key.group, project, TreeRootNode.Type.LIBRARY);
+                    } else {
+                        return new TreeRootNode(folder, key.group, project, TreeRootNode.Type.FOLDER);
+                    }
                 } catch (IllegalArgumentException ex) {
                     return null; // It might happened sometimes - see issue 208426
                 }
             }
+
+            // The rest should have package view Look & Feel
             return PackageView.createPackageView(key.group);
         }
 

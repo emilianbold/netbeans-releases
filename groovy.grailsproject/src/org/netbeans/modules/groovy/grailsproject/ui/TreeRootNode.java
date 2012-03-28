@@ -85,16 +85,20 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public final class TreeRootNode extends FilterNode implements PropertyChangeListener {
 
-    private static Image PACKAGE_BADGE = ImageUtilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/packageBadge.gif"); // NOI18N
+    private static Image LIBRARIES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/librariesBadge.png"); // NOI18N
     private final SourceGroup group;
+    private final Type visualType;
 
 
-
-    public TreeRootNode(DataFolder folder, SourceGroup g, GrailsProject project) {
-        this(new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter(g))), g, project);
+    enum Type {
+        LIBRARY, FOLDER;
     }
 
-    private TreeRootNode(Node originalNode, SourceGroup group, GrailsProject project) {
+    TreeRootNode(DataFolder folder, SourceGroup g, GrailsProject project, Type type) {
+        this(new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter(g))), g, project, type);
+    }
+
+    private TreeRootNode(Node originalNode, SourceGroup group, GrailsProject project, Type type) {
         super(originalNode, new PackageFilterChildren(originalNode),
                 new ProxyLookup(
                 originalNode.getLookup(),
@@ -108,6 +112,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         String pathName = group.getName();
         setShortDescription(pathName.substring(project.getProjectDirectory().getPath().length() + 1));
         this.group = group;
+        this.visualType = type;
         group.addPropertyChangeListener(WeakListeners.propertyChange(this, group));
     }
 
@@ -121,7 +126,12 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         Icon icon = group.getIcon(opened);
         if (icon == null) {
             Image image = opened ? super.getOpenedIcon(type) : super.getIcon(type);
-            return ImageUtilities.mergeImages(image, PACKAGE_BADGE, 7, 7);
+
+            if (Type.LIBRARY.equals(visualType)) {
+                return ImageUtilities.mergeImages(image, LIBRARIES_BADGE, 7, 7);
+            } else {
+                return image;
+            }
         } else {
             return ImageUtilities.icon2Image(icon);
         }
