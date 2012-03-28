@@ -41,6 +41,10 @@
  */
 package org.openide.modules;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.openide.util.lookup.NamedServiceDefinition;
 
 /** An annotation to place on a {@link Runnable} with public default constructor
@@ -69,5 +73,7 @@ import org.openide.util.lookup.NamedServiceDefinition;
     path="Modules/Start", // NOI18N
     serviceType=Runnable.class
 )
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.TYPE)
 public @interface OnStart {
 }

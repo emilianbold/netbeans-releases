@@ -41,6 +41,10 @@
  */
 package org.openide.modules;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.concurrent.Callable;
 import org.openide.util.lookup.NamedServiceDefinition;
 
@@ -78,5 +82,7 @@ import org.openide.util.lookup.NamedServiceDefinition;
 @NamedServiceDefinition(
     path="Modules/Stop", serviceType={ Runnable.class, Callable.class }
 )
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.TYPE)
 public @interface OnStop {
 }

@@ -41,6 +41,10 @@
  */
 package org.openide.windows;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.openide.util.lookup.NamedServiceDefinition;
 
 /** Annotation to place on a {@link Runnable} with default constructor
@@ -64,6 +68,8 @@ import org.openide.util.lookup.NamedServiceDefinition;
     serviceType=Runnable.class,
     position="position" // NOI18N
 )
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.TYPE)
 public @interface OnShowing {
     /** Allows to specify order between the individual runnables
      * registered by different modules
