@@ -270,7 +270,7 @@ class ModuleData {
         dos.writeUTF(buildVersion);
         writeStrings(dos, provides);
         writeStrings(dos, friendNames);
-        dos.writeUTF(specVers.toString());
+        dos.writeUTF(specVers != null ? specVers.toString() : "0");
         Module.PackageExport.write(dos, publicPackages);
     }
 

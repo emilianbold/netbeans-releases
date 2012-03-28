@@ -58,8 +58,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -89,7 +87,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeListener;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
-import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
@@ -979,9 +976,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private static final Object LOCK = new Object();
 
     private class QueryPanel extends JPanel implements ExplorerManager.Provider,
-            Comparator<String>, PropertyChangeListener, ChangeListener, Observer {
+            Comparator<String>, PropertyChangeListener, ChangeListener {
         
-        private QueryRequest queryRequest;
 
         private BeanTreeView btv;
         private ExplorerManager manager;
@@ -1002,7 +998,6 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             manager.addPropertyChangeListener(this);
             AddDependencyPanel.this.resultsLabel.setLabelFor(btv);
             btv.getAccessibleContext().setAccessibleDescription(AddDependencyPanel.this.resultsLabel.getAccessibleContext().getAccessibleDescription());
-            queryRequest = null;
             resultsRootNode = new ResultsRootNode();
             manager.setRootContext(resultsRootNode);
         }
@@ -1024,15 +1019,25 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 find(curTypedText);
             }
         }
+        
+                private boolean cancel() {
+                    synchronized (LOCK) {
+                        if (lastQueryText != null && !lastQueryText.equals(inProgressText)) {
+                            return true; //we no longer care
+                        }
+                    }
+                    return false;
+                }
+        
 
         void find(String queryText) {
             synchronized (LOCK) {
                 if (inProgressText != null) {
                     lastQueryText = queryText;
                     // stop waiting for results of the previous search
-                    if (null != queryRequest) {
-                        queryRequest.deleteObserver(this);
-                    }
+                    //TODO we want to have the current task cancelled and new one started.
+                    //currently we wait for the first one to finish, which takes forever in some cases.
+                    
                     return;
                 }
                 inProgressText = queryText;
@@ -1073,38 +1078,52 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 }
             }
             
-            queryRequest = new QueryRequest(fields, RepositoryPreferences.getInstance().getRepositoryInfos(), this);
 
             Task t = RPofQueryPanel.post(new Runnable() {
-
+                
                 @Override
                 public void run() {
+                    if (cancel()) return;//we no longer care
                     //first try with classes search included,
                     try {
-                        RepositoryQueries.find(queryRequest);
+                        Result<NBVersionInfo> result = RepositoryQueries.findResult(fields, RepositoryPreferences.getInstance().getRepositoryInfos());
+                        if (cancel()) return;//we no longer care
+                        updateResults(result.getResults(), result.isPartial());
+                        if (result.isPartial()) {
+                            if (cancel()) return;//we no longer care
+                            result.waitForSkipped();
+                            if (cancel()) return;//we no longer care
+                            updateResults(result.getResults(), false);
+                        }
+                        
                     } catch (BooleanQuery.TooManyClauses exc) {
+                        if (cancel()) return;//we no longer care
                         // if failing, then exclude classes from search..
-                        if (queryRequest.countObservers()>0) {
-                            try {
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        AddDependencyPanel.this.nls.setInformationMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_ClassesExcluded")); //NOI18N
-                                    }
-                                });
-                                queryRequest.changeFields(fieldsNonClasses);
-                                RepositoryQueries.find(queryRequest);
-                            } catch (BooleanQuery.TooManyClauses exc2) {
-                                // if still failing, report to the user
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        AddDependencyPanel.this.searchField.setForeground(Color.RED);
-                                        AddDependencyPanel.this.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_TooGeneral")); //NOI18N
-                                        resultsRootNode.setOneChild(getTooGeneralNode());
-                                    }
-                                });
+                        try {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    AddDependencyPanel.this.nls.setInformationMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_ClassesExcluded")); //NOI18N
+                                }
+                            });
+                            Result<NBVersionInfo> result = RepositoryQueries.findResult(fieldsNonClasses, RepositoryPreferences.getInstance().getRepositoryInfos());
+                            if (cancel()) return;//we no longer care
+                            updateResults(result.getResults(), result.isPartial());
+                            if (result.isPartial()) {
+                                result.waitForSkipped();
+                                if (cancel()) return;//we no longer care
+                                updateResults(result.getResults(), false);
                             }
+                        } catch (BooleanQuery.TooManyClauses exc2) {
+                            // if still failing, report to the user
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    AddDependencyPanel.this.searchField.setForeground(Color.RED);
+                                    AddDependencyPanel.this.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_TooGeneral")); //NOI18N
+                                    resultsRootNode.setOneChild(getTooGeneralNode());
+                                }
+                            });
                         }
                     } catch (OutOfMemoryError oome) {
                         // running into OOME may still happen in Lucene despite the fact that
@@ -1152,79 +1171,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             return manager;
         }
 
-
-        private void updateResultNodes(List<String> keyList, Map<String, List<NBVersionInfo>> map) {
-
-            if (keyList.size() > 0) { // some results available
-                
-                Map<String, Node> currentNodes = new HashMap<String, Node>();
-                for (Node nd : resultsRootNode.getChildren().getNodes()) {
-                    currentNodes.put(nd.getName(), nd);
-                }
-                List<Node> newNodes = new ArrayList<Node>(keyList.size());
-
-                    // still searching?
-                if (null!=queryRequest && !queryRequest.isFinished())
-                    newNodes.add(getSearchingNode());
-                
-                for (String key : keyList) {
-                    Node nd;
-                    nd = currentNodes.get(key);
-                    if (null != nd) {
-                        ((MavenNodeFactory.ArtifactNode)((FilterNodeWithDefAction)nd).getOriginal()).setVersionInfos(map.get(key));
-                    } else {
-                        nd = createFilterWithDefaultAction(MavenNodeFactory.createArtifactNode(key, map.get(key)), false);
-                    }
-                    newNodes.add(nd);
-                }
-                
-                resultsRootNode.setNewChildren(newNodes);
-            } else if (null!=queryRequest && !queryRequest.isFinished()) { // still searching, no results yet
-                resultsRootNode.setOneChild(getSearchingNode());
-            } else { // finished searching with no results
-                resultsRootNode.setOneChild(getNoResultsNode());
-            }
-        }
-
-        /** Impl of comparator, sorts artifacts asfabetically with exception
-         * of items that contain current query string, which take precedence.
-         */
-        @Override
-        public int compare(String s1, String s2) {
-
-            int index1 = s1.indexOf(inProgressText);
-            int index2 = s2.indexOf(inProgressText);
-
-            if (index1 >= 0 || index2 >=0) {
-                if (index1 < 0) {
-                    return 1;
-                } else if (index2 < 0) {
-                    return -1;
-                }
-                return s1.compareTo(s2);
-            } else {
-                return s1.compareTo(s2);
-            }
-        }
-
-        /** PropertyChangeListener impl, stores maven coordinates of selected artifact */
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                Node[] selNodes = manager.getSelectedNodes();
-                changeSelection(selNodes.length == 1 ? selNodes[0].getLookup() : Lookup.EMPTY);
-            }
-        }
-
-        @Override
-        public void update(Observable o, Object arg) {
-
-            if (null == o || !(o instanceof QueryRequest)) {
-                return;
-            }
-
-            List<NBVersionInfo> infos = ((QueryRequest) o).getResults();
-
+        void updateResults(List<NBVersionInfo> infos, final boolean partial) {
             final Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
 
             if (infos != null) {
@@ -1273,10 +1220,75 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    updateResultNodes(keyList, map);
+                    updateResultNodes(keyList, map, partial);
                 }
             });
         }
+
+
+        private void updateResultNodes(List<String> keyList, Map<String, List<NBVersionInfo>> map, boolean partial) {
+
+            if (keyList.size() > 0) { // some results available
+                
+                Map<String, Node> currentNodes = new HashMap<String, Node>();
+                for (Node nd : resultsRootNode.getChildren().getNodes()) {
+                    currentNodes.put(nd.getName(), nd);
+                }
+                List<Node> newNodes = new ArrayList<Node>(keyList.size());
+
+                    // still searching?
+                if (partial)
+                    newNodes.add(getSearchingNode());
+                
+                for (String key : keyList) {
+                    Node nd;
+                    nd = currentNodes.get(key);
+                    if (null != nd) {
+                        ((MavenNodeFactory.ArtifactNode)((FilterNodeWithDefAction)nd).getOriginal()).setVersionInfos(map.get(key));
+                    } else {
+                        nd = createFilterWithDefaultAction(MavenNodeFactory.createArtifactNode(key, map.get(key)), false);
+                    }
+                    newNodes.add(nd);
+                }
+                
+                resultsRootNode.setNewChildren(newNodes);
+            } else if (partial) { // still searching, no results yet
+                resultsRootNode.setOneChild(getSearchingNode());
+            } else { // finished searching with no results
+                resultsRootNode.setOneChild(getNoResultsNode());
+            }
+        }
+
+        /** Impl of comparator, sorts artifacts asfabetically with exception
+         * of items that contain current query string, which take precedence.
+         */
+        @Override
+        public int compare(String s1, String s2) {
+
+            int index1 = s1.indexOf(inProgressText);
+            int index2 = s2.indexOf(inProgressText);
+
+            if (index1 >= 0 || index2 >=0) {
+                if (index1 < 0) {
+                    return 1;
+                } else if (index2 < 0) {
+                    return -1;
+                }
+                return s1.compareTo(s2);
+            } else {
+                return s1.compareTo(s2);
+            }
+        }
+
+        /** PropertyChangeListener impl, stores maven coordinates of selected artifact */
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                Node[] selNodes = manager.getSelectedNodes();
+                changeSelection(selNodes.length == 1 ? selNodes[0].getLookup() : Lookup.EMPTY);
+            }
+        }
+
         private String key(NBVersionInfo nbvi) {
             return nbvi.getGroupId() + ':' + nbvi.getArtifactId() + ':' + nbvi.getVersion();
         }

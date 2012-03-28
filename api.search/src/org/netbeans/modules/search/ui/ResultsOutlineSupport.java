@@ -105,6 +105,7 @@ public class ResultsOutlineSupport {
     private Node invisibleRoot;
     private List<TableColumn> allColumns = new ArrayList<TableColumn>(5);
     private ETableColumnModel columnModel;
+    private List<MatchingObjectNode> matchingObjectNodes;
 
     public ResultsOutlineSupport(boolean replacing, boolean details,
             ResultModel resultModel, List<FileObject> rootFiles,
@@ -117,6 +118,7 @@ public class ResultsOutlineSupport {
         this.resultsNode = new ResultsNode();
         this.infoNode = infoNode;
         this.invisibleRoot = new RootNode();
+        this.matchingObjectNodes = new LinkedList<MatchingObjectNode>();
         createOutlineView();
     }
 
@@ -151,8 +153,11 @@ public class ResultsOutlineSupport {
         outlineView.expandNode(resultsNode);
     }
 
-    private void onDetach() {
+    private synchronized void onDetach() {
         resultModel.close();
+        for (MatchingObjectNode mo : matchingObjectNodes) {
+            mo.clean();
+        }
         saveColumnState();
     }
 
@@ -423,7 +428,10 @@ public class ResultsOutlineSupport {
         } else {
             children = key.getDetailsChildren(replacing);
         }
-        return new MatchingObjectNode(delegate, children, key, replacing);
+        MatchingObjectNode mon =
+                new MatchingObjectNode(delegate, children, key, replacing);
+        matchingObjectNodes.add(mon);
+        return mon;
     }
 
     public void addMatchingObject(MatchingObject mo) {
