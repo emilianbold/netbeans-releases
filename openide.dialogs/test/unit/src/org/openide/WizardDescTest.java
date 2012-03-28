@@ -44,13 +44,12 @@
 package org.openide;
 
 
-import org.netbeans.junit.*;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.JLabel;
@@ -64,7 +63,10 @@ import org.openide.util.HelpCtx;
  */
 public class WizardDescTest extends NbTestCase {
 
-    
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(WizardDescTest.class);
+    }
+
     public WizardDescTest (String name) {
         super(name);
     }
