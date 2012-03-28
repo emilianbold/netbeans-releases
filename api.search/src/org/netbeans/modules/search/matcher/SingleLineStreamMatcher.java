@@ -84,7 +84,8 @@ public class SingleLineStreamMatcher extends AbstractMatcher {
     public Def checkMeasuredInternal(FileObject file, SearchListener listener) {
 
         Charset charset = FileEncodingQuery.getEncoding(file);
-        CharsetDecoder decoder = charset.newDecoder();
+        CharsetDecoder decoder = prepareDecoder(charset);
+        charset.newDecoder();
         try {
             listener.fileContentMatchingStarted(file.getPath());
             List<TextDetail> textDetails = getTextDetailsSL(file, decoder,

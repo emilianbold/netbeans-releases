@@ -217,7 +217,7 @@ public class MultiLineMappedMatcherBig extends AbstractMatcher {
         public LongCharSequence(File file, Charset charset)
                 throws FileNotFoundException {
 
-            decoder = charset.newDecoder();
+            decoder = prepareDecoder(charset);
             fileInputStream = new FileInputStream(file);
             fileChannel = fileInputStream.getChannel();
             fileSize = file.length();

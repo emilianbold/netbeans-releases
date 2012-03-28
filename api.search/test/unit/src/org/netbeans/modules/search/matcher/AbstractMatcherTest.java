@@ -42,81 +42,92 @@
 package org.netbeans.modules.search.matcher;
 
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CodingErrorAction;
+import org.netbeans.api.search.SearchPattern;
 import org.netbeans.api.search.provider.SearchListener;
-import org.netbeans.modules.search.MatchingObject.Def;
+import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Base for all matchers used by the basic search provider.
  *
  * @author jhavlin
  */
-public abstract class AbstractMatcher  {
+public class AbstractMatcherTest extends NbTestCase {
 
-    private long totalTime = 0;
-    private int matchingFiles = 0;
-    private int matchingItems = 0;
-    private boolean strict = true;
+    private SearchPattern searchPattern;
 
-    public AbstractMatcher() {
-    }
-    
-    public final Def check(FileObject file, SearchListener listener) {
-        long start = System.currentTimeMillis();
-        Def def = checkMeasuredInternal(file, listener);
-        long end = System.currentTimeMillis();
-        if (def != null) {
-            matchingFiles++;
-            if (def.getTextDetails() != null
-                    && !def.getTextDetails().isEmpty()) {
-                matchingItems++;
-            }
-        }
-        totalTime += end - start;
-        return def;
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        searchPattern = SearchPattern.create("a", false, false, false);
     }
 
-    protected abstract Def checkMeasuredInternal(FileObject file,
-            SearchListener listener);
-
-    public long getTotalTime() {
-        return totalTime;
+    @Override
+    protected void tearDown() throws Exception {
+        searchPattern = null;
+        super.tearDown();
     }
 
-    public int getMatchingFiles() {
-        return matchingFiles;
-    }
-
-    public int getMatchingItems() {
-        return matchingItems;
-    }
-
-    public abstract void terminate();
-
-    public boolean isStrict() {
-        return strict;
+    public AbstractMatcherTest(String name) {
+        super(name);
     }
 
     /**
-     * @param strict True if an error should be raised for decoding errors
-     * (unmappable character etc.), false if such error should be ignored.
-     * Strict mode should be used when replacing.
+     * Check that an exception is thrown if a decoding error occurs.
      */
-    public void setStrict(boolean strict) {
-        this.strict = strict;
+    public void testStrictModeOn() {
+        testStrinctMode(true, true);
     }
 
-    public CharsetDecoder prepareDecoder(Charset charset) {
-        CharsetDecoder decoder = charset.newDecoder();
-        if (strict) {
-            decoder.onMalformedInput(CodingErrorAction.REPORT);
-            decoder.onUnmappableCharacter(CodingErrorAction.REPORT);
-        } else {
-            decoder.onMalformedInput(CodingErrorAction.IGNORE);
-            decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+    /**
+     * Check that no expception is thrown if a decoding error occurs.
+     */
+    public void testStrictModeOff() {
+        testStrinctMode(false, false);
+    }
+
+    private void testStrinctMode(boolean strict, boolean expectException) {
+        MockServices.setServices(Utf8FileEncodingQueryImpl.class);
+        FileObject dir = FileUtil.toFileObject(getDataDir());
+        assertNotNull(dir);
+        FileObject file = dir.getFileObject("textFiles/latin2file.txt");
+        AbstractMatcher am = new DefaultMatcher(searchPattern);
+        am.setStrict(strict);
+        assertTrue(file.isValid());
+        ExceptionListener el = new ExceptionListener();
+        am.check(file, el);
+        assertEquals(expectException, el.exception);
+    }
+
+    /**
+     * Listener storing information about decoding problems.
+     */
+    private class ExceptionListener extends SearchListener {
+
+        private boolean exception = false;
+
+        @Override
+        public void fileContentMatchingError(String fileName,
+                Throwable throwable) {
+            exception = true;
         }
-        return decoder;
+    }
+
+    /**
+     * Set incorrect encoding for ISO-8859-2 files.
+     */
+    public static class Utf8FileEncodingQueryImpl
+            extends FileEncodingQueryImplementation {
+
+        @Override
+        public Charset getEncoding(FileObject file) {
+            if (file.getName().equals("latin2file")) {
+                return Charset.forName("UTF-8");
+            } else {
+                return null;
+            }
+        }
     }
 }
