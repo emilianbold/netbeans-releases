@@ -50,6 +50,7 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.openide.filesystems.FileObject;
@@ -68,6 +69,18 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         // check if it should have C++11 flavor
         Language<?> language = (Language<?>) doc.getProperty(Language.class);
         if (language != CppTokenId.languageCpp()) {
+            return;
+        }
+        if (true) { // workaround till not fixed IZ#210309
+            NativeFileItemSet nfis = dob.getLookup().lookup(NativeFileItemSet.class);
+            for (NativeFileItem nativeFileItem : nfis.getItems()) {
+                if (nativeFileItem.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11) {
+                    InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
+                    Filter<?> filter = CndLexerUtilities.getGccCpp11Filter();
+                    lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
+                    return;
+                }
+            }
             return;
         }
         FileObject primaryFile = dob.getPrimaryFile();
