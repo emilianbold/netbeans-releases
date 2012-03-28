@@ -70,6 +70,9 @@ public class ValidPrimaryTableName extends JPAClassRule {
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
         String tableName = JPAHelper.getPrimaryTableName((Entity)ctx.getModelElement());
+        if(tableName == null){
+            return null;
+        }
         String entityName = ((Entity) ctx.getModelElement()).getName();
         if (tableName.length() == 0){
             return new ErrorDescription[]{createProblem(subject, ctx,
