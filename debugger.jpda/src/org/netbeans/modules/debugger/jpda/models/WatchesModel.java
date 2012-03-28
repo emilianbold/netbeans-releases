@@ -44,14 +44,12 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
-import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.util.*;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
@@ -72,9 +70,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorExpression;
 
-import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
@@ -183,7 +179,7 @@ public class WatchesModel implements TreeModel {
         if (node == ROOT) return false;
         if (node instanceof JPDAWatchEvaluating) {
             JPDAWatchEvaluating jwe = (JPDAWatchEvaluating) node;
-            if (!isWatchEnabled(jwe.getWatch())) {
+            if (!jwe.getWatch().isEnabled()) {
                 return true;
             }
             if (!jwe.isCurrent()) {
@@ -291,7 +287,7 @@ public class WatchesModel implements TreeModel {
             this.model = model;
             this.w = w;
             this.debugger = debugger;
-            if (isWatchEnabled(w)) {
+            if (w.isEnabled()) {
                 parseExpression(w.getExpression());
             }
             if (cloneNumber == 0) {
@@ -341,7 +337,7 @@ public class WatchesModel implements TreeModel {
         
         public void expressionChanged() {
             setEvaluated(null);
-            if (isWatchEnabled(w)) {
+            if (w.isEnabled()) {
                 parseExpression(w.getExpression());
             }
         }
@@ -364,7 +360,7 @@ public class WatchesModel implements TreeModel {
 
         @Override
         public String getToStringValue() throws InvalidExpressionException {
-            if (!isWatchEnabled(w)) {
+            if (!w.isEnabled()) {
                 return NbBundle.getMessage(WatchesModel.class, "CTL_WatchDisabled");
             }
             JPDAWatch evaluatedWatch;
@@ -407,7 +403,7 @@ public class WatchesModel implements TreeModel {
         }
         
         private String getValue(JPDAWatch[] watchRef) {
-            if (!isWatchEnabled(w)) {
+            if (!w.isEnabled()) {
                 return NbBundle.getMessage(WatchesModel.class, "CTL_WatchDisabled");
             }
             synchronized (evaluating) {
@@ -582,7 +578,7 @@ public class WatchesModel implements TreeModel {
             // We already have watchAdded & watchRemoved. Ignore PROP_WATCHES:
             // We care only about the current call stack frame change and watch expression change here...
             if (!(JPDADebugger.PROP_STATE.equals(propName) || Watch.PROP_EXPRESSION.equals(propName) ||
-                    "enabled".equals(propName) || JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propName))) return;
+                  Watch.PROP_ENABLED.equals(propName) || JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propName))) return;
             final WatchesModel m = getModel ();
             if (m == null) return;
             if (JPDADebugger.PROP_STATE.equals(propName) &&
@@ -699,24 +695,4 @@ public class WatchesModel implements TreeModel {
         }
     }
     
-    public static void setWatchEnabled(Watch watch, boolean enabled) {
-        try {
-            Method setEnabledMethod = watch.getClass().getDeclaredMethod("setEnabled", Boolean.TYPE);
-            setEnabledMethod.setAccessible(true);
-            setEnabledMethod.invoke(watch, enabled);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
-    public static boolean isWatchEnabled(Watch watch) {
-        try {
-            Method isEnabledMethod = watch.getClass().getDeclaredMethod("isEnabled");
-            isEnabledMethod.setAccessible(true);
-            return (Boolean) isEnabledMethod.invoke(watch);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            return true;
-        }
-    }
 }
