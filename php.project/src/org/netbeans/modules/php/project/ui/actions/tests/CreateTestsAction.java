@@ -71,11 +71,8 @@ import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -310,16 +307,7 @@ public final class CreateTestsAction extends NodeAction {
         for (File file : files) {
             assert file.isFile() : "File must be given to open: " + file;
             toRefresh.add(file.getParentFile());
-            try {
-                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                assert fo != null : "File object not found for " + file;
-                assert fo.isValid() : "File object not valid for " + file;
-                DataObject dobj = DataObject.find(fo);
-                EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                ec.open();
-            } catch (DataObjectNotFoundException ex) {
-                LOGGER.log(Level.SEVERE, null, ex);
-            }
+            PhpProjectUtils.openFile(file);
         }
 
         if (!toRefresh.isEmpty()) {
