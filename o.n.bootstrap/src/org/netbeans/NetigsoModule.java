@@ -56,6 +56,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /** Special module for representing OSGi bundles 
  * @author Jaroslav Tulach
@@ -71,6 +72,7 @@ final class NetigsoModule extends Module {
     public NetigsoModule(Manifest mani, File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         super(mgr, ev, history, reloadable, autoload, eager);
         this.jar = jar;
+        Parameters.notNull("manifest", mani);
         this.manifest = mani;
     }
 

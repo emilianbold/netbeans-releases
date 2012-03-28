@@ -44,6 +44,7 @@ package org.netbeans;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 /**
@@ -67,7 +68,14 @@ public class ModuleFactory {
     throws IOException {
         final Boolean osgiStatus = mgr.isOSGi(jar);
         if (Boolean.TRUE.equals(osgiStatus)) {
-            return new NetigsoModule(null, jar, mgr, ev, history, reloadable, autoload, eager);
+            JarFile jf = new JarFile(jar);
+            Manifest mani;
+            try {
+                mani = jf.getManifest();
+            } finally {
+                jf.close();
+            }
+            return new NetigsoModule(mani, jar, mgr, ev, history, reloadable, autoload, eager);
         }
         Module m;
         try {
