@@ -54,6 +54,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Table;
 
 /**
  * Utility methods for discovering various facts
@@ -99,7 +100,8 @@ public class JPAHelper {
      * @return name of the primary table that will be mapped to given entity class
      */
     public static String getPrimaryTableName(Entity entity){
-        return entity.getTable().getName();
+        Table table = entity.getTable();
+        return table!=null ? table.getName(): null;
     }
     
     public static AnnotationMirror getFirstAnnotationFromGivenSet(Element element,

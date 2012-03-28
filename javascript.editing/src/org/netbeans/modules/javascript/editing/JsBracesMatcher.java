@@ -42,11 +42,11 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.*;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
@@ -68,6 +68,7 @@ public final class JsBracesMatcher implements BracesMatcher {
         this.context = context;
     }
 
+    @Override
     public int [] findOrigin() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
@@ -119,6 +120,7 @@ public final class JsBracesMatcher implements BracesMatcher {
         }
     }
     
+    @Override
     public int [] findMatches() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
@@ -144,34 +146,34 @@ public final class JsBracesMatcher implements BracesMatcher {
                 
                 OffsetRange r;
                 if (id == JsTokenId.STRING_BEGIN) {
-                    r = LexUtilities.findFwd(doc, ts, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END);
+                    r = findPair(ts.languagePath(), ts.offset(), false, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END);
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == JsTokenId.STRING_END) {
-                    r = LexUtilities.findBwd(doc, ts, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END);
+                    r = findPair(ts.languagePath(), ts.offset(), true, JsTokenId.STRING_END, JsTokenId.STRING_BEGIN);
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == JsTokenId.REGEXP_BEGIN) {
-                    r = LexUtilities.findFwd(doc, ts, JsTokenId.REGEXP_BEGIN, JsTokenId.REGEXP_END);
+                    r = findPair(ts.languagePath(), ts.offset(), false, JsTokenId.REGEXP_BEGIN, JsTokenId.REGEXP_END);
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == JsTokenId.REGEXP_END) {
-                    r = LexUtilities.findBwd(doc, ts, JsTokenId.REGEXP_BEGIN, JsTokenId.REGEXP_END);
+                    r = findPair(ts.languagePath(), ts.offset(), true, JsTokenId.REGEXP_END, JsTokenId.REGEXP_BEGIN);
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == JsTokenId.LPAREN) {
-                    r = LexUtilities.findFwd(doc, ts, JsTokenId.LPAREN, JsTokenId.RPAREN);
+                    r = findPair(ts.languagePath(), ts.offset(), false, JsTokenId.LPAREN, JsTokenId.RPAREN);
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == JsTokenId.RPAREN) {
-                    r = LexUtilities.findBwd(doc, ts, JsTokenId.LPAREN, JsTokenId.RPAREN);
+                    r = findPair(ts.languagePath(), ts.offset(), true, JsTokenId.RPAREN, JsTokenId.LPAREN);
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == JsTokenId.LBRACE) {
-                    r = LexUtilities.findFwd(doc, ts, JsTokenId.LBRACE, JsTokenId.RBRACE);
+                    r = findPair(ts.languagePath(), ts.offset(), false, JsTokenId.LBRACE, JsTokenId.RBRACE);
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == JsTokenId.RBRACE) {
-                    r = LexUtilities.findBwd(doc, ts, JsTokenId.LBRACE, JsTokenId.RBRACE);
+                    r = findPair(ts.languagePath(), ts.offset(), true, JsTokenId.RBRACE, JsTokenId.LBRACE);
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == JsTokenId.LBRACKET) {
-                    r = LexUtilities.findFwd(doc, ts, JsTokenId.LBRACKET, JsTokenId.RBRACKET);
+                    r = findPair(ts.languagePath(), ts.offset(), false, JsTokenId.LBRACKET, JsTokenId.RBRACKET);
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == JsTokenId.RBRACKET) {
-                    r = LexUtilities.findBwd(doc, ts, JsTokenId.LBRACKET, JsTokenId.RBRACKET);
+                    r = findPair(ts.languagePath(), ts.offset(), true, JsTokenId.RBRACKET, JsTokenId.LBRACKET);
                     return new int [] {r.getStart(), r.getEnd() };
                 }
             }
@@ -181,4 +183,104 @@ public final class JsBracesMatcher implements BracesMatcher {
         }
     }
     
+    private OffsetRange findPair(LanguagePath lPath, int originOffset, boolean backward, TokenId originalId, TokenId pairId) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
+        List<TokenSequence<?>> list;
+        if (backward) {
+            list = th.tokenSequenceList(lPath, 0, originOffset);
+        } else {
+            list = th.tokenSequenceList(lPath, originOffset + 1, context.getDocument().getLength());
+        }
+        
+        int counter = 0;
+        TokenId tokenID;
+        
+        for (TokenSequenceIterator tsi = new TokenSequenceIterator(list, backward); tsi.hasMore();) {
+            TokenSequence<?> sq = tsi.getSequence();
+            tokenID = sq.token().id();
+            if (originalId == tokenID) {
+                counter++;
+            } else if (pairId == tokenID) {
+                if (counter == 0) {
+                    return new OffsetRange(sq.offset(), sq.offset() + sq.token().length());
+                } else {
+                    counter--;
+                }
+            }
+        }
+        return OffsetRange.NONE;
+    }
+
+    private static final class TokenSequenceIterator {
+
+        private final List<TokenSequence<?>> list;
+        private final boolean backward;
+
+        private int index;
+
+        public TokenSequenceIterator(List<TokenSequence<?>> list, boolean backward) {
+            this.list = list;
+            this.backward = backward;
+            this.index = -1;
+        }
+
+        public boolean hasMore() {
+            return backward ? hasPrevious() : hasNext();
+        }
+
+        public TokenSequence<?> getSequence() {
+            assert index >= 0 && index < list.size() : "No sequence available, call hasMore() first."; //NOI18N
+            return list.get(index);
+        }
+
+        private boolean hasPrevious() {
+            boolean anotherSeq = false;
+
+            if (index == -1) {
+                index = list.size() - 1;
+                anotherSeq = true;
+            }
+
+            for( ; index >= 0; index--) {
+                TokenSequence<?> seq = list.get(index);
+                if (anotherSeq) {
+                    seq.moveEnd();
+                }
+
+                if (seq.movePrevious()) {
+                    return true;
+                }
+
+                anotherSeq = true;
+            }
+
+            return false;
+        }
+
+        private boolean hasNext() {
+            boolean anotherSeq = false;
+
+            if (index == -1) {
+                index = 0;
+                anotherSeq = true;
+            }
+
+            for( ; index < list.size(); index++) {
+                TokenSequence<?> seq = list.get(index);
+                if (anotherSeq) {
+                    seq.moveStart();
+                }
+
+                if (seq.moveNext()) {
+                    return true;
+                }
+
+                anotherSeq = true;
+            }
+
+            return false;
+        }
+    }
+
 }
+

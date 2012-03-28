@@ -158,7 +158,7 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
 
     @Override
     public boolean isDescriptorRequired() {
-        return true;
+        return serverVersion == null || !serverVersion.isAboveOrEqual(NO_DESCRIPTOR_REQUIRED);
     }
     
     /**
