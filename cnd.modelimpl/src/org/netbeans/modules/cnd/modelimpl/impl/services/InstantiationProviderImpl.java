@@ -418,8 +418,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 Collection<CsmOffsetableDeclaration> specs = ((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString());
                 for (CsmOffsetableDeclaration decl : specs) {
                     if (decl instanceof ClassImplSpecialization) {
-                        specialization = (CsmClassifier) decl;
-                        break;
+                        ClassImplSpecialization spec = (ClassImplSpecialization) decl;
+                        if(spec.getSpecializationParameters().size() >= params.size()) {
+                            specialization = spec;
+                            break;
+                        }
                     }
                 }
             }

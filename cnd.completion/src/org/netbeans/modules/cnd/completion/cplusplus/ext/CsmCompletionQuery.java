@@ -1447,7 +1447,7 @@ abstract public class CsmCompletionQuery {
                                         if (first && !findType) {
                                             lastType = findExactVarType(var, varPos);
                                         }
-                                        if (lastType == null) {
+                                        if (lastType == null || lastType.getClassifierText().toString().equals("auto")) { // NOI18N
                                             // try to find with resolver
                                             CompletionResolver.Result res = null;
                                             compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);

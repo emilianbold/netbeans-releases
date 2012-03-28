@@ -214,7 +214,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     protected final void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         // TODO: this dummy implementation is far from optimal in terms of performance. It needs to be improved.
         if (getParent() != null) {
-            getParent().refreshImpl(recursive, antiLoop, expected);
+            getParent().refreshImpl(false, antiLoop, expected);
         }
     }    
     
