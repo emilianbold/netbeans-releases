@@ -44,13 +44,21 @@
 
 package org.openide.explorer.propertysheet;
 
+import java.awt.GraphicsEnvironment;
 import javax.swing.JWindow;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 public class MorePropertySheetTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(MorePropertySheetTest.class);
+    }
+
     public MorePropertySheetTest(String name) {
         super(name);
     }

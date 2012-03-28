@@ -48,12 +48,15 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JScrollPane;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 
 
@@ -75,7 +78,10 @@ import org.openide.windows.TopComponent;
  */
 public class DefaultActionTest extends NbTestCase {
     
-    
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(DefaultActionTest.class);
+    }
+
     public DefaultActionTest (String name) {
         super(name);
     }

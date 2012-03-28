@@ -46,6 +46,7 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
 import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -59,6 +60,8 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
@@ -72,6 +75,11 @@ import org.openide.util.NbPreferences;
  * @author Jaroslav Tulach
  */
 public class InstallerInitTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(InstallerInitTest.class);
+    }
+
     private Installer installer;
     
     static {

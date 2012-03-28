@@ -44,6 +44,9 @@
 
 package org.netbeans.core.windows.services;
 
+import java.awt.GraphicsEnvironment;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 
@@ -52,6 +55,11 @@ import org.openide.NotifyDescriptor;
  * @author Jaroslav Tulach
  */
 public class NotifyLaterWithDialogDescriptorTest extends NotifyLaterTest {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NotifyLaterWithDialogDescriptorTest.class);
+    }
+
     public NotifyLaterWithDialogDescriptorTest (String testName) {
         super (testName);
     }

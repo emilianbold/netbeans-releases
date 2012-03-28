@@ -46,26 +46,26 @@ package org.openide.explorer.propertysheet;
 
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.GraphicsEnvironment;
 import java.beans.*;
-import java.lang.reflect.*;
 import javax.swing.*;
 
-import org.openide.*;
-import org.openide.explorer.propertysheet.*;
 
 import junit.framework.*;
-import junit.textui.TestRunner;
 
 import org.netbeans.junit.*;
 import java.beans.PropertyDescriptor;
-import java.awt.IllegalComponentStateException;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import javax.swing.JPanel;
 
 /** A test of a property panel.
  */
 public final class PropertyPanelTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(PropertyPanelTest.class);
+    }
+
     static {
         //Added with property panel rewrite - the property model given the
         //variable name "replace" is a String property, and the default

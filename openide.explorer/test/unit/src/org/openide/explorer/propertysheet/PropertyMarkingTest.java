@@ -67,6 +67,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.openide.explorer.propertysheet.ExtTestCase.WaitWindow;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -79,6 +81,11 @@ import org.openide.nodes.Sheet;
  * successfully changes the property value.
  */
 public class PropertyMarkingTest extends GraphicsTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(PropertyMarkingTest.class);
+    }
+
     private static boolean setup=false;
     
     static {

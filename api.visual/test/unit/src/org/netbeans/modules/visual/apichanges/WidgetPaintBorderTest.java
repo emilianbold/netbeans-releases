@@ -43,6 +43,9 @@
  */
 package org.netbeans.modules.visual.apichanges;
 
+import java.awt.GraphicsEnvironment;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.modules.visual.framework.VisualTestCase;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -52,6 +55,10 @@ import org.netbeans.api.visual.widget.Widget;
  * @author David Kaspar
  */
 public class WidgetPaintBorderTest extends VisualTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(WidgetPaintBorderTest.class);
+    }
 
     public WidgetPaintBorderTest (String s) {
         super (s);

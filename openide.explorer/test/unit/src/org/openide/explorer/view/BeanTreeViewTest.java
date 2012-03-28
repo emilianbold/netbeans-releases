@@ -45,6 +45,7 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyVetoException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
@@ -57,6 +58,8 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 import junit.framework.AssertionFailedError;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
@@ -68,6 +71,10 @@ import org.openide.nodes.Node;
  */
 public class BeanTreeViewTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(BeanTreeViewTest.class);
+    }
+
     private static final int NO_OF_NODES = 3;
     static {
         System.setProperty("netbeans.debug.heap", "no wait");

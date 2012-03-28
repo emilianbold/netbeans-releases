@@ -43,32 +43,21 @@
  */
 
 package org.openide.text;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
 import java.util.Stack;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.DefaultAttributes;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.LocalFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
 
@@ -78,6 +67,11 @@ import org.openide.util.Mutex;
  * @author Jaroslav Tulach
  */
 public class RenameWithTimestampChangeTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(RenameWithTimestampChangeTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

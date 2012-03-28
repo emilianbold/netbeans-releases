@@ -44,6 +44,7 @@ package org.openide.explorer.view;
 import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
@@ -53,6 +54,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -66,6 +69,11 @@ import org.openide.nodes.Node;
  * @author Tomas Holy
  */
 public class TableViewTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TableViewTest.class);
+    }
+
     private static final Logger LOG = Logger.getLogger(TableViewTest.class.getName());
 
     public TableViewTest(String name) {
