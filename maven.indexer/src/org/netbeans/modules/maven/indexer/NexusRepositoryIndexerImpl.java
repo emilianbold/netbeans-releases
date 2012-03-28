@@ -1347,29 +1347,38 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 for (QueryField field : fields) {
                     BooleanClause.Occur occur = field.getOccur() == QueryField.OCCUR_SHOULD ? BooleanClause.Occur.SHOULD : BooleanClause.Occur.MUST;
                     String fieldName = toNexusField(field.getField());
+                    String one = field.getValue();
+                    while (!one.isEmpty() && (one.startsWith("*") || one.startsWith("?"))) {
+                        //#196046
+                        one = one.substring(1);
+                    }
+                    if (one.isEmpty()) {
+                        continue;
+                    }
+
                     if (fieldName != null) {
                         Query q;
                         if (ArtifactInfo.NAMES.equals(fieldName)) {
                             try {
-                                String clsname = field.getValue().replace(".", "/"); //NOI18N
+                                String clsname = one.replace(".", "/"); //NOI18N
                                 q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase()));
                             } catch (IllegalArgumentException iae) {
                                 //#204651 only escape when problems occur
-                                String clsname = QueryParser.escape(field.getValue().replace(".", "/")); //NOI18N
+                                String clsname = QueryParser.escape(one.replace(".", "/")); //NOI18N
                                 q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase()));
                             }
                         } else if (ArtifactInfo.ARTIFACT_ID.equals(fieldName)) {
                             try {
-                                q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(field.getValue()));
+                                q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(one));
                             } catch (IllegalArgumentException iae) {
                                 //#204651 only escape when problems occur
-                                q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(QueryParser.escape(field.getValue())));
+                                q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(QueryParser.escape(one)));
                             }
                         } else {
                             if (field.getMatch() == QueryField.MATCH_EXACT) {
-                                q = new TermQuery(new Term(fieldName, field.getValue()));
+                                q = new TermQuery(new Term(fieldName, one));
                             } else {
-                                q = new PrefixQuery(new Term(fieldName, field.getValue()));
+                                q = new PrefixQuery(new Term(fieldName, one));
                             }
                         }
                         bq.add(new BooleanClause(setBooleanRewrite(q), occur));
