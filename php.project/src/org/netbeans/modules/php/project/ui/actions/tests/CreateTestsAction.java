@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.project.ui.actions.tests;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -70,11 +71,8 @@ import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -228,35 +226,9 @@ public final class CreateTestsAction extends NodeAction {
             }
         });
 
-        if (!failed.isEmpty()) {
-            StringBuilder sb = new StringBuilder(50);
-            for (FileObject file : failed) {
-                sb.append(file.getNameExt());
-                sb.append("\n"); // NOI18N
-            }
-            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(CreateTestsAction.class, "MSG_TestNotGenerated", sb.toString()), NotifyDescriptor.WARNING_MESSAGE));
-        }
-
-        Set<File> toRefresh = new HashSet<File>();
-        for (File file : toOpen) {
-            assert file.isFile() : "File must be given to open: " + file;
-            toRefresh.add(file.getParentFile());
-            try {
-                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                assert fo != null : "File object not found for " + file;
-                assert fo.isValid() : "File object not valid for " + file;
-                DataObject dobj = DataObject.find(fo);
-                EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                ec.open();
-            } catch (DataObjectNotFoundException ex) {
-                LOGGER.log(Level.SEVERE, null, ex);
-            }
-        }
-
-        if (!toRefresh.isEmpty()) {
-            FileUtil.refreshFor(toRefresh.toArray(new File[toRefresh.size()]));
-        }
+        showFailures(failed);
+        reformat(toOpen);
+        open(toOpen);
     }
 
     private void generateTest(PhpProject phpProject, PhpVisibilityQuery phpVisibilityQuery, FileObject sourceFo,
@@ -305,6 +277,42 @@ public final class CreateTestsAction extends NodeAction {
         File parent = FileUtil.toFile(source.getParent());
         File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
         return new PhpUnitTestGenerator(phpUnit, phpProject, source, configFiles, workingDirectory);
+    }
+
+    private void showFailures(Set<FileObject> files) {
+        if (files.isEmpty()) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder(50);
+        for (FileObject file : files) {
+            sb.append(file.getNameExt());
+            sb.append("\n"); // NOI18N
+        }
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
+                NbBundle.getMessage(CreateTestsAction.class, "MSG_TestNotGenerated", sb.toString()), NotifyDescriptor.WARNING_MESSAGE));
+    }
+
+    private void reformat(Set<File> files) {
+        for (File file : files) {
+            try {
+                PhpProjectUtils.reformatFile(file);
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Cannot reformat file " + file, ex);
+            }
+        }
+    }
+
+    private void open(Set<File> files) {
+        Set<File> toRefresh = new HashSet<File>();
+        for (File file : files) {
+            assert file.isFile() : "File must be given to open: " + file;
+            toRefresh.add(file.getParentFile());
+            PhpProjectUtils.openFile(file);
+        }
+
+        if (!toRefresh.isEmpty()) {
+            FileUtil.refreshFor(toRefresh.toArray(new File[toRefresh.size()]));
+        }
     }
 
     //~ Inner classes
