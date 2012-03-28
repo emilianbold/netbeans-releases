@@ -74,17 +74,13 @@ public class DwarfLineInfoSection extends ElfSection {
         super(reader, sectionIdx);
     }
     
-    public DwarfStatementList getStatementList(long offset) {
+    public DwarfStatementList getStatementList(long offset) throws IOException {
         Long lOffset = Long.valueOf(offset);
         DwarfStatementList statementList = statementLists.get(lOffset);
         
         if (statementList == null) {
-            try {
-                statementList = readStatementList(offset);
-                statementLists.put(lOffset, statementList);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            statementList = readStatementList(offset);
+            statementLists.put(lOffset, statementList);
         }
         
         return statementList;

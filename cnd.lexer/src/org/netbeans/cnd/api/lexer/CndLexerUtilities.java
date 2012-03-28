@@ -54,7 +54,6 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.spi.lexer.CndLexerLanguageEmbeddingProvider;
 import org.netbeans.cnd.spi.lexer.CndLexerLanguageFilterProvider;
-import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.lookup.Lookups;
 
@@ -69,8 +68,6 @@ public final class CndLexerUtilities {
     public static final String FORTRAN_MAXIMUM_TEXT_WIDTH = "fortran-maximum-text-width"; // NOI18N
     public static final String FLAVOR = "language-flavor"; // NOI18N
 
-    public static final boolean CPP11 = DebugUtils.getBoolean("cnd.modelimpl.cpp11", false); // NOI18N
-    
     private CndLexerUtilities() {
     }
 
@@ -119,10 +116,10 @@ public final class CndLexerUtilities {
         private final static Collection<? extends CndLexerLanguageFilterProvider> providers = Lookups.forPath(CndLexerLanguageFilterProvider.REGISTRATION_PATH).lookupAll(CndLexerLanguageFilterProvider.class);
     }
     
-    public static Filter<CppTokenId> getFilter(Language<?> language, Document doc) {
+    public static Filter<?> getFilter(Language<?> language, Document doc) {
         if (!CndLexerLanguageFilterProviders.providers.isEmpty()) {
             for (org.netbeans.cnd.spi.lexer.CndLexerLanguageFilterProvider provider : CndLexerLanguageFilterProviders.providers) {
-                Filter<CppTokenId> filter = provider.getFilter(language, doc);
+                Filter<?> filter = provider.getFilter(language, doc);
                 if (filter != null) {
                     return filter;
                 }
@@ -134,13 +131,12 @@ public final class CndLexerUtilities {
             return CndLexerUtilities.getGccCFilter();
         } else if (language == CppTokenId.languagePreproc()) {
             return CndLexerUtilities.getPreprocFilter();
-        } else {
-            if(CPP11) {
-                return CndLexerUtilities.getGccCpp11Filter();
-            } else {
-                return CndLexerUtilities.getGccCppFilter();
-            }
+        } else if (language == FortranTokenId.languageFortran()) {
+            return CndLexerUtilities.getFortranFilter();
+        } else if (language == CppTokenId.languageCpp()) {
+            return CndLexerUtilities.getGccCppFilter();
         }
+        return null;
     }
     
     /**
@@ -821,7 +817,13 @@ public final class CndLexerUtilities {
             CppTokenId._STDCALL,
             CppTokenId.__STDCALL,
             CppTokenId.__TRY,
-            CppTokenId.__W64,};
+            CppTokenId.__W64,
+            CppTokenId.__NULL,
+            CppTokenId.__ALIGNOF,
+            CppTokenId.__IS_CLASS,
+            CppTokenId.__IS_POD,
+            CppTokenId.__IS_BASE_OF,
+            CppTokenId.__HAS_TRIVIAL_CONSTRUCTOR,};
         addToFilter(ids, filterToModify);
     }
 

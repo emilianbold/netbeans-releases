@@ -141,7 +141,7 @@ public class RemoteFileObjectFactory {
     public RemoteFileObjectBase createFileObject(RemoteDirectory parent, DirEntry entry, RemoteFileObject owner) {
         File childCache = new File(parent.getCache(), entry.getCache());
         String childPath = parent.getPath() + '/' + entry.getName();
-        RemoteFileObjectBase fo = null;
+        RemoteFileObjectBase fo;
         if (entry.isDirectory()) {
             fo = createRemoteDirectory(parent, childPath, childCache, owner);
         }  else if (entry.isLink()) {
