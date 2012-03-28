@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,79 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.profiler.nbimpl.actions;
 
-package org.netbeans.modules.maven.profiler;
-
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.FileActionPerformer;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author mkleint
+ * @author Jaroslav Bachorik
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=72)
-public class ProfilerActionsProvider extends AbstractMavenActionsProvider {
-    final private Set<String> supportedTypes = new HashSet<String>() {
-        {
-            add(NbMavenProject.TYPE_JAR);
-            add(NbMavenProject.TYPE_WAR);
-            add(NbMavenProject.TYPE_EJB);
-            add(NbMavenProject.TYPE_NBM);
-            add(NbMavenProject.TYPE_NBM_APPLICATION);
-        }
-    };
+public class FileSensitivePerformer implements FileActionPerformer {
+
+    final private String command;
+
+    public FileSensitivePerformer(String command) {
+        this.command = command;
+    }
 
     @Override
-    public boolean isActionEnable(String action, Project project, Lookup lookup) {
-        if (!(action.equals(ActionProvider.COMMAND_PROFILE) || action.startsWith(ActionProvider.COMMAND_PROFILE_SINGLE) || action.equals(ActionProvider.COMMAND_PROFILE_TEST_SINGLE))) {
+    public boolean enable(FileObject file) {
+        if (file == null) {
             return false;
         }
-        NbMavenProject mavenprj = project.getLookup().lookup(NbMavenProject.class);
-        String type = mavenprj.getPackagingType();
-        if (supportedTypes.contains(type)) {
-            return super.isActionEnable(action, project, lookup);
+
+        Project p = FileOwnerQuery.getOwner(file);
+
+        if (p == null) {
+            return false;
+        }
+
+        ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+        try {
+            if (ap != null && ap.isActionEnabled(command, getContext(file))) {
+                ProjectProfilingSupport ppp = ProjectProfilingSupport.get(p);
+                if (ppp == null) {
+                    return false;
+                }
+                
+                return ppp.isProfilingSupported();
+            }
+        } catch (IllegalArgumentException e) {
+            // command not supported
         }
         return false;
     }
 
     @Override
-    protected InputStream getActionDefinitionStream() {
-        String path = "/org/netbeans/modules/maven/profiler/ActionMappings.xml"; //NOI18N
-        InputStream in = getClass().getResourceAsStream(path);
-        assert in != null : "no instream for " + path; //NOI18N
-        return in;
+    public void perform(FileObject file) {
+        Project p = FileOwnerQuery.getOwner(file);
+        ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+        if (ap != null) {
+            ProfilerLauncher.Session s = ProfilerLauncher.newSession(command, getContext(file));
+            if (s != null) {
+                s.run();
+            }
+        }
+    }
+
+    private Lookup getContext(FileObject file) {
+        Project p = FileOwnerQuery.getOwner(file);
+        try {
+            return Lookups.fixed(file, p, DataObject.find(file));
+        } catch (DataObjectNotFoundException e) {
+        }
+        return Lookups.fixed(file, p);
     }
 }

@@ -663,6 +663,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg value="-ea"/>
                             <jvmarg line="${{runmain.jvmargs}}"/>
+                            <jvmarg line="${{run.jvmargs.ide}}"/>
                         </junit>
                     </sequential>
                 </macrodef>
@@ -858,24 +859,34 @@ exists or setup the property manually. For example like this:
             <target name="-init-ap-cmdline" depends="-init-ap-cmdline-properties,-init-ap-cmdline-supported">
                 <property name="ap.cmd.line.internal" value=""/>
             </target>
-
-            <target name="profile-init" depends="-profile-pre-init, init, -profile-post-init, -profile-init-check"/>
+            
+            <xsl:comment>
+                pre NB7.2 profiling section; consider it deprecated
+            </xsl:comment>
+            <target name="profile-init" depends="-profile-pre-init, init, -profile-post-init, -profile-init-check">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
+            </target>
 
             <target name="-profile-pre-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
             </target>
 
             <target name="-profile-post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
             </target>
             <target name="-profile-init-check">
                 <xsl:attribute name="depends">-profile-pre-init, init, -profile-post-init</xsl:attribute>
                 <fail unless="profiler.info.jvm">Must set JVM to use for profiling in profiler.info.jvm</fail>
                 <fail unless="profiler.info.jvmargs.agent">Must set profiler agent JVM arguments in profiler.info.jvmargs.agent</fail>
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
             </target>
-
+            <xsl:comment>
+                end of pre NB7.2 profiling section
+            </xsl:comment>
 
             <target name="init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-taskdefs,-init-ap-cmdline</xsl:attribute>
@@ -1430,8 +1441,13 @@ exists or setup the property manually. For example like this:
             =================
             </xsl:comment>
 
-            <target name="profile">
+            <xsl:comment>
+                pre NB7.2 profiling section; consider it deprecated
+            </xsl:comment>
+            <target name="-profile-pre72">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
                 <xsl:attribute name="description">Profile a J2EE project in the IDE.</xsl:attribute>
+                <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
                 <condition>
                     <xsl:attribute name="property">profiler.startserver.target</xsl:attribute>
                     <xsl:attribute name="value">start-profiled-server-extraargs</xsl:attribute>
@@ -1447,8 +1463,37 @@ exists or setup the property manually. For example like this:
                     <xsl:attribute name="target">run</xsl:attribute>
                 </antcall>
                 <antcall>
-                    <xsl:attribute name="target">start-loadgen</xsl:attribute>
+                    <xsl:attribute name="target">-profile-start-loadgen</xsl:attribute>
                 </antcall>
+            </target>
+            
+            <target name="-profile-test-single-pre72">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
+                <xsl:attribute name="depends">profile-init,compile-test-single</xsl:attribute>
+                <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
+                <nbprofiledirect>
+                    <classpath>
+                        <path path="${{run.test.classpath}}"/>
+                        <path path="${{j2ee.platform.classpath}}"/>
+                    </classpath>
+                </nbprofiledirect>
+
+                <junit showoutput="true" fork="true" dir="${{profiler.info.dir}}"  jvm="${{profiler.info.jvm}}" failureproperty="tests.failed" errorproperty="tests.failed">
+                    <env key="${{profiler.info.pathvar}}" path="${{profiler.info.agentpath}}:${{profiler.current.path}}"/>
+                    <jvmarg value="${{profiler.info.jvmargs.agent}}" />
+                    <jvmarg line="${{profiler.info.jvmargs}}"/>
+                    <test name="${{profile.class}}"/>
+                    <classpath>
+                        <path path="${{run.test.classpath}}"/>
+                        <path path="${{j2ee.platform.classpath}}"/>
+                    </classpath>
+                    <syspropertyset>
+                        <propertyref prefix="test-sys-prop."/>
+                        <mapper type="glob" from="test-sys-prop.*" to="*"/>
+                    </syspropertyset>
+                    <formatter type="brief" usefile="false"/>
+                    <formatter type="xml"/>
+                </junit>
             </target>
 
             <target name="start-profiled-server">
@@ -1481,11 +1526,42 @@ exists or setup the property manually. For example like this:
                     </jvmarg>
                 </nbstartprofiledserver>
             </target>
+            <xsl:comment>
+                end of pre NB7.2 profiling section
+            </xsl:comment>
 
-            <target name="start-loadgen" if="profiler.loadgen.path">
-                    <loadgenstart>
-                        <xsl:attribute name="path">${profiler.loadgen.path}</xsl:attribute>
-                    </loadgenstart>
+            <target name="-profile-check" if="netbeans.home">
+                <condition property="profiler.configured">
+                    <or>
+                        <contains string="${{run.jvmargs.ide}}" substring="-agentpath:" casesensitive="true"/>
+                        <contains string="${{run.jvmargs.ide}}" substring="-javaagent:" casesensitive="true"/>
+                    </or>
+                </condition>
+            </target>
+
+            <target name="profile" depends="-profile-check,init,compile,dist-directory-deploy,-profile-pre72" if="profiler.configured" unless="profiler.info.jvmargs.agent">
+                <xsl:attribute name="description">Profile a J2EE project in the IDE.</xsl:attribute>
+                
+                <startprofiler/>
+                <nbstartserver profilemode="true"/>
+                
+                <nbdeploy profilemode="true" clientUrlPart="${client.urlPart}" forceRedeploy="true" />
+                <antcall>
+                    <xsl:attribute name="target">-profile-start-loadgen</xsl:attribute>
+                </antcall>
+            </target>
+            
+            <target name="profile-test-single" depends="-profile-test-single-pre72"/>
+            
+            <target name="profile-test" depends="-profile-check" if="profiler.configured" unless="profiler.info.jvmargs.agent">
+                <startprofiler/>
+                <antcall target="test-single"/>
+            </target>
+
+            <target name="-profile-start-loadgen" if="profiler.loadgen.path">
+                <loadgenstart>
+                    <xsl:attribute name="path">${profiler.loadgen.path}</xsl:attribute>
+                </loadgenstart>
             </target>
 
             <xsl:comment>
@@ -1759,41 +1835,6 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix-test</xsl:attribute>
             </target>
-
-        <xsl:comment>
-        =========================
-        TESTS PROFILING  SECTION
-        =========================
-        </xsl:comment>
-
-          <target name="profile-test-single">
-              <xsl:attribute name="if">netbeans.home</xsl:attribute>
-              <xsl:attribute name="depends">profile-init,compile-test-single</xsl:attribute>
-              <nbprofiledirect>
-                  <classpath>
-                      <path path="${{run.test.classpath}}"/>
-                      <path path="${{j2ee.platform.classpath}}"/>
-                  </classpath>
-              </nbprofiledirect>
-
-              <junit showoutput="true" fork="true" dir="${{profiler.info.dir}}"  jvm="${{profiler.info.jvm}}" failureproperty="tests.failed" errorproperty="tests.failed">
-                  <env key="${{profiler.info.pathvar}}" path="${{profiler.info.agentpath}}:${{profiler.current.path}}"/>
-                  <jvmarg value="${{profiler.info.jvmargs.agent}}" />
-                  <jvmarg line="${{profiler.info.jvmargs}}"/>
-                  <test name="${{profile.class}}"/>
-                  <classpath>
-                      <path path="${{run.test.classpath}}"/>
-                      <path path="${{j2ee.platform.classpath}}"/>
-                  </classpath>
-                  <syspropertyset>
-                      <propertyref prefix="test-sys-prop."/>
-                      <mapper type="glob" from="test-sys-prop.*" to="*"/>
-                  </syspropertyset>
-                  <formatter type="brief" usefile="false"/>
-                  <formatter type="xml"/>
-              </junit>
-          </target>
-
 
             <xsl:comment>
                 CLEANUP SECTION

@@ -39,38 +39,59 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.j2ee.impl;
+package org.netbeans.modules.profiler.nbimpl.actions;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.api.extexecution.startup.StartupExtender.StartMode;
-import org.netbeans.api.server.ServerInstance;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
-import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
+import org.netbeans.api.project.Project;
+import org.netbeans.lib.profiler.common.Profiler;
+import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
+import org.netbeans.modules.profiler.nbimpl.NetBeansProfiler;
+import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher.Session;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author Jaroslav Bachorik <jaroslav.bachorik@oracle.com>
  */
-@StartupExtenderImplementation.Registration(position=100, displayName="#DESC_Profiler",
-        startMode=StartMode.PROFILE)
-public class ProfilerArgsProvider implements StartupExtenderImplementation {
-
+public class ProjectSensitivePerformer implements ProjectActionPerformer {
+    final private String command;
+    
+    public ProjectSensitivePerformer(String command) {
+        this.command = command;
+    }
+    
     @Override
-    public List<String> getArguments(Lookup context, StartMode mode) {
-        Profiler p = Lookup.getDefault().lookup(Profiler.class);
-        ServerInstance server = context.lookup(ServerInstance.class);
-        if (server != null) {
-            InstanceProperties ip = server.getLookup().lookup(InstanceProperties.class);
-            if (ip != null) {
-                return Arrays.asList(p.getSettings(ip.getProperty("url"), false).getJvmArgs()); //NOI18N
-            }
-        }
+    public boolean enable(Project project) {
+        if (project == null) return false;
 
-        return Collections.EMPTY_LIST;
+        ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+        try {
+            if (ap != null && ap.isActionEnabled(command, project.getLookup())) {
+                ProjectProfilingSupport ppp = ProjectProfilingSupport.get(project);
+                if (ppp == null) {
+                    return false;
+                }
+                return ppp.isProfilingSupported();
+            }
+        } catch (IllegalArgumentException e) {
+            // no provider responds to the command
+        }
+        return false;
     }
 
+    @Override
+    public void perform(final Project project) {
+        final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+        if (ap != null) {
+            Lookup ctx = new ProxyLookup(project.getLookup(), Lookups.fixed(project));
+            
+            Session s = ProfilerLauncher.newSession(command, ctx);
+            if (s != null) {
+                s.run();
+            }
+        }
+    }
 }
