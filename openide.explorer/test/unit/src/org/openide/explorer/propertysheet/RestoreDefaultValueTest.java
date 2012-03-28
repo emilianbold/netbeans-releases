@@ -48,6 +48,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.lang.reflect.InvocationTargetException;
@@ -57,6 +58,8 @@ import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -66,6 +69,11 @@ import org.openide.util.NbBundle;
 
 // This test class tests the main functionality of the property sheet
 public class RestoreDefaultValueTest extends ExtTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(RestoreDefaultValueTest.class);
+    }
+
     private PropertySheet ps = null;
     public RestoreDefaultValueTest(String name) {
         super(name);
