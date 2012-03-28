@@ -96,4 +96,14 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug210257.cpp", 9, 52, "bug210257.cpp", 6, 3);
     }    
     
+    public void testBug210291() throws Exception {
+        // Bug 210291 - Unresolved ids in instantiations
+        performTest("bug210291.cpp", 13, 59, "bug210291.cpp", 8, 5);
+    }    
+    
+    public void testBug210303() throws Exception {
+        // Bug 210303 - Unresolved instantiation
+        performTest("bug210303.cpp", 18, 11, "bug210303.cpp", 11, 9);
+    }
+    
 }

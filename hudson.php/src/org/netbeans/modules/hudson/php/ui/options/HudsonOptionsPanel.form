@@ -55,6 +55,8 @@
                       <Component id="jobConfigTextField" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jobConfigBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jobConfigDefaultButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -97,6 +99,7 @@
                   <Component id="jobConfigTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jobConfigLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jobConfigBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jobConfigDefaultButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jobConfigHintLabel" min="-2" max="-2" attributes="0"/>
@@ -204,6 +207,16 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jobConfigBrowseButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="jobConfigDefaultButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/hudson/php/ui/options/Bundle.properties" key="HudsonOptionsPanel.jobConfigDefaultButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jobConfigDefaultButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jobConfigHintLabel">
