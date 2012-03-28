@@ -51,6 +51,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.JLabel;
@@ -185,6 +186,7 @@ public class WizardDescTest extends NbTestCase {
         panels[1] = mfp;
         panels[2] = new Panel ("Last one");
         wd = new WizardDescriptor(panels);
+        Dialog dlg = DialogDisplayer.getDefault().createDialog( wd );
         
         assertNull ("Component has not been yet initialized", panels[1].component);
         mp.failedMsg = null;
@@ -207,7 +209,7 @@ public class WizardDescTest extends NbTestCase {
         wd.doFinishClick();
         assertEquals ("The lazy validation failed on Finish.", mfp.validateMsg, mfp.failedMsg);
         assertNull ("The validation failed, still no initialiaation", panels[2].component);
-        assertEquals ("State has not changed", state, wd.getValue ());
+        assertEquals ("State is not FINISH if validation failed (#209510)", wd.getDefaultValue(), wd.getValue());
         
         mfp.validateMsg = null;
         mfp.failedMsg = null;
