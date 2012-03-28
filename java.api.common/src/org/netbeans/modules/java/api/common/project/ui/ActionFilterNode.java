@@ -361,11 +361,16 @@ final class ActionFilterNode extends FilterNode {
             if (mode.isFolder()) {
                 final FileObject fobj = n.getLookup().lookup(FileObject.class);
                 if (fobj == null) {
-                    assert false : String.format(
-                        "DataNode without FileObject in Lookup %s : %s",   //NOI18N
-                        n,
-                        n.getClass());
-                    return new Node[0];
+                    if (n.isLeaf() && n.getActions(false).length == 0) {
+                        //"Please Wait..." node
+                        return new Node[] { new FilterNode(n)};
+                    } else {
+                        assert false : String.format(
+                            "DataNode without FileObject in Lookup %s : %s",   //NOI18N
+                            n,
+                            n.getClass());
+                        return new Node[0];
+                    }
                 }
                 else if (fobj.isFolder()) {
                     return new Node[] {new ActionFilterNode (n, Mode.PACKAGE, cpRoot, fobj)};

@@ -45,11 +45,14 @@
 package org.openide.explorer.view;
 
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JFrame;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
@@ -63,6 +66,10 @@ import org.openide.nodes.Node;
 
 public class TreeViewExpandAllTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TreeViewExpandAllTest.class);
+    }
+
     public TreeViewExpandAllTest(String name) {
         super(name);
     }

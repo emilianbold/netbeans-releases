@@ -48,9 +48,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,19 +57,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
-import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
+import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
-import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
@@ -86,7 +83,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -94,8 +90,6 @@ import org.openide.util.Utilities;
  */
 public abstract class BaseDwarfProvider implements DiscoveryProvider {
     
-    private static final boolean TRACE_READ_EXCEPTIONS = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.errors"); // NOI18N
-    private static final boolean FULL_TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.source"); // NOI18N
     public static final String RESTRICT_SOURCE_ROOT = "restrict_source_root"; // NOI18N
     public static final String RESTRICT_COMPILE_ROOT = "restrict_compile_root"; // NOI18N
     protected AtomicBoolean isStoped = new AtomicBoolean(false);
@@ -193,7 +187,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                   String fileFinder = Dwarf.fileFinder(file, name);
                   if (fileFinder != null) {
                       fo = fileSystem.findResource(fileFinder);
-                      if (fo != null && fo.isValid()) {
+                      if (fo != null && fo.isValid() && fo.isData()) {
                           if (f instanceof DwarfSource) {
                               ((DwarfSource)f).resetItemPath(fileFinder);
                               name = fileFinder;
@@ -202,7 +196,9 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                       }
                   }
             } else {
-                exist = true;
+                if (fo.isData()) {
+                    exist = true;
+                }
             }
 
             if (exist) {
@@ -216,9 +212,9 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                 }
             } else {
-                if (FULL_TRACE) {
-                    System.out.println("Not Exist " + name); // NOI18N
-                } //NOI18N
+                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE, "Not Exist {0}", name); // NOI18N
+                }
             }
         }
         if (progress != null) {
@@ -242,7 +238,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
         try{
             dump = new Dwarf(objFileName);
-            Iterator<CompilationUnit> iterator = dump.iteratorCompilationUnits();
+            Dwarf.CompilationUnitIterator iterator = dump.iteratorCompilationUnits();
             while (iterator.hasNext()) {
                 CompilationUnit cu = iterator.next();
                 if (cu != null) {
@@ -328,26 +324,20 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             }
         } catch (FileNotFoundException ex) {
             errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "FileNotFoundException", objFileName));  // NOI18N
-            if (TRACE_READ_EXCEPTIONS) {
-                System.out.println("File not found " + objFileName + ": " + ex.getMessage());  // NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "File not found {0}: {1}", new Object[]{objFileName, ex.getMessage()});  // NOI18N
             }
         } catch (WrongFileFormatException ex) {
             errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "WrongFileFormatException", objFileName));  // NOI18N
-            if (TRACE_READ_EXCEPTIONS) {
-                System.out.println("Unsuported format of file " + objFileName + ": " + ex.getMessage());  // NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "Unsuported format of file {0}: {1}", new Object[]{objFileName, ex.getMessage()});  // NOI18N
             }
         } catch (IOException ex) {
             errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "IOException", objFileName, ex.toString()));  // NOI18N
-            if (TRACE_READ_EXCEPTIONS) {
-                System.err.println("Exception in file " + objFileName + ": " + ex.getMessage());  // NOI18N
-                ex.printStackTrace(System.err);
-            }
+            DwarfSource.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
         } catch (Exception ex) {
             errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "Exception", objFileName, ex.toString()));  // NOI18N
-            //if (TRACE_READ_EXCEPTIONS) {
-            System.err.println("Exception in file " + objFileName + ": " + ex.getMessage());  // NOI18N
-            ex.printStackTrace(System.err);
-            //}
+            DwarfSource.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
         } finally {
             if (dump != null) {
                 dump.dispose();
@@ -494,11 +484,11 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
         try {
-            if (FULL_TRACE) {
-                System.out.println("Process file " + objFileName);  // NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "Process file {0}", objFileName);  // NOI18N
             }
             dump = new Dwarf(objFileName);
-            Iterator<CompilationUnit> iterator = dump.iteratorCompilationUnits();
+            Dwarf.CompilationUnitIterator iterator = dump.iteratorCompilationUnits();
             while (iterator.hasNext()) {
                 CompilationUnit cu = iterator.next();
                 if (cu != null) {
@@ -506,15 +496,15 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         break;
                     }
                     if (cu.getRoot() == null || cu.getSourceFileName() == null) {
-                        if (TRACE_READ_EXCEPTIONS) {
-                            System.out.println("Compilation unit has broken name in file " + objFileName);  // NOI18N
+                        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                            DwarfSource.LOG.log(Level.FINE, "Compilation unit has broken name in file {0}", objFileName);  // NOI18N
                         }
                         continue;
                     }
                     String lang = cu.getSourceLanguage();
                     if (lang == null) {
-                        if (TRACE_READ_EXCEPTIONS) {
-                            System.out.println("Compilation unit has unresolved language in file " + objFileName + "for " + cu.getSourceFileName());  // NOI18N
+                        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                            DwarfSource.LOG.log(Level.FINE, "Compilation unit has unresolved language in file {0}for {1}", new Object[]{objFileName, cu.getSourceFileName()});  // NOI18N
                         }
                         continue;
                     }
@@ -534,23 +524,23 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     } else if (LANG.DW_LANG_Fortran95.toString().equals(lang)) {
                         source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F95, getCommpilerSettings(), grepBase, storage);
                     } else {
-                        if (FULL_TRACE) {
-                            System.out.println("Unknown language: " + lang);  // NOI18N
+                        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                            DwarfSource.LOG.log(Level.FINE, "Unknown language: {0}", lang);  // NOI18N
                         }
                         // Ignore other languages
                     }
                     if (source != null) {
                         if (source.getCompilePath() == null) {
-                            if (TRACE_READ_EXCEPTIONS) {
-                                System.out.println("Compilation unit has NULL compile path in file " + objFileName);  // NOI18N
+                            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                                DwarfSource.LOG.log(Level.FINE, "Compilation unit has NULL compile path in file {0}", objFileName);  // NOI18N
                             }
                             continue;
                         }
                         String name = source.getItemPath();
                         SourceFileProperties old = map.get(name);
                         if (old != null && old.getUserInludePaths().size() > 0) {
-                            if (FULL_TRACE) {
-                                System.out.println("Compilation unit already exist. Skip " + name);  // NOI18N
+                            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                                DwarfSource.LOG.log(Level.FINE, "Compilation unit already exist. Skip {0}", name);  // NOI18N
                             }
                             // do not process processed item
                             continue;
@@ -571,23 +561,17 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             }
         } catch (FileNotFoundException ex) {
             // Skip Exception
-            if (TRACE_READ_EXCEPTIONS) {
-                System.out.println("File not found " + objFileName + ": " + ex.getMessage());  // NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "File not found {0}: {1}", new Object[]{objFileName, ex.getMessage()});  // NOI18N
             }
         } catch (WrongFileFormatException ex) {
-            if (TRACE_READ_EXCEPTIONS) {
-                System.out.println("Unsuported format of file " + objFileName + ": " + ex.getMessage());  // NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "Unsuported format of file {0}: {1}", new Object[]{objFileName, ex.getMessage()});  // NOI18N
             }
         } catch (IOException ex) {
-            if (TRACE_READ_EXCEPTIONS) {
-                System.err.println("Exception in file " + objFileName);  // NOI18N
-                ex.printStackTrace(System.err);
-            }
+            DwarfSource.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
         } catch (Exception ex) {
-            if (TRACE_READ_EXCEPTIONS) {
-                System.err.println("Exception in file " + objFileName);  // NOI18N
-                ex.printStackTrace(System.err);
-            }
+            DwarfSource.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
         } finally {
             if (dump != null) {
                 dump.dispose();

@@ -1054,24 +1054,24 @@ public class Folder implements FileChangeListener, ChangeListener {
     /*
      * Returns a set of all files in this logical folder and subfolders as FileObjetc's
      */
-    public Set<DataObject> getAllItemsAsDataObjectSet(boolean projectFilesOnly, String MIMETypeFilter) {
-        LinkedHashSet<DataObject> files = new LinkedHashSet<DataObject>();
-        getAllItemsAsDataObjectSet(files, projectFilesOnly, MIMETypeFilter);
+    public Set<FileObject> getAllItemsAsFileObjectSet(boolean projectFilesOnly, String MIMETypeFilter) {
+        LinkedHashSet<FileObject> files = new LinkedHashSet<FileObject>();
+        getAllItemsAsFileObjectSet(files, projectFilesOnly, MIMETypeFilter);
         return files;
     }
 
-    private void getAllItemsAsDataObjectSet(Set<DataObject> files, boolean projectFilesOnly, String MIMETypeFilter) {
+    private void getAllItemsAsFileObjectSet(Set<FileObject> files, boolean projectFilesOnly, String MIMETypeFilter) {
         if (!projectFilesOnly || isProjectFiles()) {
             Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Item) {
-                    DataObject da = ((Item) item).getDataObject();
-                    if (da != null && (MIMETypeFilter == null || da.getPrimaryFile().getMIMEType().contains(MIMETypeFilter))) {
+                    FileObject da = ((Item) item).getFileObject();
+                    if (da != null && (MIMETypeFilter == null || da.getMIMEType().contains(MIMETypeFilter))) {
                         files.add(da);
                     }
                 } else if (item instanceof Folder) {
-                    ((Folder) item).getAllItemsAsDataObjectSet(files, projectFilesOnly, MIMETypeFilter);
+                    ((Folder) item).getAllItemsAsFileObjectSet(files, projectFilesOnly, MIMETypeFilter);
                 }
             }
         }

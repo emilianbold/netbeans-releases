@@ -220,16 +220,12 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         if ( rootNode != null && rootNode.getFileObject().equals( fileObject) ) {
             // update
             //System.out.println("UPDATE ======" + description.fileObject.getName() );
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    long startTime = System.currentTimeMillis();
-                    rootNode.updateRecursively( description );
-                    long endTime = System.currentTimeMillis();
-                    Logger.getLogger("TIMER").log(Level.FINE, "Navigator Merge",
-                            new Object[] {fileObject, endTime - startTime});
-                    
-                }
-            } );            
+            long startTime = System.currentTimeMillis();
+            rootNode.updateRecursively( description );
+            long endTime = System.currentTimeMillis();
+            Logger.getLogger("TIMER").log(Level.FINE, "Navigator Merge",
+                    new Object[] {fileObject, endTime - startTime});
+
         } 
         else {
             //System.out.println("REFRES =====" + description.fileObject.getName() );

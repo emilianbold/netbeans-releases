@@ -45,6 +45,9 @@
 package org.netbeans.core.windows;
 
 
+import java.awt.GraphicsEnvironment;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
@@ -57,6 +60,10 @@ import org.openide.util.Lookup;
  * 
  */
 public class PersistenceHandlerTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(PersistenceHandlerTest.class);
+    }
 
     public PersistenceHandlerTest (String name) {
         super (name);

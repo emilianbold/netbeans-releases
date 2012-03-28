@@ -502,14 +502,14 @@ public class CndPathUtilitities {
     }
 
     public static String normalizeSlashes(String path) {
-        return path.replaceAll("\\\\", "/"); // NOI18N
+        return path.replace('\\', '/'); // NOI18N
     }
 
     public static String naturalizeSlashes(String path) {
         if (Utilities.isUnix()) {
-            return path.replaceAll("\\\\", "/"); // NOI18N
+            return path.replace('\\', '/'); // NOI18N
         } else if (Utilities.isWindows()) {
-            return path.replaceAll("/", "\\\\"); // NOI18N
+            return path.replace('/', '\\'); // NOI18N
         } else {
             return path;
         }

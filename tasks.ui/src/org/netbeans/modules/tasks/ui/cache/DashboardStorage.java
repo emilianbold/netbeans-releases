@@ -107,6 +107,9 @@ public class DashboardStorage {
         try {
             lock = FileLocks.getLock(file);
             synchronized (lock) {
+                if (closedEntries.isEmpty()) {
+                    file.delete();
+                }
                 dos = getClosedOutputStream(file);
                 for (String entry : closedEntries) {
                     writeString(dos, entry);

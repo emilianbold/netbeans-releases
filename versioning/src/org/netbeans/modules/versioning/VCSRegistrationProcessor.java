@@ -73,18 +73,20 @@ public class VCSRegistrationProcessor extends LayerGeneratingProcessor {
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         for (Element e : roundEnv.getElementsAnnotatedWith(VersioningSystem.Registration.class)) {
             Registration a = e.getAnnotation(VersioningSystem.Registration.class);
-            String s = processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString();
-            
-            File f = layer(e).file("Services/VersioningSystem/" + s.replace('.','-') + ".instance"); // NOI18N
+            if (a == null) {
+                continue;
+            }
+            File f = layer(e).instanceFile("Services/VersioningSystem", null, a, null); // NOI18N
             f.methodvalue("instanceCreate", DelegatingVCS.class.getName(), "create");                // NOI18N
+            f.stringvalue("instanceOf", org.netbeans.modules.versioning.core.spi.VersioningSystem.class.getName()); // NOI18N
             String[] folderNames = a.metadataFolderNames();
             for (int i = 0; i < folderNames.length; i++) {
                 f.stringvalue("metadataFolderName" + i, folderNames[i]);        // NOI18N
             }
-            f.newvalue("delegate", s);                                          // NOI18N
+            f.instanceAttribute("delegate", VersioningSystem.class);            // NOI18N
             f.bundlevalue("displayName", a.displayName());                      // NOI18N
             f.bundlevalue("menuLabel", a.menuLabel());                          // NOI18N
-            f.bundlevalue("actionsCategory", a.actionsCategory());              // NOI18N    
+            f.stringvalue("actionsCategory", a.actionsCategory());              // NOI18N
             f.write();
         }
         return true;

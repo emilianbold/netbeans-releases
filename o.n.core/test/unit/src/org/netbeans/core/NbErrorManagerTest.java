@@ -45,6 +45,7 @@
 package org.netbeans.core;
 
 import java.awt.Dialog;
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -56,6 +57,8 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.startup.TopLogging;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -73,6 +76,11 @@ import org.xml.sax.SAXParseException;
  * @see "#18141"
  */
 public final class NbErrorManagerTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NbErrorManagerTest.class);
+    }
+
     public NbErrorManagerTest(String s) {
         super(s);
     }

@@ -74,6 +74,7 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(daysLabel2, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.daysLabel2.text")); // NOI18N
 
         warningLabel.setForeground(java.awt.Color.red);
+        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/error.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.warningLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(noLabelCleanupCheckBox, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.noLabelCleanupCheckBox.text")); // NOI18N
@@ -104,7 +105,6 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(warningLabel)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -138,7 +138,9 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator2))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(keepForeverRadioButton)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(keepForeverRadioButton)
+                            .addComponent(warningLabel))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -169,9 +171,9 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
                     .addComponent(loadIncrementsRadioButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(loadAllRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 71, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(warningLabel)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         olderThanDaysTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "ACSN_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N

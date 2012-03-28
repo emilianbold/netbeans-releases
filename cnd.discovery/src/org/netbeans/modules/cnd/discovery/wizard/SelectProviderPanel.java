@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.discovery.wizard;
 
-import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -64,13 +63,14 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
+import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.openide.WizardDescriptor;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -298,7 +298,6 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     // End of variables declaration//GEN-END:variables
     
     void read(final DiscoveryDescriptor wizardDescriptor) {
-        Lookup.Result<DiscoveryProvider> providers = Lookup.getDefault().lookup(new Lookup.Template<DiscoveryProvider>(DiscoveryProvider.class));
         DefaultComboBoxModel model = (DefaultComboBoxModel)prividersComboBox.getModel();
         model.removeAllElements();
         ProjectProxy proxy = new ProjectProxy() {
@@ -337,8 +336,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             }
         };
         List<ProviderItem> list = new ArrayList<ProviderItem>();
-        for(DiscoveryProvider provider : providers.allInstances()){
-            provider.clean();
+        for(DiscoveryProvider provider : DiscoveryProviderFactory.findAllProviders()){
             if (provider.isApplicable(proxy)) {
                 list.add(new ProviderItem(provider));
             }
@@ -461,7 +459,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
 
 
     private String getString(String key) {
-        return NbBundle.getBundle(SelectProviderPanel.class).getString(key);
+        return NbBundle.getMessage(SelectProviderPanel.class, key);
     }
 
     @Override

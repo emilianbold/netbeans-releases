@@ -45,9 +45,12 @@ package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.GraphicsEnvironment;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeNode;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
@@ -67,6 +70,10 @@ import org.openide.util.Exceptions;
  * @author  Jiri Rechtacek
  */
 public final class OutlineView152857Test extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(OutlineView152857Test.class);
+    }
 
     private OutlineViewComponent comp;
 

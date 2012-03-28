@@ -54,6 +54,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -116,8 +117,12 @@ public class ChangeParametersUI implements RefactoringUI, JavaRefactoringUIFacto
         }
         
         if(path != null && ((kind = path.getLeaf().getKind()) == Kind.METHOD_INVOCATION || kind == Kind.NEW_CLASS)) {
-            ExecutableElement element = (ExecutableElement) info.getTrees().getElement(path);
-            path = info.getTrees().getPath(element);
+            Element element = info.getTrees().getElement(path);
+            if(element.asType().getKind() == TypeKind.ERROR) {
+                return null;
+            }
+            ExecutableElement method = (ExecutableElement) element;
+            path = info.getTrees().getPath(method);
         }
         
         return path != null
@@ -208,6 +213,6 @@ public class ChangeParametersUI implements RefactoringUI, JavaRefactoringUIFacto
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ChangeParametersUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.ChangeParametersUI"); // NOI18N
     }
 }

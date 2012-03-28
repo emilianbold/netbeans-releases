@@ -46,6 +46,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
@@ -85,6 +86,12 @@ public class DashboardStorageTest extends NbTestCase {
         assertTrue(readClosedCategories.contains("Dummy1"));
         assertTrue(readClosedCategories.contains("Dummy2"));
         assertTrue(readClosedCategories.contains("Dummy3"));
+
+        categoryNames = Collections.emptyList();
+        storage.storeClosedCategories(categoryNames);
+
+        readClosedCategories = storage.readClosedCategories();
+        assertEquals(0, readClosedCategories.size());
 
         List<String> repositoryIds = new ArrayList<String>();
         repositoryIds.add("Dummy1");

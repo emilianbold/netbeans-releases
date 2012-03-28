@@ -160,6 +160,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), NO_ACTION);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), NO_ACTION); 
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), NO_ACTION); 
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), NO_ACTION); 
  
         
         ((AbstractDocument) editorPane.getDocument()).setDocumentFilter(new DocumentFilter() {

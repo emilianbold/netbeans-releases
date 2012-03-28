@@ -47,11 +47,14 @@ package org.openide;
 import org.netbeans.junit.NbTestSuite;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.JLabel;
 import javax.swing.event.ChangeListener;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.openide.InstantiatingIteratorTest.Listener;
 import org.openide.util.HelpCtx;
 
@@ -61,7 +64,10 @@ import org.openide.util.HelpCtx;
  */
 public class AsynchronousInstantiatingIteratorTest extends InstantiatingIteratorTest {
 
-    
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(AsynchronousInstantiatingIteratorTest.class);
+    }
+
     public AsynchronousInstantiatingIteratorTest (String name) {
         super(name);
     }

@@ -87,7 +87,8 @@ public class CategoryNode extends AbstractCategoryNode {
     }
 
     @Override
-    protected void refresh() {
+    void updateContent() {
+        updateNodes();
         refreshChildren();
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.editor.lib2.document;
 
-package org.netbeans.modules.openide.util;
+import javax.swing.text.Document;
 
-import java.net.URLStreamHandler;
-import java.util.Collections;
-import java.util.Set;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
-import org.openide.util.URLStreamHandlerRegistration;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.implspi.AbstractServiceProviderProcessor;
-
-@ServiceProvider(service=Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class URLStreamHandlerRegistrationProcessor extends AbstractServiceProviderProcessor {
-
-    public @Override Set<String> getSupportedAnnotationTypes() {
-        return Collections.singleton(URLStreamHandlerRegistration.class.getCanonicalName());
-    }
-
-    public static final String REGISTRATION_PREFIX = "URLStreamHandler/"; // NOI18N
-
-    protected @Override boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        for (Element el : roundEnv.getElementsAnnotatedWith(URLStreamHandlerRegistration.class)) {
-            URLStreamHandlerRegistration r = el.getAnnotation(URLStreamHandlerRegistration.class);
-            TypeMirror type = processingEnv.getTypeUtils().getDeclaredType(
-                    processingEnv.getElementUtils().getTypeElement(URLStreamHandler.class.getName()));
-            for (String protocol : r.protocol()) {
-                register(el, URLStreamHandlerRegistration.class, type,
-                        REGISTRATION_PREFIX + protocol, r.position(), new String[0]);
-            }
-        }
-        return true;
-    }
-
+/**
+ * Various services for a document implementation
+ * (currently only org.netbeans.editor.BaseDocument).
+ * <br/>
+ * This class together with EditorDocumentHandler allows an efficient
+ * performing of methods from {@link org.netbeans.api.editor.document.EditorDocumentUtils}.
+ *
+ * @author Miloslav Metelka
+ */
+public interface EditorDocumentServices {
+    
+    /**
+     * @see {@link org.netbeans.api.editor.document.EditorDocumentUtils#runExclusive(java.lang.Runnable)}.
+     */
+    void runExclusive(Document doc, Runnable r);
+    
 }

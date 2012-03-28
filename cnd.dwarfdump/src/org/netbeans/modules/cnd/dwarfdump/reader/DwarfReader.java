@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.dwarfdump.reader;
 
+import java.io.IOException;
 import org.netbeans.modules.cnd.dwarfdump.Magic;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATE;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
@@ -52,15 +53,14 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfAbbriviationTableSection;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfArangesSection;
+import org.netbeans.modules.cnd.dwarfdump.section.DwarfAttribute;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfDebugInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfMacroInfoSection;
+import org.netbeans.modules.cnd.dwarfdump.section.DwarfNameLookupTableSection;
+import org.netbeans.modules.cnd.dwarfdump.section.DwarfRelaDebugInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
 import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
-import org.netbeans.modules.cnd.dwarfdump.section.DwarfAttribute;
-import org.netbeans.modules.cnd.dwarfdump.section.DwarfNameLookupTableSection;
-import java.io.IOException;
-import org.netbeans.modules.cnd.dwarfdump.section.DwarfRelaDebugInfoSection;
 
 /**
  *
@@ -151,7 +151,7 @@ public class DwarfReader extends ElfReader {
     }
     
     @Override
-    ElfSection initSection(Integer sectionIdx, String sectionName) {
+    ElfSection initSection(Integer sectionIdx, String sectionName) throws IOException {
         if (sectionName.equals(SECTIONS.DEBUG_STR)) {
             return new StringTableSection(this, sectionIdx);
         }

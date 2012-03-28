@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
+import org.netbeans.modules.cnd.spi.remote.setup.RemoteSyncFactoryDefaultProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
@@ -187,7 +188,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
 
         if (create) {
             // Create a new unlisted record and return it
-            RemoteServerRecord record = new RemoteServerRecord(env, null, RemoteSyncFactory.getDefault(), false);
+            RemoteServerRecord record = new RemoteServerRecord(env, null, RemoteServerList.getDefaultFactory(env), false);
             unlisted.add(record);
             return record;
         } else {
@@ -245,7 +246,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
 
         RemoteServerRecord record = null;
         if (syncFactory == null) {
-            syncFactory = RemoteSyncFactory.getDefault();
+            syncFactory = RemoteServerList.getDefaultFactory(execEnv);
         }
 
         // First off, check if we already have this record
@@ -297,6 +298,15 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             }
         }
         return instance;
+    }
+
+    public static RemoteSyncFactory getDefaultFactory(ExecutionEnvironment env) {
+        RemoteSyncFactoryDefaultProvider rsfdp = Lookup.getDefault().lookup(RemoteSyncFactoryDefaultProvider.class);
+        if (rsfdp != null) {
+            return rsfdp.getDefaultFactory(env);
+        } else {
+            return RemoteSyncFactory.getDefault();
+        }
     }
 
     public static void storePreferences() {

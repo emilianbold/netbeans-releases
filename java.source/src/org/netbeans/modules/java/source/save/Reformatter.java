@@ -416,6 +416,7 @@ public class Reformatter implements ReformatTask {
         private int lastBlankLines;
         private int lastBlankLinesTokenIndex;
         private Diff lastBlankLinesDiff;
+        private int lastNewLineOffset;
         private boolean afterAnnotation;
         private boolean wrapAnnotation;
         private boolean checkWrap;
@@ -453,6 +454,7 @@ public class Reformatter implements ReformatTask {
             this.lastBlankLines = -1;
             this.lastBlankLinesTokenIndex = -1;
             this.lastBlankLinesDiff = null;
+            this.lastNewLineOffset = -1;
             this.afterAnnotation = false;
             this.wrapAnnotation = false;
             this.fieldGroup = false;
@@ -1478,6 +1480,7 @@ public class Reformatter implements ReformatTask {
                         int index = tokens.index();
                         int c = col;
                         Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                        int o = tokens.offset();
                         boolean oldCheckWrap = checkWrap;
                         checkWrap = true;
                         try {
@@ -1487,7 +1490,7 @@ public class Reformatter implements ReformatTask {
                         } finally {
                             checkWrap = oldCheckWrap;
                         }
-                        if (col > rightMargin) {
+                        if (col > rightMargin && o >= lastNewLineOffset) {
                             rollback(index, c, d);
                             if (cs.wrapAfterDotInChainedMethodCalls()) {
                                 accept(DOT);
@@ -2801,7 +2804,9 @@ public class Reformatter implements ReformatTask {
                 } else {
                     return;
                 }
-            }        
+            }
+            lastNewLineOffset = tokens.offset();
+            checkWrap = false;
             Token<JavaTokenId> lastToken = null;
             int after = 0;
             do {
@@ -3005,6 +3010,7 @@ public class Reformatter implements ReformatTask {
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
+                    int o = tokens.offset();
                     boolean oldCheckWrap = checkWrap;
                     checkWrap = true;
                     try {
@@ -3018,7 +3024,7 @@ public class Reformatter implements ReformatTask {
                     } finally {
                         checkWrap = oldCheckWrap;
                     }
-                    if (this.col > rightMargin) {
+                    if (this.col > rightMargin && o >= lastNewLineOffset) {
                         rollback(index, c, d);
                         indent = alignIndent >= 0 ? alignIndent : old;
                         newline();
@@ -3057,6 +3063,7 @@ public class Reformatter implements ReformatTask {
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
+                    int o = tokens.offset();
                     boolean oldCheckWrap = checkWrap;
                     checkWrap = true;
                     try {
@@ -3070,7 +3077,7 @@ public class Reformatter implements ReformatTask {
                     } finally {
                         checkWrap = oldCheckWrap;
                     }
-                    if (col > rightMargin) {
+                    if (col > rightMargin && o >= lastNewLineOffset) {
                         rollback(index, c, d);
                         indent = alignIndent >= 0 ? alignIndent : old;
                         newline();
@@ -3116,6 +3123,7 @@ public class Reformatter implements ReformatTask {
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
+                    int o = tokens.offset();
                     boolean oldCheckWrap = checkWrap;
                     checkWrap = true;
                     try {
@@ -3136,7 +3144,7 @@ public class Reformatter implements ReformatTask {
                     } finally {
                         checkWrap = oldCheckWrap;
                     }
-                    if (col > rightMargin) {
+                    if (col > rightMargin && o >= lastNewLineOffset) {
                         rollback(index, c, d);
                         indent = alignIndent >= 0 ? alignIndent : old;
                         newline();

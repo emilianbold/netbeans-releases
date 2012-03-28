@@ -268,6 +268,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             }
             actions.add(CommonProjectActions.setProjectConfigurationAction());
             actions.add(null);
+            actions.add(CommonProjectActions.setAsMainProjectAction());
             //actions.add(CommonProjectActions.openSubprojectsAction()); // does not make sense for php now
             actions.add(CommonProjectActions.closeProjectAction());
             actions.add(null);

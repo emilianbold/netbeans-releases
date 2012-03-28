@@ -43,7 +43,6 @@ package org.netbeans.cnd.spi.lexer;
 
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 
 /**
@@ -61,5 +60,5 @@ public interface CndLexerLanguageFilterProvider {
      * @param doc
      * @return 
      */
-    Filter<CppTokenId> getFilter(Language<?> language, Document doc);
+    Filter<?> getFilter(Language<?> language, Document doc);
 }

@@ -621,4 +621,9 @@ public abstract class BasicAbstractResultsPanel
             shift(direction);
         }
     }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        return getOutlineView().requestFocusInWindow();
+    }
 }

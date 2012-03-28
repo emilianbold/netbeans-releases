@@ -50,8 +50,11 @@ import org.openide.nodes.AbstractNode;
 import java.util.Collections;
 import java.util.Arrays;
 import java.awt.BorderLayout;
+import java.awt.GraphicsEnvironment;
 import org.openide.explorer.view.BeanTreeView;
 import javax.swing.JLabel;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.HelpCtx;
 
@@ -60,6 +63,10 @@ import org.openide.util.HelpCtx;
  * @see "#14701"
  */
 public class FindHelpTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(FindHelpTest.class);
+    }
 
     public FindHelpTest(String name) {
         super(name);

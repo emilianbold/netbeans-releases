@@ -70,6 +70,7 @@ import org.netbeans.Stamps;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 
 /** Controller of the IDE's whole module system.
@@ -458,6 +459,20 @@ public final class ModuleSystem {
      */
     public String getEffectiveClasspath(Module m) {
         return installer.getEffectiveClasspath(m);
+    }
+
+    /** Checks whether the provided module will be visible in autoupdate client.
+     * Seeks for AutoUpdate-Show-In-Client attribute in manifest. The module
+     * is visible if the attribute is missing or if it is set to <code>true</code>.
+     * Uses caches to remember the value between restarts.
+     * 
+     * @since 1.38
+     * @param mi the module to test
+     * @return <code>true</code> if the module is supposed to be visible in 
+     *   autoupdate client
+     */
+    public boolean isShowInAutoUpdateClient(ModuleInfo mi) {
+        return this.installer.isShowInAutoUpdateClient(mi);
     }
     
     /** Dummy event handler that does not print anything.

@@ -162,7 +162,11 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         });
         ConnectionManager.getInstance().addConnectionListener(this);
     }
-    
+
+    /*package*/ void dispose() {
+        ConnectionManager.getInstance().removeConnectionListener(this);
+    }
+
     @Override
     public void connected(ExecutionEnvironment env) {
         readOnlyConnectNotification.compareAndSet(true, false);

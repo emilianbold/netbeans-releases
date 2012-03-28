@@ -299,16 +299,21 @@ public class TopSecurityManager extends SecurityManager {
     private final Set<String> warnedClassesNDE = new HashSet<String>(25);
     private static final Set<String> warnedClassesNH = new HashSet<String>(25);
     static {
+        // XXX cleaner would be to use @SuppressWarnings, but that has Retention(SOURCE), and not all these can use org.netbeans.api.annotations.common
         warnedClassesNH.add("org.openide.modules.Places");
         warnedClassesNH.add("org.netbeans.MainImpl"); // NOI18N
         warnedClassesNH.add("org.netbeans.MainImpl$BootClassLoader");
-        warnedClassesNH.add("org.netbeans.org.netbeans.CLIHandler");
+        warnedClassesNH.add("org.netbeans.CLIHandler");
         warnedClassesNH.add("org.netbeans.Stamps"); // NOI18N
         warnedClassesNH.add("org.netbeans.core.startup.InstalledFileLocatorImpl"); // NOI18N
         warnedClassesNH.add("org.netbeans.core.startup.CLIOptions");
+        warnedClassesNH.add("org.netbeans.core.startup.preferences.RelPaths");
+        warnedClassesNH.add("org.netbeans.core.startup.layers.BinaryFS");
+        warnedClassesNH.add("org.netbeans.modules.netbinox.NetbinoxFactory");
         warnedClassesNH.add("org.netbeans.updater.UpdateTracking"); // NOI18N
         warnedClassesNH.add("org.netbeans.core.ui.ProductInformationPanel"); // #47429; NOI18N
         warnedClassesNH.add("org.netbeans.lib.uihandler.LogFormatter");
+        warnedClassesNH.add("org.netbeans.modules.project.libraries.LibrariesStorage");
         warnedClassesNH.add("org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties"); // AS bundle is not in any cluster
         warnedClassesNH.add("org.netbeans.modules.apisupport.project.universe.NbPlatform"); // defaultPlatformLocation
     }

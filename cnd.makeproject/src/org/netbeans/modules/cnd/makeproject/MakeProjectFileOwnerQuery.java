@@ -42,10 +42,11 @@
 
 package org.netbeans.modules.cnd.makeproject;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -71,6 +72,31 @@ import org.openide.util.Lookup.Provider;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class, position=98)
 public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
     private static final String PATH_SEPARATOR = "/"; //NOI18N
+    private static final class Cache {
+        private FileObject lastFO;
+        private Project lastProject;
+
+        public boolean getLastProject(FileObject fo, Project out[]) {
+            if (fo == lastFO) {
+                out[0] = lastProject;
+                return true;
+            }
+            return false;
+        }
+
+        public void cacheQuery(FileObject fo, Project prj) {
+            lastFO = fo;
+            lastProject = prj;
+        }
+    }
+
+    private final ThreadLocal<Reference<Cache>> cache = new ThreadLocal<Reference<Cache>>() {
+
+        @Override
+        protected Reference<Cache> initialValue() {
+            return new WeakReference<Cache>(new Cache());
+        }
+    };
 
     @Override
     public Project getOwner(URI uri) {
@@ -91,6 +117,15 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
     public Project getOwner(FileObject fo) {
         if (fo == null) {
             return null;
+        }
+        Reference<Cache> ref = cache.get();
+        Cache cachedValue = ref.get();
+        Project out[] = new Project[] { null };
+        if (cachedValue != null && cachedValue.getLastProject(fo, out)) {
+            return out[0];
+        } else {
+            cachedValue = new Cache();
+            cache.set(new WeakReference<Cache>(cachedValue));
         }
         FileSystem fs;
         try {
@@ -116,19 +151,21 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
                         } else if (fo.isFolder()) {
                             mine = descriptor.findFolderByPath(path) != null;
                         }
+                        if (!mine && isMine(descriptor.getAbsoluteSourceRoots(), fo, path)) {
+                            mine = true;
+                        }
+                        if (!mine && isMine(descriptor.getAbsoluteTestRoots(), fo, path)) {
+                            mine = true;
+                        }
                         if (mine) {
-                            return (Project) project;
-                        }
-                        if (isMine(descriptor.getAbsoluteSourceRoots(), fo, path)) {
-                             return (Project) project;
-                        }
-                        if (isMine(descriptor.getAbsoluteTestRoots(), fo, path)) {
+                            cachedValue.cacheQuery(fo, (Project)project);
                             return (Project) project;
                         }
                     }
                 }
             }
         }
+        cachedValue.cacheQuery(fo, null);
         return null;
     }
     

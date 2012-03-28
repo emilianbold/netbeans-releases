@@ -177,7 +177,7 @@ public final class EncapsulateFieldUI implements RefactoringUI, JavaRefactoringU
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(EncapsulateFieldUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.EncapsulateFieldUI"); // NOI18N
     }
     
     /**
