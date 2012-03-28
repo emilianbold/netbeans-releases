@@ -402,10 +402,7 @@ public class TestPropertiesStorage extends TestFileStorage {
         assertNull(storage.toPropertiesFile());
         assertNull(storage.toFolder());
         assertFalse(storage.existsNode());
-        try {
-            pref.sync();
-            fail();
-        } catch (IllegalStateException ise) {}
+        pref.sync();
     }
 
     public void testRemoveParentNode() throws BackingStoreException {
