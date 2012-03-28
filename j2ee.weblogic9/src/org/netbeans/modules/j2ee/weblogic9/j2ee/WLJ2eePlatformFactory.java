@@ -328,7 +328,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 } else {
                     serverVersion = WLPluginProperties.getServerVersion(serverRoot);
                 }
-                if (JPA2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
+                if (serverVersion != null && JPA2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
                     filter = new FilenameFilter() {
                         @Override
                         public boolean accept(File dir, String name) {
