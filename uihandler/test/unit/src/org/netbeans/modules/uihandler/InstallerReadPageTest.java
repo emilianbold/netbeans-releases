@@ -49,6 +49,7 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
@@ -60,6 +61,8 @@ import java.util.Locale;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JScrollPane;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
@@ -73,6 +76,10 @@ import org.openide.NotifyDescriptor;
  */
 public class InstallerReadPageTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(InstallerReadPageTest.class);
+    }
+
     public InstallerReadPageTest(String testName) {
         super(testName);
     }
