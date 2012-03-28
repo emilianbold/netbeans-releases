@@ -44,9 +44,7 @@
 
 package org.netbeans.modules.groovy.grailsproject.ui;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -56,6 +54,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.support.api.GroovySources;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
@@ -66,9 +65,9 @@ import org.openide.util.ChangeSupport;
 
 /**
  *
- * @author Martin Adamek
+ * @author Martin Adamek, Martin Janicek
  */
-@NodeFactory.Registration(projectType="org-netbeans-modules-groovy-grailsproject")
+@NodeFactory.Registration(projectType = "org-netbeans-modules-groovy-grailsproject")
 public class SourceNodeFactory implements NodeFactory {
 
     public SourceNodeFactory() {
@@ -76,20 +75,29 @@ public class SourceNodeFactory implements NodeFactory {
 
     @Override
     public NodeList<?> createNodes(Project p) {
-
-        GrailsProject project = p.getLookup().lookup(GrailsProject.class);
-        assert project != null;
-        return new SourcesNodeList(project);
+        return new SourcesNodeList(p.getLookup().lookup(GrailsProject.class));
     }
 
     private static class SourcesNodeList implements NodeList<SourceGroupKey>, ChangeListener {
 
+        // Contains a set of String for which tree view node will be created
+        // Every node not contained in this bag will use package view node
+        private static final Set<String> treeViewBag = new HashSet<String>();
+        static {
+            treeViewBag.add("conf"); // NOI18N
+            treeViewBag.add("i18n"); // NOI18N
+            treeViewBag.add("views"); // NOI18N
+            treeViewBag.add("web-app"); // NOI18N
+            treeViewBag.add("lib"); // NOI18N
+        }
+
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private GrailsProject project;
 
-        
-        public SourcesNodeList(GrailsProject proj) {
-            this.project = proj;
+
+        public SourcesNodeList(GrailsProject project) {
+            assert project != null;
+            this.project = project;
         }
 
         @Override
@@ -107,7 +115,7 @@ public class SourceNodeFactory implements NodeFactory {
                     result.add(new SourceGroupKey(sourceGroup, projectDir));
                 }
             }
-            
+
             Collections.sort(result);
             return result;
         }
@@ -124,12 +132,18 @@ public class SourceNodeFactory implements NodeFactory {
 
         @Override
         public Node node(SourceGroupKey key) {
-            try {
-                DataFolder folder = DataFolder.findFolder(key.fileObject);
-                return new TreeRootNode(folder, key.group, project);
-            } catch (IllegalArgumentException ex) {
-                return null; // It might happened sometimes - see issue 208426
+            String groupPath = key.group.getName();
+            String groupName = groupPath.substring(groupPath.lastIndexOf("/") + 1); // NOI18N
+
+            if (treeViewBag.contains(groupName)) {
+                try {
+                    DataFolder folder = DataFolder.findFolder(key.fileObject);
+                    return new TreeRootNode(folder, key.group, project);
+                } catch (IllegalArgumentException ex) {
+                    return null; // It might happened sometimes - see issue 208426
+                }
             }
+            return PackageView.createPackageView(key.group);
         }
 
         @Override
@@ -147,6 +161,7 @@ public class SourceNodeFactory implements NodeFactory {
             // setKeys(getKeys());
             // The caller holds ProjectManager.mutex() read lock
             SwingUtilities.invokeLater(new Runnable() {
+
                 @Override
                 public void run() {
                     changeSupport.fireChange();
@@ -161,22 +176,21 @@ public class SourceNodeFactory implements NodeFactory {
 
     private static class SourceGroupKey implements Comparable<SourceGroupKey> {
 
-        private final SourceGroup group;
-        private final FileObject projectDir;
-        private final FileObject fileObject;
-        
+        public final SourceGroup group;
+        public final FileObject fileObject;
+        public final FileObject projectDir;
+
 
         SourceGroupKey(SourceGroup group, FileObject projectDir) {
             this.group = group;
-            this.projectDir = projectDir;
             this.fileObject = group.getRootFolder();
+            this.projectDir = projectDir;
         }
 
         @Override
         public int hashCode() {
             return fileObject.hashCode();
         }
-
 
         @Override
         public int compareTo(SourceGroupKey o) {
@@ -187,7 +201,6 @@ public class SourceNodeFactory implements NodeFactory {
 
         @Override
         public boolean equals(Object obj) {
-
             if (!(obj instanceof SourceGroupKey)) {
                 return false;
             } else {
