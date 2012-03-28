@@ -1447,7 +1447,7 @@ abstract public class CsmCompletionQuery {
                                         if (first && !findType) {
                                             lastType = findExactVarType(var, varPos);
                                         }
-                                        if (lastType == null) {
+                                        if (lastType == null || lastType.getClassifierText().toString().equals("auto")) { // NOI18N
                                             // try to find with resolver
                                             CompletionResolver.Result res = null;
                                             compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
@@ -1563,7 +1563,7 @@ abstract public class CsmCompletionQuery {
                                             // IZ#143044, IZ#160677
                                             // There is no need for searching in parents for global declarations/definitions
                                             // in case of csope access
-                                            boolean inspectParentClasses = (this.contextElement != null || !scopeAccessedClassifier);
+                                            boolean inspectParentClasses = (this.contextElement != null || !scopeAccessedClassifier || staticOnly);
                                             List res = findFieldsAndMethods(finder, contextElement, classifier, var, openingSource, staticOnly && !memberPointer, false, inspectParentClasses, this.scopeAccessedClassifier, skipConstructors, sort);
                                             List nestedClassifiers = findNestedClassifiers(finder, contextElement, classifier, var, openingSource, true, sort);
                                             res.addAll(nestedClassifiers);
@@ -1680,7 +1680,10 @@ abstract public class CsmCompletionQuery {
                     break;
 
                 case CsmCompletionExpression.GENERIC_TYPE: {
-                    CsmType typ = resolveType(item.getParameter(0));
+                    CsmType typ = null;
+                    if(first) {
+                        typ = resolveType(item.getParameter(0));
+                    }
                     if(typ == null) {
                         boolean oldFindType = findType;
                         findType = true;

@@ -166,7 +166,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
         AtomicBoolean hasClassifier = new AtomicBoolean(false);
         for (CsmClassifier decl : decls) {
             if (!classesOnly || CsmKindUtilities.isClass(decl)) {
-                if (first == null || ForwardClass.isForwardClass(first)) {
+                if ((first == null || ForwardClass.isForwardClass(first))) {
                     first = decl;
                 }
                 if (ir.isObjectVisible(file, decl)) {

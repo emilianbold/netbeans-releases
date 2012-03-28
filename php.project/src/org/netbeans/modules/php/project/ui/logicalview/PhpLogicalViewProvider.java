@@ -314,7 +314,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx(PhpLogicalViewProvider.class);
+            return new HelpCtx("org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider"); // NOI18N
         }
 
         private static Children createChildren(PhpProject project) {

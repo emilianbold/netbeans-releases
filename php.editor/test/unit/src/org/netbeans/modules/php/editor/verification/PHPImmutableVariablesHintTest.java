@@ -39,31 +39,36 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.source.bridge;
+package org.netbeans.modules.php.editor.verification;
 
-import javax.swing.text.Document;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.cnd.api.lexer.Filter;
-import org.netbeans.cnd.spi.lexer.CndLexerLanguageFilterProvider;
-import org.netbeans.modules.cnd.debug.DebugUtils;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.prefs.Preferences;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@ServiceProvider(path=CndLexerLanguageFilterProvider.REGISTRATION_PATH, service=CndLexerLanguageFilterProvider.class, position=1000)
-public class MakeProjectLanguageFlavorProvider implements CndLexerLanguageFilterProvider {
+public class PHPImmutableVariablesHintTest extends PHPHintsTestBase {
 
-    @Override
-    public Filter<?> getFilter(org.netbeans.api.lexer.Language<?> language, Document doc) {
-        if (language == CppTokenId.languageCpp()) {
-            // check if it should have C++11 flavor
-            if (DebugUtils.getBoolean("cnd.modelimpl.cpp11", false)) {
-                return CndLexerUtilities.getGccCpp11Filter();
-            }
-        }
-        return null;
+    public PHPImmutableVariablesHintTest(String testName) {
+        super(testName);
     }
+
+    public void testWith1AllowedAssignments() throws Exception {
+        checkHintsInStartEndFile(new ImmutablevariablesHintStub(1), "testImmutableVariablesHint.php");
+    }
+
+    private class ImmutablevariablesHintStub extends ImmutableVariablesHint {
+        private final int numberOfAllowedAssignments;
+
+        public ImmutablevariablesHintStub(final int numberOfAllowedAssignments) {
+            this.numberOfAllowedAssignments = numberOfAllowedAssignments;
+        }
+
+        @Override
+        public int getNumberOfAllowedAssignments(Preferences preferences) {
+            return numberOfAllowedAssignments;
+        }
+
+    }
+
 }
