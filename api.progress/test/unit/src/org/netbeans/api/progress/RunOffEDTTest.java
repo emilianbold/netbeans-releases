@@ -41,11 +41,14 @@
  */
 package org.netbeans.api.progress;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
@@ -55,6 +58,10 @@ import org.openide.util.Exceptions;
  * @author Tomas Holy
  */
 public class RunOffEDTTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(RunOffEDTTest.class);
+    }
 
     {
         System.setProperty("org.netbeans.modules.progress.ui.WARNING_TIME", "1000");

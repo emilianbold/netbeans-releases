@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.autoupdate.ui;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction;
 import org.openide.awt.Actions;
@@ -52,6 +55,10 @@ import org.openide.awt.Actions;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class InitialTabTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(InitialTabTest.class);
+    }
 
     public InitialTabTest(String name) {
         super(name);

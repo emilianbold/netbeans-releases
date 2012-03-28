@@ -43,11 +43,14 @@ package org.netbeans.core.output2;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Exceptions;
@@ -64,6 +67,10 @@ import org.openide.windows.OutputListener;
  * @author Tomas Holy
  */
 public class IOExtensionsTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(IOExtensionsTest.class);
+    }
 
     public IOExtensionsTest(String name) {
         super(name);

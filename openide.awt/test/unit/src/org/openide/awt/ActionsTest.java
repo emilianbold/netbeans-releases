@@ -45,6 +45,7 @@ package org.openide.awt;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -57,6 +58,8 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.HelpCtx;
@@ -70,6 +73,11 @@ import org.openide.util.actions.SystemAction;
  * @author David Strupl
  */
 public class ActionsTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ActionsTest.class);
+    }
+
     static {
         MockServices.setServices(TestConnector.class);
         assertFalse("Initialized Actions class outside of AWT thread", EventQueue.isDispatchThread());
