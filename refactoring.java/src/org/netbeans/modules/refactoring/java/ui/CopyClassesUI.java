@@ -219,7 +219,7 @@ public class CopyClassesUI implements RefactoringUI, RefactoringUIBypass {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(CopyClassesUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.CopyClassesUI"); // NOI18N
     }
 
     @Override
