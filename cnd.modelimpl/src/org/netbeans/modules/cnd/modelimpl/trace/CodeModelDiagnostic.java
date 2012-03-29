@@ -140,7 +140,7 @@ public final class CodeModelDiagnostic {
                         for (FSPath path : item.getSystemIncludePaths()) {
                             String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
                             FileObject valid = path.getFileObject();
-                            if (valid != null && valid.isValid()) {
+                            if (valid != null && !valid.isValid()) {
                                 valid = null;
                             }
                             printOut.printf("\t\t%s%s\n", msg, valid == null ? "[invalid]" : "");// NOI18N 
