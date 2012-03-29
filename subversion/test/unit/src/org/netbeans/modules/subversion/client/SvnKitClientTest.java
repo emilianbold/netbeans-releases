@@ -69,7 +69,6 @@ public class SvnKitClientTest extends NbTestCase {
 
         TestSuite suite = new TestSuite();        
         suite.addTestSuite(AddTestHidden.class);
-        // TODO stabilize test
         suite.addTestSuite(BlameTestHidden.class);
         suite.addTestSuite(CatTestHidden.class);
         suite.addTestSuite(CheckoutTestHidden.class);
@@ -89,7 +88,6 @@ public class SvnKitClientTest extends NbTestCase {
         suite.addTestSuite(RemoveTestHidden.class);
         suite.addTestSuite(ResolvedTestHidden.class);
         suite.addTestSuite(RevertTestHidden.class);
-        // TODO stabilize test
         suite.addTestSuite(StatusTestHidden.class);
         suite.addTestSuite(TreeConflictsTestHidden.class);
         suite.addTestSuite(SwitchToTestHidden.class);
