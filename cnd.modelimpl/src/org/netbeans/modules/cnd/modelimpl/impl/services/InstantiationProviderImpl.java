@@ -419,10 +419,10 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 for (CsmOffsetableDeclaration decl : specs) {
                     if (decl instanceof ClassImplSpecialization) {
                         ClassImplSpecialization spec = (ClassImplSpecialization) decl;
-                        if(spec.getSpecializationParameters().size() >= params.size()) {
+//                        if(spec.getSpecializationParameters().size() >= params.size()) {
                             specialization = spec;
                             break;
-                        }
+//                        }
                     }
                 }
             }

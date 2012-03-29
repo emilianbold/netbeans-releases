@@ -744,6 +744,22 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "$this->controlPrototype->class(self::CS^S_CLASS);", "const ^CSS_CLASS = 'datepicker';");
     }
 
+    public void testIssue147517_01() throws Exception {
+        checkDeclaration(getTestPath(), "require_once 'driv^er.php';", "^<?php//driver");
+    }
+
+    public void testIssue147517_02() throws Exception {
+        checkDeclaration(getTestPath(), "require ('man^ager.php');", "^<?php//manager");
+    }
+
+    public void testIssue147517_03() throws Exception {
+        checkDeclaration(getTestPath(), "include 'facto^ry.php';", "^<?php//factory");
+    }
+
+    public void testIssue147517_04() throws Exception {
+        checkDeclaration(getTestPath(), "include_once ( 'con^tainer.php');", "^<?php//container");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

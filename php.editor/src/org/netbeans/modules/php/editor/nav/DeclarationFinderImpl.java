@@ -198,7 +198,8 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 }
                 if (id.equals(PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING)) {
                     OffsetRange retval = new OffsetRange(ts.offset(), ts.offset() + token.length());
-                    for (int i = 0; i < 2 && ts.movePrevious(); i++) {
+                    int maxForgingTokens = 4; // REQUIRE_INCLUDE_TOKEN [WS] [OPENING_BRACE] [WS] = include_once ( 'file.php');
+                    for (int i = 0; i < maxForgingTokens && ts.movePrevious(); i++) {
                         token = ts.token();
                         id = token.id();
                         if (id.equals(PHPTokenId.PHP_INCLUDE) || id.equals(PHPTokenId.PHP_INCLUDE_ONCE) || id.equals(PHPTokenId.PHP_REQUIRE) || id.equals(PHPTokenId.PHP_REQUIRE_ONCE)) {

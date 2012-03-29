@@ -60,6 +60,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -67,6 +69,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -237,6 +240,7 @@ public class STSWizardCreator {
         serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project), true);
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
                        
+        final String[] fqn = new String[1];
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
 
@@ -247,6 +251,12 @@ public class STSWizardCreator {
                 if (genUtils!=null) {     
                     TreeMaker make = workingCopy.getTreeMaker();
                     ClassTree javaClass = genUtils.getClassTree();
+                    Element element = workingCopy.getTrees().getElement( 
+                            workingCopy.getTrees().getPath(
+                                    workingCopy.getCompilationUnit(), javaClass));
+                    if ( element instanceof TypeElement ){
+                        fqn[0] = ((TypeElement)element).getQualifiedName().toString();
+                    }
                     ClassTree modifiedClass;
                     
                     // not found on classpath, because the runtime jar is not on classpath by default
@@ -386,7 +396,8 @@ public class STSWizardCreator {
         
         targetSource.runModificationTask(task).commit();
 
-        String mexUrl = "/" + targetName + "Service/mex";
+        String url = "/" + targetName + "Service";
+        String mexUrl = url +"/mex";
 
         WsitProvider wsitProvider = project.getLookup().lookup(WsitProvider.class);
         if (wsitProvider != null) {
@@ -405,6 +416,15 @@ public class STSWizardCreator {
         endpoint.setImplementation(Util.MEX_CLASS_NAME);
         endpoint.setUrlPattern(mexUrl);
         endpoints.addEnpoint(endpoint);
+        
+        if ( fqn[0]!= null ){
+            endpoint = endpoints.newEndpoint();
+            endpoint.setEndpointName(targetName);
+            endpoint.setImplementation(fqn[0]);
+            endpoint.setUrlPattern(url);
+            endpoints.addEnpoint(endpoint);
+        }
+        
         FileLock lock = null;
         OutputStream os = null;
         synchronized (this) {
