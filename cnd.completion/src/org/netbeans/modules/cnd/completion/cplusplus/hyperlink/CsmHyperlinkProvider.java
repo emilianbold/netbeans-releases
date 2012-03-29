@@ -141,7 +141,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             return false;
         }
         TokenItem<TokenId> jumpToken = getJumpToken();
-        CsmOffsetable primary = (CsmOffsetable) findTargetObject(doc, jumpToken, offset, false);
+        CsmObject primary = findTargetObject(doc, jumpToken, offset, false);
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
         CsmOffsetable item = toJumpObject(primary, csmFile, offset);
         if (type == HyperlinkType.ALT_HYPERLINK) {

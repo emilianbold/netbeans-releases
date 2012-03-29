@@ -227,6 +227,11 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
         }
 
         @Override
+        public void visit(StaticFieldAccess node) {
+            // intentionally
+        }
+
+        @Override
         public void visit(Variable node) {
             if (variableAssignment) {
                 processVariableAssignment(node);

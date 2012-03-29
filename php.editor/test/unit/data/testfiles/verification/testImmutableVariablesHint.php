@@ -19,5 +19,12 @@ try {
 $test = "ok";
 $test = "2 - should fail";
 
+class y {
+    private static function x() {
+        $h = '';
+        self::$h = 1;
+    }
+}
+
 //END
 ?>

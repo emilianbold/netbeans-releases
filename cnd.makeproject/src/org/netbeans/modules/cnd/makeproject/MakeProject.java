@@ -92,11 +92,13 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder.FileObjectNameMatcher;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
+import org.netbeans.modules.cnd.makeproject.ui.FolderSearchInfo.FileObjectNameMatcherImpl;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
@@ -1358,20 +1360,27 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
 
         @Override
-        public Iterator<FileObject> filesToSearch(SearchScopeOptions options, SearchListener listener, AtomicBoolean terminated) {
+        public Iterator<FileObject> filesToSearch(final SearchScopeOptions options, SearchListener listener, final AtomicBoolean terminated) {
+            FileObjectNameMatcherImpl matcher = new FileObjectNameMatcherImpl(options, terminated);
             MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             Folder rootFolder = projectDescriptor.getLogicalFolders();
-            Set<FileObject> res = rootFolder.getAllItemsAsFileObjectSet(false, "text/"); // NOI18N
+            Set<FileObject> res = rootFolder.getAllItemsAsFileObjectSet(false, matcher);
             FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
-            addFolder(res, baseDirFileObject.getFileObject("nbproject")); // NOI18N
-            addFolder(res, baseDirFileObject.getFileObject("nbproject/private")); // NOI18N
+            addFolder(res, baseDirFileObject.getFileObject("nbproject"), matcher); // NOI18N
+            addFolder(res, baseDirFileObject.getFileObject("nbproject/private"), matcher); // NOI18N
             return res.iterator();
         }
 
-        private void addFolder(Set<FileObject> res, FileObject fo) {
+        private void addFolder(Set<FileObject> res, FileObject fo, FileObjectNameMatcher matcher) {
             if (fo != null && fo.isFolder() && fo.isValid()) {
+                if (matcher.isTerminated()) {
+                    return;
+                }
                 for (FileObject f : fo.getChildren()) {
-                    if (f.isData()) {
+                    if (matcher.isTerminated()) {
+                        return;
+                    }
+                    if (f.isData() && matcher.pathMatches(f)) {
                         res.add(f);
                     }
                 }
