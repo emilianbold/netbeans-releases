@@ -152,7 +152,8 @@ public class APTHandlersSupportImpl {
     public static StateKey getMacroMapID(APTPreprocHandler.State state){
         assert state != null;
         APTFileMacroMap.FileStateImpl macro = (FileStateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
-        return macro.getStateKey();
+        StartEntry extractStartEntry = extractStartEntry(((APTPreprocHandlerImpl.StateImpl)state).inclState);
+        return macro.getStateKey(extractStartEntry == null ? null : extractStartEntry.getStartFileProject());
     }
 
     public static boolean isEmptyActiveMacroMap(APTPreprocHandler.State state) {

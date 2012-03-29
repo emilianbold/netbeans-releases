@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.debugger.gdb2;
 
-package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerCommand;
 
 /**
- * Holds the command string created by HandlerExpert or any 
- * error condition.
  *
- * We used to use plain String's for that but in time we needed to pass
- * error stuff, so the String became a HandlerCommand.
+ * @author Egor Ushakov
  */
-
-public class HandlerCommand {
-    private final String data;
-    private final boolean error;
-
-    /**
-     * Create a HandlerCommand which is not an error.
-     */
-    public static HandlerCommand makeCommand(String command) {
-	return new HandlerCommand(command, false);
+public class GdbHandlerCommand extends HandlerCommand {
+    public enum Type {CHANGE, REPLACE};
+    
+    private final Type type;
+    private GdbHandlerCommand next = null;
+    
+    GdbHandlerCommand(Type type, String changeCommand, boolean error) {
+        super(changeCommand, false);
+        this.type = type;
+    }
+    
+    public Type getType() {
+        return type;
     }
 
-    /**
-     * Create a HandlerCommand which is an error.
-     */
-    public static HandlerCommand makeError(String error) {
-	return new HandlerCommand(error, true);
+    public GdbHandlerCommand getNext() {
+        return next;
     }
 
-    protected HandlerCommand(String data, boolean error) {
-	this.data = data;
-	this.error = error;
+    public void setNext(GdbHandlerCommand next) {
+        this.next = next;
     }
-
-    public boolean isError() {
-	return error;
-    }
-
-    public String getData() {
-	return data;
-    }
+    
+    void onDone(){};
 }
