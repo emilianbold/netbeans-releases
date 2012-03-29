@@ -217,7 +217,12 @@ public class MakeProjectGeneratorImpl {
         final Iterator<LogicalFolderItemsInfo> logicalFolderItems = prjParams.getLogicalFolderItems();
         final Iterator<LogicalFoldersInfo> logicalFolders = prjParams.getLogicalFolders();
         String mainFile = prjParams.getMainFile();
-        MakeProjectHelper h = MakeProjectGenerator.createProject(dirFO, MakeProjectTypeImpl.TYPE);
+        MakeProjectHelper h = null;
+        try {
+            h = MakeProjectGenerator.createProject(dirFO, MakeProjectTypeImpl.TYPE);
+        } catch (IllegalArgumentException e) {
+            throw new IOException(e);
+        }
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.PROJECT_CONFIGURATION__NAME_NAME);
