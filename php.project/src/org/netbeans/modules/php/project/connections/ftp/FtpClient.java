@@ -90,6 +90,7 @@ public class FtpClient implements RemoteClient {
     };
 
     private final FtpConfiguration configuration;
+    private final InputOutput io;
     // @GuardedBy(this)
     private final FTPClient ftpClient;
     private final ProtocolCommandListener protocolCommandListener;
@@ -104,6 +105,7 @@ public class FtpClient implements RemoteClient {
     public FtpClient(FtpConfiguration configuration, InputOutput io) {
         assert configuration != null;
         this.configuration = configuration;
+        this.io = io;
 
         LOGGER.log(Level.FINE, "FTP client creating");
         ftpClient = createFtpClient(configuration);
@@ -598,9 +600,10 @@ public class FtpClient implements RemoteClient {
             keepAliveTask.cancel();
             silentDisconnect();
             WindowsJdk7WarningPanel.warn();
-            // #201828
-            RemoteException exc = new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotKeepAlive", configuration.getHost()), ex, getReplyString());
-            RemoteUtils.processRemoteException(exc);
+            // #209043 - just inform user in the log, do not show any dialog
+            if (io != null) {
+                io.getErr().println(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotKeepAlive", configuration.getHost()));
+            }
         }
     }
 
