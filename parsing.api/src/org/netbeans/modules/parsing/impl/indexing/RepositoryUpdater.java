@@ -1895,7 +1895,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private int progress = -1;
         //Indexer statistics <IndexerName,{InvocationCount,CumulativeTime}>
         private Map<String,int[]> indexerStatistics;
-
+        
         protected Work(
                 final boolean followUpJob,
                 final boolean checkEditor,
@@ -1984,12 +1984,14 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     value = Pair.<SourceIndexerFactory,Context>of(factory,ctx);
                     ctxToFinish.put(key,value);
                 }
+                long time = System.currentTimeMillis();
                 boolean vote = factory.scanStarted(value.second);
                 votes.put(factory,vote);
                 if (getLogContext() != null) {
                     long timeSpan = System.currentTimeMillis() - time;
                     getLogContext().addIndexerTime(factory.getIndexerName(), timeSpan);
                 }
+                logIndexerTime(factory.getIndexerName(), (int)(System.currentTimeMillis() - time));
             }
             for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
                 for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
@@ -2020,7 +2022,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                 }
             }
-        }long time = System.currentTimeMillis();
+        }
 
 
         protected final void scanFinished(final Collection<? extends Pair<SourceIndexerFactory,Context>> ctxToFinish) throws IOException {
@@ -4350,16 +4352,15 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final List<Work> follow = new ArrayList<Work>(1);
                         if (workInProgress != null) {
                             if (workInProgress.cancelBy(work,follow)) {
-                                // make the WiP absorbed by this follow-up work:
-                                if (workInProgress.logCtx != null) {
-                                    if (work.logCtx != null) {
-                                        work.logCtx.absorb(workInProgress.logCtx);
-                                    } else {
-                                        work.logCtx = workInProgress.logCtx;
-                                    }
+                            // make the WiP absorbed by this follow-up work:
+                            if (workInProgress.logCtx != null) {
+                                if (work.logCtx != null) {
+                                    work.logCtx.absorb(workInProgress.logCtx);
+                                } else {
+                                    work.logCtx = workInProgress.logCtx;
                                 }
-                                canceled = true;
                             }
+                            canceled = true;
                         }
 
                         // coalesce ordinary jobs
