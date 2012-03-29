@@ -2177,7 +2177,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     votes.put(factory, false);
                     Exceptions.printStackTrace(t);
                 }
-                logIndexerTime(factory.getIndexerName(), (int)(System.currentTimeMillis() - time));
+                if (getLogContext() != null) {
+                    long timeSpan = System.currentTimeMillis() - time;
+                    getLogContext().addIndexerTime(factory.getIndexerName(), timeSpan);
+                }
             }
         }
 
@@ -2222,8 +2225,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         votes.put(eif, false);
                         Exceptions.printStackTrace(t);
                     }
-                    long timeSpan = System.currentTimeMillis() - time;
-                    logIndexerTime(eif.getIndexerName(), (int)timeSpan);
+                    if (getLogContext() != null) {
+                        long timeSpan = System.currentTimeMillis() - time;
+                        getLogContext().addIndexerTime(eif.getIndexerName(), timeSpan);
+                    }
                 }
             }
         }
@@ -2240,8 +2245,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                     long time = System.currentTimeMillis();
                     entry.first.scanFinished(entry.second);
-                    long timeSpan = System.currentTimeMillis() - time;
-                    logIndexerTime(entry.first.getIndexerName(), (int)timeSpan);
+                    if (getLogContext() != null) {
+                        long timeSpan = System.currentTimeMillis() - time;
+                        getLogContext().addIndexerTime(entry.first.getIndexerName(), timeSpan);
+                    }
                     if (TEST_LOGGER.isLoggable(Level.FINEST)) {
                         TEST_LOGGER.log(Level.FINEST, "scanFinished:{0}:{1}", 
                                 new Object[] { entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm() });
