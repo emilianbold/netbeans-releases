@@ -54,6 +54,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -234,6 +236,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
     }
 
     public void testWhenScanFinished() throws Exception {
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.SOURCE) });
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final CountDownLatch startLatch = new CountDownLatch(1);
@@ -276,7 +279,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
                 "public interface Person {" +
                 "   String getName();" +
                 "}");
-        assertTrue("operation timed out", scanBlockingLatch.await(10, TimeUnit.SECONDS));
+        assertTrue("operation timed out", scanBlockingLatch.await(15, TimeUnit.SECONDS));
         assertSame(result, futureRef.get().get());
         t.join();
     }
