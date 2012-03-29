@@ -173,8 +173,7 @@ class ActionFilterNode extends FilterNode {
                 case MODE_PACKAGE:
                     FileObject fobj = n.getLookup().lookup(FileObject.class);
                     if (fobj == null) {
-                        assert false : "DataNode without FileObject in Lookup";  //NOI18N
-                        return new Node[0];
+                        return super.createNodes(n); // "Please wait..." perhaps
                     } else if (fobj.isFolder()) {
                         return new Node[] {new ActionFilterNode(n, MODE_PACKAGE, cpRoot, fobj)};
                     } else {
