@@ -396,11 +396,11 @@ public class BugzillaIssue {
 
     public Date getLastModifyDate() {
         String value = getFieldValue(IssueField.MODIFICATION);
-        if(value != null && !value.equals("")) {
+        if(value != null && !value.trim().equals("")) {
             try {
                 return MODIFIED_DATE_FORMAT.parse(value);
             } catch (ParseException ex) {
-                Bugzilla.LOG.log(Level.WARNING, null, ex);
+                Bugzilla.LOG.log(Level.WARNING, value, ex);
             }
         }
         return null;
@@ -417,11 +417,11 @@ public class BugzillaIssue {
 
     public Date getCreatedDate() {
         String value = getFieldValue(IssueField.CREATION);
-        if(value != null && !value.equals("")) {
+        if(value != null && !value.trim().equals("")) {
             try {
                 return CREATED_DATE_FORMAT.parse(value);
             } catch (ParseException ex) {
-                Bugzilla.LOG.log(Level.WARNING, null, ex);
+                Bugzilla.LOG.log(Level.WARNING, value, ex);
             }
         }
         return null;
@@ -1074,13 +1074,14 @@ public class BugzillaIssue {
 
         public Comment(TaskAttribute a) {
             Date d = null;
+            String s = "";
             try {
-                String s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
+                s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
                 if(s != null && !s.trim().equals("")) {                         // NOI18N
                     d = CC_DATE_FORMAT.parse(s);
                 }
             } catch (ParseException ex) {
-                Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                Bugzilla.LOG.log(Level.SEVERE, s, ex);
             }
             when = d;
             TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
@@ -1152,13 +1153,14 @@ public class BugzillaIssue {
         public Attachment(TaskAttribute ta) {
             id = ta.getValue();
             Date d = null;
+            String s = "";
             try {
-                String s = getMappedValue(ta, TaskAttribute.ATTACHMENT_DATE);
+                s = getMappedValue(ta, TaskAttribute.ATTACHMENT_DATE);
                 if(s != null && !s.trim().equals("")) {                         // NOI18N
                     d = CC_DATE_FORMAT.parse(s);
                 }
             } catch (ParseException ex) {
-                Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                Bugzilla.LOG.log(Level.SEVERE, s, ex);
             }
             date = d;
             filename = getMappedValue(ta, TaskAttribute.ATTACHMENT_FILENAME);
