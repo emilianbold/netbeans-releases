@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
+import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
  * utilities for working with APT states (macro-state, include-state, preproc-state)
@@ -132,27 +133,33 @@ public class APTHandlersSupport {
 
     public static final class StateKey {
         private final int crc1,crc2;
-        public StateKey(int crc1, int crc2){
+        private final Key startProjectKey;
+        private final int hashCode;
+        public StateKey(int crc1, int crc2, Key startProjectKey){
             this.crc1 = crc1;
             this.crc2 = crc2;
+            this.startProjectKey = startProjectKey;
+            int hash = startProjectKey == null ? 1 : startProjectKey.hashCode();
+            this.hashCode = crc1 ^ crc2 ^ hash;
         }
 
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof StateKey) {
-                return crc1 == ((StateKey)obj).crc1 && crc2 == ((StateKey)obj).crc2;
+                return crc1 == ((StateKey)obj).crc1 && crc2 == ((StateKey)obj).crc2 &&
+                       startProjectKey.equals(((StateKey)obj).startProjectKey);
             }
             return false;
         }
 
         @Override
         public int hashCode() {
-            return crc1 ^ crc2;
+            return hashCode;
         }
 
         @Override
         public String toString() {
-            return "<"+crc1+","+crc2+">"; // NOI18N
+            return "<"+crc1+","+crc2+">"+"from " + startProjectKey; // NOI18N
         }
     }
 }
