@@ -37,8 +37,9 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.plugins;
 
+import org.netbeans.modules.refactoring.java.api.InvertBooleanRefactoring;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -68,13 +69,13 @@ import org.openide.util.MapFormat;
  *
  * @author lahvac
  */
-public class InvertBooleanRefactoringPluginImpl implements RefactoringPlugin { //extends JackpotBasedRefactoring {
+public class InvertBooleanRefactoringPlugin implements RefactoringPlugin { //extends JackpotBasedRefactoring {
 
     private final InvertBooleanRefactoring invertBooleanRefactoring;
     
     protected final AtomicBoolean cancel = new AtomicBoolean();
     
-    public InvertBooleanRefactoringPluginImpl(InvertBooleanRefactoring replaceConstructorRefactoring) {
+    public InvertBooleanRefactoringPlugin(InvertBooleanRefactoring replaceConstructorRefactoring) {
         this.invertBooleanRefactoring = replaceConstructorRefactoring;
     }
 

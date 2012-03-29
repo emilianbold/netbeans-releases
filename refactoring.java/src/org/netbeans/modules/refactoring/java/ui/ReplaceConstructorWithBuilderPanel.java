@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.ui;
 
 import java.awt.Component;
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ import java.util.List;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorWithBuilderRefactoring.Setter;
+import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 
 /**
@@ -181,10 +181,10 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
     }
     
     public List<ReplaceConstructorWithBuilderRefactoring.Setter> getSetters() {
-        List<Setter> result = new ArrayList();
+        List<ReplaceConstructorWithBuilderRefactoring.Setter> result = new ArrayList();
         for (int i = 0; i < parameterTypes.size(); i++) {
             final String name = (String) ((DefaultTableModel) paramTable.getModel()).getValueAt(i, 0);
-            result.add(new Setter(
+            result.add(new ReplaceConstructorWithBuilderRefactoring.Setter(
                     (String) ((DefaultTableModel) paramTable.getModel()).getValueAt(i, 1),
                     parameterTypes.get(i),
                     (String) ((DefaultTableModel) paramTable.getModel()).getValueAt(i, 2),

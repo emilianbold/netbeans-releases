@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.test;
 
 import java.io.IOException;
 import java.util.Arrays;

@@ -40,8 +40,9 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.test;
 
+import org.netbeans.modules.refactoring.java.api.InvertBooleanRefactoring;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -61,9 +62,9 @@ import org.openide.filesystems.FileObject;
  *
  * @author lahvac
  */
-public class InvertBooleanRefactoringPluginImplTest extends RefTestBase {
+public class InvertBooleanTest extends RefTestBase {
 
-    public InvertBooleanRefactoringPluginImplTest(String name) {
+    public InvertBooleanTest(String name) {
         super(name);
     }
 

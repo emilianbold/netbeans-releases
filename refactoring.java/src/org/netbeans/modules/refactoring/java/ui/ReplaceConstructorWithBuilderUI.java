@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,20 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.ui;
 
+import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
+import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -63,31 +69,41 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author lahvac
  * @author Jan Becicka
  */
-public class InvertBooleanRefactoringUI implements RefactoringUI, JavaRefactoringUIFactory {
+public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefactoringUIFactory {
 
-    private String initialName;
-    private InvertBooleanRefactoringPanel panel;
-    private InvertBooleanRefactoring refactoring;
+    private ReplaceConstructorWithBuilderRefactoring refactoring;
+    private String builderFQN;
+    private ReplaceConstructorWithBuilderPanel panel;
+    private String name;
+    private List <String> paramaterNames;
+    private List <String> parameterTypes; 
 
-    private InvertBooleanRefactoringUI() {
+    private ReplaceConstructorWithBuilderUI(TreePathHandle constructor, CompilationInfo info) {
+        this.refactoring = new ReplaceConstructorWithBuilderRefactoring(constructor);
+        this.name = constructor.resolveElement(info).getSimpleName().toString();
+        MethodTree constTree = (MethodTree) constructor.resolve(info).getLeaf();
+        paramaterNames = new ArrayList();
+        parameterTypes = new ArrayList();
+        for (VariableTree var:constTree.getParameters()) {
+            paramaterNames.add(var.getName().toString());
+            parameterTypes.add(var.getType().toString());
+        }
+        builderFQN = ((TypeElement) constructor.resolveElement(info).getEnclosingElement()).getQualifiedName().toString();
     }
-    
-    private InvertBooleanRefactoringUI(TreePathHandle path, String name) {
-        this.refactoring = new InvertBooleanRefactoring(path);
-        this.initialName = name;
+
+    private ReplaceConstructorWithBuilderUI() {
     }
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(InvertBooleanRefactoringUI.class, "InvertBooleanName");
+        return NbBundle.getMessage(ReplaceConstructorWithBuilderUI.class, "ReplaceConstructorWithBuilderName");    
     }
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(InvertBooleanRefactoringUI.class, "InvertBooleanDescription", initialName);
+        return NbBundle.getMessage(ReplaceConstructorWithBuilderUI.class, "ReplaceConstructorWithBuilderDescription", name ,builderFQN);    
     }
 
     @Override
@@ -97,20 +113,23 @@ public class InvertBooleanRefactoringUI implements RefactoringUI, JavaRefactorin
 
     @Override
     public CustomRefactoringPanel getPanel(final ChangeListener parent) {
-        if(panel == null)
-            panel = new InvertBooleanRefactoringPanel(parent, initialName);
+        if (panel == null) {
+            panel = new ReplaceConstructorWithBuilderPanel(parent, builderFQN + "Builder", paramaterNames, parameterTypes);
+        }
         return panel;
     }
 
     @Override
     public Problem setParameters() {
-        refactoring.setNewName(panel.getNewName());
+        refactoring.setSetters(panel.getSetters());
+        refactoring.setBuilderName(panel.getBuilderName());
         return refactoring.checkParameters();
     }
 
     @Override
     public Problem checkParameters() {
-        refactoring.setNewName(panel.getNewName());
+        refactoring.setSetters(panel.getSetters());
+        refactoring.setBuilderName(panel.getBuilderName());
         return refactoring.fastCheckParameters();
     }
 
@@ -126,38 +145,32 @@ public class InvertBooleanRefactoringUI implements RefactoringUI, JavaRefactorin
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(InvertBooleanRefactoringUI.class);
+        return new HelpCtx(ReplaceConstructorWithBuilderUI.class);
     }
 
     @Override
     public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
         assert handles.length == 1;
-        TreePath p = handles[0].resolve(info);
+        TreePath path = handles[0].resolve(info);
 
         Set<Tree.Kind> treeKinds = EnumSet.of(
-                Tree.Kind.METHOD,
-                Tree.Kind.METHOD_INVOCATION,
-                Tree.Kind.VARIABLE,
-                Tree.Kind.IDENTIFIER);
+                Tree.Kind.NEW_CLASS,
+                Tree.Kind.METHOD);
 
-        while (p != null && !treeKinds.contains(p.getLeaf().getKind())) {
-            p = p.getParentPath();
+        while (path != null && !treeKinds.contains(path.getLeaf().getKind())) {
+            path = path.getParentPath();
         }
-        if (p != null && treeKinds.contains(p.getLeaf().getKind())) {
-            Element selected = info.getTrees().getElement(p);
-            TreePath selectedTree = info.getTrees().getPath(selected);
-            if (selected.getKind().isField() && ((VariableElement) selected).asType().getKind() == TypeKind.BOOLEAN) {
-                return new InvertBooleanRefactoringUI(TreePathHandle.create(selectedTree, info), ((VariableElement) selected).getSimpleName().toString());
-            }
-            if (selected.getKind() == ElementKind.METHOD && ((ExecutableElement) selected).getReturnType().getKind() == TypeKind.BOOLEAN) {
-                return new InvertBooleanRefactoringUI(TreePathHandle.create(selectedTree, info), ((ExecutableElement) selected).getSimpleName().toString());
+        if (path != null && treeKinds.contains(path.getLeaf().getKind())) {
+            Element selected = info.getTrees().getElement(path);
+            if (selected.getKind() == ElementKind.CONSTRUCTOR) {
+                return new ReplaceConstructorWithBuilderUI(TreePathHandle.create(selected, info), info);
             }
         }
         return null;
     }
     
     public static JavaRefactoringUIFactory factory() {
-        return new InvertBooleanRefactoringUI();
+        return new ReplaceConstructorWithBuilderUI();
     }
 
 }
