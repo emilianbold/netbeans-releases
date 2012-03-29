@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.php.editor.actions;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.swing.Icon;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
@@ -59,6 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
+@NbBundle.Messages("DoNotUseType=Don't use type.")
 public class ImportDataCreator {
     public static final String NS_SEPARATOR = "\\"; //NOI18N
     private final Map<String, List<UsedNamespaceName>> usedNames;
@@ -116,7 +114,6 @@ public class ImportDataCreator {
         data.icons[index][0] = IconsUtils.getErrorGlyphIcon();
     }
 
-    @NbBundle.Messages("DoNotUseType=Don't use type.")
     private void insertPossibleData(final int index, final Set<TypeElement> filteredTypeElements, final String typeName) {
         data.variants[index] = new String[filteredTypeElements.size() + 1];
         data.icons[index] = new Icon[data.variants[index].length];
@@ -143,6 +140,7 @@ public class ImportDataCreator {
                 data.defaults[index] = data.variants[index][i];
             }
         }
+        Arrays.sort(data.variants[index], new VariantsComparator());
     }
 
     private Set<TypeElement> filterDuplicates(final Set<TypeElement> possibleTypes) {
@@ -208,6 +206,20 @@ public class ImportDataCreator {
             }
         }
         return result;
+    }
+
+    private class VariantsComparator implements Comparator<String> {
+
+        @Override
+        public int compare(String o1, String o2) {
+            int result = 0;
+            if (o1.equals(Bundle.DoNotUseType())) {
+                result = -1;
+            } else {
+                result = o1.compareToIgnoreCase(o2);
+            }
+            return result;
+        }
     }
 
 }

@@ -75,8 +75,14 @@ public class Utils {
     /** Return URL representation of the specified file. */
     public static URL fileToUrl(File file) throws MalformedURLException {
         URL url = file.toURI().toURL();
-        if (FileUtil.isArchiveFile(url)) {
-            url = FileUtil.getArchiveRoot(url);
+        if (!file.isDirectory()) {
+            if (file.getName().endsWith(".zip") || file.getName().endsWith("jar")) {
+            // isArchiveFile reads the bytes from file which is forbidden
+            // to be done from UI - check fro extensions should be safe enough
+            // see #207440
+            //if (FileUtil.isArchiveFile(url)) {
+                url = FileUtil.getArchiveRoot(url);
+            }
         }
         return url;
     }

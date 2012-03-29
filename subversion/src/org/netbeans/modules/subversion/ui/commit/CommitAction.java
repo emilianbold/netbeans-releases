@@ -461,7 +461,7 @@ public class CommitAction extends ContextAction {
                 for (File f : fileSet) {
                     FileInformation fi = cache.getCachedStatus(f);
                     ISVNStatus st;
-                    if (fi != null && (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 && (st = fi.getEntry(null)) != null) {
+                    if (fi != null && (fi.getStatus() & (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) != 0 && (st = fi.getEntry(null)) != null) {
                         if (checkUrl(st, f)) {
                             deletedCandidates.put(st.getUrl(), f);
                         }

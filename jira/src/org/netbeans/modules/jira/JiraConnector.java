@@ -124,7 +124,7 @@ public class JiraConnector extends KenaiBugtrackingConnector {
     }
 
     @Override
-    public TaskListIssueProvider getTasklistProvder() {
+    public TaskListIssueProvider getTasklistProvider() {
         return JiraTaskListProvider.getInstance();
     }
     

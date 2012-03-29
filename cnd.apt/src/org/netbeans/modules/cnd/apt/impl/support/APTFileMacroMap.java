@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -187,9 +188,9 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         }
     }
 
-    public StateKey getStateKey() {
-        return new StateKey(crc1, crc2);
-    }
+//    public StateKey getStateKey() {
+//        return new StateKey(crc1, crc2);
+//    }
 
     public static class FileStateImpl extends StateImpl {
         private final APTMacroMap sysMacroMap;
@@ -210,8 +211,8 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             this.crc2 = state.crc2;
         }
 
-        StateKey getStateKey() {
-            return new StateKey(crc1, crc2);
+        StateKey getStateKey(Key startFileProject) {
+            return new StateKey(crc1, crc2, startFileProject);
         }
 
         @Override

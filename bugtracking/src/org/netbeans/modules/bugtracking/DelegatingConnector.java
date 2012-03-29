@@ -131,8 +131,8 @@ public class DelegatingConnector extends BugtrackingConnector {
     }
 
     @Override
-    public TaskListIssueProvider getTasklistProvder() {
-        return getDelegate().getTasklistProvder();
+    public TaskListIssueProvider getTasklistProvider() {
+        return getDelegate().getTasklistProvider();
     }
 
 }

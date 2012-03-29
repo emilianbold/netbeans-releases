@@ -50,7 +50,9 @@ import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,10 +71,12 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -737,7 +741,7 @@ public final class EditorContextDispatcher {
                 if (oldFile != null) {
                     FileChangeListener chw = currentFileChangeListenerWeak.get();
                     if (chw != null) {
-                        oldFile.removeFileChangeListener(chw);
+                        AddRemoveFileListenerInEQThread.removeFileChangeListener(oldFile, chw);
                         currentFileChangeListenerWeak = NO_FILE_CHANGE;
                         currentFileChangeListener = null;
                     }
@@ -748,14 +752,14 @@ public final class EditorContextDispatcher {
                             WeakListeners.create(FileChangeListener.class,
                                                  currentFileChangeListener,
                                                  newFile);
-                    newFile.addFileChangeListener(chw);
+                    AddRemoveFileListenerInEQThread.addFileChangeListener(newFile, chw);
                     currentFileChangeListenerWeak = new WeakReference<FileChangeListener>(chw);
                 }
             } else {
                 if (oldFile != null) {
                     FileChangeListener chw = mostRecentFileChangeListenerWeak.get();
                     if (chw != null) {
-                        oldFile.removeFileChangeListener(chw);
+                        AddRemoveFileListenerInEQThread.removeFileChangeListener(oldFile, chw);
                         mostRecentFileChangeListenerWeak = NO_FILE_CHANGE;
                         mostRecentFileChangeListener = null;
                     }
@@ -766,7 +770,7 @@ public final class EditorContextDispatcher {
                             WeakListeners.create(FileChangeListener.class,
                                                  mostRecentFileChangeListener,
                                                  newFile);
-                    newFile.addFileChangeListener(chw);
+                    AddRemoveFileListenerInEQThread.addFileChangeListener(newFile, chw);
                     mostRecentFileChangeListenerWeak = new WeakReference<FileChangeListener>(chw);
                 }
             }
@@ -785,6 +789,93 @@ public final class EditorContextDispatcher {
             return fos.iterator().next();
         }
         
+    }
+    
+    /**
+     * Use this class to add or remove file change listener in EQ thread.
+     * The addition or removal of a listener may require some disk operations.
+     * Therefore it can block EventQueue for an unpredictable amount of time.
+     * This is why doing it in AWT can block UI. Use this class not to block the UI.
+     */
+    private final static class AddRemoveFileListenerInEQThread implements Runnable {
+        
+        private enum AddRemove { ADD, REMOVE }
+        private static final Queue<Work> work = new LinkedList<Work>();
+        private static final RequestProcessor rp = new RequestProcessor(AddRemoveFileListenerInEQThread.class.getName());
+        private static Task t;
+        private static final int TIMEOUT = 250; // Can spend 250ms in EQ at most
+        
+        public static void addFileChangeListener(FileObject fo, FileChangeListener l) {
+            //System.err.println("addFileChangeListener("+fo+") in AWT");
+            //long start = System.nanoTime();
+            doWork(new Work(AddRemove.ADD, fo, l));
+            //long end = System.nanoTime();
+            //System.err.println("addFileChangeListener("+fo+") in AWT done in "+((end-start)/1000000.0)+"ms.");
+        }
+        
+        public static void removeFileChangeListener(FileObject fo, FileChangeListener l) {
+            //System.err.println("removeFileChangeListener("+fo+") in AWT");
+            //long start = System.nanoTime();
+            doWork(new Work(AddRemove.REMOVE, fo, l));
+            //long end = System.nanoTime();
+            //System.err.println("removeFileChangeListener("+fo+") in AWT done in "+((end-start)/1000000.0)+"ms.");
+        }
+        
+        private static void doWork(Work w) {
+            synchronized (AddRemoveFileListenerInEQThread.class) {
+                work.add(w);
+                if (t == null) {
+                    t = rp.create(new AddRemoveFileListenerInEQThread());
+                }
+                t.schedule(0);
+            }
+            try {
+                w.waitFinished(TIMEOUT);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        private synchronized static Work getWork() {
+            return work.poll();
+        }
+
+        @Override
+        public void run() {
+            Work w;
+            while ((w = getWork()) != null) {
+                switch (w.ar) {
+                    case ADD:    w.fo.addFileChangeListener(w.l);
+                                 //System.err.println("  listener added to "+w.fo);
+                                 break;
+                    case REMOVE: w.fo.removeFileChangeListener(w.l);
+                                 //System.err.println("  listener removed from "+w.fo);
+                                 break;
+                }
+                w.finished();
+            }
+        }
+        
+        private static final class Work {
+            
+            AddRemove ar; FileObject fo; FileChangeListener l;
+            boolean finished;
+            
+            Work(AddRemove ar, FileObject fo, FileChangeListener l) {
+                this.ar = ar; this.fo = fo; this.l = l;
+            }
+            
+            private synchronized void finished() {
+                finished = true;
+                notifyAll();
+            }
+            
+            private synchronized void waitFinished(int timeout) throws InterruptedException {
+                if (!finished) {
+                    wait(timeout);
+                }
+            }
+        }
     }
     
     private final class EventFirer implements Runnable {
