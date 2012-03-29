@@ -2543,11 +2543,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    dbx().sendCommand(rt, 0, hc.toString());
+                    dbx().sendCommand(rt, 0, hc.getData());
                 }
             });
         } else {
-            dbx().sendCommand(rt, 0, hc.toString());
+            dbx().sendCommand(rt, 0, hc.getData());
         }
 
 	// We'll come back either via newHandler() or noteBreakpointError().
@@ -2656,7 +2656,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     // interface BreakpointProvider
     @Override
     public void postCreateHandlerImpl(int routingToken, HandlerCommand hc) {
-	dbx.sendCommandInt(routingToken, 0, hc.toString());
+	dbx.sendCommandInt(routingToken, 0, hc.getData());
 	// We'll come back either via newHandler() or noteBreakpointError().
     }
 
@@ -2666,14 +2666,14 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     public void postChangeHandlerImpl(int rt, HandlerCommand hc) {
 
         // this will show up as a handler_replace or error
-        dbx.sendCommandInt(rt, 0, hc.toString());
+        dbx.sendCommandInt(rt, 0, hc.getData());
     }
 
     // interface BreakpointProvider
     @Override
     public void postRepairHandlerImpl(int rt, HandlerCommand cmd) {
         // this will show up as a handler_new or error
-        dbx.sendCommandInt(rt, 0, cmd.toString());
+        dbx.sendCommandInt(rt, 0, cmd.getData());
     }
 
     protected void postVarContinuation(int rt, VarContinuation vc) {
