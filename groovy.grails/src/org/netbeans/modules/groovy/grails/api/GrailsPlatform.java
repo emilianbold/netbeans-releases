@@ -48,16 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,14 +66,12 @@ import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.Parameters;
-import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.*;
 
 /**
  * Class providing the access to basic Grails runtime routines.
@@ -93,6 +82,7 @@ import org.openide.util.RequestProcessor;
  */
 // TODO instance should be always configured in future
 // TODO more appropriate would be getDefault and forProject
+@Messages({"MSG_GrailsNotConfigured=Grails not configured. Please go to Tools/Options/Miscellaneous/Groovy and setup your Grails home."})
 public final class GrailsPlatform {
 
     public static final String IDE_RUN_COMMAND = "run-app"; // NOI18N
@@ -129,6 +119,7 @@ public final class GrailsPlatform {
             instance = new GrailsPlatform();
             GrailsSettings.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
 
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (GrailsSettings.GRAILS_BASE_PROPERTY.equals(evt.getPropertyName())) {
                         instance.reload();
@@ -157,7 +148,10 @@ public final class GrailsPlatform {
         Parameters.notNull("descriptor", descriptor);
 
         if (!isConfigured()) {
-            throw new IllegalStateException("Grails not configured"); // NOI18N
+            Message dialogMessage = new NotifyDescriptor.Message(NbBundle.getMessage(GrailsPlatform.class, "MSG_GrailsNotConfigured"));
+            if (DialogDisplayer.getDefault().notify(dialogMessage) == NotifyDescriptor.OK_OPTION) {
+                return new GrailsCallable(descriptor);
+            }
         }
         return new GrailsCallable(descriptor);
     }
@@ -292,6 +286,7 @@ public final class GrailsPlatform {
         // default executor as general purpose should be enough for this
         RequestProcessor.getDefault().post(new Runnable() {
 
+            @Override
             public void run() {
                 synchronized (GrailsPlatform.this) {
                     if (version != null) {
@@ -613,6 +608,7 @@ public final class GrailsPlatform {
             return hash;
         }
 
+        @Override
         public int compareTo(Version o) {
             if (this == o) {
                 return 0;
@@ -692,13 +688,13 @@ public final class GrailsPlatform {
             this.descriptor = descriptor;
         }
 
+        @Override
         public Process call() throws Exception {
             File grailsExecutable = RuntimeHelper.getGrailsExecutable(
                     new File(GrailsSettings.getInstance().getGrailsBase()), descriptor.isDebug());
 
             if (grailsExecutable == null || !grailsExecutable.exists()) {
-                LOGGER.log(Level.WARNING, "Executable doesn't exist: "
-                        + grailsExecutable.getAbsolutePath());
+                LOGGER.log(Level.WARNING, "Executable doesn''t exist: {0}", grailsExecutable.getAbsolutePath());
 
                 return null;
             }
