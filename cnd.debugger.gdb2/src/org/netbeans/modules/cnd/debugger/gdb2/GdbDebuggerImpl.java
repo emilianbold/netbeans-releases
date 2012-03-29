@@ -3886,17 +3886,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    switch (bp.op()) {
 		case NEW:
 		    handler = handlerExpert.newHandler(template, result, null);
-                    // fix for #193505
-                    if (template != null && !template.isEnabled()) {
-                        postEnableHandler(rt, handler.getId(), false);
-                    }
 		    break;
 		case RESTORE:
 		    handler = handlerExpert.newHandler(template, result, bp.restored());
-                    // fix for #193505
-                    if (template != null && !template.isEnabled()) {
-                        postEnableHandler(rt, handler.getId(), false);
-                    }
 		    assert handler.breakpoint() == bp.restored();
 		    break;
 		case MODIFY:

@@ -164,11 +164,9 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    cmd.append(" -p ").append(breakpoint.getThread());		// NOI18N
         }
 
-	// Only gdb 6.8 and newer understand -d
-	/* LATER
-	if (! breakpoint.isEnabled())
-	    cmd += " -d";					// NOI18N
-	*/
+	if (!breakpoint.isEnabled()) {
+            cmd.append(debugger.getGdbVersionPeculiarity().breakDisabledFlag());
+        }
     }
 
     // interface HandlerExpert
