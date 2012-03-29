@@ -1,0 +1,2 @@
+function |>MARK_OCCURRENCES:anotherFunction<|() {
+this.|>MARK_OCCURRENCES:anotherFunct^ion<|();
