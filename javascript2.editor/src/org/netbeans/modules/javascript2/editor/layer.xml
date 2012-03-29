@@ -17,6 +17,11 @@
                         </folder>
                     </folder>
                 </folder>
+                <!-- custom editor folding -->
+                <folder name="FoldManager">
+                    <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
+                </folder>
+                
             </folder>
 <!--            <folder name="javascript">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
