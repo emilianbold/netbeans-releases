@@ -71,8 +71,9 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         if (language != CppTokenId.languageCpp()) {
             return;
         }
-        if (true) { // workaround till not fixed IZ#210309
-            NativeFileItemSet nfis = dob.getLookup().lookup(NativeFileItemSet.class);
+        // fast check using NativeFileItemSet
+        NativeFileItemSet nfis = dob.getLookup().lookup(NativeFileItemSet.class);
+        if (nfis != null && !nfis.isEmpty()) {
             for (NativeFileItem nativeFileItem : nfis.getItems()) {
                 if (nativeFileItem.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11) {
                     InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
@@ -81,6 +82,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                     return;
                 }
             }
+            // there is non empty set and file is not c++11
             return;
         }
         FileObject primaryFile = dob.getPrimaryFile();
