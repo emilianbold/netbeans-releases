@@ -57,7 +57,7 @@ import org.openide.util.actions.NodeAction;
  *
  * @author theofanis
  */
-@ActionID(id = "org.netbeans.modules.gsf.testrunner.api.TestMethodDebuggerAction", category = "CommonTestRunner")
+@ActionID(id = "org.netbeans.modules.gsf.testrunner.TestMethodDebuggerAction", category = "CommonTestRunner")
 @ActionRegistration(displayName = "#LBL_Action_DebugTestMethod")
 @ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup", position=1797)})
 @NbBundle.Messages({"LBL_Action_DebugTestMethod=Debug Focused Test Method"})

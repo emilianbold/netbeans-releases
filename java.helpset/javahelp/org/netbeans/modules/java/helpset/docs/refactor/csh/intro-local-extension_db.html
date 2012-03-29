@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 1997, 2012, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Introduce Local Extension Dialog Box</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Introduce Local Extension Dialog Box</h2>
+        <p><small> <a href="#seealso">See Also</a> </small></p>
+        <p>Use the Introduce Local Extension dialog box to add logic when you cannot modify the original source code. 
+        The Introduce Local Extension dialog box appears after you have chosen the Refactor &gt; Introduce Local Extension command while having a class method selected in the Source Editor.</p>
+
+        <p>The dialog box has the following fields:</p>
+        <ul>
+		<li><b>Introduce Local Extension for.</b> Displays the name of the source class that needs an additional method but cannot be modified. The value is already filled in and is read-only.</li>
+		<li><b>New Name.</b> Enter the name of an extension class being created.</li>
+		<li><b>Project.</b> Specify the project in which the extension class will be created.</li>
+<li><b>Location.</b> Specify the folder where you want to store the  created extension class.</li>
+
+<li><b>To Package.</b> Specify the name of the package where the generated extension class will be housed.</li>
+<li><b>Type.</b> Select either of the following options to use:
+    <ul>
+<li><b>Wrapper.</b> Select to make the extension class a wrapper of the original class, which keeps the original instance in one of its private fields. </li>
+<li><b>Subtype.</b> Select to make the extension class a subclass of the original class, which uses the extension keyword. </li>
+</ul></li>
+<li><b>Equality.</b> Select one of the following options to set how the <tt>equals</tt> and <tt>hashCode</tt> methods should be handled:
+    <ul>
+<li><b>Delegate.</b> Select to delegate to the <tt>equals</tt> and <tt>hashCode</tt> methods of the original class. </li>
+<li><b>Generate.</b> Select to generate new <tt>equals</tt> and <tt>hashCode</tt> methods using the IDE code generator. </li>
+<li><b>Separate.</b> Select to separate the <tt>equals</tt> method into two. A new method is added to check if the original class equals the extension class. </li>
+</ul>
+<p class="note">
+  The <b>Equality</b> field is disabled  when <b>Subtype</b> is chosen in the <b>Type</b> field.		</p>
+</li>
+<li><b>Replace original usages with the extension.</b> Select to replace all usages of the original class with the new local extension class.</li>
+        </ul>
+		
+        <p>If you want the class to be moved immediately, click Refactor.</p>
+        <p>If you want to preview the change first, follow these steps:</p>
+        <ol>
+            <li>Click Preview. 
+                <p>The Refactoring 
+                window opens and displays a tree view of the code to be affected by the refactoring.</p>
+            </li>
+            <li>Check the items displayed in the Refactoring window to make sure that you want them 
+            all changed. Clear the checkbox next to any parts of the code that 
+            you do not want changed.</li>
+            <li>Click Do Refactoring.</li>
+        </ol>
+        
+        <ul class="note">
+            <li>You should always perform a clean build after completing
+                any refactoring commands. You can do a clean build by right-clicking the project's 
+                node in the Projects window and choosing Clean and Build Project.
+            </li>
+        </ul>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../refactorQuickRef.html">Refactoring: Quick Reference</a></dd>
+			<dd><a href="move-class_db.html">Move Class Dialog Box</a></dd>
+            <dd><a href="../renameClass.html">Renaming a Class or Interface</a></dd>
+            <dd><a href="../renameField.html">Renaming a Field or Method</a></dd>
+            <dd><a href="../moveClass.html">Moving a Class to Another Java Package</a></dd>
+			<dd><a href="../undo.html">Undoing Refactoring Changes</a></dd> 
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>
