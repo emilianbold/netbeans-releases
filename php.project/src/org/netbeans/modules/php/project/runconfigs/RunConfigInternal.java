@@ -59,7 +59,7 @@ import org.openide.util.Mutex;
 public final class RunConfigInternal {
 
     public static final String DEFAULT_HOSTNAME = "localhost"; // NOI18N
-    public static final int DEFAULT_PORT = 8888;
+    public static final int DEFAULT_PORT = 8000;
 
     private File workDir;
     private File documentRoot;
