@@ -59,7 +59,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.api.search.provider.FileNameMatcher;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -1063,8 +1062,14 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     private void getAllItemsAsFileObjectSet(Set<FileObject> files, boolean projectFilesOnly, FileObjectNameMatcher matcher) {
         if (!projectFilesOnly || isProjectFiles()) {
+            if (matcher.isTerminated()) {
+                return;
+            }
             Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
+                if (matcher.isTerminated()) {
+                    return;
+                }
                 Object item = iter.next();
                 if (item instanceof Item) {
                     FileObject fo = ((Item) item).getFileObject();
@@ -1423,5 +1428,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         * @return True if file path matches required criteria, false otherwise.
         */
         boolean pathMatches(FileObject fileObject);
+        
+        boolean isTerminated();
     }
 }
