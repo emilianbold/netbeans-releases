@@ -87,7 +87,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     private FileTablePanel tablePanel;             
     private VCSFileProxy[] files;
 
-    private RequestProcessor rp = new RequestProcessor("LocalHistoryView", 1, true); // NOI18N
+    private RequestProcessor rp = new RequestProcessor("HistoryView", 1, true); // NOI18N
     private final HistoryComponent tc; 
     private Filter filter;
     private Task refreshTask;

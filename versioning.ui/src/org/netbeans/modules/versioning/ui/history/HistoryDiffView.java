@@ -88,7 +88,7 @@ public class HistoryDiffView implements PropertyChangeListener {
     private Task prepareDiffTask = null;
     private PreparingDiffHandler preparingDiffPanel;
         
-    /** Creates a new instance of LocalHistoryView */
+    /** Creates a new instance of HistoryDiffView */
     public HistoryDiffView(HistoryComponent tc) {
         this.tc = tc;
         panel = new DiffPanel();                                                              
