@@ -907,9 +907,7 @@ public class Installer extends ModuleInstall implements Runnable {
             if (logStream != null) {
                 try {
                     os.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                } catch (IOException ex) {}
                 return logStream;
             }
             logStream = os;
@@ -937,9 +935,7 @@ public class Installer extends ModuleInstall implements Runnable {
             if (logStreamMetrics != null) {
                 try {
                     os.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                } catch (IOException ex) {}
                 return logStreamMetrics;
             }
             logStreamMetrics = os;
@@ -959,9 +955,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
         try {
             os.close();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        } catch (IOException ex) {}
     }
 
     private static void closeLogStreamMetrics() {
@@ -976,9 +970,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
         try {
             os.close();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        } catch (IOException ex) {}
     }
 
     static void clearLogs() {
