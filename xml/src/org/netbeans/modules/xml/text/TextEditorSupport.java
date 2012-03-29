@@ -764,10 +764,11 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
                 if ( editorRef != null ) {
                     editorSupport = (TextEditorSupport) editorRef.get();
                 }
-                if ( editorSupport == null ) {
-                    editorSupport = prepareEditor();
-                    editorRef = new WeakReference(editorSupport);
+                if ( editorSupport != null ) {
+                    return editorSupport;
                 }
+                editorSupport = prepareEditor();
+                editorRef = new WeakReference(editorSupport);
             }
             editorSupport.syncMimeType();
             return editorSupport;
