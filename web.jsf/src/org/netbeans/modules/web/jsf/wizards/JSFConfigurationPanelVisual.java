@@ -151,8 +151,9 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private JSFComponentsTableModel jsfComponentsTableModel;
     private TreeMap<String, JsfComponentCustomizer> jsfComponentCustomizers = new TreeMap<String, JsfComponentCustomizer>();
 
-    private static final Lookup.Result<? extends JsfComponentProvider> jsfComponentProviders =
-            Lookups.forPath(JsfComponentProvider.COMPONENTS_PATH).lookupResult(JsfComponentProvider.class);
+    private static final Collection<? extends JsfComponentProvider> jsfComponentProviders =
+            new ArrayList<JsfComponentProvider>(Lookups.forPath(JsfComponentProvider.COMPONENTS_PATH).
+            lookupResult(JsfComponentProvider.class).allInstances());
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -335,7 +336,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             return;
 
         List<JsfComponentImplementation> jsfComponentDescriptors = new ArrayList<JsfComponentImplementation>();
-        for (JsfComponentProvider provider: jsfComponentProviders.allInstances()) {
+        for (JsfComponentProvider provider: jsfComponentProviders) {
             jsfComponentDescriptors.addAll(provider.getJsfComponents());
         }
 
