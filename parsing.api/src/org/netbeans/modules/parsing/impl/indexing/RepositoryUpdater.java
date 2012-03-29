@@ -2046,7 +2046,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         //visibility. The Work.scanBinaries modifies the map from multiple threads.
         private final Map<String,int[]> indexerStatistics = Collections.<String, int[]>synchronizedMap(new HashMap<String, int[]>());
         private volatile boolean reportIndexerStatistics;
-
+        
         protected Work(
                 final boolean followUpJob,
                 final boolean checkEditor,
@@ -2166,6 +2166,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     TEST_LOGGER.log(Level.FINEST, "scanStarting:{0}:{1}", 
                             new Object[] { factory.getIndexerName(), root.toString() });
                 }
+                long time = System.currentTimeMillis();
                 try {
                     boolean vote = factory.scanStarted(value.second);
                     votes.put(factory,vote);
@@ -2175,6 +2176,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                     votes.put(factory, false);
                     Exceptions.printStackTrace(t);
+                }
+                if (getLogContext() != null) {
+                    long timeSpan = System.currentTimeMillis() - time;
+                    getLogContext().addIndexerTime(factory.getIndexerName(), timeSpan);
                 }
             }
         }
@@ -2209,6 +2214,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         value = Pair.<SourceIndexerFactory,Context>of(eif,context);
                         ctxToFinish.put(key, value);
                     }
+                    long time = System.currentTimeMillis();
                     try {
                         boolean vote = eif.scanStarted(value.second);
                         votes.put(eif, vote);
@@ -2218,6 +2224,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         }
                         votes.put(eif, false);
                         Exceptions.printStackTrace(t);
+                    }
+                    if (getLogContext() != null) {
+                        long timeSpan = System.currentTimeMillis() - time;
+                        getLogContext().addIndexerTime(eif.getIndexerName(), timeSpan);
                     }
                 }
             }
@@ -2233,7 +2243,12 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         TEST_LOGGER.log(Level.FINEST, "scanFinishing:{0}:{1}", 
                                 new Object[] { entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm() });
                     }
+                    long time = System.currentTimeMillis();
                     entry.first.scanFinished(entry.second);
+                    if (getLogContext() != null) {
+                        long timeSpan = System.currentTimeMillis() - time;
+                        getLogContext().addIndexerTime(entry.first.getIndexerName(), timeSpan);
+                    }
                     if (TEST_LOGGER.isLoggable(Level.FINEST)) {
                         TEST_LOGGER.log(Level.FINEST, "scanFinished:{0}:{1}", 
                                 new Object[] { entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm() });
@@ -2837,6 +2852,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected final void logIndexerTime(
                 final @NonNull String indexerName,
                 final int time) {
+            if (getLogContext() != null) {
+                getLogContext().addIndexerTime(indexerName, time);
+            }
             if (!reportIndexerStatistics) {
                 return;
             }
@@ -4391,7 +4409,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         preregisterIn.put(source, EMPTY_DEPS);
                         preregistered = true;
                     }
+                    LogContext lctx = getLogContext();
                     try {
+                        if (lctx != null) {
+                            lctx.noteRootScanning(source);
+                        }
                         if (scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), indexers, outOfDateFiles, deletedFiles, recursiveListenersTime)) {
                             ctx.scannedRoots.add(source);
                             success = true;
@@ -4400,6 +4422,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             break;
                         }
                     } finally {
+                        if (lctx != null) {
+                            lctx.finishScannedRoot(source);
+                        }
                         if (preregistered && !success) {
                             preregisterIn.remove(source);
                         }
@@ -4789,6 +4814,14 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     final List<Work> follow = new ArrayList<Work>(1);
                     if (workInProgress != null) {
                         if (workInProgress.cancelBy(work,follow)) {
+                            // make the WiP absorbed by this follow-up work:
+                            if (workInProgress.logCtx != null) {
+                                if (work.logCtx != null) {
+                                    work.logCtx.absorb(workInProgress.logCtx);
+                                } else {
+                                    work.logCtx = workInProgress.logCtx;
+                                }
+                            }
                             canceled = true;
                         }
                     }
