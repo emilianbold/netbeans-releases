@@ -1986,6 +1986,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 }
                 boolean vote = factory.scanStarted(value.second);
                 votes.put(factory,vote);
+                if (getLogContext() != null) {
+                    long timeSpan = System.currentTimeMillis() - time;
+                    getLogContext().addIndexerTime(factory.getIndexerName(), timeSpan);
+                }
             }
             for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
                 for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
@@ -1999,16 +2003,35 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         value = Pair.<SourceIndexerFactory,Context>of(eif,context);
                         ctxToFinish.put(key, value);
                     }
-                    boolean vote = eif.scanStarted(value.second);
-                    votes.put(eif, vote);
+                    long time = System.currentTimeMillis();
+                    try {
+                        boolean vote = eif.scanStarted(value.second);
+                        votes.put(eif, vote);
+                    } catch (Throwable t) {
+                        if (t instanceof ThreadDeath) {
+                            throw (ThreadDeath) t;
+                        }
+                        votes.put(eif, false);
+                        Exceptions.printStackTrace(t);
+                    }
+                    if (getLogContext() != null) {
+                        long timeSpan = System.currentTimeMillis() - time;
+                        getLogContext().addIndexerTime(eif.getIndexerName(), timeSpan);
+                    }
                 }
             }
-        }
+        }long time = System.currentTimeMillis();
+
 
         protected final void scanFinished(final Collection<? extends Pair<SourceIndexerFactory,Context>> ctxToFinish) throws IOException {
             try {
                 for (Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
+                    long time = System.currentTimeMillis();
                     entry.first.scanFinished(entry.second);
+                    if (getLogContext() != null) {
+                        long timeSpan = System.currentTimeMillis() - time;
+                        getLogContext().addIndexerTime(entry.first.getIndexerName(), timeSpan);
+                    }
                 }
             } finally {
                 for(Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
@@ -2526,6 +2549,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected final void logIndexerTime(
                 final @NonNull String indexerName,
                 final int time) {
+            if (getLogContext() != null) {
+                getLogContext().addIndexerTime(indexerName, time);
+            }
             if (indexerStatistics == null) {
                 return;
             }
@@ -3932,7 +3958,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         preregisterIn.put(source, EMPTY_DEPS);
                         preregistered = true;
                     }
+                    LogContext lctx = getLogContext();
                     try {
+                        if (lctx != null) {
+                            lctx.noteRootScanning(source);
+                        }
                         if (scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), indexers, outOfDateFiles, deletedFiles, recursiveListenersTime)) {
                             ctx.scannedRoots.add(source);
                             success = true;
@@ -3941,6 +3971,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             break;
                         }
                     } finally {
+                        if (lctx != null) {
+                            lctx.finishScannedRoot(source);
+                        }
                         if (preregistered && !success) {
                             preregisterIn.remove(source);
                         }
@@ -4317,6 +4350,14 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final List<Work> follow = new ArrayList<Work>(1);
                         if (workInProgress != null) {
                             if (workInProgress.cancelBy(work,follow)) {
+                                // make the WiP absorbed by this follow-up work:
+                                if (workInProgress.logCtx != null) {
+                                    if (work.logCtx != null) {
+                                        work.logCtx.absorb(workInProgress.logCtx);
+                                    } else {
+                                        work.logCtx = workInProgress.logCtx;
+                                    }
+                                }
                                 canceled = true;
                             }
                         }
