@@ -76,6 +76,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.FileNameMatcher;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
@@ -92,6 +93,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder.FileObjectNameMatcher;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
@@ -122,6 +124,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -1359,19 +1362,29 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
         @Override
         public Iterator<FileObject> filesToSearch(SearchScopeOptions options, SearchListener listener, AtomicBoolean terminated) {
+        final FileNameMatcher delegate = FileNameMatcher.create(options);
+            FileObjectNameMatcher matcher = new Folder.FileObjectNameMatcher() {
+                @Override
+                public boolean pathMatches(FileObject fileObject) {
+                    if (delegate.pathMatches(fileObject)) {
+                        return fileObject.getMIMEType().contains("text/"); // NOI18N
+                    }
+                    return false;
+                }
+            };
             MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             Folder rootFolder = projectDescriptor.getLogicalFolders();
-            Set<FileObject> res = rootFolder.getAllItemsAsFileObjectSet(false, "text/"); // NOI18N
+            Set<FileObject> res = rootFolder.getAllItemsAsFileObjectSet(false, matcher);
             FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
-            addFolder(res, baseDirFileObject.getFileObject("nbproject")); // NOI18N
-            addFolder(res, baseDirFileObject.getFileObject("nbproject/private")); // NOI18N
+            addFolder(res, baseDirFileObject.getFileObject("nbproject"), matcher); // NOI18N
+            addFolder(res, baseDirFileObject.getFileObject("nbproject/private"), matcher); // NOI18N
             return res.iterator();
         }
 
-        private void addFolder(Set<FileObject> res, FileObject fo) {
+        private void addFolder(Set<FileObject> res, FileObject fo, FileObjectNameMatcher matcher) {
             if (fo != null && fo.isFolder() && fo.isValid()) {
                 for (FileObject f : fo.getChildren()) {
-                    if (f.isData()) {
+                    if (f.isData() && matcher.pathMatches(f)) {
                         res.add(f);
                     }
                 }
