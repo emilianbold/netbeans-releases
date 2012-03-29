@@ -49,9 +49,8 @@ made subject to such option by the copyright holder.
         <apidef name="JavaRefactoringAPI">Java Refactoring API</apidef>
     </apidefs>
     <changes>
-        <change
-            id="ReplaceConstructorWithBuilder-ReplaceConstructorWithFactory-InvertBoolean">
-            <api name="refactoring"/>
+        <change id="ReplaceConstructorWithBuilder-ReplaceConstructorWithFactory-InvertBoolean">
+            <api name="JavaRefactoringAPI"/>
             <summary>New refactorings on board: ReplaceConstructorWithFactory,
                 ReplaceConstructorWithBuilder and InvertBoolean
             </summary>
