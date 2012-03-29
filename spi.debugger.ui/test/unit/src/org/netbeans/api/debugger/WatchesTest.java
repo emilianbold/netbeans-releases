@@ -46,6 +46,7 @@ package org.netbeans.api.debugger;
 
 import org.netbeans.api.debugger.test.TestDebuggerManagerListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.List;
 
@@ -181,6 +182,47 @@ public class WatchesTest extends DebuggerApiTestBase {
             exThrown = true;
         }
         assertTrue(exThrown);
+    }
+    
+    public void testEnableDisable() throws Exception {
+        DebuggerManager dm = DebuggerManager.getDebuggerManager();
+        Watch w1 = dm.createWatch("w1");
+        assertTrue(w1.isEnabled()); // Watches are enabled by default.
+        final PropertyChangeEvent[] eventPtr = new PropertyChangeEvent[] { null };
+        w1.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                eventPtr[0] = evt;
+            }
+        });
+        w1.setEnabled(false);
+        assertNotNull("Event not fired when watch disabled.", eventPtr[0]);
+        assertEquals(Watch.PROP_ENABLED, eventPtr[0].getPropertyName());
+        assertEquals(false, eventPtr[0].getNewValue());
+        assertFalse(w1.isEnabled());
+        eventPtr[0] = null;
+        w1.setEnabled(true);
+        assertNotNull("Event not fired when watch enabled.", eventPtr[0]);
+        assertEquals(Watch.PROP_ENABLED, eventPtr[0].getPropertyName());
+        assertEquals(true, eventPtr[0].getNewValue());
+        assertTrue(w1.isEnabled());
+    }
+    
+    public void testWatchPersistence() throws Exception {
+        DebuggerManager dm = DebuggerManager.getDebuggerManager();
+        Watch w1 = dm.createWatch("w1");
+        Properties p = Properties.getDefault();
+        p.setObject("watch1", w1);
+        Watch w2 = dm.createWatch("w2");
+        w2.setEnabled(false);
+        p.setObject("watch2", w2);
+        
+        w1 = (Watch) p.getObject("watch1", null);
+        assertEquals("w1", w1.getExpression());
+        assertEquals(true, w1.isEnabled());
+        w2 = (Watch) p.getObject("watch2", null);
+        assertEquals("w2", w2.getExpression());
+        assertEquals(false, w2.isEnabled());
     }
 
 }
