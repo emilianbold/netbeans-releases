@@ -56,6 +56,7 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionResult;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -351,12 +352,15 @@ public final class Manager {
                 ? firstDisplay || sessionEnd
                 : sessionEnd;
 
-        int displayIndex = getDisplayIndex(session);
-        if (displayIndex == -1) {
-            addDisplay(session);
-            Mutex.EVENT.writeAccess(new Displayer(displayHandler, promote));
-        } else if (promote) {
-            Mutex.EVENT.writeAccess(new Displayer(null, promote));
+        SessionResult sessionResult = session.getSessionResult();
+        if (sessionResult.getErrors() + sessionResult.getFailed() > 0) {
+            int displayIndex = getDisplayIndex(session);
+            if (displayIndex == -1) {
+                addDisplay(session);
+                Mutex.EVENT.writeAccess(new Displayer(displayHandler, promote));
+            } else if (promote) {
+                Mutex.EVENT.writeAccess(new Displayer(null, promote));
+            }
         }
     }
 

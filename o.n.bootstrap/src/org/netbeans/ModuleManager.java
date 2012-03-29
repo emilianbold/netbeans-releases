@@ -1074,10 +1074,10 @@ public final class ModuleManager extends Modules {
             } catch (InvalidException ie) {
                 // Remember that there was a problem with this guy.
                 Module bad = ie.getModule();
-                if (bad == null) throw new IllegalStateException("Problem with no associated module: " + ie); // NOI18N
+                if (bad == null) throw new IllegalStateException("Problem with no associated module: " + ie, ie); // NOI18N
                 Set<Union2<Dependency,InvalidException>> probs = moduleProblemsWithNeeds.get(bad);
-                if (probs == null) throw new IllegalStateException("Were trying to install a module that had never been checked: " + bad); // NOI18N
-                if (! probs.isEmpty()) throw new IllegalStateException("Were trying to install a module that was known to be bad: " + bad); // NOI18N
+                if (probs == null) throw new IllegalStateException("Were trying to install a module that had never been checked: " + bad, ie); // NOI18N
+                if (! probs.isEmpty()) throw new IllegalStateException("Were trying to install a module that was known to be bad: " + bad + " " + probs, ie); // NOI18N
                 // Record for posterity.
                 if (probs == EMPTY_COLLECTION) {
                     probs = new HashSet<Union2<Dependency,InvalidException>>(8);
