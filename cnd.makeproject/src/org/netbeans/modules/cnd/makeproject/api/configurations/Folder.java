@@ -59,14 +59,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.api.search.provider.FileNameMatcher;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileAttributeEvent;
@@ -1054,24 +1055,24 @@ public class Folder implements FileChangeListener, ChangeListener {
     /*
      * Returns a set of all files in this logical folder and subfolders as FileObjetc's
      */
-    public Set<FileObject> getAllItemsAsFileObjectSet(boolean projectFilesOnly, String MIMETypeFilter) {
+    public Set<FileObject> getAllItemsAsFileObjectSet(boolean projectFilesOnly, FileObjectNameMatcher matcher) {
         LinkedHashSet<FileObject> files = new LinkedHashSet<FileObject>();
-        getAllItemsAsFileObjectSet(files, projectFilesOnly, MIMETypeFilter);
+        getAllItemsAsFileObjectSet(files, projectFilesOnly, matcher);
         return files;
     }
 
-    private void getAllItemsAsFileObjectSet(Set<FileObject> files, boolean projectFilesOnly, String MIMETypeFilter) {
+    private void getAllItemsAsFileObjectSet(Set<FileObject> files, boolean projectFilesOnly, FileObjectNameMatcher matcher) {
         if (!projectFilesOnly || isProjectFiles()) {
             Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Item) {
-                    FileObject da = ((Item) item).getFileObject();
-                    if (da != null && (MIMETypeFilter == null || da.getMIMEType().contains(MIMETypeFilter))) {
-                        files.add(da);
+                    FileObject fo = ((Item) item).getFileObject();
+                    if (fo != null && (matcher == null || matcher.pathMatches(fo))) {
+                        files.add(fo);
                     }
                 } else if (item instanceof Folder) {
-                    ((Folder) item).getAllItemsAsFileObjectSet(files, projectFilesOnly, MIMETypeFilter);
+                    ((Folder) item).getAllItemsAsFileObjectSet(files, projectFilesOnly, matcher);
                 }
             }
         }
@@ -1414,5 +1415,13 @@ public class Folder implements FileChangeListener, ChangeListener {
 
         private ConfigurationAuxObject aux;
         private ItemConfiguration ic;
+    }
+    
+    public static interface FileObjectNameMatcher {
+        /**
+        * @param fileObject File whose name or path should be matched.
+        * @return True if file path matches required criteria, false otherwise.
+        */
+        boolean pathMatches(FileObject fileObject);
     }
 }

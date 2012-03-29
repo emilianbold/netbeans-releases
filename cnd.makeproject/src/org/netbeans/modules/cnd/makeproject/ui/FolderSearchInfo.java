@@ -47,8 +47,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.FileNameMatcher;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder.FileObjectNameMatcher;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileObject;
 
@@ -76,6 +78,16 @@ final class FolderSearchInfo extends SearchInfoDefinition {
 
     @Override
     public Iterator<FileObject> filesToSearch(SearchScopeOptions options, SearchListener listener, AtomicBoolean terminated) {
-        return folder.getAllItemsAsFileObjectSet(false, "text/").iterator(); // NOI18N
+        final FileNameMatcher delegate = FileNameMatcher.create(options);
+        FileObjectNameMatcher matcher = new FileObjectNameMatcher() {
+            @Override
+            public boolean pathMatches(FileObject fileObject) {
+                if (delegate.pathMatches(fileObject)) {
+                    return fileObject.getMIMEType().contains("text/"); // NOI18N
+                }
+                return false;
+            }
+        };
+        return folder.getAllItemsAsFileObjectSet(false, matcher).iterator();
     }
 }
