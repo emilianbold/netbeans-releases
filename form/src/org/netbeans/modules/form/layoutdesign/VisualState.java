@@ -774,8 +774,14 @@ public class VisualState implements LayoutConstants {
                 pt = PaddingType.RELATED;
             }
             desc.append(getDefaultGapDisplayName(pt));
+            if (resizing && gap.getDiffToDefaultSize() != 0) {
+                desc.append(" / " + wholeSize);
+            }
         } else {
             desc.append(prefSize);
+            if (resizing && prefSize != wholeSize) {
+                desc.append(" / " + wholeSize);
+            }
         }
         gapInfo.description = desc.toString();
 

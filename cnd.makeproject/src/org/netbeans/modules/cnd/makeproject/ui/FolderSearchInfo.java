@@ -41,16 +41,22 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.search.SearchRoot;
+import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.openide.loaders.DataObject;
-import org.openidex.search.SearchInfo;
+import org.netbeans.spi.search.SearchInfoDefinition;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Alexander Simon
  */
-final class FolderSearchInfo implements SearchInfo {
+final class FolderSearchInfo extends SearchInfoDefinition {
 
     private Folder folder;
 
@@ -64,7 +70,12 @@ final class FolderSearchInfo implements SearchInfo {
     }
 
     @Override
-    public Iterator<DataObject> objectsToSearch() {
-        return folder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
+    public List<SearchRoot> getSearchRoots() {
+        return Collections.<SearchRoot>emptyList();
+    }
+
+    @Override
+    public Iterator<FileObject> filesToSearch(SearchScopeOptions options, SearchListener listener, AtomicBoolean terminated) {
+        return folder.getAllItemsAsFileObjectSet(false, "text/").iterator(); // NOI18N
     }
 }

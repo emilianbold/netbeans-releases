@@ -105,7 +105,7 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(RemoteConfirmationPanel.class);
+        return new HelpCtx("org.netbeans.modules.php.project.ui.wizards.RemoteConfirmationPanel"); // NOI18N
     }
 
     @Override

@@ -57,9 +57,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -70,10 +68,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -183,36 +179,35 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         return false;
     }
     
+    private static final long vmDeadline;
+    static {
+        Integer vmTimeRemaining = Integer.getInteger("nbjunit.hard.timeout");
+        if (vmTimeRemaining != null) {
+            vmDeadline = System.currentTimeMillis() + vmTimeRemaining;
+        } else {
+            vmDeadline = 0L;
+        }
+    }
     /** Provides support for tests that can have problems with terminating.
      * Runs the test in a "watchdog" that measures the time the test shall
      * take and if it does not terminate it reports a failure including a thread dump.
      * <p>If the system property {@code nbjunit.hard.timeout} is set to a number
      * (of milliseconds) by which the whole VM must exit (as in the {@code timeout}
-     * property to Ant's {@code <junit>} task), and is at least 60000 (one minute),
-     * this "soft timeout" will default to 10000 (ten seconds) less than that, so
+     * property to Ant's {@code <junit>} task),
+     * this "soft timeout" will default to some portion of the remaining time, so
      * that we can capture a meaningful thread dump rather than simply report that the
      * test took too long. (If the VM crashes, the hard timeout kicks in.) Otherwise the
      * default is 0 (no soft timeout). For an Ant-based NBM project, {@code common.xml}
      * specifies 600000 (ten minutes) as a default hard timeout, and sets the system
-     * property, so soft timeouts should be the default. Note that the soft timeout is
-     * per test, whereas a hard timeout is per suite (by default - whatever is run in
-     * one JVM), so it is still possible to get a hard timeout from a hung test in case
-     * the tests preceding it in the suite completed but took more than ten seconds
-     * cumulatively; for such cases, simply override this method to specify a lower
-     * soft timeout.
+     * property, so soft timeouts should be the default.
      * @return amount ms to give one test to finish or 0 to disable time outs
      * @since 1.20
      */
     protected int timeOut() {
-        String hardTimeoutS = System.getProperty("nbjunit.hard.timeout");
-        if (hardTimeoutS != null) {
-            try {
-                int hardTimeoutI = Integer.parseInt(hardTimeoutS);
-                if (hardTimeoutI >= 60000) {
-                    return hardTimeoutI - 10000;
-                }
-            } catch (NumberFormatException x) {
-                x.printStackTrace();
+        if (vmDeadline != 0L) {
+            int remaining = (int) (vmDeadline - System.currentTimeMillis());
+            if (remaining > 1500) {
+                return (remaining - 1000) / 2;
             }
         }
         return 0;

@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Analyze Performance: Edit Profiling Roots Dialog Box</title>
+        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+
+        <h2>Analyze Performance: Edit Profiling Roots Dialog Box</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>When analyzing application performance, you can choose to limit the source code that is instrumented by 
+        specifying a root method. When you profile an application by instrumenting a root method, profiling data 
+        is collected when one of the application's threads enters and leaves the root method.</p>
+                
+        <p>The Edit Profiling Roots dialog box enables you to specify the profiling
+        root methods that will be used when you analyze the performance of the application.
+        You can open this dialog box from the Select Profiling Task dialog box 
+        by selecting the Advanced (instrumented) option and clicking <b>customize</b>
+        (or <b>edit</b> if some root methods are already specified)
+        when you select the analyze application performance task (CPU).</p> 
+        
+        <p>The dialog box displays a hierarchical view of the project.
+        Expand the nodes and select the node for the method that you want to specify as a profiling root method.
+        </p>
+        
+        <p>The dialog box contains the following  
+            
+        <ul>
+            <li><b>Find.</b> Type in the text field and press Return to filter project classes by name.
+                You can use the Find Next and Find Previous buttons to navigate the displayed results.
+                Click the Close icon to hide the text field. 
+                Type text in the dialog box to display the text field.</li>
+            <li><b>Select View.</b> Select a view type from the dropdown list
+                to change the organization of the hierarchy. 
+                <p>If you are profiling a web application
+                you can select Web Application View or Package View 
+                from the dropdown list.
+                For all other project types only Package View is available in the dropdown list.</p></li>
+        </ul>
+            
+            
+        
+        <p><b>Notes:</b></p>
+        <ul class="note">
+            <li>You can click Advanced to specify more advanced options
+            for adding, editing and removing the root methods.</li>
+            <li>If you want to specify a root method that is in another project or
+            a sub-project, you can add additional projects to the list of projects
+            in the dialog box by clicking Edit Projects.</li>
+        </ul>
+        
+        
+        
+        
+        <p>For more, see the following NetBeans FAQ:
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://wiki.netbeans.org/wiki/view/FaqProfilerProfilingRootMethods">
+                <param name="text" value="<html><u>How does profiling via root methods work?</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>
+        </p>
+        
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../profile_rootmethod.html">Specifying a Root Method</a></dd>
+            <dd><a href="../profile_analyze_short.html">Analyzing Application Performance</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
+</html>

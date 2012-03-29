@@ -73,5 +73,37 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug210019.cpp", 2, 50, "bug210019.cpp", 2, 10);
         performTest("bug210019.cpp", 2, 54, "bug210019.cpp", 2, 18);
     }
+
+    public void testBug210191() throws Exception {
+        // Bug 210191 - Unresolved class members in lambdas
+        performTest("bug210191.cpp", 7, 28, "bug210191.cpp", 3, 5);
+    }
+    
+    public void testBug210192() throws Exception {
+        // Bug 210192 - Unresolved template functions
+        performTest("bug210192.cpp", 5, 36, "bug210192.cpp", 1, 1);
+    }    
+    
+    public void testBug210194() throws Exception {
+        // Bug 210194 - Unresolved instantiations with function pointers
+        performTest("bug210194.cpp", 19, 77, "bug210194.cpp", 6, 3);
+        performTest("bug210194.cpp", 20, 82, "bug210194.cpp", 6, 3);
+        performTest("bug210194.cpp", 21, 88, "bug210194.cpp", 6, 3);
+    }    
+    
+    public void testBug210257() throws Exception {
+        // Bug 210257 - Ellipsis breaks hyperlink
+        performTest("bug210257.cpp", 9, 52, "bug210257.cpp", 6, 3);
+    }    
+    
+    public void testBug210291() throws Exception {
+        // Bug 210291 - Unresolved ids in instantiations
+        performTest("bug210291.cpp", 13, 59, "bug210291.cpp", 8, 5);
+    }    
+    
+    public void testBug210303() throws Exception {
+        // Bug 210303 - Unresolved instantiation
+        performTest("bug210303.cpp", 18, 11, "bug210303.cpp", 11, 9);
+    }
     
 }
