@@ -977,18 +977,6 @@ public final class Utilities {
         return found;
     }
 
-    public static Set<Severity> disableErrors(FileObject file) {
-        if (file.getAttribute(DISABLE_ERRORS) != null) {
-            return EnumSet.allOf(Severity.class);
-        }
-        if (!file.canWrite() && FileUtil.getArchiveFile(file) != null) {
-            return EnumSet.allOf(Severity.class);
-        }
-
-        return EnumSet.noneOf(Severity.class);
-    }
-
-    private static final String DISABLE_ERRORS = "disable-java-errors";
 
     private Utilities() {
     }

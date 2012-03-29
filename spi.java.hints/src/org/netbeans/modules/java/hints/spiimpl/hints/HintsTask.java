@@ -100,7 +100,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
     public void run(CompilationInfo info) {
         cancel.set(false);
 
-        if (org.netbeans.modules.editor.java.Utilities.disableErrors(info.getFileObject()).contains(Severity.VERIFIER)) {
+        if (org.netbeans.modules.java.hints.spiimpl.Utilities.disableErrors(info.getFileObject()).contains(Severity.VERIFIER)) {
             return;
         }
 

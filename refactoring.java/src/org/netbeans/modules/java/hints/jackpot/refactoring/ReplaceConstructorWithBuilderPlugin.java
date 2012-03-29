@@ -42,22 +42,24 @@ import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.*;
-import org.netbeans.modules.java.hints.jackpot.refactoring.JackpotBaseRefactoring2.Transform;
 import org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorWithBuilderRefactoring.Setter;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.java.spi.DiffElement;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
+import org.netbeans.spi.java.hints.support.TransformationSupport;
+import org.netbeans.spi.java.hints.support.TransformationSupport.Transformer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -70,6 +72,8 @@ import org.openide.util.NbBundle;
 public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
 
     private final ReplaceConstructorWithBuilderRefactoring replaceConstructorWithBuilder;
+    
+    private final AtomicBoolean cancel = new AtomicBoolean();
 
     public ReplaceConstructorWithBuilderPlugin(ReplaceConstructorWithBuilderRefactoring refactoring) {
         this.replaceConstructorWithBuilder = refactoring;
@@ -106,6 +110,7 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
 
     @Override
     public final Problem prepare(RefactoringElementsBag refactoringElements) {
+        cancel.set(false);
         final TreePathHandle constr = replaceConstructorWithBuilder.getRefactoringSource().lookup(TreePathHandle.class);
         final String[] ruleCode = new String[1];
         final String[] toCode = new String[1];
@@ -212,7 +217,7 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
 
             results.add(mod);
 
-            results.addAll(JackpotBaseRefactoring2.performTransformation(ruleCode[0], new Transform() {
+            results.addAll(TransformationSupport.create(ruleCode[0], new Transformer() {
 
                 @Override
                 public void transform(WorkingCopy copy, Occurrence occurrence) {
@@ -240,15 +245,28 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
 
                     copy.rewrite(occurrence.getOccurrenceRoot().getLeaf(), create);
                 }
-            }));
+            }).setCancel(cancel).processAllProjects());
 
-            JackpotBaseRefactoring2.createAndAddElements(replaceConstructorWithBuilder, refactoringElements, results);
+            createAndAddElements(replaceConstructorWithBuilder, refactoringElements, results);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
 
         return null;
     }
+    
+    //TODO: only one copy!
+    public static void createAndAddElements(AbstractRefactoring refactoring, RefactoringElementsBag elements, Collection<ModificationResult> results) {
+        elements.registerTransaction(JavaRefactoringPlugin.createTransaction(results));
+        for (ModificationResult result:results) {
+            for (FileObject jfo : result.getModifiedFileObjects()) {
+                for (ModificationResult.Difference diff: result.getDifferences(jfo)) {
+                    elements.add(refactoring, DiffElement.create(diff, jfo, result));
+                }
+            }
+        }
+    }
+
 
     private boolean treeEquals(WorkingCopy copy, Tree value, String defaultValue) {
         if (defaultValue == null) {
@@ -266,5 +284,6 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
 
     @Override
     public void cancelRequest() {
+        cancel.set(true);
     }
 }

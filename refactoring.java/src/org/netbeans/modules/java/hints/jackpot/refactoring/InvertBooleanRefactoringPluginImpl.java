@@ -39,29 +39,28 @@
 
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.spi.PatternConvertor;
+import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.matching.Occurrence;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.spi.java.hints.support.TransformationSupport;
+import org.netbeans.spi.java.hints.support.TransformationSupport.Transformer;
 import org.openide.util.Exceptions;
 import org.openide.util.MapFormat;
 
@@ -69,12 +68,13 @@ import org.openide.util.MapFormat;
  *
  * @author lahvac
  */
-public class InvertBooleanRefactoringPluginImpl extends JackpotBasedRefactoring {
+public class InvertBooleanRefactoringPluginImpl implements RefactoringPlugin { //extends JackpotBasedRefactoring {
 
     private final InvertBooleanRefactoring invertBooleanRefactoring;
-
+    
+    protected final AtomicBoolean cancel = new AtomicBoolean();
+    
     public InvertBooleanRefactoringPluginImpl(InvertBooleanRefactoring replaceConstructorRefactoring) {
-        super(replaceConstructorRefactoring);
         this.invertBooleanRefactoring = replaceConstructorRefactoring;
     }
 
@@ -143,16 +143,23 @@ public class InvertBooleanRefactoringPluginImpl extends JackpotBasedRefactoring 
             INVERT_FIXES.replace("${newName-with-enclosing}$", "return ") +
             ";;";
 
-    @Override
-    protected void prepareAndConstructRule(final Context result) {
+
+    public final Problem prepare(RefactoringElementsBag refactoringElements) {
+        cancel.set(false);
+//        TreePathHandle tph = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+//        FileObject file = tph.getFileObject();
+//        ClassPath source = ClassPath.getClassPath(file, ClassPath.SOURCE);
+//        FileObject sourceRoot = source.findOwnerRoot(file);
         final TreePathHandle original = invertBooleanRefactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        final String[] ruleCode = new String[1];
+        final String[] toCode = new String[1];
 
         try {
             ModificationResult mod = JavaSource.forFileObject(original.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
 
                 @Override
                 public void run(final WorkingCopy parameter) throws Exception {
-                    parameter.toPhase(Phase.RESOLVED);
+                   parameter.toPhase(Phase.RESOLVED);
 
                     final TreePath path = original.resolve(parameter);
                     Map<String, String> arguments = new HashMap<String, String>();
@@ -175,7 +182,7 @@ public class InvertBooleanRefactoringPluginImpl extends JackpotBasedRefactoring 
                             format.setRightBrace("}$");
                             String initFormat = format.format(VAR_INIT);
 
-                            Hacks.findHintsAndApplyFixes(parameter, PatternConvertor.create(initFormat), path, cancel);
+                            TransformationSupport.create(initFormat).setCancel(cancel).transformTreePath(parameter, TreePath.getPath(parameter.getCompilationUnit(), var.getInitializer()));
                         }
                     } else if (leaf.getKind() == Kind.METHOD) {
                         MethodTree mt = (MethodTree) leaf;
@@ -189,7 +196,7 @@ public class InvertBooleanRefactoringPluginImpl extends JackpotBasedRefactoring 
 
                         new TreePathScanner<Void, Void>() {
                             @Override public Void visitReturn(ReturnTree node, Void p) {
-                                Hacks.findHintsAndApplyFixes(parameter, PatternConvertor.create(mthFormat), getCurrentPath(), cancel);
+                                TransformationSupport.create(mthFormat).setCancel(cancel).transformTreePath(parameter, getCurrentPath());
                                 return super.visitReturn(node, p);
                             }
                             @Override public Void visitClass(ClassTree node, Void p) {
@@ -244,14 +251,27 @@ public class InvertBooleanRefactoringPluginImpl extends JackpotBasedRefactoring 
                     format.setLeftBrace("${");
                     format.setRightBrace("}$");
 
-                    result.addScript(parent.getQualifiedName().toString(), format.format(scriptTemplate), ScriptOptions.RUN/*, ScriptOptions.STORE*/);
+                    ruleCode[0] = format.format(scriptTemplate);
                 }
             });
 
-            result.addModificationResult(mod);
+            List<ModificationResult> results = new ArrayList<ModificationResult>();
+
+            results.add(mod);
+
+            results.addAll(TransformationSupport.create(ruleCode[0]).setCancel(cancel).processAllProjects());
+            ReplaceConstructorWithBuilderPlugin.createAndAddElements(invertBooleanRefactoring, refactoringElements, results);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+
+        return null/*XXX*/;
+    }
+    
+
+    @Override
+    public void cancelRequest() {
+        cancel.set(true);
     }
 
 }
