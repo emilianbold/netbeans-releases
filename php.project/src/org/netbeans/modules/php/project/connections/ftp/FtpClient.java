@@ -63,6 +63,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
@@ -602,7 +603,14 @@ public class FtpClient implements RemoteClient {
             WindowsJdk7WarningPanel.warn();
             // #209043 - just inform user in the log, do not show any dialog
             if (io != null) {
-                io.getErr().println(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotKeepAlive", configuration.getHost()));
+                String message;
+                String reason = getReplyString();
+                if (StringUtils.hasText(reason)) {
+                    message = NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotKeepAlive", configuration.getHost(), reason);
+                } else {
+                    message = NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotKeepAliveNoReason", configuration.getHost());
+                }
+                io.getErr().println(message);
             }
         }
     }
