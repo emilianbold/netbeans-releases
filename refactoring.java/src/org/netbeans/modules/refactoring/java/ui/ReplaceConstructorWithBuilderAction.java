@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.ui;
 
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.ui.ScanDialog;

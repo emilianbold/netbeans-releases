@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.api;
 
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
@@ -65,7 +65,7 @@ import org.openide.util.lookup.Lookups;
  * </pre>
  * 
  * @author Jan Becicka
- * @since 1.34
+ * @since 1.36
  */
 public final class ReplaceConstructorWithBuilderRefactoring extends AbstractRefactoring {
 

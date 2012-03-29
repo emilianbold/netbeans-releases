@@ -37,8 +37,9 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.plugins;
 
+import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithFactoryRefactoring;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -142,9 +143,9 @@ public class ReplaceConstructorWithFactoryPlugin implements RefactoringPlugin {
                         rule.append(" :: ").append(constraints);
                     }
 //                    rule.append(" => ").append(parent.getQualifiedName()).append(".").append(replaceConstructorRefactoring.getFactoryName()).append("(").append(parameters).append(");;");
-                    rule.append(";;");
                     ruleCode[0] = rule.toString();
                     toCode[0] = parent.getQualifiedName() + "." + replaceConstructorRefactoring.getFactoryName() + "(" + parameters + ")";
+                    toCode[0]+=";;";
                 }
             });
 

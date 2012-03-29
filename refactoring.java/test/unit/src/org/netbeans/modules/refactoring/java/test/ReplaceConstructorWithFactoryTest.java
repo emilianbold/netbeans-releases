@@ -37,28 +37,25 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.test;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.util.TreePath;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithFactoryRefactoring;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author lahvac
  */
-public class ReplaceConstructorRefactoringPluginImplTest extends RefTestBase {
+public class ReplaceConstructorWithFactoryTest extends RefTestBase {
 
-    public ReplaceConstructorRefactoringPluginImplTest(String name) {
+    public ReplaceConstructorWithFactoryTest(String name) {
         super(name);
     }
 

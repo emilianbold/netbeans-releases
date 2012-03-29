@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.test;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -48,9 +48,10 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import java.util.Collections;
-import org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorWithBuilderRefactoring.Setter;
+import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring.Setter;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring;
 import org.openide.filesystems.FileObject;
 
 /**

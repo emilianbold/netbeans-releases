@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010-2011 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,9 +34,9 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010-2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.ui;
 
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.refactoring.java.ui.ContextAnalyzer;
@@ -48,31 +48,36 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-@ActionID(id = "org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorWithFactoryAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_ReplaceConstructorAction")
-@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "ReplaceConstructorWithFactoryAction", position = 1820)
-public final class ReplaceConstructorWithFactoryAction extends JavaRefactoringGlobalAction {
 
-    public ReplaceConstructorWithFactoryAction() {
-        super(NbBundle.getMessage(ReplaceConstructorWithFactoryAction.class, "LBL_ReplaceConstructorAction"), null); // NOI18N
+@ActionID( id = "org.netbeans.modules.java.hints.jackpot.refactoring.InvertBooleanAction", category = "Refactoring")
+@ActionRegistration(displayName = "#LBL_InvertBooleanAction")
+@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "InvertBooleanAction", position = 1830)
+public final class InvertBooleanAction extends JavaRefactoringGlobalAction {
+
+    public InvertBooleanAction() {
+        super(NbBundle.getMessage(InvertBooleanAction.class, "LBL_InvertBooleanAction"), null); // NOI18N
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     protected boolean enable(Lookup context) {
         return ContextAnalyzer.canRefactorSingle(context, true);
     }
 
+
     @Override
     public void performAction(Lookup context) {
-        Runnable task = ContextAnalyzer.createTask(context, ReplaceConstructorWithFactoryUI.factory());
+        Runnable task = ContextAnalyzer.createTask(context, InvertBooleanRefactoringUI.factory());
         ScanDialog.runWhenScanFinished(task, getName());
     }
 }

@@ -37,9 +37,10 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.api;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
@@ -49,7 +50,7 @@ import org.openide.util.lookup.Lookups;
  * Invert logic of boolean field or method.
  * @author lahvac
  * @author Jan Becicka
- * @since 1.34
+ * @since 1.36
  */
 public final class InvertBooleanRefactoring extends AbstractRefactoring {
     
@@ -65,8 +66,9 @@ public final class InvertBooleanRefactoring extends AbstractRefactoring {
     }
 
     /**
-     * Getter for new name of inverted method of field
-     * @return name of field or method
+     * Getter for new name of inverted method of field.
+     * @return name of field or method. Can return null, if rename is not 
+     * requested.
      */
     @NonNull
     public String getNewName() {
@@ -74,10 +76,10 @@ public final class InvertBooleanRefactoring extends AbstractRefactoring {
     }
 
     /**
-     * Setter for new name of method or field
+     * Setter for new name of method or field. Null if rename is not requested.
      * @param newName name of method or field
      */
-    public void setNewName(@NonNull String newName) {
+    public void setNewName(@NullAllowed String newName) {
         this.newName = newName;
     }
 }

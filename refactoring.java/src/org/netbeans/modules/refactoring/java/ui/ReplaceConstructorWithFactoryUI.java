@@ -37,8 +37,9 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.ui;
 
+import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithFactoryRefactoring;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.EnumSet;
