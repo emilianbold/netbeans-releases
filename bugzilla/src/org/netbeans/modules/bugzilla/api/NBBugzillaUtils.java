@@ -57,12 +57,7 @@ import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
  */
 public class NBBugzillaUtils {
 
-    private static final String NB_BUGZILLA_PASSWORD = "nbbugzilla.password";                // NOI18N
-    private static final String NB_BUGZILLA_USERNAME = "nbbugzilla.username";                // NOI18N
-
     private static Pattern netbeansUrlPattern = Pattern.compile("(https|http)://(([a-z]|\\d)+\\.)*([a-z]|\\d)*netbeans([a-z]|\\d)*(([a-z]|\\d)*\\.)+org(.*)"); // NOI18N
-
-    private static Preferences preferences;
 
     /**
      * Opens in the IDE the given issue from the netbeans repository
