@@ -63,6 +63,7 @@ import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 
 /**
  *
@@ -273,13 +274,13 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
             }
         });
         t.start();
-       
-        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
+        RepositoryUpdater.getDefault().refreshAll(true, true, false, null);
+//        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         TestUtilities.copyStringToFileObject(srcFO, "Person.java",
                 "public interface Person {" +
                 "   String getName();" +
                 "}");
-        assertTrue("operation timed out", scanBlockingLatch.await(15, TimeUnit.SECONDS));
+        assertTrue("operation timed out", scanBlockingLatch.await(25, TimeUnit.SECONDS));
         assertSame(result, futureRef.get().get());
         t.join();
     }
