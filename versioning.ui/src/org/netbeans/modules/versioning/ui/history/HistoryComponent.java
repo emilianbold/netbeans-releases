@@ -522,6 +522,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             prevButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-prev.png"))); // NOI18N
             nextButton.addActionListener(this);
             prevButton.addActionListener(this);
+            nextButton.setEnabled(false);
+            prevButton.setEnabled(false);
             refreshButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/refresh.png"))); // NOI18N
             refreshButton.addActionListener(this);
             settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/options.png"))); // NOI18N
