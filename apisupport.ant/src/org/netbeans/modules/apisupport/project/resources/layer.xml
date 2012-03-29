@@ -36,10 +36,6 @@
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugProjectAction.instance"/>
                     <attr name="position" intvalue="800"/>
                 </file>
-                <file name="profiler.shadow">
-                    <attr name="originalFile" stringvalue="Projects/Profiler_Actions_temporary"/>
-                    <attr name="position" intvalue="900"/>
-                </file>
                 <file name="org-netbeans-modules-project-ui-TestProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
                     <attr name="position" intvalue="1000"/>
@@ -155,10 +151,6 @@
                 <file name="org-netbeans-modules-debugger-ui-actions-DebugProjectAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugProjectAction.instance"/>
                     <attr name="position" intvalue="900"/>
-                </file>
-                <file name="profiler.shadow">
-                    <attr name="originalFile" stringvalue="Projects/Profiler_Actions_temporary"/>
-                    <attr name="position" intvalue="1000"/>
                 </file>
                 <file name="org-netbeans-modules-project-ui-TestProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.profiler.nbimpl;
 
-package org.netbeans.modules.maven.profiler;
-
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
+import java.io.File;
+import java.util.Map;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Lookup;
+import org.netbeans.lib.profiler.common.Profiler;
+import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author mkleint
+ * @author Jaroslav Bachorik
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=72)
-public class ProfilerActionsProvider extends AbstractMavenActionsProvider {
-    final private Set<String> supportedTypes = new HashSet<String>() {
-        {
-            add(NbMavenProject.TYPE_JAR);
-            add(NbMavenProject.TYPE_WAR);
-            add(NbMavenProject.TYPE_EJB);
-            add(NbMavenProject.TYPE_NBM);
-            add(NbMavenProject.TYPE_NBM_APPLICATION);
-        }
-    };
-
+public class StartProfilerTask extends Task {
+    private String freeformStr = "";
+    private boolean isFreeForm = false;
+    
     @Override
-    public boolean isActionEnable(String action, Project project, Lookup lookup) {
-        if (!(action.equals(ActionProvider.COMMAND_PROFILE) || action.startsWith(ActionProvider.COMMAND_PROFILE_SINGLE) || action.equals(ActionProvider.COMMAND_PROFILE_TEST_SINGLE))) {
-            return false;
+    public void execute() throws BuildException {
+        ProfilerLauncher.Session s = ProfilerLauncher.getLastSession();
+        if (s == null && isFreeForm) {
+            File baseDir = getProject().getBaseDir();
+            if (baseDir != null) {
+                Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(baseDir));
+                if (p != null) {
+                    s = ProfilerLauncher.Session.createSession(p);
+                }
+            }
+            
         }
-        NbMavenProject mavenprj = project.getLookup().lookup(NbMavenProject.class);
-        String type = mavenprj.getPackagingType();
-        if (supportedTypes.contains(type)) {
-            return super.isActionEnable(action, project, lookup);
+        if (s != null) {
+            Map<String, String> props = s.getProperties();
+            if (props != null) {
+                for(Map.Entry<String, String> e : props.entrySet()) {
+                    getProject().setProperty(e.getKey(), e.getValue());
+                }
+                NetBeansProfiler.getDefaultNB().setupDispatcher(s.getProfilingSettings());
+                Profiler.getDefault().connectToStartedApp(s.getProfilingSettings(), s.getSessionSettings());
+                getProject().setProperty("profiler.configured", "true"); // NOI18N
+            }
         }
-        return false;
     }
-
-    @Override
-    protected InputStream getActionDefinitionStream() {
-        String path = "/org/netbeans/modules/maven/profiler/ActionMappings.xml"; //NOI18N
-        InputStream in = getClass().getResourceAsStream(path);
-        assert in != null : "no instream for " + path; //NOI18N
-        return in;
+    
+    public void setFreeform(String val) {
+        freeformStr = val;
+        isFreeForm = Boolean.parseBoolean(val);
+    }
+    
+    public String getFreeform() {
+        return freeformStr;
     }
 }

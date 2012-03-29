@@ -82,6 +82,12 @@ class ProfilerControlPanel2Support implements FileChangeListener {
         this.properties = properties;
         registerListener();
     }
+    
+    void setProperties(Properties p) {
+        if (this.script != null) {
+            this.properties = p;
+        }
+    }
 
     FileObject getScript() {
         return script;
