@@ -2407,7 +2407,7 @@ public class Installer extends ModuleInstall implements Runnable {
     } // end SubmitInteractive
 
     private static final class SubmitAutomatic extends Submit {
-        Button def;
+        final Button def;
         private boolean urlComputed;
 
         public SubmitAutomatic(String msg, Button def, DataType dataType) {
@@ -2445,7 +2445,7 @@ public class Installer extends ModuleInstall implements Runnable {
         protected void addMoreLogs(List<? super String> params, boolean openPasswd) {
         }
         @Override
-        protected Object showDialogAndGetValue(DialogDescriptor dd) {
+        protected Object showDialogAndGetValue(final DialogDescriptor dd) {
             while (!urlComputed) {
                 synchronized (this) {
                     try {
@@ -2455,14 +2455,27 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
                 }
             }
-            for (Object o : dd.getOptions()) {
-                if (o instanceof JButton) {
-                    JButton b = (JButton)o;
-                    if (def.isCommand(b.getActionCommand())) {
-                        actionPerformed(new ActionEvent(b, 0, b.getActionCommand()));
-                        return b;
+            final JButton[] buttonPtr = new JButton[] { null };
+            try {
+                EventQueue.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (Object o : dd.getOptions()) {
+                            if (o instanceof JButton) {
+                                JButton b = (JButton)o;
+                                if (def.isCommand(b.getActionCommand())) {
+                                    actionPerformed(new ActionEvent(b, 0, b.getActionCommand()));
+                                    buttonPtr[0] = b;
+                                    break;
+                                }
+                            }
+                        }
                     }
-                }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
             }
             return DialogDescriptor.CLOSED_OPTION;
         }
