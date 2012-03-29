@@ -450,7 +450,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         } 
         return false;
     }
-        
+
     private class EmptyToolbar extends JToolBar  {
         private EmptyToolbar() {
             setBorder(new EmptyBorder(0, 0, 0, 0));
@@ -600,9 +600,18 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         @Override
         public void actionPerformed(ActionEvent e) {
             if(e.getSource() == getToolbar().nextButton) {
-                diffView.onNextButton();
+                if(lastDifference) {
+                    masterView.selectNextEntry();
+                } else {
+                    diffView.onNextButton();
+                }
             } else if(e.getSource() == getToolbar().prevButton) {
-                diffView.onPrevButton();
+                if(firstDifference) {
+                    diffView.onSelectionLastDifference();
+                    masterView.selectPrevEntry();
+                } else {
+                    diffView.onPrevButton();
+                }
             } else if(e.getSource() == getToolbar().refreshButton) {
                 masterView.refresh();
             } else if(e.getSource() == getToolbar().settingsButton) {
@@ -670,9 +679,19 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         getToolbar().nextButton.setEnabled(false);
     }
 
+    private boolean lastDifference = false;
+    private boolean firstDifference = true;
     void refreshNavigationButtons(int currentDifference, int diffCount) {
-        getToolbar().prevButton.setEnabled(currentDifference > 0);
-        getToolbar().nextButton.setEnabled(currentDifference < diffCount - 1);
+        firstDifference = currentDifference <= 0;
+        lastDifference = currentDifference == diffCount - 1;
+        
+        if(masterView.isSingleSelection()) {
+            getToolbar().prevButton.setEnabled(!(firstDifference && masterView.isFirstRow()));
+            getToolbar().nextButton.setEnabled(!(lastDifference && masterView.isLastRow()));
+        } else {
+            getToolbar().prevButton.setEnabled(currentDifference > 0);
+            getToolbar().nextButton.setEnabled(currentDifference < diffCount - 1);
+        }
     }
 
     @Override
