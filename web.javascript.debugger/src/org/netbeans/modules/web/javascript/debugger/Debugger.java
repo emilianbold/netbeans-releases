@@ -464,7 +464,7 @@ public class Debugger {
                 COMM.getOut().println(out ? "\n >SENDING:" : "\n <RECEIVING:");
             }
             String val = text.toString();
-            if (val.startsWith("{\"result\":{\"scriptSource\":\"")) {
+            if (val.length() > 100 && val.startsWith("{\"result\":{\"scriptSource\":\"")) {
                 int index = val.indexOf("\"},\"");
                 if (index != -1) {
                     val = val.substring(0, 60)+"[...]"+val.substring(index);
