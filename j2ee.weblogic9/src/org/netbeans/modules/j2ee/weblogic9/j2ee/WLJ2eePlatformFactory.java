@@ -225,6 +225,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
      * 
      * @return the resulting URI
      */
+    // FIXME this mught need fixing as in #207440
     static URL fileToUrl(File file) throws MalformedURLException {
         URL url = file.toURI().toURL();
         if (FileUtil.isArchiveFile(url)) {
