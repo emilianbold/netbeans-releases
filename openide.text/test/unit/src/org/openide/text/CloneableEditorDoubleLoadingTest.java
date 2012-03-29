@@ -44,6 +44,7 @@
 
 package org.openide.text;
 
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
 import java.io.ByteArrayInputStream;
@@ -60,6 +61,8 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -73,6 +76,11 @@ import org.openide.windows.CloneableTopComponent;
  */
 public class CloneableEditorDoubleLoadingTest extends NbTestCase
 implements CloneableEditorSupport.Env {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(CloneableEditorDoubleLoadingTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

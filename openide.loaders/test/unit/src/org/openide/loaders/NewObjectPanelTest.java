@@ -42,11 +42,14 @@
  * made subject to such option by the copyright holder.
  */
 package org.openide.loaders;
+import java.awt.GraphicsEnvironment;
 import javax.swing.JFrame;
 
 import javax.swing.event.ChangeEvent;
 
 import javax.swing.event.ChangeListener;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 import org.netbeans.junit.NbTestCase;
 
@@ -55,6 +58,10 @@ import org.netbeans.junit.NbTestCase;
  * @author  pzajac
  */
 public class NewObjectPanelTest extends NbTestCase{
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NewObjectPanelTest.class);
+    }
 
     private static class MyChangeListener implements ChangeListener {
         public void stateChanged(ChangeEvent event) {}

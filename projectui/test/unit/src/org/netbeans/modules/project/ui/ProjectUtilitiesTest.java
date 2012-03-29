@@ -44,12 +44,15 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
@@ -79,6 +82,10 @@ import org.w3c.dom.NodeList;
  * @author Jiri Rechtacek
  */
 public class ProjectUtilitiesTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ProjectUtilitiesTest.class);
+    }
 
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");

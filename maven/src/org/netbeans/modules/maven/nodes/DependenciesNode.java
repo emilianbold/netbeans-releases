@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -338,19 +339,23 @@ public class DependenciesNode extends AbstractNode {
                             contribs, ProgressTransferListener.cancellable(), null);
                     handle.start();
                     try {
-                    ProgressTransferListener.setAggregateHandle(handle);
-                    for (int i = 0; i < nds.length; i++) {
-                        if (nds[i] instanceof DependencyNode) {
-                            DependencyNode nd = (DependencyNode)nds[i];
-                            if (javadoc && !nd.hasJavadocInRepository()) {
-                                nd.downloadJavadocSources(contribs[i], javadoc);
-                            } else if (!javadoc && !nd.hasSourceInRepository()) {
-                                nd.downloadJavadocSources(contribs[i], javadoc);
-                            } else {
-                                contribs[i].finish();
+                        ProgressTransferListener.setAggregateHandle(handle);
+                        for (int i = 0; i < nds.length; i++) {
+                            AtomicBoolean cancel = ProgressTransferListener.activeListener().cancel;
+                            if (cancel != null && cancel.get()) {
+                                return;
+                            }
+                            if (nds[i] instanceof DependencyNode) {
+                                DependencyNode nd = (DependencyNode)nds[i];
+                                if (javadoc && !nd.hasJavadocInRepository()) {
+                                    nd.downloadJavadocSources(contribs[i], javadoc);
+                                } else if (!javadoc && !nd.hasSourceInRepository()) {
+                                    nd.downloadJavadocSources(contribs[i], javadoc);
+                                } else {
+                                    contribs[i].finish();
+                                }
                             }
                         }
-                    }
                     } catch (ThreadDeath d) { // download interrupted
                     } finally {
                         handle.finish();

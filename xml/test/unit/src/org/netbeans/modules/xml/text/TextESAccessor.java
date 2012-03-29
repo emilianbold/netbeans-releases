@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.cnd.spi.lexer;
-
-import javax.swing.text.Document;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.cnd.api.lexer.Filter;
+package org.netbeans.modules.xml.text;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author sdedic
  */
-public interface CndLexerLanguageFilterProvider {
-    // constant to be used for registration of provider
-    // i.e. @ServiceProvider(path=CndLexerLanguageFilterProvider.REGISTRATION_PATH, service=CndLexerLanguageFilterProvider.class, position=100)
-    public static final String REGISTRATION_PATH = "CND/CndLexerLanguageFilterProvider"; // NOI18N
-    
-    /**
-     * returns filter for document
-     * @param language
-     * @param doc
-     * @return 
-     */
-    Filter<CppTokenId> getFilter(Language<?> language, Document doc);
+public class TextESAccessor {
+    public static String getMimeType(TextEditorSupport s) {
+        return s.getMIMEType();
+    }
 }

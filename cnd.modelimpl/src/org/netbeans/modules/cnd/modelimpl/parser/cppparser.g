@@ -3744,7 +3744,12 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL___imag
 
             |   LITERAL_alignof
+            |   LITERAL___alignof
             |   LITERAL___alignof__
+            |   LITERAL___is_class
+            |   LITERAL___is_pod
+            |   LITERAL___is_base_of
+            |   LITERAL___has_trivial_constructor
 
             |   LITERAL_auto
             |   LITERAL_final
@@ -3979,7 +3984,12 @@ lazy_expression_predicate
     |   LITERAL___imag
 
     |   LITERAL_alignof
+    |   LITERAL___alignof
     |   LITERAL___alignof__
+    |   LITERAL___is_class
+    |   LITERAL___is_pod
+    |   LITERAL___is_base_of
+    |   LITERAL___has_trivial_constructor
 
     |   LITERAL_auto
     |   LITERAL_final
@@ -4099,6 +4109,7 @@ constant
     |   LITERAL_true
     |   LITERAL_false
     |   LITERAL_nullptr
+    |   LITERAL___null
     ;
 
 optor 

@@ -45,6 +45,7 @@ package org.netbeans.modules.progress.ui;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
@@ -60,7 +61,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.JFrame;
 import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -68,13 +70,11 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.Workspace;
@@ -83,9 +83,16 @@ import org.openide.windows.Workspace;
  *
  * @author Tim Boudreau
  */
-public class RunOffEDTImplTest extends TestCase {
+public class RunOffEDTImplTest extends NbTestCase {
 
-    @Before
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(RunOffEDTImplTest.class);
+    }
+
+    public RunOffEDTImplTest(String name) {
+        super(name);
+    }
+
     public void setUp() {
         MockServices.setServices(WM.class, RunOffEDTImpl.class);
     }
@@ -96,7 +103,6 @@ public class RunOffEDTImplTest extends TestCase {
         return hintsMap == null || !RenderingHints.VALUE_TEXT_ANTIALIAS_OFF.equals(hintsMap.get(RenderingHints.KEY_TEXT_ANTIALIASING));
     }
 
-    @Test
     public void testShowProgressDialogAndRun_3args_1_EQ() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         EventQueue.invokeLater(new Runnable() {
@@ -113,7 +119,6 @@ public class RunOffEDTImplTest extends TestCase {
         latch.await();
     }
 
-    @Test
     public void testShowProgressDialogAndRun_3args_2_EQ() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         EventQueue.invokeLater(new Runnable() {
@@ -134,7 +139,6 @@ public class RunOffEDTImplTest extends TestCase {
         latch.await();
     }
 
-    @Test
     public void testShowProgressDialogAndRunLater() throws Exception {
         final WM wm = Lookup.getDefault().lookup(WM.class);
         //make sure main window is on screen before proceeding
@@ -171,7 +175,6 @@ public class RunOffEDTImplTest extends TestCase {
         assertTrue ("Glass pane not set", !testGlassPane || glassPaneFound.get());
     }
 
-    @Test
     public void testShowProgressDialogAndRunLaterEQ() throws Throwable {
         EventQueue.invokeAndWait(new Runnable() {
             @Override
@@ -185,12 +188,10 @@ public class RunOffEDTImplTest extends TestCase {
         });
     }
 
-    @Test
     public void testShowProgressDialogAndRun_3args_1() {
         assertEquals ("Done", ProgressUtils.showProgressDialogAndRun(new CB(), "Doing Stuff", true));
     }
 
-    @Test
     public void testShowProgressDialogAndRun_3args_2() throws InterruptedException {
         final WM wm = Lookup.getDefault().lookup(WM.class);
         //make sure main window is on screen before proceeding
@@ -221,7 +222,6 @@ public class RunOffEDTImplTest extends TestCase {
         assertTrue ("Glass pane not set", !testGlassPane || glassPaneFound.get());
     }
 
-    @Test
     public void testStressWithRandomContention() throws InterruptedException, Exception {
         Random r = new Random(123456789);
         for (int i = 0; i < 30; i++) {

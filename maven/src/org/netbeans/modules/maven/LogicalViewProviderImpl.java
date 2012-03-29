@@ -79,6 +79,7 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
     /**
      * create the root node for maven projects..
      */
+    @Override
     public Node createLogicalView() {
         NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         return new MavenProjectNode(createLookup(project), project);
@@ -96,9 +97,10 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
     /**
      * TODO this is probably good for the Select in Project view action..
      */
+    @Override
     public Node findPath(Node node, Object target) {
-        NbMavenProjectImpl proj = node.getLookup().lookup(NbMavenProjectImpl.class );
-        if ( proj == null ) {
+        NbMavenProjectImpl prj = node.getLookup().lookup(NbMavenProjectImpl.class );
+        if ( prj == null ) {
             return null;
         }
         
@@ -106,7 +108,7 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
             FileObject fo = (FileObject)target;
             
             Project owner = FileOwnerQuery.getOwner( fo );
-            if ( !proj.equals( owner ) ) {
+            if ( !prj.equals( owner ) ) {
                 return null; // Don't waste time if project does not own the fo
             }
             Node[] nodes = node.getChildren().getNodes(true);

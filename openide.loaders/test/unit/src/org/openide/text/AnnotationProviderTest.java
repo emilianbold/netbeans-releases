@@ -45,11 +45,14 @@
 
 package org.openide.text;
 
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.actions.CopyAction;
@@ -93,6 +96,11 @@ import org.openide.util.actions.SystemAction;
 import org.openide.windows.CloneableOpenSupport;
 
 public class AnnotationProviderTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(AnnotationProviderTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

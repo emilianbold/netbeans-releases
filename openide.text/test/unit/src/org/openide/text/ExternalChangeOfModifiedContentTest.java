@@ -43,6 +43,7 @@
  */
 
 package org.openide.text;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,6 +53,8 @@ import java.util.Stack;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 
@@ -69,6 +72,11 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class ExternalChangeOfModifiedContentTest extends NbTestCase
 implements CloneableEditorSupport.Env {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ExternalChangeOfModifiedContentTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

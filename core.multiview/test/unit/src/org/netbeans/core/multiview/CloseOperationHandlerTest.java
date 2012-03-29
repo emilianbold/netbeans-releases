@@ -44,6 +44,9 @@
 
 package org.netbeans.core.multiview;
 
+import java.awt.GraphicsEnvironment;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
@@ -61,6 +64,10 @@ import org.openide.windows.*;
  */
 public class CloseOperationHandlerTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(CloseOperationHandlerTest.class);
+    }
+
     public CloseOperationHandlerTest(String name) {
         super (name);
     }

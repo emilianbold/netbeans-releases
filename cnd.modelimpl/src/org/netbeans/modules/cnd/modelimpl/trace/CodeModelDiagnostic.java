@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
-import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -51,8 +50,16 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
+import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -104,6 +111,50 @@ public final class CodeModelDiagnostic {
                 } else {
                     printOut.printf("UKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N 
                 }
+            }
+            DataObject dob = context.lookup(DataObject.class);
+            if (dob != null) {
+                NativeFileItemSet nfis = dob.getLookup().lookup(NativeFileItemSet.class);
+                if (nfis != null) {
+                    printOut.printf("NativeFileItemSet has %d elements\n", nfis.getItems().size());// NOI18N 
+                    int ind = 0;
+                    for (NativeFileItem item : nfis.getItems()) {
+                        printOut.printf("[%d] NativeFileItem %s of class %s\n", ++ind, item.getAbsolutePath(), item.getClass().getName());// NOI18N 
+                        NativeProject nativeProject = item.getNativeProject();
+                        printOut.printf(" from project %s [%s]\n", nativeProject.getProjectDisplayName(), nativeProject.getProjectRoot());// NOI18N 
+                        printOut.printf("\tLang=%s Flavor=%s excluded=%s\n", item.getLanguage(), item.getLanguageFlavor(), item.isExcluded());// NOI18N 
+                        printOut.print("\tUser Include Paths:\n");// NOI18N 
+                        for (FSPath path : item.getUserIncludePaths()) {
+                            String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
+                            FileObject valid = path.getFileObject();
+                            if (valid != null && valid.isValid()) {
+                                valid = null;
+                            } 
+                            printOut.printf("\t\t%s%s\n", msg, valid == null ? "[invalid]" : "");// NOI18N 
+                        }
+                        printOut.print("\tUser Macros:\n");// NOI18N 
+                        for (String macro : item.getUserMacroDefinitions()) {
+                            printOut.printf("\t\t%s\n", macro);// NOI18N 
+                        }
+                        printOut.print("\tSystem Include Paths:\n");// NOI18N 
+                        for (FSPath path : item.getSystemIncludePaths()) {
+                            String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
+                            FileObject valid = path.getFileObject();
+                            if (valid != null && valid.isValid()) {
+                                valid = null;
+                            }
+                            printOut.printf("\t\t%s%s\n", msg, valid == null ? "[invalid]" : "");// NOI18N 
+                        }
+                        printOut.print("\tSystem Macros:\n");// NOI18N 
+                        for (String macro : item.getSystemMacroDefinitions()) {
+                            printOut.printf("\t\t%s\n", macro);// NOI18N 
+                        }
+                    }
+                } else {
+                    printOut.printf("no NativeFileItemSet in %s\n", dob);// NOI18N 
+                }
+            } else {
+                printOut.printf("no file object in lookup\n");// NOI18N 
             }
         }
     }

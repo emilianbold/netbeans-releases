@@ -519,22 +519,18 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         }
         if (needToRender) {
             CachePair newCachePair = new CachePair(FileImpl.getParseCount(), ResolverFactory.getCurrentStartFile(this));
-            if (classifier != null) {                
-                if (newCachePair.equals(lastCache)) {
-                    return classifier;
+            if (classifier == null || !newCachePair.equals(lastCache)) {                
+                if (qname != null) {
+                    classifier = renderClassifier(qname);
+                } else if (classifierText.length() > 0) {
+                    classifier = renderClassifier(new CharSequence[] { classifierText });
                 }
+                synchronized (this) {
+                    _setClassifier(classifier);
+                    lastCache = newCachePair;
+                }
+                classifier = _getClassifier();
             }
-
-            if (qname != null) {
-                classifier = renderClassifier(qname);
-            } else if (classifierText.length() > 0) {
-                classifier = renderClassifier(new CharSequence[] { classifierText });
-            }
-            synchronized (this) {
-                _setClassifier(classifier);
-                lastCache = newCachePair;
-            }
-            classifier = _getClassifier();
         }
         if (isInstantiation() && CsmKindUtilities.isTemplate(classifier) && !((CsmTemplate)classifier).getTemplateParameters().isEmpty()) {
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();

@@ -45,20 +45,20 @@
 package org.netbeans.modules.cnd.dwarfdump;
 
 import java.io.File;
-import org.netbeans.modules.cnd.dwarfdump.reader.MyRandomAccessFile;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
+import org.netbeans.modules.cnd.dwarfdump.reader.MyRandomAccessFile;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfDebugInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
-import org.netbeans.modules.cnd.dwarfdump.trace.TraceDwarf;
 
 /**
  *
@@ -70,6 +70,7 @@ public class Dwarf {
     private FileMagic magic;
     private String fileName;
     private List<FileMagic> toDispose = new ArrayList<FileMagic>();
+    public static final Logger LOG = Logger.getLogger(Dwarf.class.getName());
     
     private enum Mode {
         Normal, Archive, MachoLOF
@@ -77,8 +78,8 @@ public class Dwarf {
     private final Mode mode;
     
     public Dwarf(String objFileName) throws IOException {
-        if (TraceDwarf.TRACED) {
-            System.out.println("\n**** Dwarfing " + objFileName + "\n"); //NOI18N
+        if (Dwarf.LOG.isLoggable(Level.FINE)) {
+            Dwarf.LOG.log(Level.FINE, "\n**** Dwarfing {0}\n", objFileName); //NOI18N
         }
         fileName = objFileName;
         try {
@@ -122,7 +123,7 @@ public class Dwarf {
         toDispose.clear();
     }
     
-    public ElfSection getSection(String sectionName) {
+    public ElfSection getSection(String sectionName) throws IOException {
 	return dwarfReader.getSection(sectionName);
     }
 
@@ -134,7 +135,7 @@ public class Dwarf {
 	return fileName;
     }
 
-    public Iterator<CompilationUnit> iteratorCompilationUnits() throws IOException {
+    public CompilationUnitIterator iteratorCompilationUnits() throws IOException {
         if (mode == Mode.Archive) {
             return new ArchiveIterator(magic.getReader());
         } else if (mode == Mode.Normal) {
@@ -221,7 +222,7 @@ public class Dwarf {
 
     private List<CompilationUnit> getFileCompilationUnits() throws IOException {
         DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)dwarfReader.getSection(SECTIONS.DEBUG_INFO);
-        List<CompilationUnit> result = null;
+        List<CompilationUnit> result;
         if (debugInfo != null) {
             result = debugInfo.getCompilationUnits();
         } else {
@@ -230,13 +231,22 @@ public class Dwarf {
         return result;
     }
 
-    private Iterator<CompilationUnit> iteratorFileCompilationUnits() throws IOException {
+    private CompilationUnitIterator iteratorFileCompilationUnits() throws IOException {
         DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)dwarfReader.getSection(SECTIONS.DEBUG_INFO);
-        Iterator<CompilationUnit> result = null;
+        CompilationUnitIterator result;
         if (debugInfo != null) {
             result = debugInfo.iteratorCompilationUnits();
         } else {
-            result = new LinkedList<CompilationUnit>().iterator();
+            result = new CompilationUnitIterator() {
+
+                public boolean hasNext() throws IOException{
+                    return false;
+                }
+
+                public CompilationUnit next() throws IOException{
+                    return null;
+                }
+            };
         }
         return result;
     }
@@ -293,9 +303,9 @@ public class Dwarf {
         String[] splitReal = binaryPath.split("/"); //NOI18N
         String[] splitVirtual = path.split("/"); //NOI18N
         for(int i = 0; i < splitReal.length; i++) {
-            int startReal = -1;
-            int startVirtual = -1;
-            int len = -1;
+            int startReal;
+            int startVirtual;
+            int len;
             loop2:for(int j = 0; j < splitVirtual.length; j++) {
                 if (splitReal[i].equals(splitVirtual[j])) {
                     startReal = i;
@@ -349,10 +359,10 @@ public class Dwarf {
         return null;
     }
 
-    private class MacArchiveIterator implements Iterator<CompilationUnit>{
+    private class MacArchiveIterator implements CompilationUnitIterator {
         private List<String> objectFiles;
         private int archiveIndex = 0;
-        private Iterator<CompilationUnit> currentList;
+        private CompilationUnitIterator currentList;
         private Dwarf currentDwarf;
 
         public MacArchiveIterator() throws IOException{
@@ -361,30 +371,20 @@ public class Dwarf {
         }
 
         @Override
-        public boolean hasNext() {
+        public boolean hasNext() throws IOException {
             if (currentList == null) {
                 return false;
             }
             if (currentList.hasNext()) {
                 return true;
             }
-            try {
-                advanceArchive();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                return false;
-            }
+            advanceArchive();
             return currentList != null;
         }
 
         @Override
-        public CompilationUnit next() {
+        public CompilationUnit next() throws IOException {
             return currentList.next();
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
         }
 
         private void advanceArchive() throws IOException {
@@ -394,8 +394,9 @@ public class Dwarf {
                     currentDwarf.magic.dispose();
                     currentDwarf = null;
                 }
+                String member;
                 if (archiveIndex < objectFiles.size()) {
-                    String member = objectFiles.get(archiveIndex);
+                    member = objectFiles.get(archiveIndex);
                     if(!new File(member).exists()) {
                         String fileFinder = fileFinder(Dwarf.this.fileName, member);
                         if (fileFinder != null && new File(fileFinder).exists()) {
@@ -411,7 +412,7 @@ public class Dwarf {
                             continue;
                         }
                     } catch (IOException ex) {
-                        ex.printStackTrace();
+                        LOG.log(Level.INFO, "File "+Dwarf.this.fileName+" Member "+member, ex);
                         continue;
                     }
                     break;
@@ -423,10 +424,10 @@ public class Dwarf {
         }
     }
 
-    private class ArchiveIterator implements Iterator<CompilationUnit>{
+    private class ArchiveIterator implements CompilationUnitIterator {
         private int archiveIndex = 0;
         private MyRandomAccessFile reader;
-        private Iterator<CompilationUnit> currentIterator;
+        private CompilationUnitIterator currentIterator;
 
         public ArchiveIterator(MyRandomAccessFile reader) throws IOException {
             this.reader = reader;
@@ -434,30 +435,20 @@ public class Dwarf {
         }
 
         @Override
-        public boolean hasNext() {
+        public boolean hasNext() throws IOException {
             if (currentIterator == null) {
                 return false;
             }
             if (currentIterator.hasNext()) {
                 return true;
             }
-            try {
-                advanceArchive();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                return false;
-            }
+            advanceArchive();
             return currentIterator != null;
         }
 
         @Override
-        public CompilationUnit next() {
+        public CompilationUnit next() throws IOException {
             return currentIterator.next();
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
         }
 
         private void advanceArchive() throws IOException {
@@ -479,9 +470,7 @@ public class Dwarf {
                             dwarfReader = new DwarfReader(fileName, reader, Magic.Macho, shiftIvArchive, length);
                         }
                     } catch (Exception e) {
-                        if (TraceDwarf.TRACED) {
-                            e.printStackTrace();
-                        }
+                        Dwarf.LOG.log(Level.INFO, fileName, e);
                         continue;
                     }
                     currentIterator = iteratorFileCompilationUnits();
@@ -495,5 +484,10 @@ public class Dwarf {
                 }
             }
         }
+    }
+    
+    public interface CompilationUnitIterator {
+        boolean hasNext() throws IOException;
+        CompilationUnit next() throws IOException;
     }
 }

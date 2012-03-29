@@ -1129,6 +1129,15 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private void showWaitCursor() {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    showWaitCursor();
+                }
+            });
+            return;
+        }
         if ((wizardPanel == null) || (wizardPanel.getRootPane() == null)) {
             // if none root pane --> don't set wait cursor
             return;
@@ -1153,6 +1162,15 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private void showNormalCursor() {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    showNormalCursor();
+                }
+            } );
+            return;
+        }
         if (waitingComponent == null) {
             // none waitingComponent --> don't change cursor to normal
             return;
@@ -1464,6 +1482,8 @@ public class WizardDescriptor extends DialogDescriptor {
 
                     validationRuns = false;
                     err.log (Level.FINE, "validation failed", wve); // NOI18N
+                    if( FINISH_OPTION.equals( getValue() ) )
+                        setValue( getDefaultValue() );
                     updateState ();
                     // cannot continue, notify user
                     if (wizardPanel != null) {
@@ -1531,21 +1551,32 @@ public class WizardDescriptor extends DialogDescriptor {
         } else if (panels instanceof ProgressInstantiatingIterator) {
             err.fine("is ProgressInstantiatingIterator");
             handle = ProgressHandleFactory.createHandle (PROGRESS_BAR_DISPLAY_NAME);
-
-            JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
-            if (wizardPanel != null) {
-                wizardPanel.setProgressComponent (progressComp, ProgressHandleFactory.createDetailLabelComponent (handle));
-            }
+            final JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
+            final JLabel detailComp = ProgressHandleFactory.createDetailLabelComponent (handle);
+            Mutex.EVENT.readAccess( new Runnable() {
+                @Override
+                public void run() {
+                    if (wizardPanel != null) {
+                        wizardPanel.setProgressComponent (progressComp, detailComp);
+                    }
+                }
+            });
 
             err.log (Level.FINE, "Show progressPanel controlled by iterator later.");
         } else if (panels instanceof AsynchronousInstantiatingIterator) {
             err.fine("is AsynchronousInstantiatingIterator");
             handle = ProgressHandleFactory.createHandle (PROGRESS_BAR_DISPLAY_NAME);
 
-            JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
-            if (wizardPanel != null) {
-                wizardPanel.setProgressComponent (progressComp, ProgressHandleFactory.createMainLabelComponent (handle));
-            }
+            final JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
+            final JLabel mainLabelComp = ProgressHandleFactory.createMainLabelComponent (handle);
+            Mutex.EVENT.readAccess( new Runnable() {
+                @Override
+                public void run() {
+                    if (wizardPanel != null) {
+                        wizardPanel.setProgressComponent (progressComp, mainLabelComp);
+                    }
+                }
+            });
 
             handle.start ();
             err.log (Level.FINE, "Show progressPanel later.");
@@ -2720,6 +2751,7 @@ public class WizardDescriptor extends DialogDescriptor {
         }
 
         private void setProgressComponent (JComponent progressComp, final JLabel progressLabel) {
+            assert SwingUtilities.isEventDispatchThread();
             if (progressComp == null) {
                 progressBarPanel.removeAll ();
                 progressBarPanel.setVisible (false);

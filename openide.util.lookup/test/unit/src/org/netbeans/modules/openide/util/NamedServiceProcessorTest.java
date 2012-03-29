@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.openide.util.lookup;
+package org.netbeans.modules.openide.util;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.annotation.Retention;
@@ -49,15 +49,17 @@ import java.net.URLClassLoader;
 import java.util.concurrent.Callable;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.NamedServiceDefinition;
 import org.openide.util.test.AnnotationProcessorTestUtils;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class NamedServiceDefinitionTest extends NbTestCase {
+public class NamedServiceProcessorTest extends NbTestCase {
     
-    public NamedServiceDefinitionTest(String n) {
+    public NamedServiceProcessorTest(String n) {
         super(n);
     }
 
@@ -68,7 +70,7 @@ public class NamedServiceDefinitionTest extends NbTestCase {
     
     public void testNamedDefinition() throws Exception {
         System.setProperty("executed", "false");
-        String content = "import org.openide.util.lookup.NamedServiceDefinitionTest.RunTestReg;\n"
+        String content = "import " + RunTestReg.class.getCanonicalName() + ";\n"
             + "@RunTestReg(position=10,when=\"now\")\n"
             + "public class Test implements Runnable {\n"
             + "  public void run() { System.setProperty(\"executed\", \"true\"); }\n"
@@ -78,7 +80,7 @@ public class NamedServiceDefinitionTest extends NbTestCase {
             AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, System.err)
             );
         
-        URLClassLoader l = new URLClassLoader(new URL[] { getWorkDir().toURI().toURL() }, NamedServiceDefinitionTest.class.getClassLoader());
+        URLClassLoader l = new URLClassLoader(new URL[] { getWorkDir().toURI().toURL() }, NamedServiceProcessorTest.class.getClassLoader());
         Lookup lkp = Lookups.metaInfServices(l, "META-INF/namedservices/runtest/now/below/");
         for (Runnable r : lkp.lookupAll(Runnable.class)) {
             r.run();
@@ -88,7 +90,7 @@ public class NamedServiceDefinitionTest extends NbTestCase {
     
     public void testNamedDefinitionWithArray() throws Exception {
         System.setProperty("executed", "false");
-        String content = "import org.openide.util.lookup.NamedServiceDefinitionTest.RunTestArray;\n"
+        String content = "import " + RunTestArray.class.getCanonicalName() + ";\n"
             + "@RunTestArray(position=10,array={\"now\", \"then\" })\n"
             + "public class Test implements Runnable {\n"
             + "  public void run() { System.setProperty(\"executed\", \"true\"); }\n"
@@ -98,7 +100,7 @@ public class NamedServiceDefinitionTest extends NbTestCase {
             AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, System.err)
             );
         
-        URLClassLoader l = new URLClassLoader(new URL[] { getWorkDir().toURI().toURL() }, NamedServiceDefinitionTest.class.getClassLoader());
+        URLClassLoader l = new URLClassLoader(new URL[] { getWorkDir().toURI().toURL() }, NamedServiceProcessorTest.class.getClassLoader());
         Lookup lkp = Lookups.metaInfServices(l, "META-INF/namedservices/runtest/now/");
         for (Runnable r : lkp.lookupAll(Runnable.class)) {
             r.run();
@@ -114,7 +116,7 @@ public class NamedServiceDefinitionTest extends NbTestCase {
     
     public void testDoesNotImplementInterfaces() throws Exception {
         System.setProperty("executed", "false");
-        String content = "import org.openide.util.lookup.NamedServiceDefinitionTest.RunTestReg;\n"
+        String content = "import " + RunTestReg.class.getCanonicalName() + ";\n"
             + "@RunTestReg(position=10,when=\"now\")\n"
             + "public class Test {\n"
             + "  public void run() { System.setProperty(\"executed\", \"true\"); }\n"
@@ -135,7 +137,7 @@ public class NamedServiceDefinitionTest extends NbTestCase {
 
     public void testDoesImplementInterface() throws Exception {
         System.setProperty("executed", "false");
-        String content = "import org.openide.util.lookup.NamedServiceDefinitionTest.RunTestReg;\n"
+        String content = "import " + RunTestReg.class.getCanonicalName() + ";\n"
             + "import java.util.concurrent.Callable;\n"
             + "@RunTestReg(position=10,when=\"now\")\n"
             + "public class Test implements Callable<Boolean> {\n"

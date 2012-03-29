@@ -66,9 +66,13 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -102,7 +106,7 @@ public class PkgConfigImpl implements PkgConfig {
         initPackagesFromSet(set);
     }
 
-    private List<String> envPaths(String folder){
+    private List<String> envPaths(String folder, String... foders){
         ExitStatus status = ProcessUtils.execute(pi.getExecutionEnvironment(),
                 pi.isWindows()?"pkg-config.exe":"pkg-config", new String[]{"--variable", "pc_path", "pkg-config"}); // NOI18N
         List<String> res = new ArrayList<String>();
@@ -110,6 +114,7 @@ public class PkgConfigImpl implements PkgConfig {
             addPaths(res, status.output);
         }
         res.add(folder);
+        Collections.addAll(res, foders);
         addPaths(res, pi.getEnv().get("PKG_CONFIG_PATH")); // NOI18N
         return res;
     }
@@ -161,8 +166,26 @@ public class PkgConfigImpl implements PkgConfig {
             }
             initPackages(envPaths(baseDirectory), true); // NOI18N
         } else {
-            //initPackages("/net/elif/export1/sside/as204739/pkgconfig/"); // NOI18N
-            initPackages(envPaths("/usr/lib/pkgconfig/"), false); // NOI18N
+                //initPackages("/net/elif/export1/sside/as204739/pkgconfig/"); // NOI18N     
+            if (pi.isLinux()) {
+                HostInfo hostinfo = null;
+                try {
+                    if (HostInfoUtils.isHostInfoAvailable(pi.getExecutionEnvironment())) {
+                        hostinfo = HostInfoUtils.getHostInfo(pi.getExecutionEnvironment());
+                    }                
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (CancellationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (hostinfo != null && hostinfo.getOS().getBitness() == HostInfo.Bitness._64) {
+                    initPackages(envPaths("/usr/lib64/pkgconfig", "/usr/share/pkgconfig"), false); // NOI18N
+                } else {
+                    initPackages(envPaths("/usr/lib/pkgconfig", "/usr/share/pkgconfig"), false); // NOI18N
+                } 
+            } else {
+                initPackages(envPaths("/usr/lib/pkgconfig", "/usr/share/pkgconfig"), false); // NOI18N
+            }
         }
     }
 
