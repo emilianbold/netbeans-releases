@@ -63,6 +63,7 @@ public final class HistoryOptionsController extends OptionsPanelController imple
     private final HistoryOptionsPanel panel;
     private boolean noLabelValue;
     private String daysValue;
+    private String increments;
     
     public HistoryOptionsController() {
         panel = new HistoryOptionsPanel();
@@ -78,15 +79,20 @@ public final class HistoryOptionsController extends OptionsPanelController imple
     @Override
     public void update() {        
         panel.olderThanDaysTextField.setText(daysValue = String.valueOf(HistorySettings.getInstance().getTTL()));
-        panel.daysIncrementTextField.setText(daysValue = String.valueOf(HistorySettings.getInstance().getIncrements()));
+        panel.daysIncrementTextField.setText(increments = String.valueOf(HistorySettings.getInstance().getIncrements()));
         panel.noLabelCleanupCheckBox.setSelected(noLabelValue = !HistorySettings.getInstance().getCleanUpLabeled());
         if(HistorySettings.getInstance().getKeepForever()) {
             panel.keepForeverRadioButton.setSelected(true);
         } else {
             panel.removeOlderRadioButton.setSelected(true);
         }
+        if(HistorySettings.getInstance().getLoadAll()) {
+            panel.loadAllRadioButton.setSelected(true);
+        } else {
+            panel.loadIncrementsRadioButton.setSelected(true);
+        }
         updateForeverState();
-        updateLoadAllState(HistorySettings.getInstance().getLoadAll());
+        updateLoadAllState();
     }
 
     @Override
@@ -103,7 +109,7 @@ public final class HistoryOptionsController extends OptionsPanelController imple
         }
         if(panel.loadAllRadioButton.isSelected()) {
             HistorySettings.getInstance().setLoadAll(true);
-            HistorySettings.getInstance().setIncrements(Integer.parseInt(daysValue));
+            HistorySettings.getInstance().setIncrements(Integer.parseInt(increments));
         } else {
             HistorySettings.getInstance().setLoadAll(false);
             HistorySettings.getInstance().setIncrements(Integer.parseInt(panel.daysIncrementTextField.getText()));
@@ -183,7 +189,7 @@ public final class HistoryOptionsController extends OptionsPanelController imple
         if(e.getSource() == panel.keepForeverRadioButton || e.getSource() == panel.removeOlderRadioButton) {
             updateForeverState();
         } else if(e.getSource() == panel.loadAllRadioButton || e.getSource() == panel.loadIncrementsRadioButton) {
-            updateLoadAllState(panel.loadAllRadioButton.isSelected());
+            updateLoadAllState();
         }
     }
     
@@ -208,10 +214,22 @@ public final class HistoryOptionsController extends OptionsPanelController imple
         }
     }
     
-    private void updateLoadAllState(boolean loadAllOn) {
-        panel.loadAllRadioButton.setSelected(loadAllOn);
-        panel.loadIncrementsRadioButton.setSelected(!loadAllOn);
-        panel.daysIncrementTextField.setEnabled(!loadAllOn);
-        panel.jLabel4.setEnabled(!loadAllOn);
+    private void updateLoadAllState() {
+        if(panel.loadAllRadioButton.isSelected()) {
+            panel.loadAllRadioButton.setSelected(true);
+            panel.loadIncrementsRadioButton.setSelected(false);
+            panel.daysIncrementTextField.setEnabled(false);
+            panel.jLabel4.setEnabled(false);
+        
+            increments = panel.daysIncrementTextField.getText();
+            panel.daysIncrementTextField.setText("");
+        } else {
+            panel.daysIncrementTextField.setText(increments);
+            
+            panel.loadAllRadioButton.setSelected(false);
+            panel.loadIncrementsRadioButton.setSelected(true);
+            panel.daysIncrementTextField.setEnabled(true);
+            panel.jLabel4.setEnabled(true);
+        }
     }
 }
