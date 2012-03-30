@@ -53,7 +53,7 @@ public class GdbHandlerCommand extends HandlerCommand {
     private final Type type;
     private GdbHandlerCommand next = null;
     
-    GdbHandlerCommand(Type type, String changeCommand, boolean error) {
+    GdbHandlerCommand(Type type, String changeCommand) {
         super(changeCommand, false);
         this.type = type;
     }
