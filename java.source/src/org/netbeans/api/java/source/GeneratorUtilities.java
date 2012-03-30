@@ -183,7 +183,7 @@ public final class GeneratorUtilities {
         CodeStyle codeStyle = DiffContext.getCodeStyle(copy);
         if (codeStyle.getClassMemberInsertionPoint() == CodeStyle.InsertionPoint.CARET_LOCATION) {
             JTextComponent jtc = EditorRegistry.lastFocusedComponent();
-            if (jtc.getDocument() == doc)
+            if (jtc != null && jtc.getDocument() == doc)
                 caretPos = jtc.getCaretPosition();
         }
         ClassMemberComparator comparator = caretPos < 0 ? new ClassMemberComparator(codeStyle) : null;
