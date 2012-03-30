@@ -1322,13 +1322,7 @@ public class VariousUtils {
     public static boolean isAliased(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
         boolean result = false;
         if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
-            Scope scope = inScope;
-            while (scope != null && !(scope instanceof NamespaceScope)) {
-                scope = scope.getInScope();
-            }
-            if (scope != null) {
-                result = isAlias(qualifiedName.getSegments().getFirst(), offset, (NamespaceScope) scope);
-            }
+            result = isAliasedClassName(qualifiedName.getSegments().getFirst(), offset, inScope);
         }
         return result;
     }
@@ -1336,13 +1330,19 @@ public class VariousUtils {
     public static boolean isAlias(final QualifiedName unqualifiedName, final int offset, final Scope inScope) {
         boolean result = false;
         if(unqualifiedName.getKind().isUnqualified() && !isSpecialClassName(unqualifiedName.getName())) {
-            Scope scope = inScope;
-            while (scope != null && !(scope instanceof NamespaceScope)) {
-                scope = scope.getInScope();
-            }
-            if (scope != null) {
-                result = isAlias(unqualifiedName.getSegments().getFirst(), offset, (NamespaceScope) scope);
-            }
+            result = isAliasedClassName(unqualifiedName.getSegments().getFirst(), offset, inScope);
+        }
+        return result;
+    }
+
+    private static boolean isAliasedClassName(final String className, final int offset, final Scope inScope) {
+        boolean result = false;
+        Scope scope = inScope;
+        while (scope != null && !(scope instanceof NamespaceScope)) {
+            scope = scope.getInScope();
+        }
+        if (scope != null) {
+            result = isAlias(className, offset, (NamespaceScope) scope);
         }
         return result;
     }
