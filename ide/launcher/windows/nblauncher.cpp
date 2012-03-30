@@ -406,7 +406,7 @@ bool NbLauncher::findCacheDir(const char *str) {
         }
         defCacheDirRoot = defCacheDirRoot + NETBEANS_CACHES_DIRECTORY;
         defCacheDirRoot.erase(defCacheDirRoot.rfind('\\'));
-        logMsg("Default Chachedir Root: %s", defCacheDirRoot.c_str());
+        logMsg("Default Cachedir Root: %s", defCacheDirRoot.c_str());
         cacheDir = defCacheDirRoot + (str + strlen(DEFAULT_CACHEDIR_ROOT_TOKEN));
     } else {
         cacheDir = str;
