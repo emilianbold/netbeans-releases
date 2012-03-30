@@ -43,7 +43,6 @@ package org.netbeans.modules.html.editor.hints;
 
 import java.util.Collections;
 import javax.swing.text.BadLocationException;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
@@ -51,6 +50,10 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.openide.util.NbBundle;
 
 /**
@@ -92,16 +95,16 @@ public class RemoveSurroundingTag extends Hint {
                 @Override
                 public void run() {
                     try {
-                        AstNode[] surroundingPair = findPairNodesAtSelection(context) ;
+                        Element[] surroundingPair = findPairNodesAtSelection(context) ;
                         if(surroundingPair == null) {
                             return ;
                         }
-                        int otfrom = surroundingPair[0].startOffset();
-                        int otto = surroundingPair[0].endOffset();
+                        int otfrom = surroundingPair[0].from();
+                        int otto = surroundingPair[0].to();
                         int otlen = otto - otfrom;
                         
-                        int ctfrom = surroundingPair[1].startOffset();
-                        int ctto = surroundingPair[1].endOffset();
+                        int ctfrom = surroundingPair[1].from();
+                        int ctto = surroundingPair[1].to();
                         
                         context.doc.remove(otfrom, otlen);
                         context.doc.remove(ctfrom - otlen, ctto - ctfrom);
@@ -148,7 +151,7 @@ public class RemoveSurroundingTag extends Hint {
         }
     }
 
-    private static AstNode[] findPairNodesAtSelection(RuleContext context) {
+    private static Element[] findPairNodesAtSelection(RuleContext context) {
         if (context.selectionStart == -1 || context.selectionEnd == -1) {
             return null;
         }
@@ -157,24 +160,24 @@ public class RemoveSurroundingTag extends Hint {
 
         //check whether the selection starts at a tag and ends at a tag
         //open tag
-        AstNode open = result.findLeafTag(context.selectionStart, true, true);
-
-        if (open == null || open.type() != AstNode.NodeType.OPEN_TAG) {
+        Element open = result.findByPhysicalRange(context.selectionStart, true);
+        if (open == null || open.type() != ElementType.OPEN_TAG) {
             return null;
         }
 
         //close tag
-        AstNode close = result.findLeafTag(context.selectionEnd, false, true);
-        if (close == null || close.type() != AstNode.NodeType.ENDTAG) {
+        Element close = result.findByPhysicalRange(context.selectionEnd, false);
+        if (close == null || close.type() != ElementType.CLOSE_TAG) {
             return null;
         }
 
         //is the end tag really a pair node of the open tag?
-        if (open.getMatchingTag() != close) { //same AST ... reference test is ok
+        OpenTag openTag = (OpenTag)open;
+        if (openTag.matchingCloseTag() != close) { //same AST ... reference test is ok
             return null;
         }
 
-        return new AstNode[]{open, close};
+        return new Element[]{open, close};
     }
     
     

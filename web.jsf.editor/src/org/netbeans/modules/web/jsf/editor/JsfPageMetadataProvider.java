@@ -46,7 +46,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.WebPageMetadata;
 import org.netbeans.modules.web.common.spi.WebPageMetadataProvider;
