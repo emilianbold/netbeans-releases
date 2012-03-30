@@ -1174,35 +1174,48 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public void makeCalleeCurrent() {
         Frame frame = getCurrentFrame();
         if (frame != null) {
-            String number = frame.getNumber();
-            makeFrameCurrent(getStack()[Integer.valueOf(number)-1]);
+            int frameNo = Integer.parseInt(frame.getNumber());
+            if (frameNo > 0) {
+                makeFrameCurrent(getStack()[frameNo-1]);
+            }
         }
     }
 
+    @Override
     public void makeCallerCurrent() {
         Frame frame = getCurrentFrame();
         if (frame != null) {
-            String number = frame.getNumber();
-            makeFrameCurrent(getStack()[Integer.valueOf(number)+1]);
+            int newFrameNo = Integer.parseInt(frame.getNumber())+1;
+            Frame[] stack = getStack();
+            if (newFrameNo < stack.length) {
+                makeFrameCurrent(stack[newFrameNo]);
+            }
         }
     }
 
+    @Override
     public void popToHere(Frame frame) {
-        String number = frame.getNumber();
-        makeFrameCurrent(getStack()[Integer.valueOf(number)-1]);
-        execFinish();
+        int frameNo = Integer.parseInt(frame.getNumber());
+        if (frameNo > 0) {
+            makeFrameCurrent(getStack()[frameNo-1]);
+            execFinish();
+        }
     }
 
+    @Override
     public void popTopmostCall() {
         stepOut();
     }
 
+    @Override
     public void popLastDebuggerCall() {
     }
 
+    @Override
     public void popToCurrentFrame() {
         makeCalleeCurrent();
         execFinish();
@@ -1797,6 +1810,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public Frame[] getStack() {
         if (guiStackFrames == null) {
             return new GdbFrame[0];
@@ -1813,6 +1827,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void postVerboseStack(boolean v) {
     }
 
+    @Override
     public GdbFrame getCurrentFrame() {
         if (guiStackFrames != null) {
             for (Frame frame : guiStackFrames) {
@@ -1829,6 +1844,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	return;
     }
     
+    @Override
     public void makeFrameCurrent(Frame f) {
         String fno = f.getNumber();
         boolean changed = false;
