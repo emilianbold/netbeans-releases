@@ -69,6 +69,23 @@ public class XmlSyntaxTreeBuilderTest extends TestBase {
         assertNotNull(div);
     }
     
+    public void testNodesHasParentsSet() {
+        String code = "<x><y><z/></y></x>";
+        Node root = parse(code);
+
+        Element x = ElementUtils.query(root, "x"); 
+        assertNotNull(x);
+        Element y = ElementUtils.query(root, "x/y"); 
+        assertNotNull(y);
+        Element z = ElementUtils.query(root, "x/y/z"); 
+        assertNotNull(z);
+        
+        assertNull(root.parent());
+        assertEquals(root, x.parent());
+        assertEquals(x, y.parent());
+        assertEquals(y, z.parent());
+        
+    }
      //Bug 197608 - Non-html tags offered as closing tags using code completion
     public void testIssue197608() throws ParseException, BadLocationException {
         String code = "<div></di";

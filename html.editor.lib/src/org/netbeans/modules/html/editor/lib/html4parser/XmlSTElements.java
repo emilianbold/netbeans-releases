@@ -231,6 +231,7 @@ public class XmlSTElements {
                 children = new ArrayList<Element>(1);
             }
             children.add(child);
+            ((NamedElement)child).setParent(this);
         }
 
         @Override
