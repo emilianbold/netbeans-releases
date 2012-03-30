@@ -49,6 +49,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -65,6 +66,8 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.openide.explorer.propertysheet.ExtTestCase.WaitWindow;
 import org.openide.nodes.Node;
 
@@ -73,6 +76,10 @@ import org.openide.nodes.Node;
  * @see "#14701"
  */
 public class NonEditabilityTest extends ExtTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NonEditabilityTest.class);
+    }
 
     public NonEditabilityTest(String name) {
         super(name);

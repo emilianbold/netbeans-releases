@@ -507,6 +507,26 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         storageOutputStream.write("key1=value1".getBytes("ISO-8859-1"));
         storageOutputStream.close();
     }
+
+    public void testRemoveNode3 () throws Exception {
+        NbPreferences pref = (NbPreferences) getPreferencesNode();
+        assertNotNull(pref);
+        pref.put("key", "value");
+        assertEquals("value", pref.get("key", null));
+        pref.removeNode();
+        assertNotNull(pref);
+        pref.removeNode();
+    }
+
+    public void testRemoveNode4 () throws Exception {
+        NbPreferences pref = (NbPreferences) getPreferencesNode();
+        assertNotNull(pref);
+        pref.put("key", "value");
+        assertEquals("value", pref.get("key", null));
+        pref.removeNode();
+        assertNotNull(pref);
+        pref.sync();
+    }
     
     @Override
     protected int timeOut() {

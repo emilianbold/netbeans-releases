@@ -45,6 +45,9 @@
 
 package org.netbeans.core.multiview;
 
+import java.awt.GraphicsEnvironment;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -61,6 +64,10 @@ import org.openide.windows.*;
  */
 public class MultiViewHandlerTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(MultiViewHandlerTest.class);
+    }
+
     public MultiViewHandlerTest(String name) {
         super (name);
     }

@@ -291,6 +291,9 @@ public class ExportZIP extends JPanel {
         } else if (new File(t).exists()) {
             notifications.setErrorMessage(ERR_exists(t));
             return false;
+        } else if (new File(t).getParentFile() == null) {
+            notifications.setErrorMessage(ERR_no_dir(new File(t)));
+            return false;
         } else if (!new File(t).getParentFile().isDirectory()) {
             notifications.setErrorMessage(ERR_no_dir(new File(t).getParent()));
             return false;

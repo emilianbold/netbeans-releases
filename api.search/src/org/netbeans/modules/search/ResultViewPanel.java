@@ -62,6 +62,7 @@ import javax.accessibility.AccessibleContext;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -1294,4 +1295,14 @@ class ResultViewPanel extends JPanel{
         }
     }
 
+    @Override
+    public boolean requestFocusInWindow() {
+        if (resultsPanel != null && resultsPanel.getComponentCount() > 0) {
+            JComponent comp = (JComponent) resultsPanel.getComponent(0);
+            if (comp != null) {
+                return comp.requestFocusInWindow();
+            }
+        }
+        return super.requestFocusInWindow();
+    }
 }

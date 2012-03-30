@@ -58,12 +58,12 @@ import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * Creates a MakeProject from scratch according to some initial configuration.
@@ -122,9 +122,13 @@ public final class MakeProjectGenerator {
                     doc.getDocumentElement().appendChild(el);
                     el = doc.createElementNS(MakeProjectHelper.PROJECT_NS, "configuration"); // NOI18N
                     doc.getDocumentElement().appendChild(el);
+                    
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
+                    final byte[] data = MakeProjectHelperImpl.convertLineSeparator(baos, projectXml, projectXml.getParent());
                     OutputStream os = SmartOutputStream.getSmartOutputStream(projectXml);
                     try {
-                        XMLUtil.write(doc, os, "UTF-8"); // NOI18N
+                        os.write(data);
                     } finally {
                         os.close();
                     }

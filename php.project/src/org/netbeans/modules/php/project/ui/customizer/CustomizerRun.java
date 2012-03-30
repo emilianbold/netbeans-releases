@@ -311,7 +311,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(CustomizerRun.class);
+        return new HelpCtx("org.netbeans.modules.php.project.ui.customizer.CustomizerRun"); // NOI18N
     }
 
 }

@@ -362,7 +362,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         System.err.println(mainFunctionPosition);
         if (canAnalyze.getErrors() != null && canAnalyze.getErrors().size() > 0) {
             for(String error : canAnalyze.getErrors()) {
-                System.err.print(error);
+            System.err.print(error);
             }
             assert true;
         }

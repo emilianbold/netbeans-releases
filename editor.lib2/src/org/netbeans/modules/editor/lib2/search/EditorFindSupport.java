@@ -355,7 +355,7 @@ public final class EditorFindSupport {
                             );
                         }
 
-                        ensureVisible(comp, pos, pos);
+                        selectText(comp, pos, pos + len, back);
                         return true;
                     }
                 }
@@ -452,7 +452,7 @@ public final class EditorFindSupport {
         }
     }
     
-    private FindReplaceResult findReplaceImpl(String replaceExp, 
+    FindReplaceResult findReplaceImpl(String replaceExp, 
             Map<String, Object> props, boolean oppositeDir, JTextComponent c) {
         incSearchReset();
         props = getValidFindProperties(props);

@@ -295,11 +295,13 @@ public class MakeArtifact {
                 FileObject toFileObject = fs.findResource(projectPath);
                 if (toFileObject != null) {
                     Project findProject = ProjectManager.getDefault().findProject(toFileObject);
-                    ProjectConfigurationProvider<Configuration> lookup = findProject.getLookup().lookup(ProjectConfigurationProvider.class);
-                    for(Configuration c : lookup.getConfigurations()) {
-                        if (configurationName.equals(c.getName())) {
-                            makeConfiguration = (MakeConfiguration) c;
-                            break;
+                    if (findProject != null) {
+                        ProjectConfigurationProvider<Configuration> lookup = findProject.getLookup().lookup(ProjectConfigurationProvider.class);
+                        for(Configuration c : lookup.getConfigurations()) {
+                            if (configurationName.equals(c.getName())) {
+                                makeConfiguration = (MakeConfiguration) c;
+                                break;
+                            }
                         }
                     }
                 }

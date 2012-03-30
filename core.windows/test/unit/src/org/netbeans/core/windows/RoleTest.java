@@ -44,6 +44,9 @@
 
 package org.netbeans.core.windows;
 
+import java.awt.GraphicsEnvironment;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.junit.*;
 
@@ -56,6 +59,10 @@ import org.openide.windows.*;
  * @author S. Aubrecht
  */
 public class RoleTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(RoleTest.class);
+    }
 
     public RoleTest (String name) {
         super (name);

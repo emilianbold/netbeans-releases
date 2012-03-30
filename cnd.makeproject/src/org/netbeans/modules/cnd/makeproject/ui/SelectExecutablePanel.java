@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
@@ -180,7 +181,11 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         }
         ArrayList<String> aLlist = new ArrayList<String>();
         addExecutables(root, aLlist);
-        return aLlist.toArray(new String[aLlist.size()]);
+        
+        // See IZ 205812, sort the list
+        String[] res = aLlist.toArray(new String[aLlist.size()]);
+        Arrays.sort(res);
+        return res;
     }
 
     private void addExecutables(FileObject dir, List<String> filesAdded) {

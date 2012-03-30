@@ -108,7 +108,7 @@ public class MultiLineMappedMatcherSmall extends AbstractMatcher {
 
             // Decode the file into a char buffer
             Charset charset = FileEncodingQuery.getEncoding(fo);
-            CharsetDecoder decoder = charset.newDecoder();
+            CharsetDecoder decoder = prepareDecoder(charset);
             decoder.onUnmappableCharacter(CodingErrorAction.IGNORE);
             CharBuffer cb = decoder.decode(bb);
 

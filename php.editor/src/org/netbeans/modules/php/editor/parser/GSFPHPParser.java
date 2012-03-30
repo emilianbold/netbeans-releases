@@ -61,10 +61,7 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
-import org.netbeans.modules.php.editor.parser.astnodes.Comment;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
@@ -199,19 +196,19 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 //do we need sanitization?
                 boolean ok = true;
                 for (Statement statement : statements) {
-                    if (statement instanceof ASTError) {
-                        // if there is an errot, try to sanitize only if there
-                        // is a class or function inside the error
-                        String errorCode = "<?" + source.substring(statement.getStartOffset(), statement.getEndOffset()) + "?>";
-                        ASTPHP5Scanner fcScanner = new ASTPHP5Scanner(new StringReader(errorCode), shortTags, aspTags);
-                        Symbol token = fcScanner.next_token();
-                        while (token.sym != ASTPHP5Symbols.EOF) {
-                            if (token.sym == ASTPHP5Symbols.T_CLASS || token.sym == ASTPHP5Symbols.T_FUNCTION || isRequireFunction(token)) {
-                                ok = false;
+                    if (statement instanceof NamespaceDeclaration) {
+                        NamespaceDeclaration ns = (NamespaceDeclaration) statement;
+                        for (Statement st : ns.getBody().getStatements()) {
+                            ok = isStatementOk(st, source);
+                            if (!ok) {
                                 break;
                             }
-                            token = fcScanner.next_token();
                         }
+                        if (!ok) {
+                            break;
+                        }
+                    } else {
+                        ok = isStatementOk(statement, source);
                         if (!ok) {
                             break;
                         }
@@ -239,6 +236,25 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         }
 
         return result;
+    }
+
+    private boolean isStatementOk(final Statement statement, final String source) throws IOException {
+        boolean isStatementOk = true;
+        if (statement instanceof ASTError) {
+            // if there is an errot, try to sanitize only if there
+            // is a class or function inside the error
+            String errorCode = "<?" + source.substring(statement.getStartOffset(), statement.getEndOffset()) + "?>";
+            ASTPHP5Scanner fcScanner = new ASTPHP5Scanner(new StringReader(errorCode), shortTags, aspTags);
+            Symbol token = fcScanner.next_token();
+            while (token.sym != ASTPHP5Symbols.EOF) {
+                if (token.sym == ASTPHP5Symbols.T_CLASS || token.sym == ASTPHP5Symbols.T_FUNCTION || isRequireFunction(token)) {
+                    isStatementOk = false;
+                    break;
+                }
+                token = fcScanner.next_token();
+            }
+        }
+        return isStatementOk;
     }
 
     private boolean sanitizeSource(Context context, Sanitize sanitizing, PHP5ErrorHandler errorHandler) {

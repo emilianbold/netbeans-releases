@@ -44,14 +44,15 @@ Other names may be trademarks of their respective owners.
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:composite="http://java.sun.com/jsf/composite">
+
     <ui:composition>
         <composite:interface>
-            <composite:valueHolder name="menuid" />
+            <composite:attribute name="menuid" />
         </composite:interface>
 
         <composite:implementation>
             <td>
-                <div class="menu" id="menu#{menuid}">
+                <div class="menu" id="menu#{cc.attrs.menuid}">
                     <ul>
                         <composite:insertChildren></composite:insertChildren>
                     </ul>

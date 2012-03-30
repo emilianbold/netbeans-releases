@@ -309,7 +309,7 @@ public class RevisionNode extends AbstractNode implements Comparable {
         }
     } 
 
-    private static class FileNode extends AbstractNode implements Comparable {        
+    static class FileNode extends AbstractNode implements Comparable {        
 
         private final HistoryEntry entry;
         private final VCSFileProxy file;

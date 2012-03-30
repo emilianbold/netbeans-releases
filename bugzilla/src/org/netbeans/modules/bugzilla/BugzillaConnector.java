@@ -113,7 +113,7 @@ public class BugzillaConnector extends KenaiBugtrackingConnector {
     }
 
     @Override
-    public TaskListIssueProvider getTasklistProvder() {
+    public TaskListIssueProvider getTasklistProvider() {
         return BugzillaTaskListProvider.getInstance();
     }
 

@@ -87,7 +87,7 @@ public class MethodRedeclarationHint extends AbstractRule {
         }
     }
 
-    @Messages("MethodRedeclarationCustom=Method or function \"{0}\" has been already declared")
+    @Messages("MethodRedeclarationCustom=Method or function \"{0}\" has already been declared")
     private void checkDeclaredFunctions(Collection<? extends FunctionScope> declaredFunctions) {
         Set<String> declaredMethodNames = new HashSet<String>();
         for (FunctionScope functionScope : declaredFunctions) {

@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -74,7 +75,6 @@ import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.InstanceContent;
-import org.openidex.search.SearchInfo;
 
 /**
  * Support for creating logical views.
@@ -122,7 +122,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         Folder logicalFolders = configurationDescriptor.getLogicalFolders();
         ic.add(logicalFolders);
         ic.add(getProject());
-        SearchInfo searchInfo = project.getLookup().lookup(SearchInfo.class);
+        SearchInfoDefinition searchInfo = project.getLookup().lookup(SearchInfoDefinition.class);
         ic.add(searchInfo);
         projectRootNode = new MakeLogicalViewRootNode(logicalFolders, this, ic);
     }
@@ -130,7 +130,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private void createLoadingRoot() {
         InstanceContent ic = new InstanceContent();
         ic.add(getProject());
-        SearchInfo searchInfo = project.getLookup().lookup(SearchInfo.class);
+        SearchInfoDefinition searchInfo = project.getLookup().lookup(SearchInfoDefinition.class);
         ic.add(searchInfo);
         projectRootNode = new MakeLogicalViewRootNode(null, this, ic);
     }

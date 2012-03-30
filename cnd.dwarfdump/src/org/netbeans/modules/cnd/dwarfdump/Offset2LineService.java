@@ -48,11 +48,11 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
@@ -78,7 +78,7 @@ public class Offset2LineService {
         try {
             dump(args[0], System.out);
         } catch (Throwable ex) {
-            ex.printStackTrace();
+            Dwarf.LOG.log(Level.INFO, "Exception in file " + args[0], ex);  // NOI18N
         }
     }
 
@@ -185,7 +185,7 @@ public class Offset2LineService {
         }
         Dwarf dwarf = new Dwarf(executable);
         try {
-            Iterator<CompilationUnit> iterator = dwarf.iteratorCompilationUnits();
+            Dwarf.CompilationUnitIterator iterator = dwarf.iteratorCompilationUnits();
             while(iterator.hasNext()) {
                 CompilationUnit compilationUnit = iterator.next();
                 TreeSet<LineNumber> lineNumbers = getCompilationUnitLines(compilationUnit);

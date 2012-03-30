@@ -403,22 +403,22 @@ public class DoxygenDocumentation {
                                 break;
                             case '"':// This command writes the " character to the output. This character has to be escaped in some cases, because it is used in pairs to indicate an unformatted text fragment.
                                 i++;
-                                img.append("&quot;");
+                                img.append("&quot;"); //NOI18N
                                 escaped = true;
                                 break;
                             case '&':// This command writes the & character to output. This character has to be escaped because it has a special meaning in HTML.
                                 i++;
-                                img.append("&amp;");
+                                img.append("&amp;"); //NOI18N
                                 escaped = true;
                                 break;
                             case '<':// This command writes the < character to the output. This character has to be escaped because it has a special meaning in HTML.
                                 i++;
-                                img.append("&lt;");
+                                img.append("&lt;"); //NOI18N
                                 escaped = true;
                                 break;
                             case '>':// This command writes the > character to the output. This character has to be escaped because it has a special meaning in HTML.
                                 i++;
-                                img.append("&gt;");
+                                img.append("&gt;"); //NOI18N
                                 escaped = true;
                                 break;
                             case '#':// This command writes the # character to the output. This character has to be escaped in some cases, because it is used to refer to documented entities.
@@ -475,16 +475,16 @@ public class DoxygenDocumentation {
                         if (verbatimMode || codeMode) {
                             switch (c) {
                                 case '&':
-                                    img.append("&amp;");
+                                    img.append("&amp;"); //NOI18N
                                     break;
                                 case '<':
-                                    img.append("&lt;");
+                                    img.append("&lt;"); //NOI18N
                                     break;
                                 case '>':
-                                    img.append("&gt;");
+                                    img.append("&gt;"); //NOI18N
                                     break;
                                 case '"':
-                                    img.append("&quot;");
+                                    img.append("&quot;"); //NOI18N
                                     break;
                                 default:
                                     img.append(c);

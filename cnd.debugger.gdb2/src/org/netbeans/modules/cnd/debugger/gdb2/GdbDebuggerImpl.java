@@ -894,6 +894,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    this.reportError = false;
 	}
 
+        @Override
 	protected void onDone(MIRecord record) {
 	    if (emptyDoneIsError && record.isEmpty()) {
 		// See comment for isEmpty
@@ -3486,7 +3487,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public void postRestoreHandler(final int rt, HandlerCommand hc) {
 
-        final MICommand cmd = new MIRestoreBreakCommand(rt, hc.toString());
+        final MICommand cmd = new MIRestoreBreakCommand(rt, hc.getData());
 
 	//
 	// What's the inject("1\n") about?
@@ -3885,17 +3886,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    switch (bp.op()) {
 		case NEW:
 		    handler = handlerExpert.newHandler(template, result, null);
-                    // fix for #193505
-                    if (template != null && !template.isEnabled()) {
-                        postEnableHandler(rt, handler.getId(), false);
-                    }
 		    break;
 		case RESTORE:
 		    handler = handlerExpert.newHandler(template, result, bp.restored());
-                    // fix for #193505
-                    if (template != null && !template.isEnabled()) {
-                        postEnableHandler(rt, handler.getId(), false);
-                    }
 		    assert handler.breakpoint() == bp.restored();
 		    break;
 		case MODIFY:
@@ -4054,9 +4047,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 cliBreakpointsRTs.add(rt);
             }
         }
-
-        @Override
-        protected abstract void onDone(MIRecord record);
 
         @Override
         protected void finish() {
@@ -4233,10 +4223,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
     };
 
-    private abstract class MIChangeBreakCommand extends MIBreakCommand {
+    private class MIChangeBreakCommand extends MIBreakCommand {
+        private final GdbHandlerCommand ghc;
 
-        MIChangeBreakCommand(int rt, String cmdString) {
-            super(rt, cmdString);
+        MIChangeBreakCommand(int rt, GdbHandlerCommand ghc) {
+            super(rt, ghc.getData());
+            this.ghc = ghc;
+        }
+
+        @Override
+        protected void onDone(MIRecord record) {
+            ghc.onDone();
+            manager().bringDownDialog();
+            super.onDone(record);
         }
     }
 
@@ -4245,10 +4244,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      */
     private class MIReplaceBreakLineCommand extends MIChangeBreakCommand {
 
-        MIReplaceBreakLineCommand(int rt, String cmdString) {
-            super(rt, cmdString);
+        MIReplaceBreakLineCommand(int rt, GdbHandlerCommand ghc) {
+            super(rt, ghc);
         }
 
+        @Override
         protected void onDone(MIRecord record) {
 	    if (record.isEmpty()) {
 		// See comment for isEmpty
@@ -4269,10 +4269,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      */
     private class MIRepairBreakLineCommand extends MIChangeBreakCommand {
 
-        MIRepairBreakLineCommand(int rt, String cmdString) {
-            super(rt, cmdString);
+        MIRepairBreakLineCommand(int rt, GdbHandlerCommand ghc) {
+            super(rt, ghc);
         }
 
+        @Override
         protected void onDone(MIRecord record) {
 	    if (record.isEmpty()) {
 		// See comment for isEmpty
@@ -4370,19 +4371,45 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     @Override
     public void postCreateHandlerImpl(int routingToken, HandlerCommand hc) {
-	final MICommand cmd = new MIBreakLineCommand(routingToken, hc.toString());
+	final MICommand cmd = new MIBreakLineCommand(routingToken, hc.getData());
         sendCommandInt(cmd);
     }
 
     @Override
     public void postChangeHandlerImpl(int rt, HandlerCommand hc) {
-        final MICommand cmd = new MIReplaceBreakLineCommand(rt, hc.toString());
-        sendCommandInt(cmd);
+        assert hc instanceof GdbHandlerCommand;
+        GdbHandlerCommand ghc = (GdbHandlerCommand)hc;
+        
+        // build a chain of gdb commands
+        MiCommandImpl cmd = null;
+        while (ghc != null) {
+            switch (ghc.getType()) {
+                case CHANGE:
+                    MiCommandImpl changeCmd = new MIChangeBreakCommand(rt, ghc);
+                    if (cmd != null) {
+                        cmd.chain(changeCmd, null);
+                    } else {
+                        cmd = changeCmd;
+                    }
+                    break;
+                case REPLACE:
+                    MICommand old = cmd;
+                    cmd = new MIReplaceBreakLineCommand(rt, ghc);
+                    cmd.chain(old, null);
+                    break;
+            }
+            ghc = ghc.getNext();
+        }
+        if (cmd != null) {
+            sendCommandInt(cmd);
+        }
     }
 
     @Override
     public void postRepairHandlerImpl(int rt, HandlerCommand hc) {
-        final MICommand cmd = new MIRepairBreakLineCommand(rt, hc.toString());
+        assert hc instanceof GdbHandlerCommand;
+        GdbHandlerCommand ghc = (GdbHandlerCommand)hc;
+        final MICommand cmd = new MIRepairBreakLineCommand(rt, ghc);
         sendCommandInt(cmd);
     }
     

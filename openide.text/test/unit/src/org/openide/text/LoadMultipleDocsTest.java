@@ -46,15 +46,17 @@
 package org.openide.text;
 
 
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.lang.reflect.*;
 import java.util.ArrayList;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 
 import javax.swing.text.Document;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 
@@ -68,6 +70,11 @@ import org.openide.util.Lookup;
  * @author  Jarda Tulach
  */
 public class LoadMultipleDocsTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(LoadMultipleDocsTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

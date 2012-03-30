@@ -95,6 +95,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private final Cache<Scope, Map<String, AssignmentImpl>> assignmentMapCache = new Cache<Scope, Map<String, AssignmentImpl>>();
 
     private boolean lazyScan = true;
+    private volatile ScopeImpl previousScope;
+    private volatile List<String> currentLexicalVariables = new LinkedList<String>();
 
     public ModelVisitor(final PHPParseResult info) {
         this.fileScope = new FileScopeImpl(info);
@@ -564,7 +566,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             return;
         }
         Scope scope = modelBuilder.getCurrentScope();
-        occurencesBuilder.prepare(node, scope);
+        if (previousScope != null && isLexicalVariable(node)) {
+            occurencesBuilder.prepare(node, previousScope);
+        } else {
+            occurencesBuilder.prepare(node, scope);
+        }
 
         if (scope instanceof VariableNameFactory) {
             ASTNodeInfo<Variable> varInfo = ASTNodeInfo.create(node);
@@ -578,6 +584,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             assert scope instanceof TypeScope : scope;
         }
         super.visit(node);
+    }
+
+    private boolean isLexicalVariable(final Variable variable) {
+        return currentLexicalVariables.contains(CodeUtils.extractVariableName(variable));
     }
 
     @Override
@@ -870,19 +880,23 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(LambdaFunctionDeclaration node) {
         ScopeImpl scope = modelBuilder.getCurrentScope();
         FunctionScopeImpl fncScope = FunctionScopeImpl.createElement(scope, node);
-        modelBuilder.setCurrentScope(scope = fncScope);
         List<Expression> lexicalVariables = node.getLexicalVariables();
         for (Expression expression : lexicalVariables) {
             if (expression instanceof Variable) {
                 Variable variable = (Variable) expression;
-                VariableNameImpl varNameImpl= createVariable((VariableNameFactory) scope, variable);
+                currentLexicalVariables.add(CodeUtils.extractVariableName(variable));
+                VariableNameImpl varNameImpl= createVariable((VariableNameFactory) fncScope, variable);
                 varNameImpl.setGloballyVisible(true);
             }
         }
         scan(lexicalVariables);
-        scope.setBlockRange(node.getBody());
+        modelBuilder.setCurrentScope(fncScope);
+        fncScope.setBlockRange(node.getBody());
         scan(node.getFormalParameters());
+        previousScope = scope;
         scan(node.getBody());
+        previousScope = null;
+        currentLexicalVariables.clear();
         modelBuilder.reset();
     }
 
