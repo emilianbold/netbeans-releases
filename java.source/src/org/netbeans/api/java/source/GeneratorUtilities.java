@@ -688,8 +688,8 @@ public final class GeneratorUtilities {
                         }
                     }
                 }
-                importScope.importAll(((Symbol)entry.getKey()).members());
             }
+            importScope.importAll(((Symbol)entry.getKey()).members());
         }
 
         // sort the elements to import
