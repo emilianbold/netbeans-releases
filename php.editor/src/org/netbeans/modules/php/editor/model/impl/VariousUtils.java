@@ -1331,19 +1331,7 @@ public class VariousUtils {
                 scope = scope.getInScope();
             }
             if (scope != null) {
-                NamespaceScope namespaceScope = (NamespaceScope) scope;
-                String firstSegmentName = qualifiedName.getSegments().getFirst();
-                for (UseScope useElement : namespaceScope.getDeclaredUses()) {
-                    if (useElement.getOffset() < offset) {
-                        AliasedName aliasName = useElement.getAliasedName();
-                        if (aliasName != null) {
-                            if (firstSegmentName.equals(aliasName.getAliasName())) {
-                                result = true;
-                                break;
-                            }
-                        }
-                    }
-                }
+                result = isAlias(qualifiedName.getSegments().getFirst(), offset, (NamespaceScope) scope);
             }
         }
         return result;
@@ -1358,17 +1346,21 @@ public class VariousUtils {
                 scope = scope.getInScope();
             }
             if (scope != null) {
-                NamespaceScope namespaceScope = (NamespaceScope) scope;
-                String firstSegmentName = unqualifiedName.getSegments().getFirst();
-                for (UseScope useElement : namespaceScope.getDeclaredUses()) {
-                    if (useElement.getOffset() < offset) {
-                        AliasedName aliasName = useElement.getAliasedName();
-                        if (aliasName != null) {
-                            if (firstSegmentName.equals(aliasName.getAliasName())) {
-                                result = true;
-                                break;
-                            }
-                        }
+                result = isAlias(unqualifiedName.getSegments().getFirst(), offset, (NamespaceScope) scope);
+            }
+        }
+        return result;
+    }
+
+    private static boolean isAlias(final String name, final int offset, final NamespaceScope namespaceScope) {
+        boolean result = false;
+        for (UseScope useElement : namespaceScope.getDeclaredUses()) {
+            if (useElement.getOffset() < offset) {
+                AliasedName aliasName = useElement.getAliasedName();
+                if (aliasName != null) {
+                    if (name.equals(aliasName.getAliasName())) {
+                        result = true;
+                        break;
                     }
                 }
             }
