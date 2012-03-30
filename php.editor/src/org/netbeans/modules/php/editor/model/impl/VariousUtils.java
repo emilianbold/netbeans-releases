@@ -1349,6 +1349,33 @@ public class VariousUtils {
         return result;
     }
 
+    public static boolean isAlias(final QualifiedName unqualifiedName, final int offset, final Scope inScope) {
+        boolean result = false;
+        if(unqualifiedName.getKind() == QualifiedNameKind.UNQUALIFIED && !unqualifiedName.getName().equalsIgnoreCase("self")
+                && !unqualifiedName.getName().equalsIgnoreCase("static") && !unqualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
+            Scope scope = inScope;
+            while (scope != null && !(scope instanceof NamespaceScope)) {
+                scope = scope.getInScope();
+            }
+            if (scope != null) {
+                NamespaceScope namespaceScope = (NamespaceScope) scope;
+                String firstSegmentName = unqualifiedName.getSegments().getFirst();
+                for (UseScope useElement : namespaceScope.getDeclaredUses()) {
+                    if (useElement.getOffset() < offset) {
+                        AliasedName aliasName = useElement.getAliasedName();
+                        if (aliasName != null) {
+                            if (firstSegmentName.equals(aliasName.getAliasName())) {
+                                result = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     @CheckForNull
     public static AliasedName getAliasedName(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
         AliasedName result = null;

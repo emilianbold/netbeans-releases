@@ -760,6 +760,14 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "include_once ( 'con^tainer.php');", "^<?php//container");
     }
 
+    public void testIssue203073_01() throws Exception {
+        checkDeclaration(getTestPath(), "class Yours extends Second^Parent {", "use Full\\Name\\Space\\FirstParent as ^SecondParent;");
+    }
+
+    public void testIssue203073_02() throws Exception {
+        checkDeclaration(getTestPath(), "class Yours1 extends First^Parent {", "class ^FirstParent {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
