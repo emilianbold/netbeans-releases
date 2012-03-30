@@ -144,10 +144,6 @@
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.customizer.GrailsProjectCustomizerProvider.createLibraries"/>
                     <attr name="position" intvalue="150"/>
                 </file>
-                <file name="Debugging.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.customizer.GrailsProjectCustomizerProvider.createDebugging"/>
-                    <attr name="position" intvalue="200"/>
-                </file>
                 <file name="Formatting.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.indent.project.api.Customizers.createFormattingCategoryProvider"/>
