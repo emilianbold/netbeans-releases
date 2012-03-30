@@ -50,12 +50,15 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
@@ -98,7 +101,7 @@ public class ComponentUsagesChecker extends HintsProvider {
         //lets get their parse trees and check the content
         for (final String declaredLibraryNamespace : declaredLibraries.keySet()) {
             final Library lib = declaredLibraries.get(declaredLibraryNamespace);
-            AstNode root = result.root(declaredLibraryNamespace);
+            Node root = result.root(declaredLibraryNamespace);
             if(root == null) {
                 //no parse tree for this namespace
                 continue;
@@ -130,19 +133,19 @@ public class ComponentUsagesChecker extends HintsProvider {
             
             final String docText = documentContent;
 
-            AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+            ElementUtils.visitChildren(root, new ElementVisitor() {
 
                 @Override
-                public void visit(AstNode node) {
-                    if (node.type() == AstNode.NodeType.OPEN_TAG) {
-                        String tagName = node.getNameWithoutPrefix();
+                public void visit(Element node) {
+                    OpenTag openTag = (OpenTag)node;
+                        String tagName = openTag.unqualifiedName().toString();
                         LibraryComponent component = lib.getComponent(tagName);
                         if (component == null) {
                             //error, the component doesn't exist in the library
                             Hint hint = new Hint(DEFAULT_ERROR_RULE,
                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_CC_COMPONENT", lib.getDisplayName()),
                                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                                    JsfUtils.createOffsetRange(snapshot, docText, node.startOffset(), node.endOffset()),
+                                    JsfUtils.createOffsetRange(snapshot, docText, node.from(), node.to()),
                                     Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                             hints.add(hint);
                         } else {
@@ -162,12 +165,12 @@ public class ComponentUsagesChecker extends HintsProvider {
                                 Collection<Attribute> attrs = tag.getAttributes();
                                 for (Attribute attr : attrs) {
                                     if (attr.isRequired()) {
-                                        if (node.getAttribute(attr.getName()) == null) {
+                                        if (openTag.getAttribute(attr.getName()) == null) {
                                             //missing required attribute
                                             Hint hint = new Hint(DEFAULT_ERROR_RULE,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_MISSING_REQUIRED_ATTRIBUTE", attr.getName()),
                                                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                                                    JsfUtils.createOffsetRange(snapshot, docText, node.startOffset(), node.endOffset()),
+                                                    JsfUtils.createOffsetRange(snapshot, docText, node.from(), node.to()),
                                                     Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                                             hints.add(hint);
                                         }
@@ -175,11 +178,12 @@ public class ComponentUsagesChecker extends HintsProvider {
                                 }
 
                                 //2. check for unknown attributes
-                                for (AstNode.Attribute nodeAttr : node.getAttributes()) {
+                                for (org.netbeans.modules.html.editor.lib.api.elements.Attribute nodeAttr : openTag.attributes()) {
                                     //do not check attributes with a namespace
+                                    String nodeAttrName = nodeAttr.name().toString();
                                     if (nodeAttr.namespacePrefix() == null && 
-					    tag.getAttribute(nodeAttr.name()) == null &&
-					    !"xmlns".equals(nodeAttr.name().toLowerCase(Locale.ENGLISH))) {
+					    tag.getAttribute(nodeAttrName) == null &&
+					    !"xmlns".equals(nodeAttrName.toLowerCase(Locale.ENGLISH))) {
                                         //unknown attribute
                                         Hint hint = new Hint(DEFAULT_WARNING_RULE,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_ATTRIBUTE", nodeAttr.name()),
@@ -195,9 +199,10 @@ public class ComponentUsagesChecker extends HintsProvider {
                                 //btw, composite library w/o TLD simulates a TLD since can be reasonable parsed
                             }
                         }
-                    }
+                    
                 }
-            });
+
+            }, ElementType.OPEN_TAG);
         }
 
     }
