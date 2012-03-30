@@ -52,9 +52,13 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JFileChooser;
 
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -84,6 +88,8 @@ import org.openide.util.NbBundle;
  */
 public class TestRestTargetPanel extends javax.swing.JPanel {
     
+    private static final String TEST_CLIENT_PROJECT ="test.client.project"; // NOI18N
+    
     private static final ProjectNodeFactory WEB_PROJECT_FACTORY = new WebProjectFactory();
 
     public TestRestTargetPanel(Project project) {
@@ -101,10 +107,12 @@ public class TestRestTargetPanel extends javax.swing.JPanel {
                 if ( source == myLocal ){
                     myBrowse.setEnabled( false );
                     setTargetProject(myProject, false);
+                    storeSelectedProject();
                 }
                 else if ( source == myRemote ){
                     myBrowse.setEnabled( true );
                     setTargetProject(null, false);
+                    storeSelectedProject();
                 }
             }
         };
@@ -125,10 +133,11 @@ public class TestRestTargetPanel extends javax.swing.JPanel {
                 {
                     Node node = explorerPanel.getSelectedService();
                     setTargetProject( node.getLookup().lookup(Project.class), true);
+                    storeSelectedProject();
                 }
             }
         });
-        setTargetProject(myProject,  false);
+        initTargetProject();
     }
     
     Project getProject(){
@@ -268,6 +277,44 @@ public class TestRestTargetPanel extends javax.swing.JPanel {
             return true;
         }
         
+    }
+    
+    private void initTargetProject(){
+        RestSupport support = myProject.getLookup().lookup(RestSupport.class);
+        String clientProject = support.getProjectProperty(TEST_CLIENT_PROJECT);
+        if ( clientProject == null ){
+            setTargetProject(myProject, false);
+        }
+        else {
+            myLocal.setSelected(false);
+            myRemote.setSelected(true);
+            myBrowse.setEnabled(true);
+            File file = new File( clientProject );
+            if ( file.exists() ){
+                FileObject fileObject = FileUtil.toFileObject( 
+                        FileUtil.normalizeFile(file));
+                Project project = FileOwnerQuery.getOwner(fileObject);
+                setTargetProject(project, true);
+            }
+        }
+    }
+    
+    private void storeSelectedProject(){
+        RestSupport support = myProject.getLookup().lookup(RestSupport.class);
+        if (isRemote) {
+            FileObject projectDir = myChosenProject.getProjectDirectory();
+            try {
+                String path = FileUtil.toFile(projectDir).getCanonicalPath();
+                support.setProjectProperty(TEST_CLIENT_PROJECT, path);
+            }
+            catch (IOException e) {
+                Logger.getLogger(TestRestTargetPanel.class.getCanonicalName())
+                        .log(Level.INFO, null, e);
+            }
+        }
+        else {
+            support.removeProjectProperties(new String[]{ TEST_CLIENT_PROJECT});
+        }
     }
     
     private void setTargetProject(Project project, boolean remote ){

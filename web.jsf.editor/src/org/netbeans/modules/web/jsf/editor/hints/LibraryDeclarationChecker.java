@@ -58,17 +58,22 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.AttributeFilter;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
@@ -116,8 +121,8 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //a.take the html AST & the AST for undeclared components
         //b.search for nodes with xmlns attribute
         //ugly, grr, the whole namespace support needs to be fixed
-        final Map<String, AstNode.Attribute> namespace2Attribute = new HashMap<String, Attribute>();
-        AstNode root = result.root();
+        final Map<String, Attribute> namespace2Attribute = new HashMap<String, Attribute>();
+        Node root = result.root();
 
         final Document doc = snapshot.getSource().getDocument(true);
         if(doc == null) {
@@ -138,42 +143,47 @@ public class LibraryDeclarationChecker extends HintsProvider {
         });
         final String docText = docTextRef.get(); //may be null if BLE happens (which is unlikely)
 
-        AstNodeVisitor namespacesCollector = new AstNodeVisitor() {
+        ElementVisitor namespacesCollector = new ElementVisitor() {
 
             @Override
-            public void visit(AstNode node) {
+            public void visit(Element node) {
+                OpenTag openTag = (OpenTag)node;
                 //put all NS attributes to the namespace2Attribute map for #1.
-                Collection<AstNode.Attribute> nsAttrs = node.getAttributes(new AstNode.AttributeFilter() {
+                Collection<Attribute> nsAttrs = openTag.attributes(new AttributeFilter() {
 
                     @Override
                     public boolean accepts(Attribute attribute) {
-                        return "xmlns".equals(attribute.namespacePrefix()); //NOI18N
+                        return LexerUtils.equals("xmlns", attribute.namespacePrefix(), true, true); //NOI18N
                     }
                 });
-                for (AstNode.Attribute attr : nsAttrs) {
-                    namespace2Attribute.put(attr.unquotedValue(), attr);
+                
+                for (Attribute attr : nsAttrs) {
+                    namespace2Attribute.put(attr.unquotedValue().toString(), attr);
                 }
             }
+
         };
 
-        AstNodeUtils.visitChildren(root, namespacesCollector, AstNode.NodeType.OPEN_TAG);
-        AstNode undeclaredComponentsTreeRoot = result.rootOfUndeclaredTagsParseTree();
+        ElementUtils.visitChildren(root, namespacesCollector, ElementType.OPEN_TAG);
+        Node undeclaredComponentsTreeRoot = result.rootOfUndeclaredTagsParseTree();
         if(undeclaredComponentsTreeRoot != null) {
-            AstNodeUtils.visitChildren(undeclaredComponentsTreeRoot, namespacesCollector, AstNode.NodeType.OPEN_TAG);
+            ElementUtils.visitChildren(undeclaredComponentsTreeRoot, namespacesCollector, ElementType.OPEN_TAG);
 
             //check for undeclared tags
-            AstNodeUtils.visitChildren(undeclaredComponentsTreeRoot, new AstNodeVisitor() {
+            ElementUtils.visitChildren(undeclaredComponentsTreeRoot, new ElementVisitor() {
 
                 @Override
-                public void visit(AstNode node) {
-                    if (node.type() == AstNode.NodeType.OPEN_TAG && node.getNamespacePrefix() != null) {
+                public void visit(Element node) {
+                    OpenTag openTag = (OpenTag)node;
+                    String namespacePrefix = openTag.namespacePrefix().toString();
+                    if (namespacePrefix != null) {
                         //3. check for undeclared components
 
                         List<HintFix> fixes = new ArrayList<HintFix>();
-                        List<AbstractFaceletsLibrary> libs = getLibsByPrefix(context, node.getNamespacePrefix());
+                        List<AbstractFaceletsLibrary> libs = getLibsByPrefix(context, namespacePrefix);
 
                         for (AbstractFaceletsLibrary lib : libs){
-                            FixLibDeclaration fix = new FixLibDeclaration(context.doc, node.getNamespacePrefix(), lib);
+                            FixLibDeclaration fix = new FixLibDeclaration(context.doc, namespacePrefix, lib);
                             fixes.add(fix);
                         }
 
@@ -182,12 +192,12 @@ public class LibraryDeclarationChecker extends HintsProvider {
                         Hint hint = new Hint(DEFAULT_ERROR_RULE,
                                 NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT"), //NOI18N
                                 context.parserResult.getSnapshot().getSource().getFileObject(),
-                                JsfUtils.createOffsetRange(snapshot, docText, node.startOffset(), node.startOffset() + node.name().length() + 1 /* "<".length */),
+                                JsfUtils.createOffsetRange(snapshot, docText, node.from(), node.from() + openTag.name().length() + 1 /* "<".length */),
                                 fixes, DEFAULT_ERROR_HINT_PRIORITY);
                         hints.add(hint);
                     }
                 }
-            });
+            }, ElementType.OPEN_TAG);
         }
 
         for (String namespace : declaredNamespaces) {
@@ -215,18 +225,18 @@ public class LibraryDeclarationChecker extends HintsProvider {
             @Override
             public void run() {
                 for (AbstractFaceletsLibrary lib : declaredLibraries) {
-                    AstNode rootNode = result.root(lib.getNamespace());
+                    Node rootNode = result.root(lib.getNamespace());
                     if (rootNode == null) {
                         continue; //no parse result for this namespace, the namespace is not declared
                     }
                     final int[] usages = new int[1];
-                    AstNodeUtils.visitChildren(rootNode, new AstNodeVisitor() {
+                    ElementUtils.visitChildren(rootNode, new ElementVisitor() {
 
                         @Override
-                        public void visit(AstNode node) {
+                        public void visit(Element node) {
                             usages[0]++;
                         }
-                    }, AstNode.NodeType.OPEN_TAG);
+                    }, ElementType.OPEN_TAG);
 
                     usages[0] += isFunctionLibraryPrefixUsedInEL(context, lib) ? 1 : 0;
 

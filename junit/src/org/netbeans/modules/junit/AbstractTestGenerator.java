@@ -374,7 +374,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                     tstTopClass);
             }
         } else {                        //it does not exist - it must be created
-            if (srcHasTestableMethods) {
+            if (srcHasTestableMethods && testClassSimpleName != null) {
                 tstTopClass = generateNewTestClass(workingCopy,
                                                    testClassSimpleName,
                                                    srcTopClass,

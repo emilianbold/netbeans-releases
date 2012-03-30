@@ -77,10 +77,7 @@ public class AsmDataObject extends MultiDataObject {
         super(fo, loader); 
         
         CookieSet cookies = getCookieSet();                       
-        cookies.add(EditorCookie.class, factory);
-        cookies.add(OpenCookie.class, factory);
-        cookies.add(CloseCookie.class, factory);
-        cookies.add(PrintCookie.class, factory);
+        cookies.add(AsmEditorSupport.class, factory);
     }
     
     private AsmEditorSupport editor = null;
@@ -88,18 +85,10 @@ public class AsmDataObject extends MultiDataObject {
     private final CookieSet.Factory factory = new CookieSet.Factory() {
         @Override
         public <T extends Cookie> T createCookie(Class<T> klass) {
-            if (klass.isAssignableFrom(EditorCookie.class)
-                   || klass.isAssignableFrom(OpenCookie.class)
-                   || klass.isAssignableFrom(CloseCookie.class)
-                   || klass.isAssignableFrom(PrintCookie.class) ) {
-
-                    if (editor == null) editor = new AsmEditorSupport(AsmDataObject.this);  // the first pass
-                    if (editor == null) return null;                    //??? gc unfriendly
-
-                    return klass.isAssignableFrom(editor.getClass()) ? klass.cast(editor) : null;
-                } else {
-                    return null;
-                }
+            if (editor == null) {
+                editor = new AsmEditorSupport(AsmDataObject.this);
+            }
+            return klass.isAssignableFrom(editor.getClass()) ? klass.cast(editor) : null;
         }
     };
   

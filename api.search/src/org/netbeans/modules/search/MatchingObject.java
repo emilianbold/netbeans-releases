@@ -45,8 +45,8 @@
 package org.netbeans.modules.search;
 
 import java.awt.EventQueue;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,8 +64,9 @@ import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.search.TextDetail.DetailNode;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -73,7 +74,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,7 +84,11 @@ import org.openide.util.NbBundle;
  * @author  Tim Boudreau
  */
 public final class MatchingObject implements Comparable<MatchingObject>,
-        PropertyChangeListener, Selectable {
+        Selectable {
+
+    public static final String PROP_INVALIDITY_STATUS =
+            "invalidityStatus";                                         //NOI18N
+    public static final String PROP_SELECTED = "selected";              //NOI18N
 
     /** */
     private static final Logger LOG =
@@ -156,8 +160,12 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     /** */
     private boolean valid = true;
     /** */
+    private InvalidityStatus invalidityStatus = null;
+    /** */
     private StringBuilder text;
-    private ChangeSupport changeSupport = new ChangeSupport(this);
+    private PropertyChangeSupport changeSupport =
+            new PropertyChangeSupport(this);
+    private FileListener fileListener;
     /**
      * Creates a new {@code MatchingObject} with a reference to the found
      * object (returned by {@code SearchGroup}).
@@ -199,32 +207,37 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     /**
      */
     private void setUpDataObjValidityChecking() {
-        if (dataObject != null && dataObject.isValid()) {
-            dataObject.addPropertyChangeListener(this);
+        if (fileObject != null && fileObject.isValid()) {
+            fileListener = new FileListener();
+            fileObject.addFileChangeListener(fileListener);
         }
     }
     
     /**
      */
     void cleanup() {
-        if(dataObject != null) {
-            dataObject.removePropertyChangeListener(this);
+        if(fileObject != null && fileListener != null) {
+            fileObject.removeFileChangeListener(fileListener);
+            fileListener = null;
         }
         dataObject = null;
         nodeDelegate = null;
     }
-    
-    @Override
-    public void propertyChange(PropertyChangeEvent e) {
-        if (DataObject.PROP_VALID.equals(e.getPropertyName())
-                && Boolean.FALSE.equals(e.getNewValue())) {
-            if(dataObject != null) {
-                assert e.getSource() == dataObject;
-                dataObject.removePropertyChangeListener(this);
-            }
-            resultModel.objectBecameInvalid(this);
-            fireChange();
+
+    private void setInvalid(InvalidityStatus invalidityStatus) {
+        if (this.invalidityStatus == invalidityStatus) {
+            return;
         }
+        InvalidityStatus oldStatus = this.invalidityStatus;
+        this.valid = false;
+        this.invalidityStatus = invalidityStatus;
+        resultModel.objectBecameInvalid(this);
+        if (fileObject != null && fileListener != null
+                && invalidityStatus == InvalidityStatus.DELETED) {
+            fileObject.removeFileChangeListener(fileListener);
+        }
+        changeSupport.firePropertyChange(PROP_INVALIDITY_STATUS,
+                oldStatus, invalidityStatus);
     }
     
     /**
@@ -255,7 +268,7 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         
         this.selected = selected;
         matchesSelection = null;
-        fireChange();
+        changeSupport.firePropertyChange(PROP_SELECTED, !selected, selected);
     }
 
     @Override
@@ -555,16 +568,24 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         return dataObject;
     }
 
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+    public synchronized void addPropertyChangeListener(
+            PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
     }
 
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
+    public synchronized void removePropertyChangeListener(
+            PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
     }
 
-    public void fireChange() {
-        changeSupport.fireChange();
+    public synchronized void addPropertyChangeListener(
+            String propertyName, PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public synchronized void removePropertyChangeListener(
+            String propertyName, PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(propertyName, listener);
     }
 
     /**
@@ -626,11 +647,16 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     /**
      */
     InvalidityStatus checkValidity() {
-        InvalidityStatus status = getInvalidityStatus();
+        InvalidityStatus status = getFreshInvalidityStatus();
         if (status != null) {
             valid = false;
+            invalidityStatus = status;
         }
         return status;
+    }
+
+    public InvalidityStatus getInvalidityStatus() {
+        return invalidityStatus;
     }
     
     /**
@@ -638,7 +664,7 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     String getInvalidityDescription() {
         String descr;
         
-        InvalidityStatus status = getInvalidityStatus();
+        InvalidityStatus status = getFreshInvalidityStatus();
         if (status != null) {
             descr = status.getDescription(getFileObject().getPath());
         } else {
@@ -655,7 +681,7 @@ public final class MatchingObject implements Comparable<MatchingObject>,
      * @author  Tim Boudreau
      * @author  Marian Petras
      */
-    private InvalidityStatus getInvalidityStatus() {
+    private InvalidityStatus getFreshInvalidityStatus() {
         log(FINER, "getInvalidityStatus()");                            //NOI18N
         FileObject f = getFileObject();
         if (!f.isValid()) {
@@ -955,6 +981,21 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         @Override
         protected Node[] createNodes(TextDetail key) {
             return new Node[]{new TextDetail.DetailNode(key, replacing)};
+        }
+    }
+
+    private class FileListener extends FileChangeAdapter {
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            setInvalid(InvalidityStatus.DELETED);
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            if (resultModel.basicCriteria.isSearchAndReplace()) {
+                setInvalid(InvalidityStatus.CHANGED);
+            }
         }
     }
 }

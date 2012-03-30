@@ -33,8 +33,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -42,6 +45,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.dialogs.BrowseFolders;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -201,12 +205,12 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
                                 if (result.getSnapshot().getMimeType().equals("text/html")) {
                                     HtmlParserResult htmlResult = (HtmlParserResult)result;
                                     if (htmlResult.getNamespaces().containsKey(NAME_SPACE)) {
-                                        List<AstNode> foundNodes = findValue(htmlResult.root(NAME_SPACE).children(), TAG_NAME, new ArrayList<AstNode>());
+                                        List<OpenTag> foundNodes = findValue(htmlResult.root(NAME_SPACE).children(OpenTag.class), TAG_NAME, new ArrayList<OpenTag>());
 
-                                        for (AstNode node : foundNodes) {
-                                            AstNode.Attribute attr = node.getAttribute(VALUE_NAME);
+                                        for (OpenTag node : foundNodes) {
+                                            Attribute attr = node.getAttribute(VALUE_NAME);
                                             if (attr !=null) {
-                                                String value = attr.unquotedValue();
+                                                String value = attr.unquotedValue().toString();
                                                 if (value != null && !"".equals(value)) {   //NOI18N
                                                     templateData.add(value);
                                                 }
@@ -236,16 +240,15 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
         return (message == null);
     }
 
-    private List<AstNode> findValue(List<AstNode> nodes, String tagName, List<AstNode> foundNodes) {
+    private List<OpenTag> findValue(Collection<OpenTag> nodes, String tagName, List<OpenTag> foundNodes) {
         if (nodes == null) {
             return foundNodes;
         }
-        for (int i = 0; i < nodes.size(); i++) {
-            AstNode node = nodes.get(i);
-            if (tagName.equals(node.name())) {
-                foundNodes.add(node);
+        for (OpenTag ot : nodes) {
+            if(LexerUtils.equals(tagName, ot.name(), true, false)) {
+                foundNodes.add(ot);
             } else {
-                foundNodes = findValue(node.children(), tagName, foundNodes);
+                foundNodes = findValue(ot.children(OpenTag.class), tagName, foundNodes);
             }
 
         }
