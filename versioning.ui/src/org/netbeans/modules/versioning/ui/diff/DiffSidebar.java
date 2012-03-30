@@ -162,9 +162,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     private void refreshOriginalContent() {
-        VCSFileProxy file = fileObject != null ? VCSFileProxy.createFileProxy(fileObject) : null;
-        ownerVersioningSystem = file != null ? Utils.getOwner(file) : null;
-        LOG.log(Level.FINE, "owner for file {0} is {1}", new Object[]{fileObject != null ? fileObject.getPath() : null, ownerVersioningSystem != null ? ownerVersioningSystem.getDisplayName() : "null"});
         originalContentSerial++;
         sidebarTemporarilyDisabled = false;
         LOG.finer("refreshing diff in refreshOriginalContent");
@@ -535,6 +532,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             return;
         }
         shutdown();
+        ownerVersioningSystem = null;
         initialize();
         LOG.finer("refreshing diff in refresh");
         refreshDiff();
@@ -852,6 +850,18 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
         @Override
         public void run() {
+            if(ownerVersioningSystem == null) {
+                VCSFileProxy file = fileObject != null ? VCSFileProxy.createFileProxy(fileObject) : null;
+                ownerVersioningSystem = file != null ? Utils.getOwner(file) : null;
+
+                LOG.log(
+                    Level.FINE, 
+                    "owner for file {0} is {1}", 
+                    new Object[]{
+                        fileObject != null ? fileObject.getPath() : null, 
+                        ownerVersioningSystem != null ? ownerVersioningSystem.getDisplayName() : "null"});
+            }
+            
             computeDiff();
             EventQueue.invokeLater(new Runnable() {
                 @Override
