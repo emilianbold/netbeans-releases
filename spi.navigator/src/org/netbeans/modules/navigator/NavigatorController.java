@@ -152,6 +152,7 @@ public final class NavigatorController implements LookupListener,
     private boolean inUpdate;
 
     private static final Logger LOG = Logger.getLogger(NavigatorController.class.getName());
+    private boolean closed;
 
     /** Creates a new instance of NavigatorController */
     public NavigatorController(NavigatorDisplayer navigatorTC) {
@@ -179,11 +180,12 @@ public final class NavigatorController implements LookupListener,
         panelLookupNodesResult.addLookupListener(panelLookupListener);
 
         updateContext();
+        closed = false;
     }
 
     /** Stops listening to selected nodes and active component */
     private void navigatorTCClosed() {
-        if (panelLookupNodesResult == null) {
+        if (panelLookupNodesResult == null || closed) {
             return;
         }
         LOG.fine("Entering navigatorTCClosed");
@@ -213,6 +215,7 @@ public final class NavigatorController implements LookupListener,
             LOG.fine("navigatorTCClosed: clearing act nodes...");
             navigatorTC.getTopComponent().setActivatedNodes(new Node[0]);
         }
+        closed = true;
     }
 
     /** Returns lookup that delegates to lookup of currently active
