@@ -536,16 +536,22 @@ public class ElementsFactory {
         }
 
         void addAttribute(Attribute attr) {
+            if(attrs == null) {
+                attrs = new ArrayList<Attribute>(1);
+            }
             attrs.add(attr);
         }
 
         void addAttributes(Collection<Attribute> attributes) {
+            if(attrs == null) {
+                attrs = new ArrayList<Attribute>(1);
+            }
             attrs.addAll(attributes);
         }
 
         @Override
         public Collection<Attribute> attributes() {
-            return attrs;
+            return attrs == null ? Collections.<Attribute>emptyList() : attrs;
         }
 
         @Override
