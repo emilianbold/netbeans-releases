@@ -92,7 +92,11 @@ final class TypesPanel extends JPanel {
         for( int i=0; i<names.length; i++ ) {
             names[i] = providers.get( i ).getDisplayName();
         }
-        lstTypes = new CheckList( providerState, names );
+        String[] descs = new String[providers.size()];
+        for (int i = 0; i < descs.length; i++) {
+            descs[i] = providers.get(i).getDescription();
+        }
+        lstTypes = new CheckList(providerState, names, descs);
         lstTypes.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
         lstTypes.getSelectionModel().addListSelectionListener( new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent arg0) {

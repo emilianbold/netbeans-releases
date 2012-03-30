@@ -2748,6 +2748,7 @@ public class WizardDescriptor extends DialogDescriptor {
             iconLabel.setForeground(fgColor);
             messagePane.setForeground(fgColor);
             messagePane.setText(message);
+            messagePane.setFocusable(message != null);
         }
 
         private void setProgressComponent (JComponent progressComp, final JLabel progressLabel) {
