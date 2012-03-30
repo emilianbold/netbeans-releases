@@ -22,6 +22,14 @@
                     <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
                 </folder>
                 
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-javascript2-editor-codetemplates.xml" url="codetemplates.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                
             </folder>
 <!--            <folder name="javascript">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
@@ -46,16 +54,7 @@
                         </folder>
                     </folder>
                 </folder>
-                
-                <folder name="CodeTemplates">
-                    <folder name="Defaults">
-                        <file name="codetemplates.xml" url="codetemplates.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
-
-                <folder name="Keybindings">
+                                <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-javascript-editing-keybindings.xml" url="DefaultKeyBindings.xml"/>
