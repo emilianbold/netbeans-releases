@@ -1278,7 +1278,7 @@ public class VariousUtils {
     public static Collection<QualifiedName> getPossibleFQN(QualifiedName name, int nameOffset, NamespaceScope contextNamespace){
         Set<QualifiedName> namespaces = new HashSet<QualifiedName>();
         boolean resolved = false;
-        if (name.getKind() == QualifiedNameKind.FULLYQUALIFIED) {
+        if (name.getKind().isFullyQualified()) {
             namespaces.add(name);
             resolved = true;
         } else {
@@ -1309,7 +1309,7 @@ public class VariousUtils {
             }
         }
         if (!resolved) {
-            if (name.getKind() == QualifiedNameKind.UNQUALIFIED) {
+            if (name.getKind().isUnqualified()) {
                 namespaces.add(contextNamespace.getNamespaceName().append(name).toFullyQualified());
             } else {
                 // the name is qualified -> append the name to the namespace name
@@ -1321,7 +1321,7 @@ public class VariousUtils {
 
     public static boolean isAliased(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
         boolean result = false;
-        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !isSpecialClassName(qualifiedName.getName())) {
+        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
             Scope scope = inScope;
             while (scope != null && !(scope instanceof NamespaceScope)) {
                 scope = scope.getInScope();
@@ -1335,7 +1335,7 @@ public class VariousUtils {
 
     public static boolean isAlias(final QualifiedName unqualifiedName, final int offset, final Scope inScope) {
         boolean result = false;
-        if(unqualifiedName.getKind() == QualifiedNameKind.UNQUALIFIED && !isSpecialClassName(unqualifiedName.getName())) {
+        if(unqualifiedName.getKind().isUnqualified() && !isSpecialClassName(unqualifiedName.getName())) {
             Scope scope = inScope;
             while (scope != null && !(scope instanceof NamespaceScope)) {
                 scope = scope.getInScope();
@@ -1366,7 +1366,7 @@ public class VariousUtils {
     @CheckForNull
     public static AliasedName getAliasedName(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
         AliasedName result = null;
-        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !isSpecialClassName(qualifiedName.getName())) {
+        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
             Scope scope = inScope;
             while (scope != null && !(scope instanceof NamespaceScope)) {
                 scope = scope.getInScope();
@@ -1391,7 +1391,7 @@ public class VariousUtils {
     }
 
     public static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
-        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !isSpecialClassName(qualifiedName.getName())) {
+        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
             while (inScope != null && !(inScope instanceof NamespaceScope)) {
                 inScope = inScope.getInScope();
             }
