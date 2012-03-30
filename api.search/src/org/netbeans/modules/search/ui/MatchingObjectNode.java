@@ -45,11 +45,10 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.search.MatchingObject;
 import org.openide.cookies.EditCookie;
 import org.openide.nodes.AbstractNode;
@@ -95,24 +94,35 @@ public class MatchingObjectNode extends AbstractNode {
         } else {
             setInvalidOriginal();
         }
-        matchingObject.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                if (!matchingObject.isObjectValid() && valid) {
-                    matchingObject.removeChangeListener(this);
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            setInvalidOriginal();
+        matchingObject.addPropertyChangeListener(
+                MatchingObject.PROP_INVALIDITY_STATUS,
+                new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent e) {
+                        if (matchingObject.getInvalidityStatus()
+                                == MatchingObject.InvalidityStatus.DELETED) {
+                            matchingObject.removePropertyChangeListener(
+                                    MatchingObject.PROP_INVALIDITY_STATUS,
+                                    this);
                         }
-                    });
-                } else {
-                    fireIconChange();
-                    ResultsOutlineSupport.toggleParentSelected(
-                            MatchingObjectNode.this);
-                }
-            }
-        });
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                setInvalidOriginal();
+                            }
+                        });
+                    }
+                });
+        matchingObject.addPropertyChangeListener(MatchingObject.PROP_SELECTED,
+                new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent e) {
+
+                        fireIconChange();
+                        ResultsOutlineSupport.toggleParentSelected(
+                                MatchingObjectNode.this);
+                    }
+                });
     }
 
     @Override
@@ -120,8 +130,15 @@ public class MatchingObjectNode extends AbstractNode {
         if (valid) {
             return original.getIcon(type);
         } else {
-            return ImageUtilities.loadImage(
-                    "org/netbeans/modules/search/res/invalid.png");     //NOI18N
+            String img;
+            switch (matchingObject.getInvalidityStatus()) {
+                case DELETED:
+                    img = "org/netbeans/modules/search/res/invalid.png";//NOI18N
+                    break;
+                default:
+                    img = "org/netbeans/modules/search/res/warning.gif";//NOI18N
+            }
+            return ImageUtilities.loadImage(img);
         }
     }
 
@@ -156,7 +173,12 @@ public class MatchingObjectNode extends AbstractNode {
     }
 
     private void setInvalidOriginal() {
-        valid = false;
+        if (valid) {
+            valid = false;
+        } else {
+            fireIconChange();
+            return; // already invalid
+        }
         if (origNodeListener != null) {
             original.removeNodeListener(origNodeListener);
             origNodeListener = null;
