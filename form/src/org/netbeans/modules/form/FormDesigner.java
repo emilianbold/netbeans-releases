@@ -2230,30 +2230,6 @@ public class FormDesigner {
         }
 
         @Override
-        public void repaintComponent(String componentId, Graphics g) {
-            Object comp = getComponent(componentId);
-            if (comp instanceof Component) {
-                Component component = ((Component)comp);
-                int cx = component.getX();
-                int cy = component.getY();
-                Component parent = component.getParent();
-                Component topComp = getTopDesignComponentView();
-                while (parent != null) {
-                    if (parent == topComp) {
-                        g.translate(cx, cy);
-                        component.paint(g);
-                        g.translate(-cx, -cy);
-                        break;
-                    } else {
-                        cx += parent.getX();
-                        cy += parent.getY();
-                        parent = parent.getParent();
-                    }
-                }
-            }            
-        }
-
-        @Override
         public void repaintDesigner(String forComponentId) {
             RADComponent metacomp = formModel != null ? formModel.getMetaComponent(forComponentId) : null;
             if (metacomp instanceof RADVisualComponent
