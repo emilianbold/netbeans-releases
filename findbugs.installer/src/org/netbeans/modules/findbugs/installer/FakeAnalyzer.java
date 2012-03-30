@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.findbugs.installer;
 
-import java.awt.Image;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,7 +54,6 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author lahvac
  */
-@ServiceProvider(service=Analyzer.class)
 public class FakeAnalyzer implements Analyzer {
 
     @Override
@@ -68,6 +66,7 @@ public class FakeAnalyzer implements Analyzer {
         return true;
     }
 
+    @ServiceProvider(service=AnalyzerFactory.class)
     public static final class FakeAnalyzerFactory extends AnalyzerFactory {
 
         public FakeAnalyzerFactory() {
