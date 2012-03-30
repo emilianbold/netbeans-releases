@@ -450,7 +450,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         } 
         return false;
     }
-        
+
     private class EmptyToolbar extends JToolBar  {
         private EmptyToolbar() {
             setBorder(new EmptyBorder(0, 0, 0, 0));
@@ -522,6 +522,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             prevButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-prev.png"))); // NOI18N
             nextButton.addActionListener(this);
             prevButton.addActionListener(this);
+            nextButton.setEnabled(false);
+            prevButton.setEnabled(false);
             refreshButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/refresh.png"))); // NOI18N
             refreshButton.addActionListener(this);
             settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/options.png"))); // NOI18N
@@ -600,9 +602,18 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         @Override
         public void actionPerformed(ActionEvent e) {
             if(e.getSource() == getToolbar().nextButton) {
-                diffView.onNextButton();
+                if(lastDifference) {
+                    masterView.selectNextEntry();
+                } else {
+                    diffView.onNextButton();
+                }
             } else if(e.getSource() == getToolbar().prevButton) {
-                diffView.onPrevButton();
+                if(firstDifference) {
+                    diffView.onSelectionLastDifference();
+                    masterView.selectPrevEntry();
+                } else {
+                    diffView.onPrevButton();
+                }
             } else if(e.getSource() == getToolbar().refreshButton) {
                 masterView.refresh();
             } else if(e.getSource() == getToolbar().settingsButton) {
@@ -670,9 +681,19 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         getToolbar().nextButton.setEnabled(false);
     }
 
+    private boolean lastDifference = false;
+    private boolean firstDifference = true;
     void refreshNavigationButtons(int currentDifference, int diffCount) {
-        getToolbar().prevButton.setEnabled(currentDifference > 0);
-        getToolbar().nextButton.setEnabled(currentDifference < diffCount - 1);
+        firstDifference = currentDifference <= 0;
+        lastDifference = currentDifference == diffCount - 1;
+        
+        if(masterView.isSingleSelection()) {
+            getToolbar().prevButton.setEnabled(!(firstDifference && masterView.isFirstRow()));
+            getToolbar().nextButton.setEnabled(!(lastDifference && masterView.isLastRow()));
+        } else {
+            getToolbar().prevButton.setEnabled(currentDifference > 0);
+            getToolbar().nextButton.setEnabled(currentDifference < diffCount - 1);
+        }
     }
 
     @Override

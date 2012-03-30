@@ -75,7 +75,7 @@ public class History {
     
     public RequestProcessor getRequestProcessor() {
         if (rp == null) {
-            rp = new RequestProcessor("LocalHistory.ParallelTasks", 5, true); //NOI18N
+            rp = new RequestProcessor("History.ParallelTasks", 5, true); //NOI18N
         }
         return rp;
     }    
