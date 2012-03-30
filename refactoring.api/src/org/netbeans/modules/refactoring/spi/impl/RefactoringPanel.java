@@ -744,7 +744,12 @@ public class RefactoringPanel extends JPanel {
                         setupInstantTree(root, showParametersPanel);
                     }
                     
-                    progressHandle.start(elements.size()/10);
+                    if (isInstant()) {
+                        progressHandle.start();
+                        progressHandle.setDisplayName(NbBundle.getMessage(RefactoringPanel.class, "MSG_Searching"));
+                    } else {
+                        progressHandle.start(elements.size()/10);
+                    }
                     int i=0;
                     try {
                         //[retouche]                    JavaModel.getJavaRepository().beginTrans(false);
@@ -802,8 +807,11 @@ public class RefactoringPanel extends JPanel {
                                 PositionBounds pb = e.getPosition();
                                 fileObjects.add(e.getParentFile());
                                 
-                                if (i % 10 == 0)
-                                    progressHandle.progress(i/10);
+                                if (!isInstant()) {
+                                    if (i % 10 == 0) {
+                                        progressHandle.progress(i / 10);
+                                    }
+                                }
                             }
                         } finally {
                             //[retouche]                        JavaModel.getJavaRepository().endTrans();
