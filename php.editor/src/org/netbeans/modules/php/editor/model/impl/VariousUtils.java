@@ -42,17 +42,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.StringTokenizer;
+import java.util.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -130,6 +120,13 @@ public class VariousUtils {
     public static final String STATIC_FIELD__TYPE_PREFIX = "static.fld:";
     public static final String VAR_TYPE_PREFIX = "var:";
     public static final String ARRAY_TYPE_PREFIX = "array:";
+    private static final Collection<String> SPECIAL_CLASS_NAMES = new LinkedList<String>();
+
+    static {
+        SPECIAL_CLASS_NAMES.add("self"); //NOI18N
+        SPECIAL_CLASS_NAMES.add("static"); //NOI18N
+        SPECIAL_CLASS_NAMES.add("parent"); //NOI18N
+    }
 
     public static enum Kind {
         CONSTRUCTOR,
@@ -1324,8 +1321,7 @@ public class VariousUtils {
 
     public static boolean isAliased(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
         boolean result = false;
-        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
-                && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
+        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !isSpecialClassName(qualifiedName.getName())) {
             Scope scope = inScope;
             while (scope != null && !(scope instanceof NamespaceScope)) {
                 scope = scope.getInScope();
@@ -1339,8 +1335,7 @@ public class VariousUtils {
 
     public static boolean isAlias(final QualifiedName unqualifiedName, final int offset, final Scope inScope) {
         boolean result = false;
-        if(unqualifiedName.getKind() == QualifiedNameKind.UNQUALIFIED && !unqualifiedName.getName().equalsIgnoreCase("self")
-                && !unqualifiedName.getName().equalsIgnoreCase("static") && !unqualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
+        if(unqualifiedName.getKind() == QualifiedNameKind.UNQUALIFIED && !isSpecialClassName(unqualifiedName.getName())) {
             Scope scope = inScope;
             while (scope != null && !(scope instanceof NamespaceScope)) {
                 scope = scope.getInScope();
@@ -1371,8 +1366,7 @@ public class VariousUtils {
     @CheckForNull
     public static AliasedName getAliasedName(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
         AliasedName result = null;
-        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
-                && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
+        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !isSpecialClassName(qualifiedName.getName())) {
             Scope scope = inScope;
             while (scope != null && !(scope instanceof NamespaceScope)) {
                 scope = scope.getInScope();
@@ -1397,8 +1391,7 @@ public class VariousUtils {
     }
 
     public static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
-        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
-                && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
+        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !isSpecialClassName(qualifiedName.getName())) {
             while (inScope != null && !(inScope instanceof NamespaceScope)) {
                 inScope = inScope.getInScope();
             }
@@ -1498,6 +1491,16 @@ public class VariousUtils {
             retval = typeNames;
         }
         return retval;
+    }
+
+    /**
+     * Check if a className is "self", "static", or "parent".
+     *
+     * @param className
+     * @return
+     */
+    public static boolean isSpecialClassName(final String className) {
+        return SPECIAL_CLASS_NAMES.contains(className.toLowerCase());
     }
 
 }
