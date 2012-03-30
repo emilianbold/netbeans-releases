@@ -162,6 +162,9 @@ public class DocumentUtil {
         }
         final String tmp = snField.stringValue();
         final String snName = tmp.substring(0,tmp.length()-1);
+        if (snName.length() == 0) {
+            return null;
+        }
         if (kind != null) {
             assert kind.length == 1;
             kind[0] = decodeKind (tmp.charAt(tmp.length()-1));
@@ -243,7 +246,8 @@ public class DocumentUtil {
         assert binaryName != null;
         assert references != null;
         int index = binaryName.lastIndexOf(PKG_SEPARATOR);  //NOI18N
-        String fileName, pkgName, simpleName, caseInsensitiveName;
+        final String fileName;      //name with no package and appended type character
+        final String pkgName;       //Package
         if (index<0) {
             fileName = binaryName;
             pkgName = "";                           //NOI18N
@@ -252,6 +256,10 @@ public class DocumentUtil {
             fileName = binaryName.substring(index+1);
             pkgName = binaryName.substring(0,index);
         }
+        assert fileName.length() > 1 : "BinaryName with type char: " + binaryName +
+                                       ", Package: " + pkgName +
+                                       ", FileName with type char: " + fileName;
+        final String  simpleName;
         index = fileName.lastIndexOf('$');  //NOI18N
         if (index<0) {
             simpleName = fileName.substring(0, fileName.length()-1);
@@ -259,7 +267,7 @@ public class DocumentUtil {
         else {
             simpleName = fileName.substring(index+1,fileName.length()-1);
         }
-        caseInsensitiveName = simpleName.toLowerCase();         //XXX: I18N, Locale
+        final String caseInsensitiveName = simpleName.toLowerCase();         //XXX: I18N, Locale
         Document doc = new Document ();        
         Field field = new Field (FIELD_BINARY_NAME,fileName,Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
         doc.add (field);
