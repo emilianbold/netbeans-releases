@@ -465,12 +465,16 @@ public class RefactoringPanel extends JPanel {
         
         boolean added = false;
         int i = 0;
-        for (; i < parentNode.getChildCount(); i++) {
-            if (node.getLabel().compareTo(((CheckNode) parentNode.getChildAt(i)).getLabel()) < 0 ) {
-                parentNode.insert(node, i);
-                added = true;
-                break;
+        if (!(representedObject.getUserObject() instanceof RefactoringElement)) {
+            for (; i < parentNode.getChildCount(); i++) {
+                if (node.getLabel().compareTo(((CheckNode) parentNode.getChildAt(i)).getLabel()) < 0) {
+                    parentNode.insert(node, i);
+                    added = true;
+                    break;
+                }
             }
+        } else {
+            i = parentNode.getChildCount();
         }
         if (!added) {
             parentNode.add(node);
