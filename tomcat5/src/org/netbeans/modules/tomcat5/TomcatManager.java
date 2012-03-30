@@ -779,6 +779,16 @@ public class TomcatManager implements DeploymentManager {
                 ADMIN_XML,   // NOI18N For bundled tomcat 5.0.x 
                 "conf/Catalina/localhost/manager.xml",   // NOI18N
             };
+            boolean[] userReadOnly = new boolean[] {
+                false,
+                false,
+                false,
+                false,
+                true,
+                false,
+                false,
+                false
+            };
             String [] patternFrom = new String [] { 
                 null, 
                 null, 
@@ -823,6 +833,7 @@ public class TomcatManager implements DeploymentManager {
                 String sfolder = files[i].substring (0, slash);
                 File fromDir = new File (homeDir, sfolder); // NOI18N
                 File toDir = new File (baseDir, sfolder); // NOI18N
+                File targetFile = new File (toDir, files[i].substring (slash+1));
 
                 if (patternTo[i] == null) {
                     File fileToCopy = new File(homeDir, files[i]);
@@ -831,25 +842,16 @@ public class TomcatManager implements DeploymentManager {
                         continue;
                     }
                     FileInputStream is = new FileInputStream(fileToCopy);
-                    FileOutputStream os = new FileOutputStream (new File (toDir, files[i].substring (slash+1)));
+                    FileOutputStream os = new FileOutputStream(targetFile);
                     try {
-                        final byte[] BUFFER = new byte[4096];
-                        int len;
-
-                        for (;;) {
-                            len = is.read (BUFFER);
-                            if (len == -1) break;
-                            os.write (BUFFER, 0, len);
-                        }
-                    }
-                    catch (IOException ioe) {
+                        FileUtil.copy(is, os);
+                    } catch (IOException ioe) {
                         LOGGER.log(Level.INFO, null, ioe);
                     } finally {
                         try {
                             if (os != null)
                                 os.close();
-                        }
-                        catch (IOException ioe) { } // ignored
+                        } catch (IOException ioe) { } // ignored
                         try {
                             if (is != null)
                                 is.close();
@@ -859,16 +861,27 @@ public class TomcatManager implements DeploymentManager {
                     // use patched version
                     if (!copyAndPatch (
                         new File (fromDir, files[i].substring (slash+1)), 
-                        new File (toDir, files[i].substring (slash+1)), 
+                        targetFile,
                         patternFrom[i],
                         patternTo[i]
                         )) {
                         if (!(ADMIN_XML.equals(files[i]) && !(new File (fromDir, files[i].substring (slash+1))).exists()) ){
                             LOGGER.log(Level.INFO, "Cannot create config file "+files[i]);
+                            continue;
                         }
                     }
                 }
+
+                if (userReadOnly[i]) {
+                    if (targetFile.setReadable(false, false)) {
+                        targetFile.setReadable(true);
+                    }
+                    if (targetFile.setWritable(false, false)) {
+                        targetFile.setWritable(true);
+                    }
+                }
             }
+
             // deploy the ROOT context, if exists
             if (new File(homeDir, "webapps/ROOT").exists()) { // NOI18N
                 writeToFile(new File(baseDir, "conf/Catalina/localhost/ROOT.xml"), // NOI18N
@@ -920,7 +933,7 @@ public class TomcatManager implements DeploymentManager {
             return false;
         try {
             r = new BufferedReader (new InputStreamReader (new FileInputStream (src), "utf-8")); // NOI18N
-            StringBuffer sb = new StringBuffer ();
+            StringBuilder sb = new StringBuilder();
             final char[] BUFFER = new char[4096];
             int len;
 
@@ -944,9 +957,15 @@ public class TomcatManager implements DeploymentManager {
             LOGGER.log(Level.INFO, null, ioe);
             return false;
         } finally {
-            try { if (out != null) out.close (); } catch (java.io.IOException ioe) { // ignore this
+            try {
+                if (out != null)
+                    out.close ();
+            } catch (java.io.IOException ioe) { // ignore this
             }
-            try { if (r != null) r.close (); } catch (java.io.IOException ioe) { // ignore this 
+            try {
+                if (r != null)
+                    r.close ();
+            } catch (java.io.IOException ioe) { // ignore this
             }
         }
         return true;
