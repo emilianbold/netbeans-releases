@@ -385,13 +385,28 @@ bool NbLauncher::findUserDir(const char *str) {
 
 bool NbLauncher::findCacheDir(const char *str) {
     logMsg("NbLauncher::findCacheDir()");
-    if (strncmp(str, DEFAULT_CACHEDIR_ROOT_TOKEN, strlen(DEFAULT_CACHEDIR_ROOT_TOKEN)) == 0) {
+    if (strncmp(str, HOME_TOKEN, strlen(HOME_TOKEN)) == 0) {
+        if (userHome.empty()) {
+            char *userProfile = getenv(ENV_USER_PROFILE);
+            if (userProfile) {
+                userHome = userProfile;
+            } else {
+
+                if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DESKTOP_NAME, userHome)) {
+                    return false;
+                }
+                userHome.erase(userHome.rfind('\\'));
+            }
+            logMsg("User home: %s", userHome.c_str());
+        }
+        cacheDir = userHome + (str + strlen(HOME_TOKEN));
+    } else if (strncmp(str, DEFAULT_CACHEDIR_ROOT_TOKEN, strlen(DEFAULT_CACHEDIR_ROOT_TOKEN)) == 0) {
         if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DEFAULT_CACHEDIR_ROOT, defCacheDirRoot)) {
             return false;
         }
         defCacheDirRoot = defCacheDirRoot + NETBEANS_CACHES_DIRECTORY;
         defCacheDirRoot.erase(defCacheDirRoot.rfind('\\'));
-        logMsg("Default Cachedir Root: %s", defCacheDirRoot.c_str());
+        logMsg("Default Chachedir Root: %s", defCacheDirRoot.c_str());
         cacheDir = defCacheDirRoot + (str + strlen(DEFAULT_CACHEDIR_ROOT_TOKEN));
     } else {
         cacheDir = str;
