@@ -156,23 +156,23 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         return stack;
     }
 
-    public boolean isRootNode() {
+    boolean isRootNode() {
         return false;
     }
 
-    public boolean isVirtual() {
+    boolean isVirtual() {
         return startOffset() == -1 && endOffset() == -1;
     }
 
-    public void detachFromParent() {
+    void detachFromParent() {
         setParent(null);
     }
 
-    public String getNamespace() {
+    String getNamespace() {
         return (String) getRootNode().getProperty(NAMESPACE_PROPERTY);
     }
 
-    public Node getMatchingTag() {
+    Node getMatchingTag() {
 //        return (AstNode) getProp(matchingNode);
         return matchingNode;
     }
@@ -187,20 +187,20 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
      * @return non-null int array - new int[]{from, to};
      *
      */
-    public int[] getLogicalRange() {
+    int[] getLogicalRange() {
         return new int[]{startOffset, logicalEndOffset};
     }
 
-    public void setLogicalEndOffset(int offset) {
+    void setLogicalEndOffset(int offset) {
         this.logicalEndOffset = offset;
     }
 
-    public void setMatchingNode(Node match) {
+    void setMatchingNode(Node match) {
 //        putProp(matchingNode, match);]
         this.matchingNode = match;
     }
 
-    public boolean needsToHaveMatchingTag() {
+    boolean needsToHaveMatchingTag() {
         //non-dtd elements always need to have a pair
         if (getDTDElement() == null) {
             return true;
@@ -216,11 +216,11 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         }
     }
 
-    public org.netbeans.modules.html.editor.lib.dtd.DTD.Element getDTDElement() {
+    org.netbeans.modules.html.editor.lib.dtd.DTD.Element getDTDElement() {
         return dtdElement;
     }
 
-    public boolean reduce(org.netbeans.modules.html.editor.lib.dtd.DTD.Element element) {
+    boolean reduce(org.netbeans.modules.html.editor.lib.dtd.DTD.Element element) {
         if (getContentModel() == null) {
             return false; //unknown tag can contain anything, error reports done somewhere else
         }
@@ -276,7 +276,7 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         }
     }
 
-    public boolean isResolved() {
+    boolean isResolved() {
         Content _content = getContent();
         if (_content == null) {
             return false;
@@ -301,7 +301,7 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         return _content == Content.EMPTY_CONTENT || _content.isDiscardable(); //XXX: is that correct???
     }
 
-    public List<Element> getUnresolvedElements() {
+    List<Element> getUnresolvedElements() {
         if (!isResolved()) {
             return (List<Element>) getContent().getPossibleElements();
         } else {
@@ -309,7 +309,7 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         }
     }
 
-    public List<org.netbeans.modules.html.editor.lib.dtd.DTD.Element> getAllPossibleElements() {
+    List<org.netbeans.modules.html.editor.lib.dtd.DTD.Element> getAllPossibleElements() {
         Content content = getContent();
         assert content != null;
 
@@ -320,7 +320,7 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         return col;
     }
 
-    public synchronized void addDescriptionToNode(String key, String message, int type) {
+    synchronized void addDescriptionToNode(String key, String message, int type) {
         //adjust the description position and length for open tag
         //only the tag name is annotated, not the whole tag
         int from = startOffset();
@@ -340,13 +340,13 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         addDescription(ProblemDescription.create(key, message, type, from, to));
     }
 
-    public synchronized void addDescriptionsToNode(Collection<String[]> keys_messages, int type) {
+    synchronized void addDescriptionsToNode(Collection<String[]> keys_messages, int type) {
         for (String[] msg : keys_messages) {
             addDescriptionToNode(msg[0], msg[1], type);
         }
     }
 
-    public synchronized void addDescription(ProblemDescription message) {
+    synchronized void addDescription(ProblemDescription message) {
         if (descriptions == null) {
             descriptions = new ArrayList<ProblemDescription>(1);
         }
@@ -354,7 +354,7 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
 
     }
 
-    public synchronized void addDescriptions(Collection<ProblemDescription> messages) {
+    synchronized void addDescriptions(Collection<ProblemDescription> messages) {
         if (descriptions == null) {
             descriptions = new ArrayList<ProblemDescription>(1);
         }
@@ -371,23 +371,23 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         return nodeType;
     }
 
-    public int startOffset() {
+    int startOffset() {
         return startOffset;
     }
 
-    public int endOffset() {
+    int endOffset() {
         return endOffset;
     }
 
-    public void setEndOffset(int offset) {
+    void setEndOffset(int offset) {
         this.endOffset = offset;
     }
 
-    public int logicalStartOffset() {
+    int logicalStartOffset() {
         return getLogicalRange()[0];
     }
 
-    public int logicalEndOffset() {
+    int logicalEndOffset() {
         return getLogicalRange()[1];
     }
 
@@ -396,6 +396,7 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         return children == null ? Collections.EMPTY_LIST : children;
     }
 
+    @Override
     public Collection<Element> children(ElementFilter filter) {
         Collection<Element> filtered = new ArrayList<Element>(children().size());
         for (Element child : children()) {
@@ -411,29 +412,19 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         return empty;
     }
 
-    public CharSequence getNamespacePrefix() {
-        int colonIndex = CharSequences.indexOf(name(), ":");
-        return colonIndex == -1 ? null : name().subSequence(0, colonIndex);
-    }
-
-    public CharSequence getNameWithoutPrefix() {
-        int colonIndex = CharSequences.indexOf(name(), ":");
-        return colonIndex == -1 ? name() : name().subSequence(colonIndex + 1, name().length());
-    }
-
     @Override
     public Object getProperty(String key) {
         return properties == null ? null : properties.get(key);
     }
 
-    public synchronized void setProperty(String key, Object value) {
+    synchronized void setProperty(String key, Object value) {
         if (properties == null) {
             properties = new HashMap<String, Object>();
         }
         properties.put(key, value);
     }
 
-    public AstNode getRootNode() {
+    AstNode getRootNode() {
         if (this instanceof RootAstNode) {
             return this;
         } else {
@@ -442,13 +433,13 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         }
     }
 
-    public void addChild(AstNode child) {
+    void addChild(AstNode child) {
         initChildren();
         children.add(child);
         child.setParent(this);
     }
 
-    public boolean insertBefore(AstNode node, AstNode insertBeforeNode) {
+    boolean insertBefore(AstNode node, AstNode insertBeforeNode) {
         List<Element> _children = children;
         initChildren();
         int idx = _children.indexOf(insertBeforeNode);
@@ -460,20 +451,20 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         return true;
     }
 
-    public void addChildren(List<AstNode> childrenList) {
+    void addChildren(List<AstNode> childrenList) {
         initChildren();
         for (AstNode child : childrenList) {
             addChild(child);
         }
     }
 
-    public void removeChild(AstNode child) {
+    void removeChild(AstNode child) {
         initChildren();
         child.setParent(null);
         children.remove(child);
     }
 
-    public void removeChildren(List<AstNode> childrenList) {
+    void removeChildren(List<AstNode> childrenList) {
         initChildren();
         for (AstNode child : new ArrayList<AstNode>(childrenList)) {
             removeChild(child);
@@ -486,32 +477,11 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         }
     }
 
-    public void setAttribute(AstAttribute attr) {
+    void setAttribute(AstAttribute attr) {
         if (attributes == null) {
             attributes = new HashMap<String, Attribute>();
         }
         attributes.put(attr.name(), attr);
-    }
-
-    public Collection<String> getAttributeKeys() {
-        return attributes == null ? Collections.EMPTY_LIST : attributes.keySet();
-    }
-
-    public Collection<AstAttribute> getAttributes() {
-        return attributes == null ? Collections.EMPTY_LIST : attributes.values();
-    }
-
-    public Collection<AstAttribute> getAttributes(AttributeFilter filter) {
-        if (attributes == null) {
-            return Collections.EMPTY_LIST;
-        }
-        Collection<AstAttribute> filtered = new ArrayList<AstAttribute>(attributes.size() / 2);
-        for (AstAttribute attr : getAttributes()) {
-            if (filter.accepts(attr)) {
-                filtered.add(attr);
-            }
-        }
-        return filtered;
     }
 
     @Override
@@ -574,7 +544,7 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
 
         b.append('{');
         //attributes
-        for (AstAttribute a : getAttributes()) {
+        for (Attribute a : attributes()) {
             b.append(a.toString());
             b.append(',');
         }
@@ -619,7 +589,7 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
     /**
      * returns the AST path from the root element
      */
-    public TreePath path() {
+    TreePath path() {
         return new TreePath(null, this);
     }
 
@@ -640,14 +610,14 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
 
     @Override
     public Collection<Attribute> attributes() {
-        return attributes.values();
+        return attributes == null ? Collections.EMPTY_LIST : attributes.values();
     }
 
     @Override
     public Collection<Attribute> attributes(AttributeFilter filter) {
         Collection<Attribute> attrs = new ArrayList<Attribute>();
-        for(Attribute a : attributes()) {
-            if(filter.accepts(a)) {
+        for (Attribute a : attributes()) {
+            if (filter.accepts(a)) {
                 attrs.add(a);
             }
         }
@@ -656,28 +626,30 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
 
     @Override
     public CloseTag matchingCloseTag() {
-        return (CloseTag)getMatchingTag();
+        return (CloseTag) getMatchingTag();
     }
 
     @Override
     public CharSequence namespacePrefix() {
-        return getNamespacePrefix();
+        int colonIndex = CharSequences.indexOf(name(), ":");
+        return colonIndex == -1 ? null : name().subSequence(0, colonIndex);
+
     }
 
     @Override
     public CharSequence unqualifiedName() {
-        return getNameWithoutPrefix();
+        int colonIndex = CharSequences.indexOf(name(), ":");
+        return colonIndex == -1 ? name() : name().subSequence(colonIndex + 1, name().length());
     }
 
     @Override
     public <T extends Element> Collection<T> children(Class<T> type) {
         Collection<T> filtered = new ArrayList<T>();
-        for(Element child : children()) {
-            if(type.isAssignableFrom(child.getClass())) {
+        for (Element child : children()) {
+            if (type.isAssignableFrom(child.getClass())) {
                 filtered.add(type.cast(child));
             }
         }
         return filtered;
     }
-    
 }

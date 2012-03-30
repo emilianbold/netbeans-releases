@@ -78,14 +78,14 @@ public class AstNodeTest extends TestBase {
         AstNode node = new AstNode("div", ElementType.OPEN_TAG, 0, 1, false);
 
         assertEquals("div", node.name());
-        assertEquals("div", node.getNameWithoutPrefix());
-        assertNull(node.getNamespacePrefix());
+        assertEquals("div", node.unqualifiedName());
+        assertNull(node.namespacePrefix());
 
         node = new AstNode("ui:composition", ElementType.OPEN_TAG, 0, 1, false);
 
         assertEquals("ui:composition", node.name());
-        assertEquals("composition", node.getNameWithoutPrefix());
-        assertEquals("ui", node.getNamespacePrefix());
+        assertEquals("composition", node.unqualifiedName());
+        assertEquals("ui", node.namespacePrefix());
 
     }
 
