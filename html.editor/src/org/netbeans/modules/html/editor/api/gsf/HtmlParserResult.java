@@ -184,18 +184,13 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
         return result.getDeclaredNamespaces();
     }
 
-    /** Returns a leaf most Node from the parse tree to which range the given
-     * offset belongs.
-     *
-     * @param offset of the searched node
-     */
-    public Element findLeafTag(int offset, boolean forward, boolean physicalNodesOnly ) {
-        //first try to find the leaf in html content
-        Element mostLeaf = ElementUtils.findNode(root(), offset, forward, physicalNodesOnly);
+    public Node findBySemanticRange(int offset, boolean forward) {
+         //first try to find the leaf in html content
+        Node mostLeaf = ElementUtils.findBySemanticRange(root(), offset, forward);
         //now search the non html trees
         for (String uri : getNamespaces().keySet()) {
             Node root = root(uri);
-            Element leaf = ElementUtils.findNode(root, offset, forward, physicalNodesOnly);
+            Node leaf = ElementUtils.findBySemanticRange(root, offset, forward);
             if (leaf == null) {
                 continue;
             }
@@ -210,7 +205,29 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
         }
         return mostLeaf;
     }
-
+    
+    public Element findByPhysicalRange(int offset, boolean forward) {
+         //first try to find the leaf in html content
+        Element mostLeaf = ElementUtils.findByPhysicalRange(root(), offset, forward);
+        //now search the non html trees
+        for (String uri : getNamespaces().keySet()) {
+            Node root = root(uri);
+            Element leaf = ElementUtils.findByPhysicalRange(root, offset, forward);
+            if (leaf == null) {
+                continue;
+            }
+            if (mostLeaf == null) {
+                mostLeaf = leaf;
+            } else {
+                //they cannot overlap, just be nested, at least I think
+                if (leaf.from() > mostLeaf.from()) {
+                    mostLeaf = leaf;
+                }
+            }
+        }
+        return mostLeaf;
+    }
+    
     @Override
     public synchronized List<? extends Error> getDiagnostics() {
         if (errors == null) {

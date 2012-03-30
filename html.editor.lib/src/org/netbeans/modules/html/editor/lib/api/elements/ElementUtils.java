@@ -64,62 +64,54 @@ public class ElementUtils {
     }
 
     /**
-     * sarches for a descendant of the given node
-     *
-     * @param base the base node
-     * @param offset the offset for which we try to find a descendant node
-     * @param forward the direction bias
-     * @param physicalNodeOnly if true the found descendant will be returned
-     * only if the offset falls to its physical boundaries.
+     * Returns most leaf open tag which semantic range fits to the given offset.
      */
-    public static Node findNode(Node base, int offset, boolean forward, boolean physicalNodeOnly) {
-        if (physicalNodeOnly) {
-            return findByPhysicalRange(base, offset, forward);
-        } else {
-            return findByLogicalRange(base, offset, forward);
-        }
-    }
-
-    private static Node findByPhysicalRange(Node node, int offset, boolean forward) {
-        for (OpenTag child : node.children(OpenTag.class)) {
-            if (matchesNodeRange(child, offset, forward, true)) {
-                return child;
-            } else if (node.from() > offset) {
-                //already behind the possible candidates
-                return null;
-            } else {
-                //lets try this branch
-                Node candidate = findByPhysicalRange(child, offset, forward);
-                if (candidate != null) {
-                    return candidate;
-                }
-            }
-        }
-        return null;
-    }
-
-    public static boolean isVirtualNode(Element node) {
-        return node.from() == -1 && node.to() == -1;
-    }
-
-    private static Node findByLogicalRange(Node node, int offset, boolean forward) {
+    public static Node findBySemanticRange(Node node, int offset, boolean forward) {
         for (OpenTag child : node.children(OpenTag.class)) {
             if (isVirtualNode(child)) {
                 //we need to recurse into every virtual branch blindly hoping there might by some
                 //real nodes fulfilling our constrains
-                Node n = findByLogicalRange(child, offset, forward);
+                Node n = findBySemanticRange(child, offset, forward);
                 if (n != null) {
                     return n;
                 }
             }
             if (matchesNodeRange(child, offset, forward, false)) {
-                return findByLogicalRange(child, offset, forward);
+                return findBySemanticRange(child, offset, forward);
             }
         }
         return isVirtualNode(node) ? null : node;
     }
+    
+    /**
+     * Returns most leaf element of any kind at the specified offset.
+     */
+    public static Element findByPhysicalRange(Node base, int offset, boolean forward) {
+        for (Element child : base.children()) {
+            if (matchesNodeRange(child, offset, forward, true)) {
+                return child;
+            } else if (base.from() > offset) {
+                //already behind the possible candidates
+                return null;
+            } else {
+                //lets try this branch
+                if(child instanceof Node) {
+                    Node childNode = (Node)child;
+                    Element candidate = findByPhysicalRange(childNode, offset, forward);
+                    if (candidate != null) {
+                        return candidate;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+  
+    public static boolean isVirtualNode(Element node) {
+        return node.from() == -1 && node.to() == -1;
+    }
 
-    private static boolean matchesNodeRange(Node node, int offset, boolean forward, boolean physicalNodeRangeOnly) {
+    private static boolean matchesNodeRange(Element node, int offset, boolean forward, boolean physicalNodeRangeOnly) {
         int lf, lt;
         switch (node.type()) {
             case OPEN_TAG:

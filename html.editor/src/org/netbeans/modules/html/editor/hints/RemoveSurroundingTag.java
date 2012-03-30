@@ -160,13 +160,13 @@ public class RemoveSurroundingTag extends Hint {
 
         //check whether the selection starts at a tag and ends at a tag
         //open tag
-        Element open = result.findLeafTag(context.selectionStart, true, true);
+        Element open = result.findByPhysicalRange(context.selectionStart, true);
         if (open == null || open.type() != ElementType.OPEN_TAG) {
             return null;
         }
 
         //close tag
-        Element close = result.findLeafTag(context.selectionEnd, false, true);
+        Element close = result.findByPhysicalRange(context.selectionEnd, false);
         if (close == null || close.type() != ElementType.CLOSE_TAG) {
             return null;
         }

@@ -136,7 +136,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
         List<OpenTag> nodesInPath = new ArrayList<OpenTag>();
         int astOffset = info.getSnapshot().getEmbeddedOffset(caretPosition);
         for (Node root : allRoots) {
-            Element leaf = ElementUtils.findNode(root, astOffset, false, false);
+            Element leaf = ElementUtils.findBySemanticRange(root, astOffset, false);
             if (leaf != null) {
                 //add all nodes in the leaf's path to the root
                 TreePath treePath = new TreePath(null, leaf);

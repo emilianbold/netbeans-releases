@@ -522,7 +522,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         
         Snapshot snapshot = result.getSnapshot();
         
-        Element leaf = htmlresult.findLeafTag(caretOffset, true, true);
+        Element leaf = htmlresult.findByPhysicalRange(caretOffset, true);
         if (leaf == null || leaf.type() != ElementType.OPEN_TAG) {
             return DeclarationLocation.NONE;
         }

@@ -333,7 +333,7 @@ public class HtmlCompletionQuery extends UserTask {
         }
         if (useHtmlParseResult) {
             //use the standart mechanism
-            node = parserResult.findLeafTag(searchAstOffset, !backward, false);
+            node = parserResult.findBySemanticRange(searchAstOffset, !backward);
             if (node == null || node.equals(parserResult.root())) {
                 //fallback to the default simple xml parse tree (mlSyntaxTreeBuilder.makeUncheckedTree() )
                 //if no leaf node found or just the root seems to be the leaf. This situation is likely
@@ -352,7 +352,7 @@ public class HtmlCompletionQuery extends UserTask {
 //            root = SyntaxTreeBuilder.makeTree(htmlResult.source(), HtmlVersion.HTML40_TRANSATIONAL, parserResult.getSyntaxAnalyzerResult().getElements().items());
             ParseResult plain = parserResult.getSyntaxAnalyzerResult().parsePlain();
             root = plain.root();
-            node = ElementUtils.findNode(root, searchAstOffset, !backward, false);
+            node = ElementUtils.findBySemanticRange(root, searchAstOffset, !backward);
             if (node == null) {
                 node = root;
             }
@@ -362,7 +362,7 @@ public class HtmlCompletionQuery extends UserTask {
         assert root != null;
 
         //find a leaf node for the xml stuff
-        Node xmlLeafNode = findLeafTag(parserResult, searchAstOffset, !backward, false);
+        Node xmlLeafNode = findLeafTag(parserResult, searchAstOffset, !backward);
 
         assert xmlLeafNode != null;
 
@@ -863,13 +863,13 @@ public class HtmlCompletionQuery extends UserTask {
         }
     }
 
-    private Node findLeafTag(HtmlParserResult result, int offset, boolean forward, boolean physicalNodesOnly) {
+    private Node findLeafTag(HtmlParserResult result, int offset, boolean forward) {
         //first try to find the in the undeclared component tree
-        Node mostLeaf = ElementUtils.findNode(result.rootOfUndeclaredTagsParseTree(), offset, forward, physicalNodesOnly);
+        Node mostLeaf = ElementUtils.findBySemanticRange(result.rootOfUndeclaredTagsParseTree(), offset, forward);
         //now search the non html trees
         for (String uri : result.getNamespaces().keySet()) {
             Node root = result.root(uri);
-            Node leaf = ElementUtils.findNode(root, offset, forward, physicalNodesOnly);
+            Node leaf = ElementUtils.findBySemanticRange(root, offset, forward);
             if (mostLeaf == null) {
                 mostLeaf = leaf;
             } else {

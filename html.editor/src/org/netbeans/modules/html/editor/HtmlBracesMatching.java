@@ -225,7 +225,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     int searchOffsetLocal = searchOffset;
                     while (searchOffsetLocal != context.getLimitOffset()) {
                         int searched = result.getSnapshot().getEmbeddedOffset(searchOffsetLocal);
-                        Element origin = result.findLeafTag(searched, !context.isSearchingBackward(), true);
+                        Element origin = result.findByPhysicalRange(searched, !context.isSearchingBackward());
                         if (origin != null) {
                             if (origin.type() == ElementType.OPEN_TAG) {
                                 OpenTag origin_tag = (OpenTag) origin;

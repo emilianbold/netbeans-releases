@@ -70,7 +70,7 @@ class HtmlRenameHandler implements InstantRenamer {
         }
 
         HtmlParserResult result = (HtmlParserResult) info;
-        Element node = result.findLeafTag(astCaretOffset, true, true);
+        Element node = result.findByPhysicalRange(astCaretOffset, true);
 
         if (node == null) {
             return false;
@@ -98,7 +98,7 @@ class HtmlRenameHandler implements InstantRenamer {
         }
 
         HtmlParserResult result = (HtmlParserResult) info;
-        Element node = result.findLeafTag(astCaretOffset, true, true);
+        Element node = result.findByPhysicalRange(astCaretOffset, true);
 
         if (node == null) {
             return Collections.emptySet();
