@@ -92,8 +92,7 @@ public class GdbHandlerExpert implements HandlerExpert {
     Handler newHandler(NativeBreakpoint template,
 		       MIResult result,
 		       NativeBreakpoint breakpoint) {
-
-	assert result.variable().equals("bkpt") || result.variable().equals("wpt");
+        assertBkptResult(result);
 	MIValue bkptValue = result.value();
 	MITList props = bkptValue.asTuple();
 
@@ -110,8 +109,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 
     Handler replaceHandler(NativeBreakpoint template,
                            Handler originalHandler, MIResult result) {
-
-	assert result.variable().equals("bkpt");
+        assertBkptResult(result);
 	MIValue bkptValue = result.value();
 	MITList props = bkptValue.asTuple();
 
@@ -120,6 +118,11 @@ public class GdbHandlerExpert implements HandlerExpert {
 	Handler handler = new Handler(debugger, breakpoint);
 	setGenericProperties(handler, props);
 	return handler;
+    }
+    
+    private static void assertBkptResult(MIResult result) {
+        assert result.variable().equals(GdbDebuggerImpl.MI_BKPT) || 
+                result.variable().equals(GdbDebuggerImpl.MI_WPT) : "Result " + result + " is not a breakpoint"; //NOI18N
     }
 
     public ReplacementPolicy replacementPolicy() {
@@ -270,7 +273,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    return HandlerCommand.makeError(null);
 	}
 
-	return HandlerCommand.makeCommand(cmd.toString());
+	return new GdbHandlerCommand(GdbHandlerCommand.Type.REPLACE, cmd.toString());
     }
 
     // interface HandlerExpert
@@ -288,7 +291,7 @@ public class GdbHandlerExpert implements HandlerExpert {
                 }
                 cmd = new GdbHandlerCommand(GdbHandlerCommand.Type.CHANGE, 
                         "-break-after " + repairedBreakpoint.getId() + //NOI18N
-                        ' ' + value, false) {
+                        ' ' + value) {
                             @Override
                             void onDone() {
                                 repairedBreakpoint.setCountLimit(clonedBreakpoint.getCountLimit(), clonedBreakpoint.hasCountLimit());
@@ -303,7 +306,7 @@ public class GdbHandlerExpert implements HandlerExpert {
                 }
                 cmd = new GdbHandlerCommand(GdbHandlerCommand.Type.CHANGE, 
                         "-break-condition " + repairedBreakpoint.getId() + //NOI18N
-                        ' ' + value, false) {
+                        ' ' + value) {
                             @Override
                             void onDone() {
                                 repairedBreakpoint.setCondition(clonedBreakpoint.getCondition());
@@ -552,8 +555,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 			       NativeBreakpoint breakpoint,
 			       NativeBreakpoint template,
 			       MIResult result) {
-
-	assert result.variable().equals("bkpt") || result.variable().equals("wpt");
+        assertBkptResult(result);
 	MIValue bkptValue = result.value();
 	MITList props = bkptValue.asTuple();
 
