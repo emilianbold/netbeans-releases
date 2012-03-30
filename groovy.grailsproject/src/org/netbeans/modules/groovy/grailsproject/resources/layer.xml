@@ -1,55 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-    <folder name="Actions">
-        <folder name="Build">
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GenerateViewsAction.instance"/>
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GenerateAllAction.instance"/>
-        </folder>
-        <folder name="Groovy">
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.instance"/>
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoDomainClassAction.instance"/>
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.instance"/>
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GrailsCommandAction.instance"/>
-        </folder>
-    </folder>
-
-    <folder name="Loaders">
-        <folder name="text">
-            <folder name="x-groovy">
-                <folder name="Actions">
-                    <file name="org-netbeans-modules-groovy-grailsproject-actions-GenerateViewsAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-groovy-grailsproject-actions-GenerateViewsAction.instance"/>
-                        <attr name="position" intvalue="0"/>
-                    </file>
-                    <file name="org-netbeans-modules-groovy-grailsproject-actions-GenerateAllAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-groovy-grailsproject-actions-GenerateAllAction.instance"/>
-                        <attr name="position" intvalue="20"/>
-                    </file>
-                    <file name="org-netbeans-modules-groovy-grailsproject-actions-separatorAfter.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="50"/>
-                    </file>
-                    <file name="org-netbeans-modules-groovy-grailsproject-actions-separatorBefore.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="-100"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
-    <folder name="Menu">
-        <folder name="GoTo">
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.instance"/>
-                <attr name="position" intvalue="550"/>
-            </file>
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.instance"/>
-                <attr name="position" intvalue="575"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Templates">
         <folder name="Project">
             <folder name="Groovy">
@@ -163,33 +114,11 @@
 
     <folder name="Editors">
         <folder name="text">
-            <folder name="x-groovy">
-                <folder name="Popup">
-                    <folder name="goto">
-                        <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.instance"/>
-                            <attr name="position" intvalue="100"/>
-                        </file>
-                        <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.instance"/>
-                            <attr name="position" intvalue="150"/>
-                        </file>
-                    </folder>
-                </folder>
-            </folder>
             <folder name="x-gsp">
                 <folder name="Popup">
                     <folder name="goto">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.Bundle"/>
                         <attr name="position" intvalue="100"/>
-                        <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.instance"/>
-                            <attr name="position" intvalue="100"/>
-                        </file>
-                        <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.instance"/>
-                            <attr name="position" intvalue="150"/>
-                        </file>
                     </folder>
                 </folder>
             </folder>
