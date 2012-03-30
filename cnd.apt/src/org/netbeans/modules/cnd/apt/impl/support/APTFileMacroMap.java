@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
-import org.netbeans.modules.cnd.apt.support.APTHandlersSupport.StateKey;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
@@ -211,8 +210,8 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             this.crc2 = state.crc2;
         }
 
-        StateKey getStateKey(Key startFileProject) {
-            return new StateKey(crc1, crc2, startFileProject);
+        APTHandlersSupportImpl.StateKeyImpl getStateKey(Key startFileProject) {
+            return new APTHandlersSupportImpl.StateKeyImpl(crc1, crc2, startFileProject);
         }
 
         @Override
