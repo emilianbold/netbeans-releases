@@ -2927,7 +2927,7 @@ public class CasualDiff {
         if (sameComments(oldInlineComments, newInlineComments) && sameComments(oldTrailingComments, newTrailingComments))
             return localPointer;
 
-        localPointer = diffCommentLists(oldT, newT, oldInlineComments, newInlineComments, false, localPointer);
+        localPointer = diffCommentLists(oldT, newT, oldInlineComments, newInlineComments, true, localPointer);
 
         boolean containedEmbeddedNewLine = false;
         boolean containsEmbeddedNewLine = false;
