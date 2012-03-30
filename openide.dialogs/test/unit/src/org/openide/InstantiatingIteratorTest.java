@@ -44,17 +44,18 @@
 package org.openide;
 
 
-import org.netbeans.junit.*;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.JLabel;
 import javax.swing.event.ChangeListener;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.*;
 import org.openide.util.HelpCtx;
@@ -64,7 +65,10 @@ import org.openide.util.HelpCtx;
  */
 public class InstantiatingIteratorTest extends NbTestCase {
 
-    
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(InstantiatingIteratorTest.class);
+    }
+
     public InstantiatingIteratorTest (String name) {
         super(name);
     }

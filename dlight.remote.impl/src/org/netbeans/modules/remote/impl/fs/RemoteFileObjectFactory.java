@@ -255,7 +255,7 @@ public class RemoteFileObjectFactory {
             // (result == fo) means that result was placed into cache => we need to init listeners,
             // otherwise there already was an object in cache => listener has been already initialized
             if (result == fo) { 
-                ((RemoteLink) result).initListeners();
+                ((RemoteLink) result).initListeners(true);
             }
         }
         return result;
@@ -268,7 +268,7 @@ public class RemoteFileObjectFactory {
             // (result == fo) means that result was placed into cache => we need to init listeners,
             // otherwise there already was an object in cache => listener has been already initialized
             if (result == fo) { 
-                ((RemoteLinkChild) result).initListeners();
+                ((RemoteLinkChild) result).initListeners(true);
             } else {
                 RemoteFileObjectBase oldDelegate = ((RemoteLinkChild) result).getDelegate();
                 if (oldDelegate != delegate) {
@@ -280,7 +280,7 @@ public class RemoteFileObjectFactory {
                     fo = new RemoteLinkChild(ownerFileObject, fileSystem, env, parent, remotePath, delegate);
                     result = putIfAbsent(remotePath, fo);
                     if (result == fo) {
-                        ((RemoteLinkChild) result).initListeners(); // fo.initListeners() is quite the same :)
+                        ((RemoteLinkChild) result).initListeners(true); // fo.initListeners() is quite the same :)
                     }
                     // TODO: is it possible that somebody has just placed another one? of different kind?
                 }
@@ -326,7 +326,7 @@ public class RemoteFileObjectFactory {
         }
     }
     
-    public void remoteFileChangeListener(String path, FileChangeListener listener) {
+    public void removeFileChangeListener(String path, FileChangeListener listener) {
         RemoteFileObjectBase fo = getCachedFileObject(path);
         if (fo == null) {
             synchronized (lock) {

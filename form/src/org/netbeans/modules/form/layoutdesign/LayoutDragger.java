@@ -721,8 +721,6 @@ final class LayoutDragger implements LayoutConstants {
                             code[i] = "indent"; // NOI18N
                         }
                     }
-                } else if (componentSnappedToDefaultSize(i)) {
-                    code[i] = "snappedToDefault" + dimensionCode(i); // NOI18N
                 }
             }
         }
@@ -731,7 +729,11 @@ final class LayoutDragger implements LayoutConstants {
             code[1] = null;
         }
         if (code[0] == null) {
-            code[0] = isResizing() ? "generalResizing" : "generalPosition"; // NOI18N
+            if (isResizing()) {
+                code[0] = isComponentOperation() ? "generalResizing" : "gapResizing"; // NOI18N
+            } else {
+                code[0] = "generalPosition"; // NOI18N
+            }
         }
         return code;
     }

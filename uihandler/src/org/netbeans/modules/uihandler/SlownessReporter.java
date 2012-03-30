@@ -59,11 +59,13 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -78,6 +80,7 @@ class SlownessReporter {
     private static final String DELEGATE_PATTERN = "delegate=.*@";         // NOI18N
     static final long LATEST_ACTION_LIMIT = 1000;//ms
     private static final int CLEAR = Integer.getInteger("org.netbeans.modules.uihandler.SlownessReporter.clear", 60000); // NOI18N
+    private static final RequestProcessor IO_RP = new RequestProcessor(SlownessReporter.class);
     
     public SlownessReporter() {
         pending = new LinkedList<NotifySnapshot>();
@@ -136,12 +139,23 @@ class SlownessReporter {
         return latestActionHolder[0];
     }
 
-    void notifySlowness(byte[] nps, long time, long slownessEndTime, String slownessType) {
-        String latestActionName = getLatestAction(time, slownessEndTime);
-        pending.add(new NotifySnapshot(new SlownessData(time, nps, slownessType, latestActionName)));
-        if (pending.size() > 5) {
-            pending.remove().clear();
-        }
+    void notifySlowness(final byte[] nps, final long time,
+                        final long slownessEndTime, final String slownessType) {
+        IO_RP.post(new Runnable() {
+            @Override
+            public void run() {
+                final String latestActionName = getLatestAction(time, slownessEndTime);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        pending.add(new NotifySnapshot(new SlownessData(time, nps, slownessType, latestActionName)));
+                        if (pending.size() > 5) {
+                            pending.remove().clear();
+                        }
+                    }
+                });
+            }
+        });
     }
 
     private static final class NotifySnapshot implements ActionListener, Runnable {

@@ -106,7 +106,7 @@ public class ReportNBIssueAction extends SystemAction {
             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ReportNBIssueAction.class, "MSG_CONNECTING_2_NBORG")); // NOI18N
             handle.start();
             try {
-                repo.getExecutor().execute(cmd, false, false);
+                repo.getExecutor().execute(cmd, false, false, false);
             } finally {
                 handle.finish();
             }

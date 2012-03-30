@@ -274,7 +274,7 @@ public class ImportUITest extends JellyTestCase {
             actual[i] = model.getValueAt(i, 1).toString();
         }
 
-        assertEquals("Incorrect count of records for addition!!!", 11, model.getRowCount());
+        assertEquals("Incorrect count of records for addition!!!", 10, model.getRowCount());
 
 
         //   assertEquals("Some records were omitted from addition", 10, TestKit.compareThem(expected, actual, false));

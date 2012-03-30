@@ -43,6 +43,7 @@
 package org.openide.explorer;
 
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -52,6 +53,8 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import junit.framework.AssertionFailedError;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -63,6 +66,11 @@ import org.openide.util.datatransfer.PasteType;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class ExplorerActionsImplTest extends NbTestCase implements PropertyChangeListener {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ExplorerActionsImplTest.class);
+    }
+
     private volatile AssertionFailedError err;
     private volatile int cnt;
 

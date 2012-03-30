@@ -44,26 +44,17 @@
 
 package org.netbeans.modules.ant.debugger;
 
-import java.lang.reflect.Method;
 import java.util.Vector;
-import javax.swing.Action;
 
-import org.apache.tools.ant.module.api.support.TargetLister;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.NodeModelFilter;
-import org.openide.text.Annotatable;
-
-import org.openide.text.Line;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -125,7 +116,7 @@ public class WatchesModel implements NodeModelFilter, TableModel {
      */
     public String getShortDescription (NodeModel model, Object node) throws UnknownTypeException {
         if (node instanceof Watch) {
-            if (!isWatchEnabled((Watch) node)) {
+            if (!((Watch) node).isEnabled()) {
                 return NbBundle.getMessage(WatchesModel.class, "CTL_WatchDisabled");
             }
             String expression = ((Watch) node).getExpression ();
@@ -159,7 +150,7 @@ public class WatchesModel implements NodeModelFilter, TableModel {
             columnID == Constants.WATCH_VALUE_COLUMN_ID
         ) {
             if (node instanceof Watch) {
-                if (!isWatchEnabled((Watch) node)) {
+                if (!((Watch) node).isEnabled()) {
                     return NbBundle.getMessage(WatchesModel.class, "CTL_WatchDisabled");
                 }
                 String expression = ((Watch) node).getExpression ();
@@ -246,14 +237,4 @@ public class WatchesModel implements NodeModelFilter, TableModel {
             );
     }
     
-    private static boolean isWatchEnabled(Watch watch) {
-        try {
-            Method isEnabledMethod = watch.getClass().getDeclaredMethod("isEnabled");
-            isEnabledMethod.setAccessible(true);
-            return (Boolean) isEnabledMethod.invoke(watch);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            return true;
-        }
-    }
 }

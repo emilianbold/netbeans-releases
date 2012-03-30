@@ -161,7 +161,7 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
     }
 
     public static JTextComponent findComponent(Lookup lookup) {
-        EditorCookie ec = (EditorCookie) lookup.lookup(EditorCookie.class);
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
         return ec == null ? null : NbDocument.findRecentEditorPane(ec);
     }
     

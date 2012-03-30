@@ -161,7 +161,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             File apiFile = new File(platformRoot, "server/lib/api.jar"); // NOI18N
             if (apiFile.exists()) {
                 list.add(fileToUrl(apiFile));
-                list.addAll(getJarClassPath(apiFile));
+                list.addAll(getJarClassPath(apiFile, mwHome));
             }
 
             // patches
@@ -174,14 +174,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                                 "profiles/default/sys_manifest_classpath/weblogic_patch.jar")); // NOI18N
                         if (jarFile.exists()) {
                             list.add(fileToUrl(jarFile));
-                            List<URL> deps = getJarClassPath(jarFile);
+                            List<URL> deps = getJarClassPath(jarFile, mwHome);
                             list.addAll(deps);
                             for (URL dep : deps) {
-                                List<URL> innerDeps = getJarClassPath(dep);
+                                List<URL> innerDeps = getJarClassPath(dep, mwHome);
                                 list.addAll(innerDeps);
                                 for (URL innerDep : innerDeps) {
                                     if (innerDep.getPath().contains("patch_jars")) { // NOI18N
-                                        list.addAll(getJarClassPath(innerDep));
+                                        list.addAll(getJarClassPath(innerDep, mwHome));
                                     }
                                 }
                             }
@@ -192,7 +192,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
             // oepe contributions
             if (weblogicFile.exists()) {
-                List<URL> cp = getJarClassPath(weblogicFile);
+                List<URL> cp = getJarClassPath(weblogicFile, mwHome);
                 URL oepe = null;
                 for (URL cpElem : cp) {
                     if (OEPE_CONTRIBUTIONS_PATTERN.matcher(cpElem.getPath()).matches()) {
@@ -202,7 +202,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     }
                 }
                 if (oepe != null) {
-                    list.addAll(getJarClassPath(oepe));
+                    list.addAll(getJarClassPath(oepe, mwHome));
                 }
             }
 
@@ -225,6 +225,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
      * 
      * @return the resulting URI
      */
+    // FIXME this mught need fixing as in #207440
     static URL fileToUrl(File file) throws MalformedURLException {
         URL url = file.toURI().toURL();
         if (FileUtil.isArchiveFile(url)) {
@@ -234,14 +235,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     }
 
     // package for tests only
-    static List<URL> getJarClassPath(URL url) {
+    static List<URL> getJarClassPath(URL url, File mwHome) {
         URL fileUrl = FileUtil.getArchiveFile(url);
         if (fileUrl != null) {
             FileObject fo = URLMapper.findFileObject(fileUrl);
             if (fo != null) {
                 File file = FileUtil.toFile(fo);
                 if (file != null) {
-                    return getJarClassPath(file);
+                    return getJarClassPath(file, mwHome);
                 }
             }
         }
@@ -249,7 +250,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     }
 
     // package for tests only
-    static List<URL> getJarClassPath(File jarFile) {
+    static List<URL> getJarClassPath(File jarFile, File mwHome) {
         List<URL> urls = new ArrayList<URL>();
 
         try {
@@ -270,9 +271,17 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                                 }
                                 f = FileUtil.normalizeFile(f);
                                 if (!f.exists()) {
-                                    continue;
+                                    // fix the possibly wrong path in the jar #206528
+                                    if (mwHome != null && cpElement.startsWith("../../../modules")) { // NOI18N
+                                        f = FileUtil.normalizeFile(
+                                                new File(mwHome, cpElement.substring(9)));
+                                        if (f.exists()) {
+                                            urls.add(fileToUrl(f));
+                                        }
+                                    }
+                                } else {
+                                    urls.add(fileToUrl(f));
                                 }
-                                urls.add(fileToUrl(f));
                             }
                         }
                     }
@@ -328,7 +337,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 } else {
                     serverVersion = WLPluginProperties.getServerVersion(serverRoot);
                 }
-                if (JPA2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
+                if (serverVersion != null && JPA2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
                     filter = new FilenameFilter() {
                         @Override
                         public boolean accept(File dir, String name) {

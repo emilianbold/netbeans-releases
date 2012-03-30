@@ -203,13 +203,13 @@ public class CLIStatus implements ISVNStatus {
             return null;
         }
         public SVNNodeKind getNodeKind() {
-            return null;
+            return SVNNodeKind.UNKNOWN;
         }
         public String getLastCommitAuthor() {
             return null;
         }
         public Number getRevision() {
-            return SVNRevision.INVALID_REVISION;
+            return null;
         }
         public Number getLastChangedRevision() {
             return null;

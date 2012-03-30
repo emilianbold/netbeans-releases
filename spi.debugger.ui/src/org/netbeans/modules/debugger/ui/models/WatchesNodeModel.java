@@ -312,7 +312,7 @@ public class WatchesNodeModel implements ExtendedNodeModel, DnDNodeModel, CheckN
     public Boolean isSelected(Object node) throws UnknownTypeException {
         Watch w = getWatch(node);
         if (w != null) {
-            return WatchesReader.isWatchEnabled(w);
+            return w.isEnabled();
         } else {
             throw new UnknownTypeException(node);
         }
@@ -322,7 +322,7 @@ public class WatchesNodeModel implements ExtendedNodeModel, DnDNodeModel, CheckN
     public void setSelected(Object node, Boolean selected) throws UnknownTypeException {
         Watch w = getWatch(node);
         if (w != null) {
-            WatchesReader.setWatchEnabled(w, selected);
+            w.setEnabled(selected);
         } else {
             throw new UnknownTypeException(node);
         }

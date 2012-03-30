@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
@@ -83,7 +84,9 @@ public class ReplaceAction extends AbstractEditorAction {
 
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        if (target != null) {
+            if (target != null) {
+            if ((target instanceof JEditorPane) && ((JEditorPane) target).getEditorKit() instanceof SearchNbEditorKit)
+                target = SearchBar.getInstance().getActualTextComponent();
             EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
             if (eui != null) {
                 JComponent comp = eui.hasExtComponent() ? eui.getExtComponent() : null;

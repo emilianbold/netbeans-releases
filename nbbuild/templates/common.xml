@@ -139,7 +139,7 @@ made subject to such option by the copyright holder.
             <attribute name="javacval"/>
             <sequential>
                 <presetdef name="custom-javac">
-                    <custom-javac fork="yes" executable="@{javacval}"/>
+                    <custom-javac executable="@{javacval}"/>
                 </presetdef>
             </sequential>
         </macrodef>

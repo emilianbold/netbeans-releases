@@ -468,28 +468,22 @@ public class LayoutPainter implements LayoutConstants {
 
         if (paintedGaps != null && !paintedGaps.isEmpty()) {
             Color oldColor = g.getColor();
+            Shape oldClip = g.getClip();
+            Shape newClip = visualState.clipForGapPainting(paintedGaps);
+            g.clip(newClip);
             for (GapInfo gapInfo : paintedGaps) {
                 if (selectedGaps.contains(gapInfo)) {
                     continue;
                 }
                 paintGap(g, gapInfo, false);
-                if (gapInfo.overlappingComponents != null) {
-                    for (String compId : gapInfo.overlappingComponents) {
-                        visualState.repaintComponent(compId, g);
-                    }
-                }
             }
             for (GapInfo gapInfo : selectedGaps) {
                 paintGap(g, gapInfo, true);
                 if (selectedGaps.size() == 1) {
                     paintGapResizeHandles(g, gapInfo);
                 }
-                if (gapInfo.overlappingComponents != null) {
-                    for (String compId : gapInfo.overlappingComponents) {
-                        visualState.repaintComponent(compId, g);
-                    }
-                }
             }
+            g.setClip(oldClip);
             g.setColor(oldColor);
         }
     }
@@ -560,16 +554,15 @@ public class LayoutPainter implements LayoutConstants {
     void paintGapResizing(Graphics2D g, GapInfo resGap, Rectangle resRect, boolean defaultSize) {
         if (paintedGaps != null && !paintedGaps.isEmpty()) {
             Color originalColor = g.getColor();
+            Shape oldClip = g.getClip();
+            Shape newClip = visualState.clipForGapPainting(paintedGaps);
+            g.clip(newClip);
             for (GapInfo gapInfo : paintedGaps) {
                 if (gapInfo != resGap) {
                     paintGap(g, gapInfo, false);
-                    if (gapInfo.overlappingComponents != null) {
-                        for (String compId : gapInfo.overlappingComponents) {
-                            visualState.repaintComponent(compId, g);
-                        }
-                    }
                 }
             }
+            g.setClip(oldClip);
             paintDraggedGap(g, resRect, resGap.dimension, LayoutInterval.canResize(resGap.gap));
             g.setColor(originalColor);
         }

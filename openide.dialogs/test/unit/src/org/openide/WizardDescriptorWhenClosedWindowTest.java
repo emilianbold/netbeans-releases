@@ -43,10 +43,13 @@ package org.openide;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.WindowEvent;
 import java.util.*;
 import javax.swing.JLabel;
 import javax.swing.event.ChangeListener;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.HelpCtx;
 
@@ -55,6 +58,10 @@ import org.openide.util.HelpCtx;
  * @author Jiri Rechtacek
  */
 public class WizardDescriptorWhenClosedWindowTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(WizardDescriptorWhenClosedWindowTest.class);
+    }
 
     public WizardDescriptorWhenClosedWindowTest (String name) {
         super (name);

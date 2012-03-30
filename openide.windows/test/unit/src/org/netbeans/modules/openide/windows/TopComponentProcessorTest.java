@@ -43,11 +43,14 @@
 package org.netbeans.modules.openide.windows;
 
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.Action;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -62,6 +65,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class TopComponentProcessorTest extends  NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TopComponentProcessorTest.class);
+    }
 
     public TopComponentProcessorTest(String n) {
         super(n);
