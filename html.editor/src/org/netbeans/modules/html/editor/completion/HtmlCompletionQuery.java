@@ -352,7 +352,7 @@ public class HtmlCompletionQuery extends UserTask {
 //            root = SyntaxTreeBuilder.makeTree(htmlResult.source(), HtmlVersion.HTML40_TRANSATIONAL, parserResult.getSyntaxAnalyzerResult().getElements().items());
             ParseResult plain = parserResult.getSyntaxAnalyzerResult().parsePlain();
             root = plain.root();
-            node = ElementUtils.findElement(root, searchAstOffset, !backward, false);
+            node = ElementUtils.findNode(root, searchAstOffset, !backward, false);
             if (node == null) {
                 node = root;
             }
@@ -364,6 +364,7 @@ public class HtmlCompletionQuery extends UserTask {
         //find a leaf node for the xml stuff
         Node xmlLeafNode = findLeafTag(parserResult, searchAstOffset, !backward, false);
 
+        assert xmlLeafNode != null;
 
         //namespace is null for html content
         String namespace = null;
@@ -862,33 +863,13 @@ public class HtmlCompletionQuery extends UserTask {
         }
     }
 
-    public OpenTag findLeafTag(HtmlParserResult result, int offset, boolean forward, boolean physicalNodesOnly) {
+    private Node findLeafTag(HtmlParserResult result, int offset, boolean forward, boolean physicalNodesOnly) {
         //first try to find the in the undeclared component tree
-        Element mostLeaf = ElementUtils.findElement(result.rootOfUndeclaredTagsParseTree(), offset, forward, physicalNodesOnly);
-        if (mostLeaf != null) {
-            switch (mostLeaf.type()) {
-                case OPEN_TAG:
-                case ROOT:
-                    break;
-                default:
-                    mostLeaf = null;
-            }
-        }
-
+        Node mostLeaf = ElementUtils.findNode(result.rootOfUndeclaredTagsParseTree(), offset, forward, physicalNodesOnly);
         //now search the non html trees
         for (String uri : result.getNamespaces().keySet()) {
             Node root = result.root(uri);
-            Element leaf = ElementUtils.findElement(root, offset, forward, physicalNodesOnly);
-            
-            
-            
-            switch (mostLeaf.type()) {
-                case OPEN_TAG:
-                case ROOT:
-                    break;
-                default:
-                    continue;
-            }
+            Node leaf = ElementUtils.findNode(root, offset, forward, physicalNodesOnly);
             if (mostLeaf == null) {
                 mostLeaf = leaf;
             } else {

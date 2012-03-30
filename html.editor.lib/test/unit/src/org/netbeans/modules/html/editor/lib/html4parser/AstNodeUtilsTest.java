@@ -299,22 +299,22 @@ public class AstNodeUtilsTest extends TestBase {
         assertNotNull(title);
 
         //non logical range
-        assertSame(title, ElementUtils.findElement(root, 17, true, false)); //middle
-        assertSame(title, ElementUtils.findElement(root, 15, true, false)); //fw
-        assertSame(title, ElementUtils.findElement(root, 22, false, false)); //bw
+        assertSame(title, ElementUtils.findNode(root, 17, true, false)); //middle
+        assertSame(title, ElementUtils.findNode(root, 15, true, false)); //fw
+        assertSame(title, ElementUtils.findNode(root, 22, false, false)); //bw
 
         //logical range
-        assertSame(title, ElementUtils.findElement(root, 23, false, false));
+        assertSame(title, ElementUtils.findNode(root, 23, false, false));
 
         OpenTag div = query(root, "html/body/div");
         assertNotNull(div);
         //non logical range
-        assertSame(div, ElementUtils.findElement(root, 35, true, false)); //middle
-        assertSame(div, ElementUtils.findElement(root, 32, true, false)); //fw
-        assertSame(div, ElementUtils.findElement(root, 37, false, false)); //bw
+        assertSame(div, ElementUtils.findNode(root, 35, true, false)); //middle
+        assertSame(div, ElementUtils.findNode(root, 32, true, false)); //fw
+        assertSame(div, ElementUtils.findNode(root, 37, false, false)); //bw
 
         //logical range
-        assertSame(div, ElementUtils.findElement(root, 40, false, false));
+        assertSame(div, ElementUtils.findNode(root, 40, false, false));
 
     }
 
@@ -338,61 +338,61 @@ public class AstNodeUtilsTest extends TestBase {
         OpenTag div = query(root, "html/div");
         assertNotNull(div);
 
-        assertNull(ElementUtils.findElement(root,7, true, true));
+        assertNull(ElementUtils.findNode(root,7, true, true));
 
         //html open tag
-        assertNull(ElementUtils.findElement(root,6, true, true)); //behind, look forward
-        assertEquals(html, ElementUtils.findElement(root,6, false, true)); //behind, bw
+        assertNull(ElementUtils.findNode(root,6, true, true)); //behind, look forward
+        assertEquals(html, ElementUtils.findNode(root,6, false, true)); //behind, bw
 
-        assertEquals(html, ElementUtils.findElement(root,0, true, true)); //before, fw
-        assertNull(ElementUtils.findElement(root,0, false, true)); //before, look backward
+        assertEquals(html, ElementUtils.findNode(root,0, true, true)); //before, fw
+        assertNull(ElementUtils.findNode(root,0, false, true)); //before, look backward
 
-        assertEquals(html, ElementUtils.findElement(root,3, true, true)); //middle, fw
-        assertEquals(html, ElementUtils.findElement(root,3, false, true)); //middle, bw
+        assertEquals(html, ElementUtils.findNode(root,3, true, true)); //middle, fw
+        assertEquals(html, ElementUtils.findNode(root,3, false, true)); //middle, bw
 
         //body open tag
-        assertNull(ElementUtils.findElement(root,14, true, true)); //behind, look forward
-        assertEquals(body, ElementUtils.findElement(root,14, false, true)); //behind, bw
+        assertNull(ElementUtils.findNode(root,14, true, true)); //behind, look forward
+        assertEquals(body, ElementUtils.findNode(root,14, false, true)); //behind, bw
 
-        assertEquals(body, ElementUtils.findElement(root,8, true, true)); //before, fw
-        assertNull(ElementUtils.findElement(root,8, false, true)); //before, look backward
+        assertEquals(body, ElementUtils.findNode(root,8, true, true)); //before, fw
+        assertNull(ElementUtils.findNode(root,8, false, true)); //before, look backward
 
-        assertEquals(body, ElementUtils.findElement(root,10, true, true)); //middle, fw
-        assertEquals(body, ElementUtils.findElement(root,10, false, true)); //middle, bw
+        assertEquals(body, ElementUtils.findNode(root,10, true, true)); //middle, fw
+        assertEquals(body, ElementUtils.findNode(root,10, false, true)); //middle, bw
 
         //body end tag
-        assertNull(ElementUtils.findElement(root,29, true, true)); //behind, look forward
-        assertEquals(bodyEnd, ElementUtils.findElement(root,29, false, true)); //behind, bw
+        assertNull(ElementUtils.findNode(root,29, true, true)); //behind, look forward
+        assertEquals(bodyEnd, ElementUtils.findNode(root,29, false, true)); //behind, bw
 
-        assertEquals(bodyEnd, ElementUtils.findElement(root,22, true, true)); //before, fw
-        assertNull(ElementUtils.findElement(root,22, false, true)); //before, look backward
+        assertEquals(bodyEnd, ElementUtils.findNode(root,22, true, true)); //before, fw
+        assertNull(ElementUtils.findNode(root,22, false, true)); //before, look backward
 
-        assertEquals(bodyEnd, ElementUtils.findElement(root,25, true, true)); //middle, fw
-        assertEquals(bodyEnd, ElementUtils.findElement(root,25, false, true)); //middle, bw
+        assertEquals(bodyEnd, ElementUtils.findNode(root,25, true, true)); //middle, fw
+        assertEquals(bodyEnd, ElementUtils.findNode(root,25, false, true)); //middle, bw
 
         //div open tag
-        assertNotNull(ElementUtils.findElement(root,35, true, true)); //behind, look forward //</html>
-        assertEquals(div, ElementUtils.findElement(root,35, false, true)); //behind, bw
+        assertNotNull(ElementUtils.findNode(root,35, true, true)); //behind, look forward //</html>
+        assertEquals(div, ElementUtils.findNode(root,35, false, true)); //behind, bw
 
-        assertEquals(div, ElementUtils.findElement(root,30, true, true)); //before, fw
-        assertNull(ElementUtils.findElement(root,30, false, true)); //before, look backward
+        assertEquals(div, ElementUtils.findNode(root,30, true, true)); //before, fw
+        assertNull(ElementUtils.findNode(root,30, false, true)); //before, look backward
 
-        assertEquals(div, ElementUtils.findElement(root,32, true, true)); //middle, fw
-        assertEquals(div, ElementUtils.findElement(root,32, false, true)); //middle, bw
+        assertEquals(div, ElementUtils.findNode(root,32, true, true)); //middle, fw
+        assertEquals(div, ElementUtils.findNode(root,32, false, true)); //middle, bw
 
         //html end tag
-        assertNull(ElementUtils.findElement(root,42, true, true)); //behind, look forward
-        assertEquals(htmlEnd, ElementUtils.findElement(root,42, false, true)); //behind, bw
+        assertNull(ElementUtils.findNode(root,42, true, true)); //behind, look forward
+        assertEquals(htmlEnd, ElementUtils.findNode(root,42, false, true)); //behind, bw
 
-        assertEquals(htmlEnd, ElementUtils.findElement(root,35, true, true)); //before, fw
-        assertNotNull(ElementUtils.findElement(root,35, false, true)); //before, look backward //<div>
+        assertEquals(htmlEnd, ElementUtils.findNode(root,35, true, true)); //before, fw
+        assertNotNull(ElementUtils.findNode(root,35, false, true)); //before, look backward //<div>
 
-        assertEquals(htmlEnd, ElementUtils.findElement(root,40, true, true)); //middle, fw
-        assertEquals(htmlEnd, ElementUtils.findElement(root,40, false, true)); //middle, bw
+        assertEquals(htmlEnd, ElementUtils.findNode(root,40, true, true)); //middle, fw
+        assertEquals(htmlEnd, ElementUtils.findNode(root,40, false, true)); //middle, bw
 
         //out of content
-        assertNull(ElementUtils.findElement(root,100, true, true));
-        assertNull(ElementUtils.findElement(root,100, false, true));
+        assertNull(ElementUtils.findNode(root,100, true, true));
+        assertNull(ElementUtils.findNode(root,100, false, true));
 
 
     }
@@ -401,7 +401,7 @@ public class AstNodeUtilsTest extends TestBase {
         return assertDescendant(searchedNode, searchOffset, true, name, type, from, to);
     }
     private Element assertDescendant(Node searchedNode, int searchOffset, boolean forward, String name, ElementType type, int from, int to) {
-        Element node = ElementUtils.findElement(searchedNode, searchOffset, forward, false);
+        Element node = ElementUtils.findNode(searchedNode, searchOffset, forward, false);
         assertNotNull(node);
         assertEquals(type, node.type());
         

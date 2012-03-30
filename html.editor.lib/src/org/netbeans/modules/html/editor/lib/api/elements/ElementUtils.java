@@ -66,31 +66,30 @@ public class ElementUtils {
     /**
      * sarches for a descendant of the given node
      *
-     * @param node the base node
+     * @param base the base node
      * @param offset the offset for which we try to find a descendant node
      * @param forward the direction bias
      * @param physicalNodeOnly if true the found descendant will be returned
      * only if the offset falls to its physical boundaries.
      */
-    public static Element findElement(Node node, int offset, boolean forward, boolean physicalNodeOnly) {
+    public static Node findNode(Node base, int offset, boolean forward, boolean physicalNodeOnly) {
         if (physicalNodeOnly) {
-            return findByPhysicalRange(node, offset, forward);
+            return findByPhysicalRange(base, offset, forward);
         } else {
-            return findByLogicalRange(node, offset, forward);
+            return findByLogicalRange(base, offset, forward);
         }
     }
 
-    private static Element findByPhysicalRange(Node node, int offset, boolean forward) {
-        for (Element child : node.children()) {
-            Node achild = (Node) child;
-            if (matchesNodeRange(achild, offset, forward, true)) {
-                return achild;
+    private static Node findByPhysicalRange(Node node, int offset, boolean forward) {
+        for (OpenTag child : node.children(OpenTag.class)) {
+            if (matchesNodeRange(child, offset, forward, true)) {
+                return child;
             } else if (node.from() > offset) {
                 //already behind the possible candidates
                 return null;
             } else {
                 //lets try this branch
-                Element candidate = findByPhysicalRange(achild, offset, forward);
+                Node candidate = findByPhysicalRange(child, offset, forward);
                 if (candidate != null) {
                     return candidate;
                 }
@@ -103,12 +102,12 @@ public class ElementUtils {
         return node.from() == -1 && node.to() == -1;
     }
 
-    private static Element findByLogicalRange(Node node, int offset, boolean forward) {
+    private static Node findByLogicalRange(Node node, int offset, boolean forward) {
         for (OpenTag child : node.children(OpenTag.class)) {
             if (isVirtualNode(child)) {
                 //we need to recurse into every virtual branch blindly hoping there might by some
                 //real nodes fulfilling our constrains
-                Element n = findByLogicalRange(child, offset, forward);
+                Node n = findByLogicalRange(child, offset, forward);
                 if (n != null) {
                     return n;
                 }

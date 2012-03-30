@@ -243,15 +243,8 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                     //error
                                     ret[0] = null; //no match
                                 } else {
-                                    //match
-                                    //match the '<tagname' part
-                                    int f1 = match.from();
-                                    int t1 = f1 + match.name().length() + 1; /* +1 == open tag symbol '<' length */
-                                    //match the closing '>' symbol
-                                    int f2 = match.to() - 1; // -1 == close tag symbol '>' length
-                                    int t2 = match.to();
-
-                                    ret[0] = translate(new int[]{f1, t1, f2, t2}, result);
+                                    ret[0] = translate(new int[]{match.from(), match.to()}, result);
+                                    
                                 }
 
                             } else if (origin.type() == ElementType.CLOSE_TAG) {
@@ -271,7 +264,15 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                     ret[0] = null; //no match
                                 } else {
                                     //match
-                                    ret[0] = translate(new int[]{match.from(), match.to()}, result);
+                                    //match the '<tagname' part
+                                    int f1 = match.from();
+                                    int t1 = f1 + match.name().length() + 1; /* +1 == open tag symbol '<' length */
+                                    //match the closing '>' symbol
+                                    int f2 = match.to() - 1; // -1 == close tag symbol '>' length
+                                    int t2 = match.to();
+
+                                    ret[0] = translate(new int[]{f1, t1, f2, t2}, result);
+                                    
                                 }
                             } else if (origin.type() == ElementType.COMMENT) {
                                 if (searched >= origin.from() && searched <= origin.from() + BLOCK_COMMENT_START.length()) {

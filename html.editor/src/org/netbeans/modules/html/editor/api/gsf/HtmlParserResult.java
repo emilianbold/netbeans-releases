@@ -191,11 +191,11 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
      */
     public Element findLeafTag(int offset, boolean forward, boolean physicalNodesOnly ) {
         //first try to find the leaf in html content
-        Element mostLeaf = ElementUtils.findElement(root(), offset, forward, physicalNodesOnly);
+        Element mostLeaf = ElementUtils.findNode(root(), offset, forward, physicalNodesOnly);
         //now search the non html trees
         for (String uri : getNamespaces().keySet()) {
             Node root = root(uri);
-            Element leaf = ElementUtils.findElement(root, offset, forward, physicalNodesOnly);
+            Element leaf = ElementUtils.findNode(root, offset, forward, physicalNodesOnly);
             if (leaf == null) {
                 continue;
             }
