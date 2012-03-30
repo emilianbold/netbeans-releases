@@ -992,9 +992,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         RepositoryQueries.Result<RepositoryQueries.ClassUsage> result = ACCESSOR.createClassResult(new Redo<RepositoryQueries.ClassUsage>() {
             @Override
             public void run(Result<RepositoryQueries.ClassUsage> result) {
-                /* #209856: suppress
                 findClassUsages(className, result, ACCESSOR.getSkipped(result), false);
-                */
             }
         });
         return findClassUsages(className, result, repos, true);
@@ -1017,10 +1015,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             @Override public void run(RepositoryInfo repo) throws IOException {
                 boolean index = loadIndexingContext2(repo);
                 if (skipUnIndexed && index) {
-                    /* #209856: suppress
                     skipAction.run(repo);
                     spawnIndexLoadedRepo(repo);
-                    */
                     return;
                 }
                 ClassDependencyIndexCreator.search(className, indexer, getContexts(new RepositoryInfo[] {repo}), results);

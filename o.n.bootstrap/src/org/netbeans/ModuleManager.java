@@ -1981,7 +1981,7 @@ public final class ModuleManager extends Modules {
                 toWi = readCnbs(dis, new ArrayList<String>());
                 dis.close();
             } catch (IOException ex) {
-                Util.err.log(Level.INFO, "Cannot read " + Places.getCacheSubfile(CACHE), ex);
+                Util.err.log(Level.FINE, "Cannot read " + Places.getCacheSubfile(CACHE), ex);
                 map = null;
                 osgi = null;
                 cnbs = null;
