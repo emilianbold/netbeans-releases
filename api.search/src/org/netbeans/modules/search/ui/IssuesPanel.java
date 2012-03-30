@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.search;
+package org.netbeans.modules.search.ui;
 
 import java.awt.BorderLayout;
 import javax.swing.JLabel;

@@ -694,14 +694,14 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         }
         
         long stamp = f.lastModified().getTime();
-        if (stamp > resultModel.getCreationTime()) {
+        if (stamp > resultModel.getStartTime()) {
             log(SEVERE, "file's timestamp changed since start of the search");
             if (LOG.isLoggable(FINEST)) {
                 final java.util.Calendar cal = java.util.Calendar.getInstance();
                 cal.setTimeInMillis(stamp);
                 log(FINEST, " - file stamp:           " + stamp + " (" + cal.getTime() + ')');
-                cal.setTimeInMillis(resultModel.getCreationTime());
-                log(FINEST, " - result model created: " + resultModel.getCreationTime() + " (" + cal.getTime() + ')');
+                cal.setTimeInMillis(resultModel.getStartTime());
+                log(FINEST, " - result model created: " + resultModel.getStartTime() + " (" + cal.getTime() + ')');
             }            
             return InvalidityStatus.CHANGED;
         }

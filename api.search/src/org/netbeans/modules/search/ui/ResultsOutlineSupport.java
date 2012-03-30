@@ -158,11 +158,15 @@ public class ResultsOutlineSupport {
     }
 
     private synchronized void onDetach() {
+        clean();
+        saveColumnState();
+    }
+
+    public void clean() {
         resultModel.close();
         for (MatchingObjectNode mo : matchingObjectNodes) {
             mo.clean();
         }
-        saveColumnState();
     }
 
     private void loadColumnState() {
