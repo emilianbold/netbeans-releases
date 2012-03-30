@@ -44,13 +44,11 @@ package org.netbeans.modules.debugger.jpda.ui;
 
 import java.io.IOException;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jemmy.JemmyProperties;
 
 /**
  *
- * @author Vojtech.Sigler@sun.com
+ * @author Vojtech Sigler, Jiri Kovalsky
  */
 public class DebuggerTestCase extends JellyTestCase {
 
@@ -70,7 +68,6 @@ public class DebuggerTestCase extends JellyTestCase {
         if (!initialized)
         {
             openDataProjects(Utilities.testProjectName);
-            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             Utilities.cleanBuildTestProject();
             initialized = true;
         }

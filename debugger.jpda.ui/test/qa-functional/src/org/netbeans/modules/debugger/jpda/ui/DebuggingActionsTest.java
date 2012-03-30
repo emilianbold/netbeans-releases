@@ -42,21 +42,21 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 /**
  *
- * @author Filip Zamboj
+ * @author Filip Zamboj, Jiri Kovalsky
  */
 public class DebuggingActionsTest extends DebuggerTestCase{
 
@@ -111,7 +111,7 @@ public class DebuggingActionsTest extends DebuggerTestCase{
             Utilities.toggleBreakpoint(eo, 80);
             new DebugJavaFileAction().perform(beanNode);
             //wait for breakpoint
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
+            Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:80");
             assertTrue("Breakpoint annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
             assertTrue("Current PC annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
     }
@@ -122,7 +122,7 @@ public class DebuggingActionsTest extends DebuggerTestCase{
             Utilities.toggleBreakpoint(eo, 80);
             new DebugJavaFileAction().perform(beanNode);
             //wait for breakpoint
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
+            Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:80");
             Utilities.deleteAllBreakpoints();
             Utilities.toggleBreakpoint(eo, 104);
             new ContinueAction().performMenu();
@@ -139,7 +139,7 @@ public class DebuggingActionsTest extends DebuggerTestCase{
         Utilities.toggleBreakpoint(eo, 80);
         new DebugJavaFileAction().perform(beanNode);
         //wait for breakpoint
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:80");
         new ContinueAction().performMenu();
         //continue
         new ContinueAction().performMenu();
