@@ -571,9 +571,11 @@ public final class GeneratorUtilities {
         int treshold = cs.countForUsingStarImport();
         int staticTreshold = cs.countForUsingStaticStarImport();        
         Map<PackageElement, Integer> pkgCounts = new LinkedHashMap<PackageElement, Integer>();
-        pkgCounts.put(elements.getPackageElement("java.lang"), -2); //NOI18N
+        PackageElement pkg = elements.getPackageElement("java.lang"); //NOI18N
+        if (pkg != null)
+            pkgCounts.put(pkg, -2);
         ExpressionTree packageName = cut.getPackageName();
-        PackageElement pkg = packageName != null ? (PackageElement)trees.getElement(TreePath.getPath(cut, packageName)) : null;
+        pkg = packageName != null ? (PackageElement)trees.getElement(TreePath.getPath(cut, packageName)) : null;
         if (pkg == null && packageName != null)
             pkg = elements.getPackageElement(elements.getName(packageName.toString()));
         if (pkg == null)
