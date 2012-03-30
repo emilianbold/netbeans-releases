@@ -167,11 +167,15 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
                 // we won't use the member store entry as that might have been 
                 // set for e.g. a stored .form while this is the according .java
                 // file beeing requested. In case the storage can't find a revision it 
-                // return next nearest in time 
+                // returns the next nearest in time 
                 long ts = se.getTimestamp();
                 StoreEntry storeEntry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(originalFile, ts);
-                FileUtils.copy(storeEntry.getStoreFileInputStream(), revisionFile);
-                Utils.associateEncoding(originalFile, revisionFile);
+                if(storeEntry != null) {
+                    FileUtils.copy(storeEntry.getStoreFileInputStream(), revisionFile); 
+                    Utils.associateEncoding(originalFile, revisionFile);
+                } else {
+                    LocalHistory.LOG.log(Level.WARNING, "No entry in Local History for file {0} {1} {2}", new Object[]{originalFile, new Date(ts), ts}); // NOI18N
+                }
             } catch (IOException e) {
                 LocalHistory.LOG.log(Level.WARNING, "Error while retrieving history for file {0} stored as {1}", new Object[]{se.getFile(), se.getStoreFile()}); // NOI18N
             }
