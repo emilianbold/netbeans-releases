@@ -205,7 +205,6 @@ public class DependenciesNode extends AbstractNode {
                 break;
             default:
                 for (Artifact a : arts) {
-                    fixFile(a);
                     if (!a.getArtifactHandler().isAddedToClasspath()) {
                         lst.add(new DependencyWrapper(a));
                     }
@@ -215,25 +214,11 @@ public class DependenciesNode extends AbstractNode {
             return lst.size();
         }
         
-        private void fixFile(Artifact a) {
-            if (a.getFile() == null) {
-                ArtifactRepository local = project.getEmbedder().getLocalRepository();
-                String path = local.pathOf(a);
-                if (!path.endsWith('.' + a.getType())) {
-                    // XXX why does this happen? just for fake artifacts
-                    path += '.' + a.getType();
-                }
-                File f = new File(local.getBasedir(), path);
-                a.setFile(f);
-            }
-        }
-
         private void create(Set<DependencyWrapper> lst, Collection<Artifact> arts, String... scopes) {
             for (Artifact a : arts) {
                 if (!Arrays.asList(scopes).contains(a.getScope())) {
                     continue;
                 }
-                fixFile(a); // will be null if *any* dependency artifacts are missing, for some reason
                 if (a.getArtifactHandler().isAddedToClasspath()) {
                     lst.add(new DependencyWrapper(a));
                 }
@@ -269,13 +254,17 @@ public class DependenciesNode extends AbstractNode {
             if (!artifact.getDependencyTrail().equals(other.artifact.getDependencyTrail())) {
                 return false;
             }
+            if (!artifact.getFile().equals(other.artifact.getFile())) {
+                return false;
+            }
             return true;
         }
 
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 23 * hash + artifact.hashCode() + artifact.getDependencyTrail().hashCode();
+            hash = 31 * hash + artifact.hashCode() + artifact.getDependencyTrail().hashCode();
+            hash = 31 * hash + artifact.getFile().hashCode();
             return hash;
         }
         

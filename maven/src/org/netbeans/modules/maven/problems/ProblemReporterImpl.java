@@ -212,10 +212,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     public void addMissingArtifact(Artifact a) {
         synchronized (reports) {
             if (missingArtifacts.add(a)) {
-                File f = a.getFile();
-                if (f == null) {
-                    f = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(a).getFile();
-                }
+                File f = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(a).getFile();
                 LOG.log(Level.FINE, "listening to {0} from {1}", new Object[] {f, nbproject.getPOMFile()});
                 FileUtil.addFileChangeListener(fcl, FileUtil.normalizeFile(f));
             }
@@ -251,7 +248,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             reports.clear();
             Iterator<Artifact> as = missingArtifacts.iterator();
             while (as.hasNext()) {
-                File f = as.next().getFile();
+                File f = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(as.next()).getFile();
                 if (f != null) {
                     LOG.log(Level.FINE, "ceasing to listen to {0} from {1}", new Object[] {f, nbproject.getPOMFile()});
                     FileUtil.removeFileChangeListener(fcl, FileUtil.normalizeFile(f));
@@ -390,6 +387,10 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     }
                     missingJars.add(art);
                 }
+            } else if (NbArtifactFixer.isFallbackFile(file)) {
+                addMissingArtifact(art);
+                missingJars.add(art);
+                missingNonSibling = true;
             }
         }
         if (!missingJars.isEmpty()) {
