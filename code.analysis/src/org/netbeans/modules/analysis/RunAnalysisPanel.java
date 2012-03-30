@@ -210,7 +210,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
         progress = new JPanel(new CardLayout());
         progress.add(new JPanel(), "empty");
         progress.add(ProgressHandleFactory.createProgressComponent(handle), "progress");
-        progress.add(requiredPlugins = new RequiredPluginsPanel(this), "plugins");
+        progress.add(requiredPlugins = new RequiredPluginsPanel(), "plugins");
         add(progress, gridBagConstraints);
         ((CardLayout) progress.getLayout()).show(progress, "empty");
 
