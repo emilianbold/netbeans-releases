@@ -1804,7 +1804,7 @@ public class CommentsTest extends GeneratorTestBase {
         assertEquals(golden, res);
     }
 
-    public void test209357() throws Exception {
+    public void test209357a() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         final String content = "package org.netbeans.modules.php.apigen.ui.customizer;\n" +
                                "\n" +
@@ -1814,6 +1814,22 @@ public class CommentsTest extends GeneratorTestBase {
                                "            public void actionPerformed(java.awt.event.ActionEvent evt) {\n" +
                                "            }\n" +
                                "        });\n" +
+                               "        configButton.addActionListener(new java.awt.event.ActionListener() {\n" +
+                               "            public void actionPerformed(java.awt.event.ActionEvent evt) {\n" +
+                               "            }\n" +
+                               "        });\n" +
+                               "\n" +
+                               "    }\n" +
+                               "\n" +
+                               "    private javax.swing.JButton configButton;\n" +
+                               "    private javax.swing.JButton targetButton;\n" +
+                               "\n" +
+                               "}\n";
+        final String golden  = "package org.netbeans.modules.php.apigen.ui.customizer;\n" +
+                               "\n" +
+                               "final class ApiGenPanel {\n" +
+                               "    private void initComponents() {\n" +
+                               "        System.err.println(1); //NOI18n\n" +
                                "        configButton.addActionListener(new java.awt.event.ActionListener() {\n" +
                                "            public void actionPerformed(java.awt.event.ActionEvent evt) {\n" +
                                "            }\n" +
@@ -1857,6 +1873,52 @@ public class CommentsTest extends GeneratorTestBase {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(res, 2, res.split("new").length);
+    }
+
+    public void test209357b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        final String content = "package org.netbeans.modules.php.apigen.ui.customizer;\n" +
+                               "\n" +
+                               "final class ApiGenPanel {\n" +
+                               "    private void initComponents() {\n" +
+                               "        java.lang.System.err.println(\"a\"); //NOI18N\n" +
+                               "        java.lang.System.err.println(\"b\"); //NOI18N\n" +
+                               "        java.lang.System.err.println(\"c\"); //NOI18N\n" +
+                               "        java.lang.System.err.println(\"d\"); //NOI18N\n" +
+                               "    }\n" +
+                               "}\n";
+        final String golden  = "package org.netbeans.modules.php.apigen.ui.customizer;\n" +
+                               "\n" +
+                               "final class ApiGenPanel {\n" +
+                               "    private void initComponents() {\n" +
+                               "        System.err.println(\"a\"); //NOI18N\n" +
+                               "        System.err.println(\"b\"); //NOI18N\n" +
+                               "        System.err.println(\"c\"); //NOI18N\n" +
+                               "        System.err.println(\"d\"); //NOI18N\n" +
+                               "    }\n" +
+                               "}\n";
+
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, content);
+
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
+                workingCopy.rewrite(clazz, gu.importFQNs(gu.importComments(clazz, workingCopy.getCompilationUnit())));
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        DataObject d = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        ec.saveDocument();
+
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
     }
 
     String getGoldenPckg() {

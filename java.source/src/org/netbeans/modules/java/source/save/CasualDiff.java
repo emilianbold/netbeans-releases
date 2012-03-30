@@ -2914,7 +2914,7 @@ public class CasualDiff {
         List<Comment> newPrecedingComments = cs.getComments(CommentSet.RelativePosition.PRECEDING);
         if (sameComments(oldPrecedingComments, newPrecedingComments))
             return localPointer;
-        return diffCommentLists(oldT, newT, oldPrecedingComments, newPrecedingComments, false, localPointer);
+        return diffCommentLists(oldT, newT, oldPrecedingComments, newPrecedingComments, false, true, localPointer);
     }
 
     protected int diffTrailingComments(JCTree oldT, JCTree newT, int localPointer) {
@@ -2927,7 +2927,13 @@ public class CasualDiff {
         if (sameComments(oldInlineComments, newInlineComments) && sameComments(oldTrailingComments, newTrailingComments))
             return localPointer;
 
-        localPointer = diffCommentLists(oldT, newT, oldInlineComments, newInlineComments, true, localPointer);
+        //XXX: hack: the upper diff might already add '\n' to the result, need to skip it if diffing inline comments
+        if (!sameComments(oldInlineComments, newInlineComments)) {
+            while (printer.out.isWhitespaceLine())
+                printer.eatChars(1);
+        }
+        
+        localPointer = diffCommentLists(oldT, newT, oldInlineComments, newInlineComments, false, false, localPointer);
 
         boolean containedEmbeddedNewLine = false;
         boolean containsEmbeddedNewLine = false;
@@ -2944,7 +2950,7 @@ public class CasualDiff {
             printer.print("\n");
         }
 
-        return diffCommentLists(oldT, newT, oldTrailingComments, newTrailingComments, true, localPointer);
+        return diffCommentLists(oldT, newT, oldTrailingComments, newTrailingComments, true, false, localPointer);
     }
 
     private boolean sameComments(List<Comment> oldList, List<Comment> newList) {
@@ -2964,7 +2970,7 @@ public class CasualDiff {
     
     // refactor it! make it better
     private int diffCommentLists(JCTree oldT, JCTree newT, List<Comment>oldList,
-                                  List<Comment>newList, boolean trailing, int localPointer) {
+                                  List<Comment>newList, boolean trailing, boolean preceding, int localPointer) {
         Iterator<Comment> oldIter = oldList.iterator();
         Iterator<Comment> newIter = newList.iterator();
         Comment oldC = safeNext(oldIter);
@@ -2999,7 +3005,7 @@ public class CasualDiff {
                 }
             }
             else {
-                if (!firstNewCommentPrinted && !trailing) {
+                if (!firstNewCommentPrinted && preceding) {
                     copyTo(localPointer, localPointer = getOldPos(oldT));
                 }
                 printer.print(newC.getText());
@@ -3021,10 +3027,10 @@ public class CasualDiff {
         while (newC != null) {
             if (Style.WHITESPACE != newC.style()) {
 //                printer.print(newC.getText());                
-                if (!firstNewCommentPrinted && !trailing) {
+                if (!firstNewCommentPrinted && preceding) {
                     copyTo(localPointer, localPointer = getOldPos(oldT));
                 }
-                printer.printComment(newC, !trailing, false);
+                printer.printComment(newC, !trailing, false, !preceding && !trailing);
                 firstNewCommentPrinted = true;
             }
             newC = safeNext(oldIter);
