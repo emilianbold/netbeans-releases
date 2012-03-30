@@ -368,7 +368,14 @@ class OccurenceBuilder {
         if (canBePrepared(classDeclaration, scope)) {
             ClassDeclarationInfo node = ClassDeclarationInfo.create(classDeclaration);
             clasDeclarations.put(node, scope);
-            prepare(Kind.CLASS, classDeclaration.getSuperClass(), scope);
+            QualifiedName superClassName = QualifiedName.create(classDeclaration.getSuperClass());
+            if (superClassName != null) {
+                if (VariousUtils.isAlias(superClassName, classDeclaration.getStartOffset(), scope)) {
+                    prepare(Kind.USE_ALIAS, classDeclaration.getSuperClass(), scope);
+                } else {
+                    prepare(Kind.CLASS, classDeclaration.getSuperClass(), scope);
+                }
+            }
             List<Expression> interfaes = classDeclaration.getInterfaes();
             for (Expression iface : interfaes) {
                 prepare(Kind.IFACE, iface, scope);

@@ -50,6 +50,10 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.cnd.asm.core.editor.AsmEditorSupport;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
@@ -57,6 +61,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
@@ -72,8 +77,31 @@ public class AsmDataObject extends MultiDataObject {
         super(fo, loader); 
         
         CookieSet cookies = getCookieSet();                       
-        cookies.add(new AsmEditorSupport(this));
+        cookies.add(EditorCookie.class, factory);
+        cookies.add(OpenCookie.class, factory);
+        cookies.add(CloseCookie.class, factory);
+        cookies.add(PrintCookie.class, factory);
     }
+    
+    private AsmEditorSupport editor = null;
+    
+    private final CookieSet.Factory factory = new CookieSet.Factory() {
+        @Override
+        public <T extends Cookie> T createCookie(Class<T> klass) {
+            if (klass.isAssignableFrom(EditorCookie.class)
+                   || klass.isAssignableFrom(OpenCookie.class)
+                   || klass.isAssignableFrom(CloseCookie.class)
+                   || klass.isAssignableFrom(PrintCookie.class) ) {
+
+                    if (editor == null) editor = new AsmEditorSupport(AsmDataObject.this);  // the first pass
+                    if (editor == null) return null;                    //??? gc unfriendly
+
+                    return klass.isAssignableFrom(editor.getClass()) ? klass.cast(editor) : null;
+                } else {
+                    return null;
+                }
+        }
+    };
   
     @Messages("Source=&Source")
     @MultiViewElement.Registration(displayName = "#Source", //NOI18N 
