@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 2010 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -29,7 +29,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -43,27 +43,30 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
-<filesystem>
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="x-java">
-                <file name="org-netbeans-modules-profiler-nbimpl-providers-JavaProfilerSourceImpl.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.profiler.spi.java.AbstractJavaProfilerSource"/>
-                </file>
-                <file name="org-netbeans-modules-profiler-nbimpl-providers-SelectionTreeBuilderFactoryImpl$FileTreeBuilder.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
+<project name="{0} (profile-applet)" default="profile" basedir=".">
+    <target name="-profile-check" if="netbeans.home">
+        <condition property="profiler.configured">
+            <or>
+                <contains string="${run.jvmargs.ide}" substring="-agentpath:" casesensitive="true"/>
+                <contains string="${run.jvmargs.ide}" substring="-javaagent:" casesensitive="true"/>
+            </or>
+        </condition>
+    </target>
+    
+    <target name="profile" depends="-profile-check" if="profiler.configured">
+        <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
+        <property name="run.jvmargs" value="" />
+        <property name="work.dir" value="${basedir}"/>
 
-    <folder name="Toolbars">
-        <folder name="Build">
-            <file name="org-netbeans-modules-profiler-nbimpl-actions-ProfilerToolbarDropdownAction.instance">
-                <attr name="position" intvalue="400"/>
-                <attr name="misplaced.action.allowed" boolvalue="true"/>
-            </file>
-        </folder>
-    </folder>
-</filesystem>
+        <startprofiler/>
+        <java classpath="${classpath-translated}" classname="sun.applet.AppletViewer" dir="${work.dir}" jvm="${platform.java}" fork="true">
+            <jvmarg line="${run.jvmargs}" />
+            <jvmarg line="${run.jvmargs.ide}" />
+            <arg value="${applet.url}"/>
+            <syspropertyset>
+                <propertyref prefix="run-sys-prop."/>
+                <mapper from="run-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
+        </java>
+    </target>
+</project>

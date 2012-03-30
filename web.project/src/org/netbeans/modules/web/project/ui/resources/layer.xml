@@ -234,10 +234,6 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugProjectAction.instance"/>
                     <attr name="position" intvalue="900"/>
                 </file>
-                <file name="Profiler_Actions_temporary.shadow">
-                    <attr name="originalFile" stringvalue="Projects/Profiler_Actions_temporary"/>
-                    <attr name="position" intvalue="1000"/>
-                </file>
                 <file name="Rest_Actions_holder.shadow">
                     <attr name="originalFile" stringvalue="Projects/Rest_Actions_holder"/>
                     <attr name="position" intvalue="1050"/>

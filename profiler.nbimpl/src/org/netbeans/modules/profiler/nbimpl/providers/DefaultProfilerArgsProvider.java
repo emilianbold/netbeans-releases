@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.profiler.nbimpl.providers;
 
-package org.netbeans.modules.maven.profiler;
-
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
+import java.util.*;
+import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.api.extexecution.startup.StartupExtender.StartMode;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
+import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author mkleint
+ * @author Jaroslav Bachorik
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=72)
-public class ProfilerActionsProvider extends AbstractMavenActionsProvider {
-    final private Set<String> supportedTypes = new HashSet<String>() {
-        {
-            add(NbMavenProject.TYPE_JAR);
-            add(NbMavenProject.TYPE_WAR);
-            add(NbMavenProject.TYPE_EJB);
-            add(NbMavenProject.TYPE_NBM);
-            add(NbMavenProject.TYPE_NBM_APPLICATION);
-        }
-    };
-
+@NbBundle.Messages({
+    "DESC_NBProfiler=NetBeans Profiler"
+})
+@StartupExtenderImplementation.Registration(displayName="#DESC_NBProfiler", position=1000, startMode={
+    StartupExtender.StartMode.PROFILE,
+    StartupExtender.StartMode.TEST_PROFILE
+})
+public class DefaultProfilerArgsProvider implements StartupExtenderImplementation {
     @Override
-    public boolean isActionEnable(String action, Project project, Lookup lookup) {
-        if (!(action.equals(ActionProvider.COMMAND_PROFILE) || action.startsWith(ActionProvider.COMMAND_PROFILE_SINGLE) || action.equals(ActionProvider.COMMAND_PROFILE_TEST_SINGLE))) {
-            return false;
+    public List<String> getArguments(Lookup context, StartMode mode) {
+        Project p = context.lookup(Project.class);
+        if (p != null) {
+            ProfilerLauncher.Session s = ProfilerLauncher.getLastSession();
+            if (s != null) {
+                Map<String, String> m = ProfilerLauncher.getLastSession().getProperties();
+                if (m != null) {
+                    String agentArgs = m.get("agent.jvmargs");
+                    String jvmargs = m.get("profiler.info.jvmargs");
+                    jvmargs = jvmargs.replace(" -", "^");
+                    StringTokenizer st = new StringTokenizer(jvmargs, "^");
+                    
+                    List<String> args = new ArrayList<String>();
+                    args.add(agentArgs);
+                    while (st.hasMoreTokens()) {
+                        String arg = st.nextToken();
+                        if (!arg.isEmpty()) {
+                            args.add((arg.startsWith("-") ? "" : "-") + arg);
+                        }
+                    }
+                    return args;
+                }
+            }
         }
-        NbMavenProject mavenprj = project.getLookup().lookup(NbMavenProject.class);
-        String type = mavenprj.getPackagingType();
-        if (supportedTypes.contains(type)) {
-            return super.isActionEnable(action, project, lookup);
-        }
-        return false;
-    }
-
-    @Override
-    protected InputStream getActionDefinitionStream() {
-        String path = "/org/netbeans/modules/maven/profiler/ActionMappings.xml"; //NOI18N
-        InputStream in = getClass().getResourceAsStream(path);
-        assert in != null : "no instream for " + path; //NOI18N
-        return in;
+        return Collections.EMPTY_LIST;
     }
 }

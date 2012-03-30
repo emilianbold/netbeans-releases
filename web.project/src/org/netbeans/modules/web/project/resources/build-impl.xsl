@@ -809,6 +809,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
                             <jvmarg value="-ea"/>
+                            <jvmarg line="${{run.jvmargs.ide}}"/>
                             <customize/>
                         </junit>
                     </sequential>
@@ -1374,22 +1375,33 @@ exists or setup the property manually. For example like this:
                 <property name="ap.cmd.line.internal" value=""/>
             </target>
 
-            <target name="profile-init" depends="-profile-pre-init, init, -profile-post-init, -profile-init-check"/>
+            <xsl:comment>
+                pre NB7.2 profiling section; consider it deprecated
+            </xsl:comment>
+            <target name="profile-init" depends="-profile-pre-init, init, -profile-post-init, -profile-init-check">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
+            </target>
 
             <target name="-profile-pre-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
             </target>
 
             <target name="-profile-post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
             </target>
             <target name="-profile-init-check">
                 <xsl:attribute name="depends">-profile-pre-init, init, -profile-post-init</xsl:attribute>
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
                 <fail unless="profiler.info.jvm">Must set JVM to use for profiling in profiler.info.jvm</fail>
                 <fail unless="profiler.info.jvmargs.agent">Must set profiler agent JVM arguments in profiler.info.jvmargs.agent</fail>
             </target>
+            <xsl:comment>
+                end of pre NB7.2 profiling section
+            </xsl:comment>
 
             <target name="init">
                 <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-test,-init-macrodef-test-debug,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-nbjsdebug,-init-macrodef-debug,-init-taskdefs,-init-ap-cmdline</xsl:attribute>
@@ -2146,8 +2158,12 @@ exists or setup the property manually. For example like this:
             =================
             </xsl:comment>
 
-            <target name="profile">
+            <xsl:comment>
+                pre NB7.2 profiling section; consider it deprecated
+            </xsl:comment>
+            <target name="-profile-pre72">
                 <xsl:attribute name="description">Profile a J2EE project in the IDE.</xsl:attribute>
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
                 <condition>
                     <xsl:attribute name="property">profiler.startserver.target</xsl:attribute>
                     <xsl:attribute name="value">start-profiled-server-extraargs</xsl:attribute>
@@ -2163,11 +2179,11 @@ exists or setup the property manually. For example like this:
                     <xsl:attribute name="target">run</xsl:attribute>
                 </antcall>
                 <antcall>
-                    <xsl:attribute name="target">start-loadgen</xsl:attribute>
+                    <xsl:attribute name="target">-profile-start-loadgen</xsl:attribute>
                 </antcall>
             </target>
 
-            <target name="start-profiled-server">
+            <target name="start-profiled-server" if="profiler.info.jvmargs.agent">
                 <nbstartprofiledserver>
                     <xsl:attribute name="forceRestart">${profiler.j2ee.serverForceRestart}</xsl:attribute>
                     <xsl:attribute name="startupTimeout">${profiler.j2ee.serverStartupTimeout}</xsl:attribute>
@@ -2181,7 +2197,7 @@ exists or setup the property manually. For example like this:
                 </nbstartprofiledserver>
             </target>
 
-            <target name="start-profiled-server-extraargs">
+            <target name="start-profiled-server-extraargs" if="profiler.info.jvmargs.agent">
                 <nbstartprofiledserver>
                     <xsl:attribute name="forceRestart">${profiler.j2ee.serverForceRestart}</xsl:attribute>
                     <xsl:attribute name="startupTimeout">${profiler.j2ee.serverStartupTimeout}</xsl:attribute>
@@ -2197,11 +2213,71 @@ exists or setup the property manually. For example like this:
                     </jvmarg>
                 </nbstartprofiledserver>
             </target>
+            
+            <target name="-profile-test-single-pre72">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
+                <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
+                <xsl:attribute name="depends">profile-init,compile-test-single</xsl:attribute>
+                <nbprofiledirect>
+                    <classpath>
+                        <path path="${{run.test.classpath}}"/>
+                        <path path="${{j2ee.platform.classpath}}"/>
+                    </classpath>
+                </nbprofiledirect>
 
-            <target name="start-loadgen" if="profiler.loadgen.path">
-                    <loadgenstart>
-                        <xsl:attribute name="path">${profiler.loadgen.path}</xsl:attribute>
-                    </loadgenstart>
+                <junit showoutput="true" fork="true" dir="${{profiler.info.dir}}"  jvm="${{profiler.info.jvm}}" failureproperty="tests.failed" errorproperty="tests.failed">
+                    <env key="${{profiler.info.pathvar}}" path="${{profiler.info.agentpath}}:${{profiler.current.path}}"/>
+                    <jvmarg value="${{profiler.info.jvmargs.agent}}" />
+                    <jvmarg line="${{profiler.info.jvmargs}}"/>
+                    <test name="${{profile.class}}"/>
+                    <classpath>
+                        <path path="${{run.test.classpath}}"/>
+                        <path path="${{j2ee.platform.classpath}}"/>
+                    </classpath>
+                    <syspropertyset>
+                        <propertyref prefix="test-sys-prop."/>
+                        <mapper type="glob" from="test-sys-prop.*" to="*"/>
+                    </syspropertyset>
+                    <formatter type="brief" usefile="false"/>
+                    <formatter type="xml"/>
+                </junit>
+            </target>
+
+            <target name="-profile-check" if="netbeans.home">
+                <condition property="profiler.configured">
+                    <or>
+                        <contains string="${{run.jvmargs.ide}}" substring="-agentpath:" casesensitive="true"/>
+                        <contains string="${{run.jvmargs.ide}}" substring="-javaagent:" casesensitive="true"/>
+                    </or>
+                </condition>
+            </target>
+
+            <target name="profile" depends="-profile-check,init,-init-cos,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest,-profile-pre72" if="profiler.configured" unless="profiler.info.jvmargs.agent">
+                <xsl:attribute name="description">Profile a J2EE project in the IDE.</xsl:attribute>
+                
+                <startprofiler/>
+                <nbstartserver profilemode="true"/>
+                
+                <nbdeploy profilemode="true" clientUrlPart="${{client.urlPart}}" forceRedeploy="true" />
+                <antcall>
+                    <xsl:attribute name="target">debug-display-browser</xsl:attribute>
+                </antcall>
+                <antcall>
+                    <xsl:attribute name="target">-profile-start-loadgen</xsl:attribute>
+                </antcall>
+            </target>
+            
+            <target name="profile-test-single" depends="-profile-test-single-pre72"/>
+            
+            <target name="profile-test" depends="-profile-check" if="profiler.configured" unless="profiler.info.jvmargs.agent">
+                <startprofiler/>
+                <antcall target="test-single"/>
+            </target>
+
+            <target name="-profile-start-loadgen" if="profiler.loadgen.path">
+                <loadgenstart>
+                    <xsl:attribute name="path">${profiler.loadgen.path}</xsl:attribute>
+                </loadgenstart>
             </target>
 
             <xsl:comment>
@@ -2503,40 +2579,6 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix-test</xsl:attribute>
             </target>
-            
-        <xsl:comment>
-        =========================
-        TESTS PROFILING  SECTION
-        =========================
-        </xsl:comment>
-
-          <target name="profile-test-single">
-              <xsl:attribute name="if">netbeans.home</xsl:attribute>
-              <xsl:attribute name="depends">profile-init,compile-test-single</xsl:attribute>
-              <nbprofiledirect>
-                  <classpath>
-                      <path path="${{run.test.classpath}}"/>
-                      <path path="${{j2ee.platform.classpath}}"/>
-                  </classpath>
-              </nbprofiledirect>
-
-              <junit showoutput="true" fork="true" dir="${{profiler.info.dir}}"  jvm="${{profiler.info.jvm}}" failureproperty="tests.failed" errorproperty="tests.failed">
-                  <env key="${{profiler.info.pathvar}}" path="${{profiler.info.agentpath}}:${{profiler.current.path}}"/>
-                  <jvmarg value="${{profiler.info.jvmargs.agent}}" />
-                  <jvmarg line="${{profiler.info.jvmargs}}"/>
-                  <test name="${{profile.class}}"/>
-                  <classpath>
-                      <path path="${{run.test.classpath}}"/>
-                      <path path="${{j2ee.platform.classpath}}"/>
-                  </classpath>
-                  <syspropertyset>
-                      <propertyref prefix="test-sys-prop."/>
-                      <mapper type="glob" from="test-sys-prop.*" to="*"/>
-                  </syspropertyset>
-                  <formatter type="brief" usefile="false"/>
-                  <formatter type="xml"/>
-              </junit>
-          </target>
 
             <xsl:comment>
                 
