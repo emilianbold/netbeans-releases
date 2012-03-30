@@ -148,8 +148,6 @@ class ResultViewPanel extends JPanel{
      */
     private MessageFormat nodeCountFormatFullText;
 
-    private IssuesPanel issuesPanel;
-
     /**
      * tree view for displaying found objects
      */
@@ -301,12 +299,6 @@ class ResultViewPanel extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 composition.terminate();
-            }
-        });
-        btnReplace.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                replaceMatches();
             }
         });
 
@@ -723,32 +715,6 @@ class ResultViewPanel extends JPanel{
         arrowUpdater.update();
     }
 
-    void displayIssues(IssuesPanel issuesPanel) {
-        if (issuesPanel != null){
-            this.issuesPanel = issuesPanel;
-            remove(toolBar);
-            remove(toolbarSeparator);
-            remove(resultsPanel);
-            add(issuesPanel, getMainPanelConstraints());
-            validate();
-            repaint();
-        }
-    }
-
-    /**
-     */
-    void removeIssuesPanel() {
-        if (issuesPanel != null) {
-            remove(issuesPanel);
-            add(toolBar, getToolbarConstraints());
-            add(toolbarSeparator, getToolbarSeparatorConstraints());
-            add(resultsPanel, getMainPanelConstraints());
-            issuesPanel = null;
-            validate();
-            repaint();
-        }
-    }
-
     private GridBagConstraints getMainPanelConstraints(){
         GridBagConstraints gridBagConstraints =
                 new java.awt.GridBagConstraints();
@@ -1156,21 +1122,6 @@ class ResultViewPanel extends JPanel{
 //        ResultView.getInstance().addSearchPair(this, task);
 //        Manager.getInstance().scheduleSearchTask(task);
 //        this.tree.requestFocusInWindow();
-    }
-
-    /**
-     * Called when the <em>Replace</em> button is pressed.
-     */
-    private void replaceMatches() {
-        assert EventQueue.isDispatchThread();
-
-        nodeListener.setSelectionChangeEnabled(false);
-        btnReplace.setEnabled(false);
-
-        ReplaceTask taskReplace =
-                new ReplaceTask(resultModel.getMatchingObjects());
-        ResultView.getInstance().addReplacePair(taskReplace, this);
-        Manager.getInstance().scheduleReplaceTask(taskReplace);
     }
 
     void setBtnModifyEnabled(boolean enabled){

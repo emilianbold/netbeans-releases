@@ -63,6 +63,7 @@ import org.openide.util.TaskListener;
 import org.openide.windows.OutputWriter;
 import static org.netbeans.modules.search.ReplaceTask.ResultStatus.SUCCESS;
 import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PRE_CHECK_FAILED;
+import org.netbeans.spi.search.provider.SearchComposition;
 import org.openide.util.Mutex;
 
 /**
@@ -148,7 +149,12 @@ public final class Manager {
         pendingTasks.add(task);
         processNextPendingTask();
     }
-    
+
+    public void scheduleSearchTask(SearchComposition searchComposition,
+            boolean replacing) {
+        scheduleSearchTask(new SearchTask(searchComposition, replacing));
+    }
+
     /**
      */
     public synchronized void scheduleReplaceTask(ReplaceTask task) {
@@ -278,7 +284,8 @@ public final class Manager {
                             ? "MSG_Issues_found_during_precheck"        //NOI18N
                             : "MSG_Issues_found_during_replace";        //NOI18N
             String title = NbBundle.getMessage(getClass(), msgKey);
-            displayIssuesFromAWT(task, title, resultStatus != PRE_CHECK_FAILED);
+            task.getPanel().displayIssuesToUser(task, title, task.getProblems(),
+                    resultStatus != PRE_CHECK_FAILED);
             if (resultStatus == PRE_CHECK_FAILED) {
                 offerRescanAfterIssuesFound(task);
             }
@@ -287,7 +294,7 @@ public final class Manager {
     
     /**
      */
-    private void offerRescanAfterIssuesFound(ReplaceTask task) {
+    private void offerRescanAfterIssuesFound(final ReplaceTask task) {
         String msg = NbBundle.getMessage(getClass(),
                                          "MSG_IssuesFound_Rescan_");    //NOI18N
         NotifyDescriptor nd = new NotifyDescriptor.Message(
@@ -308,16 +315,12 @@ public final class Manager {
              * to the EventQueue thread, we use invokeLater(...) and not
              * invokeAndWait(...).
              */
-            Method theMethod;
-            try {
-                theMethod = ResultView.class.getDeclaredMethod(
-                                                    "rescan",  //NOI18N
-                                                    ReplaceTask.class);
-            } catch (NoSuchMethodException ex) {
-                throw new IllegalStateException(ex);
-            }
-
-            callOnWindowFromAWT(theMethod, new Object[]{task}, false);
+            Mutex.EVENT.writeAccess(new Runnable() {
+                @Override
+                public void run() {
+                    task.getPanel().rescan();
+                }
+            });
         }
     }
     
@@ -385,46 +388,6 @@ public final class Manager {
             throw new IllegalArgumentException();
         }
         callOnWindowFromAWT(theMethod, null, wait);
-    }
-    
-    /**
-     * Calls a given method on the Search Results window, from the AWT thread.
-     *
-     * @param  methodName  name of the method to be called
-     * @param  param  parameter to be passed to the method
-     */
-    private void callOnWindowFromAWT(final String methodName,
-                                     final Object param) {
-        callOnWindowFromAWT(methodName, param, true);
-    }
-    
-    /**
-     */
-    private void callOnWindowFromAWT(final String methodName,
-                                     final Object param,
-                                     final boolean wait) {
-        Method theMethod = null;
-        Method[] methods = ResultView.class.getDeclaredMethods();
-        for (int i = 0; i < methods.length; i++) {
-            Method method = methods[i];
-            if (method.getName().equals(methodName)) {
-                Class[] parameterTypes = method.getParameterTypes();
-                if (parameterTypes.length == 1) {
-                    Class paramType = parameterTypes[0];
-                    if ((param == null
-                               && !paramType.isPrimitive())
-                            || (paramType == Integer.TYPE)
-                               && (param instanceof Integer)
-                            || parameterTypes[0].isInstance(param)) {
-                        theMethod = method;
-                    }
-                }
-            }
-        }
-        if (theMethod == null) {
-            throw new IllegalArgumentException();
-        }
-        callOnWindowFromAWT(theMethod, new Object[] {param}, wait);
     }
     
     /**
