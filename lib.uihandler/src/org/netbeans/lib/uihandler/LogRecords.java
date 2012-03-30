@@ -149,6 +149,9 @@ public final class LogRecords {
         Parser parser = new Parser(h);
         try {
             p.parse(is, parser);
+        } catch (SAXParseException ex) {
+            LOG.log(Level.WARNING, "Line = "+ex.getLineNumber()+", column = "+ex.getColumnNumber(), ex);
+            throw new IOException(ex);
         } catch (SAXException ex) {
             LOG.log(Level.WARNING, null, ex);
             throw new IOException(ex);
