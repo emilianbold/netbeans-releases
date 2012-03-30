@@ -49,7 +49,8 @@ package org.netbeans.modules.debugger.jpda.ui;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -61,7 +62,7 @@ import org.netbeans.jemmy.EventTool;
 
 /**
  *
- * @author cincura, ehucka, Jiri Vagner, ppis, cyhelsky, vsigler
+ * @author cincura, ehucka, Jiri Vagner, ppis, cyhelsky, vsigler, Jiri Kovalsky
  */
 public class StartDebuggerTest extends DebuggerTestCase {
 
@@ -113,23 +114,24 @@ public class StartDebuggerTest extends DebuggerTestCase {
         new EventTool().waitNoEvent(500);
         Utilities.getDebugToolbar().waitComponentVisible(true);
         assertTrue("The debugger toolbar did not show after start of debugging", Utilities.getDebugToolbar().isVisible());
-        Utilities.waitStatusText(Utilities.runningStatusBarText);
+        Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText);
     }
 
     public void testDebugFile() {                
         EditorOperator eo = new EditorOperator("MemoryView.java");
         new Action(null, null, Utilities.debugFileShortcut).performShortcut();
         Utilities.getDebugToolbar().waitComponentVisible(true);
-        Utilities.waitStatusText(Utilities.runningStatusBarText);
+        Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText);
     }
  
-    public void testRunDebuggerStepInto() {                
+    public void testRunDebuggerStepInto() throws InterruptedException {                
         EditorOperator eo = new EditorOperator("MemoryView.java");
         new EventTool().waitNoEvent(500);
         Utilities.setCaret(eo, 75);
         new EventTool().waitNoEvent(1000);
         new StepIntoAction().perform();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:39");
+        Thread.sleep(1000);
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:39");
         assertTrue("Current PC annotation is not on line 39", Utilities.checkAnnotation(eo, 39, "CurrentPC"));
     }
 
@@ -148,14 +150,16 @@ public class StartDebuggerTest extends DebuggerTestCase {
     public void testRunDebuggerRunToCursor() throws Throwable
     {
         EditorOperator eo = new EditorOperator("MemoryView.java");
-        eo.setCaretPosition(75, 9);
+        Utilities.setCaret(eo, 75);
         new RunToCursorAction().perform();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:75");
+        Thread.sleep(1000);
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:75");
         assertTrue("Current PC annotation is not on line 75", Utilities.checkAnnotation(eo, 75, "CurrentPC"));
 
-        eo.setCaretPosition(104, 9);
+        Utilities.setCaret(eo, 104);
         new RunToCursorAction().perform();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
+        Thread.sleep(1000);
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104");
         assertTrue("Current PC annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentPC"));
     }
 
@@ -164,6 +168,6 @@ public class StartDebuggerTest extends DebuggerTestCase {
         new Action(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, null).perform();
         Utilities.getDebugToolbar().waitComponentVisible(true);
         assertTrue("The debugger toolbar did not show after start of debugging", Utilities.getDebugToolbar().isVisible());
-        Utilities.waitStatusText(Utilities.runningStatusBarText);
+        Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText);
     }
 }
