@@ -66,25 +66,11 @@ import org.openide.filesystems.FileUtil;
  *
  * @author sherold
  */
-public class Utils {
+public final class Utils {
     
     /** Creates a new instance of Utils */
     private Utils() {
-    }
-    
-    /** Return URL representation of the specified file. */
-    public static URL fileToUrl(File file) throws MalformedURLException {
-        URL url = file.toURI().toURL();
-        if (!file.isDirectory()) {
-            if (file.getName().endsWith(".zip") || file.getName().endsWith("jar")) {
-            // isArchiveFile reads the bytes from file which is forbidden
-            // to be done from UI - check fro extensions should be safe enough
-            // see #207440
-            //if (FileUtil.isArchiveFile(url)) {
-                url = FileUtil.getArchiveRoot(url);
-            }
-        }
-        return url;
+        super();
     }
     
     /** Return true if the specified port is free, false otherwise. */
