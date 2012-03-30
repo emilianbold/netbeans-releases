@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.html.validation;
 
-import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 
 /**
  *

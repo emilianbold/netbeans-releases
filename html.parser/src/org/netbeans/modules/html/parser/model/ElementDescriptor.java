@@ -49,7 +49,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import nu.validator.htmlparser.impl.ElementName;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagType;
 
 /**
  *

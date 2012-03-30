@@ -44,11 +44,13 @@ package org.netbeans.modules.html.editor.gsf;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -68,24 +70,24 @@ class HtmlRenameHandler implements InstantRenamer {
         }
 
         HtmlParserResult result = (HtmlParserResult) info;
-        AstNode node = result.findLeafTag(astCaretOffset, true, true);
+        Element node = result.findByPhysicalRange(astCaretOffset, true);
 
-        if(node == null) {
+        if (node == null) {
             return false;
         }
-        
-        switch(node.type()) {
+
+        switch (node.type()) {
             case OPEN_TAG:
                 //enable only if the caret is in the tag name
-                int from = node.startOffset();
-                int to = node.startOffset() + 1 + node.name().length(); //"<" + "body" length
-                return astCaretOffset >= from && astCaretOffset <=to;
-            case ENDTAG:
+                int from = node.from();
+                int to = node.to(); //"<" + "body" length
+                return astCaretOffset >= from && astCaretOffset <= to;
+            case CLOSE_TAG:
                 return true;
         }
-        
+
         return false;
-        
+
     }
 
     @Override
@@ -96,39 +98,41 @@ class HtmlRenameHandler implements InstantRenamer {
         }
 
         HtmlParserResult result = (HtmlParserResult) info;
-        AstNode node = result.findLeafTag(astCaretOffset, true, true);
+        Element node = result.findByPhysicalRange(astCaretOffset, true);
 
-        if (node != null) {
-            AstNode pair = node.getMatchingTag();
-
-            if (pair != null) {
-                Set<OffsetRange> set = new HashSet<OffsetRange>();
-                AstNode open, close;
-                switch (node.type()) {
-                    case OPEN_TAG:
-                        open = node;
-                        close = pair;
-                        break;
-                    case ENDTAG:
-                        open = pair;
-                        close = node;
-                        break;
-                    default:
-                        return Collections.emptySet();
-                }
-
-                Snapshot s = info.getSnapshot();
-                
-                set.add(new OffsetRange(s.getOriginalOffset(open.startOffset() + 1), 
-                        s.getOriginalOffset(open.startOffset() + 1 + open.name().length()))); //1 == "<".len
-                
-                set.add(new OffsetRange(s.getOriginalOffset(close.startOffset() + 2), 
-                        s.getOriginalOffset(close.startOffset() + 2 + close.name().length()))); //2 == "</".len
-
-                return set;
-            }
+        if (node == null) {
+            return Collections.emptySet();
         }
 
-        return Collections.emptySet();
+        OpenTag open;
+        CloseTag close;
+        switch (node.type()) {
+            case OPEN_TAG:
+                open = (OpenTag) node;
+                close = open.matchingCloseTag();
+                break;
+            case CLOSE_TAG:
+                close = (CloseTag) node;
+                open = close.matchingOpenTag();
+                break;
+            default:
+                return Collections.emptySet();
+        }
+
+        if (open == null || close == null) {
+            return Collections.emptySet();
+        }
+
+        Snapshot s = info.getSnapshot();
+        Set<OffsetRange> set = new HashSet<OffsetRange>();
+        
+        set.add(new OffsetRange(s.getOriginalOffset(open.from()) + 1,
+                s.getOriginalOffset(open.from() + 1 + open.name().length()))); //1 == "<".len
+
+        set.add(new OffsetRange(s.getOriginalOffset(close.from() + 2),
+                s.getOriginalOffset(close.from() + 2 + close.name().length()))); //2 == "</".len
+
+        return set;
     }
+
 }

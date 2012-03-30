@@ -43,22 +43,20 @@
 package org.netbeans.modules.html.validation;
 
 import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
-import org.netbeans.html.api.validation.ValidationContext;
-import org.netbeans.html.api.validation.ValidationException;
-import org.netbeans.html.api.validation.ValidationResult;
-import org.netbeans.html.api.validation.Validator;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.editor.lib.api.validation.ValidationContext;
+import org.netbeans.modules.html.editor.lib.api.validation.ValidationException;
+import org.netbeans.modules.html.editor.lib.api.validation.ValidationResult;
+import org.netbeans.modules.html.editor.lib.api.validation.Validator;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.lookup.ServiceProvider;
@@ -163,15 +161,18 @@ public class ValidatorImpl implements Validator {
     }
 
     private boolean containsHeadElement(ValidationContext context) {
-        List<SyntaxElement> head = context.getSyntaxAnalyzerResult().getElements().items();
+        Collection<Element> head = context.getSyntaxAnalyzerResult().getElements().items();
         //limit the search to the beginning of the file
         int limit = Math.max(head.size(), 20);
-        for(SyntaxElement se : head) {
+        for(Element se : head) {
             if(limit-- == 0) {
                 break;
             }
-            if(se.type() == SyntaxElement.TYPE_TAG && ((SyntaxElement.Named)se).getName().equalsIgnoreCase("head")) { //NOI18N
-                return true;
+            if(se.type() == ElementType.OPEN_TAG) {
+                OpenTag ot = (OpenTag)se;
+                if(LexerUtils.equals("head", ot.unqualifiedName(), true, true)) { //NOI18N
+                    return true;
+                }
             }
         }
         return false;

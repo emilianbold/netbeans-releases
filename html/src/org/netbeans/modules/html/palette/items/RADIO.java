@@ -41,8 +41,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.html.palette.items;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -50,13 +50,16 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
-import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.html.palette.HtmlPaletteUtilities;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Exceptions;
-
 
 /**
  *
@@ -65,15 +68,13 @@ import org.openide.util.Exceptions;
 public class RADIO implements ActiveEditorDrop {
 
     private static final int GROUP_DEFAULT = -1;
-    
     private String group = "";
     private int groupIndex = GROUP_DEFAULT;
     private String value = "";
     private boolean selected = false;
     private boolean disabled = false;
-   
     private String[] groups = new String[0];
-    
+
     public RADIO() {
     }
 
@@ -81,30 +82,38 @@ public class RADIO implements ActiveEditorDrop {
 
         Document doc = targetComponent.getDocument();
         if (doc instanceof BaseDocument) {
-            
+
             String oldGN = null;
             if (groupIndex >= 0) // non-empty group list from previous run =>
+            {
                 oldGN = groups[groupIndex]; // => save previously selected group name
-            else if (group.length() > 0) // new group was inserted in the previous run
+            } else if (group.length() > 0) // new group was inserted in the previous run
+            {
                 oldGN = group;
-            
-            groups = findGroups((BaseDocument)doc);
+            }
+
+            groups = findGroups((BaseDocument) doc);
             if (groups.length == 0) // no groups found => reset index
+            {
                 groupIndex = GROUP_DEFAULT;
-            
+            }
+
             if (groups.length > 0) { // some groups found
                 groupIndex = 0; // point at the beginning by default
                 if (groupIndex != GROUP_DEFAULT && oldGN != null) {// non-empty group list from previous run
                     for (; groupIndex < groups.length; groupIndex++) {
-                        if (oldGN.equalsIgnoreCase(groups[groupIndex]))
+                        if (oldGN.equalsIgnoreCase(groups[groupIndex])) {
                             break;
+                        }
                     }
                     if (groupIndex == groups.length) // previously selected group not found
+                    {
                         groupIndex = 0;
+                    }
                 }
             }
         }
-        
+
         RADIOCustomizer c = new RADIOCustomizer(this);
         boolean accept = c.showDialog();
         if (accept) {
@@ -115,18 +124,18 @@ public class RADIO implements ActiveEditorDrop {
                 accept = false;
             }
         }
-        
+
         return accept;
     }
-    
-    private String createBody() {
-        
-        String strName = " name=\"\""; // NOI18N
-        if (groupIndex == GROUP_DEFAULT)
-            strName = " name=\"" + group + "\""; // NOI18N
-        else 
-            strName = " name=\"" + groups[groupIndex] + "\""; // NOI18N
 
+    private String createBody() {
+
+        String strName = " name=\"\""; // NOI18N
+        if (groupIndex == GROUP_DEFAULT) {
+            strName = " name=\"" + group + "\""; // NOI18N
+        } else {
+            strName = " name=\"" + groups[groupIndex] + "\""; // NOI18N
+        }
         String strValue = " value=\"" + value + "\""; // NOI18N
 
         String strSelected = (selected ? " checked=\"checked\"" : ""); // NOI18N
@@ -134,7 +143,7 @@ public class RADIO implements ActiveEditorDrop {
         String strDisabled = (disabled ? " disabled=\"disabled\"" : ""); // NOI18N
 
         String radioBody = "<input type=\"radio\"" + strName + strValue + strSelected + strDisabled + " />"; // NOI18N
-        
+
         return radioBody;
     }
 
@@ -151,24 +160,24 @@ public class RADIO implements ActiveEditorDrop {
             }
         });
         CharSequence code = content[0];
-        if(code == null) {
+        if (code == null) {
             return new String[]{};
         }
 
         List<String> names = new ArrayList<String>();
         //search for the input tags
-        Collection<SyntaxElement> elements = SyntaxAnalyzer.create(new HtmlSource(code)).analyze().getElements().items();
-        for(SyntaxElement e : elements) {
-            if(e.type() == SyntaxElement.TYPE_TAG) {
-                SyntaxElement.Tag tag = (SyntaxElement.Tag)e;
-                if(tag.getName().equalsIgnoreCase("input")) { //NOI18N
-                    SyntaxElement.TagAttribute typeAttr = tag.getAttribute("type"); //NOI18N
-                    if(typeAttr != null && "radio".equalsIgnoreCase(typeAttr.getValue().toString())) { //NOI18N
-                        SyntaxElement.TagAttribute nameAttr = tag.getAttribute("name"); //NOI18N
-                        if(nameAttr != null) {
-                            String name = nameAttr.getValue().toString();
-                            if(name != null) {
-                                names.add(name);
+        Collection<Element> elements = SyntaxAnalyzer.create(new HtmlSource(code)).analyze().getElements().items();
+        for (Element e : elements) {
+            if (e.type() == ElementType.OPEN_TAG) {
+                OpenTag tag = (OpenTag) e;
+                if (LexerUtils.equals("input", tag.name(), true, true)) { //NOI18N
+                    Attribute typeAttr = tag.getAttribute("type"); //NOI18N
+                    Attribute nameAttr = tag.getAttribute("name"); //NOI18N
+                    if (typeAttr != null && nameAttr != null) {
+                        if (LexerUtils.equals("radio", typeAttr.unquotedValue(), true, true)) { //NOI18N
+                            CharSequence value = nameAttr.unquotedValue();
+                            if(value != null) {
+                                names.add(value.toString());
                             }
                         }
                     }
@@ -225,5 +234,4 @@ public class RADIO implements ActiveEditorDrop {
     public void setGroups(String[] groups) {
         this.groups = groups;
     }
-    
 }
