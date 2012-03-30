@@ -95,6 +95,10 @@ public class JiraExecutor {
     }
 
     public void execute(JiraCommand cmd, boolean handleExceptions, boolean ensureConfiguration, boolean checkVersion) {
+        execute(cmd, handleExceptions, ensureConfiguration, checkVersion, true);
+    }
+    
+    public void execute(JiraCommand cmd, boolean handleExceptions, boolean ensureConfiguration, boolean checkVersion, boolean ensureCredentials) {
         try {
             try {
 
@@ -108,6 +112,10 @@ public class JiraExecutor {
                     checkAutoupdate();
                 }
 
+                if(ensureCredentials) {
+                    repository.ensureCredentials();
+                }
+                
                 cmd.execute();
 
                 cmd.setFailed(false);

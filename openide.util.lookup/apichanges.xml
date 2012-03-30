@@ -49,6 +49,30 @@ made subject to such option by the copyright holder.
     <apidef name="lookup">Lookup API</apidef>
 </apidefs>
 <changes>
+    <change id="named.service.definition">
+        <api name="lookup"/>
+        <summary>Easy and robust way to register named services</summary>
+        <version major="8" minor="14"/>
+        <date day="27" month="3" year="2012"/>
+        <author login="jtulach"/>
+        <compatibility
+            addition="yes"
+            binary="compatible" deletion="no" deprecation="no"
+            modification="no" semantic="compatible" source="compatible"
+        />
+        <description>
+            <p>
+                Meta annotation 
+                <a href="@TOP@org/openide/util/lookup/NamedServiceDefinition.html">NamedServiceDefinition</a> 
+                for those who define their own annotations that register
+                something into 
+                <a href="@TOP@org/openide/util/lookup/Lookups.html#forPath(java.lang.String)">
+                Lookups.forPath</a> registration area.
+            </p>
+        </description>
+        <class package="org.openide.util.lookup" name="NamedServiceDefinition"/>
+        <issue number="209780"/>
+    </change>
     <change id="lazy.proxy.lookup">
         <api name="lookup"/>
         <summary><code>ProxyLookup</code> computes results lazily</summary>

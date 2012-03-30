@@ -56,6 +56,21 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="is.au.visible">
+        <api name="bridge"/>
+        <summary>isShowInAutoUpdateClient</summary>
+        <version major="1" minor="38"/>
+        <date day="21" month="3" year="2012"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            Method to allow ergonomics and autoupdate to check if a module
+            is visible in the autoupdate client.
+        </p>
+        </description>
+        <class package="org.netbeans.core.startup" name="ModuleSystem"/>
+    </change>
      <change id="netbeans.productversion">
         <api name="exec-property"/>
         <summary>netbeans.productversion property</summary>

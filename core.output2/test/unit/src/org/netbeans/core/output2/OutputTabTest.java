@@ -38,6 +38,7 @@
 package org.netbeans.core.output2;
 
 import java.awt.BorderLayout;
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Semaphore;
@@ -47,6 +48,8 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOContainer;
@@ -57,6 +60,10 @@ import org.openide.windows.OutputListener;
  * @author jhavlin
  */
 public class OutputTabTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(IOExtensionsTest.class);
+    }
 
     public OutputTabTest(String name) {
         super(name);

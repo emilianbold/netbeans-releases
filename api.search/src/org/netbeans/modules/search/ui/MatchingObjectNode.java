@@ -70,6 +70,7 @@ public class MatchingObjectNode extends AbstractNode {
 
     private MatchingObject matchingObject;
     private Node original;
+    private OrigNodeListener origNodeListener;
     private boolean valid = true;
     PropertySet[] propertySets;
 
@@ -89,6 +90,8 @@ public class MatchingObjectNode extends AbstractNode {
         if (matchingObject.isObjectValid()) {
             this.original = original;
             setValidOriginal();
+            origNodeListener = new OrigNodeListener();
+            original.addNodeListener(origNodeListener);
         } else {
             setInvalidOriginal();
         }
@@ -96,6 +99,7 @@ public class MatchingObjectNode extends AbstractNode {
             @Override
             public void stateChanged(ChangeEvent e) {
                 if (!matchingObject.isObjectValid() && valid) {
+                    matchingObject.removeChangeListener(this);
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -109,7 +113,6 @@ public class MatchingObjectNode extends AbstractNode {
                 }
             }
         });
-        original.addNodeListener(new OrigNodeListener());
     }
 
     @Override
@@ -154,6 +157,10 @@ public class MatchingObjectNode extends AbstractNode {
 
     private void setInvalidOriginal() {
         valid = false;
+        if (origNodeListener != null) {
+            original.removeNodeListener(origNodeListener);
+            origNodeListener = null;
+        }
         original = new AbstractNode(Children.LEAF);
         original.setDisplayName(matchingObject.getFileObject().getNameExt());
         fireIconChange();
@@ -164,6 +171,12 @@ public class MatchingObjectNode extends AbstractNode {
     @Override
     public boolean canDestroy() {
         return false;
+    }
+
+    public void clean() {
+        if (original != null && origNodeListener != null && valid) {
+            original.removeNodeListener(origNodeListener);
+        }
     }
 
     @Override
@@ -244,7 +257,6 @@ public class MatchingObjectNode extends AbstractNode {
                 @Override
                 public void run() {
                     setInvalidOriginal();
-                    original.removeNodeListener(OrigNodeListener.this);
                 }
             });
         }

@@ -270,7 +270,7 @@ public abstract class ActionManager<A extends SystemAction, S extends CallbackSy
      * @see org.openide.windows.TopComponent.Registry
      */
     static final class FindActionManager
-            extends ActionManager<FindInFilesAction, FindAction> {
+            extends ActionManager<FindInFilesAction.Selection, FindAction> {
 
         private static final String MAPPED_FIND_ACTION =
                 FindActionManager.class.getName()
@@ -278,7 +278,7 @@ public abstract class ActionManager<A extends SystemAction, S extends CallbackSy
         private static FindActionManager instance = null;
 
         private FindActionManager() {
-            super(FindInFilesAction.class, FindAction.class);
+            super(FindInFilesAction.Selection.class, FindAction.class);
         }
 
         @Override
@@ -309,7 +309,7 @@ public abstract class ActionManager<A extends SystemAction, S extends CallbackSy
      * @see org.openide.windows.TopComponent.Registry
      */
     static final class ReplaceActionManager
-            extends ActionManager<ReplaceInFilesAction, ReplaceAction> {
+            extends ActionManager<ReplaceInFilesAction.Selection, ReplaceAction> {
 
         private static final String MAPPED_FIND_ACTION =
                 ReplaceActionManager.class.getName()
@@ -317,7 +317,7 @@ public abstract class ActionManager<A extends SystemAction, S extends CallbackSy
         private static ReplaceActionManager instance = null;
 
         private ReplaceActionManager() {
-            super(ReplaceInFilesAction.class, ReplaceAction.class);
+            super(ReplaceInFilesAction.Selection.class, ReplaceAction.class);
         }
 
         @Override

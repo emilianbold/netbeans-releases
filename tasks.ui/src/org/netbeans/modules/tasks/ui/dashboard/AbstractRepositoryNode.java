@@ -75,7 +75,7 @@ public abstract class AbstractRepositoryNode extends TreeListNode implements Com
         updateNodes();
     }
 
-    protected final void updateNodes() {
+    final void updateNodes() {
         AppliedFilters appliedFilters = DashboardViewer.getInstance().getAppliedFilters();
         queryNodes = new ArrayList<QueryNode>();
         filteredQueryNodes = new ArrayList<QueryNode>();
@@ -88,6 +88,8 @@ public abstract class AbstractRepositoryNode extends TreeListNode implements Com
         }
     }
 
+    abstract void updateContent();
+    
     public final Repository getRepository() {
         return repository;
     }

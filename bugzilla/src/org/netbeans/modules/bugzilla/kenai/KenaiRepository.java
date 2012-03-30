@@ -202,6 +202,11 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return kc;
     }
 
+    @Override
+    public void ensureCredentials() {
+        authenticate(null);
+    }
+
     protected void setCredentials(String user, char[] password) {
         super.setCredentials(user, password, null, null);
     }

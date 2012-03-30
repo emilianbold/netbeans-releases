@@ -139,14 +139,14 @@ public class FindUsagesClassOperator extends ParametersPanelOperator {
 
     public JCheckBoxOperator getFindMethodUsage() {
         if (findMethodUsage == null) {
-            findMethodUsage = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_FindUsages"));
+            findMethodUsage = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_WhereUsed"));
         }
         return findMethodUsage;
     }
 
     public JCheckBoxOperator getFindOverridding() {
         if (findOverridding == null) {
-            findOverridding = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","DSC_WhereUsedMethodOverriders"));
+            findOverridding = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_FindOverridingMethods"));
         }
         return findOverridding;
     }

@@ -48,18 +48,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.apache.lucene.search.BooleanQuery;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.QueryRequest;
+import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import static org.netbeans.modules.maven.repository.Bundle.*;
+import org.netbeans.modules.maven.repository.M2RepositoryBrowser.QueryRequest;
 import org.openide.actions.DeleteAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
@@ -80,15 +80,17 @@ public class FindResultsNode extends AbstractNode {
     private static final @StaticResource String FIND_IN_REPO = "org/netbeans/modules/maven/repository/FindInRepo.png";
     private static final @StaticResource String ARTIFACT_BADGE = "org/netbeans/modules/maven/repository/ArtifactBadge.png";
     private static final @StaticResource String EMPTY_ICON = "org/netbeans/modules/maven/repository/empty.png";
+    private static final @StaticResource String WAIT_ICON = "org/netbeans/modules/maven/repository/wait.gif";
 
-    private final QueryRequest queryRequest;
     
     private static final RequestProcessor queryRP = new RequestProcessor(FindResultsNode.class.getName(), 10);
-    FindResultsNode(QueryRequest queryRequest) {
-        super(Children.create(new FindResultsChildren(queryRequest), true));
-        this.queryRequest = queryRequest;
-        setDisplayName(queryRequest.getQueryFields().get(0).getValue());
+    private final QueryRequest queryRequest;
+
+    FindResultsNode(QueryRequest request) {
+        super(Children.create(new FindResultsChildren(request.fields, request.infos), true));
+        setDisplayName(request.fields.get(0).getValue());
         setIconBaseWithExtension(FIND_IN_REPO);
+        queryRequest = request;
     }
 
     @Override public boolean canDestroy() {
@@ -104,38 +106,40 @@ public class FindResultsNode extends AbstractNode {
     }
 
     // XXX clumsy, use a real key instead (NBGroupInfo?) and replace no results/too general nodes with status line notifications
-    private static class FindResultsChildren extends ChildFactory.Detachable<Node> implements Observer {
+    private static class FindResultsChildren extends ChildFactory.Detachable<Node> {
 
-        private final QueryRequest queryRequest;
         private List<Node> nodes;
+        private final List<QueryField> fields;
+        private final List<RepositoryInfo> infos;
 
-        FindResultsChildren(QueryRequest queryRequest) {
-            this.queryRequest = queryRequest;
+        FindResultsChildren(List<QueryField> fields, List<RepositoryInfo> infos) {
+            this.fields = fields;
+            this.infos = infos;
         }
 
         @Override protected Node createNodeForKey(Node key) {
             return key;
         }
 
-        @Override protected void addNotify() {
-            queryRequest.addObserver(this);
-        }
-
-        @Override protected void removeNotify() {
-            queryRequest.deleteObserver(this);
-        }
-
-        @Override protected boolean createKeys(List<Node> toPopulate) {
+        @Override 
+        protected boolean createKeys(List<Node> toPopulate) {
             if (nodes != null) {
                 toPopulate.addAll(nodes);
             } else {
         queryRP.post(new Runnable() {
 
+            @Override
             public void run() {
                 try {
-                    RepositoryQueries.find(queryRequest);
+                    Result<NBVersionInfo> result = RepositoryQueries.findResult(fields, infos);
+                    update(result.getResults(), result.isPartial());
+                    if (result.isPartial()) {
+                        result.waitForSkipped();
+                        update(result.getResults(), false);
+                    }
                 } catch (BooleanQuery.TooManyClauses exc) {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             nodes = Collections.singletonList(getTooGeneralNode());
                         }
@@ -148,6 +152,7 @@ public class FindResultsNode extends AbstractNode {
                     // but most probably this thread will be it
                     // trying to indicate the condition to the user here
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             nodes = Collections.singletonList(getTooGeneralNode());
                         }
@@ -159,15 +164,7 @@ public class FindResultsNode extends AbstractNode {
             return true; // XXX queryRequest.isFinished() unsuitable here
         }
 
-    @Override
-    public void update(Observable o, Object arg) {
-
-        if (null == o || !(o instanceof QueryRequest)) {
-            return;
-        }
-
-        List<NBVersionInfo> infos = ((QueryRequest) o).getResults();
-
+    void update(List<NBVersionInfo> infos, final boolean partial) {
         final Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
 
         if (infos != null) {
@@ -186,13 +183,14 @@ public class FindResultsNode extends AbstractNode {
         Collections.sort(keyList);
 
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                updateResultNodes(keyList, map);
+                updateResultNodes(keyList, map, partial);
             }
         });
     }
 
-    private void updateResultNodes(List<String> keyList, Map<String, List<NBVersionInfo>> map) {
+    private void updateResultNodes(List<String> keyList, Map<String, List<NBVersionInfo>> map, boolean partial) {
 
             if (keyList.size() > 0) { // some results available
                 
@@ -214,15 +212,18 @@ public class FindResultsNode extends AbstractNode {
                     }
                     newNodes.add(nd);
                 }
+                if (partial) { // still searching, no results yet
+                    newNodes.add(getPartialNode());
+                }
                 
                 nodes = newNodes;
                 refresh(false);
-            } else if (null!=queryRequest && !queryRequest.isFinished()) { // still searching, no results yet
-                nodes = Collections.emptyList();
+            } else if (partial) { // still searching, no results yet
+                nodes = Collections.singletonList(getPartialNode());
             } else { // finished searching with no results
                 nodes = Collections.singletonList(getNoResultsNode());
             }
-    }
+        }
 
     }
 
@@ -292,7 +293,7 @@ public class FindResultsNode extends AbstractNode {
         }
     }
 
-    private static Node noResultsNode, tooGeneralNode;
+    private static Node noResultsNode, tooGeneralNode, partialNode;
 
     @Messages("LBL_Node_Empty=No matching items")
     private static Node getNoResultsNode() {
@@ -301,7 +302,7 @@ public class FindResultsNode extends AbstractNode {
 
                 @Override
                 public Image getIcon(int arg0) {
-                    return ImageUtilities.loadImage(EMPTY_ICON);
+                    return ImageUtilities.loadImage(WAIT_ICON);
                     }
 
                 @Override
@@ -318,6 +319,31 @@ public class FindResultsNode extends AbstractNode {
 
         return new FilterNode (noResultsNode, Children.LEAF);
     }
+    
+    @Messages("LBL_Node_Partial=Partial result, waiting for indexing to finish.")
+    private static Node getPartialNode() {
+        if (partialNode == null) {
+            AbstractNode nd = new AbstractNode(Children.LEAF) {
+
+                @Override
+                public Image getIcon(int arg0) {
+                    return ImageUtilities.loadImage(EMPTY_ICON);
+                }
+
+                @Override
+                public Image getOpenedIcon(int arg0) {
+                    return getIcon(arg0);
+                }
+            };
+            nd.setName("partial"); //NOI18N
+
+            nd.setDisplayName(LBL_Node_Partial()); //NOI18N
+
+            partialNode = nd;
+        }
+
+        return new FilterNode (partialNode, Children.LEAF);
+    }    
 
     @Messages("LBL_Node_TooGeneral=Too general query")
     private static Node getTooGeneralNode() {

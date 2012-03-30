@@ -540,4 +540,92 @@ public class EditorFindSupportTest {
 //        instance.replaceAllImpl(props, ta);
 //        assertEquals("ba aaaa", ta.getText());
 //    }
+    @Test
+    public void testReplaceFind() throws Exception {
+        final Map<String, Object> props = new HashMap<String, Object>();
+        props.put(EditorFindSupport.FIND_WHAT, "a");
+        props.put(EditorFindSupport.FIND_REPLACE_WITH, "b");
+        props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
+        props.put(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
+        props.put(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_WRAP_SEARCH, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_MATCH_CASE, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_SMART_CASE, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_REG_EXP, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_HISTORY, new Integer(30));
+        
+        final EditorFindSupport instance = EditorFindSupport.getInstance();
+        JTextArea ta = new JTextArea("aaaa");
+        ta.setCaretPosition(0);
+        instance.replaceImpl(props, false, ta);
+        instance.findReplaceImpl(null, props, false, ta);
+        assertEquals("baaa", ta.getText());
+        instance.replaceImpl(props, false, ta);
+        instance.findReplaceImpl(null, props, false, ta);
+        assertEquals("bbaa", ta.getText());
+        instance.replaceImpl(props, false, ta);
+        instance.findReplaceImpl(null, props, false, ta);
+        assertEquals("bbba", ta.getText());
+    }
+    
+    @Test
+    public void testReplaceFindFocused() throws Exception {
+        final Map<String, Object> props = new HashMap<String, Object>();
+        props.put(EditorFindSupport.FIND_WHAT, "a");
+        props.put(EditorFindSupport.FIND_REPLACE_WITH, "b");
+        props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
+        props.put(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
+        props.put(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_WRAP_SEARCH, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_MATCH_CASE, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_SMART_CASE, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_REG_EXP, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_HISTORY, new Integer(30));
+        
+        final EditorFindSupport instance = EditorFindSupport.getInstance();
+        JTextArea ta = new JTextArea("aaaa");
+        ta.setCaretPosition(0);
+        instance.setFocusedTextComponent(ta);
+        instance.replace(props, false);
+        instance.find(props, false);
+        assertEquals("baaa", ta.getText());
+        instance.replace(props, false);
+        instance.find(props, false);
+        assertEquals("bbaa", ta.getText());
+        instance.replace(props, false);
+        instance.find(props, false);
+        assertEquals("bbba", ta.getText());
+    }
+    
+    @Test
+    public void testReplaceFindNewLine() throws Exception {
+        final Map<String, Object> props = new HashMap<String, Object>();
+        props.put(EditorFindSupport.FIND_WHAT, "foo");
+        props.put(EditorFindSupport.FIND_REPLACE_WITH, "bar");
+        props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
+        props.put(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
+        props.put(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_WRAP_SEARCH, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_MATCH_CASE, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_SMART_CASE, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_REG_EXP, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_HISTORY, new Integer(30));
+        
+        final EditorFindSupport instance = EditorFindSupport.getInstance();
+        JTextArea ta = new JTextArea("foo\nfoo\nfoo\nfoo\n");
+        ta.setCaretPosition(0);
+//        instance.setFocusedTextComponent(ta);
+        instance.replaceImpl(props, false, ta);
+        instance.findReplaceImpl(null, props, false, ta);
+        assertEquals("bar\nfoo\nfoo\nfoo\n", ta.getText());
+        instance.replaceImpl(props, false, ta);
+        instance.findReplaceImpl(null, props, false, ta);
+        assertEquals("bar\nbar\nfoo\nfoo\n", ta.getText());
+        instance.replaceImpl(props, false, ta);
+        instance.findReplaceImpl(null, props, false, ta);
+        assertEquals("bar\nbar\nbar\nfoo\n", ta.getText());
+    }
 }

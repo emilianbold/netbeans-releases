@@ -46,8 +46,9 @@ Microsystems, Inc. All Rights Reserved.
         </exec>
         
         <echo message="Delete launchers for another platforms"/>
-        <delete file="${appdir}/Contents/Resources/NetBeans/bin/nb.exe"/>
-        <delete file="${appdir}/Contents/Resources/NetBeans/bin/netbeans.exe"/>
+        <delete>
+            <fileset dir="${appdir}/Contents/Resources/NetBeans/bin" includes="*.exe"/>
+        </delete>
         
         <echo message="Copying the icon into the correct place" />
         <copy file="${appdir}/Contents/Resources/NetBeans/${nbClusterDir}/netbeans.icns" todir="${appdir}/Contents/Resources"/>
@@ -81,6 +82,7 @@ TOMCAT_INSTALL_DIR="${tomcat.install.dir}"
 NB_CLUSTER_DIR="${nbClusterDir}"
 GLASSFISH_V3_INSTALL_DIR="${glassfish.v3.install.dir}"
 MYSQL_INSTALL_DIR="${mysql.install.dir}"
+DEFAULT_JDK7_HOME="${default.jdk7.home}"
 NB_ID="${nb.id}"
 GLASSFISHV3_ID="${glassfish.v3.id}"
 TOMCAT_ID="${tomcat.id}"

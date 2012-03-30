@@ -852,6 +852,30 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "echo $v^ar;", true);
     }
 
+    public void testIssue203073_01() throws Exception {
+        checkOccurrences(getTestPath(), "class First^Parent {", true);
+    }
+
+    public void testIssue203073_02() throws Exception {
+        checkOccurrences(getTestPath(), "use Full\\Name\\Space\\First^Parent as SecondParent;", true);
+    }
+
+    public void testIssue203073_03() throws Exception {
+        checkOccurrences(getTestPath(), "use Full\\Name\\Space\\First^Parent;", true);
+    }
+
+    public void testIssue203073_04() throws Exception {
+        checkOccurrences(getTestPath(), "class Yours1 extends First^Parent {", true);
+    }
+
+    public void testIssue203073_05() throws Exception {
+        checkOccurrences(getTestPath(), "use Full\\Name\\Space\\FirstParent as Second^Parent;", true);
+    }
+
+    public void testIssue203073_06() throws Exception {
+        checkOccurrences(getTestPath(), "class Yours extends Second^Parent {", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

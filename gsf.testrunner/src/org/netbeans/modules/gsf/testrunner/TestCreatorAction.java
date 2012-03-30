@@ -67,7 +67,7 @@ import org.openide.util.actions.NodeAction;
  * 
  * @author  theofanis
  */
-@ActionID(id = "org.netbeans.modules.gsf.testrunner.api.TestCreatorAction", category = "UnitTests")
+@ActionID(id = "org.netbeans.modules.gsf.testrunner.TestCreatorAction", category = "UnitTests")
 @ActionRegistration(displayName = "#LBL_CreateCommonTestAction")
 @ActionReferences(value = {
     @ActionReference(path = "UI/ToolActions/Java")})

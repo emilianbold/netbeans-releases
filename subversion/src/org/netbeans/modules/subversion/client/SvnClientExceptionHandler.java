@@ -412,7 +412,7 @@ public class SvnClientExceptionHandler {
         TrustManager[] trust = new TrustManager[] {
             new X509TrustManager() {
             @Override
-                public X509Certificate[] getAcceptedIssuers() { return null; }
+                public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
             @Override
                 public void checkClientTrusted(X509Certificate[] certs, String authType) { }
             @Override

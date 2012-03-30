@@ -85,11 +85,17 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
     private FileObject resource;
     private FileObject targetFolder;
     private Lookup lookup;
+    private boolean needsByPass;
 
     private CopyClassRefactoringUI(FileObject resource, FileObject target) {
+        this(resource, target, false);
+    }
+
+    private CopyClassRefactoringUI(FileObject resource, FileObject target, boolean needsByPass) {
         refactoring = new SingleCopyRefactoring(Lookups.singleton(resource));
         this.resource = resource;
         this.targetFolder = target;
+        this.needsByPass = needsByPass;
     }
     
     private CopyClassRefactoringUI(Lookup lookup) {
@@ -112,6 +118,7 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
                     NbBundle.getMessage(CopyClassRefactoringUI.class, "LBL_CopyWithoutRefactoring"),
                     target, resource.getName());
             panel.setCombosEnabled(!(targetFolder != null));
+            panel.setRefactoringBypassRequired(needsByPass);
         }
         return panel;
     }
@@ -169,12 +176,12 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(CopyClassRefactoringUI.class.getName());
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.CopyClassRefactoringUI"); // NOI18N
     }
 
     @Override
     public boolean isRefactoringBypassRequired() {
-        return panel != null && panel.isRefactoringBypassRequired();
+        return needsByPass || panel != null && panel.isRefactoringBypassRequired();
     }
 
     @Override
@@ -208,9 +215,16 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
             s.addAll(Arrays.asList(files));
             return new CopyClassesUI(s, tar, paste);
         }
+        if(handles.length < 1) {
+            if(tar != null) {
+                assert files.length > 0;
+                return new CopyClassRefactoringUI(files[0], tar, true);
+            } else {
+                return null;
+            }
+        }
         
-        
-        TreePathHandle selectedElement = handles[0];           
+        TreePathHandle selectedElement = handles[0];
         Element e = selectedElement.resolveElement(info);
         if (e == null) {
             return null;

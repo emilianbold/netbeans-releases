@@ -102,6 +102,7 @@ public class RepositoryNode extends AbstractRepositoryNode implements PropertyCh
         for (QueryNode queryNode : children) {
             queryNode.setExpanded(expand);
         }
+        setLoaded(true);
         Collections.sort(children);
         return new ArrayList<TreeListNode>(children);
     }
@@ -174,7 +175,8 @@ public class RepositoryNode extends AbstractRepositoryNode implements PropertyCh
         return repositoryAction;
     }
 
-    private void updateContent() {
+    @Override
+    void updateContent() {
         updateNodes();
         fireContentChanged();
         refreshChildren();

@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -72,6 +73,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JTree;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -85,11 +87,14 @@ import org.netbeans.modules.findbugs.RunFindBugs;
 import org.netbeans.modules.findbugs.RunInEditor;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 public final class FindBugsPanel extends javax.swing.JPanel {
 
+    private static final RequestProcessor WORKER = new RequestProcessor(FindBugsPanel.class.getName(), 1, false, false);
     private Preferences settings;
     private final boolean defaultsToDisabled;
     private final Map<BugCategory, List<BugPattern>> categorizedBugs = new HashMap<BugCategory, List<BugPattern>>();
@@ -108,10 +113,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
                     if (user instanceof BugPattern) {
                         BugPattern bp = (BugPattern) user;
-                        return    contains(bp.getShortDescription(), filterText)
-                               || contains(bp.getLongDescription(), filterText)
-                               || contains(bp.getCategory(), filterText)
-                               || contains(bp.getDetailPlainText(), filterText);
+                        return contains(getFilterText(bp), filterText);
                     } else if (user instanceof BugCategory) {
                         BugCategory bc = (BugCategory) user;
                         return    contains(bc.getShortDescription(), filterText)
@@ -182,6 +184,8 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
         runInEditor.setVisible(cc == null);
         defaultsToDisabled = cc != null;
+
+        prepareFilterTexts();
     }
 
     private boolean toggle( TreePath treePath ) {
@@ -249,6 +253,12 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         jSplitPane1.setLeftComponent(jScrollPane1);
 
         description.setContentType(org.openide.util.NbBundle.getMessage(FindBugsPanel.class, "FindBugsPanel.description.contentType")); // NOI18N
+        description.setEditable(false);
+        description.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
+            public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
+                descriptionHyperlinkUpdate(evt);
+            }
+        });
         jScrollPane2.setViewportView(description);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(FindBugsPanel.class, "FindBugsPanel.jLabel1.text")); // NOI18N
@@ -295,6 +305,12 @@ public final class FindBugsPanel extends javax.swing.JPanel {
                 .addComponent(jSplitPane1))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void descriptionHyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_descriptionHyperlinkUpdate
+        if (evt.getEventType() == EventType.ACTIVATED && evt.getURL() != null) {
+            URLDisplayer.getDefault().showURL(evt.getURL());
+        }
+    }//GEN-LAST:event_descriptionHyperlinkUpdate
 
     void load() {
         this.runInEditor.setSelected(NbPreferences.forModule(FindBugsPanel.class).getBoolean(RunInEditor.RUN_IN_EDITOR, RunInEditor.RUN_IN_EDITOR_DEFAULT));
@@ -419,7 +435,38 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
         return input;
     }
-    
+
+    private final Map<BugPattern, String> filterText = new IdentityHashMap<BugPattern, String>();
+
+    private synchronized String getFilterText(BugPattern bp) {
+        String seq = filterText.get(bp);
+
+        if (seq != null) return seq;
+
+        StringBuilder result = new StringBuilder();
+
+        result.append(bp.getShortDescription())
+              .append(bp.getLongDescription())
+              .append(bp.getCategory())
+              .append(bp.getDetailPlainText());
+
+        filterText.put(bp, seq = result.toString());
+
+        return seq;
+    }
+
+    private void prepareFilterTexts() {
+        WORKER.post(new Runnable() {
+            @Override public void run() {
+                for (List<BugPattern> bl : categorizedBugs.values()) {
+                    for (BugPattern bp : bl) {
+                        getFilterText(bp);
+                    }
+                }
+            }
+        });
+    }
+
     private class CheckBoxRenderer implements TreeCellRenderer {
 
         private final TristateCheckBox renderer = new TristateCheckBox();

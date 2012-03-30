@@ -72,16 +72,26 @@ public class CppDTIFactory implements DeletedTextInterceptor.Factory {
     }
 
     private static class DeletedTextInterceptorImpl implements DeletedTextInterceptor {
+        private CppTypingCompletion.ExtraText rawStringExtraText;
 
         @Override
         public boolean beforeRemove(Context context) throws BadLocationException {
+            rawStringExtraText = CppTypingCompletion.checkRawStringRemove(context);
             return false;
         }
 
         @Override
         public void remove(Context context) throws BadLocationException {
-            if (context.isBackwardDelete()) {
-                BracketCompletion.charBackspaced((BaseDocument) context.getDocument(), context.getOffset() - 1, context.getText().charAt(0));
+            if (rawStringExtraText != null) {
+                BaseDocument doc = (BaseDocument) context.getDocument();
+                String extraText = rawStringExtraText.getExtraText();
+                if (extraText != null) {
+                    doc.remove(rawStringExtraText.getExtraTextPostion(), extraText.length());
+                }
+            } else {
+                if (context.isBackwardDelete()) {
+                    BracketCompletion.charBackspaced((BaseDocument) context.getDocument(), context.getOffset() - 1, context.getText().charAt(0));
+                }
             }
         }
 

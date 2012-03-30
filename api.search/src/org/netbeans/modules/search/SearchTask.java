@@ -48,6 +48,7 @@ import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.util.Cancellable;
+import org.openide.util.Mutex;
 
 /**
  * Task performing search.
@@ -105,6 +106,12 @@ final class SearchTask implements Runnable, Cancellable {
                 this.resultViewPanel.createListener();
         try {
             searchListener.searchStarted();
+            Mutex.EVENT.writeAccess(new Runnable() {
+                @Override
+                public void run() {
+                    resultViewPanel.requestFocusInWindow();
+                }
+            });
             searchComposition.start(searchListener);
         } catch (RuntimeException e) {
             searchListener.generalError(e);

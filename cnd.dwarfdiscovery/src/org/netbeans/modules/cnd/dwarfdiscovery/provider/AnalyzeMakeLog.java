@@ -66,10 +66,10 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.discovery.api.DiscoveryProvider.class)
 public class AnalyzeMakeLog extends BaseDwarfProvider {
     private Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
     public static final String MAKE_LOG_KEY = "make-log-file"; // NOI18N
+    public static final String MAKE_LOG_PROVIDER_ID = "make-log"; // NOI18N
     
     public AnalyzeMakeLog() {
         clean();
@@ -157,7 +157,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
 
     @Override
     public String getID() {
-        return "make-log"; // NOI18N
+        return MAKE_LOG_PROVIDER_ID; // NOI18N
     }
     
     @Override

@@ -42,17 +42,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.StringTokenizer;
+import java.util.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -130,6 +120,13 @@ public class VariousUtils {
     public static final String STATIC_FIELD__TYPE_PREFIX = "static.fld:";
     public static final String VAR_TYPE_PREFIX = "var:";
     public static final String ARRAY_TYPE_PREFIX = "array:";
+    private static final Collection<String> SPECIAL_CLASS_NAMES = new LinkedList<String>();
+
+    static {
+        SPECIAL_CLASS_NAMES.add("self"); //NOI18N
+        SPECIAL_CLASS_NAMES.add("static"); //NOI18N
+        SPECIAL_CLASS_NAMES.add("parent"); //NOI18N
+    }
 
     public static enum Kind {
         CONSTRUCTOR,
@@ -1281,7 +1278,7 @@ public class VariousUtils {
     public static Collection<QualifiedName> getPossibleFQN(QualifiedName name, int nameOffset, NamespaceScope contextNamespace){
         Set<QualifiedName> namespaces = new HashSet<QualifiedName>();
         boolean resolved = false;
-        if (name.getKind() == QualifiedNameKind.FULLYQUALIFIED) {
+        if (name.getKind().isFullyQualified()) {
             namespaces.add(name);
             resolved = true;
         } else {
@@ -1312,7 +1309,7 @@ public class VariousUtils {
             }
         }
         if (!resolved) {
-            if (name.getKind() == QualifiedNameKind.UNQUALIFIED) {
+            if (name.getKind().isUnqualified()) {
                 namespaces.add(contextNamespace.getNamespaceName().append(name).toFullyQualified());
             } else {
                 // the name is qualified -> append the name to the namespace name
@@ -1324,24 +1321,41 @@ public class VariousUtils {
 
     public static boolean isAliased(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
         boolean result = false;
-        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
-                && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
-            Scope scope = inScope;
-            while (scope != null && !(scope instanceof NamespaceScope)) {
-                scope = scope.getInScope();
-            }
-            if (scope != null) {
-                NamespaceScope namespaceScope = (NamespaceScope) scope;
-                String firstSegmentName = qualifiedName.getSegments().getFirst();
-                for (UseScope useElement : namespaceScope.getDeclaredUses()) {
-                    if (useElement.getOffset() < offset) {
-                        AliasedName aliasName = useElement.getAliasedName();
-                        if (aliasName != null) {
-                            if (firstSegmentName.equals(aliasName.getAliasName())) {
-                                result = true;
-                                break;
-                            }
-                        }
+        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
+            result = isAliasedClassName(qualifiedName.getSegments().getFirst(), offset, inScope);
+        }
+        return result;
+    }
+
+    public static boolean isAlias(final QualifiedName unqualifiedName, final int offset, final Scope inScope) {
+        boolean result = false;
+        if(unqualifiedName.getKind().isUnqualified() && !isSpecialClassName(unqualifiedName.getName())) {
+            result = isAliasedClassName(unqualifiedName.getSegments().getFirst(), offset, inScope);
+        }
+        return result;
+    }
+
+    private static boolean isAliasedClassName(final String className, final int offset, final Scope inScope) {
+        boolean result = false;
+        Scope scope = inScope;
+        while (scope != null && !(scope instanceof NamespaceScope)) {
+            scope = scope.getInScope();
+        }
+        if (scope != null) {
+            result = isAlias(className, offset, (NamespaceScope) scope);
+        }
+        return result;
+    }
+
+    private static boolean isAlias(final String name, final int offset, final NamespaceScope namespaceScope) {
+        boolean result = false;
+        for (UseScope useElement : namespaceScope.getDeclaredUses()) {
+            if (useElement.getOffset() < offset) {
+                AliasedName aliasName = useElement.getAliasedName();
+                if (aliasName != null) {
+                    if (name.equals(aliasName.getAliasName())) {
+                        result = true;
+                        break;
                     }
                 }
             }
@@ -1352,8 +1366,7 @@ public class VariousUtils {
     @CheckForNull
     public static AliasedName getAliasedName(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
         AliasedName result = null;
-        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
-                && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
+        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
             Scope scope = inScope;
             while (scope != null && !(scope instanceof NamespaceScope)) {
                 scope = scope.getInScope();
@@ -1378,8 +1391,7 @@ public class VariousUtils {
     }
 
     public static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
-        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
-                && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
+        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
             while (inScope != null && !(inScope instanceof NamespaceScope)) {
                 inScope = inScope.getInScope();
             }
@@ -1479,6 +1491,16 @@ public class VariousUtils {
             retval = typeNames;
         }
         return retval;
+    }
+
+    /**
+     * Check if a className is "self", "static", or "parent".
+     *
+     * @param className
+     * @return
+     */
+    public static boolean isSpecialClassName(final String className) {
+        return SPECIAL_CLASS_NAMES.contains(className.toLowerCase());
     }
 
 }

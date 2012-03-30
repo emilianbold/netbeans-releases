@@ -47,11 +47,15 @@ package org.netbeans.modules.java.freeform;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
@@ -424,9 +428,42 @@ public class JavaProjectGenerator {
                 }
                 if (el.getLocalName().equals("source-level")) { // NOI18N
                     cu.sourceLevel = XMLUtil.findText(el);
+                    continue;
                 }
                 if (el.getLocalName().equals("unit-tests")) { // NOI18N
                     cu.isTests = true;
+                    continue;
+                }
+                if ("annotation-processing".equals(el.getLocalName())&&         //NOI18N
+                    JavaProjectNature.NS_JAVA_3.equals(el.getNamespaceURI())) {
+                    cu.annotationPorocessing = new JavaCompilationUnit.AnnotationProcessing();
+                    cu.annotationPorocessing.trigger = EnumSet.<AnnotationProcessingQuery.Trigger>noneOf(AnnotationProcessingQuery.Trigger.class);
+                    cu.annotationPorocessing.processors = new ArrayList<String>();
+                    cu.annotationPorocessing.processorParams = new LinkedHashMap<String, String>();
+                    for (Element apEl : XMLUtil.findSubElements(el)) {
+                        final String localName = apEl.getLocalName();
+                        if ("scan-trigger".equals(localName)) { //NOI18N
+                            cu.annotationPorocessing.trigger.add(AnnotationProcessingQuery.Trigger.ON_SCAN);
+                        } else if ("editor-trigger".equals(localName) && JavaProjectNature.NS_JAVA_3.equals(el.getNamespaceURI())) {   //NOI18N
+                            cu.annotationPorocessing.trigger.add(AnnotationProcessingQuery.Trigger.IN_EDITOR);
+                        } else if ("source-output".equals(localName) && JavaProjectNature.NS_JAVA_3.equals(el.getNamespaceURI())) {
+                            cu.annotationPorocessing.sourceOutput = XMLUtil.findText(apEl);
+                        } else if ("processor-path".equals(localName) && JavaProjectNature.NS_JAVA_3.equals(el.getNamespaceURI())) {    //NOI18N
+                            cu.annotationPorocessing.processorPath = XMLUtil.findText(apEl);
+                        } else if ("processor".equals(localName) && JavaProjectNature.NS_JAVA_3.equals(el.getNamespaceURI())) { //NOI18N
+                            cu.annotationPorocessing.processors.add(XMLUtil.findText(apEl));
+                        } else if ("processor-option".equals(localName) && JavaProjectNature.NS_JAVA_3.equals(el.getNamespaceURI())) {  //NOI18N
+                            final Element keyEl = XMLUtil.findElement(apEl, "key", JavaProjectNature.NS_JAVA_3);    //NOI18N
+                            final Element valueEl = XMLUtil.findElement(apEl, "value", JavaProjectNature.NS_JAVA_3);     //NOI18N
+                            if (keyEl != null && valueEl != null) {
+                                final String key = XMLUtil.findText(keyEl);
+                                final String value = XMLUtil.findText(valueEl);
+                                if (key != null) {
+                                    cu.annotationPorocessing.processorParams.put(key, value);
+                                }
+                            }
+                        }
+                    }
                 }
             }
             cu.output = outputs.size() > 0 ? outputs : null;
@@ -557,6 +594,43 @@ public class JavaProjectGenerator {
                 el.appendChild(doc.createTextNode(cu.sourceLevel));
                 cuEl.appendChild(el);
             }
+            if (cu.annotationPorocessing != null) {
+                el = doc.createElementNS(namespace, "annotation-processing"); // NOI18N
+                if (cu.annotationPorocessing.trigger.contains(AnnotationProcessingQuery.Trigger.ON_SCAN)) {                    
+                    el.appendChild(doc.createElementNS(namespace, "scan-trigger")); //NOI18N
+                }
+                if (cu.annotationPorocessing.trigger.contains(AnnotationProcessingQuery.Trigger.IN_EDITOR)) {
+                    el.appendChild(doc.createElementNS(namespace, "editor-trigger")); //NOI18N
+                }
+                if (cu.annotationPorocessing.sourceOutput != null) {
+                    final Element soElm = doc.createElementNS(namespace, "source-output");  //NOI18N
+                    soElm.appendChild(doc.createTextNode(cu.annotationPorocessing.sourceOutput));
+                    el.appendChild(soElm);
+                }
+                if (cu.annotationPorocessing.processorPath != null) {
+                    final Element ppElm = doc.createElementNS(namespace, "processor-path"); //NOI18N
+                    ppElm.appendChild(doc.createTextNode(cu.annotationPorocessing.processorPath));
+                    el.appendChild(ppElm);
+                }
+                for (String processor : cu.annotationPorocessing.processors) {
+                    final Element pElm = doc.createElementNS(namespace, "processor");   //NOI18N
+                    pElm.appendChild(doc.createTextNode(processor));
+                    el.appendChild(pElm);
+                }
+                for (Map.Entry<String,String> option : cu.annotationPorocessing.processorParams.entrySet()) {
+                    final Element poElm = doc.createElementNS(namespace, "processor-option");   //NOI18N
+                    final Element keyElm = doc.createElementNS(namespace,"key");  //NOI18N
+                    final Element valueElm = doc.createElementNS(namespace, "value");   //NOI18N
+                    keyElm.appendChild(doc.createTextNode(option.getKey()));
+                    if (option.getValue() != null) {
+                        valueElm.appendChild(doc.createTextNode(option.getValue()));
+                    }
+                    poElm.appendChild(keyElm);
+                    poElm.appendChild(valueElm);
+                    el.appendChild(poElm);
+                }
+                cuEl.appendChild(el);
+            }
         }
         aux.putConfigurationFragment(data, true);
     }
@@ -572,6 +646,7 @@ public class JavaProjectGenerator {
         public List<String> javadoc;
         public String sourceLevel;
         public boolean isTests;
+        public AnnotationProcessing annotationPorocessing;
         
         public String toString() {
             return "FPG.JCU[packageRoots=" + packageRoots + ", classpath=" + classpath + ", output=" + output + ", javadoc=" + javadoc + ", sourceLevel=" + sourceLevel + ",isTests=" + isTests + "]"; // NOI18N
@@ -587,6 +662,27 @@ public class JavaProjectGenerator {
             
         }
         
+        //@NotThreadSafe
+        public static final class AnnotationProcessing {
+            public Set<AnnotationProcessingQuery.Trigger> trigger;
+            public String sourceOutput;
+            public String processorPath;
+            public List<String> processors;
+            public Map<String,String> processorParams;
+
+            @Override
+            public String toString() {
+                return String.format(
+                    "Processors run: %s, source output %s, processor path: %s, processors: %s, processor options: %s",  //NOI18N
+                    trigger,
+                    sourceOutput,
+                    processorPath,
+                    processors,
+                    processorParams);
+            }
+            
+            
+        }
     }
     
     /**

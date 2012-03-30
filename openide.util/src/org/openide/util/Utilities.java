@@ -99,6 +99,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JMenuItem;
@@ -217,20 +218,6 @@ public final class Utilities {
 
     /** The operating system on which NetBeans runs*/
     private static int operatingSystem = -1;
-    private static final String[] keywords = new String[] {
-            
-            //If adding to this, insert in alphabetical order!
-            "abstract", "assert", "boolean", "break", "byte", "case", //NOI18N
-            "catch", "char", "class", "const", "continue", "default", //NOI18N
-            "do", "double", "else", "enum", "extends", "false", "final", //NOI18N
-            "finally", "float", "for", "goto", "if", "implements", //NOI18N
-            "import", "instanceof", "int", "interface", "long", //NOI18N
-            "native", "new", "null", "package", "private", //NOI18N
-            "protected", "public", "return", "short", "static", //NOI18N
-            "strictfp", "super", "switch", "synchronized", "this", //NOI18N
-            "throw", "throws", "transient", "true", "try", "void", //NOI18N
-            "volatile", "while" //NOI18N
-        };
     private static Timer clearIntrospector;
     private static ActionListener doClear;
     private static final int CTRL_WILDCARD_MASK = 32768;
@@ -389,27 +376,14 @@ public final class Utilities {
     /** Test whether a given string is a valid Java identifier.
     * @param id string which should be checked
     * @return <code>true</code> if a valid identifier
+    * @see SourceVersion#isIdentifier
+    * @see SourceVersion#isKeyword
     */
     public static boolean isJavaIdentifier(String id) {
         if (id == null) {
             return false;
         }
-
-        if (id.isEmpty()) {
-            return false;
-        }
-
-        if (!(java.lang.Character.isJavaIdentifierStart(id.charAt(0)))) {
-            return false;
-        }
-
-        for (int i = 1; i < id.length(); i++) {
-            if (!(java.lang.Character.isJavaIdentifierPart(id.charAt(i)))) {
-                return false;
-            }
-        }
-
-        return Arrays.binarySearch(keywords, id) < 0;
+        return SourceVersion.isIdentifier(id) && !SourceVersion.isKeyword(id);
     }
 
     /** Central method for obtaining <code>BeanInfo</code> for potential JavaBean classes.

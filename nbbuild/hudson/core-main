@@ -42,6 +42,7 @@ hudson.maven,\
 hudson.mercurial,\
 hudson.subversion,\
 hudson.tasklist,\
+ide.branding,\
 java.api.common,\
 java.freeform,\
 java.j2seplatform,\

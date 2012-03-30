@@ -255,6 +255,18 @@ public class UtilitiesTest extends NbTestCase {
         assertEquals ("Correctly converted", "CONTEXT_MENU", s);
     }
 
+    public void testIsJavaIdentifier() throws Exception {
+        assertTrue(Utilities.isJavaIdentifier("whatever"));
+        assertTrue(Utilities.isJavaIdentifier("Ю"));
+        assertTrue(Utilities.isJavaIdentifier("_someThing$99"));
+        assertFalse(Utilities.isJavaIdentifier("99z"));
+        assertFalse(Utilities.isJavaIdentifier("assert"));
+        assertFalse(Utilities.isJavaIdentifier("null"));
+        assertFalse(Utilities.isJavaIdentifier(""));
+        assertFalse(Utilities.isJavaIdentifier(null));
+        assertFalse(Utilities.isJavaIdentifier("some.thing"));
+    }
+
     public void testActionsToPopupWithLookup() throws Exception {
         MockLookup.setInstances(new AwtBridgeImpl());
         final List<String> commands = new ArrayList<String>();

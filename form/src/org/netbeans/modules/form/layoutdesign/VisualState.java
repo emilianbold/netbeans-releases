@@ -41,11 +41,10 @@
  */
 package org.netbeans.modules.form.layoutdesign;
 
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+import java.awt.*;
+import java.awt.geom.Area;
 import java.util.*;
+import java.util.List;
 
 /**
  * This class computes various data from the actual visual state of the real
@@ -774,8 +773,14 @@ public class VisualState implements LayoutConstants {
                 pt = PaddingType.RELATED;
             }
             desc.append(getDefaultGapDisplayName(pt));
+            if (resizing && gap.getDiffToDefaultSize() != 0) {
+                desc.append(" / " + wholeSize);
+            }
         } else {
             desc.append(prefSize);
+            if (resizing && prefSize != wholeSize) {
+                desc.append(" / " + wholeSize);
+            }
         }
         gapInfo.description = desc.toString();
 
@@ -800,8 +805,37 @@ public class VisualState implements LayoutConstants {
 
     // -----
 
-    void repaintComponent(String componentId, Graphics g) {
-        visualMapper.repaintComponent(componentId, g);
+    /**
+     * Returns a shape object suitable as a clip region for painting
+     * of the given gaps. The shape is a rectangle (large enough to accomodate
+     * all given gaps) with holes that correspond to components we don't
+     * want to paint over.
+     */
+    Shape clipForGapPainting(Collection<GapInfo> gaps) {
+        if (gaps == null || gaps.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        Area clip = null;
+        // Add area of all gaps
+        for (GapInfo gap : gaps) {
+            Area gapArea = new Area(gap.paintRect);;
+            if (clip == null) {
+                clip = gapArea;
+            } else {
+                clip.add(gapArea);
+            }
+        }
+        // Remove area of all overlapping components
+        for (GapInfo gap : gaps) {
+            if (gap.overlappingComponents != null) {
+                for (String componentId : gap.overlappingComponents) {
+                    Rectangle componentBounds = visualMapper.getComponentBounds(componentId);
+                    Area componentArea = new Area(componentBounds);
+                    clip.subtract(componentArea);
+                }
+            }
+        }
+        return clip;
     }
 
     static String getDefaultGapDisplayName(PaddingType pt) {

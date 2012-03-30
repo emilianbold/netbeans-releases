@@ -102,6 +102,13 @@ public @interface ServiceProvider {
      * For example, <code>Projects/sometype/Nodes</code> could be used.
      * This style of registration would be recognized by {@link Lookups#forPath}
      * rather than {@link Lookup#getDefault}.
+     * <p>
+     * The providers of a registration slot are advised to have
+     * a look at {@link NamedServiceDefinition} and consider using it since 
+     * version 8.14.
+     * The {@link NamedServiceDefinition} offers various benefits over 
+     * plain {@link #path()} usage including type checking and lower 
+     * possibility of typos.
      */
     String path() default "";
 

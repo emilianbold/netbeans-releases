@@ -325,6 +325,9 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
             conn.setDoInput(true);
             conn.setRequestProperty("User-Agent", "NetBeans");      //NOI18N
             InputStream is = conn.getInputStream();
+            if (is == null) {
+                throw new IOException("Null input stream from "+conn);
+            }
             try{
                 while(true) {
                     int ch = is.read();

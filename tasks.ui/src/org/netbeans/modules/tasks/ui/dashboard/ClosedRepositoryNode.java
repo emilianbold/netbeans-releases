@@ -123,4 +123,8 @@ public class ClosedRepositoryNode extends AbstractRepositoryNode {
             iconOpenOver = ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/open_over.png", true); //NOI18N
         }
     }
+
+    @Override
+    void updateContent() {
+    }
 }

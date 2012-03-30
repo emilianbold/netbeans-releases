@@ -244,7 +244,7 @@ public final class DashboardViewer {
                 DashboardViewer.getInstance().setActiveTaskNode(toAdd);
             }
             model.contentChanged(destCategoryNode);
-            destCategoryNode.refresh();
+            destCategoryNode.updateContent();
         }
         storeCategory(category);
     }
@@ -254,8 +254,8 @@ public final class DashboardViewer {
         taskNode.setCategory(null);
         categoryNode.removeTaskNode(taskNode);
         model.contentChanged(categoryNode);
-        //TODO only remove that child, dont refresh all
-        categoryNode.refresh();
+        //TODO only remove that child, dont updateContent all
+        categoryNode.updateContent();
         storeCategory(categoryNode.getCategory());
     }
 
@@ -385,13 +385,13 @@ public final class DashboardViewer {
             if (node instanceof AbstractCategoryNode) {
                 AbstractCategoryNode displNode = (AbstractCategoryNode) node;
                 if (categoryNode.compareTo(displNode) < 0) {
-                    model.addRoot(model.getAllNodes().indexOf(node), categoryNode);
+                    model.addRoot(model.getRootNodes().indexOf(node), categoryNode);
                     added = true;
                     break;
                 }
             } else {
                 // the end of category list, add
-                model.addRoot(model.getAllNodes().indexOf(node), categoryNode);
+                model.addRoot(model.getRootNodes().indexOf(node), categoryNode);
                 added = true;
                 break;
             }
@@ -415,9 +415,6 @@ public final class DashboardViewer {
     }
 
     private void storeClosedCategories() {
-        if (closedCategoryNodes.isEmpty()) {
-            return;
-        }
         final DashboardStorage storage = DashboardStorage.getInstance();
         final List<String> names = new ArrayList<String>(closedCategoryNodes.size());
         for (ClosedCategoryNode categoryNode : closedCategoryNodes) {
@@ -481,15 +478,15 @@ public final class DashboardViewer {
             Repository repository = closedRepositoryNode.getRepository();
             closedRepositoryNodes.remove(closedRepositoryNode);
 
-            //remove opened category from closed categories part of the view
+            //remove opened category from closed repository part of the view
             model.removeRoot(closedRepositoryNode);
 
             if (closedRepositoryNodes.isEmpty() && closedCategoryNodes.isEmpty()) {
                 model.removeRoot(titleClosedNode);
             }
-            //add category to the model - sorted
+            //add repository to the model - sorted
             int index = model.getRootNodes().indexOf(titleRepositoryNode) + 1;
-            final RepositoryNode repositoryNode = new RepositoryNode(repository);
+            final RepositoryNode repositoryNode = new RepositoryNode(repository, closedRepositoryNode.isLoaded());
             repositoryNodes.add(repositoryNode);
             Collections.sort(repositoryNodes);
             addRepositoryToModel(index, repositoryNode);
@@ -506,13 +503,13 @@ public final class DashboardViewer {
             if (node instanceof AbstractRepositoryNode) {
                 AbstractRepositoryNode displNode = (AbstractRepositoryNode) node;
                 if (repositoryNode.compareTo(displNode) < 0) {
-                    model.addRoot(model.getAllNodes().indexOf(node), repositoryNode);
+                    model.addRoot(model.getRootNodes().indexOf(node), repositoryNode);
                     added = true;
                     break;
                 }
             } else {
                 // the end of category list, add
-                model.addRoot(model.getAllNodes().indexOf(node), repositoryNode);
+                model.addRoot(model.getRootNodes().indexOf(node), repositoryNode);
                 added = true;
                 break;
             }
@@ -523,9 +520,6 @@ public final class DashboardViewer {
     }
 
     private void storeClosedRepositories() {
-        if (closedRepositoryNodes.isEmpty()) {
-            return;
-        }
         final DashboardStorage storage = DashboardStorage.getInstance();
         final List<String> ids = new ArrayList<String>(closedRepositoryNodes.size());
         for (ClosedRepositoryNode repositoryNode : closedRepositoryNodes) {
@@ -659,7 +653,7 @@ public final class DashboardViewer {
                 closedRepoNodes.add(closedRepositoryNode);
             } else {
                 RepositoryNode repositoryNode = new RepositoryNode(repository, false);
-                //TODO uncomment when query refresh is fixed
+                //TODO uncomment when query updateContent is fixed
                 //refreshQueries(repository.getQueries());
                 repoNodes.add(repositoryNode);
             }
@@ -712,17 +706,31 @@ public final class DashboardViewer {
     }
 
     private void refreshContent() {
+        //update filtered nodes
+        for (CategoryNode categoryNode : categoryNodes) {
+            categoryNode.updateContent();
+        }
+        for (ClosedCategoryNode closedCategoryNode : closedCategoryNodes) {
+            closedCategoryNode.updateContent();
+        }
+        for (RepositoryNode repositoryNode : repositoryNodes) {
+            repositoryNode.updateContent();
+        }
+        for (ClosedRepositoryNode closedRepositoryNode : closedRepositoryNodes) {
+            closedRepositoryNode.updateContent();
+        }
+
         //remove closed nodes title during filtering
         if (!appliedFilters.isEmpty()) {
             model.removeRoot(titleClosedNode);
-        } else if (!model.getRootNodes().contains(titleClosedNode)) {
+        } else if (!model.getRootNodes().contains(titleClosedNode) && (!closedCategoryNodes.isEmpty() || !closedRepositoryNodes.isEmpty())) {
             model.addRoot(-1, titleClosedNode);
         }
         setRepositories(repositoryNodes, closedRepositoryNodes);
         setCategories(categoryNodes, closedCategoryNodes);
     }
 
-    void setCategories(List<CategoryNode> catNodes, List<ClosedCategoryNode> closedCatNodes) {
+    private void setCategories(List<CategoryNode> catNodes, List<ClosedCategoryNode> closedCatNodes) {
         synchronized (LOCK) {
             removeNodesFromModel(AbstractCategoryNode.class);
             categoryNodes = catNodes;
@@ -730,7 +738,7 @@ public final class DashboardViewer {
             mapCategoryToNode.clear();
             Collections.sort(categoryNodes);
             Collections.sort(closedCategoryNodes);
-            int index = model.getAllNodes().indexOf(titleCategoryNode) + 1;
+            int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
             for (CategoryNode categoryNode : categoryNodes) {
                 if (appliedFilters.isEmpty() || !categoryNode.getFilteredTaskNodes().isEmpty()) {
                     taskFilterHits += categoryNode.getTotalCount();
@@ -738,7 +746,7 @@ public final class DashboardViewer {
                     addRootToModel(index++, categoryNode);
                 }
             }
-            index = model.getAllNodes().indexOf(titleClosedNode) + 1;
+            index = model.getRootNodes().indexOf(titleClosedNode) + 1;
             for (ClosedCategoryNode closedCategoryNode : closedCategoryNodes) {
                 //for filtering dont show closed nodes
                 if (appliedFilters.isEmpty()) {
@@ -749,21 +757,21 @@ public final class DashboardViewer {
         }
     }
 
-    void setRepositories(List<RepositoryNode> repoNodes, List<ClosedRepositoryNode> closedRepoNodes) {
+    private void setRepositories(List<RepositoryNode> repoNodes, List<ClosedRepositoryNode> closedRepoNodes) {
         synchronized (LOCK) {
             removeNodesFromModel(AbstractRepositoryNode.class);
             repositoryNodes = repoNodes;
             closedRepositoryNodes = closedRepoNodes;
             Collections.sort(this.repositoryNodes);
             Collections.sort(this.closedRepositoryNodes);
-            int index = model.getAllNodes().indexOf(titleRepositoryNode) + 1;
+            int index = model.getRootNodes().indexOf(titleRepositoryNode) + 1;
             for (RepositoryNode repositoryNode : repositoryNodes) {
                 if (appliedFilters.isEmpty() || !repositoryNode.getFilteredQueryNodes().isEmpty()) {
                     taskFilterHits += repositoryNode.getFilterHits();
                     addRootToModel(index++, repositoryNode);
                 }
             }
-            index = model.getAllNodes().indexOf(titleClosedNode) + closedCategoryNodes.size() + 1;
+            index = model.getRootNodes().indexOf(titleClosedNode) + closedCategoryNodes.size() + 1;
             for (ClosedRepositoryNode closedRepositoryNode : closedRepositoryNodes) {
                 //for filtering dont show closed nodes
                 if (appliedFilters.isEmpty()) {

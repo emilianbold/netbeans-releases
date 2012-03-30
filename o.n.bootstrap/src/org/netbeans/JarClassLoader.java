@@ -82,7 +82,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.jar.Attributes;
-import java.util.jar.Attributes.Name;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -104,6 +103,7 @@ public class JarClassLoader extends ProxyClassLoader {
     static void initializeCache() {
         cache = Stamps.getModulesJARs();
         archive = new Archive(cache);
+        PackageAttrsCache.initialize();
     }
     
     /**
@@ -186,36 +186,18 @@ public class JarClassLoader extends ProxyClassLoader {
     
     
     protected Package definePackage(String name, Manifest man, URL url)
-	throws IllegalArgumentException
-    {
-        if (man == null ) {
+    throws IllegalArgumentException {
+        if (man == null) {
             return definePackage(name, null, null, null, null, null, null, null);
         }
-        
-	String path = name.replace('.', '/').concat("/"); // NOI18N
-	Attributes spec = man.getAttributes(path);
-        Attributes main = man.getMainAttributes();
-	
-        String specTitle = getAttr(spec, main, Name.SPECIFICATION_TITLE);
-        String implTitle = getAttr(spec, main, Name.IMPLEMENTATION_TITLE);
-        String specVersion = getAttr(spec, main, Name.SPECIFICATION_VERSION);
-        String implVersion = getAttr(spec, main, Name.IMPLEMENTATION_VERSION);
-        String specVendor = getAttr(spec, main, Name.SPECIFICATION_VENDOR);
-        String implVendor = getAttr(spec, main, Name.IMPLEMENTATION_VENDOR);
-        String sealed      = getAttr(spec, main, Name.SEALED);
 
-        URL sealBase = "true".equalsIgnoreCase(sealed) ? url : null; // NOI18N
-	return definePackage(name, specTitle, specVersion, specVendor,
-			     implTitle, implVersion, implVendor, sealBase);
+        String path = name.replace('.', '/').concat("/"); // NOI18N
+        String[] arr = PackageAttrsCache.findPackageAttrs(url, man, path);
+        URL sealBase = "true".equalsIgnoreCase(arr[6]) ? url : null; // NOI18N
+        return definePackage(name, arr[0], arr[1], arr[2],
+            arr[3], arr[4], arr[5], sealBase);
     }
-
-    private static String getAttr(Attributes spec, Attributes main, Name name) {
-        String val = null;
-        if (spec != null) val = spec.getValue (name);
-        if (val == null && main != null) val = main.getValue (name);
-        return val;
-    }
-
+    
     private Boolean patchingBytecode;
     @Override
     protected Class doLoadClass(String pkgName, String name) {
@@ -223,7 +205,7 @@ public class JarClassLoader extends ProxyClassLoader {
         
         // look up the Sources and return a class based on their content
         for( int i=0; i<sources.length; i++ ) {
-            Source src = sources[i];
+            final Source src = sources[i];
             byte[] data = src.getClassData(path);
             if (data == null) continue;
 
@@ -254,7 +236,32 @@ public class JarClassLoader extends ProxyClassLoader {
                 // XXX full sealing check, URLClassLoader does something more
                 if (pkg.isSealed() && !pkg.isSealed(src.getURL())) throw new SecurityException("sealing violation"); // NOI18N
             } else {
-                Manifest man = module == null || src != sources[0] ? src.getManifest() : module.getManifest();
+                class DelayedManifest extends Manifest {
+                    private Manifest delegate;
+                    
+                    private Manifest delegate() {
+                        if (delegate == null) {
+                            delegate = module == null || src != sources[0] ? src.getManifest() : module.getManifest();
+                        }
+                        return delegate;
+                    }
+                    
+                    @Override
+                    public Attributes getMainAttributes() {
+                        return delegate().getMainAttributes();
+                    }
+
+                    @Override
+                    public Attributes getAttributes(String name) {
+                        return delegate().getAttributes(name);
+                    }
+
+                    @Override
+                    public Map<String, Attributes> getEntries() {
+                        return delegate().getEntries();
+                    }
+                }
+                Manifest man = new DelayedManifest();
                 try {
                     definePackage(pkgName, man, src.getURL());
                 } catch (IllegalArgumentException x) {
@@ -863,13 +870,21 @@ public class JarClassLoader extends ProxyClassLoader {
     }
     
     private static Iterable<String> getCoveredPackages(Module mod, Source[] sources) {
+        if (mod != null) {
+            Set<String> ret = mod.getCoveredPackages();
+            if (ret != null) {
+                return ret;
+            }
+        }
+        
         Set<String> known = new HashSet<String>();
         Manifest m = mod == null ? null : mod.getManifest();
         if (m != null) {
             Attributes attr = m.getMainAttributes();
-            String pack = attr.getValue("Covered-Packages");
+            String pack = attr.getValue("Covered-Packages"); // NOI18N
             if (pack != null) {
                 known.addAll(Arrays.asList(pack.split(",", -1)));
+                mod.registerCoveredPackages(known);
                 return known;
             }
         }
@@ -879,9 +894,8 @@ public class JarClassLoader extends ProxyClassLoader {
         for (Source s : sources) s.listCoveredPackages(known, save);
 
         if (save.length() > 0) save.setLength(save.length()-1);
-        if (m != null) {
-            Attributes attr = m.getMainAttributes();
-            attr.putValue("Covered-Packages", save.toString());
+        if (mod != null) {
+            mod.registerCoveredPackages(known);
         }
         return known;
     }
