@@ -101,6 +101,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     private DependencyTracking depScn = null;
     
     private static final Map<Severity,Integer> severity2index;
+    private static final Map<Integer,Severity> index2Severity;
     private static final Map<DependencyTracking,Integer> deptracking2index;
     
     private static final String DESCRIPTION_HEADER = 
@@ -117,6 +118,11 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         severity2index.put( Severity.ERROR, 0  );
         severity2index.put( Severity.VERIFIER, 1  );
         severity2index.put( Severity.HINT, 2  );
+        severity2index.put( Severity.WARNING, 1  );
+        index2Severity = new HashMap<Integer, Severity>();
+        index2Severity.put(0, Severity.ERROR);
+        index2Severity.put(1, Severity.VERIFIER);
+        index2Severity.put(2, Severity.HINT);
         deptracking2index = new EnumMap<DepScanningSettings.DependencyTracking, Integer>(DepScanningSettings.DependencyTracking.class);
         deptracking2index.put(DependencyTracking.ENABLED, 0);
         deptracking2index.put(DependencyTracking.ENABLED_WITHIN_PROJECT, 1);
@@ -440,12 +446,13 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     }
     
     private Severity index2severity( int index ) {
-        for( Map.Entry<Severity,Integer> e : severity2index.entrySet()) {
-            if ( e.getValue() == index ) {
-                return e.getKey();
-            }
+        Severity s = index2Severity.get(index);
+
+        if (s == null) {
+            throw new IllegalStateException( "Unknown severity");
         }
-        throw new IllegalStateException( "Unknown severity");
+
+        return s;
     }
        
     private DependencyTracking index2deptracking( int index ) {
