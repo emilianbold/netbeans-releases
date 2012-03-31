@@ -47,10 +47,10 @@ chmod -R a+x *.sh
 commonname=$work_dir/zip/moduleclusters/$prefix-$buildnumber 
 if [ -z $BUILD_NBJDK7 ] || [ 0 -eq $BUILD_NBJDK7 ] ; then
     target="build-all-dmg"
-    build_jdk7 = 0
+    build_jdk7=0
 else
     target="build-jdk-bundle-dmg"
-    build_jdk7 = 1
+    build_jdk7=1
 fi
 
 ant -f $basename/build.xml $target -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='false' -Dbuild.jdk7=$build_jdk7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
