@@ -167,12 +167,12 @@ Microsystems, Inc. All Rights Reserved.
 
         <property name="fx.clusters" value="javafx(javafx), javafx-mac(javafx)"/>
 
-        <condition property="all.clusters" value="${main.clusters}" else="${main.clusters},${fx.clusters}"> 
-            <equals arg1="${javafx.build}" arg2="0"/>
+        <condition property="all.clusters" value="${main.clusters},${fx.clusters}" else="${main.clusters}"> 
+            <equals arg1="${javafx.build}" arg2="1"/>
         </condition>
         
-        <condition property="clusters" value="${all.clusters}" else="${jdk-bundle.clusters}"> 
-            <equals arg1="${build.jdk7}" arg2="0"/>
+        <condition property="clusters" value="${jdk-bundle.clusters}" else="${all.clusters}"> 
+            <equals arg1="${build.jdk7}" arg2="1"/>
         </condition>
         
     </target>
@@ -253,11 +253,11 @@ Microsystems, Inc. All Rights Reserved.
                                         "/>
         <property name="fx.module" value="javafx(${javafx-title})"/>
 
-        <condition property="all.modules" value="${main.modules}" else="${main.modules},${fx.module}"> 
-            <equals arg1="${javafx.build}" arg2="0"/>
+        <condition property="all.modules" value="${main.modules},${fx.module}" else="${main.modules}"> 
+            <equals arg1="${javafx.build}" arg2="1"/>
         </condition>
-        <condition property="modules" value="${all.modules}" else="${jdk-bundle.modules}"> 
-            <equals arg1="${build.jdk7}" arg2="0"/>
+        <condition property="modules" value="${jdk-bundle.modules}" else="${all.modules}"> 
+            <equals arg1="${build.jdk7}" arg2="1"/>
         </condition>
     </target>    
 
@@ -330,11 +330,11 @@ Microsystems, Inc. All Rights Reserved.
 
         <property name="jdk-bundle.bundles" value="-jdk(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/${jdk.package.name}.pkg)"/>
 
-        <condition property="all.bundles" value="${main.bundles}" else="${main.bundles},${fx.bundles}"> 
-            <equals arg1="${javafx.build}" arg2="0"/>
+        <condition property="all.bundles" value="${main.bundles},${fx.bundles}" else="${main.bundles}"> 
+            <equals arg1="${javafx.build}" arg2="1"/>
         </condition>
-        <condition property="bundles" value="${all.bundles}" else="${jdk-bundle.bundles}"> 
-            <equals arg1="${build.jdk7}" arg2="0"/>
+        <condition property="bundles" value="${jdk-bundle.bundles}" else="${all.bundles}"> 
+            <equals arg1="${build.jdk7}" arg2="1"/>
         </condition>
         
     </target>
