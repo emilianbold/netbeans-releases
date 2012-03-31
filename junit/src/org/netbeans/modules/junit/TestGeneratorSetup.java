@@ -222,6 +222,10 @@ public final class TestGeneratorSetup implements TestabilityJudge {
                                         CreateTestParam.INC_SETUP));
         generateTestTearDown = Boolean.TRUE.equals(params.get(
                                         CreateTestParam.INC_TEAR_DOWN));
+        generateClassSetUp = Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_CLASS_SETUP));
+        generateClassTearDown = Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_CLASS_TEAR_DOWN));
         
         generateMainMethod = settings.isGenerateMainMethod();
     }
@@ -253,6 +257,8 @@ public final class TestGeneratorSetup implements TestabilityJudge {
         generateSourceCodeHints = settings.isBodyComments();
         generateTestSetUp = settings.isGenerateSetUp();
         generateTestTearDown = settings.isGenerateTearDown();
+        generateClassSetUp = settings.isGenerateClassSetUp();
+        generateClassTearDown = settings.isGenerateClassTearDown();
         generateMainMethod = settings.isGenerateMainMethod();
     }
     
