@@ -41,19 +41,16 @@
  */
 package org.netbeans.modules.profiler.ppoints;
 
-import org.openide.modules.ModuleInstall;
+import org.openide.modules.OnStop;
 
 /**
  * Manages a module's lifecycle. Remember that an installer is optional and
  * often not needed at all.
  */
-public class Installer extends ModuleInstall {
-
+@OnStop
+public class Installer implements Runnable {
     @Override
-    public boolean closing() {
+    public void run() {
         ProfilingPointsManager.getDefault().ideClosing(); // TODO: dirty profiling points should be persisted on document save!
-        return true;
     }
-    
-    
 }

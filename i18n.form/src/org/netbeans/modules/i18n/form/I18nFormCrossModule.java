@@ -45,8 +45,7 @@
 package org.netbeans.modules.i18n.form;
 
 import org.netbeans.modules.form.FormPropertyEditorManager;
-import org.netbeans.modules.i18n.I18nSupport;
-import org.openide.modules.ModuleInstall;
+import org.openide.modules.OnStart;
 
 /**
  * Installation class for i18n to form cross dependency module.
@@ -54,15 +53,11 @@ import org.openide.modules.ModuleInstall;
  *
  * @author Peter Zavadsky
  */
-public class I18nFormCrossModule extends ModuleInstall {
-
+@OnStart
+public class I18nFormCrossModule implements Runnable {
     /** Registers property editor in form module and factory in i18n module. */
-    public void restored() {
-        registerFormPropertyEditor();
-    }
-    
-    /** Registers <code>FormI18nStringEditor</code> form property editor to form module. */
-    private void registerFormPropertyEditor() {
+    @Override
+    public void run() {
         Class newEditorClass = FormI18nStringEditor.class;
         Class newEditorClassInteger = FormI18nIntegerEditor.class;
         Class newEditorClassMnemonic = FormI18nMnemonicEditor.class;

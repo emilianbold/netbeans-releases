@@ -44,29 +44,19 @@
 
 package org.netbeans.spi.palette;
 
-import org.openide.modules.ModuleInstall;
-import org.openide.windows.WindowManager;
+import org.openide.windows.OnShowing;
 
 /**
  *
  * @author S. Aubrecht
  * @since 1.10
  */
-public class PaletteModule extends ModuleInstall {
-    
-    /** Creates a new instance of ModuleInstall */
-    public PaletteModule() {
-    }
-    
+@OnShowing
+public class PaletteModule implements Runnable {
     @Override
-    public void restored() {
-        super.restored();
-        WindowManager.getDefault().invokeWhenUIReady( new Runnable() {
-            public void run() {
-                //start listening to activated TopComponents and Nodes 
-                //to see if palette window should be displayed
-                PaletteSwitch.getDefault().startListening();
-            }
-        });
+    public void run() {
+        //start listening to activated TopComponents and Nodes 
+        //to see if palette window should be displayed
+        PaletteSwitch.getDefault().startListening();
     }
 }
