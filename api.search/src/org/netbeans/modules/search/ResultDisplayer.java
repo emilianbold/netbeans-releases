@@ -124,6 +124,7 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
 
     @Override
     public void searchStarted() {
+        resultModel.setStartTime();
         resultPanel.searchStarted();
     }
 

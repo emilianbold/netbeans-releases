@@ -71,6 +71,8 @@ public class MatchingObjectNode extends AbstractNode {
     private Node original;
     private OrigNodeListener origNodeListener;
     private boolean valid = true;
+    private PropertyChangeListener validityListener;
+    private PropertyChangeListener selectionListener;
     PropertySet[] propertySets;
 
     public MatchingObjectNode(Node original,
@@ -94,35 +96,13 @@ public class MatchingObjectNode extends AbstractNode {
         } else {
             setInvalidOriginal();
         }
+        validityListener = new ValidityListener(matchingObject);
         matchingObject.addPropertyChangeListener(
                 MatchingObject.PROP_INVALIDITY_STATUS,
-                new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent e) {
-                        if (matchingObject.getInvalidityStatus()
-                                == MatchingObject.InvalidityStatus.DELETED) {
-                            matchingObject.removePropertyChangeListener(
-                                    MatchingObject.PROP_INVALIDITY_STATUS,
-                                    this);
-                        }
-                        EventQueue.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                setInvalidOriginal();
-                            }
-                        });
-                    }
-                });
+                validityListener);
+        selectionListener = new SelectionListener();
         matchingObject.addPropertyChangeListener(MatchingObject.PROP_SELECTED,
-                new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent e) {
-
-                        fireIconChange();
-                        ResultsOutlineSupport.toggleParentSelected(
-                                MatchingObjectNode.this);
-                    }
-                });
+                selectionListener);
     }
 
     @Override
@@ -198,6 +178,16 @@ public class MatchingObjectNode extends AbstractNode {
     public void clean() {
         if (original != null && origNodeListener != null && valid) {
             original.removeNodeListener(origNodeListener);
+        }
+        if (validityListener != null) {
+            matchingObject.removePropertyChangeListener(
+                    MatchingObject.PROP_INVALIDITY_STATUS, validityListener);
+            validityListener = null;
+        }
+        if (selectionListener != null) {
+            matchingObject.removePropertyChangeListener(
+                    MatchingObject.PROP_SELECTED, selectionListener);
+            selectionListener = null;
         }
     }
 
@@ -298,6 +288,45 @@ public class MatchingObjectNode extends AbstractNode {
             if (editCookie != null) {
                 editCookie.edit();
             }
+        }
+    }
+
+    private class ValidityListener implements PropertyChangeListener {
+
+        private final MatchingObject matchingObject;
+
+        public ValidityListener(MatchingObject matchingObject) {
+            this.matchingObject = matchingObject;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent e) {
+            if (matchingObject.getInvalidityStatus()
+                    == MatchingObject.InvalidityStatus.DELETED) {
+                matchingObject.removePropertyChangeListener(
+                        MatchingObject.PROP_INVALIDITY_STATUS,
+                        this);
+            }
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    setInvalidOriginal();
+                }
+            });
+        }
+    }
+
+    private class SelectionListener implements PropertyChangeListener {
+
+        public SelectionListener() {
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent e) {
+
+            fireIconChange();
+            ResultsOutlineSupport.toggleParentSelected(
+                    MatchingObjectNode.this);
         }
     }
 }

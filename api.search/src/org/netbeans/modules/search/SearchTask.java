@@ -121,12 +121,6 @@ final class SearchTask implements Runnable, Cancellable {
         }
     }
 
-    // TODO remove?
-    SearchTask createNewGeneration() {
-        return new SearchTask(searchComposition,
-                              replacing);
-    }
-
     /**
      * Stops this search task.
      * This method also sets a value of attribute
