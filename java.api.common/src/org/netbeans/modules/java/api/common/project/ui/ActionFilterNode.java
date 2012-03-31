@@ -363,7 +363,7 @@ final class ActionFilterNode extends FilterNode {
                 if (fobj == null) {
                     if (n.isLeaf() && n.getActions(false).length == 0) {
                         //"Please Wait..." node
-                        return new Node[] { new FilterNode(n)};
+                        return super.createNodes(n);
                     } else {
                         assert false : String.format(
                             "DataNode without FileObject in Lookup %s : %s",   //NOI18N
