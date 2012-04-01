@@ -449,27 +449,27 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
         }
 
         @Override
-        public <A> A adapt(Class<A> type) {
+        public Object adapt(Class type) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public int compareTo(Bundle o) {
+        public int compareTo(Object o) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public <S> ServiceRegistration<S> registerService(Class<S> type, S s, Dictionary<String, ?> dctnr) {
+        public ServiceRegistration registerService(Class type, Object s, Dictionary dctnr) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public <S> ServiceReference<S> getServiceReference(Class<S> type) {
+        public ServiceReference getServiceReference(Class type) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public <S> Collection<ServiceReference<S>> getServiceReferences(Class<S> type, String string) throws InvalidSyntaxException {
+        public Collection getServiceReferences(Class type, String string) throws InvalidSyntaxException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -648,7 +648,7 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
         }
 
         @Override
-        public <A> A adapt(Class<A> type) {
+        public Object adapt(Class type) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -658,7 +658,7 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
         }
 
         @Override
-        public int compareTo(Bundle o) {
+        public int compareTo(Object o) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
