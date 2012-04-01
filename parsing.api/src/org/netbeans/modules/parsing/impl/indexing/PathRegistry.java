@@ -127,12 +127,13 @@ public final class PathRegistry implements Runnable {
 
     private final Listener listener;
     private final List<PathRegistryListener> listeners;
-    private final AtomicReference<LogContext> logCtx;
+    
+    // @GuardedBy(this);
+    private LogContext logCtx;
 
     @SuppressWarnings("LeakingThisInConstructor")
     private  PathRegistry () {
         firerTask = firer.create(this, true);
-        logCtx = new AtomicReference<LogContext>();
         regs = GlobalPathRegistry.getDefault();
         assert regs != null;
         this.listener = new Listener ();
@@ -482,11 +483,15 @@ public final class PathRegistry implements Runnable {
         }
 
         Iterable<? extends PathRegistryEvent.Change> ch;
+        LogContext ctx;
+        
         synchronized (this) {
             ch = new ArrayList<PathRegistryEvent.Change>(this.changes);
+            ctx = this.logCtx;
+            this.logCtx = null;
             this.changes.clear();
         }
-        fire(ch);
+        fire(ch, ctx);
         LOGGER.log(Level.FINE, "resetCacheAndFire, firing done"); // NOI18N
     }
 
@@ -810,21 +815,27 @@ public final class PathRegistry implements Runnable {
     }
 
     private void scheduleFirer(Collection<? extends ClassPath> paths) {
-        if (logCtx.get() == null) {
-            logCtx.compareAndSet(null, LogContext.create(LogContext.EventType.PATH, null).addPaths(paths));
+        synchronized (this) {
+            if (logCtx == null) {
+                logCtx = LogContext.create(LogContext.EventType.PATH, null);
+            }
+            logCtx.addPaths(paths);
         }
         firerTask.schedule(0);
     }
 
     private void scheduleFirer(Iterable<? extends URL> roots) {
-        if (logCtx.get() == null) {
-            logCtx.compareAndSet(null, LogContext.create(LogContext.EventType.PATH, null).addRoots(roots));
+        synchronized (this) {
+            if (logCtx == null) {
+                logCtx = LogContext.create(LogContext.EventType.PATH, null);
+            }
+            logCtx.addRoots(roots);
         }
         firerTask.schedule(0);
     }
 
-    private void fire (final Iterable<? extends PathRegistryEvent.Change> changes) {
-        final PathRegistryEvent event = new PathRegistryEvent(this, changes, logCtx.getAndSet(null));
+    private void fire (final Iterable<? extends PathRegistryEvent.Change> changes, LogContext ctx) {
+        final PathRegistryEvent event = new PathRegistryEvent(this, changes, ctx);
         for (PathRegistryListener l : listeners) {
             l.pathsChanged(event);
         }

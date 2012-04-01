@@ -69,6 +69,11 @@ public class StartServer extends Task implements Deployment.Logger {
      */
     private boolean debugmode = false;
 
+    /**
+     * Holds value of property profilemode.
+     */
+    private boolean profilemode = false;
+    
     public void execute() throws BuildException {
 
         ClassLoader originalLoader = null;
@@ -107,6 +112,8 @@ public class StartServer extends Task implements Deployment.Logger {
             try {
                 if (debugmode) {
                     si.startDebug(ui);
+                } else if (profilemode) {
+                    si.startProfile(false, ui);
                 } else {
                     si.start(ui);
                 }
@@ -156,6 +163,14 @@ public class StartServer extends Task implements Deployment.Logger {
     public boolean getDebugmode() {
         return this.debugmode;
     }
+    
+    /**
+     * Getter for property profilemode.
+     * @return Value of property profilemode.
+     */
+    public boolean getProfilemode() {
+        return this.profilemode;
+    }
 
     /**
      * Setter for property debugmode.
@@ -163,5 +178,13 @@ public class StartServer extends Task implements Deployment.Logger {
      */
     public void setDebugmode(boolean debugmode) {
         this.debugmode = debugmode;
+    }
+    
+    /**
+     * Setter for property profilemode.
+     * @param profilemode New value of property profilemode.
+     */
+    public void setProfilemode(boolean profilemode) {
+        this.profilemode = profilemode;
     }
 }

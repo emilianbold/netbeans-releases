@@ -287,7 +287,9 @@ class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplemen
                         }
                         final String key = XMLUtil.findText(keyElement);
                         final String value = XMLUtil.findText(valueElement);
-                        result.put(key, eval.evaluate(value));
+                        result.put(
+                            key,
+                            value == null ? null : eval.evaluate(value));
                     }
                 }
             }

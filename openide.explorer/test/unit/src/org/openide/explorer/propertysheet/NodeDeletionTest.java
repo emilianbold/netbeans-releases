@@ -46,6 +46,7 @@ package org.openide.explorer.propertysheet;
 
 import java.awt.BorderLayout;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
@@ -54,6 +55,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -67,6 +70,11 @@ import org.openide.nodes.Sheet;
 
 // This test class tests the main functionality of the property sheet
 public class NodeDeletionTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NodeDeletionTest.class);
+    }
+
     private PropertySheet ps = null;
     public NodeDeletionTest(String name) {
         super(name);

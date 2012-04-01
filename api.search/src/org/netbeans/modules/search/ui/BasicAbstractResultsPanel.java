@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -53,6 +54,7 @@ import javax.swing.AbstractButton;
 import javax.swing.ActionMap;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
+import javax.swing.UIManager;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.BasicSearchCriteria;
 import org.netbeans.modules.search.FindDialogMemory;
@@ -98,15 +100,19 @@ public abstract class BasicAbstractResultsPanel
     private static final String MODE_FLAT = "flat";                     //NOI18N
     private static final String MODE_TREE = "tree";                     //NOI18N
     protected ResultModel resultModel;
-    private JButton nextButton;
-    private JButton prevButton;
-    private JToggleButton expandButton;
-    private JToggleButton toggleViewButton;
-    private JButton showDetailsButton;
+    protected JButton nextButton;
+    protected JButton prevButton;
+    protected JToggleButton expandButton;
+    protected JToggleButton toggleViewButton;
+    protected JButton showDetailsButton;
     protected boolean details;
-    private BasicComposition composition;
+    protected BasicComposition composition;
     protected final ResultsOutlineSupport resultsOutlineSupport;
     private NodeListener resultsNodeAdditionListener;
+    protected static final boolean isMacLaf =
+            "Aqua".equals(UIManager.getLookAndFeel().getID());          //NOI18N
+    protected static final Color macBackground =
+            UIManager.getColor("NbExplorerView.background");            //NOI18N
 
     public BasicAbstractResultsPanel(ResultModel resultModel,
             BasicComposition composition, boolean details,
@@ -620,5 +626,10 @@ public abstract class BasicAbstractResultsPanel
         public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
             shift(direction);
         }
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        return getOutlineView().requestFocusInWindow();
     }
 }

@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -204,7 +205,6 @@ public class DependenciesNode extends AbstractNode {
                 break;
             default:
                 for (Artifact a : arts) {
-                    fixFile(a);
                     if (!a.getArtifactHandler().isAddedToClasspath()) {
                         lst.add(new DependencyWrapper(a));
                     }
@@ -214,25 +214,11 @@ public class DependenciesNode extends AbstractNode {
             return lst.size();
         }
         
-        private void fixFile(Artifact a) {
-            if (a.getFile() == null) {
-                ArtifactRepository local = project.getEmbedder().getLocalRepository();
-                String path = local.pathOf(a);
-                if (!path.endsWith('.' + a.getType())) {
-                    // XXX why does this happen? just for fake artifacts
-                    path += '.' + a.getType();
-                }
-                File f = new File(local.getBasedir(), path);
-                a.setFile(f);
-            }
-        }
-
         private void create(Set<DependencyWrapper> lst, Collection<Artifact> arts, String... scopes) {
             for (Artifact a : arts) {
                 if (!Arrays.asList(scopes).contains(a.getScope())) {
                     continue;
                 }
-                fixFile(a); // will be null if *any* dependency artifacts are missing, for some reason
                 if (a.getArtifactHandler().isAddedToClasspath()) {
                     lst.add(new DependencyWrapper(a));
                 }
@@ -268,13 +254,17 @@ public class DependenciesNode extends AbstractNode {
             if (!artifact.getDependencyTrail().equals(other.artifact.getDependencyTrail())) {
                 return false;
             }
+            if (!artifact.getFile().equals(other.artifact.getFile())) {
+                return false;
+            }
             return true;
         }
 
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 23 * hash + artifact.hashCode() + artifact.getDependencyTrail().hashCode();
+            hash = 31 * hash + artifact.hashCode() + artifact.getDependencyTrail().hashCode();
+            hash = 31 * hash + artifact.getFile().hashCode();
             return hash;
         }
         
@@ -338,19 +328,23 @@ public class DependenciesNode extends AbstractNode {
                             contribs, ProgressTransferListener.cancellable(), null);
                     handle.start();
                     try {
-                    ProgressTransferListener.setAggregateHandle(handle);
-                    for (int i = 0; i < nds.length; i++) {
-                        if (nds[i] instanceof DependencyNode) {
-                            DependencyNode nd = (DependencyNode)nds[i];
-                            if (javadoc && !nd.hasJavadocInRepository()) {
-                                nd.downloadJavadocSources(contribs[i], javadoc);
-                            } else if (!javadoc && !nd.hasSourceInRepository()) {
-                                nd.downloadJavadocSources(contribs[i], javadoc);
-                            } else {
-                                contribs[i].finish();
+                        ProgressTransferListener.setAggregateHandle(handle);
+                        for (int i = 0; i < nds.length; i++) {
+                            AtomicBoolean cancel = ProgressTransferListener.activeListener().cancel;
+                            if (cancel != null && cancel.get()) {
+                                return;
+                            }
+                            if (nds[i] instanceof DependencyNode) {
+                                DependencyNode nd = (DependencyNode)nds[i];
+                                if (javadoc && !nd.hasJavadocInRepository()) {
+                                    nd.downloadJavadocSources(contribs[i], javadoc);
+                                } else if (!javadoc && !nd.hasSourceInRepository()) {
+                                    nd.downloadJavadocSources(contribs[i], javadoc);
+                                } else {
+                                    contribs[i].finish();
+                                }
                             }
                         }
-                    }
                     } catch (ThreadDeath d) { // download interrupted
                     } finally {
                         handle.finish();

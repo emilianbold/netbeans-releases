@@ -73,5 +73,14 @@ function functionNameArrayAccess() {
     return $subnodes;
 }
 
+function foo() {
+  $myArray = array();
+
+  foreach ($myArray as $value) {
+     echo $value;
+     bar($myVar);
+  }
+}
+
 //END
 ?>

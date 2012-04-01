@@ -69,6 +69,7 @@ public class BasicComposition extends SearchComposition<MatchingObject.Def> {
     private SearchResultsDisplayer<MatchingObject.Def> displayer = null;
     private BasicSearchCriteria basicSearchCriteria;
     private Presenter presenter;
+    private String scopeDisplayName;
     AtomicBoolean terminated = new AtomicBoolean(false);
 
     public BasicComposition(SearchInfo searchInfo, AbstractMatcher matcher,
@@ -77,6 +78,7 @@ public class BasicComposition extends SearchComposition<MatchingObject.Def> {
         this.searchInfo = searchInfo;
         this.matcher = matcher;
         this.basicSearchCriteria = basicSearchCriteria;
+        this.scopeDisplayName = scopeDisplayName;
         this.presenter = BasicSearchProvider.createBasicPresenter(
                 basicSearchCriteria.isSearchAndReplace(),
                 basicSearchCriteria.getSearchPattern(),
@@ -205,5 +207,17 @@ public class BasicComposition extends SearchComposition<MatchingObject.Def> {
                 return title;
             }
         }
+    }
+
+    public SearchInfo getSearchInfo() {
+        return searchInfo;
+    }
+
+    public AbstractMatcher getMatcher() {
+        return matcher;
+    }
+
+    public String getScopeDisplayName() {
+        return scopeDisplayName;
     }
 }

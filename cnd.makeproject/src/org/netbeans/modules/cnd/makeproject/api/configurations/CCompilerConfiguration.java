@@ -62,16 +62,26 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
     public static final int STANDARD_DEFAULT = 0;
     public static final int STANDARD_C89 = 1;
     public static final int STANDARD_C99 = 2;
+    public static final int STANDARD_INHERITED = 3;
     private static final String[] STANDARD_NAMES = {
         getString("STANDARD_DEFAULT"),
         getString("STANDARD_C89"),
-        getString("STANDARD_C99"),};
+        getString("STANDARD_C99"),
+        getString("STANDARD_INHERITED"),};
+    private static final String[] STANDARD_NAMES_ROOT = {
+        getString("STANDARD_DEFAULT"),
+        getString("STANDARD_C89"),
+        getString("STANDARD_C99"),};    
     private IntConfiguration cStandard;        
     
     // Constructors
     public CCompilerConfiguration(String baseDir, CCompilerConfiguration master, MakeConfiguration owner) {
         super(baseDir, master, owner);
-        cStandard = new IntConfiguration(master != null ? master.getCStandard() : null, STANDARD_DEFAULT, STANDARD_NAMES, null);
+        if (master != null) {
+            cStandard = new IntConfiguration(null, STANDARD_INHERITED, STANDARD_NAMES, null);
+        } else {
+            cStandard = new IntConfiguration(null, STANDARD_DEFAULT, STANDARD_NAMES_ROOT, null);
+        }
     }
 
     public void fixupMasterLinks(CCompilerConfiguration compilerConfiguration) {
@@ -177,8 +187,6 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
     }
     
     public String getAllOptions2(AbstractCompiler compiler) {
-        CCompilerConfiguration master;
-        
         String options = ""; // NOI18N
         if (getDevelopmentMode().getValue() != DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
@@ -188,6 +196,9 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
         options += getPreprocessorOptions(compiler.getCompilerSet());
         options += getIncludeDirectoriesOptions(compiler.getCompilerSet());
         options += getLibrariesFlags();
+        if (getCStandard().getValue() != STANDARD_INHERITED) {
+            options += compiler.getCppStandardOptions(getCStandard().getValue());
+        }        
         return CppUtils.reformatWhitespaces(options);
     }
     

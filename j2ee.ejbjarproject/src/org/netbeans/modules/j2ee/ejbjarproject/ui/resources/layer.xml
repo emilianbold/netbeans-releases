@@ -168,8 +168,8 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugProjectAction.instance"/>
                     <attr name="position" intvalue="900"/>
                 </file>
-                <file name="Profiler_Actions_temporary.shadow">
-                    <attr name="originalFile" stringvalue="Projects/Profiler_Actions_temporary"/>
+                <file name="org-netbeans-modules-profiler-actions-ProfileProjectActionPopup.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-profiler-actions-ProfileProjectPopup.instance"/>
                     <attr name="position" intvalue="1000"/>
                 </file>
                 <file name="org-netbeans-modules-project-ui-TestProject.shadow">
@@ -179,6 +179,10 @@ made subject to such option by the copyright holder.
                 <file name="sep-3.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="1300"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-SetMainProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SetMainProject.instance"/>
+                    <attr name="position" intvalue="1400"/>
                 </file>
                 <file name="org-netbeans-modules-project-ui-actions-OpenSubprojects.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions-OpenSubprojects.instance"/>

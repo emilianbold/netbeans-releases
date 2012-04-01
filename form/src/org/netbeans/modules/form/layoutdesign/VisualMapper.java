@@ -45,7 +45,6 @@
 package org.netbeans.modules.form.layoutdesign;
 
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Rectangle;
 
 public interface VisualMapper extends LayoutConstants  {
@@ -125,14 +124,6 @@ public interface VisualMapper extends LayoutConstants  {
     void rebuildLayout(String containerId);
 
     void setComponentVisibility(String componentId, boolean visible);
-
-    /**
-     * Repaints requested component in the designer. Used during painting
-     * additional layout information to ensure that components stay visible.
-     * @param componentId The id of the component to be repainted.
-     * @param g Graphics object to paint in
-     */
-    void repaintComponent(String componentId, Graphics g);
 
     /**
      * Repaints the entire designer. Used when the LayoutDesigner needs to do

@@ -62,6 +62,7 @@ import javax.accessibility.AccessibleContext;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -146,8 +147,6 @@ class ResultViewPanel extends JPanel{
      * of matches found so far
      */
     private MessageFormat nodeCountFormatFullText;
-
-    private IssuesPanel issuesPanel;
 
     /**
      * tree view for displaying found objects
@@ -300,12 +299,6 @@ class ResultViewPanel extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 composition.terminate();
-            }
-        });
-        btnReplace.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                replaceMatches();
             }
         });
 
@@ -722,32 +715,6 @@ class ResultViewPanel extends JPanel{
         arrowUpdater.update();
     }
 
-    void displayIssues(IssuesPanel issuesPanel) {
-        if (issuesPanel != null){
-            this.issuesPanel = issuesPanel;
-            remove(toolBar);
-            remove(toolbarSeparator);
-            remove(resultsPanel);
-            add(issuesPanel, getMainPanelConstraints());
-            validate();
-            repaint();
-        }
-    }
-
-    /**
-     */
-    void removeIssuesPanel() {
-        if (issuesPanel != null) {
-            remove(issuesPanel);
-            add(toolBar, getToolbarConstraints());
-            add(toolbarSeparator, getToolbarSeparatorConstraints());
-            add(resultsPanel, getMainPanelConstraints());
-            issuesPanel = null;
-            validate();
-            repaint();
-        }
-    }
-
     private GridBagConstraints getMainPanelConstraints(){
         GridBagConstraints gridBagConstraints =
                 new java.awt.GridBagConstraints();
@@ -1157,21 +1124,6 @@ class ResultViewPanel extends JPanel{
 //        this.tree.requestFocusInWindow();
     }
 
-    /**
-     * Called when the <em>Replace</em> button is pressed.
-     */
-    private void replaceMatches() {
-        assert EventQueue.isDispatchThread();
-
-        nodeListener.setSelectionChangeEnabled(false);
-        btnReplace.setEnabled(false);
-
-        ReplaceTask taskReplace =
-                new ReplaceTask(resultModel.getMatchingObjects());
-        ResultView.getInstance().addReplacePair(taskReplace, this);
-        Manager.getInstance().scheduleReplaceTask(taskReplace);
-    }
-
     void setBtnModifyEnabled(boolean enabled){
         btnModifySearch.setEnabled(enabled);
     }
@@ -1294,4 +1246,14 @@ class ResultViewPanel extends JPanel{
         }
     }
 
+    @Override
+    public boolean requestFocusInWindow() {
+        if (resultsPanel != null && resultsPanel.getComponentCount() > 0) {
+            JComponent comp = (JComponent) resultsPanel.getComponent(0);
+            if (comp != null) {
+                return comp.requestFocusInWindow();
+            }
+        }
+        return super.requestFocusInWindow();
+    }
 }

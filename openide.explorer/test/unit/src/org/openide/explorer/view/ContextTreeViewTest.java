@@ -45,11 +45,14 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
+import java.awt.GraphicsEnvironment;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
@@ -60,6 +63,10 @@ import org.openide.nodes.Node;
  * Tests for class ContextTreeViewTest
  */
 public class ContextTreeViewTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ContextTreeViewTest.class);
+    }
 
     private static final int NO_OF_NODES = 3;
     

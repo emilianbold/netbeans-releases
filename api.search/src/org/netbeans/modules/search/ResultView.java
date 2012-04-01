@@ -61,6 +61,7 @@ import javax.swing.ActionMap;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.openide.awt.ActionID;
@@ -110,7 +111,7 @@ public final class ResultView extends TopComponent {
      *
      * @return  singleton of this <code>TopComponent</code>
      */
-    static synchronized ResultView getInstance() {
+    public static synchronized ResultView getInstance() {
         ResultView view;
         view = (ResultView) WindowManager.getDefault().findTopComponent(ID);
         if (view == null) {
@@ -171,24 +172,6 @@ public final class ResultView extends TopComponent {
      */
     void closeResults() {
         close();
-    }
-
-    /**
-     */
-    void displayIssuesToUser(ReplaceTask task, String title, String[] problems, boolean reqAtt) {
-        assert EventQueue.isDispatchThread();
-
-        IssuesPanel issuesPanel = new IssuesPanel(title, problems);
-        if( isMacLaf ) {
-            issuesPanel.setBackground(macBackground);
-        }
-        searchToViewMap.get(replaceToSearchMap.get(task)).displayIssues(issuesPanel);
-        if (!isOpened()) {
-            open();
-        }
-        if (reqAtt) {
-            requestAttention(true);
-        }
     }
 
     @Override
@@ -343,7 +326,6 @@ public final class ResultView extends TopComponent {
 
         ResultViewPanel panel = searchToViewMap.get(task);
         if (panel != null) {
-            panel.removeIssuesPanel();
             String msgKey = null;
             switch (blockingTask) {
                 case Manager.REPLACING:
@@ -378,7 +360,6 @@ public final class ResultView extends TopComponent {
         }
         switch (changeType) {
             case Manager.EVENT_SEARCH_STARTED:
-                panel.removeIssuesPanel();
                 updateTabTitle(panel);
                 panel.searchStarted();
                 break;
@@ -420,14 +401,6 @@ public final class ResultView extends TopComponent {
 
     private Map<ReplaceTask, SearchTask> replaceToSearchMap = new HashMap();
     private Map<SearchTask, ReplaceTask> searchToReplaceMap = new HashMap();
-
-    void addReplacePair(ReplaceTask taskReplace, ResultViewPanel panel){
-        if ((taskReplace != null) && (panel != null)){
-            SearchTask taskSearch = viewToSearchMap.get(panel);
-            replaceToSearchMap.put(taskReplace, taskSearch);
-            searchToReplaceMap.put(taskSearch, taskReplace);
-        }
-    }
 
     synchronized ResultViewPanel initiateResultView(SearchTask task){
         assert EventQueue.isDispatchThread();
@@ -478,25 +451,6 @@ public final class ResultView extends TopComponent {
                 tc.requestActive();
             }
         }
-    }
-        
-    /**
-     */
-    void rescan(ReplaceTask task) {
-        assert EventQueue.isDispatchThread();
-
-        SearchTask lastSearchTask = replaceToSearchMap.get(task);
-        SearchTask newSearchTask = lastSearchTask.createNewGeneration();
-
-        ResultViewPanel panel = searchToViewMap.get(lastSearchTask);
-
-        if (panel != null) {
-           if (panel != null){
-                ResultView.getInstance().addSearchPair(panel, newSearchTask);
-                panel.removeIssuesPanel();
-            }
-        }
-        Manager.getInstance().scheduleSearchTask(newSearchTask);
     }
 
     private void closeAll(boolean butCurrent) {

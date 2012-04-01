@@ -1983,27 +1983,25 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         }
                         break;
 
-//                    case ELLIPSIS:
-//                        switch (topID) {
-//                            case VARIABLE:
-//                            case METHOD:
-//                            case DOT:
-//                            case ARRAY:
-//                            case TYPE: // ... int[ ...
-//                            case GENERIC_TYPE: // List<String> "["
-//                                popExp(); // top popped
-//                                CsmCompletionExpression arrExp = createTokenExp(ARRAY);
-//                                // Add "..." again to have the even token count like with "[" "]"
-//                                addTokenTo(arrExp);
-//                                arrExp.addParameter(top);
-//                                pushExp(arrExp);
-//                                break;
-//
-//                            default:
-//                                errorContext = true;
-//                                break;
-//                        }
-//                        break;
+                    case ELLIPSIS:
+                        switch (topID) {
+                            case VARIABLE:
+                            case METHOD:
+                            case DOT:
+                            case ARRAY:
+                            case TYPE: 
+                            case GENERIC_TYPE:
+                            case PARENTHESIS_OPEN:
+                                CsmCompletionExpression exp = createTokenExp(OPERATOR);
+                                addTokenTo(exp);
+                                top.addParameter(exp);
+                                break;
+
+                            default:
+                                errorState = true;
+                                break;
+                        }
+                        break;
 
                     case RBRACKET:
                         switch (topID) {

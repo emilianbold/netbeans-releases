@@ -67,6 +67,10 @@ import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsEx
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -373,22 +377,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
                     int oldState = getServerState();
                     setServerState(STATE_WAITING);
                     if (ServerInstance.this == profiledServerInstance) {
-                        int profState = ProfilerSupport.getState();
-                        if (profState == ProfilerSupport.STATE_STARTING) {
-                            setServerState(ServerInstance.STATE_PROFILER_STARTING);
-                            return;
-                        } else if (profState == ProfilerSupport.STATE_BLOCKING) {
-                            setServerState(ServerInstance.STATE_PROFILER_BLOCKING);
-                            return;
-                        } else if (profState == ProfilerSupport.STATE_PROFILING
-                                   || profState == ProfilerSupport.STATE_RUNNING) {
-                            initCoTarget();
-                            setServerState(ServerInstance.STATE_PROFILING);
-                            return;
-                        } else {
-                            //  profiler is inactive - has been shutdown
-                            profiledServerInstance = null;
-                        }
+                        updateStateFromProfiler();
+                        return;
                     }
                     if (isSuspended()) {
                         setServerState(ServerInstance.STATE_SUSPENDED);
@@ -1513,11 +1503,35 @@ public class ServerInstance implements Node.Cookie, Comparable {
             profiledServerInstance = null;
         }
         
-        Profiler profiler = ServerRegistry.getProfiler();
+        final Profiler profiler = ServerRegistry.getProfiler();
         if (profiler == null) {
             // this should not occur, but better make sure
             throw new ServerException(NbBundle.getMessage(ServerInstance.class, "MSG_ProfilerNotRegistered"));
         }
+        
+        final ScheduledExecutorService statusUpdater = Executors.newSingleThreadScheduledExecutor();
+        statusUpdater.scheduleAtFixedRate(new Runnable() {
+
+            @Override
+            public void run() {
+                updateStateFromProfiler();
+            }
+        }, 50, 100, TimeUnit.MILLISECONDS);
+        
+        final StateListener l = new StateListener() {
+
+            @Override
+            public void stateChanged(int oldState, int newState) {
+                if (oldState != newState && newState == STATE_STOPPED) {
+                    ServerInstance.this.removeStateListener(this);
+                    statusUpdater.shutdownNow();
+                    profiledServerInstance = null;
+                }
+            }
+        };
+        
+        this.addStateListener(l);
+        
         profiler.notifyStarting();
         ProgressObject po = getStartServer().startProfiling(target);
         try {
@@ -1993,6 +2007,21 @@ public class ServerInstance implements Node.Cookie, Comparable {
                     }
                 });
             }
+        }
+    }
+    
+    private void updateStateFromProfiler() {
+        int profState = ProfilerSupport.getState();
+        if (profState == ProfilerSupport.STATE_STARTING) {
+            setServerState(ServerInstance.STATE_PROFILER_STARTING);
+        } else if (profState == ProfilerSupport.STATE_BLOCKING) {
+            setServerState(ServerInstance.STATE_PROFILER_BLOCKING);
+        } else if (profState == ProfilerSupport.STATE_PROFILING
+                    || profState == ProfilerSupport.STATE_RUNNING) {
+            initCoTarget();
+            setServerState(ServerInstance.STATE_PROFILING);
+        } else {
+            setServerState(ServerInstance.STATE_STOPPED);
         }
     }
 }

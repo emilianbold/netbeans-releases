@@ -1156,20 +1156,28 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-
-            <target name="profile-init" depends="-profile-pre-init, init, -profile-post-init, -profile-init-macrodef-profile, -profile-init-check"/>
+            
+            <xsl:comment>
+                pre NB7.2 profiling section; consider it deprecated
+            </xsl:comment>
+            <target name="profile-init" depends="-profile-pre-init, init, -profile-post-init, -profile-init-macrodef-profile, -profile-init-check">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
+            </target>
 
             <target name="-profile-pre-init">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
             <target name="-profile-post-init">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
             <target name="-profile-init-macrodef-profile">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
                 <macrodef>
                   <xsl:attribute name="name">resolve</xsl:attribute>
                   <attribute>
@@ -1217,9 +1225,13 @@ is divided into following sections:
 
             <target name="-profile-init-check">
                 <xsl:attribute name="depends">-profile-pre-init, init, -profile-post-init, -profile-init-macrodef-profile</xsl:attribute>
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
                 <fail unless="profiler.info.jvm">Must set JVM to use for profiling in profiler.info.jvm</fail>
                 <fail unless="profiler.info.jvmargs.agent">Must set profiler agent JVM arguments in profiler.info.jvmargs.agent</fail>
             </target>
+            <xsl:comment>
+                end of pre NB7.2 profiling section
+            </xsl:comment>
 
             <target name="-init-macrodef-nbjpda" depends="-init-debug-args">
                 <macrodef>
@@ -1351,6 +1363,10 @@ is divided into following sections:
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
                         <xsl:attribute name="default">${run.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">jvm</xsl:attribute>
+                        <xsl:attribute name="default">jvm</xsl:attribute>
                     </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
@@ -1894,11 +1910,11 @@ is divided into following sections:
                 PROFILING SECTION
                 =================
             </xsl:comment>
-
-            <target name="profile">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">profile-init,compile</xsl:attribute>
-                <xsl:attribute name="description">Profile a project in the IDE.</xsl:attribute>
+            <xsl:comment>
+                pre NB7.2 profiler integration
+            </xsl:comment>
+            <target depends="profile-init,compile" description="Profile a project in the IDE." if="profiler.info.jvmargs.agent" name="-profile-pre72">
+                <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
                 <nbprofiledirect>
                     <classpath>
                         <path path="${{run.classpath}}"/>
@@ -1906,74 +1922,96 @@ is divided into following sections:
                 </nbprofiledirect>
                 <profile/>
             </target>
-
-            <target name="profile-single">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">profile-init,compile-single</xsl:attribute>
-                <xsl:attribute name="description">Profile a selected class in the IDE.</xsl:attribute>
+            <target depends="profile-init,compile-single" description="Profile a selected class in the IDE." if="profiler.info.jvmargs.agent" name="-profile-single-pre72">
                 <fail unless="profile.class">Must select one file in the IDE or set profile.class</fail>
+                <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
                 <nbprofiledirect>
                     <classpath>
                         <path path="${{run.classpath}}"/>
                     </classpath>
                 </nbprofiledirect>
-              <profile classname="${{profile.class}}"/>
+                <profile classname="${{profile.class}}"/>
             </target>
-
-            <xsl:comment>
-                =========================
-                APPLET PROFILING  SECTION
-                =========================
-            </xsl:comment>
-
-            <target name="profile-applet">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">profile-init,compile-single</xsl:attribute>
+            <target depends="profile-init,compile-single" if="profiler.info.jvmargs.agent" name="-profile-applet-pre72">
+                <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
                 <nbprofiledirect>
                     <classpath>
                         <path path="${{run.classpath}}"/>
                     </classpath>
                 </nbprofiledirect>
-
                 <profile classname="sun.applet.AppletViewer">
                     <customize>
                         <arg value="${{applet.url}}"/>
                     </customize>
                 </profile>
             </target>
-
+            <target depends="profile-init,compile-test-single" if="profiler.info.jvmargs.agent" name="-profile-test-single-pre72">
+                <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
+                <nbprofiledirect>
+                    <classpath>
+                        <path path="${{run.test.classpath}}"/>
+                    </classpath>
+                </nbprofiledirect>
+                <junit dir="${{profiler.info.dir}}" errorproperty="tests.failed" failureproperty="tests.failed" fork="true" jvm="${{profiler.info.jvm}}" showoutput="true">
+                    <env key="${{profiler.info.pathvar}}" path="${{profiler.info.agentpath}}:${{profiler.current.path}}"/>
+                    <jvmarg value="${{profiler.info.jvmargs.agent}}"/>
+                    <jvmarg line="${{profiler.info.jvmargs}}"/>
+                    <test name="${{profile.class}}"/>
+                    <classpath>
+                        <path path="${{run.test.classpath}}"/>
+                    </classpath>
+                    <syspropertyset>
+                        <propertyref prefix="test-sys-prop."/>
+                        <mapper from="test-sys-prop.*" to="*" type="glob"/>
+                    </syspropertyset>
+                    <formatter type="brief" usefile="false"/>
+                    <formatter type="xml"/>
+                </junit>
+            </target>
             <xsl:comment>
-                =========================
-                TESTS PROFILING  SECTION
-                =========================
+                end of pre NB72 profiling section
             </xsl:comment>
-
-            <target name="profile-test-single">
-              <xsl:attribute name="if">netbeans.home</xsl:attribute>
-              <xsl:attribute name="depends">profile-init,compile-test-single</xsl:attribute>
-              <nbprofiledirect>
-                  <classpath>
-                      <path path="${{run.test.classpath}}"/>
-                  </classpath>
-              </nbprofiledirect>
-
-              <junit showoutput="true" fork="true" dir="${{profiler.info.dir}}"  jvm="${{profiler.info.jvm}}" failureproperty="tests.failed" errorproperty="tests.failed">
-                  <env key="${{profiler.info.pathvar}}" path="${{profiler.info.agentpath}}:${{profiler.current.path}}"/>
-                  <jvmarg value="${{profiler.info.jvmargs.agent}}" />
-                  <jvmarg line="${{profiler.info.jvmargs}}"/>
-                  <test name="${{profile.class}}"/>
-                  <classpath>
-                      <path path="${{run.test.classpath}}"/>
-                  </classpath>
-                  <syspropertyset>
-                      <propertyref prefix="test-sys-prop."/>
-                      <mapper type="glob" from="test-sys-prop.*" to="*"/>
-                  </syspropertyset>
-                  <formatter type="brief" usefile="false"/>
-                  <formatter type="xml"/>
-              </junit>
+            
+            <target name="-profile-check" if="netbeans.home">
+                <condition property="profiler.configured">
+                    <or>
+                        <contains string="${{run.jvmargs.ide}}" substring="-agentpath:" casesensitive="true"/>
+                        <contains string="${{run.jvmargs.ide}}" substring="-javaagent:" casesensitive="true"/>
+                    </or>
+                </condition>
+            </target>
+            
+            <target name="profile" depends="-profile-check,-profile-pre72" description="Profile a project in the IDE." if="profiler.configured" unless="profiler.info.jvmargs.agent">
+                <startprofiler/>
+                <antcall target="run"/>
             </target>
 
+            <target name="profile-single" depends="-profile-check,-profile-single-pre72" description="Profile a selected class in the IDE." if="profiler.configured" unless="profiler.info.jvmargs.agent">
+                <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
+                <startprofiler/>
+                <antcall target="run-single"/>
+            </target>
+
+            <target name="profile-test-single" depends="-profile-test-single-pre72" description="Profile a selected test in the IDE."/>
+
+            <target name="profile-test" depends="-profile-check" description="Profile a selected test in the IDE." if="profiler.configured" unless="profiler.info.jvmargs">
+                <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
+                <startprofiler/>
+                <antcall target="test-single"/>
+            </target>
+
+            <target name="profile-test-with-main" depends="-profile-check" description="Profile a selected class in the IDE." if="profiler.configured">
+                <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
+                <startprofiler/>
+                <antcal target="run-test-with-main"/>
+            </target>
+            
+            <target name="profile-applet" depends="-profile-check,-profile-applet-pre72" if="profiler.configured" unless="profiler.info.jvmargs.agent">
+                <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
+                <startprofiler/>
+                <antcall target="run-applet"/>
+            </target>
+            
             <xsl:comment>
                 ===============
                 JAVADOC SECTION

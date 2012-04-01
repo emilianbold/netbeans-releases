@@ -2046,7 +2046,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         //visibility. The Work.scanBinaries modifies the map from multiple threads.
         private final Map<String,int[]> indexerStatistics = Collections.<String, int[]>synchronizedMap(new HashMap<String, int[]>());
         private volatile boolean reportIndexerStatistics;
-
+        
         protected Work(
                 final boolean followUpJob,
                 final boolean checkEditor,
@@ -2166,6 +2166,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     TEST_LOGGER.log(Level.FINEST, "scanStarting:{0}:{1}", 
                             new Object[] { factory.getIndexerName(), root.toString() });
                 }
+                long time = System.currentTimeMillis();
                 try {
                     boolean vote = factory.scanStarted(value.second);
                     votes.put(factory,vote);
@@ -2175,6 +2176,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                     votes.put(factory, false);
                     Exceptions.printStackTrace(t);
+                }
+                if (getLogContext() != null) {
+                    long timeSpan = System.currentTimeMillis() - time;
+                    getLogContext().addIndexerTime(factory.getIndexerName(), timeSpan);
                 }
             }
         }
@@ -2209,6 +2214,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         value = Pair.<SourceIndexerFactory,Context>of(eif,context);
                         ctxToFinish.put(key, value);
                     }
+                    long time = System.currentTimeMillis();
                     try {
                         boolean vote = eif.scanStarted(value.second);
                         votes.put(eif, vote);
@@ -2218,6 +2224,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         }
                         votes.put(eif, false);
                         Exceptions.printStackTrace(t);
+                    }
+                    if (getLogContext() != null) {
+                        long timeSpan = System.currentTimeMillis() - time;
+                        getLogContext().addIndexerTime(eif.getIndexerName(), timeSpan);
                     }
                 }
             }
@@ -2233,7 +2243,12 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         TEST_LOGGER.log(Level.FINEST, "scanFinishing:{0}:{1}", 
                                 new Object[] { entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm() });
                     }
+                    long time = System.currentTimeMillis();
                     entry.first.scanFinished(entry.second);
+                    if (getLogContext() != null) {
+                        long timeSpan = System.currentTimeMillis() - time;
+                        getLogContext().addIndexerTime(entry.first.getIndexerName(), timeSpan);
+                    }
                     if (TEST_LOGGER.isLoggable(Level.FINEST)) {
                         TEST_LOGGER.log(Level.FINEST, "scanFinished:{0}:{1}", 
                                 new Object[] { entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm() });
@@ -2837,6 +2852,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected final void logIndexerTime(
                 final @NonNull String indexerName,
                 final int time) {
+            if (getLogContext() != null) {
+                getLogContext().addIndexerTime(indexerName, time);
+            }
             if (!reportIndexerStatistics) {
                 return;
             }
@@ -4346,9 +4364,13 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     scannedRootsCnt.incrementAndGet();
                 }
                 reportRootScan(root, time);
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format("Indexing of: %s took: %d ms", root.toExternalForm(), time)); //NOI18N
-                }
+                LOGGER.log(
+                    Level.FINE,
+                    "Indexing of: {0} took: {1} ms",    //NOI18N
+                    new Object[] {
+                        root,
+                        time
+                    });
             }
             return false;
         }
@@ -4387,7 +4409,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         preregisterIn.put(source, EMPTY_DEPS);
                         preregistered = true;
                     }
+                    LogContext lctx = getLogContext();
                     try {
+                        if (lctx != null) {
+                            lctx.noteRootScanning(source);
+                        }
                         if (scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), indexers, outOfDateFiles, deletedFiles, recursiveListenersTime)) {
                             ctx.scannedRoots.add(source);
                             success = true;
@@ -4396,6 +4422,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             break;
                         }
                     } finally {
+                        if (lctx != null) {
+                            lctx.finishScannedRoot(source);
+                        }
                         if (preregistered && !success) {
                             preregisterIn.remove(source);
                         }
@@ -4413,16 +4442,30 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     if (LOGGER.isLoggable(Level.INFO)) {
                         File f = FileUtil.archiveOrDirForURL(source);
                         Object shown = f != null ? f : source;
-                        LOGGER.info(String.format("Indexing of: %s took: %d ms (New or modified files: %d, Deleted files: %d) [Adding listeners took: %d ms]", //NOI18N
-                                shown, time, outOfDateFiles[0], deletedFiles[0], recursiveListenersTime[0]));
+                        LOGGER.log(
+                            Level.INFO,
+                            "Indexing of: {0} took: {1} ms (New or modified files: {2}, Deleted files: {3}) [Adding listeners took: {4} ms]", //NOI18N
+                            new Object[] {
+                                shown,
+                                time,
+                                outOfDateFiles[0],
+                                deletedFiles[0],
+                                recursiveListenersTime[0]
+                            });
                     }
                 }
             }
 
-            if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info(String.format("Complete indexing of %d source roots took: %d ms (New or modified files: %d, Deleted files: %d) [Adding listeners took: %d ms]", //NOI18N
-                        scannedRootsCnt, completeTime, totalOutOfDateFiles, totalDeletedFiles, totalRecursiveListenersTime));
-            }
+            LOGGER.log(
+                Level.INFO,
+                "Complete indexing of {0} source roots took: {1} ms (New or modified files: {2}, Deleted files: {3}) [Adding listeners took: {4} ms]", //NOI18N
+                new Object[] {
+                    scannedRootsCnt,
+                    completeTime,
+                    totalOutOfDateFiles,
+                    totalDeletedFiles,
+                    totalRecursiveListenersTime
+                });
             TEST_LOGGER.log(Level.FINEST, "scanSources", ctx.newRootsToScan); //NOI18N
             return finished;
         }
@@ -4771,6 +4814,14 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     final List<Work> follow = new ArrayList<Work>(1);
                     if (workInProgress != null) {
                         if (workInProgress.cancelBy(work,follow)) {
+                            // make the WiP absorbed by this follow-up work:
+                            if (workInProgress.logCtx != null) {
+                                if (work.logCtx != null) {
+                                    work.logCtx.absorb(workInProgress.logCtx);
+                                } else {
+                                    work.logCtx = workInProgress.logCtx;
+                                }
+                            }
                             canceled = true;
                         }
                     }
@@ -5328,38 +5379,43 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return instance;
         }
 
-        @org.netbeans.api.annotations.common.SuppressWarnings(
-        value={"DMI_COLLECTION_OF_URLS","DMI_BLOCKING_METHODS_ON_URL"}
-        /*,justification="URLs have never host part"*/)
-        public FileObject findFileObject(URL url) {
-            FileObject f = null;
-            synchronized (cache) {
-                Reference<FileObject> ref = cache.get(url);
-                if (ref != null) {
-                    f = ref.get();
-                }
-            }
-
+        @CheckForNull
+        public FileObject findFileObject(final @NonNull URL url) {
+            URI uri = null;
             try {
-                if (f != null && f.isValid() && url.equals(f.getURL())) {
+                uri  = url.toURI();
+            } catch (URISyntaxException e) {
+                Exceptions.printStackTrace(e);
+            }
+            FileObject f = null;
+            if (uri != null) {
+                synchronized (cache) {
+                    Reference<FileObject> ref = cache.get(uri);
+                    if (ref != null) {
+                        f = ref.get();
+                    }
+                }
+
+                if (f != null && f.isValid() && url.equals(f.toURL())) {
                     return f;
                 }
-            } catch (FileStateInvalidException fsie) {
-                // ignore
             }
+
             f = URLMapper.findFileObject(url);
 
-            synchronized (cache) {
-                if (f != null && f.isValid()) {
-                    cache.put(url, new WeakReference<FileObject>(f));
+            if (uri != null) {
+                synchronized (cache) {
+                    if (f != null && f.isValid()) {
+                        cache.put(uri, new WeakReference<FileObject>(f));
+                    }
                 }
-
-                return f;
             }
+            
+            return f;
         }
 
         private static URLCache instance = null;
-        private final Map<URL, Reference<FileObject>> cache = new WeakHashMap<URL, Reference<FileObject>>();
+        private final Map<URI, Reference<FileObject>> cache = new WeakHashMap<URI, Reference<FileObject>>();
 
         private URLCache() {
 

@@ -71,8 +71,10 @@ public class RunJarStartupArgs implements LateBoundPrerequisitesChecker {
             mode = StartupExtender.StartMode.NORMAL;
         } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || DEBUG_MAIN.equals(actionName)) {
             mode = StartupExtender.StartMode.DEBUG;
-        } else if ("profile".equals(actionName)) {
+        } else if (ActionProvider.COMMAND_PROFILE.equals(actionName) || ActionProvider.COMMAND_PROFILE_SINGLE.equals(actionName)) {
             mode = StartupExtender.StartMode.PROFILE;
+        } else if (ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName)) {
+            mode = StartupExtender.StartMode.TEST_PROFILE;
         } else {
             // XXX could also set argLine for COMMAND_TEST and relatives (StartMode.TEST_*); need not be specific to TYPE_JAR
             return true;

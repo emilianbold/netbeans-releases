@@ -68,6 +68,7 @@ import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Events;
@@ -158,7 +159,11 @@ final class NbInstaller extends ModuleInstaller {
         String processSections = cache.findGlobalProperty("processSections", null, "false"); // NOI18N
         if (!"false".equals(processSections)) { // NOI18N
             // Find and load manifest sections.
-            for (Map.Entry<String,Attributes> entry : m.getManifest().getEntries().entrySet()) {
+            Manifest mani = m.getManifest();
+            if (mani == null) {
+                throw new InvalidException(m, "no manifest");
+            }
+            for (Map.Entry<String,Attributes> entry : mani.getEntries().entrySet()) {
                 ManifestSection section = ManifestSection.create(entry.getKey(), entry.getValue(), m);
                 if (section != null) {
                     if (mysections == null) {

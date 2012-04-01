@@ -822,10 +822,7 @@ public final class BugzillaTaskListProvider extends TaskListIssueProvider implem
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for: " + projectName);
                     String url = getUrl().toString();
                     Repository repository = KenaiUtil.getRepository(url, projectName);
-                    repo = provider.bugzillaRepositories.get(repository.getId());
-                    assert repo != null;
-                    assert repo instanceof KenaiRepository;
-                    return (KenaiRepository) repo;
+                    repo = repository != null ? provider.bugzillaRepositories.get(repository.getId()) : null;
                 } catch (IOException ex) {
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for " + projectName, ex);
                 }

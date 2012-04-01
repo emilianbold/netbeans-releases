@@ -46,11 +46,14 @@ package org.openide.text;
 
 import java.awt.Container;
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.actions.Savable;
 import org.netbeans.junit.*;
@@ -72,6 +75,11 @@ import org.openide.util.Lookup;
  * @author  Jaroslav Tulach
  */
 public final class SimpleFactoryTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(SimpleFactoryTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

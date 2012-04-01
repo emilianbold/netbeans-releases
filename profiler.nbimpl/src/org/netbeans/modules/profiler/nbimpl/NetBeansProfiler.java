@@ -50,6 +50,7 @@ import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.modules.profiler.HeapDumpWatch;
 import org.netbeans.modules.profiler.ProfilerModule;
+import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
 import org.netbeans.modules.profiler.spi.LoadGenPlugin;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -71,6 +72,14 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
         getActionSupport().setAll(buildScriptFO, target, props);
 
         doRunTarget(buildScriptFO, target, props);
+    }
+    
+    public void notifyRunTarget(FileObject buildXml, String target) {
+        getActionSupport().setAll(buildXml, target, null);
+    }
+    
+    public void storeProfilingProperties(Properties props) {
+        getActionSupport().setProperties(props);
     }
 
     /**
@@ -114,19 +123,19 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
     @Override
     public boolean rerunAvailable() {
         int state = getProfilingState();
-        return (state == Profiler.PROFILING_INACTIVE || state == Profiler.PROFILING_STOPPED) ? getActionSupport().isActionAvailable() : false;
+        return (state == Profiler.PROFILING_INACTIVE || state == Profiler.PROFILING_STOPPED) ? ProfilerLauncher.canRelaunch() : false;
     }
 
     @Override
     public boolean modifyAvailable() {
-        return getProfilingMode()==MODE_ATTACH || getActionSupport().isActionAvailable();
+        return getProfilingState() == Profiler.PROFILING_RUNNING;
     }
 
     @Override
     public void rerunLastProfiling() {
-        String target = getActionSupport().getTarget();
-        if (target!=null) {
-            doRunTarget(getActionSupport().getScript(), target, getActionSupport().getProperties());
+        ProfilerLauncher.Session s = ProfilerLauncher.getLastSession();
+        if (s != null) {
+            s.run();
         }
     }
 

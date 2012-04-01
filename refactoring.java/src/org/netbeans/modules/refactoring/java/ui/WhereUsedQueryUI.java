@@ -270,6 +270,9 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
 
     @Override
     public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        if(handles.length < 1) {
+            return null;
+        }
         return new WhereUsedQueryUI(handles[0], info);
     }
 

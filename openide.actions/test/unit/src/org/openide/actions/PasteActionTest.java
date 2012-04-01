@@ -44,6 +44,7 @@
 
 package org.openide.actions;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -51,6 +52,8 @@ import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.Log;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.CallbackSystemAction;
@@ -61,6 +64,10 @@ import org.openide.windows.TopComponent;
  */
 public class PasteActionTest extends AbstractCallbackActionTestHidden {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(PasteActionTest.class);
+    }
+
     public PasteActionTest(String name) {
         super(name);
     }

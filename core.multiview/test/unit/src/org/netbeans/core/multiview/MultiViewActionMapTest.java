@@ -44,6 +44,7 @@
 
 
 package org.netbeans.core.multiview;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
@@ -51,6 +52,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 
 
@@ -82,6 +85,10 @@ import org.openide.windows.TopComponent;
  */
 public class MultiViewActionMapTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(MultiViewActionMapTest.class);
+    }
+
     public MultiViewActionMapTest(String name) {
         super (name);
     }
