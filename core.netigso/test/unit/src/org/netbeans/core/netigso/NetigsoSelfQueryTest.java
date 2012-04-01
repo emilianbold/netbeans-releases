@@ -197,7 +197,8 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
         assertTrue("org.test.pkg: " + set, set.contains("org.test.pkg"));
     }
 
-    public static final class MockFramework implements Framework, FrameworkFactory, BundleContext {
+    public static final class MockFramework 
+    implements Framework, FrameworkFactory, BundleContext, Comparable<Bundle> {
         private final List<MockBundle> bundles = new ArrayList<MockBundle>();
         NetigsoArchive archive;
 
@@ -454,7 +455,7 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
         }
 
         @Override
-        public int compareTo(Object o) {
+        public int compareTo(Bundle o) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -480,7 +481,7 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
 
     }
 
-    private static final class MockBundle implements Bundle, BundleContent {
+    private static final class MockBundle implements Bundle, BundleContent, Comparable<Bundle> {
         private final String url;
         private final MockFramework f;
         private final NetigsoArchive archive;
@@ -658,9 +659,8 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
         }
 
         @Override
-        public int compareTo(Object o) {
+        public int compareTo(Bundle o) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-
     }
 }
