@@ -492,10 +492,13 @@ public final class J2EEProjectProperties {
         }
         File rootFile = FileUtil.normalizeFile(j2eePlatform.getPlatformRoots()[0]);
         FileObject root = FileUtil.toFileObject(rootFile);
+        if (root == null) {
+            return null;
+        }
         boolean ok = true;
         for (File file : j2eePlatform.getClasspathEntries()) {
             FileObject fo = FileUtil.toFileObject(file);
-            if (!FileUtil.isParentOf(root, fo)) {
+            if (fo != null && !FileUtil.isParentOf(root, fo)) {
                 ok = false;
                 break;
             }
