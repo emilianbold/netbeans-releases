@@ -392,7 +392,7 @@ public class FmtOptions {
             { classMembersOrder, "STATIC FIELD;STATIC_INIT;STATIC METHOD;FIELD;INSTANCE_INIT;CONSTRUCTOR;METHOD;STATIC CLASS;CLASS"}, //NOI18N
             { sortMembersByVisibility, FALSE}, //NOI18N
             { visibilityOrder, "PUBLIC;PRIVATE;PROTECTED;DEFAULT"}, //NOI18N
-            { classMemberInsertionPoint, IP_LAST},
+            { classMemberInsertionPoint, IP_CARET},
 
             { classDeclBracePlacement, BP_SAME_LINE}, //NOI18N
             { methodDeclBracePlacement, BP_SAME_LINE}, //NOI18N

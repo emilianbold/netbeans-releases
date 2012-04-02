@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.html.editor.lib.plain;
 
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 
 /**
@@ -49,7 +52,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
  */
 public class CommentElement extends AbstractElement{
 
-    public CommentElement(CharSequence doc, int offset, int length) {
+    public CommentElement(CharSequence doc, int offset, short length) {
         super(doc, offset, length);
     }
 

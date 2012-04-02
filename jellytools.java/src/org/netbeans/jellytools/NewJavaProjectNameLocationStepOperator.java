@@ -43,11 +43,11 @@
  */
 package org.netbeans.jellytools;
 
+import javax.swing.JTextField;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import javax.swing.JTextField;
 
 /**
  * Handle "Name And Location" panel of the New Project wizard.
@@ -99,7 +99,6 @@ public class NewJavaProjectNameLocationStepOperator extends NewProjectWizardOper
     private JTextFieldOperator  _txtProjectFolder;
     private JButtonOperator     _btBrowseLocation;
     //Java Application
-    private JCheckBoxOperator   _cbSetAsMainProject;
     private JCheckBoxOperator   _cbCreateMainClass;
     private JTextFieldOperator  _txtCreateMainClass;
     //Java Project With Existing Ant script
@@ -214,20 +213,6 @@ public class NewJavaProjectNameLocationStepOperator extends NewProjectWizardOper
         }
         return _btBrowseLocation;
     }
-    
-    
-    /** Returns operator for checkbox 'Set as Main Project'
-     * @return JCheckBoxOperator
-     */
-    public JCheckBoxOperator cbSetAsMainProject() {
-        if ( _cbSetAsMainProject==null ) {
-            _cbSetAsMainProject = new JCheckBoxOperator(this,
-                                        Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
-                                                                "LBL_setAsMainCheckBox"));
-        }
-        return _cbSetAsMainProject;    
-    }
-    
     
     /** Returns operator for checkbox 'Create Main Class'
      * @return JCheckBoxOperator

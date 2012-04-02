@@ -57,6 +57,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.bookmarks.BookmarkAPIAccessor;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
+import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
@@ -112,7 +113,7 @@ public final class Bookmark {
         this.bookmarkList = bookmarkList;
         this.info = info;
         Document document = bookmarkList.getDocument ();
-        int lineIndex = BookmarksPersistence.offset2LineIndex(document, offset);
+        int lineIndex = BookmarkUtils.offset2LineIndex(document, offset);
         DataObject dataObject = NbEditorUtilities.getDataObject (document);
         for (Line _line : lineToAnnotation.keySet ()) {
             if (_line.getLineNumber () == lineIndex &&
@@ -160,7 +161,7 @@ public final class Bookmark {
      * inserts/removals).
      */
     public int getOffset () {
-        return BookmarksPersistence.lineIndex2Offset(bookmarkList.getDocument(), line.getLineNumber());
+        return BookmarkUtils.lineIndex2Offset(bookmarkList.getDocument(), line.getLineNumber());
     }
 
     /**
@@ -262,6 +263,11 @@ public final class Bookmark {
         @Override
         public BookmarkInfo getInfo(Bookmark b) {
             return b.info();
+        }
+
+        @Override
+        public Bookmark getBookmark(Document doc, BookmarkInfo b) {
+            return BookmarkList.get(doc).getBookmark(b);
         }
         
     }

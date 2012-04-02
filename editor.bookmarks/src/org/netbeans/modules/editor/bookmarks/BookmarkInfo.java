@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.editor.bookmarks;
 
-import java.net.URL;
+import java.util.Comparator;
 
 /**
  * Description of a bookmark that does not have a corresponding document
@@ -51,63 +51,41 @@ import java.net.URL;
  */
 public final class BookmarkInfo {
     
+    public static final Comparator<BookmarkInfo> CURRENT_LINE_COMPARATOR = new Comparator<BookmarkInfo>() {
+
+        @Override
+        public int compare(BookmarkInfo bookmark1, BookmarkInfo bookmark2) {
+            return bookmark1.getCurrentLineIndex() - bookmark2.getCurrentLineIndex();
+        }
+        
+    };
+    
     public static BookmarkInfo create(int id, String name, int lineIndex, String key) {
         return create(id, name, lineIndex, key, null);
     }
 
-    /**
-     * Create new bookmark info.
-     * @param name name of bookmark consisting of characters satisfying
-     *   {@link Character#isJavaIdentifierPart(char) }.
-     * @param lineIndex zero-based index of line on which the bookmark will be placed.
-     * @param key Current implementation returns a single char [0-9a-z] used for jumping
-     * to the bookmark by a keystroke in a Goto dialog or an empty string
-     * when no shortcut was assigned yet.
-     * @param url explicit url to which this bookmark belongs; but usually it's null
-     * which means to take the URL from URLBookmarks object which contains this info.
-     */
-    public static BookmarkInfo create(int id, String name, int lineIndex, String key, URL url) {
-        return new BookmarkInfo(id, name, lineIndex, key, url);
+    public static BookmarkInfo create(int id, String name, int lineIndex, String key, FileBookmarks fileBookmarks) {
+        return new BookmarkInfo(id, name, lineIndex, key, fileBookmarks);
     }
 
-    public static BookmarkInfo create(BookmarkInfo info, URL url) {
-        return create(info, url, -1);
-    }
-    
-    /**
-     * Create new bookmark info by getting information from an original bookmark info
-     * and setting a fresh line index value.
-     *
-     * @param info non-null existing info
-     * @param url url or null to retain info's url.
-     * @param lineIndex line index to be set or -1 to retain info's lineIndex.
-     */
-    public static BookmarkInfo create(BookmarkInfo info, URL url, int lineIndex) {
-        if (url == null) {
-            url = info.getURL();
-        }
-        if (lineIndex == -1) {
-            lineIndex = info.getLineIndex();
-        }
-        return new BookmarkInfo(info.getId(), info.getName(), lineIndex, info.getKey(), url);
-    }
-    
-    private final int id;
+    private final Integer id;
     
     private String name;
 
     private int lineIndex;
+    
+    private int currentLineIndex;
 
     private String key;
 
-    private URL url;
+    private FileBookmarks fileBookmarks;
     
-    private BookmarkInfo(int id, String name, int lineIndex, String key, URL url) {
+    private BookmarkInfo(Integer id, String name, int lineIndex, String key, FileBookmarks fileBookmarks) {
         this.id = id;
         this.name = name;
-        this.lineIndex = lineIndex;
+        setLineIndex(lineIndex); // Also call setCurrentLineIndex()
         this.key = key;
-        this.url = url;
+        this.fileBookmarks = fileBookmarks;
     }
     
     public int getId() {
@@ -141,6 +119,15 @@ public final class BookmarkInfo {
     
     public void setLineIndex(int lineIndex) {
         this.lineIndex = lineIndex;
+        setCurrentLineIndex(lineIndex);
+    }
+
+    public int getCurrentLineIndex() {
+        return currentLineIndex;
+    }
+
+    public void setCurrentLineIndex(int currentLineIndex) {
+        this.currentLineIndex = currentLineIndex;
     }
 
     public String getKey() {
@@ -155,23 +142,18 @@ public final class BookmarkInfo {
         }
     }
 
-    /**
-     * Get URL for this bookmark or null if it was not filled in (parent URLBookmarks define it).
-     *
-     * @return URL or null.
-     */
-    public URL getURL() {
-        return url;
+    public FileBookmarks getFileBookmarks() {
+        return fileBookmarks;
     }
 
-    public void setURL(URL url) {
-        this.url = url;
+    public void setFileBookmarks(FileBookmarks fileBookmarks) {
+        this.fileBookmarks = fileBookmarks;
     }
 
     @Override
     public String toString() {
         return "id=" + id + ", name=\"" + name + "\", key='" + key + // NOI18N
-                "' at line=" + lineIndex + ", url=" + url; // NOI18N
+                "' at line=" + lineIndex + ", fileBookmarksIC=" + System.identityHashCode(fileBookmarks); // NOI18N
     }
 
 }

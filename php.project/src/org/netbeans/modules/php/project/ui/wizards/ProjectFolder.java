@@ -234,10 +234,10 @@ public class ProjectFolder extends JPanel implements ItemListener, DocumentListe
     }// </editor-fold>//GEN-END:initComponents
 
     private void projectFolderBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_projectFolderBrowseButtonActionPerformed
-        File newLocation = Utils.browseLocationAction(this, LastUsedFolders.getProject(), NbBundle.getMessage(ProjectFolder.class, "LBL_SelectProjectFolder"));
+        File newLocation = Utils.browseLocationAction(LastUsedFolders.NEW_PROJECT,
+                NbBundle.getMessage(ProjectFolder.class, "LBL_SelectProjectFolder"));
         if (newLocation != null) {
             setProjectFolder(new File(newLocation, projectNameProvider.getProjectName()).getAbsolutePath());
-            LastUsedFolders.setProject(newLocation);
         }
     }//GEN-LAST:event_projectFolderBrowseButtonActionPerformed
 

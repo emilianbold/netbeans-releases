@@ -42,9 +42,12 @@
 package org.netbeans.modules.editor.bookmarks;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.netbeans.api.project.Project;
 
 /**
  * Bookmarks for a project consist of bookmarks for all URLs (where the bookmarks exist)
@@ -53,18 +56,27 @@ import java.util.Map;
  * @author Miloslav Metelka
  */
 public final class ProjectBookmarks {
+    
+    private final Project project;
 
     private volatile int lastBookmarkId;
 
-    private final Map<URL,URLBookmarks> url2Bookmars;
+    private final Map<URL,FileBookmarks> url2FileBookmarks;
     
-    public ProjectBookmarks() {
-        this(0);
+    private boolean removed;
+    
+    public ProjectBookmarks(Project project) {
+        this(project, 0);
     }
     
-    public ProjectBookmarks(int lastBookmarkId) {
+    public ProjectBookmarks(Project project, int lastBookmarkId) {
+        this.project = project;
         this.lastBookmarkId = lastBookmarkId;
-        url2Bookmars = new HashMap<URL, URLBookmarks>();
+        url2FileBookmarks = new HashMap<URL, FileBookmarks>();
+    }
+
+    public Project getProject() {
+        return project;
     }
     
     public int getLastBookmarkId() {
@@ -79,20 +91,45 @@ public final class ProjectBookmarks {
         lastBookmarkId = Math.max(lastBookmarkId, bookmarkId);
     }
 
-    public URLBookmarks get(URL url) {
-        return url2Bookmars.get(url);
+    public FileBookmarks get(URL url) {
+        return url2FileBookmarks.get(url);
     }
     
     public void remove(URL url) {
-        url2Bookmars.remove(url);
+        url2FileBookmarks.remove(url);
     }
     
-    public void put(URL url, URLBookmarks urlBookmarks) {
-        url2Bookmars.put(url, urlBookmarks);
+    public void add(FileBookmarks fileBookmarks) {
+        url2FileBookmarks.put(fileBookmarks.getUrl(), fileBookmarks);
     }
     
     public Collection<URL> allURLs() {
-        return url2Bookmars.keySet();
+        return url2FileBookmarks.keySet();
+    }
+    
+    public Collection<FileBookmarks> allFileBookmarks() {
+        return url2FileBookmarks.values();
+    }
+    
+    public List<BookmarkInfo> allBookmarks() {
+       List<BookmarkInfo> allBookmarks = new ArrayList<BookmarkInfo>();
+       for (FileBookmarks fileBookmarks : url2FileBookmarks.values()) {
+           allBookmarks.addAll(fileBookmarks.getBookmarks());
+       }
+       return allBookmarks;
+    }
+    
+    public void markRemoved() {
+        removed = true;
+    }
+
+    public boolean isRemoved() {
+        return removed;
+    }
+
+    @Override
+    public String toString() {
+        return "project=" + project + ", lastBId=" + lastBookmarkId + ", removed=" + removed; // NOI18N
     }
 
 }

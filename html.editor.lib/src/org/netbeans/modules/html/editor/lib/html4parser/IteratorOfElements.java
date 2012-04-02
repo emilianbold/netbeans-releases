@@ -39,40 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.bookmarks;
+package org.netbeans.modules.html.editor.lib.html4parser;
 
-import java.net.URL;
-import java.util.List;
+import java.util.Iterator;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 
 /**
- * Bookmarks for a file represented by URL.
  *
- * @author Miloslav Metelka
+ * @author marekfukala
  */
-public class URLBookmarks {
+public class IteratorOfElements {
     
-    private final ProjectBookmarks projectBookmarks; // Useful when a source file was moved between projects
+    private Iterator<Element> iterator;
 
-    private final URL url;
-    
-    private List<BookmarkInfo> bookmarkInfos; // Sorted by line number
-    
-    URLBookmarks(ProjectBookmarks projectBookmarks, URL url, List<BookmarkInfo> bookmarkInfos) {
-        this.projectBookmarks = projectBookmarks;
-        this.url = url;
-        this.bookmarkInfos = bookmarkInfos;
+    public IteratorOfElements(Iterator<Element> iterator) {
+        this.iterator = iterator;
     }
 
-    public ProjectBookmarks getProjectBookmarks() {
-        return projectBookmarks;
-    }
-
-    public URL getUrl() {
-        return url;
+    public Iterator<Element> getIterator() {
+        return iterator;
     }
     
-    public List<BookmarkInfo> getBookmarkInfos() {
-        return bookmarkInfos;
-    }
-
 }

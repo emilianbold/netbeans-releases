@@ -75,6 +75,8 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            DirectoryReaderTestCase.class,
            RefreshTestCase.class,
            RefreshTestCase_IZ_210125.class,
+           RefreshNonInstantiatedTestCase.class,
+           RefreshDirSyncCountTestCase.class,
            CanonicalTestCase.class,
            CreateDataAndFolderTestCase.class,
            ListenersTestCase.class,

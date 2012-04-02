@@ -305,7 +305,7 @@ public class TestRestTargetPanel extends javax.swing.JPanel {
             FileObject projectDir = myChosenProject.getProjectDirectory();
             try {
                 String path = FileUtil.toFile(projectDir).getCanonicalPath();
-                support.setProjectProperty(TEST_CLIENT_PROJECT, path);
+                support.setPrivateProjectProperty(TEST_CLIENT_PROJECT, path);
             }
             catch (IOException e) {
                 Logger.getLogger(TestRestTargetPanel.class.getCanonicalName())
