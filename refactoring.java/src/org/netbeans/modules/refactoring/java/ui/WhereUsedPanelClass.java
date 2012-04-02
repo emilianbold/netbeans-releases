@@ -83,6 +83,7 @@ public class WhereUsedPanelClass extends WhereUsedPanel.WhereUsedInnerPanel {
         searchInComments = new javax.swing.JCheckBox();
         label = new javax.swing.JLabel();
         lbl_usagesof = new javax.swing.JLabel();
+        spacer = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -111,7 +112,6 @@ public class WhereUsedPanelClass extends WhereUsedPanel.WhereUsedInnerPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 12);
         add(c_directOnly, gridBagConstraints);
 
@@ -148,6 +148,14 @@ public class WhereUsedPanelClass extends WhereUsedPanel.WhereUsedInnerPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(lbl_usagesof, gridBagConstraints);
+
+        spacer.setMinimumSize(new java.awt.Dimension(0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
+        add(spacer, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void searchInCommentsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchInCommentsItemStateChanged
@@ -165,11 +173,12 @@ public class WhereUsedPanelClass extends WhereUsedPanel.WhereUsedInnerPanel {
     private javax.swing.JLabel label;
     private javax.swing.JLabel lbl_usagesof;
     private javax.swing.JCheckBox searchInComments;
+    private javax.swing.JPanel spacer;
     // End of variables declaration//GEN-END:variables
 
     @Override
     void initialize(final Element element, CompilationController info) {
-        final String labelText = UIUtilities.createHtmlHeader((TypeElement)element, info.getElements().isDeprecated(element), false, true);
+        final String labelText = UIUtilities.createHeader((TypeElement)element, info.getElements().isDeprecated(element), false, false, true);
         final Icon labelIcon = ElementIcons.getElementIcon(element.getKind(), element.getModifiers());
         SwingUtilities.invokeLater(new Runnable() {
 

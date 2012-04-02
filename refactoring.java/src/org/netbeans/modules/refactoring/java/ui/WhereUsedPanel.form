@@ -21,14 +21,14 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="scopePanel" max="32767" attributes="0"/>
-          <Component id="innerPanel" max="32767" attributes="0"/>
+          <Component id="innerPanel" pref="361" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="innerPanel" pref="45" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="scopePanel" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -44,7 +44,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="scopeLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="scope" pref="174" max="32767" attributes="0"/>
+                  <Component id="scope" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btnCustomScope" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -52,7 +52,7 @@
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
-          <Group type="103" groupAlignment="3" attributes="0">
+          <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
