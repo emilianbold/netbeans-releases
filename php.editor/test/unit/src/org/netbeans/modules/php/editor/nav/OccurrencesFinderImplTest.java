@@ -876,6 +876,22 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "class Yours extends Second^Parent {", true);
     }
 
+    public void testIssue203814_01() throws Exception {
+        checkOccurrences(getTestPath(), "public function fMe^thod()", true);
+    }
+
+    public void testIssue203814_02() throws Exception {
+        checkOccurrences(getTestPath(), "self::$first->fMe^thod();", true);
+    }
+
+    public void testIssue203814_03() throws Exception {
+        checkOccurrences(getTestPath(), "static::$first->fMe^thod();", true);
+    }
+
+    public void testIssue203814_04() throws Exception {
+        checkOccurrences(getTestPath(), "Second::$first->fMe^thod();", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
