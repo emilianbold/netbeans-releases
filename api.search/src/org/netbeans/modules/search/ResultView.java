@@ -397,23 +397,6 @@ public final class ResultView extends TopComponent {
     private Map<ReplaceTask, SearchTask> replaceToSearchMap = new HashMap();
     private Map<SearchTask, ReplaceTask> searchToReplaceMap = new HashMap();
 
-    /**
-     */
-    void closeAndSendFocusToEditor(ReplaceTask task) {
-        assert EventQueue.isDispatchThread();
-
-        removePanel(searchToViewMap.get(replaceToSearchMap.get(task)));
-//        close();
-        
-        Mode m = WindowManager.getDefault().findMode("editor");         //NOI18N
-        if (m != null) {
-            TopComponent tc = m.getSelectedTopComponent();
-            if (tc != null) {
-                tc.requestActive();
-            }
-        }
-    }
-
     private void closeAll(boolean butCurrent) {
         Component comp = getComponent(0);
         if (comp instanceof JTabbedPane) {

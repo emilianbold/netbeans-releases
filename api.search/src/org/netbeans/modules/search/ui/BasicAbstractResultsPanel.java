@@ -314,7 +314,9 @@ public abstract class BasicAbstractResultsPanel
             boolean canExpand) {
         Node[] selected = getExplorerManager().getSelectedNodes();
         Node n = null;
-        if (selected == null || selected.length == 0) {
+        if ((selected == null || selected.length == 0)
+                && getExplorerManager().getRootContext()
+                == resultsOutlineSupport.getRootNode()) {
             n = resultsOutlineSupport.getResultsNode();
         } else if (selected.length == 1) {
             n = selected[0];
