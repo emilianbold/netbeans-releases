@@ -374,7 +374,7 @@ public class VariousUtils {
                 } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.STATIC_METHOD_TYPE_PREFIX;
                 } else if (VariousUtils.STATIC_FIELD__TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
-                    operation = VariousUtils.FIELD_TYPE_PREFIX;
+                    operation = VariousUtils.STATIC_FIELD__TYPE_PREFIX;
                 } else if (VariousUtils.VAR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.VAR_TYPE_PREFIX;
                 } else if (VariousUtils.ARRAY_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
@@ -409,6 +409,23 @@ public class VariousUtils {
                         FunctionScope fnc = ModelUtils.getFirst(IndexScopeImpl.getFunctions(QualifiedName.create(frag), varScope));
                         if (fnc != null) {
                             newRecentTypes.addAll(fnc.getReturnTypes(true));
+                        }
+                        recentTypes = newRecentTypes;
+                        operation = null;
+                    } else if (operation.startsWith(STATIC_FIELD__TYPE_PREFIX)) {
+                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
+                        String[] frgs = frag.split("\\."); //NOI18N
+                        assert frgs.length == 2;
+                        String clsName = frgs[0];
+                        if (clsName != null) {
+                        QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(clsName, varScope), offset, varScope);
+                            Collection<? extends ClassScope> classes = IndexScopeImpl.getClasses(fullyQualifiedName, varScope);
+                            for (ClassScope cls : classes) {
+                                Collection<? extends FieldElement> fields = IndexScopeImpl.getFields(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
+                                for (FieldElement field : fields) {
+                                    newRecentTypes.addAll(field.getTypes(offset));
+                                }
+                            }
                         }
                         recentTypes = newRecentTypes;
                         operation = null;
@@ -768,7 +785,7 @@ public class VariousUtils {
             String clsName = CodeUtils.extractUnqualifiedName(fieldAccess.getClassName());
             String fldName = CodeUtils.extractVariableName(fieldAccess.getField());
             if (clsName != null && fldName != null) {
-                return clsName+"@" + STATIC_FIELD__TYPE_PREFIX + fldName;
+                return "@" + STATIC_FIELD__TYPE_PREFIX + clsName + '.' + fldName;
             }
         }
 
