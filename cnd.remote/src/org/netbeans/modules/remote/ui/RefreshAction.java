@@ -85,7 +85,7 @@ public class RefreshAction extends SingleHostAction {
             @Override
             public void run() {
                 if (ConnectionManager.getInstance().isConnectedTo(env)) {
-                    FileObject rootFO = FileSystemProvider.getFileObject(env, "/");
+                    FileObject rootFO = FileSystemProvider.getFileObject(env, "/"); // NOI18N
                     if (rootFO!= null) {
                         FileSystemProvider.scheduleRefresh(rootFO);
                         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(RefreshAction.class, "RefreshScheduled", env.getDisplayName()));

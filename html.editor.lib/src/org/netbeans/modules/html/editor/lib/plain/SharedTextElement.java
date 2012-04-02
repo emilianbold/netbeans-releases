@@ -55,7 +55,7 @@ public class SharedTextElement extends AbstractElement {
     private static final String TO_STRING = "<n/a>"; //NOI18N
 
     public SharedTextElement() {
-        super(null, 0, 0);
+        super(null, 0, (short)0);
     }
 
     @Override

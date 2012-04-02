@@ -100,12 +100,12 @@ public final  class PhpOptionsPanel extends JPanel {
                 GlobalIncludePathSupport.getInstance().itemsIterator());
         PathUiSupport.EditMediator.FileChooserDirectoryHandler directoryHandler = new PathUiSupport.EditMediator.FileChooserDirectoryHandler() {
             @Override
-            public File getCurrentDirectory() {
-                return LastUsedFolders.getIncludePath();
+            public String getDirKey() {
+                return LastUsedFolders.GLOBAL_INCLUDE_PATH;
             }
             @Override
-            public void setCurrentDirectory(File currentDirectory) {
-                LastUsedFolders.setIncludePath(currentDirectory);
+            public File getCurrentDirectory() {
+                return null;
             }
         };
 
@@ -354,9 +354,13 @@ public final  class PhpOptionsPanel extends JPanel {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
+
+    @NbBundle.Messages("PhpOptionsPanel.interpreter.browse.title=Select PHP Interpreter")
     private void phpInterpreterBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phpInterpreterBrowseButtonActionPerformed
-        Utils.browsePhpInterpreter(this, phpInterpreterTextField);
+        File file = Utils.browseFileAction(LastUsedFolders.PHP_INTERPRETER, Bundle.PhpOptionsPanel_interpreter_browse_title());
+        if (file != null) {
+            phpInterpreterTextField.setText(file.getAbsolutePath());
+        }
     }//GEN-LAST:event_phpInterpreterBrowseButtonActionPerformed
 
     private void phpInterpreterSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phpInterpreterSearchButtonActionPerformed

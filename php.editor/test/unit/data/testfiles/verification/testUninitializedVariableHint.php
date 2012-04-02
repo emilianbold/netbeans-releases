@@ -82,5 +82,8 @@ function foo() {
   }
 }
 
+echo $argc;
+echo $argv;
+
 //END
 ?>

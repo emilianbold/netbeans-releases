@@ -39,40 +39,67 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.plain;
+package org.netbeans.modules.editor.bookmarks;
 
-import org.netbeans.modules.html.editor.lib.api.elements.*;
-import org.openide.util.CharSequences;
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 
 /**
+ * Bookmarks for a file represented by URL.
  *
- * @author marekfukala
+ * @author Miloslav Metelka
  */
-public abstract class AbstractNamedElement extends AbstractElement implements Named {
+public class FileBookmarks {
+    
+    private final ProjectBookmarks projectBookmarks; // Useful when a source file was moved between projects
 
-    private CharSequence name;
-
-    public AbstractNamedElement(CharSequence document, int from, int length, CharSequence name) {
-        super(document, from, length);
-        this.name = name;
+    private final URL url;
+    
+    private FileObject fileObject;
+    
+    private List<BookmarkInfo> bookmarks; // Sorted by line number
+    
+    FileBookmarks(ProjectBookmarks projectBookmarks, URL url, List<BookmarkInfo> bookmarks) {
+        this.projectBookmarks = projectBookmarks;
+        this.url = url;
+        this.bookmarks = bookmarks;
+        for (BookmarkInfo bookmark : bookmarks) {
+            bookmark.setFileBookmarks(this);
+        }
     }
 
-    @Override
-    public CharSequence name() {
-        return name;
+    public ProjectBookmarks getProjectBookmarks() {
+        return projectBookmarks;
     }
 
-    @Override
-    public CharSequence namespacePrefix() {
-        int colonIndex = CharSequences.indexOf(name(), ":");
-        return colonIndex == -1 ? null : name().subSequence(0, colonIndex);
-
+    public URL getUrl() {
+        return url;
     }
 
-    @Override
-    public CharSequence unqualifiedName() {
-        int colonIndex = CharSequences.indexOf(name(), ":");
-        return colonIndex == -1 ? name() : name().subSequence(colonIndex + 1, name().length());
+    public FileObject getFileObject() {
+        if (fileObject == null) {
+            fileObject = URLMapper.findFileObject(url);
+        }
+        return fileObject;
     }
     
+    public List<BookmarkInfo> getBookmarks() {
+        return bookmarks;
+    }
+    
+    public void add(BookmarkInfo bookmark) {
+        bookmarks.add(bookmark);
+        Collections.sort(bookmarks, BookmarkInfo.CURRENT_LINE_COMPARATOR);
+    }
+
+    public boolean remove(BookmarkInfo bookmark) {
+        if (!projectBookmarks.isRemoved()) {
+            return bookmarks.remove(bookmark);
+        }
+        return false;
+    }
+
 }

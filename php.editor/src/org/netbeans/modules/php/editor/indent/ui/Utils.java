@@ -53,6 +53,8 @@ import java.io.InputStreamReader;
  */
 public class Utils {
 
+    public static final int POSSIBLE_SCROLL_BAR_WIDTH = 30;
+
     public static String loadPreviewText(InputStream is) throws IOException {
             BufferedReader r = new BufferedReader(new InputStreamReader(is));
             try {

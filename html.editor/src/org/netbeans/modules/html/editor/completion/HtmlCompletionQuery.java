@@ -614,7 +614,9 @@ public class HtmlCompletionQuery extends UserTask {
 
     private boolean usesLowerCase(HtmlParserResult result, int astOffset) {
         //finds tag name case for the first document tag
-        for (Element e : result.getSyntaxAnalyzerResult().getElements().items()) {
+        Iterator<Element> iterator = result.getSyntaxAnalyzerResult().getElementsIterator();
+        while(iterator.hasNext()) {
+            Element e = iterator.next();
             switch (e.type()) {
                 case OPEN_TAG:
                 case CLOSE_TAG:

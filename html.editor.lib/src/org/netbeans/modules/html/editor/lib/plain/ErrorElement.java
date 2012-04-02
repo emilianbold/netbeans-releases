@@ -49,7 +49,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
  */
 public class ErrorElement extends AbstractElement {
 
-    public ErrorElement(CharSequence doc, int offset, int length) {
+    public ErrorElement(CharSequence doc, int offset, short length) {
         super(doc, offset, length);
     }
 
