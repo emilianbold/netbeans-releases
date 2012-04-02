@@ -41,29 +41,15 @@
  */
 package org.netbeans.modules.editor.bookmarks;
 
-import javax.swing.text.Document;
-import org.netbeans.lib.editor.bookmarks.api.Bookmark;
+import java.util.EventListener;
 
 /**
- * Accessor for Bookmark API package.
+ * Listener for changes on bookmark manager.
  *
  * @author Miloslav Metelka
  */
-public abstract class BookmarkAPIAccessor {
+public interface BookmarkManagerListener extends EventListener {
     
-    public static BookmarkAPIAccessor INSTANCE;
-    
-    static {
-        Class c = Bookmark.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            throw new IllegalStateException("Cannot load class " + c.getName());
-        }
-    }
-    
-    public abstract BookmarkInfo getInfo(Bookmark b);
-
-    public abstract Bookmark getBookmark(Document doc, BookmarkInfo b);
+    void bookmarksChanged(BookmarkManagerEvent evt);
 
 }

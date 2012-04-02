@@ -41,29 +41,26 @@
  */
 package org.netbeans.modules.editor.bookmarks;
 
-import javax.swing.text.Document;
-import org.netbeans.lib.editor.bookmarks.api.Bookmark;
+import java.util.EventObject;
+import java.util.List;
 
 /**
- * Accessor for Bookmark API package.
+ * Event describing changes in bookmark manager.
  *
  * @author Miloslav Metelka
  */
-public abstract class BookmarkAPIAccessor {
+public final class BookmarkManagerEvent extends EventObject {
     
-    public static BookmarkAPIAccessor INSTANCE;
+    private final List<BookmarkChange> bookmarkChanges;
     
-    static {
-        Class c = Bookmark.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            throw new IllegalStateException("Cannot load class " + c.getName());
-        }
+    BookmarkManagerEvent(BookmarkManager boookmarkManager, List<BookmarkChange> bookmarkChanges) {
+        super(boookmarkManager);
+        assert (bookmarkChanges != null) : "Null bookmarkChanges";
+        this.bookmarkChanges = bookmarkChanges;
+    }
+
+    public List<BookmarkChange> getBookmarkChanges() {
+        return bookmarkChanges;
     }
     
-    public abstract BookmarkInfo getInfo(Bookmark b);
-
-    public abstract Bookmark getBookmark(Document doc, BookmarkInfo b);
-
 }

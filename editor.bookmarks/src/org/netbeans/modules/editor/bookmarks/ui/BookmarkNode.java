@@ -43,18 +43,25 @@ package org.netbeans.modules.editor.bookmarks.ui;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.io.IOException;
+import java.util.Collections;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.lib.editor.bookmarks.api.Bookmark;
-import org.netbeans.modules.editor.bookmarks.BookmarkAPIAccessor;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
-import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
+import org.netbeans.modules.editor.bookmarks.BookmarkManager;
+import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.OpenAction;
+import org.openide.actions.RenameAction;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Node for either real Bookmark or a BookmarkInfo.
@@ -78,24 +85,28 @@ public class BookmarkNode extends AbstractNode {
     
     private final BookmarkInfo bookmarkInfo;
     
-    private Reference<Bookmark> bookmarkRef;
-    
     private static Image bookmarkIcon;
 
-    public BookmarkNode(FileObject fo, Bookmark b) {
-        this(fo, BookmarkAPIAccessor.INSTANCE.getInfo(b));
-        this.bookmarkRef = new WeakReference<Bookmark>(b);
-    }
-    
     public BookmarkNode(FileObject fo, BookmarkInfo bookmarkInfo) {
         super(Children.LEAF);
         this.fo = fo;
+        assert (bookmarkInfo != null);
         this.bookmarkInfo = bookmarkInfo;
     }
     
     @Override
     public String getName() {
         return bookmarkInfo.getName();
+    }
+
+    @Override
+    public void setName(String name) {
+        String origName = getName();
+        if (!name.equals(origName)) {
+            setBookmarkName(name);
+            fireNameChange(origName, name);
+            fireDisplayNameChange(null, null);
+        }
     }
 
     @Override
@@ -111,6 +122,15 @@ public class BookmarkNode extends AbstractNode {
     }
 
     @Override
+    public Action[] getActions(boolean context) {
+        return new Action[] {
+            SystemAction.get(OpenAction.class),
+            SystemAction.get(RenameAction.class),
+            SystemAction.get(DeleteAction.class)
+        };
+    }
+    
+    @Override
     public Image getIcon(int type) {
         if (bookmarkIcon == null) {
             bookmarkIcon = ImageUtilities.loadImage(
@@ -119,18 +139,72 @@ public class BookmarkNode extends AbstractNode {
         return bookmarkIcon;
 
     }
+
+    @Override
+    public <T extends Cookie> T getCookie(Class<T> type) {
+        if (type == OpenCookie.class) {
+            @SuppressWarnings("unchecked")
+            T impl = (T) new OpenCookieImpl();
+            return impl;
+        }
+        return super.getCookie(type);
+    }
+    
+    @Override
+    public boolean canCopy() {
+        return false;
+    }
+
+    @Override
+    public boolean canCut() {
+        return false;
+    }
+
+    @Override
+    public boolean canRename() {
+        return true;
+    }
+
+    @Override
+    public boolean canDestroy() {
+        return true;
+    }
+
+    @Override
+    public void destroy() throws IOException {
+        super.destroy();
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            lockedBookmarkManager.removeBookmarks(Collections.singletonList(bookmarkInfo));
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
+    }
     
     private int lineIndex() {
-        Bookmark b = bookmark();
-        return (b != null) ? b.getLineNumber() : bookmarkInfo.getLineIndex();
+        return bookmarkInfo.getCurrentLineIndex();
     }
     
     void openInEditor() {
-        BookmarksPersistence.get().openEditor(fo, getUpdatedInfo());
-    }
-    
-    Bookmark bookmark() {
-        return (bookmarkRef != null) ? bookmarkRef.get() : null;
+        final EditorCookie ec;
+        Document doc;
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            ec = BookmarkUtils.findEditorCookie(bookmarkInfo);
+            if (ec != null && (doc = ec.getDocument()) != null) {
+                BookmarkUtils.updateCurrentLineIndex(bookmarkInfo, doc);
+                final int lineIndex = bookmarkInfo.getCurrentLineIndex();
+                // Post opening since otherwise the focus would get returned to an original pane
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        BookmarkUtils.openEditor(ec, lineIndex); // Take url from bookmarkInfo
+                    }
+                });
+            }
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
     }
     
     public String getBookmarkName() {
@@ -138,7 +212,13 @@ public class BookmarkNode extends AbstractNode {
     }
     
     public void setBookmarkName(String bookmarkName) {
-        bookmarkInfo.setName(bookmarkName);
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            bookmarkInfo.setName(bookmarkName);
+            lockedBookmarkManager.updateNameOrKey(bookmarkInfo, true, false);
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
     }
     
     public String getBookmarkLocation() {
@@ -156,19 +236,30 @@ public class BookmarkNode extends AbstractNode {
     }
     
     public void setBookmarkKey(String bookmarkKey) {
-        bookmarkInfo.setKey(bookmarkKey);
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            bookmarkInfo.setKey(bookmarkKey);
+            lockedBookmarkManager.updateNameOrKey(bookmarkInfo, false, true);
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
+    }
+    
+    public BookmarkInfo getBookmarkInfo() {
+        return bookmarkInfo;
     }
     
     public FileObject getFileObject() {
         return fo;
     }
 
-    public BookmarkInfo getUpdatedInfo() {
-        Bookmark b = bookmark();
-        if (b != null) {
-            return BookmarkInfo.create(bookmarkInfo, fo.toURL(), b.getLineNumber());
+    private final class OpenCookieImpl implements OpenCookie {
+
+        @Override
+        public void open() {
+            openInEditor();
         }
-        return bookmarkInfo;
+        
     }
-    
+
 }
