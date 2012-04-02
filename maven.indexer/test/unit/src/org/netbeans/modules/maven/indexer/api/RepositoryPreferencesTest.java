@@ -51,6 +51,7 @@ public class RepositoryPreferencesTest extends NbTestCase {
     }
 
     public void testGetRepositoryInfos() throws Exception {
+        RepositoryPreferences.CONSIDER_MIRRORS = false;
         RepositoryPreferences rp = RepositoryPreferences.getInstance();
         assertEquals("[local, central]", rp.getRepositoryInfos().toString());
         rp.addTransientRepository(1, "foo", "Foo", "http://nowhere.net/");

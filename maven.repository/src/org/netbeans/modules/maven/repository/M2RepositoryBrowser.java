@@ -49,6 +49,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.cli.MavenCli;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
@@ -59,6 +60,7 @@ import org.netbeans.modules.maven.repository.register.RepositoryRegisterUI;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -94,6 +96,8 @@ public final class M2RepositoryBrowser extends AbstractNode {
             new AddAction()
         };
     }
+    
+    
 
     private static class AddAction extends AbstractAction {
         AddAction() {
@@ -166,7 +170,7 @@ public final class M2RepositoryBrowser extends AbstractNode {
         cs.removeChangeListener(l);
     }
 
-    private static class RootNodes extends ChildFactory.Detachable<Union2<RepositoryInfo,QueryRequest>> implements ChangeListener {
+    private static class RootNodes extends ChildFactory.Detachable<Union2<RepositoryInfo,QueryRequest>> implements ChangeListener, FileChangeListener {
         @Override protected boolean createKeys(List<Union2<RepositoryInfo,QueryRequest>> toPopulate) {
             for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
                 toPopulate.add(Union2.<RepositoryInfo,QueryRequest>createFirst(info));
@@ -187,15 +191,40 @@ public final class M2RepositoryBrowser extends AbstractNode {
         }
         @Override protected void addNotify() {
             RepositoryPreferences.getInstance().addChangeListener(this);
+            FileUtil.addFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
             addChangeListener(this);
         }
         @Override protected void removeNotify() {
             RepositoryPreferences.getInstance().removeChangeListener(this);
             removeChangeListener(this);
+            FileUtil.removeFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
         }
         @Override public void stateChanged(ChangeEvent e) {
             refresh(false);
         }
+
+        @Override public void fileFolderCreated(FileEvent fe) {
+        }
+
+        @Override public void fileDataCreated(FileEvent fe) {
+            refresh(false);
+        }
+
+        @Override public void fileChanged(FileEvent fe) {
+            refresh(false);
+        }
+
+        @Override public void fileDeleted(FileEvent fe) {
+            refresh(false);
+        }
+
+        @Override public void fileRenamed(FileRenameEvent fe) {
+            refresh(false);
+        }
+
+        @Override public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+
     }
     
     static class QueryRequest {
