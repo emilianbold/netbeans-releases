@@ -112,14 +112,14 @@ import org.openide.util.Parameters;
  */
 public class VariousUtils {
 
-    public static final String CONSTRUCTOR_TYPE_PREFIX = "constuct:";
-    public static final String FUNCTION_TYPE_PREFIX = "fn:";
-    public static final String METHOD_TYPE_PREFIX = "mtd:";
-    public static final String STATIC_METHOD_TYPE_PREFIX = "static.mtd:";
-    public static final String FIELD_TYPE_PREFIX = "fld:";
-    public static final String STATIC_FIELD__TYPE_PREFIX = "static.fld:";
-    public static final String VAR_TYPE_PREFIX = "var:";
-    public static final String ARRAY_TYPE_PREFIX = "array:";
+    public static final String CONSTRUCTOR_TYPE_PREFIX = "constuct:"; //NOI18N
+    public static final String FUNCTION_TYPE_PREFIX = "fn:"; //NOI18N
+    public static final String METHOD_TYPE_PREFIX = "mtd:"; //NOI18N
+    public static final String STATIC_METHOD_TYPE_PREFIX = "static.mtd:"; //NOI18N
+    public static final String FIELD_TYPE_PREFIX = "fld:"; //NOI18N
+    public static final String STATIC_FIELD__TYPE_PREFIX = "static.fld:"; //NOI18N
+    public static final String VAR_TYPE_PREFIX = "var:"; //NOI18N
+    public static final String ARRAY_TYPE_PREFIX = "array:"; //NOI18N
     private static final Collection<String> SPECIAL_CLASS_NAMES = new LinkedList<String>();
 
     static {
@@ -226,7 +226,7 @@ public class VariousUtils {
                     String parts[] = tag.getValue().trim().split("\\s+", 2); //NOI18N
 
                     if (parts.length > 0) {
-                        String type = parts[0].split("\\;", 2)[0];
+                        String type = parts[0].split("\\;", 2)[0]; //NOI18N
                         return type;
                     }
 
@@ -294,7 +294,7 @@ public class VariousUtils {
 
     public static String replaceVarNames(String semiTypeName, Map<String,String> var2Type)  {
         StringBuilder retval = new StringBuilder();
-        String[] fragments = semiTypeName.split("[@:]");
+        String[] fragments = semiTypeName.split("[@:]"); //NOI18N
         for (int i = 0; i < fragments.length; i++) {
             String frag = fragments[i];
             if (frag.trim().length() == 0) continue;
@@ -330,7 +330,7 @@ public class VariousUtils {
     }
     public static Collection<? extends VariableName> getAllVariables(VariableScope varScope, String semiTypeName)  {
         List<VariableName> retval = new ArrayList<VariableName>();
-        String[] fragments = semiTypeName.split("[@:]");
+        String[] fragments = semiTypeName.split("[@:]"); //NOI18N
         for (int i = 0; i < fragments.length; i++) {
             String frag = fragments[i];
             if (frag.trim().length() == 0) continue;
@@ -356,9 +356,9 @@ public class VariousUtils {
         Collection<? extends TypeScope> oldRecentTypes = Collections.emptyList();
         Stack<VariableName> fldVarStack = new Stack<VariableName>();
 
-        if (semiTypeName != null && semiTypeName.contains("@")) {
+        if (semiTypeName != null && semiTypeName.contains("@")) { //NOI18N
             String operation = null;
-            String[] fragments = semiTypeName.split("[@:]");
+            String[] fragments = semiTypeName.split("[@:]"); //NOI18N
             int len = (justDispatcher) ? fragments.length - 1 : fragments.length;
             for (int i = 0; i < len; i++) {
                 oldRecentTypes = recentTypes;
@@ -366,7 +366,7 @@ public class VariousUtils {
                 if (frag.length() == 0) {
                     continue;
                 }
-                String operationPrefix = (frag.endsWith(":")) ? frag : String.format("%s:", frag);
+                String operationPrefix = (frag.endsWith(":")) ? frag : String.format("%s:", frag); //NOI18N
                 if (VariousUtils.METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.METHOD_TYPE_PREFIX;
                 } else if (VariousUtils.FUNCTION_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
@@ -431,7 +431,7 @@ public class VariousUtils {
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.STATIC_METHOD_TYPE_PREFIX)) {
                         Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
-                        String[] frgs = frag.split("\\.");
+                        String[] frgs = frag.split("\\."); //NOI18N
                         assert frgs.length == 2;
                         String clsName = frgs[0];
                         if (clsName != null) {
@@ -554,16 +554,16 @@ public class VariousUtils {
         Stack<Collection<? extends TypeScope>> stack = new Stack<Collection<? extends TypeScope>>();
 
         TypeScope type = null;
-        if (semiTypeName != null && semiTypeName.contains("@")) {
+        if (semiTypeName != null && semiTypeName.contains("@")) { //NOI18N
             String operation = null;
-            String[] fragments = semiTypeName.split("[@:]");
+            String[] fragments = semiTypeName.split("[@:]"); //NOI18N
             int len = fragments.length;
             for (int i = 0; i < len; i++) {
                 String frag = fragments[i];
                 if (frag.trim().length() == 0) {
                     continue;
                 }
-                String operationPrefix = (frag.endsWith(":")) ? frag : String.format("%s:", frag);
+                String operationPrefix = (frag.endsWith(":")) ? frag : String.format("%s:", frag); //NOI18N
                 if (VariousUtils.METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.METHOD_TYPE_PREFIX;
                 } else if (VariousUtils.FUNCTION_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
@@ -636,7 +636,7 @@ public class VariousUtils {
                         stack.push(Collections.singletonList(cls));
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.STATIC_METHOD_TYPE_PREFIX)) {
-                        String[] frgs = frag.split("\\.");
+                        String[] frgs = frag.split("\\."); //NOI18N
                         assert frgs.length == 2;
                         String clsName = frgs[0];
                         if (clsName == null) {
@@ -751,11 +751,11 @@ public class VariousUtils {
                     return semiTypeName;
                 }
             }
-            return "@" + VAR_TYPE_PREFIX + varName;
+            return "@" + VAR_TYPE_PREFIX + varName; //NOI18N
         } else if (varBase instanceof FunctionInvocation) {
             FunctionInvocation functionInvocation = (FunctionInvocation) varBase;
             String fname = CodeUtils.extractFunctionName(functionInvocation);
-            return "@" + FUNCTION_TYPE_PREFIX + fname;
+            return "@" + FUNCTION_TYPE_PREFIX + fname; //NOI18N
         } else if (varBase instanceof StaticMethodInvocation) {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) varBase;
             String className = null;
@@ -766,26 +766,26 @@ public class VariousUtils {
             String methodName = CodeUtils.extractFunctionName(staticMethodInvocation.getMethod());
 
             if (className != null && methodName != null) {
-                return "@" + STATIC_METHOD_TYPE_PREFIX + className + '.' + methodName;
+                return "@" + STATIC_METHOD_TYPE_PREFIX + className + '.' + methodName; //NOI18N
             }
         } else if (varBase instanceof MethodInvocation) {
             MethodInvocation methodInvocation = (MethodInvocation) varBase;
             String methodName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
             if (methodName != null) {
-                return "@" + METHOD_TYPE_PREFIX + methodName;
+                return "@" + METHOD_TYPE_PREFIX + methodName; //NOI18N
             }
         } else if (varBase instanceof FieldAccess) {
             FieldAccess fieldAccess = (FieldAccess) varBase;
             String filedName = CodeUtils.extractVariableName(fieldAccess.getField());
             if (filedName != null) {
-                return "@" + FIELD_TYPE_PREFIX + filedName;
+                return "@" + FIELD_TYPE_PREFIX + filedName; //NOI18N
             }
         } else if (varBase instanceof StaticFieldAccess) {
             StaticFieldAccess fieldAccess = (StaticFieldAccess) varBase;
             String clsName = CodeUtils.extractUnqualifiedName(fieldAccess.getClassName());
             String fldName = CodeUtils.extractVariableName(fieldAccess.getField());
             if (clsName != null && fldName != null) {
-                return "@" + STATIC_FIELD__TYPE_PREFIX + clsName + '.' + fldName;
+                return "@" + STATIC_FIELD__TYPE_PREFIX + clsName + '.' + fldName; //NOI18N
             }
         }
 
@@ -815,7 +815,7 @@ public class VariousUtils {
      * @param sourceFile needs to be data file (not folder)
      */
     public static FileObject resolveInclude(FileObject sourceFile, Include include) {
-        Parameters.notNull("sourceFile", sourceFile);
+        Parameters.notNull("sourceFile", sourceFile); //NOI18N
         if (sourceFile.isFolder()) {
             throw new IllegalArgumentException(FileUtil.getFileDisplayName(sourceFile));
         }
@@ -872,13 +872,13 @@ public class VariousUtils {
                         state = (state.equals(State.METHOD)) ? State.STOP : State.INVALID;
                         // state = State.INVALID;
                         if (isReference(token)) {
-                            metaAll.insert(0, "@" + VariousUtils.METHOD_TYPE_PREFIX);
+                            metaAll.insert(0, "@" + VariousUtils.METHOD_TYPE_PREFIX); //NOI18N
                             state = State.REFERENCE;
                         } else if (isStaticReference(token)) {
-                            metaAll.insert(0, "@" + VariousUtils.METHOD_TYPE_PREFIX);
+                            metaAll.insert(0, "@" + VariousUtils.METHOD_TYPE_PREFIX); //NOI18N
                             state = State.STATIC_REFERENCE;
                         } else if (state.equals(State.STOP)) {
-                            metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
+                            metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX); //NOI18N
                         }
                         break;
                     case IDX:
@@ -908,11 +908,11 @@ public class VariousUtils {
                     case STATIC_REFERENCE:
                         state = State.INVALID;
                         if (isString(token)) {
-                            metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
+                            metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX); //NOI18N
                             metaAll.insert(0, token.text().toString());
                             state = State.CLASSNAME;
                         } else if (isSelf(token) || isParent(token) || isStatic(token)) {
-                            metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
+                            metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX); //NOI18N
                             metaAll.insert(0, translateSpecialClassName(varScope, token.text().toString()));
                             //TODO: maybe rather introduce its own State
                             state = State.CLASSNAME;
@@ -952,7 +952,7 @@ public class VariousUtils {
                     case FIELD:
                         state = State.INVALID;
                         if (isReference(token)) {
-                            metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
+                            metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX); //NOI18N
                             state = State.REFERENCE;
                         }
                         break;
@@ -967,9 +967,9 @@ public class VariousUtils {
                     case ARRAY_VARIABLE:
                     case VARIABLE:
                         if (state.equals(State.ARRAY_VARIABLE)) {
-                            metaAll.insert(0, "@" + VariousUtils.ARRAY_TYPE_PREFIX);
+                            metaAll.insert(0, "@" + VariousUtils.ARRAY_TYPE_PREFIX); //NOI18N
                         } else {
-                            metaAll.insert(0, "@" + VariousUtils.VAR_TYPE_PREFIX);
+                            metaAll.insert(0, "@" + VariousUtils.VAR_TYPE_PREFIX); //NOI18N
                         }
                     case CLASSNAME:
                         //TODO: self, parent not handled yet
@@ -1002,14 +1002,14 @@ public class VariousUtils {
                     state = State.STOP;
                     PHPTokenId id = token.id();
                     if (id != null && PHPTokenId.PHP_NEW.equals(id)) {
-                        metaAll.insert(0, "@" + VariousUtils.CONSTRUCTOR_TYPE_PREFIX);
+                        metaAll.insert(0, "@" + VariousUtils.CONSTRUCTOR_TYPE_PREFIX); //NOI18N
                     } else {
-                        metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
+                        metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX); //NOI18N
                     }
                     break;
                 } else if (state.equals(State.PARAMS) && !possibleClassName.isEmpty() && token.id() != null && PHPTokenId.PHP_NEW.equals(token.id()) && (rightBraces - 1 == leftBraces)) {
                     state = State.STOP;
-                    metaAll.insert(0, "@" + VariousUtils.CONSTRUCTOR_TYPE_PREFIX + possibleClassName);
+                    metaAll.insert(0, "@" + VariousUtils.CONSTRUCTOR_TYPE_PREFIX + possibleClassName); //NOI18N
                     break;
                 }
             }
@@ -1083,7 +1083,7 @@ public class VariousUtils {
         if (classScope != null) {
             if ("self".equals(clsName) || "this".equals(clsName) || "static".equals(clsName)) {//NOI18N
                 clsName = classScope.getName();
-            } else if ("parent".equals(clsName)) {
+            } else if ("parent".equals(clsName)) { //NOI18N
                 QualifiedName fullyQualifiedName = ModelUtils.getFirst(classScope.getPossibleFQSuperClassNames());
                 if (fullyQualifiedName != null) {
                     clsName = fullyQualifiedName.toString();
@@ -1172,9 +1172,9 @@ public class VariousUtils {
             csi = (TypeScope)inScope;
         }
         if (csi != null) {
-            if ("self".equals(staticTypeName)) {
+            if ("self".equals(staticTypeName)) { //NOI18N
                 return Collections.singletonList(csi);
-            } else if ( "parent".equals(staticTypeName) && (csi instanceof ClassScope)) {
+            } else if ( "parent".equals(staticTypeName) && (csi instanceof ClassScope)) { //NOI18N
                 return ((ClassScope)csi).getSuperClasses();
             }
         }
