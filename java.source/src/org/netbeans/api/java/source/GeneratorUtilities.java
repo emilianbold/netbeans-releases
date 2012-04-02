@@ -691,7 +691,8 @@ public final class GeneratorUtilities {
                     }
                 }
             }
-            importScope.importAll(((Symbol)entry.getKey()).members());
+            if (entry.getValue() < 0 && entry.getKey() instanceof Symbol)
+                importScope.importAll(((Symbol)entry.getKey()).members());
         }
 
         // sort the elements to import
