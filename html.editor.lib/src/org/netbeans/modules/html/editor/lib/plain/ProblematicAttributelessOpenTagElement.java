@@ -44,21 +44,25 @@ package org.netbeans.modules.html.editor.lib.plain;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 
 /**
  *
  * @author marekfukala
  */
-public class CommentElement extends AbstractElement{
+public class ProblematicAttributelessOpenTagElement extends AttributelessOpenTagElement implements OpenTag {
 
-    public CommentElement(CharSequence doc, int offset, short length) {
-        super(doc, offset, length);
+    private ProblemDescription problem;
+
+    public ProblematicAttributelessOpenTagElement(CharSequence document, int from, short length,
+            byte nameLen, boolean isEmpty, ProblemDescription problem) {
+        super(document, from, length, nameLen, isEmpty);
+        this.problem = problem;
     }
 
     @Override
-    public ElementType type() {
-        return ElementType.COMMENT;
+    public Collection<ProblemDescription> problems() {
+        return Collections.singleton(problem);
     }
-    
+
 }

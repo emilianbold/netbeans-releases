@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.editor.lib.html4parser;
 
+import java.util.Iterator;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.ParseException;
@@ -48,6 +49,7 @@ import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerElements;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementsIterator;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 
@@ -98,21 +100,8 @@ public class XmlSyntaxTreeBuilderTest extends TestBase {
 
     private Node parse(String code) {
         HtmlSource source = new HtmlSource(code);
-        SyntaxAnalyzer result = SyntaxAnalyzer.create(source);
-        SyntaxAnalyzerElements elements = result.elements();
-        
-//        for(SyntaxElement se : elements.items()) {
-//            System.out.print(se);
-//            List<ProblemDescription> problems = se.getProblems();
-//            if(problems == null || problems.isEmpty()) {
-//                System.out.println("OK");
-//            } else { 
-//                System.out.println(se.getProblems().get(0));
-//            }
-//            
-//        }
-        
-        return XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, elements.items());
+        Iterator<Element> iterator = new ElementsIterator(source);
+        return XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, iterator);
     }
 
 }

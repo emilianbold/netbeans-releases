@@ -176,7 +176,7 @@ public class RefreshManager {
     }
     
     private static boolean isDirectory(RemoteFileObjectBase fo) {
-        return fo != null && ((fo instanceof RemoteLinkBase) || (fo instanceof RemoteDirectory));
+        return fo != null && (/*(fo instanceof RemoteLinkBase) || */ (fo instanceof RemoteDirectory));
     }
     
     private static class PathComparator implements Comparator<RemoteFileObjectBase>  {

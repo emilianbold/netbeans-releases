@@ -44,6 +44,7 @@ package org.netbeans.modules.html.validation;
 
 import java.net.URL;
 import java.util.*;
+import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -161,10 +162,11 @@ public class ValidatorImpl implements Validator {
     }
 
     private boolean containsHeadElement(ValidationContext context) {
-        Collection<Element> head = context.getSyntaxAnalyzerResult().getElements().items();
+        Iterator<Element> head = context.getSyntaxAnalyzerResult().getElementsIterator();
         //limit the search to the beginning of the file
-        int limit = Math.max(head.size(), 20);
-        for(Element se : head) {
+        int limit = 20;
+        while(head.hasNext()) {
+            Element se = head.next();
             if(limit-- == 0) {
                 break;
             }

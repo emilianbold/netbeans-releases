@@ -85,11 +85,12 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
 
         PathUiSupport.EditMediator.FileChooserDirectoryHandler directoryHandler = new PathUiSupport.EditMediator.FileChooserDirectoryHandler() {
             @Override
-            public File getCurrentDirectory() {
-                return FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project));
+            public String getDirKey() {
+                return CustomizerIgnorePath.class.getName();
             }
             @Override
-            public void setCurrentDirectory(File currentDirectory) {
+            public File getCurrentDirectory() {
+                return FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project));
             }
         };
 

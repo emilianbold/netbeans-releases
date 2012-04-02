@@ -41,24 +41,36 @@
  */
 package org.netbeans.modules.html.editor.lib.plain;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.openide.util.CharSequences;
 
 /**
  *
  * @author marekfukala
  */
-public class CommentElement extends AbstractElement{
+public abstract class AbstractTagElement extends AbstractElement {
 
-    public CommentElement(CharSequence doc, int offset, short length) {
-        super(doc, offset, length);
-    }
-
-    @Override
-    public ElementType type() {
-        return ElementType.COMMENT;
-    }
+    private byte nameLen;
     
+    public AbstractTagElement(CharSequence doc, int offset, short length, byte nameLen) {
+        super(doc, offset, length);
+        this.nameLen = nameLen;
+    }
+
+    protected abstract int fromToNamePositionDiff();
+
+    public CharSequence name() {
+        int nameOffset = from() + fromToNamePositionDiff();
+        return source().subSequence(nameOffset, nameOffset + nameLen );
+    }
+
+    public CharSequence namespacePrefix() {
+        int colonIndex = CharSequences.indexOf(name(), ":");
+        return colonIndex == -1 ? null : name().subSequence(0, colonIndex);
+
+    }
+
+    public CharSequence unqualifiedName() {
+        int colonIndex = CharSequences.indexOf(name(), ":");
+        return colonIndex == -1 ? name() : name().subSequence(colonIndex + 1, name().length());
+    }
 }

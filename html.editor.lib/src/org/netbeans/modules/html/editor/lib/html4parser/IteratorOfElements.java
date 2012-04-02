@@ -39,40 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.plain;
+package org.netbeans.modules.html.editor.lib.html4parser;
 
-import org.netbeans.modules.html.editor.lib.api.elements.*;
-import org.openide.util.CharSequences;
+import java.util.Iterator;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 
 /**
  *
  * @author marekfukala
  */
-public abstract class AbstractNamedElement extends AbstractElement implements Named {
+public class IteratorOfElements {
+    
+    private Iterator<Element> iterator;
 
-    private CharSequence name;
-
-    public AbstractNamedElement(CharSequence document, int from, int length, CharSequence name) {
-        super(document, from, length);
-        this.name = name;
+    public IteratorOfElements(Iterator<Element> iterator) {
+        this.iterator = iterator;
     }
 
-    @Override
-    public CharSequence name() {
-        return name;
-    }
-
-    @Override
-    public CharSequence namespacePrefix() {
-        int colonIndex = CharSequences.indexOf(name(), ":");
-        return colonIndex == -1 ? null : name().subSequence(0, colonIndex);
-
-    }
-
-    @Override
-    public CharSequence unqualifiedName() {
-        int colonIndex = CharSequences.indexOf(name(), ":");
-        return colonIndex == -1 ? name() : name().subSequence(colonIndex + 1, name().length());
+    public Iterator<Element> getIterator() {
+        return iterator;
     }
     
 }
