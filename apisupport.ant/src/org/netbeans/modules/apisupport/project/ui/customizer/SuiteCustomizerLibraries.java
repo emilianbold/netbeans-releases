@@ -1375,11 +1375,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             return mm.getImplementationVersion();
         }
         public Set<String> getProvidedTokens() {
-            return new HashSet<String>(Arrays.asList(mm.getProvidedTokens()));
+            return new TreeSet<String>(Arrays.asList(mm.getProvidedTokens()));
         }
         public Set<String> getRequiredTokens() {
-            Set<String> s = new HashSet<String>(Arrays.asList(mm.getRequiredTokens()));
-            s.addAll(Arrays.asList(mm.getNeededTokens()));
+            Set<String> s = new TreeSet<String>(Arrays.asList(mm.getRequiredTokens()));
             Iterator<String> it = s.iterator();
             while (it.hasNext()) {
                 String tok = it.next();
