@@ -42,15 +42,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.apisupport.project;
+package org.netbeans.modules.apisupport.project.api;
 
-import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Manifest;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.apisupport.project.TestUtil;
 import org.openide.util.test.TestFileUtils;
 
 /**
