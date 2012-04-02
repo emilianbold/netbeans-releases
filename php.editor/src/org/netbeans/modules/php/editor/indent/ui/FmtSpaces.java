@@ -45,6 +45,7 @@
 package org.netbeans.modules.php.editor.indent.ui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -101,6 +102,9 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         for( int i = root.getChildCount(); i >= 0; i-- ) {
             cfgTree.expandRow(i);
         }
+
+        Dimension dimension = new Dimension((int) cfgTree.getPreferredSize().getWidth() + Utils.POSSIBLE_SCROLL_BAR_WIDTH, (int) jScrollPane1.getMinimumSize().getHeight());
+        jScrollPane1.setMinimumSize(dimension);
     }
 
     public static PreferencesCustomizer.Factory getController() {
