@@ -78,7 +78,7 @@ import org.openide.util.Exceptions;
 
 /**
  * Static utility classes for processing jackpot patterns.
- * {@link https://bitbucket.org/jlahoda/jackpot30/wiki/RulesLanguage}
+ * <a href="https://bitbucket.org/jlahoda/jackpot30/wiki/RulesLanguage">Rules Language</a>
  * @author Jan Becicka
  * @since 1.1
  */

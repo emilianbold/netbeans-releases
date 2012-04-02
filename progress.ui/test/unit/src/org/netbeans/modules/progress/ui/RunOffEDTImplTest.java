@@ -237,8 +237,8 @@ public class RunOffEDTImplTest extends NbTestCase {
 
     private void createRandomContention(final Random r) throws Exception {
         if (r.nextInt(10) > 7) {
+            RequestProcessor rp = new RequestProcessor(this.getClass().getName());
             for (int i= 0; i < r.nextInt(5); i++) {
-                RequestProcessor rp = new RequestProcessor(this.getClass().getName());
                 rp.post(new Runnable() {
 
                     @Override

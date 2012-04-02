@@ -3952,7 +3952,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
         
         private void checkRootCollection(Collection<? extends URL> roots) {
-            if (!shouldDoNothing || roots.isEmpty()) {
+            if (!shouldDoNothing || roots.isEmpty() || isCancelled()) {
                 return;
             }
             boolean found = false;
@@ -3966,7 +3966,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 return;
             }
             if (previousLevel == null) {
-                previousLevel = LOGGER.getLevel();
+                previousLevel = LOGGER.getLevel() == null ? Level.ALL : LOGGER.getLevel();
                 LOGGER.setLevel(Level.FINE);
                 LOGGER.warning("Non-empty roots encountered while no projects are opened; loglevel increased");
                 
@@ -4123,6 +4123,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Running " + this + " on \n" + depCtx.toString()); //NOI18N
+                
+                if (previousLevel != null && isCancelled()) {
+                    LOGGER.fine("Note: the Work was canceled during dependency-resolve, disregard preceding logs on non-empty paths");
+                    LOGGER.setLevel(previousLevel == Level.ALL ? null : previousLevel);
+                }
             }
             switchProgressToDeterminate(depCtx.newBinariesToScan.size() + depCtx.newRootsToScan.size());
             boolean finished = scanBinaries(depCtx);
@@ -4191,7 +4196,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return finished;
             } finally {
                 if (previousLevel != null) {
-                    LOGGER.setLevel(previousLevel);
+                    LOGGER.setLevel(previousLevel == Level.ALL ? null : previousLevel);
                     previousLevel = null;
                 }
             }

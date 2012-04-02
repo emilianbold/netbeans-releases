@@ -44,13 +44,7 @@ package org.netbeans.modules.versioning.core;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import javax.swing.Action;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
@@ -81,6 +75,12 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
     private final String menuLabel;
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+
+    /**
+     * Caches folders known as having no metadata according to {@link #getMetadataFolderNames()}. 
+     * Will be flushed at delegate instantiation.
+     */
+    private final Set<VCSFileProxy> unversionedParents = Collections.synchronizedSet(new HashSet<VCSFileProxy>(20));
     
     public static DelegatingVCS create(Map<?, ?> map) {
         return new DelegatingVCS(map);
@@ -305,6 +305,15 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
         if(file == null) {
             return false;
         }
+        
+        VersioningManager.LOG.log(Level.FINE, "looking up metadata for {0}", new Object[] { file });
+        if(unversionedParents.contains(file)) {
+            VersioningManager.LOG.fine(" cached as unversioned");
+            return false;
+        }
+        
+        boolean ret = false;
+        Set<VCSFileProxy> done = new HashSet<VCSFileProxy>();
         for(String folderName : getMetadataFolderNames()) {
             VCSFileProxy parent;
             if(file.isDirectory()) {
@@ -312,6 +321,12 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
             } else {
                 parent = file.getParentFile();
             }
+            
+            if(unversionedParents.contains(parent)) {
+                VersioningManager.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
+                break;
+            }
+            
             while(parent != null) {
                 final boolean metadataFolder = VCSFileProxy.createFileProxy(parent, folderName).exists();
                 if(metadataFolder) {
@@ -320,12 +335,18 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
                             "found metadata folder {0} for file {1}",           // NOI18N
                             new Object[]{metadataFolder, file});
                     
-                    return true;
+                    ret = true;
+                } else {
+                    done.add(parent);
                 }
                 parent = parent.getParentFile();
             }
         }
-        return false;
+        if(!ret) {
+            VersioningManager.LOG.log(Level.FINE, " storing unversioned");
+            unversionedParents.addAll(done);
+        }
+        return ret;
     }
     
     /**

@@ -159,10 +159,14 @@ public class AbstractGitTestCase extends NbTestCase {
         assertEquals(conflict, status.isConflict());
     }
 
-    protected Repository getRepository (JGitRepository gitRepo) throws Exception {
-        Field f = JGitRepository.class.getDeclaredField("repository");
+    protected Repository getRepository (JGitRepository gitRepo) {
+        return gitRepo.getRepository();
+    }
+
+    protected Repository getRepository (GitClient client) throws Exception {
+        Field f = GitClient.class.getDeclaredField("gitRepository");
         f.setAccessible(true);
-        return (Repository) f.get(gitRepo);
+        return ((JGitRepository) f.get(client)).getRepository();
     }
 
 //    protected GitRepository cloneRemoteRepository (File target) throws GitException {

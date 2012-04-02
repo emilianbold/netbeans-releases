@@ -44,20 +44,18 @@
 
 package org.netbeans.modules.java.hints.spiimpl.options;
 
-import java.awt.event.ItemEvent;
-import org.netbeans.modules.java.hints.spiimpl.refactoring.Configuration;
-import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import java.awt.BorderLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.AbstractPreferences;
@@ -79,17 +77,18 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-
-import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.spiimpl.options.DepScanningSettings.DependencyTracking;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsPanel.State;
+import org.netbeans.modules.java.hints.spiimpl.refactoring.Configuration;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.Hint.Kind;
-import org.netbeans.spi.java.hints.Hint.Options;
+import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 
 /** Contains all important listeners and logic of the Hints Panel.
@@ -101,8 +100,9 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     private Map<String,ModifiedPreferences> changes = new HashMap<String, ModifiedPreferences>();
     private DependencyTracking depScn = null;
     
-    private static Map<Severity,Integer> severity2index;
-    private static Map<DependencyTracking,Integer> deptracking2index;
+    private static final Map<Severity,Integer> severity2index;
+    private static final Map<Integer,Severity> index2Severity;
+    private static final Map<DependencyTracking,Integer> deptracking2index;
     
     private static final String DESCRIPTION_HEADER = 
         "<html><head>" + // NOI18N
@@ -114,11 +114,16 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     
     
     static {
-        severity2index = new HashMap<Severity, Integer>();
+        severity2index = new EnumMap<Severity, Integer>(Severity.class);
         severity2index.put( Severity.ERROR, 0  );
         severity2index.put( Severity.VERIFIER, 1  );
         severity2index.put( Severity.HINT, 2  );
-        deptracking2index = new HashMap<DepScanningSettings.DependencyTracking, Integer>();
+        severity2index.put( Severity.WARNING, 1  );
+        index2Severity = new HashMap<Integer, Severity>();
+        index2Severity.put(0, Severity.ERROR);
+        index2Severity.put(1, Severity.VERIFIER);
+        index2Severity.put(2, Severity.HINT);
+        deptracking2index = new EnumMap<DepScanningSettings.DependencyTracking, Integer>(DepScanningSettings.DependencyTracking.class);
         deptracking2index.put(DependencyTracking.ENABLED, 0);
         deptracking2index.put(DependencyTracking.ENABLED_WITHIN_PROJECT, 1);
         deptracking2index.put(DependencyTracking.ENABLED_WITHIN_ROOT, 2);
@@ -267,6 +272,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     
     // MouseListener implementation --------------------------------------------
     
+    @Override
     public void mouseClicked(MouseEvent e) {
         Point p = e.getPoint();
         TreePath path = errorTree.getPathForLocation(e.getPoint().x, e.getPoint().y);
@@ -281,20 +287,27 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         }
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {}
 
+    @Override
     public void mouseExited(MouseEvent e) {}
 
+    @Override
     public void mousePressed(MouseEvent e) {}
 
+    @Override
     public void mouseReleased(MouseEvent e) {}
     
     // KeyListener implementation ----------------------------------------------
 
+    @Override
     public void keyTyped(KeyEvent e) {}
 
+    @Override
     public void keyReleased(KeyEvent e) {}
 
+    @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER ) {
 
@@ -311,6 +324,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     
     // TreeSelectionListener implementation ------------------------------------
     
+    @Override
     public void valueChanged(TreeSelectionEvent ex) {            
         Object o = getUserObject(errorTree.getSelectionPath());
         
@@ -390,6 +404,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     
     // ActionListener implementation -------------------------------------------
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         if( errorTree.getSelectionPath() == null || !severityComboBox.equals(e.getSource()))
             return;
@@ -411,6 +426,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
    
     // ChangeListener implementation -------------------------------------------
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         // System.out.println("Task list box changed ");
     }
@@ -430,12 +446,13 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     }
     
     private Severity index2severity( int index ) {
-        for( Map.Entry<Severity,Integer> e : severity2index.entrySet()) {
-            if ( e.getValue() == index ) {
-                return e.getKey();
-            }
+        Severity s = index2Severity.get(index);
+
+        if (s == null) {
+            throw new IllegalStateException( "Unknown severity");
         }
-        throw new IllegalStateException( "Unknown severity");
+
+        return s;
     }
        
     private DependencyTracking index2deptracking( int index ) {
@@ -574,39 +591,48 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 
         }
         
+        @Override
         protected void putSpi(String key, String value) {
             map.put(key, value);            
         }
 
+        @Override
         protected String getSpi(String key) {
             return (String)map.get(key);                    
         }
 
+        @Override
         protected void removeSpi(String key) {
             map.remove(key);
         }
 
+        @Override
         protected void removeNodeSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected String[] keysSpi() throws BackingStoreException {
             String array[] = new String[map.keySet().size()];
             return map.keySet().toArray( array );
         }
 
+        @Override
         protected String[] childrenNamesSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected AbstractPreferences childSpi(String name) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected void syncSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected void flushSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
