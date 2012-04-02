@@ -2,7 +2,6 @@ RunGavinsLife:METHOD:[PUBLIC]:ESCAPED{RunGavinsLife}ESCAPED{(}PARAMETERS{}ESCAPE
 Person:CONSTRUCTOR:[PUBLIC]:ESCAPED{Person}ESCAPED{(}PARAMETERS{ESCAPED{n}ESCAPED{, }ESCAPED{race}}ESCAPED{)}<font color="#999999">ESCAPED{ : }Person</font>:
   age:VARIABLE:[PRIVATE]:ESCAPED{age}<font color="#999999">ESCAPED{ : }Number</font>:
   alive:VARIABLE:[PRIVATE]:ESCAPED{alive}<font color="#999999">ESCAPED{ : }Boolean</font>:
-  arguments:VARIABLE:[PRIVATE]:ESCAPED{arguments}<font color="#999999">ESCAPED{ : }Arguments</font>:
   clothing:FIELD:[PUBLIC]:ESCAPED{clothing}<font color="#999999">ESCAPED{ : }String</font>:
   dirtFactor:FIELD:[PUBLIC]:ESCAPED{dirtFactor}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}Number</font>:
   eat:METHOD:[PROTECTED]:ESCAPED{eat}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:

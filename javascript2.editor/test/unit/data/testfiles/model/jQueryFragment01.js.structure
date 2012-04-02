@@ -1,4 +1,3 @@
-arguments:VARIABLE:[PRIVATE]:ESCAPED{arguments}<font color="#999999">ESCAPED{ : }Arguments</font>:
 functionVar:VARIABLE:[PRIVATE]:ESCAPED{functionVar}<font color="#999999">ESCAPED{ : }String</font>:
 jQuery:CLASS:[PUBLIC]:ESCAPED{jQuery}:
   event:CLASS:[PUBLIC]:ESCAPED{event}:

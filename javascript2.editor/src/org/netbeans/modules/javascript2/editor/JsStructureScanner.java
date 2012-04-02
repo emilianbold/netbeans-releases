@@ -89,10 +89,12 @@ public class JsStructureScanner implements StructureScanner {
     
     private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems) {
         Collection<? extends JsObject> properties = jsObject.getProperties().values();
+        boolean countFunctionChild = jsObject.getJSKind().isFunction() && !jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
+                && !containsFunction(jsObject);
+        
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
-            if (jsObject.getJSKind().isFunction() && !jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
-                    && !child.getModifiers().contains(Modifier.STATIC)) {
+            if (countFunctionChild &&  !child.getModifiers().contains(Modifier.STATIC)) {
                 // don't count children for functions and methods
                 continue;
             }
@@ -118,6 +120,15 @@ public class JsStructureScanner implements StructureScanner {
         return collectedItems;
     }
 
+    private boolean containsFunction(JsObject jsObject) {
+        for (JsObject property: jsObject.getProperties().values()) {
+            if (property.getJSKind().isFunction() && property.isDeclared()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private static class FoldingItem {
         String kind;
         int start;

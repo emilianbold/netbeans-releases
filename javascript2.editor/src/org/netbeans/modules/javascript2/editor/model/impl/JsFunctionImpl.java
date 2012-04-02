@@ -77,7 +77,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             // creating arguments variable
             JsObjectImpl arguments = new JsObjectImpl(this, 
                     new IdentifierImpl("arguments", new OffsetRange(name.getOffsetRange().getStart(), name.getOffsetRange().getStart())), 
-                    name.getOffsetRange(),  true, EnumSet.of(Modifier.PRIVATE)); // NOI8N
+                    name.getOffsetRange(),  false, EnumSet.of(Modifier.PRIVATE)); // NOI8N
             arguments.addAssignment(new TypeUsageImpl("Arguments", getOffset(), true), getOffset());    // NOI18N
             this.addProperty(arguments.getName(), arguments);
         }
