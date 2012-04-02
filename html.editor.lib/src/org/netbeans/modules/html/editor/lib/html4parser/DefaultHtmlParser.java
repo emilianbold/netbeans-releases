@@ -100,10 +100,12 @@ public class DefaultHtmlParser implements HtmlParser {
     public HtmlParseResult parse(HtmlSource source, final HtmlVersion version, Lookup lookup) throws ParseException {
         assert canParse(version);
 
-        SyntaxAnalyzerElements elements = lookup.lookup(SyntaxAnalyzerElements.class);
-        assert elements != null;
+        IteratorOfElements wrapper = lookup.lookup(IteratorOfElements.class);
+        assert wrapper != null;
+        
+        Iterator<Element> iterator = wrapper.getIterator();
 
-        Node root = SyntaxTreeBuilder.makeTree(source, version, elements.items());
+        Node root = SyntaxTreeBuilder.makeTree(source, version, iterator);
 
         return new DefaultHtmlParseResult(source, root, Collections.<ProblemDescription>emptyList(), version) {
 
