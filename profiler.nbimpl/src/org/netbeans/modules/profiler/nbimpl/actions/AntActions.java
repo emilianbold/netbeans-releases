@@ -66,8 +66,13 @@ import org.openide.util.NbBundle.Messages;
  * @author Jaroslav Bachorik <jaroslav.bachorik@oracle.com>
  */
 public class AntActions {
+    @Messages({
+        "# {0} - # of selected projects (0 if disabled), or -1 if main project", 
+        "# {1} - project name, if exactly one project", 
+        "LBL_ProfileMainProjectAction=&Profile {0,choice,-1#Main Project|0#Project|1#Project ({1})|1<{0} Projects}"
+    })
     @ActionID(category="Profile", id="org.netbeans.modules.profiler.actions.ProfileMainProject")
-    @ActionRegistration(displayName="Profile Main Project", lazy=false)
+    @ActionRegistration(displayName="#LBL_ProfileMainProjectAction", lazy=false)
     @ActionReferences({
         @ActionReference(path="Menu/Profile", position=100),
         @ActionReference(path="Shortcuts", name="A-F2")
@@ -79,12 +84,15 @@ public class AntActions {
                 Icons.getIcon(ProfilerIcons.PROFILE)
         );
         delegate.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(AntActions.class, "HINT_ProfileMainProjectAction")); // NOI18N
-        
+        delegate.putValue("iconBase", Icons.getResource(ProfilerIcons.PROFILE)); // NOI18N
         return delegate;
     }
     
+    @Messages({
+        "LBL_ProfileProject=Profile"
+    })
     @ActionID(category="Profile", id="org.netbeans.modules.profiler.actions.ProfileProjectPopup")
-    @ActionRegistration(displayName="Profile", lazy=false, asynchronous=true)
+    @ActionRegistration(displayName="#LBL_ProfileProject", lazy=false, asynchronous=true)
     @ActionReferences({
         @ActionReference(path="Projects/org-netbeans-modules-java-j2seproject/Actions", position=1000),
         @ActionReference(path="Projects/org-netbeans-modules-apisupport-project/Actions", position=900),
@@ -145,6 +153,11 @@ public class AntActions {
                 null);
     }
     
+    @Messages({
+        "# {0} - # of selected projects (0 if disabled)", 
+        "# {1} - project name, if exactly one project", 
+        "LBL_UnintegrateProfilerAction=&Unintegrate Profiler from {0,choice,0#Project|1#\"{1}\"|1<Projects}"
+    })
     @ActionID(id = "org.netbeans.modules.profiler.nbimpl.actions.UnintegrateProfilerAction", category = "Profile")
     @ActionRegistration(displayName = "#LBL_UnintegrateProfilerAction", lazy=false)
     @ActionReference(path = "Menu/Profile/Advanced", position = 500)

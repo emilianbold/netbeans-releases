@@ -52,6 +52,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -156,6 +157,8 @@ public class LexerUtils {
 
     /** @param optimized - first sequence is lowercase, one call to Character.toLowerCase() only*/
     public static boolean equals(CharSequence text1, CharSequence text2, boolean ignoreCase, boolean optimized) {
+        Parameters.notNull("text1", text1);
+        Parameters.notNull("text2", text2);
         if (text1.length() != text2.length()) {
             return false;
         } else {

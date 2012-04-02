@@ -101,7 +101,11 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
     public boolean getModified() {
         return super.getModified() || getCStandard().getModified();
     }
-            
+     
+    public boolean isCStandardChanged() {
+        return getCStandard().getDirty() && getCStandard().getPreviousValue() != getInheritedCStandard();
+    }    
+    
     // Clone and assign
     public void assign(CCompilerConfiguration conf) {
         // From XCompiler
@@ -152,7 +156,6 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
         options += compiler.getLanguageExtOptions(getLanguageExt().getValue()) + " "; // NOI18N
         //options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
         options += compiler.getSixtyfourBitsOption(getSixtyfourBits().getValue()) + " "; // NOI18N
-        options += compiler.getCStandardOptions(getCStandard().getValue()) + " "; // NOI18N              
         if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(DEVELOPMENT_MODE_TEST);
         }
@@ -199,7 +202,19 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
         if (getCStandard().getValue() != STANDARD_INHERITED) {
             options += compiler.getCppStandardOptions(getCStandard().getValue());
         }        
+        options += compiler.getCStandardOptions(getInheritedCStandard());
         return CppUtils.reformatWhitespaces(options);
+    }
+    
+    public int getInheritedCStandard() {
+        CCompilerConfiguration master = this;
+        while (master != null) {
+            if (master.getCStandard().getValue() != STANDARD_INHERITED) {
+                return master.getCStandard().getValue();
+            }
+            master = (CCompilerConfiguration) master.getMaster();
+        }
+        return STANDARDS_DEFAULT;
     }
     
     public String getPreprocessorOptions(CompilerSet cs) {
@@ -307,7 +322,8 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
                     }
                 }
             }
-        } else if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE && item == null && folder == null) {
+        } 
+        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
             set0.put(standardProp);
         }
         
