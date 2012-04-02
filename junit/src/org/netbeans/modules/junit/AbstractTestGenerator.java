@@ -355,7 +355,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                        srcMethods,
                                        tstTopClass,
                                        tstTopClassTreePath,
-                                       isNewTestClass,
+                                       true,
                                        workingCopy);
             } else if (isNewTestClass) {
                 tstTopClass = generateMissingInitMembers(
@@ -1210,11 +1210,9 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                               tstClassTreePath,
                                               workingCopy.getTrees());
 
-        if (isNewTestClass) {
-            membersChanged |= generateMissingInitMembers(tstMembers,
+        membersChanged |= generateMissingInitMembers(tstMembers,
                                                          classMap,
                                                          workingCopy);
-        }
 
         return finishSuiteClass(tstClass,
                                 tstClassTreePath,

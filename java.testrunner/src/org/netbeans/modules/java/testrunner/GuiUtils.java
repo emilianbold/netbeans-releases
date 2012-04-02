@@ -103,6 +103,10 @@ public final class GuiUtils {
     /** */
     public static final String CHK_TEARDOWN = "TearDown";               //NOI18N
     /** */
+    public static final String CHK_BEFORE_CLASS = "BeforeClass";                     //NOI18N
+    /** */
+    public static final String CHK_AFTER_CLASS = "AfterClass";               //NOI18N
+    /** */
     public static final String CHK_METHOD_BODIES = "Content";           //NOI18N
     /** */
     public static final String CHK_JAVADOC = "JavaDoc";                 //NOI18N

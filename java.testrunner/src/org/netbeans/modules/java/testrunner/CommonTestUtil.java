@@ -372,6 +372,10 @@ public class CommonTestUtil {
                    Boolean.valueOf(settings.isGenerateSetUp()));
         params.put(CreateTestParam.INC_TEAR_DOWN,
                    Boolean.valueOf(settings.isGenerateTearDown()));
+        params.put(CreateTestParam.INC_CLASS_SETUP,
+                   Boolean.valueOf(settings.isGenerateClassSetUp()));
+        params.put(CreateTestParam.INC_CLASS_TEAR_DOWN,
+                   Boolean.valueOf(settings.isGenerateClassTearDown()));
         
         return params;
     }

@@ -59,6 +59,7 @@ public class ProjectSearchScopeDefinitionProvider
     public List<SearchScopeDefinition> createSearchScopeDefinitions() {
         List<SearchScopeDefinition> list =
                 new ArrayList<SearchScopeDefinition>(2);
+        list.add(new SearchScopeCurrentProject());
         list.add(new SearchScopeMainProject());
         list.add(new SearchScopeOpenProjects());
         list.add(new SearchScopeNodeSelection());

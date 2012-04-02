@@ -108,18 +108,23 @@ public abstract class WebLogicIntegrationProvider extends AbstractIntegrationPro
     public IntegrationProvider.IntegrationHints getModificationHints(AttachSettings attachSettings) {
         String targetOS = attachSettings.getHostOS();
 
+        IntegrationHints h;
         // Remote attach instructions
         if (attachSettings.isRemote()) {
-            return getManualRemoteIntegrationStepsInstructions(targetOS, attachSettings);
+            h = getManualRemoteIntegrationStepsInstructions(targetOS, attachSettings);
         }
         // Local direct attach
         else if (attachSettings.isDirect()) {
-            return getManualLocalDirectIntegrationStepsInstructions(targetOS, attachSettings);
+            h = getManualLocalDirectIntegrationStepsInstructions(targetOS, attachSettings);
         }
         // Local dynamic attach
         else {
-            return getManualLocalDynamicIntegrationStepsInstructions(targetOS, attachSettings);
+            h = getManualLocalDynamicIntegrationStepsInstructions(targetOS, attachSettings);
         }
+        
+        addLinkWarning(h, "JAVA_OPTIONS", attachSettings); // NOI18N
+        
+        return h;
     }
 
     public void categorize(IntegrationCategorizer categorizer) {

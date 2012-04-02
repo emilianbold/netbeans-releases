@@ -380,22 +380,14 @@ public class Reformatter implements ReformatTask {
         private static final String CODE_END_TAG = "</code>"; //NOI18N
         private static final String PRE_TAG = "<pre>"; //NOI18N
         private static final String PRE_END_TAG = "</pre>"; //NOI18N
-        private static final String JDOC_AUTHOR_TAG = "@author"; //NOI18N
         private static final String JDOC_CODE_TAG = "@code"; //NOI18N
-        private static final String JDOC_DEPRECATED_TAG = "@deprecated"; //NOI18N
         private static final String JDOC_EXCEPTION_TAG = "@exception"; //NOI18N
         private static final String JDOC_LINK_TAG = "@link"; //NOI18N
         private static final String JDOC_LINKPLAIN_TAG = "@linkplain"; //NOI18N
         private static final String JDOC_LITERAL_TAG = "@literal"; //NOI18N
         private static final String JDOC_PARAM_TAG = "@param"; //NOI18N
         private static final String JDOC_RETURN_TAG = "@return"; //NOI18N
-        private static final String JDOC_SEE_TAG = "@see"; //NOI18N
-        private static final String JDOC_SERIAL_TAG = "@serial"; //NOI18N
-        private static final String JDOC_SERIAL_DATA_TAG = "@serialData"; //NOI18N
-        private static final String JDOC_SERIAL_FIELD_TAG = "@serialField"; //NOI18N
-        private static final String JDOC_SINCE_TAG = "@since"; //NOI18N
         private static final String JDOC_THROWS_TAG = "@throws"; //NOI18N
-        private static final String JDOC_VERSION_TAG = "@version"; //NOI18N
         private static final String ERROR = "<error>"; //NOI18N
         private static final int ANY_COUNT = -1;
 
@@ -3375,15 +3367,6 @@ public class Reformatter implements ReformatTask {
                             } else if (JDOC_THROWS_TAG.equalsIgnoreCase(tokenText)
                                     || JDOC_EXCEPTION_TAG.equalsIgnoreCase(tokenText)) {
                                 newState = 4;
-                            } else if (JDOC_AUTHOR_TAG.equalsIgnoreCase(tokenText)
-                                    || JDOC_DEPRECATED_TAG.equalsIgnoreCase(tokenText)
-                                    || JDOC_SEE_TAG.equalsIgnoreCase(tokenText)
-                                    || JDOC_SERIAL_TAG.equalsIgnoreCase(tokenText)
-                                    || JDOC_SERIAL_DATA_TAG.equalsIgnoreCase(tokenText)
-                                    || JDOC_SERIAL_FIELD_TAG.equalsIgnoreCase(tokenText)
-                                    || JDOC_SINCE_TAG.equalsIgnoreCase(tokenText)
-                                    || JDOC_VERSION_TAG.equalsIgnoreCase(tokenText)) {
-                                newState = 7;
                             } else if (JDOC_LINK_TAG.equalsIgnoreCase(tokenText)
                                     || JDOC_LINKPLAIN_TAG.equalsIgnoreCase(tokenText)
                                     || JDOC_CODE_TAG.equalsIgnoreCase(tokenText)
@@ -3393,8 +3376,7 @@ public class Reformatter implements ReformatTask {
                                 lastWSOffset = currWSOffset = -1;
                                 break;
                             } else {
-                                lastWSOffset = currWSOffset = -1;
-                                break;
+                                newState = 7;
                             }
                             if (currWSOffset >= 0 && afterText) {
                                 marks.add(Pair.of(currWSOffset, state == 0 && cs.blankLineAfterJavadocDescription()

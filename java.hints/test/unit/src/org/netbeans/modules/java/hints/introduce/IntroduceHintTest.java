@@ -1736,6 +1736,156 @@ public class IntroduceHintTest extends NbTestCase {
                        1, 0);
     }
 
+    public void testConstantFix204373a() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "     private Object LOGGER;\n" +
+                       "     class C {\n" +
+                       "         public void foo() {\n" +
+                       "             |Logger.getLogger(Test.class.getName())|.log(Level.FINEST, \"foo\");\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                        "    static final Logger LOGGER1 = Logger.getLogger(Test.class.getName());\n" +
+                        "    private Object LOGGER;\n" +
+                        "    class C {\n" +
+                        "        public void foo() {\n" +
+                        "            LOGGER1.log(Level.FINEST, \"foo\");\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl(null, true, true, true, EnumSet.noneOf(Modifier.class)),
+                       5, 1);
+    }
+
+    public void testConstantFix204373b() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "     class C {\n" +
+                       "         public void foo() {\n" +
+                       "             int i = |1 + 2*3|;\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                        "     class C {\n" +
+                        "         static final int NAME = 1 + 2*3;\n" +
+                        "         public void foo() {\n" +
+                        "             int i = NAME;\n" +
+                        "         }\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl(null, true, true, true, EnumSet.noneOf(Modifier.class)),
+                       5, 1);
+    }
+
+    public void testConstantFix204373c() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "     public static void foo() {\n" +
+                       "         int i = 1 + 2*3;\n" +
+                       "     }\n" +
+                       "     class C {\n" +
+                       "         public void foo() {\n" +
+                       "             int i = |1 + 2*3|;\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                        "     static final int NAME = 1 + 2*3;\n" +
+                        "     public static void foo() {\n" +
+                        "         int i = NAME;\n" +
+                        "     }\n" +
+                        "     class C {\n" +
+                        "         public void foo() {\n" +
+                        "             int i = NAME;\n" +
+                        "         }\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl(null, true, true, true, EnumSet.noneOf(Modifier.class)),
+                       5, 1);
+    }
+
+    public void testConstantFix204373d() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "     public void foo() {\n" +
+                       "         int i = 1 + 2*3;\n" +
+                       "     }\n" +
+                       "     class C {\n" +
+                       "         public void foo() {\n" +
+                       "             int i = |1 + 2*3|;\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                        "     private int name = 1 + 2*3;\n" +
+                        "     public void foo() {\n" +
+                        "         int i = name;\n" +
+                        "     }\n" +
+                        "     class C {\n" +
+                        "         public void foo() {\n" +
+                        "             int i = name;\n" +
+                        "         }\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_FIELD, true, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       5, 2);
+    }
+
+    public void testConstantFix204373e() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "     public static void foo() {\n" +
+                       "         int i = 1 + 2*3;\n" +
+                       "     }\n" +
+                       "     class C {\n" +
+                       "         public void foo() {\n" +
+                       "             int i = |1 + 2*3|;\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                        "     private static int name = 1 + 2*3;\n" +
+                        "     public static void foo() {\n" +
+                        "         int i = name;\n" +
+                        "     }\n" +
+                        "     class C {\n" +
+                        "         public void foo() {\n" +
+                        "             int i = name;\n" +
+                        "         }\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_FIELD, true, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       5, 2);
+    }
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
 
