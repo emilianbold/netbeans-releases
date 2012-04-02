@@ -77,7 +77,7 @@ public class CreateClientTest extends AbstractGitTestCase {
             JGitClientFactory.getInstance(null).getClient(newLocation);
             fail("Should fail");
         } catch (GitException ex) {
-            assertEquals("It seems the config file for the repository at [" + newLocation.getAbsolutePath() + "] is corrupted.\nEnsure it ends with empty line.", ex.getMessage());
+            assertEquals("java.io.IOException: Unknown repository format", ex.getMessage());
         }
         write(new File(gitFolder, "config"), read(new File(gitFolder, "config")) + "\n");
     }
