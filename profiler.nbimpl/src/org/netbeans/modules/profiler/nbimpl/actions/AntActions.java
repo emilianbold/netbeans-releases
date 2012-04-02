@@ -84,6 +84,7 @@ public class AntActions {
                 Icons.getIcon(ProfilerIcons.PROFILE)
         );
         delegate.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(AntActions.class, "HINT_ProfileMainProjectAction")); // NOI18N
+        delegate.putValue("iconBase", Icons.getResource(ProfilerIcons.PROFILE)); // NOI18N
         return delegate;
     }
     
