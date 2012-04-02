@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="ide/allmodules" basedir="." default="regenerate-project.xml">
-    <target name="regenerate-project.xml">
-        <property file="../../nbbuild/cluster.properties"/>
-        <property file="../../nbbuild/build.properties"/>
-        <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="../../nbbuild/build/nbantext.jar"/>
-        <checkmoduleconfigs nbroot="../.." masterprojectxml="nbproject/project.xml"/>
-    </target>
-</project>
