@@ -476,7 +476,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public final void onClose() {
-        DataObject dao = getDataObject();
+        DataObject dao = lastDataObject;
         if (dao != null) {
             dao.removePropertyChangeListener(this);
             NativeFileItemSet set = dao.getCookie(NativeFileItemSet.class);
