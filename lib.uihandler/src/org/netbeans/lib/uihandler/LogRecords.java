@@ -163,6 +163,13 @@ public final class LogRecords {
         } catch (RuntimeException ex) {
             LOG.log(Level.WARNING, "Input file corruption", ex);
             throw new IOException(ex);
+        } finally {
+            List<SAXParseException> fatalErrors = parser.getFatalErrors();
+            if (fatalErrors != null) {
+                for (SAXParseException ex : fatalErrors) {
+                    LOG.log(Level.WARNING, "Fatal SAX Parse Exception: Line = "+ex.getLineNumber()+", column = "+ex.getColumnNumber(), ex);
+                }
+            }
         }
     }   
 
@@ -188,12 +195,15 @@ public final class LogRecords {
         private Queue<FakeException> exceptions;
         private List<String> params;
         private StringBuilder chars = new StringBuilder();
-        private int fatalErrors;
+        private List<SAXParseException> fatalErrors;
         
         public Parser(Handler c) {
             this.callback = c;
         }
         
+        public List<SAXParseException> getFatalErrors() {
+            return fatalErrors;
+        }
         
         @Override
         public void setDocumentLocator(Locator locator) {
@@ -399,7 +409,11 @@ public final class LogRecords {
 
         @Override
         public void fatalError(SAXParseException e) throws SAXException {
-            if (fatalErrors++ > 1000) {
+            if (fatalErrors == null) {
+                fatalErrors = new LinkedList<SAXParseException>();
+            }
+            fatalErrors.add(e);
+            if (fatalErrors.size() > 100) {
                 throw e;
             }
         }
