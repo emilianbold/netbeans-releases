@@ -42,110 +42,36 @@
 
 package org.netbeans.modules.php.project.ui;
 
-import java.io.File;
-import java.util.prefs.Preferences;
-import org.netbeans.modules.php.project.PhpPreferences;
-import org.openide.filesystems.FileUtil;
-
 /**
- * Helper class to remember the last selected folders for every file chooser in PHP project.
- * @author Tomas Mysik
+ * Helper class to hold last used directories (directory keys).
  */
 public final class LastUsedFolders {
-    // Do not change arbitrary - consult with layer's folder OptionsExport
-    // Path to Preferences node for storing these preferences
-    private static final String LAST_USED_FOLDERS_NODE = "lastUsedFoldersNode";
 
-    private static final String COPY_FILES = "copyFiles"; // NOI18N
-    private static final String INCLUDE_PATH = "includePath"; // NOI18N
-    private static final String SOURCES = "sources"; // NOI18N
-    private static final String PROJECT = "project"; // NOI18N
-    private static final String PRIVATE_KEY = "privateKey"; // NOI18N
-    private static final String KNOWN_HOSTS = "knownHosts"; // NOI18N
-    private static final String PATH_MAPPING = "pathMapping"; // NOI18N
+    // general
+    public static final String PHP_INTERPRETER = "nb.php.interpreter";
+    public static final String TEST_DIR = "nb.php.test.dir";
+    public static final String NEW_PROJECT = "nb.php.new.project";
+    public static final String EXISTING_SOURCES = "nb.php.sources.existing";
+    // local server
+    public static final String DOCUMENT_ROOT = "nb.php.localServer.documentRoot";
+    public static final String COPY_TARGET = "nb.php.localServer.copyTarget";
+    // include path
+    public static final String GLOBAL_INCLUDE_PATH = "nb.php.global.includePath";
+    public static final String PROJECT_INCLUDE_PATH = "nb.php.project.includePath";
+    // debugger
+    public static final String DEBUGGER_PATH_MAPPING = "nb.php.debugger.pathMapping";
+    // unit tests
+    public static final String PHPUNIT = "nb.php.phpunit";
+    public static final String PHPUNIT_BOOTSTRAP = "nb.php.phpunit.bootstrap";
+    public static final String PHPUNIT_CONFIGURATION = "nb.php.phpunit.configuration";
+    public static final String PHPUNIT_SUITE = "nb.php.phpunit.suite";
+    public static final String PHPUNIT_PROJECT_SCRIPT = "nb.php.phpunit.projectScript";
+    // remote connections
+    public static final String REMOTE_SFTP_IDENTITY_FILE = "nb.php.remote.sftp.identityFile";
+    public static final String REMOTE_SFTP_KNOWN_HOSTS = "nb.php.remote.sftp.knownHosts";
+
 
     private LastUsedFolders() {
     }
 
-    private static Preferences getPreferences() {
-        return PhpPreferences.getPreferences(false).node(LAST_USED_FOLDERS_NODE);
-    }
-
-    private static File getFile(String option) {
-        String path = getPreferences().get(option, null);
-        if (path == null) {
-            return null;
-        }
-        return new File(path);
-    }
-
-    private static void setFile(String option, File file) {
-        if (file == null) {
-            return;
-        }
-        file = FileUtil.normalizeFile(file);
-        String path = null;
-        if (file.isDirectory()) {
-            path = file.getAbsolutePath();
-        } else {
-            path = file.getParentFile().getAbsolutePath();
-        }
-        getPreferences().put(option, path);
-    }
-
-    public static File getCopyFiles() {
-        return getFile(COPY_FILES);
-    }
-
-    public static void setCopyFiles(File copyFiles) {
-        setFile(COPY_FILES, copyFiles);
-    }
-
-    public static File getIncludePath() {
-        return getFile(INCLUDE_PATH);
-    }
-
-    public static void setIncludePath(File includePath) {
-        setFile(INCLUDE_PATH, includePath);
-    }
-
-    public static File getSources() {
-        return getFile(SOURCES);
-    }
-
-    public static void setSources(File sources) {
-        setFile(SOURCES, sources);
-    }
-
-    public static File getProject() {
-        return getFile(PROJECT);
-    }
-
-    public static void setProject(File project) {
-        setFile(PROJECT, project);
-    }
-
-    public static File getPrivateKey() {
-        return getFile(PRIVATE_KEY);
-    }
-
-    public static void setPrivateKey(File privateKey) {
-        setFile(PRIVATE_KEY, privateKey);
-    }
-
-    public static File getKnownHosts() {
-        return getFile(KNOWN_HOSTS);
-    }
-
-    public static void setKnownHosts(File knownHosts) {
-        setFile(KNOWN_HOSTS, knownHosts);
-    }
-
-    public static File getPathMapping() {
-        return getFile(PATH_MAPPING);
-    }
-
-    public static void setPathMapping(File pathMapping) {
-        setFile(PATH_MAPPING, pathMapping);
-    }
 }

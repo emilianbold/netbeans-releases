@@ -450,20 +450,15 @@ public final class PathUiSupport {
         }
 
         private void addFolders() {
-            FileChooserBuilder builder = new FileChooserBuilder(PathUiSupport.class)
-                    .forceUseOfDefaultWorkingDirectory(true)
+            FileChooserBuilder builder = new FileChooserBuilder(directoryHandler.getDirKey())
                     .setDirectoriesOnly(true)
-                    .setDefaultWorkingDirectory(directoryHandler.getCurrentDirectory())
                     .setTitle(NbBundle.getMessage(PathUiSupport.class, "LBL_AddFolders_DialogTitle"));
-            File[] selectedFiles = null;
-            if (project != null) {
-                selectedFiles = builder.showMultiOpenDialog();
-            } else {
-                File selectedFile = builder.showOpenDialog();
-                if (selectedFile != null) {
-                    selectedFiles = new File[] {selectedFile};
-                }
+            File currentDirectory = directoryHandler.getCurrentDirectory();
+            if (currentDirectory != null) {
+                builder.forceUseOfDefaultWorkingDirectory(true)
+                        .setDefaultWorkingDirectory(currentDirectory);
             }
+            File[] selectedFiles = builder.showMultiOpenDialog();
             if (selectedFiles != null
                     && selectedFiles.length > 0) {
                 String[] paths = new String[selectedFiles.length];
@@ -472,14 +467,13 @@ public final class PathUiSupport {
                 }
                 int[] newSelection = PathUiSupport.addFolders(listModel, list.getSelectedIndices(), paths);
                 list.setSelectedIndices(newSelection);
-                // remember last folder
-                directoryHandler.setCurrentDirectory(selectedFiles[0].getParentFile());
             }
         }
 
         public interface FileChooserDirectoryHandler {
+            String getDirKey();
             File getCurrentDirectory();
-            void setCurrentDirectory(File currentDirectory);
         }
+
     }
 }

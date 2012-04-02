@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.project.ui;
 
-import java.awt.Component;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
@@ -117,22 +116,38 @@ public final class Utils {
     /**
      * @return the selected file or <code>null</code>.
      */
-    public static File browseFileAction(final Component parent, File currentDirectory, String title) {
-        return browseAction(parent, currentDirectory, title, true);
+    public static File browseFileAction(String dirKey, String title) {
+        return browseAction(dirKey, title, true, null);
+    }
+
+    /**
+     * @return the selected file or <code>null</code>.
+     */
+    public static File browseFileAction(String dirKey, String title, File workDir) {
+        return browseAction(dirKey, title, true, workDir);
     }
 
     /**
      * @return the selected folder or <code>null</code>.
      */
-    public static File browseLocationAction(final Component parent, File currentDirectory, String title) {
-        return browseAction(parent, currentDirectory, title, false);
+    public static File browseLocationAction(String dirKey, String title) {
+        return browseAction(dirKey, title, false, null);
     }
 
-    private static File browseAction(final Component parent, File currentDirectory, String title, boolean filesOnly) {
-        FileChooserBuilder builder = new FileChooserBuilder(Utils.class)
-                .forceUseOfDefaultWorkingDirectory(true)
-                .setDefaultWorkingDirectory(currentDirectory)
+    /**
+     * @return the selected folder or <code>null</code>.
+     */
+    public static File browseLocationAction(String dirKey, String title, File workDir) {
+        return browseAction(dirKey, title, false, workDir);
+    }
+
+    private static File browseAction(String dirKey, String title, boolean filesOnly, File workDir) {
+        FileChooserBuilder builder = new FileChooserBuilder(dirKey)
                 .setTitle(title);
+        if (workDir != null) {
+            builder.setDefaultWorkingDirectory(workDir)
+                    .forceUseOfDefaultWorkingDirectory(true);
+        }
         if (filesOnly) {
             builder.setFilesOnly(true);
         } else {
@@ -145,23 +160,23 @@ public final class Utils {
         return null;
     }
 
-    /**
-     * @return the selected folder or <code>null</code>.
-     */
-    public static File browseLocalServerAction(final Component parent, final JComboBox localServerComboBox,
-            final MutableComboBoxModel localServerComboBoxModel, File preselected, String newSubfolderName, String title) {
-        if (preselected == null) {
-            LocalServer ls = (LocalServer) localServerComboBox.getSelectedItem();
-            if (ls.getDocumentRoot() != null && ls.getDocumentRoot().length() > 0) {
-                preselected = new File(ls.getDocumentRoot());
-            }
+    public static void browseLocalServerAction(final JComboBox localServerComboBox,
+            final MutableComboBoxModel localServerComboBoxModel, String newSubfolderName, String title, String dirKey) {
+        File preselected = null;
+        LocalServer ls = (LocalServer) localServerComboBox.getSelectedItem();
+        if (ls.getDocumentRoot() != null && ls.getDocumentRoot().length() > 0) {
+            preselected = new File(ls.getDocumentRoot());
         }
-        File newLocation = browseLocationAction(parent, preselected, title);
+        File newLocation = new FileChooserBuilder(dirKey)
+                .setTitle(title)
+                .setDirectoriesOnly(true)
+                .setDefaultWorkingDirectory(preselected)
+                .showOpenDialog();
         if (newLocation == null) {
-            return null;
+            return;
         }
 
-        File file = null;
+        File file;
         if (newSubfolderName == null) {
             file = newLocation;
         } else {
@@ -178,29 +193,10 @@ public final class Utils {
         LocalServer localServer = new LocalServer(newLocation.getAbsolutePath(), projectLocation);
         localServerComboBoxModel.addElement(localServer);
         localServerComboBox.setSelectedItem(localServer);
-        return newLocation;
-    }
-
-    public static void browsePhpInterpreter(JTextField textField) {
-        browseFile("nb.php.interpreter.lastDir", NbBundle.getMessage(Utils.class, "LBL_SelectPhpInterpreter"), textField); // NOI18N
-    }
-
-    public static void browsePhpUnit(JTextField textField) {
-        browseFile("nb.php.phpunit.lastDir", NbBundle.getMessage(Utils.class, "LBL_SelectPhpUnit"), textField); // NOI18N
-    }
-
-    private static void browseFile(String dirKey, String title, JTextField textField) {
-        File selectedFile = new FileChooserBuilder(dirKey)
-                .setTitle(title)
-                .setFilesOnly(true)
-                .showOpenDialog();
-        if (selectedFile != null) {
-            textField.setText(FileUtil.normalizeFile(selectedFile).getAbsolutePath());
-        }
     }
 
     public static void browseTestSources(JTextField textField, PhpProject phpProject) {
-        File selectedFile = new FileChooserBuilder("nb.php.test.dir.lastDir") // NOI18N
+        File selectedFile = new FileChooserBuilder(LastUsedFolders.TEST_DIR)
                 .setTitle(NbBundle.getMessage(Utils.class, "LBL_SelectUnitTestFolder", ProjectUtils.getInformation(phpProject).getDisplayName()))
                 .setDirectoriesOnly(true)
                 .setDefaultWorkingDirectory(FileUtil.toFile(phpProject.getProjectDirectory()))

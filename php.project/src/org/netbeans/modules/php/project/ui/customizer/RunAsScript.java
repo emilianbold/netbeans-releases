@@ -65,6 +65,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptValidator;
+import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -453,8 +454,12 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         Utils.browseSourceFile(project, indexFileTextField);
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
+    @NbBundle.Messages("RunAsScript.interpreter.browse.title=Select PHP Interpreter")
     private void interpreterBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_interpreterBrowseButtonActionPerformed
-        Utils.browsePhpInterpreter(interpreterTextField);
+        File file = Utils.browseFileAction(LastUsedFolders.PHP_INTERPRETER, Bundle.RunAsScript_interpreter_browse_title());
+        if (file != null) {
+            interpreterTextField.setText(file.getAbsolutePath());
+        }
     }//GEN-LAST:event_interpreterBrowseButtonActionPerformed
 
     private void workDirBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_workDirBrowseButtonActionPerformed
