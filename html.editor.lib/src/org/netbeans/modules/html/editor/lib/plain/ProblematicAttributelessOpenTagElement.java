@@ -41,38 +41,28 @@
  */
 package org.netbeans.modules.html.editor.lib.plain;
 
-import org.netbeans.modules.html.editor.lib.api.elements.*;
-import org.openide.util.CharSequences;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 
 /**
  *
  * @author marekfukala
  */
-public abstract class AbstractNamedElement extends AbstractElement implements Named {
+public class ProblematicAttributelessOpenTagElement extends AttributelessOpenTagElement implements OpenTag {
 
-    private CharSequence name;
+    private ProblemDescription problem;
 
-    public AbstractNamedElement(CharSequence document, int from, int length, CharSequence name) {
-        super(document, from, length);
-        this.name = name;
+    public ProblematicAttributelessOpenTagElement(CharSequence document, int from, short length,
+            byte nameLen, boolean isEmpty, ProblemDescription problem) {
+        super(document, from, length, nameLen, isEmpty);
+        this.problem = problem;
     }
 
     @Override
-    public CharSequence name() {
-        return name;
+    public Collection<ProblemDescription> problems() {
+        return Collections.singleton(problem);
     }
 
-    @Override
-    public CharSequence namespacePrefix() {
-        int colonIndex = CharSequences.indexOf(name(), ":");
-        return colonIndex == -1 ? null : name().subSequence(0, colonIndex);
-
-    }
-
-    @Override
-    public CharSequence unqualifiedName() {
-        int colonIndex = CharSequences.indexOf(name(), ":");
-        return colonIndex == -1 ? name() : name().subSequence(colonIndex + 1, name().length());
-    }
-    
 }

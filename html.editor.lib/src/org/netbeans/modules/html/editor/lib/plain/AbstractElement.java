@@ -46,10 +46,8 @@
 package org.netbeans.modules.html.editor.lib.plain;
 
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
@@ -61,12 +59,11 @@ import org.netbeans.modules.html.editor.lib.api.elements.Node;
 public abstract class AbstractElement implements Element {
     
     private CharSequence source;
-    private List<ProblemDescription> problems;
     
     private int offset;
-    private int length;
+    private short length;
     
-    AbstractElement( CharSequence doc, int offset, int length) {
+    AbstractElement( CharSequence doc, int offset, short length) {
         assert offset >=0 : "start offset must be >= 0 !";
         assert length >=0 : "element length must be positive!";
 
@@ -85,36 +82,20 @@ public abstract class AbstractElement implements Element {
         return offset + length;
     }
     
+    protected CharSequence source() {
+        return source;
+    }
+    
     @Override
     public CharSequence image() {
         return source.subSequence(from(), to());
     }
 
-    @Override
-    public Collection<ProblemDescription> problems() {
-        return problems;
-    }
-    
-    
-    
-    public void addProblem(ProblemDescription problem) {
-        assert problem != null;
-        if(problems == null) {
-            problems = Collections.singletonList(problem); //save some memory for just one problem per element
-        } else {
-            if(problems.size() == 1) {
-                ProblemDescription existing = problems.get(0);
-                problems = new ArrayList<ProblemDescription>();
-                problems.add(existing);
-            }
-            problems.add(problem);
-        }
-    }
 
     @Override
     public String toString() {
         return new StringBuilder()
-                .append("SyntaxElement[")
+                .append("[")
                 .append(type().name())
                 .append(' ')
                 .append(from())
@@ -132,6 +113,11 @@ public abstract class AbstractElement implements Element {
     @Override
     public Node parent() {
         return null;
+    }
+    
+     @Override
+    public Collection<ProblemDescription> problems() {
+        return Collections.emptyList();
     }
 
 }

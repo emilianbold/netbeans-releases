@@ -161,7 +161,7 @@ public final class SyntaxAnalyzer {
     private void error() {
         current = new ErrorElement(sourceCode,
                 start,
-                ts.offset() + ts.token().length() - start);
+                (short)(ts.offset() + ts.token().length() - start));
     }
 
     private void text() {
@@ -175,20 +175,20 @@ public final class SyntaxAnalyzer {
     private void entityReference() {
         current = new EntityReferenceElement(sourceCode,
                 start,
-                ts.offset() + ts.token().length() - start);
+                (short)(ts.offset() + ts.token().length() - start));
 
     }
 
     private void comment() {
         current = new CommentElement(sourceCode,
                 start,
-                ts.offset() + ts.token().length() - start);
+                (short)(ts.offset() + ts.token().length() - start));
     }
 
     private void declaration() {
         current = new DeclarationElement(sourceCode,
                 start,
-                ts.offset() + ts.token().length() - start,
+                (short)(ts.offset() + ts.token().length() - start),
                 root_element,
                 doctype_public_id,
                 doctype_file,
@@ -252,18 +252,55 @@ public final class SyntaxAnalyzer {
         }
 
         if (openTag) {
-            current = new OpenTagElement(sourceCode,
-                    start,
-                    ts.offset() + ts.token().length() - start,
-                    tagName.intern(),
-                    attributes.isEmpty() ? null : attributes,
-                    emptyTag);
-        } else {
-            current = new EndTagElement(sourceCode, start, ts.offset() + ts.token().length() - start, tagName.intern());
-        }
 
-        if (problem != null) {
-            current.addProblem(problem);
+            if(attributes.isEmpty()) {
+                //no attributes
+                if(problem == null) {
+                    current = new AttributelessOpenTagElement(
+                            sourceCode, 
+                            start,
+                            (short)(ts.offset() + ts.token().length() - start),
+                            (byte)tagName.length(),
+                            emptyTag);
+                } else {
+                    current = new ProblematicAttributelessOpenTagElement(
+                            sourceCode, 
+                            start,
+                            (short)(ts.offset() + ts.token().length() - start),
+                            (byte)tagName.length(),
+                            emptyTag,
+                            problem);
+                    
+                }
+            } else {
+                //attributes
+                if(problem == null) {
+                    current = new OpenTagElement(
+                            sourceCode, 
+                            start,
+                            (short)(ts.offset() + ts.token().length() - start),
+                            (byte)tagName.length(),
+                            attributes,
+                            emptyTag);
+                } else {
+                    current = new ProblematicOpenTagElement(
+                            sourceCode, 
+                            start,
+                            (short)(ts.offset() + ts.token().length() - start),
+                            (byte)tagName.length(),
+                            attributes,
+                            emptyTag,
+                            problem);
+                    
+                }
+            }
+            
+        } else {
+            current = new EndTagElement(
+                    sourceCode, 
+                    start, 
+                    (short)(ts.offset() + ts.token().length() - start), 
+                    (byte)tagName.length());
         }
 
         tagName = null;
