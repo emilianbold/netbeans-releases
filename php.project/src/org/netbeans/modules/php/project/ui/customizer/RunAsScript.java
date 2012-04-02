@@ -55,7 +55,6 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -70,6 +69,7 @@ import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -454,23 +454,25 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     private void interpreterBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_interpreterBrowseButtonActionPerformed
-        Utils.browsePhpInterpreter(this, interpreterTextField);
+        Utils.browsePhpInterpreter(interpreterTextField);
     }//GEN-LAST:event_interpreterBrowseButtonActionPerformed
 
     private void workDirBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_workDirBrowseButtonActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(NbBundle.getMessage(RunAsScript.class, "LBL_SelectWorkingDirectory"));
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        File curDir = null;
+        File curDir;
         String workDir = createRunConfig().getWorkDir();
         if (StringUtils.hasText(workDir)) {
             curDir = new File(workDir);
         } else {
             curDir = FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project));
         }
-        chooser.setCurrentDirectory(curDir);
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            workDirTextField.setText(FileUtil.normalizeFile(chooser.getSelectedFile()).getAbsolutePath());
+        File selectedFile = new FileChooserBuilder(RunAsScript.class)
+                .forceUseOfDefaultWorkingDirectory(true)
+                .setTitle(NbBundle.getMessage(RunAsScript.class, "LBL_SelectWorkingDirectory"))
+                .setDirectoriesOnly(true)
+                .setDefaultWorkingDirectory(curDir)
+                .showOpenDialog();
+        if (selectedFile != null) {
+            workDirTextField.setText(FileUtil.normalizeFile(selectedFile).getAbsolutePath());
         }
     }//GEN-LAST:event_workDirBrowseButtonActionPerformed
 

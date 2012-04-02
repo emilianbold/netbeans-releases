@@ -356,7 +356,7 @@ public final  class PhpOptionsPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     private void phpInterpreterBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phpInterpreterBrowseButtonActionPerformed
-        Utils.browsePhpInterpreter(this, phpInterpreterTextField);
+        Utils.browsePhpInterpreter(phpInterpreterTextField);
     }//GEN-LAST:event_phpInterpreterBrowseButtonActionPerformed
 
     private void phpInterpreterSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phpInterpreterSearchButtonActionPerformed

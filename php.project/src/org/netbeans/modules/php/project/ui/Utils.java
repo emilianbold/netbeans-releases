@@ -52,7 +52,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
 import org.netbeans.api.project.ProjectUtils;
@@ -65,6 +64,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
 import org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -118,26 +118,29 @@ public final class Utils {
      * @return the selected file or <code>null</code>.
      */
     public static File browseFileAction(final Component parent, File currentDirectory, String title) {
-        return browseAction(parent, currentDirectory, title, JFileChooser.FILES_ONLY);
+        return browseAction(parent, currentDirectory, title, true);
     }
 
     /**
      * @return the selected folder or <code>null</code>.
      */
     public static File browseLocationAction(final Component parent, File currentDirectory, String title) {
-        return browseAction(parent, currentDirectory, title, JFileChooser.DIRECTORIES_ONLY);
+        return browseAction(parent, currentDirectory, title, false);
     }
 
-    private static File browseAction(final Component parent, File currentDirectory, String title, int mode) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(title);
-        chooser.setFileSelectionMode(mode);
-        if (currentDirectory != null
-                && currentDirectory.exists()) {
-            chooser.setSelectedFile(currentDirectory);
+    private static File browseAction(final Component parent, File currentDirectory, String title, boolean filesOnly) {
+        FileChooserBuilder builder = new FileChooserBuilder(Utils.class)
+                .forceUseOfDefaultWorkingDirectory(true)
+                .setDefaultWorkingDirectory(currentDirectory)
+                .setTitle(title);
+        if (filesOnly) {
+            builder.setFilesOnly(true);
+        } else {
+            builder.setDirectoriesOnly(true);
         }
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
-            return FileUtil.normalizeFile(chooser.getSelectedFile());
+        File selectedFile = builder.showOpenDialog();
+        if (selectedFile != null) {
+            return FileUtil.normalizeFile(selectedFile);
         }
         return null;
     }
@@ -178,38 +181,32 @@ public final class Utils {
         return newLocation;
     }
 
-    public static void browsePhpInterpreter(Component parent, JTextField textField) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectPhpInterpreter"));
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setCurrentDirectory(LastUsedFolders.getOptionsPhpInterpreter());
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
-            File phpInterpreter = FileUtil.normalizeFile(chooser.getSelectedFile());
-            LastUsedFolders.setOptionsPhpInterpreter(phpInterpreter);
-            textField.setText(phpInterpreter.getAbsolutePath());
-        }
+    public static void browsePhpInterpreter(JTextField textField) {
+        browseFile("nb.php.interpreter.lastDir", NbBundle.getMessage(Utils.class, "LBL_SelectPhpInterpreter"), textField); // NOI18N
     }
 
-    public static void browsePhpUnit(Component parent, JTextField textField) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectPhpUnit"));
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setCurrentDirectory(LastUsedFolders.getOptionsPhpUnit());
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
-            File phpUnit = FileUtil.normalizeFile(chooser.getSelectedFile());
-            LastUsedFolders.setOptionsPhpUnit(phpUnit);
-            textField.setText(phpUnit.getAbsolutePath());
+    public static void browsePhpUnit(JTextField textField) {
+        browseFile("nb.php.phpunit.lastDir", NbBundle.getMessage(Utils.class, "LBL_SelectPhpUnit"), textField); // NOI18N
+    }
+
+    private static void browseFile(String dirKey, String title, JTextField textField) {
+        File selectedFile = new FileChooserBuilder(dirKey)
+                .setTitle(title)
+                .setFilesOnly(true)
+                .showOpenDialog();
+        if (selectedFile != null) {
+            textField.setText(FileUtil.normalizeFile(selectedFile).getAbsolutePath());
         }
     }
 
     public static void browseTestSources(JTextField textField, PhpProject phpProject) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectUnitTestFolder", ProjectUtils.getInformation(phpProject).getDisplayName()));
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setCurrentDirectory(FileUtil.toFile(phpProject.getProjectDirectory()));
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(textField.getParent())) {
-            File testsDirectory = FileUtil.normalizeFile(chooser.getSelectedFile());
-            textField.setText(testsDirectory.getAbsolutePath());
+        File selectedFile = new FileChooserBuilder("nb.php.test.dir.lastDir") // NOI18N
+                .setTitle(NbBundle.getMessage(Utils.class, "LBL_SelectUnitTestFolder", ProjectUtils.getInformation(phpProject).getDisplayName()))
+                .setDirectoriesOnly(true)
+                .setDefaultWorkingDirectory(FileUtil.toFile(phpProject.getProjectDirectory()))
+                .showOpenDialog();
+        if (selectedFile != null) {
+            textField.setText(FileUtil.normalizeFile(selectedFile).getAbsolutePath());
         }
     }
 

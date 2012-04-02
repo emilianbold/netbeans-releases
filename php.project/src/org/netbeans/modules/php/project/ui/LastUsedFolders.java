@@ -56,8 +56,6 @@ public final class LastUsedFolders {
     // Path to Preferences node for storing these preferences
     private static final String LAST_USED_FOLDERS_NODE = "lastUsedFoldersNode";
 
-    private static final String OPTIONS_PHP_INTERPRETER = "optionsInterpreter"; // NOI18N
-    private static final String OPTIONS_PHP_UNIT = "optionsPhpUnit"; // NOI18N
     private static final String COPY_FILES = "copyFiles"; // NOI18N
     private static final String INCLUDE_PATH = "includePath"; // NOI18N
     private static final String SOURCES = "sources"; // NOI18N
@@ -93,22 +91,6 @@ public final class LastUsedFolders {
             path = file.getParentFile().getAbsolutePath();
         }
         getPreferences().put(option, path);
-    }
-
-    public static File getOptionsPhpInterpreter() {
-        return getFile(OPTIONS_PHP_INTERPRETER);
-    }
-
-    public static void setOptionsPhpInterpreter(File optionsPhpInterpreter) {
-        setFile(OPTIONS_PHP_INTERPRETER, optionsPhpInterpreter);
-    }
-
-    public static File getOptionsPhpUnit() {
-        return getFile(OPTIONS_PHP_UNIT);
-    }
-
-    public static void setOptionsPhpUnit(File optionsPhpUnit) {
-        setFile(OPTIONS_PHP_UNIT, optionsPhpUnit);
     }
 
     public static File getCopyFiles() {
