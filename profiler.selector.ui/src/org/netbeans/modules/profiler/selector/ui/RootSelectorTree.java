@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -176,9 +177,10 @@ public class RootSelectorTree extends JPanel {
         this.cancellHandler = cancellable;
     }
 
-    private AtomicBoolean isActive = new AtomicBoolean(true);
+    final private AtomicBoolean isActive = new AtomicBoolean(true);
+    final private Semaphore selectionSemaphore = new Semaphore(1);
     public void setSelection(final SourceCodeSelection[] selection) {
-        new SwingWorker(false) {
+        new SwingWorker(selectionSemaphore) {
             
             protected void doInBackground() {
                 isActive.set(true);
@@ -559,7 +561,7 @@ public class RootSelectorTree extends JPanel {
             return;
         }
         if (searchInProgress.compareAndSet(false, true)) {
-            new SwingWorker(true) {
+            new SwingWorker() {
                 volatile private TreePath rsltPath;
                 volatile private ProgressDisplayer pd;
                 @Override
