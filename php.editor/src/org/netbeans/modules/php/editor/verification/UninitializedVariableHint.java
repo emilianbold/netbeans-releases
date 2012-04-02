@@ -88,6 +88,8 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
         UNCHECKED_VARIABLES.add("_SESSION"); //NOI18N
         UNCHECKED_VARIABLES.add("_REQUEST"); //NOI18N
         UNCHECKED_VARIABLES.add("_ENV"); //NOI18N
+        UNCHECKED_VARIABLES.add("argc"); //NOI18N
+        UNCHECKED_VARIABLES.add("argv"); //NOI18N
     }
 
     @Override
