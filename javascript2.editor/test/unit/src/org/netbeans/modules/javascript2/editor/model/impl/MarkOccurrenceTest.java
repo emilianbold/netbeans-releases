@@ -182,7 +182,23 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue209941_01() throws Exception {
         checkOccurrences("testfiles/coloring/issue209941.js", "this.globalNot^ify();", true);
     }
+    
+    public void testIssue198032_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue198032.js", "function leve^l0() {", true);
+    }
 
+    public void testIssue198032_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue198032.js", "function level^1_1(){", true);
+    }
+
+    public void testIssue198032_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue198032.js", "formatter.println(\"calling level1_2(): \" + lev^el1_2());", true);
+    }
+    
+    public void testIssue198032_04() throws Exception {
+        checkOccurrences("testfiles/coloring/issue198032.js", "var fir^st = \"defined in level1_2\";", true);
+    }
+        
     @Override
     protected void assertDescriptionMatches(FileObject fileObject,
             String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
