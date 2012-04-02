@@ -768,6 +768,18 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "class Yours1 extends First^Parent {", "class ^FirstParent {");
     }
 
+    public void testIssue203814_01() throws Exception {
+        checkDeclaration(getTestPath(), "self::$first->fMe^thod();", "public function ^fMethod()");
+    }
+
+    public void testIssue203814_02() throws Exception {
+        checkDeclaration(getTestPath(), "static::$first->fMe^thod();", "public function ^fMethod()");
+    }
+
+    public void testIssue203814_03() throws Exception {
+        checkDeclaration(getTestPath(), "Second::$first->fMe^thod();", "public function ^fMethod()");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
