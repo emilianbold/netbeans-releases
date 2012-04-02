@@ -128,7 +128,11 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
             }
         }
 
-        @Messages("ImmutableVariablesHintCustom=Too many assignments ({0}) into variable ${1}")
+        @Messages({
+            "# {0} - Number of assignments",
+            "# {1} - Variable name",
+            "ImmutableVariablesHintCustom=Too many assignments ({0}) into variable ${1}"
+        })
         private void createHints(List<Variable> variables) {
             for (Variable variable : variables) {
                 int start = variable.getStartOffset() + 1;
