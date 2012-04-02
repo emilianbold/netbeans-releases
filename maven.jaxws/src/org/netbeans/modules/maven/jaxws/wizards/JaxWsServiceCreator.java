@@ -348,7 +348,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                             FileUtil.toFile(project.getProjectDirectory()),
                             project,
                             "JAX-WS:wsimport", //NOI18N
-                            Collections.singletonList("org.codehaus.mojo:jaxws-maven-plugin:wsimport")); //NOI18N
+                            Collections.singletonList(MavenModelUtils.JAXWS_PLUGIN_KEY+":wsimport")); //NOI18N
                     ExecutorTask task = RunUtils.executeMaven(cfg);
                     try {
                         task.waitFinished(60000);
