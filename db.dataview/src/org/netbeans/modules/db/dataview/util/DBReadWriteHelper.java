@@ -224,7 +224,15 @@ public class DBReadWriteHelper {
                         result = new FileBackedBlob(blob.getBinaryStream());
                     }
                     
-                    blob.free();
+                    try {
+                        blob.free();
+                    } catch (java.lang.AbstractMethodError err) {
+                        // Blob gained a new method in jdbc4 (drivers compiled
+                        // against older jdks don't provide this methid
+                    } catch (SQLException ex) {
+                        // DBMS failed to free resource or does not support call
+                        // ignore this, as we can't do more
+                    }
                     
                     return result;
                 } catch (SQLException ex) {
@@ -262,11 +270,23 @@ public class DBReadWriteHelper {
                 try {
                     Clob clob = rs.getClob(index);
 
-                    if (rs.wasNull()) {
-                        return null;
-                    } else {
-                        return new FileBackedClob(clob.getCharacterStream());
+                    Object result = null;
+                    
+                    if (! rs.wasNull()) {
+                        result =  new FileBackedClob(clob.getCharacterStream());
                     }
+                    try {
+                        clob.free();
+                    } catch (java.lang.AbstractMethodError err) {
+                        // Blob gained a new method in jdbc4 (drivers compiled
+                        // against older jdks don't provide this methid
+                    } catch (SQLException ex) {
+                        // DBMS failed to free resource or does not support call
+                        // ignore this, as we can't do more
+                    }
+                    
+                    return result;
+                    
                 } catch (SQLException ex) {
                     // Ok - can happen - the jdbc driver might not support
                     // clob data or can for example not provide a longvarchar
