@@ -69,12 +69,12 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
 
         ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         try {
-            if (ap != null && ap.isActionEnabled(command, project.getLookup())) {
+            if (ap != null) {
                 ProjectProfilingSupport ppp = ProjectProfilingSupport.get(project);
                 if (ppp == null) {
                     return false;
                 }
-                return ppp.isProfilingSupported();
+                return ap.isActionEnabled(command, project.getLookup()) && ppp.isProfilingSupported();
             }
         } catch (IllegalArgumentException e) {
             // no provider responds to the command

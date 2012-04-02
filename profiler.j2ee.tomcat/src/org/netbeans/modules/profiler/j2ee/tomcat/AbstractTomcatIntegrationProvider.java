@@ -228,22 +228,29 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
                         attachSettings.getPort()))
                         + "<br>") : ""))); // NOI18N
 
+        addLinkWarning(hints, "CATALINA_OPTS", attachSettings);
+        
         return hints;
     }
 
     public IntegrationProvider.IntegrationHints getModificationHints(AttachSettings attachSettings) {
         String targetOS = attachSettings.getHostOS();
 
+        IntegrationHints h;
         // Remote attach instructions
         if (attachSettings.isRemote()) {
-            return getManualRemoteIntegrationStepsInstructions(targetOS, attachSettings);
+            h = getManualRemoteIntegrationStepsInstructions(targetOS, attachSettings);
         } // Local direct attach
         else if (attachSettings.isDirect()) {
-            return getManualLocalDirectIntegrationStepsInstructions(targetOS, attachSettings);
+            h = getManualLocalDirectIntegrationStepsInstructions(targetOS, attachSettings);
         } // Local dynamic attach
         else {
-            return getManualLocalDynamicIntegrationStepsInstructions(targetOS, attachSettings);
+            h = getManualLocalDynamicIntegrationStepsInstructions(targetOS, attachSettings);
         }
+        
+        addLinkWarning(h, "CATALINA_OPTS", attachSettings);
+        
+        return h;
     }
 
     public SettingsPersistor getSettingsPersistor() {
@@ -408,7 +415,8 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
                                     targetOS,
                                     getTargetJava(),
                                     attachSettings.isRemote(),
-                                    attachSettings.getPort())),
+                                    attachSettings.getPort(),
+                                    false)),
                                     REMOTE_ABSOLUTE_PATH_HINT)); // NOI18N
 
         // Step 5
@@ -656,7 +664,7 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         }
 
         String profilerOpts = IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, targetJVM, false, commPort);
-        profilerOpts.replace("\\s-", delimiter + "-");
+        profilerOpts = profilerOpts.replace("\\s-", delimiter + "-");
 
         if (nonEmptyOpts) {
             javaOpts.append(delimiter);

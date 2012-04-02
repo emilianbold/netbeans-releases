@@ -100,8 +100,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-import java.util.logging.Logger;
-import javax.swing.border.LineBorder;
+import javax.swing.plaf.TextUI;
+import javax.swing.plaf.basic.BasicEditorPaneUI;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.Mutex;
@@ -162,9 +162,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     private void refreshOriginalContent() {
-        VCSFileProxy file = fileObject != null ? VCSFileProxy.createFileProxy(fileObject) : null;
-        ownerVersioningSystem = file != null ? Utils.getOwner(file) : null;
-        LOG.log(Level.FINE, "owner for file {0} is {1}", new Object[]{fileObject != null ? fileObject.getPath() : null, ownerVersioningSystem != null ? ownerVersioningSystem.getDisplayName() : "null"});
         originalContentSerial++;
         sidebarTemporarilyDisabled = false;
         LOG.finer("refreshing diff in refreshOriginalContent");
@@ -535,6 +532,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             return;
         }
         shutdown();
+        ownerVersioningSystem = null;
         initialize();
         LOG.finer("refreshing diff in refresh");
         refreshDiff();
@@ -638,17 +636,21 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             clip.height += 16;
         }
 
+        g.setColor(backgroundColor());
+        g.fillRect(clip.x, clip.y, clip.width, clip.height);
+
         JTextComponent component = textComponent;
+        TextUI textui = component.getUI();
+        if(!(textui instanceof BaseTextUI)) {
+            return;
+        }
         BaseTextUI textUI = (BaseTextUI)component.getUI();
         EditorUI editorUI = Utilities.getEditorUI(textComponent);
         View rootView = Utilities.getDocumentView(component);
         if (rootView == null) {
             return;
         }
-
-        g.setColor(backgroundColor());
-        g.fillRect(clip.x, clip.y, clip.width, clip.height);
-
+        
         Difference [] paintDiff = currentDiff;
         if (paintDiff == null || paintDiff.length == 0) {
             return;
@@ -852,6 +854,18 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
         @Override
         public void run() {
+            if(ownerVersioningSystem == null) {
+                VCSFileProxy file = fileObject != null ? VCSFileProxy.createFileProxy(fileObject) : null;
+                ownerVersioningSystem = file != null ? Utils.getOwner(file) : null;
+
+                LOG.log(
+                    Level.FINE, 
+                    "owner for file {0} is {1}", 
+                    new Object[]{
+                        fileObject != null ? fileObject.getPath() : null, 
+                        ownerVersioningSystem != null ? ownerVersioningSystem.getDisplayName() : "null"});
+            }
+            
             computeDiff();
             EventQueue.invokeLater(new Runnable() {
                 @Override
