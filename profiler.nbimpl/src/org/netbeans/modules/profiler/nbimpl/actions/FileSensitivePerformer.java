@@ -78,13 +78,13 @@ public class FileSensitivePerformer implements FileActionPerformer {
 
         ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
         try {
-            if (ap != null && ap.isActionEnabled(command, getContext(file))) {
+            if (ap != null) {
                 ProjectProfilingSupport ppp = ProjectProfilingSupport.get(p);
                 if (ppp == null) {
                     return false;
                 }
                 
-                return ppp.isProfilingSupported();
+                return ap.isActionEnabled(command, getContext(file)) && ppp.isProfilingSupported();
             }
         } catch (IllegalArgumentException e) {
             // command not supported

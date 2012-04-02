@@ -52,6 +52,7 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -61,10 +62,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -88,6 +91,7 @@ public class TaskCache {
     
     private static final String ERR_EXT = "err"; //NOI18N
     private static final String WARN_EXT = "warn"; //NOI18N
+    private static final String RELOCATION_FILE = "relocation.properties";  //NOI18N
 
     private static final int VERSION = 1;
     
@@ -390,7 +394,7 @@ public class TaskCache {
     private boolean folderContainsErrors(File folder, boolean recursively) throws IOException {
         File[] errors = folder.listFiles(new FilenameFilter() {
             public @Override boolean accept(File dir, String name) {
-                return name.endsWith(".err"); //NOI18N
+                return name.endsWith(".err") || name.endsWith(".err.rel"); //NOI18N
             }
         });
         
@@ -421,8 +425,8 @@ public class TaskCache {
     private File[] computePersistentFile(URL root, Indexable i) throws IOException {
         String resourceName = i.getRelativePath();
         File cacheRoot = getCacheRoot(root);
-        File errorCacheFile = new File(cacheRoot, resourceName + "." + ERR_EXT); //NOI18N
-        File warningCacheFile = new File(cacheRoot, resourceName + "." + WARN_EXT); //NOI18N
+        File errorCacheFile = computePersistentFile(cacheRoot, resourceName, ERR_EXT);
+        File warningCacheFile = computePersistentFile(cacheRoot, resourceName, WARN_EXT);
 
         return new File[] {errorCacheFile, warningCacheFile};
     }
@@ -441,11 +445,86 @@ public class TaskCache {
         }
         
         String resourceName = cp.getResourceName(file, File.separatorChar, true);
-        File cacheRoot = getCacheRoot(root.getURL());
-        File cacheFile = new File(cacheRoot, resourceName + "." + extension); //NOI18N
+        File cacheRoot = getCacheRoot(root.toURL());
+        File cacheFile = computePersistentFile(cacheRoot, resourceName, extension);
         
         return cacheFile;
     }
+    
+    @NonNull
+    private static File computePersistentFile(
+            @NonNull final File cacheRoot,
+            @NonNull final String resourceName,
+            @NonNull final String extension) {
+        File candidate = new File(cacheRoot, resourceName + "." + extension); //NOI18N
+        final String nameComponent = candidate.getName();
+        if (requiresRelocation(nameComponent)) {
+            final Properties relocation = loadRelocation(cacheRoot);
+            String relName = relocation.getProperty(resourceName);
+            if (relName == null) {
+                relName = computeFreeName(relocation);
+                relocation.setProperty(resourceName, relName);
+                storeRelocation(cacheRoot, relocation);
+            }
+            candidate = new File (
+                    candidate.getParentFile(),
+                    String.format("%s.%s.rel",relName, extension)); //NOI18N
+        }
+        return candidate;
+    }
+    
+    private static boolean requiresRelocation(@NonNull final String nameComponent) {
+        return nameComponent.length() > 255;
+    }
+    
+    @NonNull
+    private static Properties loadRelocation(
+            @NonNull final File cacheRoot) {
+        final Properties result = new Properties();
+        final  File relocationFile = new File (cacheRoot, RELOCATION_FILE);
+        if (relocationFile.canRead()) {
+            try {
+                final FileInputStream in = new FileInputStream(relocationFile);
+                try {
+                    result.load(in);
+               } finally {
+                    in.close();
+               }
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+        return result;
+    }
+    
+    private static void storeRelocation(
+            @NonNull final File cacheRoot,
+            @NonNull final Properties relocation) {
+        final File relocationFile = new File (cacheRoot, RELOCATION_FILE);
+        try {
+            final OutputStream out = new FileOutputStream(relocationFile);
+            try {
+                relocation.store(out, null);
+            } finally {
+                out.close();
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+    }
+    
+    @NonNull
+    private static String computeFreeName(@NonNull final Properties props) {
+        int lastUsed = 0;
+        for (Object value : props.values()) {
+            int current = Integer.parseInt((String)value);
+            if (lastUsed < current) {
+                lastUsed = current;
+            }
+        }
+        return Integer.toString(lastUsed+1);
+    }
+    
 
     private ThreadLocal<TransactionContext> q = new ThreadLocal<TransactionContext>();
     
