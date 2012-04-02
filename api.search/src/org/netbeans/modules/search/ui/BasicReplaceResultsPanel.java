@@ -107,6 +107,9 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
 
         getContentPanel().add(splitPane);
         initResultModelListener();
+        replaceButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ResultView.class,
+                "ACS_TEXT_BUTTON_REPLACE"));                            //NOI18N
     }
 
     private void replace() {

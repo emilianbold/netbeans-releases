@@ -145,7 +145,7 @@ public final class Manager {
         ResultView resultView = ResultView.getInstance();
         resultView.open();
         resultView.requestActive();
-        task.setResultViewPanel(resultView.addTab(task.getComposition()));
+        task.setResultViewPanel(resultView.addTab(task));
         pendingTasks.add(task);
         processNextPendingTask();
     }
