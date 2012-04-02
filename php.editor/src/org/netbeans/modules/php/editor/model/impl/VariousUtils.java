@@ -117,7 +117,7 @@ public class VariousUtils {
     public static final String METHOD_TYPE_PREFIX = "mtd:"; //NOI18N
     public static final String STATIC_METHOD_TYPE_PREFIX = "static.mtd:"; //NOI18N
     public static final String FIELD_TYPE_PREFIX = "fld:"; //NOI18N
-    public static final String STATIC_FIELD__TYPE_PREFIX = "static.fld:"; //NOI18N
+    public static final String STATIC_FIELD_TYPE_PREFIX = "static.fld:"; //NOI18N
     public static final String VAR_TYPE_PREFIX = "var:"; //NOI18N
     public static final String ARRAY_TYPE_PREFIX = "array:"; //NOI18N
     private static final Collection<String> SPECIAL_CLASS_NAMES = new LinkedList<String>();
@@ -150,7 +150,7 @@ public class VariousUtils {
                 case FIELD:
                     return VariousUtils.FIELD_TYPE_PREFIX;
                 case STATIC_FIELD:
-                    return VariousUtils.STATIC_FIELD__TYPE_PREFIX;
+                    return VariousUtils.STATIC_FIELD_TYPE_PREFIX;
                 case VAR:
                     return VariousUtils.VAR_TYPE_PREFIX;
             }
@@ -373,8 +373,8 @@ public class VariousUtils {
                     operation = VariousUtils.FUNCTION_TYPE_PREFIX;
                 } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.STATIC_METHOD_TYPE_PREFIX;
-                } else if (VariousUtils.STATIC_FIELD__TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
-                    operation = VariousUtils.STATIC_FIELD__TYPE_PREFIX;
+                } else if (VariousUtils.STATIC_FIELD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
+                    operation = VariousUtils.STATIC_FIELD_TYPE_PREFIX;
                 } else if (VariousUtils.VAR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.VAR_TYPE_PREFIX;
                 } else if (VariousUtils.ARRAY_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
@@ -412,7 +412,7 @@ public class VariousUtils {
                         }
                         recentTypes = newRecentTypes;
                         operation = null;
-                    } else if (operation.startsWith(STATIC_FIELD__TYPE_PREFIX)) {
+                    } else if (operation.startsWith(STATIC_FIELD_TYPE_PREFIX)) {
                         Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
                         String[] frgs = frag.split("\\."); //NOI18N
                         assert frgs.length == 2;
@@ -785,7 +785,7 @@ public class VariousUtils {
             String clsName = CodeUtils.extractUnqualifiedName(fieldAccess.getClassName());
             String fldName = CodeUtils.extractVariableName(fieldAccess.getField());
             if (clsName != null && fldName != null) {
-                return "@" + STATIC_FIELD__TYPE_PREFIX + clsName + '.' + fldName; //NOI18N
+                return "@" + STATIC_FIELD_TYPE_PREFIX + clsName + '.' + fldName; //NOI18N
             }
         }
 
