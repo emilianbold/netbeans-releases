@@ -17,16 +17,18 @@
             that will invoke a profiling action. 
             In this wizard you specify the type of profiling point that you want to set
             according to the profiling action that want to be invoked.
-            Depending on the type of profiling point that you select,
-            you will either specify a line in your code or you will 
-            specify a condition that needs to be met to invoke the action.
-            In this wizard you will also specify settings for the
-            action that is performed.</p>
+            </p>
+            <p>You use this profiling point to obtain a timestamp
+            each time that the profiling point is hit. 
+            You can obtain the length of time between two locations by selecting 
+            Timestamp and Duration and setting a start and a stop profiling point.</p>
         
         <p>You open this wizard in the following ways.</p>
         <ul>
             <li>Right-click in a line in your source code and choose Profiling &gt; Insert Profiling Point.</li>
             <li>Click Add Profiling Point in the toolbar of the Profiling Points window.</li>
+            <li>Click Edit Profiling Point in the toolbar of the Profiling Points window
+                when a Stopwatch profiling point is selected.</li>
         </ul>
             
         
@@ -34,21 +36,32 @@
         <p>In this page of the wizard you specify the following properties.</p>
         
         <ul>
-            <li><b>Profiling Point Type.</b> Select the type of profiling point
-                according to the action that you want to invoke. 
+            <li><b>Name.</b> Type the name that you want to use to identify
+            the profiling point. 
+            This name will be used to identify the profiling point in the
+            Profiling Points window.</li>
+            <li><b>Settings.</b> Select one of the following settings:
                 <ul>
-                    <li>Reset Results</li>
-                    <li>Stopwatch</li>
-                    <li>Take Snapshot</li>
-                    <li>Load Generator</li>
-                    <li>Timed Take Snapshot</li>
-                    <li>Triggered Take Snapshot</li>
+                    <li><b>Timestamp.</b> Select this option if you want to retrieve
+                    a timestamp when the profiling point is hit.</li>
+                    <li><b>Timestamp and Duration.</b> Select this option to find the length of time
+                    between two paired timestamps. 
+                    If you select this option you will need to specify the location for
+                    a starting point for the stopwatch and the location for the stopping point.</li>
                 </ul>
-                <p>A description of the type is displayed in the wizard
-                    when you select a type.</p>
             </li>
-            <li><b>Profiling Point Project.</b> Select a project
-            from the dropdown list of open project.</li>
+            <li><b>Location.</b> Specify the name of the file and
+            the line in the source code where you want to place the profiling point.
+            Select Begin or End to specify if the results are reset when
+            a thread hits the beginning of the line or reaches the end of the line. 
+            <p>You can click Browse to locate the file in your project.
+            Specify the line number and if the profiling point should be invoked 
+            at the beginning of the line or at the end of the line.</p></li>
+        </ul>
+        <ul class="note">
+            <li>If you opened the New Profiling Point wizard by clicking
+            in a line in a source file, the file and line are automatically set for you 
+            but you can modify the settings as needed. </li>
         </ul>
         
         <dl>

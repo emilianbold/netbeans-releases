@@ -50,6 +50,7 @@ made subject to such option by the copyright holder.
         <mapID target="calibrating" url="helppages/calibrating.html"/>
 	<mapID target="custom_filtersets" url="helppages/custom_filtersets.html"/>
         <mapID target="heap_taking" url="helppages/heap_taking.html"/>
+        <mapID target="heap_compare" url="helppages/heap_comparing.html"/>
         <mapID target="heapwalking" url="helppages/heapwalker.html"/>
         <mapID target="profile_attach" url="helppages/profile_attach.html"/>
 	<mapID target="profile_analyze_short" url="helppages/profile_analyze_short.html"/>
