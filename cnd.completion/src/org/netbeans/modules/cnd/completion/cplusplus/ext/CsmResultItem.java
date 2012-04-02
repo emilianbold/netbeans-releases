@@ -972,7 +972,7 @@ public abstract class CsmResultItem implements CompletionItem {
                 CsmType type = ((CsmParameter) prm).getType();
                 if (type == null) {
                     // only var args parameters could have null types
-                    assert (((CsmParameter) prm).isVarArgs());
+                    assert (((CsmParameter) prm).isVarArgs()) : " non var arg " + prm + " of class " + prm.getClass().getName();
                     params.add(new ParamStr("", "", ((CsmParameter) prm).getName().toString(), true, KEYWORD_COLOR)); //NOI18N
                     varArgIndex = i;
                 } else {
