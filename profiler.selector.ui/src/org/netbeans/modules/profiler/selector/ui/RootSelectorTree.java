@@ -403,6 +403,7 @@ public class RootSelectorTree extends JPanel {
         repaint();
     }
 
+    final private Semaphore lazyOpeningSemaphore = new Semaphore(1);
     private void addTreeLazyOpening() {
         tree.addTreeWillExpandListener(new TreeWillExpandListener() {
 
@@ -431,7 +432,7 @@ public class RootSelectorTree extends JPanel {
 
                     openingSubtree = true;
 
-                    new SwingWorker() {
+                    new SwingWorker(lazyOpeningSemaphore) {
 
                         @Override
                         protected void doInBackground() {
