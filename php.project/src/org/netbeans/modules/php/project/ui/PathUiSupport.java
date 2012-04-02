@@ -47,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,22 +57,19 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
@@ -454,41 +450,30 @@ public final class PathUiSupport {
         }
 
         private void addFolders() {
-            JFileChooser chooser = null;
+            FileChooserBuilder builder = new FileChooserBuilder(PathUiSupport.class)
+                    .forceUseOfDefaultWorkingDirectory(true)
+                    .setDirectoriesOnly(true)
+                    .setDefaultWorkingDirectory(directoryHandler.getCurrentDirectory())
+                    .setTitle(NbBundle.getMessage(PathUiSupport.class, "LBL_AddFolders_DialogTitle"));
+            File[] selectedFiles = null;
             if (project != null) {
-                chooser = new FileChooser(project.getHelper(), false);
+                selectedFiles = builder.showMultiOpenDialog();
             } else {
-                // XXX maybe select fs root
-                chooser = new JFileChooser();
-            }
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            chooser.setMultiSelectionEnabled(true);
-            chooser.setDialogTitle(NbBundle.getMessage(PathUiSupport.class, "LBL_AddFolders_DialogTitle"));
-            chooser.setCurrentDirectory(directoryHandler.getCurrentDirectory());
-            int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(list));
-            if (option == JFileChooser.APPROVE_OPTION) {
-                String[] files;
-                try {
-                    if (chooser instanceof FileChooser) {
-                        files = ((FileChooser) chooser).getSelectedPaths();
-                    } else {
-                        File[] selectedFiles = chooser.getSelectedFiles();
-                        files = new String[selectedFiles.length];
-
-                        for (int i = 0; i < selectedFiles.length; i++) {
-                            files[i] = selectedFiles[i].getAbsolutePath();
-                        }
-                    }
-                } catch (IOException ex) {
-                    // TODO add localized message
-                    Exceptions.printStackTrace(ex);
-                    return;
+                File selectedFile = builder.showOpenDialog();
+                if (selectedFile != null) {
+                    selectedFiles = new File[] {selectedFile};
                 }
-
-                int[] newSelection = PathUiSupport.addFolders(listModel, list.getSelectedIndices(), files);
+            }
+            if (selectedFiles != null
+                    && selectedFiles.length > 0) {
+                String[] paths = new String[selectedFiles.length];
+                for (int i = 0; i < selectedFiles.length; i++) {
+                    paths[i] = selectedFiles[i].getAbsolutePath();
+                }
+                int[] newSelection = PathUiSupport.addFolders(listModel, list.getSelectedIndices(), paths);
                 list.setSelectedIndices(newSelection);
                 // remember last folder
-                directoryHandler.setCurrentDirectory(chooser.getCurrentDirectory());
+                directoryHandler.setCurrentDirectory(selectedFiles[0].getParentFile());
             }
         }
 
