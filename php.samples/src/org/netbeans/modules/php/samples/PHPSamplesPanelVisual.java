@@ -43,7 +43,6 @@ package org.netbeans.modules.php.samples;
 
 import java.io.File;
 import java.util.HashSet;
-import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -51,7 +50,9 @@ import javax.swing.text.Document;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 public class PHPSamplesPanelVisual extends JPanel implements DocumentListener {
 
@@ -162,26 +163,24 @@ public class PHPSamplesPanelVisual extends JPanel implements DocumentListener {
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    @NbBundle.Messages("PhpSamplePanelVisual.fileChooser.title=Select Project Location")
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        String command = evt.getActionCommand();
-        if ("BROWSE".equals(command)) {
-            JFileChooser chooser = new JFileChooser();
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-            chooser.setDialogTitle("Select Project Location");
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            String path = this.projectLocationTextField.getText();
-            if (path.length() > 0) {
-                File f = new File(path);
-                if (f.exists()) {
-                    chooser.setSelectedFile(f);
-                }
+        FileChooserBuilder builder = new FileChooserBuilder(PHPSamplesPanelVisual.class)
+                .setTitle(Bundle.PhpSamplePanelVisual_fileChooser_title())
+                .setDirectoriesOnly(true)
+                .forceUseOfDefaultWorkingDirectory(true);
+        String path = projectLocationTextField.getText();
+        if (path.length() > 0) {
+            File f = new File(path);
+            if (f.exists()) {
+                builder.setDefaultWorkingDirectory(f);
             }
-            if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-                File projectDir = chooser.getSelectedFile();
-                projectLocationTextField.setText(FileUtil.normalizeFile(projectDir).getAbsolutePath());
-            }
-            panel.fireChangeEvent();
         }
+        File selectedFile = builder.showOpenDialog();
+        if (selectedFile != null) {
+            projectLocationTextField.setText(FileUtil.normalizeFile(selectedFile).getAbsolutePath());
+        }
+        panel.fireChangeEvent();
 
     }//GEN-LAST:event_browseButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
