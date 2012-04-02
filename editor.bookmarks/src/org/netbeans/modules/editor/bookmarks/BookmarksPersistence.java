@@ -52,36 +52,16 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.JEditorPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.text.Document;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.lib.editor.bookmarks.api.Bookmark;
-import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Line;
 import org.openide.util.Mutex.Action;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.DOMException;
@@ -97,22 +77,6 @@ import org.w3c.dom.Node;
 
 public class BookmarksPersistence implements PropertyChangeListener, Runnable {
     
-    public static int offset2LineIndex(Document doc, int offset) {
-        javax.swing.text.Element lineRoot = doc.getDefaultRootElement();
-        int lineIndex = lineRoot.getElementIndex(offset);
-        return lineIndex;
-        
-    }
-    
-    public static int lineIndex2Offset(Document doc, int lineIndex) {
-        javax.swing.text.Element lineRoot = doc.getDefaultRootElement();
-        int offset = (lineIndex < lineRoot.getElementCount())
-                ? lineRoot.getElement(lineIndex).getStartOffset()
-                : doc.getLength();
-        return offset;
-        
-    }
-    
     private static final String EDITOR_BOOKMARKS_1_NAMESPACE_URI = "http://www.netbeans.org/ns/editor-bookmarks/1"; // NOI18N
     
     private static final String EDITOR_BOOKMARKS_2_NAMESPACE_URI = "http://www.netbeans.org/ns/editor-bookmarks/2"; // NOI18N
@@ -126,20 +90,12 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
     }
 
     /**
-     * Contains mapping of a project and its corresponding bookmarks (lazily read upon request).
-     * <br/>
-     * Once the bookmarks exist in the map they will be written to project's private.xml upon project close.
-     */
-    private final Map<Project,ProjectBookmarks> project2Bookmarks =
-            new HashMap<Project,ProjectBookmarks> ();
-    
-    /**
      * Once a project listener will be fired this list will be used for finding out
      * which projects were just closed and so need their bookmarks to be written to their private.xml.
      */
     private final List<Project> lastOpenProjects;
     
-    private List<ChangeListener> listenerList = new CopyOnWriteArrayList<ChangeListener>();
+    private boolean ensureProjectsBookmarksLoadedUponProjectsLoad;
     
     private BookmarksPersistence() {
         lastOpenProjects = new ArrayList<Project>();
@@ -156,49 +112,16 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
     
     public void endProjectsListening() {
         OpenProjects.getDefault ().removePropertyChangeListener (this);
-        List<Project> projects = allProjectsWithBookmarks();
-        saveProjectsBookmarks(projects);
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            for (ProjectBookmarks projectBookmarks : lockedBookmarkManager.allLoadedProjectBookmarks()) {
+                saveProjectBookmarks(projectBookmarks);
+            }
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
         synchronized (lastOpenProjects) {
             lastOpenProjects.clear();
-        }
-    }
-    
-    public List<Project> allProjectsWithBookmarks() {
-        synchronized (project2Bookmarks) {
-            return new ArrayList<Project>(project2Bookmarks.keySet());
-        }
-    }
-    
-    public void openEditor(FileObject fo, BookmarkInfo info) {
-        if (fo == null) {
-            URL url = info.getURL();
-            if (url != null) {
-                fo = URLMapper.findFileObject(url);
-            }
-        }
-        if (fo != null) {
-            DataObject dob;
-            try {
-                dob = DataObject.find(fo);
-            } catch (DataObjectNotFoundException ex) {
-                dob = null;
-            }
-            if (dob != null) {
-                EditorCookie ec = dob.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    Line.Set lineSet = ec.getLineSet();
-                    if (lineSet != null) {
-                        Line line = lineSet.getCurrent(info.getLineIndex());
-                        if (line != null) {
-                            line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-                            JEditorPane[] panes = ec.getOpenedPanes();
-                            if (panes.length > 0) {
-                                panes[0].requestFocusInWindow();
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
     
@@ -207,163 +130,22 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
      * <br/>
      * This is used by BookmarksView's initialization to display all currently known bookmarks.
      */
-    public void ensureAllProjectsBookmarksLoaded() {
+    public void ensureAllOpenedProjectsBookmarksLoaded() {
+        ensureProjectsBookmarksLoadedUponProjectsLoad = true;
         List<Project> projects;
         synchronized (lastOpenProjects) {
             projects = new ArrayList<Project>(lastOpenProjects);
         }
-        for (Project project : projects) {
-            getProjectBookmarks(project, true, false); // Force project's bookmarks loading
-        }
-    }
-    
-    public BookmarkInfo findBookmarkByNameOrKey(String name, boolean byKey) {
-        for (Project p : allProjectsWithBookmarks()) {
-            ProjectBookmarks projectBookmarks = getProjectBookmarks(p, true, false);
-            if (projectBookmarks != null) {
-                for (URL url : projectBookmarks.allURLs()) {
-                    URLBookmarks urlBookmarks = projectBookmarks.get(url);
-                    for (BookmarkInfo info : urlBookmarks.getBookmarkInfos()) {
-                        if (name.equals(info.getName())) {
-                            info = getBookmarkInfoUpdated(info, url);
-                            return info;
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-    
-    private Document getDocument(BookmarkInfo info, URL url) {
-        Document doc = null;
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
         try {
-            if (url == null) {
-                url = info.getURL();
-            }
-            assert (url != null) : "Null URL"; // NOI18N
-            FileObject fo = URLMapper.findFileObject(url);
-            DataObject dob = DataObject.find(fo);
-            EditorCookie ec = dob.getCookie(EditorCookie.class);
-            if (ec != null) {
-                doc = ec.getDocument();
-            }
-        } catch (DataObjectNotFoundException ex) {
-            // doc remains == null;
+            lockedBookmarkManager.ensureProjectBookmarksLoaded(projects);
+        } finally {
+            lockedBookmarkManager.unlock();
         }
-        return doc;
-    }
-    
-    private BookmarkInfo getBookmarkInfoUpdated(BookmarkInfo info, URL url) {
-        Document doc = getDocument(info, url);
-        if (doc != null) {
-            List<Bookmark> bookmarks = BookmarkList.get(doc).getBookmarks();
-            for (Bookmark bookmark : bookmarks) {
-                if (BookmarkAPIAccessor.INSTANCE.getInfo(bookmark) == info) {
-                    return BookmarkInfo.create(info, url, bookmark.getLineNumber());
-                }
-            }
-        }
-        info = BookmarkInfo.create(info, url);
-        return info;
-    }
-    
-    public void addChangeListener(ChangeListener l) {
-        listenerList.add(l);
-    }
-    
-    public void removeChangeListener(ChangeListener l) {
-        listenerList.remove(l);
-    }
-    
-    void fireChange() {
-        ChangeEvent evt = new ChangeEvent(this);
-        for (ChangeListener l : listenerList) {
-            l.stateChanged(evt);
-        }
-    }
-
-    /**
-     * Get all fileobjects that contain bookmarks located in the given project.
-     * 
-     * @param prj 
-     */
-    public FileObject[] getSortedFileObjects(ProjectBookmarks prjBookmarks) {
-        List<FileObject> foList;
-        if (prjBookmarks != null) {
-            Collection<URL> allURLs = prjBookmarks.allURLs();
-            foList = new ArrayList<FileObject>(allURLs.size());
-            for (URL url : allURLs) {
-                FileObject fo = URLMapper.findFileObject(url);
-                if (fo != null) {
-                    foList.add(fo);
-                } // else: could be obsolete URL of a removed file
-            }
-            Collections.sort(foList, new Comparator<FileObject>() {
-                @Override
-                public int compare(FileObject fo1, FileObject fo2) {
-                    return fo1.getNameExt().compareTo(fo2.getNameExt());
-                }
-            });
-        } else {
-            foList = Collections.emptyList();
-        }
-        return foList.toArray(new FileObject[foList.size()]);
-    }
         
-    /**
-     * Loads bookmarks for a given document.
-     * 
-     * @param document non-null document for which the bookmarks should be loaded.
-     */
-    public synchronized URLBookmarks getURLBookmarks(Document document) {
-        URLBookmarks ret = null;
-        ProjectBookmarks projectBookmarks = getProjectBookmarks(document);
-        if (projectBookmarks != null) {
-            if (projectBookmarks != null) {
-                FileObject fo = NbEditorUtilities.getFileObject (document); // fo should be non-null
-                URL url = fo.toURL();
-                ret = projectBookmarks.get(url);
-            }
-        }
-        return ret;
-    }
-
-    public synchronized ProjectBookmarks getProjectBookmarks(Document document) {
-        ProjectBookmarks ret = null;
-        FileObject fo = NbEditorUtilities.getFileObject (document);
-        if (fo != null) {
-            Project project = FileOwnerQuery.getOwner(fo);
-            if (project != null) {
-                ret = getProjectBookmarks(project, true, true);
-            }
-        }
-        return ret;
     }
     
-    public ProjectBookmarks getProjectBookmarks(Project project, boolean load, boolean forceCreation) {
-        ProjectBookmarks projectBookmarks;
-        synchronized (project2Bookmarks) {
-            projectBookmarks = project2Bookmarks.get(project);
-        }
-        if (projectBookmarks == null) {
-            if (load) {
-                projectBookmarks = loadProjectBookmarks (project);
-            }
-            if (projectBookmarks == null && forceCreation) {
-                projectBookmarks = new ProjectBookmarks();
-            }
-            if (projectBookmarks != null) {
-                synchronized (project2Bookmarks) {
-                    project2Bookmarks.put(project, projectBookmarks);
-                }
-                fireChange();
-            }
-        }
-        return projectBookmarks;
-    }
-    
-    private ProjectBookmarks loadProjectBookmarks(final Project project) {
+    ProjectBookmarks loadProjectBookmarks(final Project project) {
         return
         ProjectManager.mutex().readAccess(new Action<ProjectBookmarks>() {
             @Override
@@ -396,7 +178,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                     }
                 }
 
-                ProjectBookmarks projectBookmarks = new ProjectBookmarks(lastBookmarkId);
+                ProjectBookmarks projectBookmarks = new ProjectBookmarks(project, lastBookmarkId);
                 URL projectFolderURL = project.getProjectDirectory().toURL();
                 Node fileElem = skipNonElementNode (bookmarksElement.getFirstChild ());
                 while (fileElem != null) {
@@ -463,7 +245,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                             } else { // absolute URL or don't have base URL
                                 url = new URL(relOrAbsURLString);
                             }
-                            projectBookmarks.put(url, new URLBookmarks(
+                            projectBookmarks.add(new FileBookmarks(
                                     projectBookmarks, url, bookmarkInfos));
                         } catch (URISyntaxException e) {
                             ErrorManager.getDefault().notify(e);
@@ -497,41 +279,8 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
         return node;
     }
     
-    /**
-     * Save bookmarks in the given bookmark list.
-     *
-     * @param bookmarkList bookmark list to save.
-     * @param origProject original project in which the document resided.
-     * @param origURL original URL in case the document was moved 
-     */
-    public synchronized URLBookmarks updateBookmarkInfos (Document document,
-            List<BookmarkInfo> bookmarkInfos, URLBookmarks origURLBookmarks)
-    {
-        // First ensure that the original infos get removed which will handle
-        // possible source file's movement to another package or even project.
-        if (origURLBookmarks != null) {
-            origURLBookmarks.getProjectBookmarks().remove(origURLBookmarks.getUrl());
-        }
-
-        FileObject fo = NbEditorUtilities.getFileObject (document);
-        if (fo != null) {
-            URL url = fo.toURL ();
-            Project project = FileOwnerQuery.getOwner (fo);
-            ProjectBookmarks projectBookmarks = getProjectBookmarks(project, false, true);
-            URLBookmarks newURLBookmarks = new URLBookmarks(projectBookmarks, url, bookmarkInfos);
-            projectBookmarks.put (url, newURLBookmarks);
-            return newURLBookmarks;
-        }
-        return null;
-    }
-    
-    private void saveProjectsBookmarks(Collection<Project> projects) {
-        for (Project prj : projects) {
-            saveProjectBookmarks(prj);
-        }
-    }
-    
-    private void saveProjectBookmarks(Project project) {
+    private void saveProjectBookmarks(ProjectBookmarks projectBookmarks) {
+        Project project = projectBookmarks.getProject();
         if (!ProjectManager.getDefault ().isValid (project)) {
             return; // cannot modify it now anyway
         }
@@ -543,8 +292,6 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
             // Use global urls in such case
             baseURI = null;
         }
-        ProjectBookmarks projectBookmarks = getProjectBookmarks(project, true, false);
-        if (projectBookmarks == null) return;
         boolean legacy = false;
         
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -557,7 +304,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
             Element bookmarksElem = document.createElementNS(namespaceURI, "editor-bookmarks");
             bookmarksElem.setAttribute("lastBookmarkId", String.valueOf(projectBookmarks.getLastBookmarkId()));
             for (URL url : projectBookmarks.allURLs()) {
-                List<BookmarkInfo> bookmarkInfos = projectBookmarks.get(url).getBookmarkInfos();
+                List<BookmarkInfo> bookmarkInfos = projectBookmarks.get(url).getBookmarks();
                 if (bookmarkInfos.isEmpty()) {
                     continue;
                 }
@@ -620,8 +367,22 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                     lastOpenProjects.clear();
                     lastOpenProjects.addAll(openProjects);
                 }
-                for (Project p : projectsToSave) {
-                    saveProjectBookmarks(p);
+                BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+                try {
+                    for (Project p : projectsToSave) {
+                        ProjectBookmarks projectBookmarks = lockedBookmarkManager.getProjectBookmarks(p, false, false);
+                        if (projectBookmarks != null) {
+                            saveProjectBookmarks(projectBookmarks); // Write into private.xml under project's mutex acquired
+                            lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
+                        }
+                    }
+                    // If ensureAllOpenedProjectsBookmarksLoaded requested previously do it now
+                    if (ensureProjectsBookmarksLoadedUponProjectsLoad) {
+                        ensureProjectsBookmarksLoadedUponProjectsLoad = false;
+                        ensureAllOpenedProjectsBookmarksLoaded();
+                    }
+                } finally {
+                    lockedBookmarkManager.unlock();
                 }
             }
         });
@@ -635,18 +396,13 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(200);
-        for (Project p : allProjectsWithBookmarks()) {
-            sb.append("Project ").append(p).append('\n');
-            ProjectBookmarks projectBookmarks = getProjectBookmarks(p, false, false);
-            if (p != null) {
-                for (URL url : projectBookmarks.allURLs()) {
-                    sb.append("    ").append(url).append("\n");
-                    for (BookmarkInfo info : projectBookmarks.get(url).getBookmarkInfos()) {
-                        sb.append("        ").append(info).append('\n');
-                    }
-                }
+        sb.append("Opened Projects:\n"); // NOI18N
+        synchronized (lastOpenProjects) {
+            for (Project p : lastOpenProjects) {
+                sb.append("Project ").append(p).append('\n'); // NOI18N
             }
         }
+        sb.append("------------------------"); // NOI18N
         return sb.toString();
     }
 

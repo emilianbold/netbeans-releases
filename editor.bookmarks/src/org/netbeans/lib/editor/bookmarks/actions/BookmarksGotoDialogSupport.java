@@ -43,6 +43,7 @@ package org.netbeans.lib.editor.bookmarks.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorRegistry;
@@ -50,7 +51,10 @@ import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.GotoDialogSupport;
 import org.netbeans.editor.ext.KeyEventBlocker;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
+import org.netbeans.modules.editor.bookmarks.BookmarkManager;
+import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
+import org.openide.cookies.EditorCookie;
 
 /**
  *
@@ -58,6 +62,7 @@ import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
  */
 public class BookmarksGotoDialogSupport extends GotoDialogSupport {
 
+    @Override
     protected boolean performGoto() {
         JTextComponent c = EditorRegistry.lastFocusedComponent();
         if (c != null) {
@@ -67,15 +72,27 @@ public class BookmarksGotoDialogSupport extends GotoDialogSupport {
                 return super.performGoto();
             } catch (NumberFormatException ex) { // Not numeric
                 // Attempt to recognize bookmark's name
-                final BookmarkInfo bookmarkInfo = BookmarksPersistence.get().findBookmarkByNameOrKey(gotoValue, false);
-                if (bookmarkInfo != null) {
-                    // Post opening since otherwise the focus would get returned to an original pane
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            BookmarksPersistence.get().openEditor(null, bookmarkInfo); // Take url from bookmarkInfo
+                final EditorCookie ec;
+                Document doc;
+                BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+                try {
+                    final BookmarkInfo info = lockedBookmarkManager.findBookmarkByNameOrKey(gotoValue, false);
+                    if (info != null) {
+                        ec = BookmarkUtils.findEditorCookie(info);
+                        if (ec != null && (doc = ec.getDocument()) != null) {
+                            BookmarkUtils.updateCurrentLineIndex(info, doc);
+                            final int lineIndex = info.getCurrentLineIndex();
+                            // Post opening since otherwise the focus would get returned to an original pane
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    BookmarkUtils.openEditor(ec, lineIndex); // Take url from bookmarkInfo
+                                }
+                            });
                         }
-                    });
+                    }
+                } finally {
+                    lockedBookmarkManager.unlock();
                 }
             }
         }

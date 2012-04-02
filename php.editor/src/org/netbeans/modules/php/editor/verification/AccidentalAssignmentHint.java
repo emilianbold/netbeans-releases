@@ -128,7 +128,10 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
             return hints;
         }
 
-        @Messages("AccidentalAssignmentHintCustom=Accidental assignment in a condition {0}")
+        @Messages({
+            "# {0} - Condition text",
+            "AccidentalAssignmentHintCustom=Accidental assignment in a condition {0}"
+        })
         private void createHint(Assignment assignment) {
             OffsetRange offsetRange = new OffsetRange(assignment.getStartOffset(), assignment.getEndOffset());
             hints.add(new Hint(AccidentalAssignmentHint.this, Bundle.AccidentalAssignmentHintCustom(asText(assignment)), fileObject, offsetRange, createFixes(assignment), 500));
@@ -310,7 +313,10 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
         }
 
         @Override
-        @Messages("ChangeAssignmentDisp=Change assignment to comparison: {0}")
+        @Messages({
+            "# {0} - Comparison text",
+            "ChangeAssignmentDisp=Change assignment to comparison: {0}"
+        })
         public String getDescription() {
             return Bundle.ChangeAssignmentDisp(getCorrectedAssignmentText());
         }

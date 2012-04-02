@@ -45,11 +45,7 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.*;
 import org.netbeans.jemmy.JemmyException;
 
 /** org.netbeans.jellytools.actions.DebugProjectAction
@@ -128,8 +124,7 @@ public class DebugProjectActionTest extends JellyTestCase {
     /** Test performMenu */
     public void testPerformMenu() {
         // Set as Main Project
-        String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
-        new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode("SampleProject")); // NOI18N
+        new Action("Run|Set Main Project|SampleProject", null).perform();
         new DebugProjectAction().performMenu();
     }
 

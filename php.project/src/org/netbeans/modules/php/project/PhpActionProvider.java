@@ -138,6 +138,10 @@ public class PhpActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled(String commandId, Lookup lookup) {
+        // hotfix for #210502
+        if (commandId.startsWith("profile")) { // NOI18N
+            return false;
+        }
         return getCommand(commandId).isActionEnabled(lookup);
     }
 

@@ -41,18 +41,18 @@
  */
 package org.netbeans.modules.html.editor.lib.plain;
 
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 
 /**
  *
  * @author marekfukala
  */
-public class EndTagElement extends AbstractNamedElement implements CloseTag {
+public class EndTagElement extends AbstractTagElement implements CloseTag {
 
-    public EndTagElement(CharSequence document, int from, int length, CharSequence name) {
-        super(document, from, length, name);
+    public EndTagElement(CharSequence document, int from, short length, byte nameLen) {
+        super(document, from, length, nameLen);
     }
 
     @Override
@@ -63,6 +63,11 @@ public class EndTagElement extends AbstractNamedElement implements CloseTag {
     @Override
     public OpenTag matchingOpenTag() {
         return null;
+    }
+
+    @Override
+    protected int fromToNamePositionDiff() {
+        return 2; //"</".length();
     }
     
 }

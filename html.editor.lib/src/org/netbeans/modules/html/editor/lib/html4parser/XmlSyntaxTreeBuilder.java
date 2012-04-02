@@ -43,6 +43,7 @@
 package org.netbeans.modules.html.editor.lib.html4parser;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
@@ -54,7 +55,7 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  */
 public class XmlSyntaxTreeBuilder {
 
-    public static Node makeUncheckedTree(HtmlSource source, String namespace, Collection<Element> elements) {
+    public static Node makeUncheckedTree(HtmlSource source, String namespace, Iterator<Element> elements) {
 
         assert elements != null : "passed elements list cannot but null"; //NOI18N
 
@@ -66,7 +67,8 @@ public class XmlSyntaxTreeBuilder {
         LinkedList<XmlSTElements.OT> stack = new LinkedList<XmlSTElements.OT>();
         stack.add(rootNode);
 
-        for (Element element : elements) {
+        while(elements.hasNext()) {
+            Element element = elements.next();
 
             if (element.type() == ElementType.OPEN_TAG) { //open tag
                 OpenTag plainOpenTag = (OpenTag) element;

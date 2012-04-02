@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.editor.bookmarks;
 
+import javax.swing.text.Document;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 
 /**
@@ -62,5 +63,7 @@ public abstract class BookmarkAPIAccessor {
     }
     
     public abstract BookmarkInfo getInfo(Bookmark b);
+
+    public abstract Bookmark getBookmark(Document doc, BookmarkInfo b);
 
 }

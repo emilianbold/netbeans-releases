@@ -62,8 +62,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -75,8 +75,6 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
@@ -84,20 +82,23 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
-import org.netbeans.lib.editor.bookmarks.api.Bookmark;
-import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
+import org.netbeans.modules.editor.bookmarks.BookmarkChange;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
+import org.netbeans.modules.editor.bookmarks.BookmarkManager;
+import org.netbeans.modules.editor.bookmarks.BookmarkManagerEvent;
+import org.netbeans.modules.editor.bookmarks.BookmarkManagerListener;
+import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
 import org.netbeans.modules.editor.bookmarks.ProjectBookmarks;
-import org.netbeans.modules.editor.bookmarks.URLBookmarks;
+import org.netbeans.modules.editor.bookmarks.FileBookmarks;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.swing.etable.ETable;
 import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -119,7 +120,9 @@ import org.openide.windows.WindowManager;
  *
  * @author Miloslav Metelka
  */
-public final class BookmarksView extends TopComponent implements ChangeListener, PropertyChangeListener {
+public final class BookmarksView extends TopComponent
+implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Provider
+{
     
     private static final int PREVIEW_PANE_REFRESH_DELAY = 300;
     
@@ -141,11 +144,11 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
                 }
                 view.open();
                 view.requestActive();
-
             }
         };
     }
 
+    private transient final ExplorerManager explorerManager;
     private transient boolean treeViewShowing; // Whether viewed as tree or as a table
     private transient JSplitPane splitPane;
     private transient BookmarksTableView tableView;
@@ -161,8 +164,19 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
     private transient BookmarkInfo displayedBookmarkInfo;
     
     BookmarksView() {
+//        getActionMap().put("rename", SystemAction.get(RenameAction.class));
+        explorerManager = new ExplorerManager();
+        ActionMap map = getActionMap();
+        map.put("delete", ExplorerUtils.actionDelete(explorerManager, false));
+        associateLookup(ExplorerUtils.createLookup(explorerManager, map));
+        explorerManager.addPropertyChangeListener(this);
     }
     
+    @Override
+    public ExplorerManager getExplorerManager() {
+        return explorerManager;
+    }
+
     @Override
     public String getName () {
         return NbBundle.getMessage (BookmarksView.class, "LBL_BookmarksView");
@@ -175,7 +189,7 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
 
     @Override
     public int getPersistenceType() {
-        return PERSISTENCE_NEVER;
+        return PERSISTENCE_ALWAYS;
     }
     
     @Override
@@ -220,17 +234,24 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
             // Make treeView visible
             // treeViewVisible = false;
             setTreeViewVisible(true);
-            
-            BookmarksPersistence.get().addChangeListener(
-                    WeakListeners.change(this, BookmarksPersistence.get()));
+            BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+            try {
+                lockedBookmarkManager.addBookmarkManagerListener(
+                    WeakListeners.create(BookmarkManagerListener.class, this, lockedBookmarkManager));
+            } finally {
+                lockedBookmarkManager.unlock();
+            }
         }
     }
 
     @Override
-    public void stateChanged(ChangeEvent e) {
-        if (treeViewShowing) {
-            updateTreeRootContext(getActiveExplorerManager());
-        }
+    public void bookmarksChanged(final BookmarkManagerEvent evt) {
+        SwingUtilities.invokeLater(new Runnable() { // Can come within project's mutex lock
+            @Override
+            public void run() {
+                updateTreeRootContext(evt.getBookmarkChanges());
+            }
+        });
     }
     
     private void setTreeViewVisible(boolean treeViewVisible) {
@@ -242,8 +263,7 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
                 create = (treeView == null);
                 if (create) {
                     container = new TreeOrTableContainer();
-                    container.getExplorerManager().addPropertyChangeListener(this);
-                    updateTreeRootContext(container.getExplorerManager());
+                    updateTreeRootContext(null);
                     treeView = new BeanTreeView();
                     container.add(treeView);
                     fixScrollPaneinSplitPaneJDKIssue(treeView);
@@ -258,32 +278,10 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
                 create = (tableView == null);
                 if (create) {
                     tableView = new BookmarksTableView();
-                    // ETable defines "enter" action => change its meaning
-                    tableView.getTable().getActionMap().put("enter", new AbstractAction() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            final BookmarkNode selectedNode = (BookmarkNode) getSelectedNode();
-                            if (selectedNode != null) {
-                                // Post into EDT (otherwise the focus would stay on ETable)
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        selectedNode.openInEditor();
-                                    }
-                                });
-                            }
-                        }
-                    });
-                    fixScrollPaneinSplitPaneJDKIssue(tableView);
                     container = new TreeOrTableContainer();
                     container.add(tableView);
                     updateTableNodes();
-                    tableView.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-                        @Override
-                        public void valueChanged(ListSelectionEvent e) {
-                            schedulePaneRefresh();
-                        }
-                    });
+                    initTableView();
                 } else {
                     container = (TreeOrTableContainer) tableView.getParent();
                 }
@@ -302,8 +300,165 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
         }
     }
     
-    private ExplorerManager getExplorerManager(JScrollPane treeOrTableView) {
-        return ((TreeOrTableContainer)treeOrTableView.getParent()).getExplorerManager();
+    private void updateTreeRootContext(List<BookmarkChange> changes) {
+        Node[] projectNodes;
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            Node selNode = getSelectedNode();
+            BookmarkInfo selectedBookmark = null;
+            ProjectBookmarks selectedProjectBookmarks = null;
+            Node selectedProjectNode = null;
+            FileBookmarks selectedFileBookmarks = null;
+            if (selNode instanceof BookmarkNode) {
+                selectedBookmark = ((BookmarkNode)selNode).getBookmarkInfo();
+                selectedFileBookmarks = selectedBookmark.getFileBookmarks();
+                selectedProjectBookmarks = selectedFileBookmarks.getProjectBookmarks();
+            }
+            
+            List<ProjectBookmarks> loadedProjectBookmarks = lockedBookmarkManager.allLoadedProjectBookmarks();
+            projectNodes = new Node[loadedProjectBookmarks.size()];
+            int i = 0;
+            for (ProjectBookmarks projectBookmarks : loadedProjectBookmarks) {
+                FileObject[] sortedFileObjects = lockedBookmarkManager.getSortedFileObjects(projectBookmarks);
+                ProjectBookmarksChildren children = new ProjectBookmarksChildren(projectBookmarks, sortedFileObjects);
+                LogicalViewProvider lvp = projectBookmarks.getProject().getLookup().lookup(LogicalViewProvider.class);
+                Node prjNode = (lvp != null) ? lvp.createLogicalView() : null;
+                if (prjNode == null) {
+                    prjNode = new AbstractNode(Children.LEAF);
+                    prjNode.setDisplayName(children.getProjectDisplayName());
+                }
+                Node n = new FilterNode(prjNode, children) {
+                    @Override
+                    public boolean canCopy() {
+                        return false;
+                    }
+                    @Override
+                    public boolean canCut() {
+                        return false;
+                    }
+                    @Override
+                    public boolean canDestroy() {
+                        return false;
+                    }
+                    @Override
+                    public boolean canRename() {
+                        return false;
+                    }
+                };
+                projectNodes[i++] = n;
+                if (projectBookmarks == selectedProjectBookmarks) {
+                    selectedProjectNode = n;
+                }
+            }
+
+            // Sort by project's display name
+            Arrays.sort(projectNodes, new Comparator<Node>() {
+                @Override
+                public int compare(Node n1, Node n2) {
+                    return ((ProjectBookmarksChildren) n1.getChildren()).getProjectDisplayName().compareTo(
+                            ((ProjectBookmarksChildren) n2.getChildren()).getProjectDisplayName());
+                }
+            });
+            Children rootChildren = new Children.Array();
+            rootChildren.add(projectNodes);
+            Node rootNode = new AbstractNode(rootChildren);
+            explorerManager.setRootContext(rootNode);
+            
+            if (selectedProjectNode != null) {
+                for (Node fileNodes : selectedProjectNode.getChildren().snapshot()) {
+                    FileBookmarksChildren ch = (FileBookmarksChildren) fileNodes.getChildren();
+                    if (ch.getFileBookmarks() == selectedFileBookmarks) {
+                        for (Node bookmarkNode : ch.snapshot()) {
+                            if (((BookmarkNode)bookmarkNode).getBookmarkInfo() == selectedBookmark) {
+                                try {
+                                    selNode = bookmarkNode;
+                                    explorerManager.setSelectedNodes(new Node[] { bookmarkNode });
+                                } catch (PropertyVetoException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Update table nodes as well if they exist
+            updateTableNodes();
+
+            if (selNode == null && projectNodes.length > 0) { // Select first node
+                try {
+                    explorerManager.setSelectedNodes(new Node[] { projectNodes[0] });
+                } catch (PropertyVetoException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
+    }
+    
+    private void updateTableNodes() {
+        if (tableView != null) {
+            BookmarksTable table = tableView.getTable();
+            int selectedIndex = Math.max(table.getSelectedRow(), 0); // If no selection request first row selection
+            List<BookmarkNode> bookmarkNodes = new ArrayList<BookmarkNode>();
+            collectBookmarkNodes(bookmarkNodes, explorerManager.getRootContext());
+            ((BookmarksTableModel)table.getModel()).setEntries(bookmarkNodes);
+            selectedIndex = Math.min(selectedIndex, table.getRowCount() - 1);
+            if (selectedIndex >= 0) {
+                table.getSelectionModel().setSelectionInterval(selectedIndex, selectedIndex);
+            }
+        }
+    }
+    
+    private void collectBookmarkNodes(List<BookmarkNode> bookmarkNodes, Node n) {
+        if (n instanceof BookmarkNode) {
+            bookmarkNodes.add((BookmarkNode)n);
+        } else {
+            for (Node cn : n.getChildren().snapshot()) {
+                collectBookmarkNodes(bookmarkNodes, cn);
+            }
+        }
+    }
+    
+    private void initTableView() {
+        fixScrollPaneinSplitPaneJDKIssue(tableView);
+        // ETable defines "enter" action => change its meaning
+        tableView.getTable().getActionMap().put("enter", new AbstractAction() { // NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final BookmarkNode selectedNode = (BookmarkNode) getSelectedNode();
+                if (selectedNode != null) {
+                    // Post into EDT (otherwise the focus would stay on ETable)
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            selectedNode.openInEditor();
+                        }
+                    });
+                }
+            }
+        });
+        tableView.getTable().getActionMap().put("delete", new AbstractAction() { // NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final BookmarkNode selectedNode = (BookmarkNode) getSelectedNode();
+                if (selectedNode != null) {
+                    BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+                    try {
+                        lockedBookmarkManager.removeBookmarks(Collections.singletonList(selectedNode.getBookmarkInfo()));
+                    } finally {
+                        lockedBookmarkManager.unlock();
+                    }
+                }
+            }
+        });
+        tableView.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                schedulePaneRefresh();
+            }
+        });
     }
     
     private void updateTableColumnSizes() {
@@ -330,62 +485,14 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
         locationColumn.setPreferredWidth(remainingWidth); // remaining space for location
     }
 
-    private void updateTreeRootContext(ExplorerManager treeExplorerManager) {
-        List<Project> prjs = BookmarksPersistence.get().allProjectsWithBookmarks();
-        Node[] nodes = new Node[prjs.size()];
-        int i = 0;
-        for (Project prj : prjs) {
-            ProjectBookmarksChildren children = new ProjectBookmarksChildren(prj);
-            LogicalViewProvider lvp = prj.getLookup().lookup(LogicalViewProvider.class);
-            Node prjNode = (lvp != null) ? lvp.createLogicalView() : null;
-            if (prjNode == null) {
-                prjNode = new AbstractNode(Children.LEAF);
-                prjNode.setDisplayName(children.getProjectDisplayName());
-            }
-            nodes[i++] = new FilterNode(prjNode, children);
-        }
-        // Sort by project's display name
-        Arrays.sort(nodes, new Comparator<Node>() {
-            @Override
-            public int compare(Node n1, Node n2) {
-                return ((ProjectBookmarksChildren)n1.getChildren()).getProjectDisplayName().compareTo(
-                        ((ProjectBookmarksChildren)n2.getChildren()).getProjectDisplayName());
-            }
-        });
-        Children rootChildren = new Children.Array();
-        rootChildren.add(nodes);
-        Node rootNode = new AbstractNode(rootChildren);
-        treeExplorerManager.setRootContext(rootNode);
-        updateTableNodes();
-    }
-    
-    private void updateTableNodes() {
-        if (tableView != null) {
-            List<BookmarkNode> bookmarkNodes = new ArrayList<BookmarkNode>();
-            collectBookmarkNodes(bookmarkNodes, getExplorerManager(treeView).getRootContext());
-            ((BookmarksTableModel)tableView.getTable().getModel()).setEntries(bookmarkNodes);
-        }
-    }
-    
-    private void collectBookmarkNodes(List<BookmarkNode> bookmarkNodes, Node n) {
-        if (n instanceof BookmarkNode) {
-            bookmarkNodes.add((BookmarkNode)n);
-        } else {
-            for (Node cn : n.getChildren().snapshot()) {
-                collectBookmarkNodes(bookmarkNodes, cn);
-            }
-        }
-    }
-    
     void requestFocusTreeOrTable() {
         if (treeViewShowing) {
-            treeView.requestFocus();
+            treeView.requestFocusInWindow();
         } else {
-            tableView.requestFocus();
+            tableView.getTable().requestFocusInWindow();
         }
         Node selectedNode = getSelectedNode();
         if (selectedNode == null) {
-            ExplorerManager explorerManager = getActiveExplorerManager();
             Children rootChildren = explorerManager.getRootContext().getChildren();
             if (rootChildren.getNodesCount() > 0) {
                 try {
@@ -397,15 +504,35 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
         }
     }
 
+    @Override
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        requestFocusTreeOrTable();
+        return isFocusable();
+    }
+    
     void refreshView() {
-//        updateTreeRootContext(getExplorerManager(treeView));
+        updateTreeRootContext(null);
         requestFocusTreeOrTable();
     }
 
     @Override
+    protected void componentActivated() {
+        super.componentActivated();
+        ExplorerUtils.activateActions(explorerManager, true);
+        requestFocusTreeOrTable();
+    }
+
+    @Override
+    protected void componentDeactivated() {
+        ExplorerUtils.activateActions(explorerManager, false);
+        super.componentDeactivated();
+    }
+    
+    @Override
     protected void componentShowing() {
-        // Load all bookmarks from all projects
-        BookmarksPersistence.get().ensureAllProjectsBookmarksLoaded();
+        // Ensure all bookmarks from all projects loaded
+        BookmarksPersistence.get().ensureAllOpenedProjectsBookmarksLoaded();
         initLayoutAndComponents();
         super.componentShowing();
     }
@@ -432,7 +559,7 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
         Node selectedNode = getSelectedNode();
         if (selectedNode instanceof BookmarkNode) {
             BookmarkNode bmNode = (BookmarkNode) selectedNode;
-            final BookmarkInfo bookmarkInfo = bmNode.getUpdatedInfo();
+            final BookmarkInfo bookmarkInfo = bmNode.getBookmarkInfo();
             if (bookmarkInfo != displayedBookmarkInfo) {
                 final FileObject fo = bmNode.getFileObject();
                 try {
@@ -471,13 +598,14 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
     
     void showPreview(FileObject fo, Document doc, BookmarkInfo bookmarkInfo) {
         if (bookmarkInfo != displayedBookmarkInfo) {
-            int lineIndex = bookmarkInfo.getLineIndex();
+            int lineIndex = bookmarkInfo.getCurrentLineIndex();
             String mimeType = (String) doc.getProperty("mimeType");
             if (mimeType != null) {
                 JEditorPane pane = new JEditorPane();
                 EditorKit editorKit = MimeLookup.getLookup(mimeType).lookup(EditorKit.class);
                 pane.setEditorKit(editorKit);
                 pane.setDocument(doc);
+                pane.setEditable(false);
                 Component editorComponent;
                 EditorUI editorUI = Utilities.getEditorUI(pane);
                 if (editorUI != null) {
@@ -488,7 +616,7 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
                 previewPanel.removeAll();
                 previewPanel.add(editorComponent);
 
-                int offset = BookmarksPersistence.lineIndex2Offset(doc, lineIndex);
+                int offset = BookmarkUtils.lineIndex2Offset(doc, lineIndex);
                 pane.setCaretPosition(offset);
                 displayedBookmarkInfo = bookmarkInfo;
                 
@@ -497,20 +625,16 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
         }
     }
     
-    private ExplorerManager getActiveExplorerManager() {
-        return getExplorerManager(treeViewShowing ? treeView : tableView);
-    }
-    
     Node getSelectedNode() {
         Node selectedNode = null;
         if (treeViewShowing) {
-            ExplorerManager explorerManager = getActiveExplorerManager();
             Node[] selectedNodes = explorerManager.getSelectedNodes();
             selectedNode = (selectedNodes.length > 0) ? selectedNodes[0] : null;
         } else {
-            int selectedRowIndex = tableView.getTable().getSelectedRow();
-            if (selectedRowIndex != -1) {
-                selectedNode = ((BookmarksTableModel)tableView.getTable().getModel()).getEntry(selectedRowIndex);
+            BookmarksTable table = tableView.getTable();
+            int selectedRowIndex = table.getSelectedRow();
+            if (selectedRowIndex != -1 && selectedRowIndex < table.getRowCount()) {
+                selectedNode = ((BookmarksTableModel)table.getModel()).getEntry(selectedRowIndex);
             }
         }
         return selectedNode;
@@ -524,8 +648,6 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
             // setDividerLocation() only works when layout is finished
             splitPane.setDividerLocation(0.5d);
             splitPane.setResizeWeight(0.5d); // Resize in the same proportions
-//            treeView.revalidate();
-//            repaint();
         }
     }
     
@@ -585,9 +707,7 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
         }
     }
     
-    private final class TreeOrTableContainer extends JPanel implements ExplorerManager.Provider {
-        
-        private ExplorerManager explorerManager;
+    private final class TreeOrTableContainer extends JPanel {
         
         TreeOrTableContainer() {
             // Use GridLayout since BorderLayout does not behave well inside JSplitPane's left component
@@ -596,33 +716,22 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
             fixScrollPaneinSplitPaneJDKIssue(this);
         }
 
-        @Override
-        public ExplorerManager getExplorerManager() {
-            if (explorerManager == null) {
-                explorerManager = new ExplorerManager();
-            }
-            return explorerManager;
-        }
-
     }
 
     private static final class ProjectBookmarksChildren extends Children.Keys<FileObject> {
         
-        Project prj;
-        
-        String prjDisplayName;
+        String projectDisplayName;
         
         ProjectBookmarks projectBookmarks;
         
-        ProjectBookmarksChildren(Project prj) {
-            prjDisplayName = ProjectUtils.getInformation(prj).getDisplayName();
-            this.projectBookmarks = BookmarksPersistence.get().getProjectBookmarks(prj, true, true);
-            FileObject[] fos = BookmarksPersistence.get().getSortedFileObjects(projectBookmarks);
-            setKeys(fos);
+        ProjectBookmarksChildren(ProjectBookmarks projectBookmarks, FileObject[] sortedFileObjects) {
+            this.projectBookmarks = projectBookmarks;
+            projectDisplayName = ProjectUtils.getInformation(projectBookmarks.getProject()).getDisplayName();
+            setKeys(sortedFileObjects);
         }
         
         String getProjectDisplayName() {
-            return prjDisplayName;
+            return projectDisplayName;
         }
 
         @Override
@@ -631,8 +740,8 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
                 DataObject dob = DataObject.find(fo);
                 Node node = dob.getNodeDelegate().cloneNode();
                 URL url = fo.toURL();
-                URLBookmarks urlBookmarks = projectBookmarks.get(url);
-                return new Node[] { new FilterNode(node, new URLBookmarksChildren(urlBookmarks, fo)) };
+                FileBookmarks urlBookmarks = projectBookmarks.get(url);
+                return new Node[] { new FilterNode(node, new FileBookmarksChildren(urlBookmarks, fo)) };
             } catch (DataObjectNotFoundException ex) {
                 throw new IllegalStateException(); // TODO generic node for FO
             }
@@ -640,53 +749,51 @@ public final class BookmarksView extends TopComponent implements ChangeListener,
 
     }
     
-    private static final class URLBookmarksChildren extends Children.Keys<Integer> {
+    private static final class FileBookmarksChildren extends Children.Array {
         
-        private URLBookmarks urlBookmarks;
+        private final FileBookmarks fileBookmarks;
         
-        private FileObject fo;
-        
-        URLBookmarksChildren(URLBookmarks urlBookmarks, FileObject fo) {
-            this.urlBookmarks = urlBookmarks;
-            this.fo = fo;
+        FileBookmarksChildren(FileBookmarks fileBookmarks, FileObject fo) {
+            super(toNodes(fileBookmarks));
+            this.fileBookmarks = fileBookmarks;
         }
-        
-        public FileObject getFileObject() { // Used by BookmarkNode
-            return fo;
-        }
-        
-        @Override
-        protected void addNotify() {
-            super.addNotify();
-            setKeys(Collections.singleton(1)); // Fake key
+
+        public FileBookmarks getFileBookmarks() {
+            return fileBookmarks;
         }
         
         @Override
-        protected Node[] createNodes(Integer fakeKey) {
-            Node[] bmNodes = null;
-            try {
-                DataObject dob = DataObject.find(fo);
-                EditorCookie ec = dob.getCookie(EditorCookie.class);
-                Document doc;
-                if (ec != null && ((doc = ec.getDocument()) != null)) {
-                    List<Bookmark> bmList = BookmarkList.get(doc).getBookmarks();
-                    bmNodes = new Node[bmList.size()];
-                    for (int i = 0; i < bmNodes.length; i++) {
-                        bmNodes[i] = new BookmarkNode(fo, bmList.get(i));
+        public boolean remove(Node[] arr) {
+            boolean ret = super.remove(arr);
+            if (ret) {
+                BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+                try {
+                    List<BookmarkInfo> removedBookmarks = new ArrayList<BookmarkInfo>(arr.length);
+                    for (Node n : arr) {
+                        removedBookmarks.add(((BookmarkNode)n).getBookmarkInfo());
                     }
-                }
-            } catch (DataObjectNotFoundException ex) {
-                // Use urlBookmarks in this case
-            }
-            
-            if (bmNodes == null) {
-                List<BookmarkInfo> bmInfos = urlBookmarks.getBookmarkInfos();
-                bmNodes = new Node[bmInfos.size()];
-                for (int i = 0; i < bmNodes.length; i++) {
-                    bmNodes[i] = new BookmarkNode(fo, bmInfos.get(i));
+                    lockedBookmarkManager.removeBookmarks(removedBookmarks);
+                } finally {
+                    lockedBookmarkManager.unlock();
                 }
             }
-            return bmNodes;
+            return ret;
+        }
+        
+        private static List<Node> toNodes(FileBookmarks fb) {
+            BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+            try {
+                List<BookmarkInfo> bookmarks = fb.getBookmarks();
+                List<Node> nodes = new ArrayList<Node>(bookmarks.size());
+                for (int i = 0; i < bookmarks.size(); i++) {
+                    BookmarkInfo bookmark = bookmarks.get(i);
+                    BookmarkNode bookmarkNode = new BookmarkNode(fb.getFileObject(), bookmark);
+                    nodes.add(bookmarkNode);
+                }
+                return nodes;
+            } finally {
+                lockedBookmarkManager.unlock();
+            }
         }
         
     }
