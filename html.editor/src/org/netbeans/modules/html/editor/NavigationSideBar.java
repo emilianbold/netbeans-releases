@@ -96,7 +96,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
         }
     };
     private boolean enabled = true;
-    List<OpenTag> nesting = new ArrayList<OpenTag>(5);
+    List<OpenTagInfo> nesting = new ArrayList<OpenTagInfo>(5);
 
     public NavigationSideBar() {
         doc = null;
@@ -133,7 +133,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
         allRoots.addAll(result.roots().values());
         allRoots.add(result.rootOfUndeclaredTagsParseTree());
 
-        List<OpenTag> nodesInPath = new ArrayList<OpenTag>();
+        List<OpenTagInfo> nodesInPath = new ArrayList<OpenTagInfo>();
         int astOffset = info.getSnapshot().getEmbeddedOffset(caretPosition);
         for (Node root : allRoots) {
             Element leaf = ElementUtils.findBySemanticRange(root, astOffset, false);
@@ -142,17 +142,18 @@ public class NavigationSideBar extends JPanel implements Accessible {
                 TreePath treePath = new TreePath(null, leaf);
                 for (Element node : treePath.path()) { //really brilliant wording!!!!
                     if (node.type() == ElementType.OPEN_TAG && !ElementUtils.isVirtualNode(node)) {
-                        nodesInPath.add((OpenTag)node);
+                        OpenTag openTag = (OpenTag)node;
+                        nodesInPath.add(new OpenTagInfo(openTag.name().toString(), openTag.from()));
                     }
                 }
             }
         }
         //sort by start offsets
-        Collections.sort(nodesInPath, new Comparator<Element>() {
+        Collections.sort(nodesInPath, new Comparator<OpenTagInfo>() {
 
             @Override
-            public int compare(Element o1, Element o2) {
-                return o1.from() - o2.from();
+            public int compare(OpenTagInfo o1, OpenTagInfo o2) {
+                return o1.getOffset() - o2.getOffset();
             }
         });
 
@@ -164,7 +165,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
     }
 
-    private void updateNestingInfo(final Result tsource, List<OpenTag> sortedPath) {
+    private void updateNestingInfo(final Result tsource, List<OpenTagInfo> sortedPath) {
         nesting = sortedPath;
 
         //update UI
@@ -181,12 +182,12 @@ public class NavigationSideBar extends JPanel implements Accessible {
     private void updatePanelUI(final Result tsource) {
         removeAll();
 
-        for (final OpenTag node : nesting) {
+        for (final OpenTagInfo node : nesting) {
             final JLabel label = new javax.swing.JLabel();
             label.setForeground(Color.BLACK);
             label.setFont(new Font("Monospaced", Font.PLAIN, (int) (getColoring().getFont().getSize() * .9))); // NOI18N
             label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            label.setText(getDrawText(node.name().toString()));
+            label.setText(getDrawText(node.getName()));
             label.addMouseListener(new java.awt.event.MouseAdapter() {
 
                 @Override
@@ -201,7 +202,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
                 @Override
                 public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    int documentOffset = tsource.getSnapshot().getOriginalOffset(node.from());
+                    int documentOffset = tsource.getSnapshot().getOriginalOffset(node.getOffset());
                     component.getCaret().setDot(documentOffset);
                 }
             });
@@ -262,7 +263,28 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
     static interface TestAccess {
 
-        public void updated(List<OpenTag> path);
+        public void updated(List<OpenTagInfo> path);
     }
+    
     private TestAccess testAccess;
+    
+    private static class OpenTagInfo {
+        
+        private String name;
+        private int offset;
+
+        public OpenTagInfo(String name, int offset) {
+            this.name = name;
+            this.offset = offset;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
+        
+    }
 }

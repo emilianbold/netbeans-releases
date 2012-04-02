@@ -306,7 +306,10 @@ public class AddUseImportHint extends AbstractRule {
         }
 
         @Override
-        @Messages("AddUseImportFix_Description=Generate \"{0}\"")
+        @Messages({
+            "# {0} - Use statement",
+            "AddUseImportFix_Description=Generate \"{0}\""
+        })
         public String getDescription() {
             return Bundle.AddUseImportFix_Description(getGeneratedCode());
         }
@@ -377,7 +380,10 @@ public class AddUseImportHint extends AbstractRule {
         }
 
         @Override
-        @Messages("ChangeNameFix_Description=Fix Name To \"{0}\"")
+        @Messages({
+            "# {0} - Fixed name",
+            "ChangeNameFix_Description=Fix Name To \"{0}\""
+        })
         public String getDescription() {
             return Bundle.ChangeNameFix_Description(getGeneratedCode());
         }
