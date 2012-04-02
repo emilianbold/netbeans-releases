@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,32 +34,67 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.openide.windows;
 
-package org.netbeans.modules.i18n.form;
-
-import org.netbeans.modules.form.FormPropertyEditorManager;
-import org.openide.modules.OnStart;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.lookup.Lookups;
 
 /**
- * Installation class for i18n to form cross dependency module.
- * It registers <code>FormI18nStringEditor</code> to form property editors.
  *
- * @author Peter Zavadsky
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@OnStart
-public class I18nFormCrossModule implements Runnable {
-    /** Registers property editor in form module and factory in i18n module. */
-    @Override
-    public void run() {
-        Class newEditorClass = FormI18nStringEditor.class;
-        Class newEditorClassInteger = FormI18nIntegerEditor.class;
-        Class newEditorClassMnemonic = FormI18nMnemonicEditor.class;
-              
-        // Register new property editor.
-        FormPropertyEditorManager.registerEditor (String.class, newEditorClass);
-        FormPropertyEditorManager.registerEditor (int.class, newEditorClassInteger);
-        FormPropertyEditorManager.registerEditor (int.class, newEditorClassMnemonic);
+final class OnShowingHandler implements LookupListener {
+    private final Set<String> onShowing = new HashSet<String>();
+    private final Lookup lkpShowing;
+    private final WindowManager wm;
+    private Lookup.Result<Runnable> resShow;
+    
+
+    OnShowingHandler(Lookup lkp, WindowManager wm) {
+        lkpShowing = lkp;
+        this.wm = wm;
+    }
+    
+    void initialize() {
+        for (Lookup.Item<Runnable> item : onShowing().allItems()) {
+            synchronized (onShowing) {
+                if (onShowing.add(item.getId())) {
+                    Runnable r = item.getInstance();
+                    if (r != null) {
+                        wm.invokeWhenUIReady(r);
+                    }
+                }
+            }
+        }
+        
     }
 
+    private synchronized Lookup.Result<Runnable> onShowing() {
+        if (resShow == null) {
+            Lookup lkp = lkpShowing != null ? lkpShowing : Lookups.forPath("Modules/UIReady"); // NOI18N
+            resShow = lkp.lookupResult(Runnable.class);
+            resShow.addLookupListener(this);
+        }
+        return resShow;
+    }
+
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        initialize();
+    }
 }
