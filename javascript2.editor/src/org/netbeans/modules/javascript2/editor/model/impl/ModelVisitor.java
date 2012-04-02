@@ -248,50 +248,15 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node visit(CallNode callNode, boolean onset) {
         if (onset) {
-//            Node calledFunction = callNode.getFunction();
-//            if (calledFunction instanceof AccessNode) {
-//                AccessNode aNode = (AccessNode)callNode.getFunction();
-//                if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) {
-//
-//                } else if(aNode.getBase() instanceof IdentNode){
-//                    List<Identifier> name = getName(aNode);
-//                    JsObject parent = ModelUtils.getJsObject(modelBuilder, name.subList(0, 1));
-//                    JsObject property;
-//
-//                    for (int i = 1; i < name.size(); i++) {
-//                        Identifier iden = name.get(i);
-//                        property = parent.getProperty(iden.getName());
-//                        if (property == null) {
-//                            if(!parent.isDeclared()) {
-//                                property = new JsObjectImpl(parent, iden, iden.getOffsetRange());
-//                                parent.addProperty(property.getName(), property);
-//                            }
-//                        }
-//                    }
-//
-                    for(Node argument : callNode.getArgs()) {
-                        if (argument instanceof IdentNode) {
-                            addOccurence((IdentNode)argument);
-                        }
-                    }
-//                    JsObject property = parent.getProperty(name.get(name.size() - 1).getName());
-//                    if (property ==  null && (parent.getParent() != null && (parent.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
-//                                || parent.getParent().getJSKind() == JsElement.Kind.OBJECT))) {
-//                        parent = parent.getParent();
-//                        property = parent.getProperty(name.get(0).getName());
-//                    }
-//                    if (property == null) {
-//                        parent = ModelUtils.getJsObject(modelBuilder, name.subList(0, name.size() - 1));
-//                        property = parent.getProperty(name.get(name.size() - 1).getName());
-//                    }
-//                    if (property != null) {
-//                        ((JsObjectImpl)property).addOccurrence(name.get(0).getOffsetRange());
-//                    } else {
-//                        property = new JsObjectImpl(parent, name.get(0), name.get(0).getOffsetRange());
-//                        parent.addProperty(property.getName(), property);
-//                    }
-//                }
-//            }
+            if (callNode.getFunction() instanceof IdentNode) {
+                addOccurence((IdentNode)callNode.getFunction());
+            }
+            for (Node argument : callNode.getArgs()) {
+                if (argument instanceof IdentNode) {
+                    addOccurence((IdentNode) argument);
+                }
+            }
+                    
         } 
             
         return super.visit(callNode, onset);

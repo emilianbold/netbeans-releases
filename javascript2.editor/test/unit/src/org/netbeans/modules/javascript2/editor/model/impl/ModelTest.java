@@ -310,7 +310,7 @@ public class ModelTest extends JsTestBase {
         assertNotNull(model);
         
         JsObject  global = model.getGlobalObject();
-        assertEquals(4, global.getProperties().size());
+        assertEquals(5, global.getProperties().size());
         
         JsObject object = global.getProperty("Kolo");
         assertEquals(JsElement.Kind.CONSTRUCTOR, object.getJSKind());
@@ -588,7 +588,7 @@ public class ModelTest extends JsTestBase {
         assertNotNull(model);
         
         JsObject global = model.getGlobalObject();
-        assertEquals(1, global.getProperties().size());
+        assertEquals(2, global.getProperties().size());
         
         JsFunctionImpl function = (JsFunctionImpl)global.getProperty("$function");
         assertTrue(function.isAnonymous());
