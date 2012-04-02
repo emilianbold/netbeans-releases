@@ -99,8 +99,6 @@ import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
@@ -329,10 +327,6 @@ class WebActionProvider extends BaseActionProvider {
             String targetNames[];
             if (command.equals(COMMAND_DEBUG_SINGLE)) {
                 targetNames = new String[]{"debug"};
-                boolean keepDebugging = setJavaScriptDebuggerProperties(p);
-                if (!keepDebugging) {
-                    return null;
-                }
             } else if (command.equals(COMMAND_PROFILE_SINGLE)) {
                 targetNames = new String[]{"profile"};
             } else {
@@ -391,10 +385,6 @@ class WebActionProvider extends BaseActionProvider {
             initWebServiceProperties(p);
         } else if (command.equals(COMMAND_DEBUG)) {
             if (!isSelectedServer()) {
-                return null;
-            }
-            boolean keepDebugging = setJavaScriptDebuggerProperties(p);
-            if (!keepDebugging) {
                 return null;
             }
             initWebServiceProperties(p);
@@ -635,29 +625,6 @@ class WebActionProvider extends BaseActionProvider {
                     NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
             return false;
-        }
-    }
-
-    private boolean setJavaScriptDebuggerProperties(Properties p) {
-        if (!WebClientToolsSessionStarterService.isAvailable()) {
-            // If JavaScript debugger is not available, set to server debugging only
-            p.setProperty("debug.client", "false"); // NOI18N
-            p.setProperty("debug.server", "true"); // NOI18N
-            return true;
-        } else {
-            // display Debug Project Dialog
-            boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(getProject());
-            if (!keepDebugging) {
-                return false;
-            }
-
-            boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(getProject());
-            boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(getProject());
-
-            p.setProperty("debug.client", String.valueOf(debugClient)); // NOI18N
-            p.setProperty("debug.server", String.valueOf(debugServer)); // NOI18N
-
-            return true;
         }
     }
 
