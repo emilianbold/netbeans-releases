@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.simpleunit.utils;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.builds.MakefileTargetProvider;
@@ -113,7 +114,12 @@ public class MakefileUtils {
                 .append("\n") // NOI18N
                 .append(".test-post: .test-impl\n") // NOI18N
                 .append("# Add your post 'test' code here...\n"); // NOI18N
-            makefile.getOutputStream().write(makefiledata.toString().getBytes());
+            OutputStream outputStream = makefile.getOutputStream();
+            try {
+                outputStream.write(makefiledata.toString().getBytes());
+            } finally {
+                outputStream.close();
+            }
         } catch (IOException ex) {
         }
     }

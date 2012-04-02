@@ -108,6 +108,10 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
         return super.getModified() || getCppStandard().getModified();
     }    
     
+    public boolean isCppStandardChanged() {
+        return getCppStandard().getDirty() && getCppStandard().getPreviousValue() != getInheritedCppStandard();
+    }
+    
     // Cloning
     @Override
     public CCCompilerConfiguration clone() {
@@ -153,7 +157,6 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
         options += compiler.getLanguageExtOptions(getLanguageExt().getValue()) + " "; // NOI18N
         //options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
         options += compiler.getSixtyfourBitsOption(getSixtyfourBits().getValue()) + " "; // NOI18N
-        options += compiler.getCppStandardOptions(getCppStandard().getValue()) + " "; // NOI18N              
         if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(DEVELOPMENT_MODE_TEST);
         }
@@ -197,12 +200,21 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
         options += getPreprocessorOptions(compiler.getCompilerSet());
         options += getIncludeDirectoriesOptions(compiler.getCompilerSet());
         options += getLibrariesFlags();
-        if (getCppStandard().getValue() != STANDARD_INHERITED) {
-            options += compiler.getCppStandardOptions(getCppStandard().getValue());
-        }
+        options += compiler.getCppStandardOptions(getInheritedCppStandard());
         return CppUtils.reformatWhitespaces(options);
     }
 
+    public int getInheritedCppStandard() {
+        CCCompilerConfiguration master = this;
+        while (master != null) {
+            if (master.getCppStandard().getValue() != STANDARD_INHERITED) {
+                return master.getCppStandard().getValue();
+            }
+            master = (CCCompilerConfiguration) master.getMaster();
+        }
+        return STANDARDS_DEFAULT;
+    }
+    
     public String getPreprocessorOptions(CompilerSet cs) {
         CCCompilerConfiguration master = (CCCompilerConfiguration)getMaster();
         OptionToString visitor = new OptionToString(null, getUserMacroFlag(cs));
@@ -308,7 +320,8 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
                     }
                 }
             }
-        } else if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE && item == null && folder == null) {
+        }  
+        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
             set0.put(standardProp);
         }
         
