@@ -74,6 +74,7 @@ public class JsInstantRenamer implements InstantRenamer {
         
         if (occurrence != null && !occurrence.getDeclarations().isEmpty()) {
             JsObject declaration = occurrence.getDeclarations().iterator().next();
+            result.add(declaration.getDeclarationName().getOffsetRange());
             for(Occurrence occur : declaration.getOccurrences()) {
                 result.add(occur.getOffsetRange());
             }
