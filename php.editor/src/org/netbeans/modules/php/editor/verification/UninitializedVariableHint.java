@@ -126,7 +126,10 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
             return hints;
         }
 
-        @Messages("UninitializedVariableVariableHintCustom=Variable ${0} seems to be uninitialized")
+        @Messages({
+            "# {0} - Name of the variable",
+            "UninitializedVariableVariableHintCustom=Variable ${0} seems to be uninitialized"
+        })
         private void createHints(List<Variable> uninitializedVariables) {
             for (Variable variable : uninitializedVariables) {
                 int start = variable.getStartOffset() + 1;
