@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.html.editor.lib.plain;
 
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 
@@ -70,7 +73,7 @@ public class DeclarationElement extends AbstractElement implements Declaration {
      * @param doctypeFile system identifier for this DOCTYPE, if available. null
      * otherwise.
      */
-    public DeclarationElement(CharSequence document, int from, int length,
+    public DeclarationElement(CharSequence document, int from, short length,
             String doctypeRootElement,
             String doctypePI, String doctypeFile, String doctypeName) {
         super(document, from, length);
@@ -121,4 +124,6 @@ public class DeclarationElement extends AbstractElement implements Declaration {
     public CharSequence rootElementName() {
         return root;
     }
+
+   
 }
