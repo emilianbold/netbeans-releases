@@ -42,9 +42,11 @@
 package org.netbeans.modules.editor.bookmarks.ui;
 
 import java.awt.Point;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
@@ -71,21 +73,15 @@ public class BookmarksTable extends ETable {
         setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
-        TableColumnModel columnModel = getColumnModel();
+        TableColumnModel colModel = getColumnModel();
         TableColumn col;
-        col = columnModel.getColumn(BookmarksTableModel.NAME_COLUMN);
-//        col.setCellRenderer(getDefaultRenderer(String.class));
-//        col.setCellEditor(null);
+        col = colModel.getColumn(BookmarksTableModel.NAME_COLUMN);
         col.setHeaderValue(NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkName"));
 
-        col = columnModel.getColumn(BookmarksTableModel.KEY_COLUMN);
-//        col.setCellRenderer(getDefaultRenderer(String.class));
-//        col.setCellEditor(null);
+        col = colModel.getColumn(BookmarksTableModel.KEY_COLUMN);
         col.setHeaderValue(NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkKeySingleLetter"));
 
-        col = columnModel.getColumn(BookmarksTableModel.LOCATION_COLUMN);
-//        col.setCellRenderer(getDefaultRenderer(String.class));
-//        col.setCellEditor(null);
+        col = colModel.getColumn(BookmarksTableModel.LOCATION_COLUMN);
         col.setHeaderValue(NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkLocation"));
 
         getTableHeader().addMouseMotionListener(new MouseMotionAdapter() {
@@ -98,6 +94,8 @@ public class BookmarksTable extends ETable {
                 }
             }
         });
+        
+        getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete"); // NOI18N
     }
     
     private String getHeaderToolTipText(int columnIndex) {

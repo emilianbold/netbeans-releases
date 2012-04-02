@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.editor.fxml;
+package org.netbeans.modules.editor.bookmarks;
 
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
+import java.util.EventObject;
+import java.util.List;
 
 /**
+ * Event describing changes in bookmark manager.
  *
- * @author Anton Chechel
+ * @author Miloslav Metelka
  */
-public final class FXMLMultiViewHelper {
+public final class BookmarkManagerEvent extends EventObject {
     
-    private FXMLMultiViewHelper() {
+    private final List<BookmarkChange> bookmarkChanges;
+    
+    BookmarkManagerEvent(BookmarkManager boookmarkManager, List<BookmarkChange> bookmarkChanges) {
+        super(boookmarkManager);
+        assert (bookmarkChanges != null) : "Null bookmarkChanges";
+        this.bookmarkChanges = bookmarkChanges;
     }
-    
-    @MultiViewElement.Registration(
-        displayName="org.netbeans.modules.javafx2.editor.Bundle#CTL_SourceTabCaption", // NOI18N
-        iconBase="org/netbeans/modules/javafx2/editor/resources/fxmlObject.png", // NOI18N
-        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
-        preferredID="xml.text", // NOI18N
-        mimeType=JavaFXEditorUtils.MIME_TYPE,
-        position=1
-    )
-    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
-        return new MultiViewEditorElement(context);
+
+    public List<BookmarkChange> getBookmarkChanges() {
+        return bookmarkChanges;
     }
     
 }

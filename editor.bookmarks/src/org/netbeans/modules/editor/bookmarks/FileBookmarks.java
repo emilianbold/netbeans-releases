@@ -42,25 +42,33 @@
 package org.netbeans.modules.editor.bookmarks;
 
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 
 /**
  * Bookmarks for a file represented by URL.
  *
  * @author Miloslav Metelka
  */
-public class URLBookmarks {
+public class FileBookmarks {
     
     private final ProjectBookmarks projectBookmarks; // Useful when a source file was moved between projects
 
     private final URL url;
     
-    private List<BookmarkInfo> bookmarkInfos; // Sorted by line number
+    private FileObject fileObject;
     
-    URLBookmarks(ProjectBookmarks projectBookmarks, URL url, List<BookmarkInfo> bookmarkInfos) {
+    private List<BookmarkInfo> bookmarks; // Sorted by line number
+    
+    FileBookmarks(ProjectBookmarks projectBookmarks, URL url, List<BookmarkInfo> bookmarks) {
         this.projectBookmarks = projectBookmarks;
         this.url = url;
-        this.bookmarkInfos = bookmarkInfos;
+        this.bookmarks = bookmarks;
+        for (BookmarkInfo bookmark : bookmarks) {
+            bookmark.setFileBookmarks(this);
+        }
     }
 
     public ProjectBookmarks getProjectBookmarks() {
@@ -70,9 +78,28 @@ public class URLBookmarks {
     public URL getUrl() {
         return url;
     }
+
+    public FileObject getFileObject() {
+        if (fileObject == null) {
+            fileObject = URLMapper.findFileObject(url);
+        }
+        return fileObject;
+    }
     
-    public List<BookmarkInfo> getBookmarkInfos() {
-        return bookmarkInfos;
+    public List<BookmarkInfo> getBookmarks() {
+        return bookmarks;
+    }
+    
+    public void add(BookmarkInfo bookmark) {
+        bookmarks.add(bookmark);
+        Collections.sort(bookmarks, BookmarkInfo.CURRENT_LINE_COMPARATOR);
+    }
+
+    public boolean remove(BookmarkInfo bookmark) {
+        if (!projectBookmarks.isRemoved()) {
+            return bookmarks.remove(bookmark);
+        }
+        return false;
     }
 
 }
