@@ -153,7 +153,8 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
                     @Override
                     public boolean accepts(Attribute attribute) {
-                        return LexerUtils.equals("xmlns", attribute.namespacePrefix(), true, true); //NOI18N
+                        CharSequence nsPrefix = attribute.namespacePrefix();
+                        return nsPrefix != null ? LexerUtils.equals("xmlns", nsPrefix, true, true) : false; //NOI18N
                     }
                 });
                 
