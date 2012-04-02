@@ -139,9 +139,9 @@ public class WorkingCopy extends CompilationController {
         textualChanges = new HashSet<Diff>();
         userInfo = new HashMap<Integer, String>();
 
-        if (getContext().get(ElementOverlay.class) == null) {
-            getContext().put(ElementOverlay.class, overlay);
-        }
+        //#208490: force the current ElementOverlay:
+        getContext().put(ElementOverlay.class, (ElementOverlay) null);
+        getContext().put(ElementOverlay.class, overlay);
     }
     
     private Context getContext() {
