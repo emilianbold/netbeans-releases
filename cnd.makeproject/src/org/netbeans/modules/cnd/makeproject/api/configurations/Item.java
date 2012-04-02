@@ -476,7 +476,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public final void onClose() {
-        DataObject dao = getDataObject();
+        DataObject dao = lastDataObject;
         if (dao != null) {
             dao.removePropertyChangeListener(this);
             NativeFileItemSet set = dao.getCookie(NativeFileItemSet.class);
@@ -783,19 +783,35 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             itemConfiguration = getItemConfiguration(makeConfiguration);
         }
         if (itemConfiguration != null && itemConfiguration.isCompilerToolConfiguration()) {
-            flavor = itemConfiguration.getLanguageFlavor();
-            if (flavor == LanguageFlavor.UNKNOWN) {
-                CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
-                if (compilerSet != null) {
-                    Tool tool = compilerSet.getTool(itemConfiguration.getTool());
-                    if (tool instanceof AbstractCompiler) {
-                        AbstractCompiler compiler = (AbstractCompiler) tool;
-                        if (itemConfiguration.isCompilerToolConfiguration()) {
-                            BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
-                            if (compilerConfiguration != null) {
-                                flavor = SPI_ACCESSOR.getLanguageFlavor(compilerConfiguration, compiler, makeConfiguration);
-                            }
+            CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+            if (compilerSet != null) {
+                Tool tool = compilerSet.getTool(itemConfiguration.getTool());
+                if (tool instanceof AbstractCompiler) {
+                    AbstractCompiler compiler = (AbstractCompiler) tool;
+                    if (itemConfiguration.isCompilerToolConfiguration()) {
+                        BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+                        if (compilerConfiguration != null) {
+                            flavor = SPI_ACCESSOR.getLanguageFlavor(compilerConfiguration, compiler, makeConfiguration);
                         }
+                    }
+                }
+            }
+            if (flavor == LanguageFlavor.UNKNOWN) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+                    switch (itemConfiguration.getCCompilerConfiguration().getInheritedCStandard()) {
+                        case CCompilerConfiguration.STANDARD_C99:
+                            return LanguageFlavor.C99;
+                        case CCompilerConfiguration.STANDARD_C89:
+                        case CCompilerConfiguration.STANDARD_DEFAULT:
+                            return LanguageFlavor.C89;
+                    }
+                } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                    switch (itemConfiguration.getCCCompilerConfiguration().getInheritedCppStandard()) {
+                        case CCCompilerConfiguration.STANDARD_CPP11:
+                            return LanguageFlavor.CPP11;
+                        case CCCompilerConfiguration.STANDARD_CPP98:
+                        case CCCompilerConfiguration.STANDARD_DEFAULT:
+                            return LanguageFlavor.CPP;
                     }
                 }
             }

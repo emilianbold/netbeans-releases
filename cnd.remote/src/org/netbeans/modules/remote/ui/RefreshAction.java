@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.core.api;
+package org.netbeans.modules.remote.ui;
 
-import java.io.File;
-import org.netbeans.modules.versioning.core.APIAccessor;
+import java.util.Arrays;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author tomas
+ * @author Vladimir Kvashin
  */
-class APIAccessorImpl extends APIAccessor {
+@ActionID(id = "org.netbeans.modules.remote.ui.RefreshAction", category = "NativeRemote")
+@ActionRegistration(displayName = "RefreshMenuItem")
+@ActionReference(path = "Remote/Host/Actions", name = "RefreshAction", position = 99999)
+public class RefreshAction extends SingleHostAction {
 
     @Override
-    public VCSFileProxy createFlatFileProxy(FileObject fo) {
-        VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
-        if(proxy != null) {
-            proxy.setFlat(true);
-        }
-        return proxy;
+    public String getName() {
+        return NbBundle.getMessage(HostListRootNode.class, "RefreshMenuItem");
     }
 
     @Override
-    public boolean isFlat(VCSFileProxy file) {
-        return file.isFlat();
-    }
-    
-    @Override
-    public VCSFileProxy createFileProxy(File file, boolean isDirectory) {
-        return VCSFileProxy.createFileProxy(file, isDirectory);
+    protected boolean enable(ExecutionEnvironment env) {
+        return env.isRemote() && ConnectionManager.getInstance().isConnectedTo(env);
     }
 
     @Override
-    public VCSFileProxy createFileProxy(VCSFileProxy parent, String name, boolean isDirectory) {
-        return VCSFileProxy.createFileProxy(parent, name, isDirectory);
+    public boolean isVisible(Node node) {
+        ExecutionEnvironment env = node.getLookup().lookup(ExecutionEnvironment.class);
+        return env != null && env.isRemote() && Boolean.getBoolean("remote.host.actions.refresh");
     }
 
     @Override
-    public boolean isLocalFile(VCSFileProxy file) {
-        return file.getFileProxyOperations() == null;
-    }
-
-    @Override
-    public VCSFileProxy createFileProxy(String path) {
-        return VCSFileProxy.createFileProxy(path);
+    protected void performAction(final ExecutionEnvironment env, Node node) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                    FileObject rootFO = FileSystemProvider.getFileObject(env, "/");
+                    if (rootFO!= null) {
+                        FileSystemProvider.scheduleRefresh(rootFO);
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(RefreshAction.class, "RefreshScheduled", env.getDisplayName()));
+                    }
+                }
+            }
+        });
     }
 }
