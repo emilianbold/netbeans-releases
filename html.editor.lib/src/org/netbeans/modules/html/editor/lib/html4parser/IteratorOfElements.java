@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,71 +34,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api;
+package org.netbeans.modules.html.editor.lib.html4parser;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementsIterator;
 
 /**
- * Plain HTML syntax analyzer
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-@Deprecated
-public final class SyntaxAnalyzer extends ElementsIterator {
+public class IteratorOfElements {
+    
+    private Iterator<Element> iterator;
 
-    public enum Behaviour {
+    public IteratorOfElements(Iterator<Element> iterator) {
+        this.iterator = iterator;
+    }
 
-        /**
-         * set as SyntaxParserContext property if you do not want to check html
-         * structure
-         */
-        DISABLE_STRUCTURE_CHECKS,
-        /**
-         * set as SyntaxParserContext property if you do not want to check html
-         * attributes
-         */
-        DISABLE_ATTRIBUTES_CHECKS
+    public Iterator<Element> getIterator() {
+        return iterator;
     }
     
-    private HtmlSource source;
-
-    public static SyntaxAnalyzer create(HtmlSource source) {
-        return new SyntaxAnalyzer(source);
-    }
-
-    private SyntaxAnalyzer(HtmlSource source) {
-        super(source);
-        this.source = source;
-    }
-
-    public SyntaxAnalyzerResult analyze() {
-        return new SyntaxAnalyzerResult(source);
-    }
-
-    public SyntaxAnalyzerResult analyze(UndeclaredContentResolver resolver) {
-        return new SyntaxAnalyzerResult(source, resolver);
-    }
-
-    public HtmlSource source() {
-        return source;
-    }
-
-    public synchronized Iterator<Element> elementsIterator() {
-        return this;
-    }
-
-    public synchronized SyntaxAnalyzerElements elements() {
-        List<Element> result = new ArrayList<Element>();
-        Iterator<Element> elementsIterator = elementsIterator();
-        while (elementsIterator.hasNext()) {
-            result.add(elementsIterator.next());
-        }
-        return new SyntaxAnalyzerElements(result);
-    }
-
 }

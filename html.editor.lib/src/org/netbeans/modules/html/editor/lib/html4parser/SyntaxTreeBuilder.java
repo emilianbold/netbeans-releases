@@ -89,7 +89,7 @@ public class SyntaxTreeBuilder {
     private static final Context context = new Context();
     //XXX <<<
 
-    public static Node makeTree(HtmlSource source, HtmlVersion version, Collection<org.netbeans.modules.html.editor.lib.api.elements.Element> elements) {
+    public static Node makeTree(HtmlSource source, HtmlVersion version, Iterator<org.netbeans.modules.html.editor.lib.api.elements.Element> elements) {
         DTD dtd = version.getDTD();
 
         assert elements != null;
@@ -103,8 +103,8 @@ public class SyntaxTreeBuilder {
         LinkedList<AstNode> stack = new LinkedList<AstNode>();
         stack.add(rootNode);
 
-        for (org.netbeans.modules.html.editor.lib.api.elements.Element element : elements) {
-
+        while(elements.hasNext()) {
+            org.netbeans.modules.html.editor.lib.api.elements.Element element = elements.next();
             if (element.type() == ElementType.OPEN_TAG) { //open tag
 
                 OpenTag tagElement = (OpenTag) element;
