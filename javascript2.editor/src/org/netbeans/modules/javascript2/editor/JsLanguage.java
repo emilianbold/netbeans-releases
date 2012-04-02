@@ -52,6 +52,7 @@ import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
 import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.model.impl.JsInstantRenamer;
 import org.netbeans.modules.javascript2.editor.navigation.DeclarationFinderImpl;
 import org.netbeans.modules.javascript2.editor.navigation.OccurrencesFinderImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParser;
@@ -156,4 +157,10 @@ public class JsLanguage extends DefaultLanguageConfig {
         return true;
     }
 
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return new JsInstantRenamer();
+    }
+
+    
 }
