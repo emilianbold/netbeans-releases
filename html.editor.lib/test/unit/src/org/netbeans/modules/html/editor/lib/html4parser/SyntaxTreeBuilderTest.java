@@ -605,6 +605,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
         ElementVisitor visitor = new ElementVisitor() {
             public void visit(Element node) {
                 for(ProblemDescription d : node.problems()) {
+                    assertNotNull(d);
                     assertTrue("Unexpected error description: " + d.dump(code), errorsItr.hasNext());
                     assertEquals(errorsItr.next(), d);
                 }

@@ -49,23 +49,16 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  *
  * @author marekfukala
  */
-public class OpenTagElement extends AbstractNamedElement implements OpenTag {
+public class OpenTagElement extends AttributelessOpenTagElement implements OpenTag {
 
     private List<Attribute> attribs;
-    private boolean empty;
 
-    public OpenTagElement(CharSequence document, int from, int length,
-            CharSequence name,
+    public OpenTagElement(CharSequence document, int from, short length,
+            byte nameLen,
             List<Attribute> attribs,
             boolean isEmpty) {
-        super(document, from, length, name);
+        super(document, from, length, nameLen, isEmpty);
         this.attribs = attribs;
-        this.empty = isEmpty;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return empty;
     }
 
     @Override
@@ -74,7 +67,7 @@ public class OpenTagElement extends AbstractNamedElement implements OpenTag {
     }
 
     @Override
-     public Collection<Attribute> attributes(AttributeFilter filter) {
+    public Collection<Attribute> attributes(AttributeFilter filter) {
         Collection<Attribute> filtered = new ArrayList<Attribute>(attributes().size() / 2);
         for (Attribute attr : attributes()) {
             if (filter.accepts(attr)) {
@@ -98,56 +91,5 @@ public class OpenTagElement extends AbstractNamedElement implements OpenTag {
         return null;
     }
 
-    @Override
-    public ElementType type() {
-        return ElementType.OPEN_TAG;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder ret = new StringBuilder(super.toString());
-        ret.append(" - {");   // NOI18N
-
-        for (Iterator i = attributes().iterator(); i.hasNext();) {
-            ret.append(i.next());
-            ret.append(", ");    // NOI18N
-        }
-
-        ret.append("}");      //NOI18N
-        if (isEmpty()) {
-            ret.append(" (EMPTY TAG)"); //NOI18N
-        }
-        return ret.toString();
-    }
-
-    @Override
-    public CloseTag matchingCloseTag() {
-        return null;
-    }
-
-    @Override
-    public int semanticEnd() {
-        return to();
-    }
-
-    @Override
-    public Collection<Element> children() {
-        return null;
-    }
-
-    @Override
-    public Collection<Element> children(ElementType type) {
-        return null;
-    }
-
-    @Override
-    public Collection<Element> children(ElementFilter filter) {
-        return null;
-    }
-
-    @Override
-    public <T extends Element> Collection<T> children(Class<T> type) {
-        return null;
-    }
-    
+  
 }

@@ -45,6 +45,7 @@ package org.netbeans.modules.html.palette.items;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -52,10 +53,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.palette.HtmlPaletteUtilities;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.text.ActiveEditorDrop;
@@ -166,8 +164,10 @@ public class RADIO implements ActiveEditorDrop {
 
         List<String> names = new ArrayList<String>();
         //search for the input tags
-        Collection<Element> elements = SyntaxAnalyzer.create(new HtmlSource(code)).analyze().getElements().items();
-        for (Element e : elements) {
+        HtmlSource source = new HtmlSource(code);
+        Iterator<Element> elements = new ElementsIterator(source);
+        while(elements.hasNext()) {
+            Element e = elements.next();
             if (e.type() == ElementType.OPEN_TAG) {
                 OpenTag tag = (OpenTag) e;
                 if (LexerUtils.equals("input", tag.name(), true, true)) { //NOI18N

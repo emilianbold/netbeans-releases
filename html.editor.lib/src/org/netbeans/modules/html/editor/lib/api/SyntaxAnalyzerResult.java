@@ -47,6 +47,7 @@ import org.netbeans.modules.html.editor.lib.EmptyResult;
 import org.netbeans.modules.html.editor.lib.HtmlSourceVersionQuery;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import org.netbeans.modules.html.editor.lib.html4parser.IteratorOfElements;
 import org.netbeans.modules.html.editor.lib.html4parser.XmlSyntaxTreeBuilder;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
@@ -62,41 +63,45 @@ import org.openide.util.lookup.InstanceContent;
 public class SyntaxAnalyzerResult {
 
     private static final String NAMESPACE_PROPERTY = "namespace"; //NOI18N
-    
-    /** special namespace which can be used for obtaining a parse tree
-     * of tags with undeclared namespace.
+    /**
+     * special namespace which can be used for obtaining a parse tree of tags
+     * with undeclared namespace.
      */
-    private SyntaxAnalyzer analyzer;
     private AtomicReference<Declaration> declaration;
     private HtmlVersion detectedHtmlVersion;
-
     private HtmlParseResult htmlParseResult;
     //ns URI to AstNode map
     private Map<String, ParseResult> embeddedCodeParseResults;
     //ns URI to PREFIX map
     private Map<String, Collection<String>> namespaces;
-
     private ParseResult undeclaredEmbeddedCodeParseResult;
-
     private Set<String> allPrefixes;
-    
     private UndeclaredContentResolver resolver;
+    private HtmlSource source;
 
-    SyntaxAnalyzerResult(SyntaxAnalyzer source) {
+    SyntaxAnalyzerResult(HtmlSource source) {
         this(source, null);
     }
-    
-    SyntaxAnalyzerResult(SyntaxAnalyzer source, UndeclaredContentResolver resolver) {
-        this.analyzer = source;
+
+    SyntaxAnalyzerResult(HtmlSource source, UndeclaredContentResolver resolver) {
+        this.source = source;
         this.resolver = resolver;
     }
 
     public HtmlSource getSource() {
-        return analyzer.source();
+        return source;
     }
 
+    public Iterator<Element> getElementsIterator() {
+        return new ElementsIterator(source);
+    }
+    
+    /**
+     * @deprecated use {@link #getElementsIterator() } instead
+     */
+    @Deprecated
     public SyntaxAnalyzerElements getElements() {
-        return analyzer.elements();
+        return SyntaxAnalyzer.create(source).elements();
     }
 
     public HtmlVersion getHtmlVersion() {
@@ -105,20 +110,19 @@ public class SyntaxAnalyzerResult {
         if (found != null) {
             return found;
         }
-        return detected != null ? detected : 
-            mayBeXhtml() ? HtmlVersion.getDefaultXhtmlVersion() : HtmlVersion.getDefaultVersion(); //fallback if nothing can be determined
+        return detected != null ? detected
+                : mayBeXhtml() ? HtmlVersion.getDefaultXhtmlVersion() : HtmlVersion.getDefaultVersion(); //fallback if nothing can be determined
     }
-    
+
     public HtmlModel getHtmlModel() {
         return findParser().getModel(getHtmlVersion());
     }
 
     /**
-     * Returns an html version for the specified parser result input.
-     * The return value depends on:
-     * 1) doctype declaration content
-     * 2) if not present, xhtml file extension
-     * 3) if not xhtml extension, present of default XHTML namespace declaration
+     * Returns an html version for the specified parser result input. The return
+     * value depends on: 1) doctype declaration content 2) if not present, xhtml
+     * file extension 3) if not xhtml extension, present of default XHTML
+     * namespace declaration
      *
      */
     public synchronized HtmlVersion getDetectedHtmlVersion() {
@@ -150,16 +154,15 @@ public class SyntaxAnalyzerResult {
     public Collection<ParseResult> getAllParseResults() throws ParseException {
         Collection<ParseResult> all = new ArrayList<ParseResult>();
         all.add(parseHtml());
-        for(String ns : getAllDeclaredNamespaces().keySet()) {
+        for (String ns : getAllDeclaredNamespaces().keySet()) {
             all.add(parseEmbeddedCode(ns));
         }
         all.add(parseUndeclaredEmbeddedCode());
         return all;
     }
 
-
     public synchronized HtmlParseResult parseHtml() throws ParseException {
-        if(htmlParseResult == null) {
+        if (htmlParseResult == null) {
             htmlParseResult = doParseHtml();
         }
         return htmlParseResult;
@@ -184,8 +187,35 @@ public class SyntaxAnalyzerResult {
                 : null;
 
 
-        LocalSourceContext context = createLocalContext(new TagsFilter() {
+        Iterator<Element> original = new ElementsIterator(source);
+        Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
+            @Override
+            public boolean accepts(Element node) {
+                switch (node.type()) {
+                    case OPEN_TAG:
+                    case CLOSE_TAG:
+                        Named named = (Named) node;
+                        CharSequence prefix = named.namespacePrefix();
 
+                        if (prefix == null) {
+                            return true; //default namespace, should be html in most cases
+                        }
+                        if (prefixes != null) {
+                            if (prefixes.contains(prefix.toString())) {
+                                //the prefix is mapped to the html namespace
+                                return true;
+                            }
+                        }
+                        break;
+                    default:
+                        return true;
+                }
+                return false;
+            }
+        });
+
+
+        LocalSourceContext context = createLocalContext(new TagsFilter() {
             @Override
             public boolean accepts(Named tag, CharSequence prefix) {
                 if (prefix == null) {
@@ -203,26 +233,25 @@ public class SyntaxAnalyzerResult {
         });
 
         CharSequence clearedSource = clearIgnoredAreas(getSource().getSourceCode(), context.getIgnoredAreas());
-        List<Element> filtered = context.getFiltered();
 
         //create a new html source with the cleared areas
-        HtmlSource source = new HtmlSource(clearedSource, analyzer.source().getSnapshot() , analyzer.source().getSourceFileObject());
+        HtmlSource newSource = new HtmlSource(clearedSource, source.getSnapshot(), source.getSourceFileObject());
 
         //add the syntax elements to the lookup since the old html4 parser needs them
         InstanceContent content = new InstanceContent();
-        content.add(new SyntaxAnalyzerElements(filtered));
+        content.add(new IteratorOfElements(filteredIterator));
         Lookup lookup = new AbstractLookup(content);
 
-        return parser.parse(source, getHtmlVersion(), lookup);
+        return parser.parse(newSource, getHtmlVersion(), lookup);
 
     }
 
     public synchronized ParseResult parseEmbeddedCode(String namespace) throws ParseException {
-        if(embeddedCodeParseResults == null) {
+        if (embeddedCodeParseResults == null) {
             embeddedCodeParseResults = new HashMap<String, ParseResult>();
         }
         ParseResult result = embeddedCodeParseResults.get(namespace);
-        if(result == null) {
+        if (result == null) {
             result = doParseEmbeddedCode(namespace);
             embeddedCodeParseResults.put(namespace, result);
         }
@@ -231,68 +260,88 @@ public class SyntaxAnalyzerResult {
 
     private ParseResult doParseEmbeddedCode(String namespace) throws ParseException {
         final Collection<String> prefixes = getAllDeclaredNamespaces().get(namespace);
-        if(prefixes == null || prefixes.isEmpty()) {
+        if (prefixes == null || prefixes.isEmpty()) {
             return new EmptyResult(getSource());
         }
 
-        LocalSourceContext context = createLocalContext(new TagsFilter() {
-
+        Iterator<Element> original = new ElementsIterator(source);
+        Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
             @Override
-            public boolean accepts(Named tag, CharSequence prefix) {
-                return prefix != null && prefixes.contains(prefix.toString());
+            public boolean accepts(Element node) {
+                switch (node.type()) {
+                    case OPEN_TAG:
+                    case CLOSE_TAG:
+                        Named named = (Named) node;
+                        CharSequence prefix = named.namespacePrefix();
+                        if (prefix != null && prefixes.contains(prefix.toString())) {
+                            return true;
+                        }
+                        break;
+                    default:
+                        return true;
+                }
+                return false;
             }
         });
 
-        CharSequence clearedSource = clearIgnoredAreas(getSource().getSourceCode(), context.getIgnoredAreas());
+        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(
+                source,
+                namespace,
+                filteredIterator);
 
-        //create a new html source with the cleared areas
-        HtmlSource source = new HtmlSource(clearedSource, analyzer.source().getSnapshot() , analyzer.source().getSourceFileObject());
-
-        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, namespace, context.getFiltered());
-        
         return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
 
     }
-    
+
     /**
-     * Parse the content as a plain xml-like tree.
-     * Any validity checks are not done, just the tag elements are transformed
-     * to the tree structure.
+     * Parse the content as a plain xml-like tree. Any validity checks are not
+     * done, just the tag elements are transformed to the tree structure.
      */
     public ParseResult parsePlain() {
-        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(analyzer.source(), null, getElements().items());
-        return new DefaultParseResult(analyzer.source(), root, Collections.<ProblemDescription>emptyList());
+        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, new ElementsIterator(source));
+        return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
     }
 
     public ParseResult parseUndeclaredEmbeddedCode() throws ParseException {
-        if(undeclaredEmbeddedCodeParseResult == null) {
+        if (undeclaredEmbeddedCodeParseResult == null) {
             undeclaredEmbeddedCodeParseResult = doParseUndeclaredEmbeddedCode();
         }
         return undeclaredEmbeddedCodeParseResult;
     }
-    
+
     private ParseResult doParseUndeclaredEmbeddedCode() throws ParseException {
         final Collection<String> prefixes = getAllDeclaredPrefixes();
-        LocalSourceContext context = createLocalContext(new TagsFilter() {
 
+        Iterator<Element> original = new ElementsIterator(source);
+        Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
             @Override
-            public boolean accepts(Named tag, CharSequence prefix) {
-                return prefix != null && !prefixes.contains(prefix.toString());
+            public boolean accepts(Element node) {
+                switch (node.type()) {
+                    case OPEN_TAG:
+                    case CLOSE_TAG:
+                        Named named = (Named) node;
+                        CharSequence prefix = named.namespacePrefix();
+                        if (prefix != null && !prefixes.contains(prefix.toString())) {
+                            return true;
+                        }
+                        break;
+                    default:
+                        return true;
+                }
+                return false;
             }
         });
 
-        CharSequence clearedSource = clearIgnoredAreas(getSource().getSourceCode(), context.getIgnoredAreas());
 
-        //create a new html source with the cleared areas
-        HtmlSource source = new HtmlSource(clearedSource, analyzer.source().getSnapshot() , analyzer.source().getSourceFileObject());
-
-        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, context.getFiltered());
+        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(
+                source,
+                null,
+                filteredIterator);
 
         return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
 
     }
 
-    
     private LocalSourceContext createLocalContext(TagsFilter filter) {
         //html5 parser:
         //since the nu.validator.htmlparser parser cannot properly handle the
@@ -304,20 +353,19 @@ public class SyntaxAnalyzerResult {
         //2. the prefixed tags and attributes <f:if ...
         List<IgnoredArea> ignoredAreas = new ArrayList<IgnoredArea>();
 
-        List<Element> filtered = new ArrayList<Element>();
-
-        for (Element e : getElements().items()) {
+        Iterator<Element> itr = new ElementsIterator(source);
+        while(itr.hasNext()) {
+            Element e = itr.next();
             if (e.type() == ElementType.OPEN_TAG || e.type() == ElementType.CLOSE_TAG) {
                 Named tag = (Named) e;
                 CharSequence tagNamePrefix = tag.namespacePrefix();
 
                 if (filter.accepts(tag, tagNamePrefix)) {
-                    filtered.add(e);
                     //check for the xmlns attributes
-                    if(e.type() == ElementType.OPEN_TAG) {
-                        OpenTag ot = (OpenTag)tag;
-                        for(Attribute a : ot.attributes()) {
-                            if(LexerUtils.startsWith(a.name(), "xmlns:", true, false)) { //NOI18N
+                    if (e.type() == ElementType.OPEN_TAG) {
+                        OpenTag ot = (OpenTag) tag;
+                        for (Attribute a : ot.attributes()) {
+                            if (LexerUtils.startsWith(a.name(), "xmlns:", true, false)) { //NOI18N
                                 ignoredAreas.add(new IgnoredArea(a.nameOffset(), a.valueOffset() + a.value().length()));
                             }
                         }
@@ -326,123 +374,15 @@ public class SyntaxAnalyzerResult {
                 } else {
                     ignoredAreas.add(new IgnoredArea(e.from(), e.to()));
                 }
-            } else {
-                //add all other element types
-                filtered.add(e);
             }
         }
-        return new LocalSourceContext(ignoredAreas, filtered);
+        return new LocalSourceContext(ignoredAreas);
 
     }
 
-//    private void xxx() {
-//
-//        //filter the elements
-//        List<SyntaxElement> filtered = new ArrayList<SyntaxElement>();
-//
-//        //prefixes may be null, if there's is no tag with the specified namespace,
-//        //
-//        //or can be a one item list with the UNDECLARED_TAGS_PREFIX which represents
-//        //all undeclared tags,
-//        //
-//        //or can be a list of tags prefixes already mapped to the given namespace
-//        List<String> prefixes = UNDECLARED_TAGS_NAMESPACE.equals(namespace)
-//                ? Collections.singletonList(UNDECLARED_TAGS_PREFIX)
-//                : getAllDeclaredNamespaces().get(namespace);
-//
-//        //html5 parser:
-//        //since the nu.validator.htmlparser parser cannot properly handle the
-//        //'foreign' namespace content it needs to be filtered from the source
-//        //before running the parser on the input charsequence
-//        //
-//        //so following content needs to be filtere out:
-//        //1. xmlns non default declarations <html xmlns:f="http:/...
-//        //2. the prefixed tags and attributes <f:if ...
-//        List<IgnoredArea> ignoredAreas = new ArrayList<IgnoredArea>();
-//
-//        for (SyntaxElement e : getElements()) {
-//            if (e.type() == SyntaxElement.TYPE_TAG || e.type() == SyntaxElement.TYPE_ENDTAG) {
-//                SyntaxElement.Tag tag = (SyntaxElement.Tag) e;
-//                String tagNamePrefix = getTagNamePrefix(tag);
-//
-//                boolean add = false; //for better readibility of the code below
-//                if (tagNamePrefix == null) {
-//                    if (prefixes == null) {
-//                        //tags w/o any prefix
-//                        add = true;
-//                    }
-//                } else {
-//                    //tagNamePrefix != null
-//                    if (prefixes != null) {
-//                        if (prefixes.contains(UNDECLARED_TAGS_PREFIX)
-//                                && !getDeclaredNamespaces().containsValue(tagNamePrefix)) {
-//                            //unknown prefixed tags falls to the 'undeclared tags parse tree'
-//                            add = true;
-//
-//                        } else if (prefixes.contains(tagNamePrefix)) {
-//                            //or the prefix matches
-//                            add = true;
-//                        }
-//                    }
-//                }
-//
-//                if (add) {
-//                    filtered.add(e);
-//                } else {
-//                    ignoredAreas.add(new IgnoredArea(e.offset(), e.offset() + e.length()));
-//                }
-//
-//                //TODO Add xmlns:xxx attributes filtering
-//
-//            } else {
-//                //do not filter the other types
-//                filtered.add(e);
-//            }
-//        }
-//
-//        AstNode root;
-//        CharSequence source;
-//
-//        if (!isHtml5()) {
-//            SyntaxParserContext spc = source.clone().setElements(filtered);
-//            source = spc.getSourceText();
-//            DTD dtd = null;
-//            if (getDTDNoFallback() != null) {
-//                if (defaultDTD != null) {
-//                    //DTD found for this file and preferred dtd is specified
-//                    //this means we are trying to parse html or xhtml tags
-//                    dtd = getDTDNoFallback();
-//                } else {
-//                    //DTD found, but no preferred dtd specifes,
-//                    //this means that one wants to parse some non-html stuff
-//                    dtd = null;
-//                }
-//            } else {
-//                if (defaultDTD != null) {
-//                    dtd = defaultDTD;
-//                }
-//            }
-//            spc.setDTD(dtd);
-//            root = SyntaxTreeBuilder.makeTree(spc);
-//        } else {
-//            //html5
-//            source = clearIgnoredAreas(source.getSourceText(), ignoredAreas);
-//            try {
-//                root = HtmlParserFactory.instance().parse(source);
-//            } catch (ParseException ex) {
-//                Exceptions.printStackTrace(ex);
-//                root = null;
-//            }
-//        }
-//
-//        root.setProperty(AstNode.NAMESPACE_PROPERTY, namespace); //NOI18N
-//        innerResults.put(namespace, new Result(source, root));
-//        return root;
-//    }
-
     public String getPublicID() {
         Declaration decl = getDoctypeDeclaration();
-        if(decl == null) {
+        if (decl == null) {
             return null;
         }
         CharSequence pid = getDoctypeDeclaration().publicId();
@@ -456,22 +396,22 @@ public class SyntaxAnalyzerResult {
             //so limit the doctype search so we do not iterate over the whole file
             //if there's no doctype
             int limitCountdown = 20;
-            Iterator<Element> elementsIterator = analyzer.elementsIterator();
-            while(elementsIterator.hasNext()) {
-                if(limitCountdown-- == 0 ) {
+            Iterator<Element> elementsIterator = new ElementsIterator(source);
+            while (elementsIterator.hasNext()) {
+                if (limitCountdown-- == 0) {
                     break;
                 }
                 Element e = elementsIterator.next();
                 if (e.type() == ElementType.DECLARATION) {
-                    Declaration decl = (Declaration)e;
-                    if(isValidDoctype(decl)) {
+                    Declaration decl = (Declaration) e;
+                    if (isValidDoctype(decl)) {
                         declarationElement = (Declaration) e;
                     }
                     break;
                 }
             }
             declaration = new AtomicReference<Declaration>(declarationElement);
-            
+
         }
         return declaration.get();
     }
@@ -480,9 +420,9 @@ public class SyntaxAnalyzerResult {
         return "doctype".equalsIgnoreCase(decl.declarationName().toString()) && decl.rootElementName() != null; //NOI18N
     }
 
-    
-    /** Returns a map of namespace URI to prefix used in the document
-     * Not only globaly registered namespace (root tag) are taken into account.
+    /**
+     * Returns a map of namespace URI to prefix used in the document Not only
+     * globaly registered namespace (root tag) are taken into account.
      */
     // URI to prefix map
     @Deprecated
@@ -499,15 +439,15 @@ public class SyntaxAnalyzerResult {
     }
 
     public synchronized Set<String> getAllDeclaredPrefixes() {
-        if(allPrefixes == null) {
+        if (allPrefixes == null) {
             allPrefixes = findAllDeclaredPrefixes();
         }
         return allPrefixes;
     }
-    
+
     private Set<String> findAllDeclaredPrefixes() {
-       HashSet<String> all = new HashSet<String>();
-        for(Collection<String> prefixes : getAllDeclaredNamespaces().values()) {
+        HashSet<String> all = new HashSet<String>();
+        for (Collection<String> prefixes : getAllDeclaredNamespaces().values()) {
             all.addAll(prefixes);
         }
         return all;
@@ -516,7 +456,7 @@ public class SyntaxAnalyzerResult {
     public String getHtmlTagDefaultNamespace() {
         //typically the html root element is at the beginning of the file
         int limitCountdown = 100;
-        Iterator<Element> elementsIterator = analyzer.elementsIterator();
+        Iterator<Element> elementsIterator = new ElementsIterator(source);
         while (elementsIterator.hasNext()) {
             if (limitCountdown-- == 0) {
                 break;
@@ -534,19 +474,21 @@ public class SyntaxAnalyzerResult {
 
     /**
      *
-     * @return map of namespace URI to a List of prefixes. The prefixes in the list
-     * are sorted according to their occurrences in the document.
+     * @return map of namespace URI to a List of prefixes. The prefixes in the
+     * list are sorted according to their occurrences in the document.
      */
     public synchronized Map<String, Collection<String>> getAllDeclaredNamespaces() {
         if (namespaces == null) {
             this.namespaces = new HashMap<String, Collection<String>>();
 
             //add the artificial namespaces to prefix map to the physically declared results
-            if(resolver != null) {
+            if (resolver != null) {
                 namespaces.putAll(resolver.getUndeclaredNamespaces(getSource()));
             }
-            
-            for (Element se : getElements().items()) {
+
+            ElementsIterator iterator = new ElementsIterator(source);
+            while (iterator.hasNext()) {
+                Element se = iterator.next();
                 if (se.type() == ElementType.OPEN_TAG) {
                     OpenTag tag = (OpenTag) se;
                     for (Attribute attr : tag.attributes()) {
@@ -594,15 +536,9 @@ public class SyntaxAnalyzerResult {
     private static class LocalSourceContext {
 
         private Collection<IgnoredArea> ignoredAreas;
-        private List<Element> filtered;
 
-        public LocalSourceContext(Collection<IgnoredArea> ignoredAreas, List<Element> filtered) {
+        public LocalSourceContext(Collection<IgnoredArea> ignoredAreas) {
             this.ignoredAreas = ignoredAreas;
-            this.filtered = filtered;
-        }
-
-        public List<Element> getFiltered() {
-            return filtered;
         }
 
         public Collection<IgnoredArea> getIgnoredAreas() {
@@ -613,7 +549,44 @@ public class SyntaxAnalyzerResult {
     private static interface TagsFilter {
 
         public boolean accepts(Named tag, CharSequence prefix);
-        
+    }
+
+    private static class FilteredIterator implements Iterator<Element> {
+
+        private Iterator<Element> source;
+        private ElementFilter filter;
+        private Element next;
+
+        public FilteredIterator(Iterator<Element> source, ElementFilter filter) {
+            this.source = source;
+            this.filter = filter;
+        }
+
+        @Override
+        public boolean hasNext() {
+            boolean hasNext = source.hasNext();
+            if (!hasNext) {
+                return false;
+            } else {
+                while (source.hasNext()) {
+                    next = source.next();
+                    if (filter.accepts(next)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public Element next() {
+            return next;
+        }
+
+        @Override
+        public void remove() {
+            //no-op
+        }
     }
 
     private static class IgnoredArea {
@@ -625,7 +598,6 @@ public class SyntaxAnalyzerResult {
             this.to = to;
         }
     }
-    
     //it seems to be better (more memory/but much faster) to create a clone of the source
     //sequence w/ the specifed areas being ws-paced than doing this dynamically.
     private static final char REPLACE_CHAR = ' '; //ws //NOI18N

@@ -49,7 +49,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
  */
 public class EntityReferenceElement extends AbstractElement{
 
-    public EntityReferenceElement(CharSequence doc, int offset, int length) {
+    public EntityReferenceElement(CharSequence doc, int offset, short length) {
         super(doc, offset, length);
     }
 
