@@ -87,7 +87,7 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
             LineBreakpoint lineBreakpoint = (LineBreakpoint) breakpoint;
             Line line = lineBreakpoint.getLine();
             DataObject dataObject = DataEditorSupport.findDataObject(line);
-            EditorCookie editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+            EditorCookie editorCookie = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
             StyledDocument document = editorCookie.getDocument();
             if (document != null) {
                 int offset = NbDocument.findLineOffset(document, line.getLineNumber());
@@ -110,7 +110,7 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
                                 || id == PHPTokenId.PHP_LINE_COMMENT
                                 || id == PHPTokenId.PHP_COMMENT_START
                                 || id == PHPTokenId.PHP_COMMENT_END
-                                || id == PHPTokenId.PHP_COMMENT                            
+                                || id == PHPTokenId.PHP_COMMENT
                                 ) {
                             break;
                         }
