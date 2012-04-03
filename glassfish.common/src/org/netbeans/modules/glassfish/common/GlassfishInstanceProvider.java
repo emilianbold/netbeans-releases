@@ -44,36 +44,22 @@ package org.netbeans.modules.glassfish.common;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
-import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
+import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -86,8 +72,16 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
 
     static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
     private static final String AUTOINSTANCECOPIED = "autoinstance-copied"; // NOI18N
-    private volatile static GlassfishInstanceProvider preludeProvider;
+
+    // Always lock ee6Provider first and preludeProviderLock second when both
+    // locks are required to avoid deadlock conditions.
+    /** Internal lock for <code>ee6Provider</code> initialization. */
+    private static final Object ee6ProviderLock = new Object();
     private volatile static GlassfishInstanceProvider ee6Provider;
+    /** Internal lock for <code>preludeProvider</code> initialization. */
+    private static final Object preludeProviderLock = new Object();
+    private volatile static GlassfishInstanceProvider preludeProvider;
+
     public static final String EE6_DEPLOYER_FRAGMENT = "deployer:gfv3ee6"; // NOI18N
     public static final String EE6WC_DEPLOYER_FRAGMENT = "deployer:gfv3ee6wc"; // NOI18N
     public static final String PRELUDE_DEPLOYER_FRAGMENT = "deployer:gfv3"; // NOI18N
@@ -113,55 +107,73 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         return providerList;
     }
     
-    public static synchronized GlassfishInstanceProvider getEe6() {
-        if (ee6Provider == null) {
-            ee6Provider = new GlassfishInstanceProvider(
-                    new String[]{EE6_DEPLOYER_FRAGMENT, EE6WC_DEPLOYER_FRAGMENT},
-                    new String[]{EE6_INSTANCES_PATH, EE6WC_INSTANCES_PATH},
-                    null,
-                    true, 
-                    new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
-                    new String[]{"--nopassword"}, // NOI18N
-                    new CommandFactory()  {
-
-                @Override
-                public SetPropertyCommand getSetPropertyCommand(String name, String value) {
-                    return new ServerCommand.SetPropertyCommand(name, value,
-                            "DEFAULT={0}={1}"); // NOI18N
-                }
-
-            });
-            ee6Provider.init();
+    public static GlassfishInstanceProvider getEe6() {
+        if (ee6Provider != null) {
+            return ee6Provider;
         }
-        return ee6Provider;
-    }
-
-    public static synchronized GlassfishInstanceProvider getPrelude() {
-        String[] uriFragments;
-        String[] instanceDirs;
-        uriFragments = new String[]{PRELUDE_DEPLOYER_FRAGMENT};
-        instanceDirs = new String[]{PRELUDE_INSTANCES_PATH};
-        if (preludeProvider == null) {
-            preludeProvider = new GlassfishInstanceProvider(
-                    uriFragments,
-                    instanceDirs,
-                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
-                        "STR_PRELUDE_SERVER_NAME", new Object[]{}), // NOI18N
-                    false,
-                    new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
-                    null,
-                    new CommandFactory()  {
+        else {
+            synchronized(ee6ProviderLock) {
+                if (ee6Provider == null) {
+                    GlassfishInstanceProvider provider;
+                    provider = new GlassfishInstanceProvider(
+                            new String[]{EE6_DEPLOYER_FRAGMENT, EE6WC_DEPLOYER_FRAGMENT},
+                            new String[]{EE6_INSTANCES_PATH, EE6WC_INSTANCES_PATH},
+                            null,
+                            true, 
+                            new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
+                            new String[]{"--nopassword"}, // NOI18N
+                            new CommandFactory()  {
 
                         @Override
                         public SetPropertyCommand getSetPropertyCommand(String name, String value) {
                             return new ServerCommand.SetPropertyCommand(name, value,
-                                    "target={0}&value={1}"); // NOI18N
+                                    "DEFAULT={0}={1}"); // NOI18N
                         }
 
                     });
-            preludeProvider.init();
+                    provider.init();
+                    // Everything must be finished before setting ee6Provider value.
+                    ee6Provider = provider;
+                }
+            }
+            return ee6Provider;
         }
-        return preludeProvider;
+    }
+
+    public static GlassfishInstanceProvider getPrelude() {
+        if (preludeProvider != null) {
+            return preludeProvider;
+        }
+        else {
+            synchronized(preludeProviderLock) {
+                if (preludeProvider == null) {
+                    GlassfishInstanceProvider provider;
+                    String[] uriFragments = new String[]{PRELUDE_DEPLOYER_FRAGMENT};
+                    String[] instanceDirs = new String[]{PRELUDE_INSTANCES_PATH};
+                    provider = new GlassfishInstanceProvider(
+                            uriFragments,
+                            instanceDirs,
+                            org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
+                                "STR_PRELUDE_SERVER_NAME", new Object[]{}), // NOI18N
+                            false,
+                            new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
+                            null,
+                            new CommandFactory()  {
+
+                                @Override
+                                public SetPropertyCommand getSetPropertyCommand(String name, String value) {
+                                    return new ServerCommand.SetPropertyCommand(name, value,
+                                            "target={0}&value={1}"); // NOI18N
+                                }
+
+                            });
+                    provider.init();
+                    // Everything must be finished before setting preludeProvider value.
+                    preludeProvider = provider;
+                }
+            }
+            return preludeProvider;
+        }
     }
 
     public static final Set<String> activeRegistrationSet = Collections.synchronizedSet(new HashSet<String>());
@@ -180,6 +192,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     final private CommandFactory cf;
     final private Lookup.Result<RegisteredDDCatalog> lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(RegisteredDDCatalog.class);
     
+    @SuppressWarnings("LeakingThisInConstructor")
     private GlassfishInstanceProvider(
             String[] uriFragments, 
             String[] instancesDirNames,
@@ -218,8 +231,21 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         refreshCatalogFromFirstInstance(this, getDDCatalog());
     }
 
-    public static synchronized boolean initialized() {
-        return preludeProvider != null || ee6Provider != null;
+    /**
+     * Check providers initialization status.
+     * <p>
+     * @return <code>true</code> when at least one of the providers
+     *         is initialized or <code>false</code> otherwise.
+     */
+    @SuppressWarnings("NestedSynchronizedStatement")
+    public static boolean initialized() {
+        // Acquire both locks to make sure there is no initialization
+        // in progress.
+        synchronized(ee6ProviderLock) {
+            synchronized(preludeProviderLock) {
+                return preludeProvider != null || ee6Provider != null;
+            }
+        }
     }
 
     public static Logger getLogger() {
