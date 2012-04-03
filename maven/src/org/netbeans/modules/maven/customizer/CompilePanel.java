@@ -280,7 +280,7 @@ public class CompilePanel extends javax.swing.JPanel {
         // java platform updater
         new ComboBoxUpdater<JavaPlatform>(comJavaPlatform, lblJavaPlatform) {
             private String modifiedValue;
-
+            private String DEFAULT_PLATFORM_VALUE = "@@DEFAU:T@@";
             private ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
 
             @Override
@@ -307,6 +307,9 @@ public class CompilePanel extends javax.swing.JPanel {
                     val = handle.getRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, true);
                 }
                 if (val != null) {
+                    if (val.equals(DEFAULT_PLATFORM_VALUE)) {
+                        return JavaPlatformManager.getDefault().getDefaultPlatform();
+                    }
                     return BootClassPathImpl.getActivePlatform(val);
                 } else {
                     return getSelPlatform();
@@ -330,17 +333,17 @@ public class CompilePanel extends javax.swing.JPanel {
 
                 boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, true) != null;
                 //TODO also try to take the value in pom vs inherited pom value into account.
-
+                modifiedValue = platformId == null ? DEFAULT_PLATFORM_VALUE : platformId;
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_JDK_PLATFORM)) {
-                    modifiedValue = platformId;
+                    
                     handle.addPOMModification(operation);
                     if (hasConfig) {
                         // in this case clean up the auxiliary config
                         handle.setRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, null, true);
                     }
                 } else {
-                handle.setRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, platformId, true);
-            }
+                    handle.setRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, platformId, true);
+                }
             }
         };
     }
