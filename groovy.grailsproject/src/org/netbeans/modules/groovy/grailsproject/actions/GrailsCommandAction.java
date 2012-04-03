@@ -48,20 +48,27 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
-import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
+import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.CTL_GrailsCommandAction;
 import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandChooser;
 import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.CallableSystemAction;
 
 /**
  *
  * @author Petr Hejl
  */
+@Messages("CTL_GrailsCommandAction=Run/Debug Grails Command...")
+@ActionID(id = "org.netbeans.modules.groovy.grailsproject.actions.GrailsCommandAction", category = "Groovy")
+@ActionRegistration(lazy = false, displayName = "#CTL_GrailsCommandAction")
+
 public class GrailsCommandAction extends CallableSystemAction {
 
     @Override
@@ -167,7 +174,7 @@ public class GrailsCommandAction extends CallableSystemAction {
     
     @Override
     public String getName() {
-        return NbBundle.getMessage(GrailsCommandAction.class, "CTL_GrailsCommandAction");
+        return CTL_GrailsCommandAction();
     }
 
 }
