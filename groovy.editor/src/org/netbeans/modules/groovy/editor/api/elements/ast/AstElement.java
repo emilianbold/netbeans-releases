@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.api.elements;
+package org.netbeans.modules.groovy.editor.api.elements.ast;
 
 import groovyjarjarasm.asm.Opcodes;
 import java.util.ArrayList;
@@ -62,6 +62,8 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
+import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
@@ -211,7 +213,7 @@ public abstract class AstElement extends GroovyElement {
     public OffsetRange getOffsetRange(ParserResult result) {
         GroovyParserResult parserResult = AstUtilities.getParseResult(result);
         // FIXME resolve handle
-        Element object = ElementHandleSupport.resolveHandle(parserResult, ElementHandleSupport.createHandle(result, this));
+        ElementHandle object = ElementHandleSupport.resolveHandle(parserResult, ElementHandleSupport.createHandle(result, this));
 
         if (object instanceof AstElement) {
              BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.editor.api.elements;
+package org.netbeans.modules.groovy.editor.api.elements.ast;
 
 import groovy.lang.MetaMethod;
 import java.util.ArrayList;
@@ -53,6 +53,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.groovy.editor.api.elements.MethodElement;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 
 public class AstMethodElement extends AstElement implements MethodElement {

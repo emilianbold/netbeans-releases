@@ -79,7 +79,7 @@ import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.impl.ProposalsCollector;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
-import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
+import org.netbeans.modules.groovy.editor.api.elements.ast.AstMethodElement;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.support.api.GroovySettings;

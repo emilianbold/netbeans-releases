@@ -44,6 +44,7 @@
 package org.netbeans.modules.groovy.editor.api.elements;
 
 import java.util.List;
+import org.netbeans.modules.csl.api.ElementHandle;
 
 /**
  * Groovy-Elements that correspond to methods will implement this interface
@@ -51,11 +52,11 @@ import java.util.List;
  *
  * @author Tor Norbye
  */
-public interface MethodElement extends Element {
-    boolean isDeprecated();
+public interface MethodElement extends ElementHandle {
 
     List<String> getParameters();
+    
     boolean isTopLevel();
-    String getIn();
     boolean isInherited();
+    boolean isDeprecated();
 }

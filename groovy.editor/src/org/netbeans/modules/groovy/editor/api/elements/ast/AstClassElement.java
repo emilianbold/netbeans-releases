@@ -42,34 +42,75 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.api.elements;
+package org.netbeans.modules.groovy.editor.api.elements.ast;
 
-import org.codehaus.groovy.ast.ModuleNode;
+import java.util.Set;
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.elements.ClassElement;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.openide.filesystems.FileObject;
 
-/**
- *
- * @author Martin Adamek
- */
-public class AstRootElement extends AstElement {
+public class AstClassElement extends AstElement implements ClassElement {
+    private String fqn;
+    private Set<String> includes;
 
-    private final FileObject fileObject;
-    private final ModuleNode moduleNode;
-
-    public AstRootElement(FileObject fo, GroovyParserResult info, ModuleNode moduleNode) {
-        super(info, moduleNode);
-        this.fileObject = fo;
-        this.moduleNode = moduleNode;
+    public AstClassElement(GroovyParserResult info, ASTNode node) {
+        super(info, node);
     }
 
     @Override
     public String getName() {
-        return fileObject.getNameExt();
+        if (name == null) {
+            if (node instanceof ClassNode) {
+                name = ((ClassNode) node).getNameWithoutPackage();
+            }
+
+            if (name == null) {
+                name = node.toString();
+            }
+        }
+
+        return name;
     }
 
-    public ModuleNode getModuleNode() {
-        return moduleNode;
+    @Override
+    public String getIn() {
+        if (in == null) {
+            if (node instanceof ClassNode) {
+                in = ((ClassNode) node).getPackageName();
+            }
+
+            if (in == null) {
+                in = ""; // NOI18N
+            }
+        }
+
+        return in;
     }
-    
+
+    public String getFqn() {
+        if (fqn == null) {
+            return getName();
+        }
+
+        return fqn;
+    }
+
+    public void setFqn(String fqn) {
+        this.fqn = fqn;
+    }
+
+    public void setIncludes(Set<String> includes) {
+        this.includes = includes;
+    }
+
+    public Set<String> getIncludes() {
+        return includes;
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.CLASS;
+    }
 }

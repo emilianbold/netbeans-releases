@@ -44,15 +44,14 @@
 package org.netbeans.modules.groovy.editor.api.elements;
 
 import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
 
 /**
  *
  * @author Tor Norbye
  */
-public interface ClassElement extends Element {
-    String getIn();
+public interface ClassElement extends ElementHandle {
 
     String getFqn();
-
     Set<String> getIncludes();
 }

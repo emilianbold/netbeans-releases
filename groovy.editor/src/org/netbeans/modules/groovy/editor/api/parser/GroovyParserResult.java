@@ -50,7 +50,7 @@ import java.util.List;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
-import org.netbeans.modules.groovy.editor.api.elements.AstRootElement;
+import org.netbeans.modules.groovy.editor.api.elements.ast.AstRootElement;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.OffsetRange;

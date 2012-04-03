@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,29 +34,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.groovy.editor.api.elements.ast;
 
-package org.netbeans.modules.groovy.editor.api.elements;
-
-import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 
-public class AstClassElement extends AstElement implements ClassElement {
-    private String fqn;
-    private Set<String> includes;
+public class AstFieldElement extends AstElement {
 
-    public AstClassElement(GroovyParserResult info, ASTNode node) {
+    private boolean property;
+
+    public AstFieldElement(GroovyParserResult info, ASTNode node) {
         super(info, node);
     }
 
     @Override
     public String getName() {
         if (name == null) {
-            if (node instanceof ClassNode) {
-                name = ((ClassNode) node).getNameWithoutPackage();
+            if (node instanceof FieldNode) {
+                name = ((FieldNode) node).getName();
             }
 
             if (name == null) {
@@ -74,42 +70,15 @@ public class AstClassElement extends AstElement implements ClassElement {
     }
 
     @Override
-    public String getIn() {
-        if (in == null) {
-            if (node instanceof ClassNode) {
-                in = ((ClassNode) node).getPackageName();
-            }
-
-            if (in == null) {
-                in = ""; // NOI18N
-            }
-        }
-
-        return in;
-    }
-
-    public String getFqn() {
-        if (fqn == null) {
-            return getName();
-        }
-
-        return fqn;
-    }
-
-    public void setFqn(String fqn) {
-        this.fqn = fqn;
-    }
-
-    public void setIncludes(Set<String> includes) {
-        this.includes = includes;
-    }
-
-    public Set<String> getIncludes() {
-        return includes;
-    }
-
-    @Override
     public ElementKind getKind() {
-        return ElementKind.CLASS;
+        return ElementKind.FIELD;
+    }
+
+    public boolean isProperty() {
+        return property;
+    }
+
+    public void setProperty(boolean isProperty) {
+        this.property = isProperty;
     }
 }

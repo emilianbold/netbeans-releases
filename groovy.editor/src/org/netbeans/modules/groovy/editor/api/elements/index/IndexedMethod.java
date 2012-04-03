@@ -41,13 +41,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.groovy.editor.api.elements;
+package org.netbeans.modules.groovy.editor.api.elements.index;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
+import org.netbeans.modules.groovy.editor.api.elements.MethodElement;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**

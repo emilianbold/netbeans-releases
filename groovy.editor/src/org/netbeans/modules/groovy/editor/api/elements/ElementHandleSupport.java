@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.groovy.editor.api.elements;
 
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
+import org.netbeans.modules.groovy.editor.api.elements.ast.AstElement;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
