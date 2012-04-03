@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -74,7 +75,8 @@ import org.openide.filesystems.FileObject;
  * However {@link #getPaths} only ever returns one copy of the classpath, and
  * listeners are only notified the first time a given classpath is added to the
  * registry, or the last time it is removed.
- * (Classpath identity is object identity, so there could be multiple paths
+ * ({@link ClassPath} equality is based on equality of the {@link ClassPathImplementation}
+ * which by default is based on object identity, so there could be multiple paths
  * returned that at the time share the same list of roots. There may also be
  * several paths which contain some shared roots.)
  * </p>
