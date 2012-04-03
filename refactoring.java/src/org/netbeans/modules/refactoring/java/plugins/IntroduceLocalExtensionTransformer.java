@@ -222,12 +222,12 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                         false);
                 members.add(method);
                 
-                body = make.Block(Collections.singletonList(make.Return(make.MethodInvocation(Collections.EMPTY_LIST, make.MemberSelect(make.Identifier("this.delegate"), "hashCode"), Collections.singletonList(make.Identifier("o"))))), false); //NOI18N
+                body = make.Block(Collections.singletonList(make.Return(make.MethodInvocation(Collections.EMPTY_LIST, make.MemberSelect(make.Identifier("this.delegate"), "hashCode"), Collections.EMPTY_LIST))), false); //NOI18N
                 method = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
                         "hashCode", //NOI18N
                         make.PrimitiveType(TypeKind.INT),
                         Collections.EMPTY_LIST,
-                        Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "o", make.Type("Object"), null)), //NOI18N
+                        Collections.EMPTY_LIST,
                         Collections.EMPTY_LIST,
                         body,
                         null,
