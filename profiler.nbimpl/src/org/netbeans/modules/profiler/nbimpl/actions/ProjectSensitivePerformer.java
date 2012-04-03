@@ -69,12 +69,12 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
 
         ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         try {
-            if (ap != null) {
+            if (ap != null && contains(ap.getSupportedActions(), command)) {
                 ProjectProfilingSupport ppp = ProjectProfilingSupport.get(project);
                 if (ppp == null) {
                     return false;
                 }
-                return ap.isActionEnabled(command, project.getLookup()) && ppp.isProfilingSupported();
+                return  ppp.isProfilingSupported() && ap.isActionEnabled(command, project.getLookup());
             }
         } catch (IllegalArgumentException e) {
             // no provider responds to the command
@@ -93,5 +93,12 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
                 s.run();
             }
         }
+    }
+    
+    private static boolean contains(String[] actions, String action) {
+        for(String a : actions) {
+            if (a.equals(action)) return true;
+        }
+        return false;
     }
 }
