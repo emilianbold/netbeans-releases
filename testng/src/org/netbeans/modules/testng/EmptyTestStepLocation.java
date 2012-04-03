@@ -124,7 +124,7 @@ class EmptyTestStepLocation implements WizardDescriptor.Panel<WizardDescriptor> 
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx("org.netbeans.modules.junit.wizards.EmptyTest");//NOI18N
+        return new HelpCtx("new_ngtestcase_wizard");//NOI18N
     }
 
     public boolean isValid() {

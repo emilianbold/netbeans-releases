@@ -109,6 +109,7 @@ class MavenRefactoringPlugin implements RefactoringPlugin {
         LOG.log(Level.FINE, "for {0} found FQN: {1}", new Object[] {handle, fqn});
         if (fqn.get() != null) {
             long start = System.currentTimeMillis();
+            //#209856 ->getLoadedContexts() 
             Iterable<ClassUsage> results = RepositoryQueries.findClassUsagesResult(fqn.get(), RepositoryQueries.getLoadedContexts()).getResults();
             long end = System.currentTimeMillis();
             LOG.log(Level.FINE, "took {0}msec to find {1}", new Object[] {end - start, fqn});

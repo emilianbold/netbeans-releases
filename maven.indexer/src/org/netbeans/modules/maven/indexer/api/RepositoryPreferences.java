@@ -378,7 +378,7 @@ public final class RepositoryPreferences {
      * @param key an arbitrary key for use with {@link #removeTransientRepositories}
      * @param id the repository ID
      * @param displayName a display name (may just be {@code id})
-     * @param url the remote URL (prefer the canonical public URL to that of a mirror)
+     * @param url the remote URL
      * @throws URISyntaxException in case the URL is malformed
      * @since 2.10
      */

@@ -374,12 +374,6 @@ public class ModelHandle2 {
         CustomizerProviderImpl.writeNbActionsModel(project, mapping, M2Configuration.getFileNameExt(cfg.getId()));
     }    
     
-
-    public static interface CustomizerOperation<T> {
-        
-        void perform(T model);
-
-    }
     
 /**
      * a javabean wrapper for configurations within the project customizer

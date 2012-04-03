@@ -281,7 +281,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
              }
          }
          String version = (String) versionCombo.getSelectedItem();
-         if (!version.equals(SEARCHING)) {
+         if (version != null && !version.equals(SEARCHING)) {
              d.putProperty(NbmWizardIterator.NB_VERSION, version);
          }
          if (isApp || isSuite) {
