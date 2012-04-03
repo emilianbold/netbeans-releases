@@ -60,9 +60,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinatio
  */
 public class WLDeploymentConfiguration implements DatasourceConfiguration, MessageDestinationConfiguration {
 
-    protected static final Version NO_DESCRIPTOR_REQUIRED =
-            Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
-
     private final WLDatasourceSupport datasourceSupport;
     
     private final WLMessageDestinationSupport messageSupport;
