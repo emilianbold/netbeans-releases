@@ -1408,7 +1408,7 @@ public class VariousUtils {
     }
 
     public static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
-        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
+        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName()) && !isPrimitiveType(qualifiedName.toString())) {
             while (inScope != null && !(inScope instanceof NamespaceScope)) {
                 inScope = inScope.getInScope();
             }
