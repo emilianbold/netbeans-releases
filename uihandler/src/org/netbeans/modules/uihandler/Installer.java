@@ -53,7 +53,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -600,28 +599,36 @@ public class Installer extends ModuleInstall implements Runnable {
     /** Append content of source to target */
     private static void appendFile (File source, File target) {
         byte[] buf = new byte[8192];
+        FileInputStream is = null;
+        FileOutputStream os = null;
+        long targetSize = -1;
         try {
-            FileInputStream is = null;
-            FileOutputStream os = null;
-            try {
-                is = new FileInputStream(source);
-                os = new FileOutputStream(target, true);
+            is = new FileInputStream(source);
+            targetSize = target.length();
+            os = new FileOutputStream(target, true);
 
-                int l;
-                while ((l = is.read(buf)) != -1) {
-                    os.write(buf, 0, l);
-                }
-                os.flush();
-            } finally {
-                if (is != null) {
-                    is.close();
-                }
-                if (os != null) {
-                    os.close();
-                }
+            int l;
+            while ((l = is.read(buf)) != -1) {
+                os.write(buf, 0, l);
             }
+            os.flush();
         } catch (IOException ex) {
+            if (os != null) {
+                // Write failed, to assure consistency of data, truncate the file back to the original size:
+                DataConsistentFileOutputStream.truncateFileToConsistentSize(os, targetSize);
+            }
             Exceptions.printStackTrace(ex);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ex) {}
+            }
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException ex) {}
+            }
         }
     }
 
@@ -896,7 +903,7 @@ public class Installer extends ModuleInstall implements Runnable {
         File logFile = logFile(0);
         if (logFile != null) {
             logFile.getParentFile().mkdirs();
-            os = new BufferedOutputStream(new FileOutputStream(logFile, true));
+            os = new DataConsistentFileOutputStream(logFile, true);
         } else {
             os = new NullOutputStream();
         }
@@ -924,7 +931,7 @@ public class Installer extends ModuleInstall implements Runnable {
         File logFile = logFileMetrics(0);
         if (logFile != null) {
             logFile.getParentFile().mkdirs();
-            os = new BufferedOutputStream(new FileOutputStream(logFile, true));
+            os = new DataConsistentFileOutputStream(logFile, true);
         } else {
             os = new NullOutputStream();
         }
