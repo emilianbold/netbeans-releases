@@ -4019,7 +4019,8 @@ class LayoutFeeder implements LayoutConstants {
 
             // second analyze the interval as a single element for "next to" placement
             boolean ortOverlap = orthogonalOverlap(sub);
-            int margin = (dimension == VERTICAL && !ortOverlap ? 4 : 0);
+            int margin = (dimension == VERTICAL && !ortOverlap
+                    && (aSnappedNextTo == null || !group.isParentOf(aSnappedNextTo)) ? 4 : 0);
             boolean dimOverlap = LayoutRegion.overlap(addingSpace, subSpace, dimension, margin);
             // in vertical dimension always pretend orthogonal overlap if there
             // is no overlap in horizontal dimension (i.e. force inserting into sequence)
