@@ -39,8 +39,8 @@
 package org.netbeans.modules.maven.queries;
 
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -68,7 +68,7 @@ public class MavenAnnotationProcessingQueryImplTest extends NbTestCase {
         assertNotNull(rootFO);
         AnnotationProcessingQuery.Result r = AnnotationProcessingQuery.getAnnotationProcessingOptions(rootFO);
         URL sOD = r.sourceOutputDirectory();
-        Map<String,String> opts = new HashMap<String,String>(r.processorOptions());
+        Map<String,String> opts = new TreeMap<String,String>(r.processorOptions());
         assertEquals("false", opts.remove("eclipselink.canonicalmodel.use_static_factory"));
         assertEquals(expected,
                 "enabled=" + r.annotationProcessingEnabled() +
@@ -124,8 +124,12 @@ public class MavenAnnotationProcessingQueryImplTest extends NbTestCase {
         assertOpts(pom, "enabled=[ON_SCAN, IN_EDITOR] run=[p.MainProc] s=.../target/generated-sources/annotations/ opts={}", "src/main/java");
         assertOpts(pom, "enabled=[ON_SCAN, IN_EDITOR] run=[p.TestProc] s=.../target/generated-sources/test-annotations/ opts={}", "src/test/java");
     }
-    
-    // XXX compilerArgument unformatted vs. compilerArguments
-    // XXX <compilerArguments><Averbose>true</></> (MCOMPILER-135)
 
+    public void testArgs() throws Exception {
+        // Note MCOMPILER-135: <Averbose>true</Averbose> will only work in 2.4+ plugin
+        assertOpts("<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId>"
+                + "<configuration><compilerArguments><Aflag/><Averbose>true</Averbose></compilerArguments><compilerArgument>-Awhich=this</compilerArgument></configuration></plugin></plugins></build>",
+            "enabled=[ON_SCAN, IN_EDITOR] run=null s=.../target/generated-sources/annotations/ opts={flag=null, verbose=true, which=this}", "src/main/java");
+    }
+    
 }
