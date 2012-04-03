@@ -49,6 +49,7 @@ import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -75,8 +76,20 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author  Tomas Pavek, Martin Roskanin
  */
-@ServiceProvider(service=Runnable.class,path="WarmUp")
 public class JavaEditorWarmUpTask implements Runnable {
+    
+    @ServiceProvider(service=Runnable.class,path="WarmUp")
+    public static class Provider implements Runnable {
+
+        private AtomicBoolean b = new AtomicBoolean();
+        
+        @Override
+        public void run() {
+            if (!b.compareAndSet(false, true))
+                return;
+            new JavaEditorWarmUpTask().run();
+        }
+    }
     
     /**
      * Number of lines that an artificial document

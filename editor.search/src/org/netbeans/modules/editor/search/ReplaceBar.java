@@ -108,20 +108,8 @@ public final class ReplaceBar extends JPanel {
         scb.getEditor().getEditorComponent().setBackground(bgColor);
         replaceComboBox = scb;
         replaceComboBox.addPopupMenuListener(new ReplacePopupMenuListener());
-        replaceLabel = new JLabel();
-        Mnemonics.setLocalizedText(replaceLabel, NbBundle.getMessage(ReplaceBar.class, "CTL_Replace")); // NOI18N
-        replaceLabel.setLabelFor(replaceComboBox);
-        add(replaceLabel);
         replaceTextField = scb.getEditorPane();
         replaceTextField.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceText")); // NOI18N
-        // flatten the action map for the text field to allow removal
-//        ActionMap origActionMap = replaceTextField.getActionMap();
-//        ActionMap newActionMap = new ActionMap();
-//        for (Object key : origActionMap.allKeys()) {
-//            newActionMap.put(key, origActionMap.get(key));
-//        }
-//        replaceTextField.setActionMap(newActionMap);
-        replaceTextField.getActionMap().remove("toggle-componentOrientation"); // NOI18N
         replaceTextField.addFocusListener(new FocusAdapter() {
 
             @Override
@@ -132,6 +120,11 @@ public final class ReplaceBar extends JPanel {
         });
         addEnterKeystrokeReplaceTo(replaceTextField);
         addShiftEnterReplaceAllTo(replaceTextField);
+        
+        replaceLabel = new JLabel();
+        Mnemonics.setLocalizedText(replaceLabel, NbBundle.getMessage(ReplaceBar.class, "CTL_Replace")); // NOI18N
+        replaceLabel.setLabelFor(replaceTextField);
+        add(replaceLabel);
         add(replaceComboBox);
 
         final JToolBar.Separator leftSeparator = new JToolBar.Separator();
@@ -141,6 +134,7 @@ public final class ReplaceBar extends JPanel {
         replaceButton = new JButton();
         Mnemonics.setLocalizedText(replaceButton, NbBundle.getMessage(ReplaceBar.class, "CTL_ReplaceNext"));
         replaceButton.setMargin(BUTTON_INSETS);
+        replaceButton.setEnabled(!getSearchBar().getIncSearchTextField().getText().isEmpty());
         replaceButton.addActionListener(new ActionListener() {
 
             @Override
@@ -153,6 +147,7 @@ public final class ReplaceBar extends JPanel {
         replaceAllButton = new JButton();
         Mnemonics.setLocalizedText(replaceAllButton, NbBundle.getMessage(ReplaceBar.class, "CTL_ReplaceAll"));
         replaceAllButton.setMargin(BUTTON_INSETS);
+        replaceAllButton.setEnabled(!getSearchBar().getIncSearchTextField().getText().isEmpty());
         replaceAllButton.addActionListener(new ActionListener() {
 
             @Override
@@ -202,6 +197,14 @@ public final class ReplaceBar extends JPanel {
 
     private void setSearchBar(SearchBar searchBar) {
         this.searchBar = searchBar;
+    }
+
+    public JButton getReplaceButton() {
+        return replaceButton;
+    }
+
+    public JButton getReplaceAllButton() {
+        return replaceAllButton;
     }
 
     private void makeBarExpandable(SearchExpandMenu expMenu) {
@@ -370,6 +373,7 @@ public final class ReplaceBar extends JPanel {
             changeSearchBarToBePartOfReplaceBar();
             setVisible(true);
             SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) replaceTextField);
+            addEnterKeystrokeReplaceTo(replaceTextField);
         }
         searchBar.gainFocus();
         searchBar.getIncSearchTextField().requestFocusInWindow();

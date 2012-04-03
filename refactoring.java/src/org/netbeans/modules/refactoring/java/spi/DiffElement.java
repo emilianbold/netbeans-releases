@@ -54,6 +54,7 @@ import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -74,7 +75,7 @@ import org.openide.util.lookup.Lookups;
         this.bounds = bounds;
         final String description = diff.getDescription();
         if (description == null) {
-            displayText = "Missing Description";
+            displayText = NbBundle.getMessage(DiffElement.class, "LBL_NotAvailable");
         } else {
             this.displayText = description;
         }

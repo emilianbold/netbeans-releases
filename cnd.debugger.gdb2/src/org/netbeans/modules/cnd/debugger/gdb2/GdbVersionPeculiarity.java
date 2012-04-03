@@ -108,6 +108,14 @@ public class GdbVersionPeculiarity {
             return "";
         }
     }
+    
+    public String breakDisabledFlag() {
+        if (version >= 6.8 || platform == Platform.MacOSX_x86) {
+            return " -d"; // NOI18N
+        } else {
+            return "";
+        }
+    }
 
     public boolean isSupported() {
         return (version >= 6.8) || (platform == Platform.MacOSX_x86 && version >= 6.3);

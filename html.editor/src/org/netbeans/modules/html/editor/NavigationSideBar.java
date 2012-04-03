@@ -41,16 +41,8 @@
  */
 package org.netbeans.modules.html.editor;
 
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedList;
+import java.awt.*;
+import java.util.*;
 import java.util.List;
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
@@ -67,10 +59,9 @@ import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.SideBarFactory;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.modules.html.editor.HtmlCaretAwareSourceTask.Source;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -105,7 +96,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
         }
     };
     private boolean enabled = true;
-    List<AstNode> nesting = new ArrayList<AstNode>(5);
+    List<OpenTagInfo> nesting = new ArrayList<OpenTagInfo>(5);
 
     public NavigationSideBar() {
         doc = null;
@@ -130,7 +121,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
         updatePreferredSize();
 
     }
-
+    
     private void change(Result info, SchedulerEvent event) {
         if (event == null) {
             return ;
@@ -138,29 +129,31 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
         int caretPosition = ((CursorMovedSchedulerEvent) event).getCaretOffset();
         HtmlParserResult result = (HtmlParserResult) info;
-        Collection<AstNode> allRoots = new LinkedList<AstNode>();
+        Collection<Node> allRoots = new LinkedList<Node>();
         allRoots.addAll(result.roots().values());
         allRoots.add(result.rootOfUndeclaredTagsParseTree());
 
-        List<AstNode> nodesInPath = new ArrayList<AstNode>();
+        List<OpenTagInfo> nodesInPath = new ArrayList<OpenTagInfo>();
         int astOffset = info.getSnapshot().getEmbeddedOffset(caretPosition);
-        for (AstNode root : allRoots) {
-            AstNode leaf = AstNodeUtils.findNode(root, astOffset, false, false);
+        for (Node root : allRoots) {
+            Element leaf = ElementUtils.findBySemanticRange(root, astOffset, false);
             if (leaf != null) {
                 //add all nodes in the leaf's path to the root
-                for (AstNode node : leaf.path().path()) { //really brilliant wording!!!!
-                    if (node.type() == AstNode.NodeType.OPEN_TAG && !node.isVirtual()) {
-                        nodesInPath.add(node);
+                TreePath treePath = new TreePath(null, leaf);
+                for (Element node : treePath.path()) { //really brilliant wording!!!!
+                    if (node.type() == ElementType.OPEN_TAG && !ElementUtils.isVirtualNode(node)) {
+                        OpenTag openTag = (OpenTag)node;
+                        nodesInPath.add(new OpenTagInfo(openTag.name().toString(), openTag.from()));
                     }
                 }
             }
         }
         //sort by start offsets
-        Collections.sort(nodesInPath, new Comparator<AstNode>() {
+        Collections.sort(nodesInPath, new Comparator<OpenTagInfo>() {
 
             @Override
-            public int compare(AstNode o1, AstNode o2) {
-                return o1.startOffset() - o2.startOffset();
+            public int compare(OpenTagInfo o1, OpenTagInfo o2) {
+                return o1.getOffset() - o2.getOffset();
             }
         });
 
@@ -172,7 +165,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
     }
 
-    private void updateNestingInfo(final Result tsource, List<AstNode> sortedPath) {
+    private void updateNestingInfo(final Result tsource, List<OpenTagInfo> sortedPath) {
         nesting = sortedPath;
 
         //update UI
@@ -189,12 +182,12 @@ public class NavigationSideBar extends JPanel implements Accessible {
     private void updatePanelUI(final Result tsource) {
         removeAll();
 
-        for (final AstNode node : nesting) {
+        for (final OpenTagInfo node : nesting) {
             final JLabel label = new javax.swing.JLabel();
             label.setForeground(Color.BLACK);
             label.setFont(new Font("Monospaced", Font.PLAIN, (int) (getColoring().getFont().getSize() * .9))); // NOI18N
             label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            label.setText(getDrawText(node.name()));
+            label.setText(getDrawText(node.getName()));
             label.addMouseListener(new java.awt.event.MouseAdapter() {
 
                 @Override
@@ -209,7 +202,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
                 @Override
                 public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    int documentOffset = tsource.getSnapshot().getOriginalOffset(node.startOffset());
+                    int documentOffset = tsource.getSnapshot().getOriginalOffset(node.getOffset());
                     component.getCaret().setDot(documentOffset);
                 }
             });
@@ -270,7 +263,28 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
     static interface TestAccess {
 
-        public void updated(List<AstNode> path);
+        public void updated(List<OpenTagInfo> path);
     }
+    
     private TestAccess testAccess;
+    
+    private static class OpenTagInfo {
+        
+        private String name;
+        private int offset;
+
+        public OpenTagInfo(String name, int offset) {
+            this.name = name;
+            this.offset = offset;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
+        
+    }
 }

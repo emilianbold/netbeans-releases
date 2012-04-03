@@ -88,6 +88,8 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
         UNCHECKED_VARIABLES.add("_SESSION"); //NOI18N
         UNCHECKED_VARIABLES.add("_REQUEST"); //NOI18N
         UNCHECKED_VARIABLES.add("_ENV"); //NOI18N
+        UNCHECKED_VARIABLES.add("argc"); //NOI18N
+        UNCHECKED_VARIABLES.add("argv"); //NOI18N
     }
 
     @Override
@@ -124,7 +126,10 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
             return hints;
         }
 
-        @Messages("UninitializedVariableVariableHintCustom=Variable ${0} seems to be uninitialized")
+        @Messages({
+            "# {0} - Name of the variable",
+            "UninitializedVariableVariableHintCustom=Variable ${0} seems to be uninitialized"
+        })
         private void createHints(List<Variable> uninitializedVariables) {
             for (Variable variable : uninitializedVariables) {
                 int start = variable.getStartOffset() + 1;
@@ -180,6 +185,7 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
             scan(node.getExpression());
             initializeExpression(node.getKey());
             initializeExpression(node.getValue());
+            scan(node.getStatement());
         }
 
         @Override
@@ -263,7 +269,11 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
                             scan(invocationParameterExp);
                         }
                     }
+                } else {
+                    scan(invocationParametersExp);
                 }
+            } else {
+                scan(invocationParametersExp);
             }
         }
 

@@ -51,6 +51,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.nio.charset.Charset;
+import javax.swing.CellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
@@ -163,6 +164,19 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         Util.initTwoColumnTableVisualProperties(this, sourceRoots);
         Util.initTwoColumnTableVisualProperties(this, testRoots);
         this.uiProperties = uiProperties;
+        uiProperties.addOptionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CellEditor cellEditor = sourceRoots.getCellEditor();
+                if (cellEditor != null) {
+                    cellEditor.stopCellEditing();
+                }
+                cellEditor = testRoots.getCellEditor();
+                if (cellEditor != null) {
+                    cellEditor.stopCellEditing();
+                }
+            }
+        });
     }
     
     public HelpCtx getHelpCtx() {

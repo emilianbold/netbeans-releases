@@ -374,6 +374,23 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 InstanceCookie ic = obj.getLookup().lookup(InstanceCookie.class);
                 if (ic != null) {
                     Object o = ic.instanceCreate ();
+                    if (fo.getPath().matches("Services/.+[.]instance")) {
+                        String instanceOf = (String) fo.getAttribute("instanceOf");
+                        if (instanceOf == null) {
+                            errors.add("File " + fo.getPath() + " should declare instanceOf");
+                        } else if (o != null) {
+                            for (String piece : instanceOf.split(", ?")) {
+                                if (!Class.forName(piece, true, Lookup.getDefault().lookup(ClassLoader.class)).isInstance(o)) {
+                                    errors.add("File " + fo.getPath() + " claims to be a " + piece + " but is not (instance of " + o.getClass() + ")");
+                                }
+                            }
+                        }
+                    } else if (fo.getPath().matches("Services/.+[.]settings")) {
+                        if (!fo.asText().contains("<instanceof")) {
+                            errors.add("File " + fo.getPath() + " should declare <instanceof class=\"...\"/>");
+                        }
+                        // XXX test assignability here too, perhaps (but only used in legacy code)
+                    }
                 }
             } catch (Exception ex) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -122,7 +122,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="1000"/>
                 </file>
                 <file name="org-netbeans-modules-profiler-actions-ProfileProjectActionPopup.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-profiler-actions-ProfileProjectActionPopup.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-profiler-actions-ProfileProjectPopup.instance"/>
                     <attr name="position" intvalue="1100"/>
                 </file>
                 <file name="org-netbeans-modules-project-ui-TestProject.shadow">
@@ -140,6 +140,10 @@ made subject to such option by the copyright holder.
                 <file name="sep-4.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="1600"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-SetMainProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SetMainProject.instance"/>
+                    <attr name="position" intvalue="1800"/>
                 </file>
                 <file name="org-netbeans-modules-project-ui-actions-OpenSubprojects.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions-OpenSubprojects.instance"/>

@@ -154,7 +154,7 @@ public class AnalyzerImpl implements Analyzer {
         return false;
     }
 
-    @ServiceProvider(service=AnalyzerFactory.class, supersedes="org.netbeans.modules.findbugs.installer.FakeAnalyzerFactory")
+    @ServiceProvider(service=AnalyzerFactory.class, supersedes="org.netbeans.modules.findbugs.installer.FakeAnalyzer$FakeAnalyzerFactory")
     public static final class AnalyzerFactoryImpl extends AnalyzerFactory {
 
         @Messages("DN_FindBugs=FindBugs")

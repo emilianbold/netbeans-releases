@@ -53,13 +53,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import javax.swing.text.StyledDocument;
-
+import javax.swing.text.Document;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.bookmarks.BookmarkAPIAccessor;
+import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
+import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
+import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
-import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
 
@@ -70,6 +72,10 @@ import org.openide.util.NbBundle;
  */
 
 public final class Bookmark {
+    
+    static {
+        BookmarkAPIAccessor.INSTANCE = new BookmarkAPIAccessorImpl();
+    }
 
     public static final String BOOKMARK_ANNOTATION_TYPE = "editor-bookmark"; // NOI18N
 
@@ -86,6 +92,8 @@ public final class Bookmark {
      */
     private boolean         released;
     
+    private final BookmarkInfo info; // Hold name and key
+
     private Line            line;
     private AAnnotation     annotation;
     private Map<BookmarkList,LineListener>
@@ -98,13 +106,17 @@ public final class Bookmark {
      * The constructor is not public intentionally.
      * Please see <code>BookmarksApiPackageAccessor</code> for details.
      */
-    Bookmark (BookmarkList bookmarkList, int offset) {
+    Bookmark (BookmarkList bookmarkList, BookmarkInfo info, int offset) {
+        if (info == null) {
+            throw new IllegalArgumentException("info cannot be null"); // NOI18N
+        }
         this.bookmarkList = bookmarkList;
-        StyledDocument document = (StyledDocument) bookmarkList.getDocument ();
-        int lineNumber = NbDocument.findLineNumber (document, offset);
+        this.info = info;
+        Document document = bookmarkList.getDocument ();
+        int lineIndex = BookmarkUtils.offset2LineIndex(document, offset);
         DataObject dataObject = NbEditorUtilities.getDataObject (document);
         for (Line _line : lineToAnnotation.keySet ()) {
-            if (_line.getLineNumber () == lineNumber &&
+            if (_line.getLineNumber () == lineIndex &&
                 _line.getLookup().lookup (DataObject.class).equals (dataObject)
             ) {
                 this.line = _line;
@@ -115,18 +127,33 @@ public final class Bookmark {
                 }
             }
         }
-        annotation = new AAnnotation ();
         line = NbEditorUtilities.getLine (bookmarkList.getDocument (), offset, false);
-        lineToAnnotation.put (line, new WeakReference(annotation));
-        annotation.attach (line);
-        LineListener lineListener = bookmarkListToLineListener.get (bookmarkList);
-        if (lineListener == null) {
-            lineListener = new LineListener (bookmarkList);
-            bookmarkListToLineListener.put (bookmarkList, lineListener);
+        if (line != null) { // In tests it may be null
+            annotation = new AAnnotation ();
+            lineToAnnotation.put (line, new WeakReference<AAnnotation>(annotation));
+            annotation.attach (line);
+            LineListener lineListener = bookmarkListToLineListener.get (bookmarkList);
+            if (lineListener == null) {
+                lineListener = new LineListener (bookmarkList);
+                bookmarkListToLineListener.put (bookmarkList, lineListener);
+            }
+            line.addPropertyChangeListener (lineListener);
         }
-        line.addPropertyChangeListener (lineListener);
     }
 
+    /**
+     * Bookmark name may be used to identify bookmark in a bookmark manager.
+     * <br/>
+     * All its characters satisfy {@link Character#isJavaIdentifierPart(char) }.
+     * <br/>
+     * Since bookmarks are stored on a per-project manner the bookmark names may be duplicate
+     * across projects and there is no restriction to have unique names even
+     * within a single project.
+     */
+    /*public*/ String getName() {
+        return info.getName();
+    }
+    
     /**
      * Get offset of this bookmark.
      * <br>
@@ -134,19 +161,31 @@ public final class Bookmark {
      * inserts/removals).
      */
     public int getOffset () {
-        return NbDocument.findLineOffset (
-            (StyledDocument) bookmarkList.getDocument (), 
-            line.getLineNumber ()
-        );
+        return BookmarkUtils.lineIndex2Offset(bookmarkList.getDocument(), line.getLineNumber());
     }
 
     /**
-     * Get the index of the line at which this bookmark resides.
+     * Get zero-based index of line at which this bookmark resides.
      */
     public int getLineNumber () {
         return line.getLineNumber ();
     }
     
+    /**
+     * Current implementation returns a single char [0-9a-z] used for jumping
+     * to the bookmark by a keystroke in a Goto dialog or an empty string
+     * when no shortcut was assigned yet.
+     * <br/>
+     * Non-single char values are reserved for future use (current code ignores them).
+     * <br/>
+     * Since bookmarks are stored on a per-project manner the bookmark keys may be duplicate
+     * across projects and there is no restriction to have unique keys even
+     * within a single project. In case of conflict an arbitrary mark with the given key is chosen.
+     */
+    public String getKey() {
+        return info.getKey();
+    }
+
     /**
      * Get the bookmark list for which this bookmark was created.
      */
@@ -170,6 +209,10 @@ public final class Bookmark {
         released = true;
         annotation.detach ();
         lineToAnnotation.remove (line);
+    }
+    
+    BookmarkInfo info() {
+        return info;
     }
     
     
@@ -197,7 +240,7 @@ public final class Bookmark {
         private WeakReference<BookmarkList> bookmarkListReference;
 
         LineListener (BookmarkList bookmarkList) {
-            bookmarkListReference = new WeakReference (bookmarkList);
+            bookmarkListReference = new WeakReference<BookmarkList> (bookmarkList);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -214,5 +257,20 @@ public final class Bookmark {
             }
         }
     };
+
+    private static final class BookmarkAPIAccessorImpl extends BookmarkAPIAccessor {
+
+        @Override
+        public BookmarkInfo getInfo(Bookmark b) {
+            return b.info();
+        }
+
+        @Override
+        public Bookmark getBookmark(Document doc, BookmarkInfo b) {
+            return BookmarkList.get(doc).getBookmark(b);
+        }
+        
+    }
+    
 }
 

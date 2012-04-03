@@ -289,7 +289,7 @@ final class RepositoryRevision {
                 }
                 @Override
                 public Number getCopySrcRevision() {
-                    return message.getRevision();
+                    return null;
                 }
                 @Override
                 public String getCopySrcPath() {

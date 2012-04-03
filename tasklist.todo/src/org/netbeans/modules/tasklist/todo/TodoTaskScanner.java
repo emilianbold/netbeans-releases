@@ -337,7 +337,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                         (c == '[') || (c == ']') ||
                         (c == '?') || (c == '*') || (c == '+') ||
                         (c == '!') || (c == '|') || (c == '\\') ||
-                        (c == '^') || (c == '$')) {
+                        (c == '^') || (c == '$') || (c == '.')) {
                         sb.append('\\');
                     }
                     sb.append(c);

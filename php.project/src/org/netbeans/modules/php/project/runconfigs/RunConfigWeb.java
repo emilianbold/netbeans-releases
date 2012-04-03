@@ -57,26 +57,6 @@ public abstract class RunConfigWeb<T extends RunConfigWeb<?>> extends BaseRunCon
 
     //~ Methods
 
-    // XXX use this for url validation as well?
-    public URL getFullUrl() throws MalformedURLException, URISyntaxException {
-        URL retval = null;
-        if (StringUtils.hasText(url)) {
-            retval = new URL(url);
-        }
-        if (retval != null && StringUtils.hasText(indexRelativePath)) {
-            retval = new URL(retval, indexRelativePath);
-        }
-        if (retval != null && StringUtils.hasText(arguments)) {
-            retval = new URI(retval.getProtocol(), retval.getUserInfo(), retval.getHost(), retval.getPort(),
-                    retval.getPath(), arguments, retval.getRef()).toURL();
-        }
-        if (retval != null) {
-            return retval;
-        }
-        return null;
-
-    }
-
     public String getUrlHint() {
         try {
             URL fullUrl = getFullUrl();
@@ -89,6 +69,29 @@ public abstract class RunConfigWeb<T extends RunConfigWeb<?>> extends BaseRunCon
             // ignored
         }
         return null;
+    }
+
+    private URL getFullUrl() throws MalformedURLException, URISyntaxException {
+        URL retval = null;
+        if (StringUtils.hasText(url)) {
+            retval = new URL(url);
+        }
+        if (retval != null && StringUtils.hasText(indexRelativePath)) {
+            String projectUrl = retval.toExternalForm();
+            if (!projectUrl.endsWith("/")) { // NOI18N
+                projectUrl += "/"; // NOI18N
+            }
+            retval = new URL(projectUrl + indexRelativePath);
+        }
+        if (retval != null && StringUtils.hasText(arguments)) {
+            retval = new URI(retval.getProtocol(), retval.getUserInfo(), retval.getHost(), retval.getPort(),
+                    retval.getPath(), arguments, retval.getRef()).toURL();
+        }
+        if (retval != null) {
+            return retval;
+        }
+        return null;
+
     }
 
     //~ Getters & Setters

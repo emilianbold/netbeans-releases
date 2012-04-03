@@ -60,6 +60,7 @@ public class RemotePkgConfigTestCase extends MakeProjectTestBase {
 
     public RemotePkgConfigTestCase() {
         super("RemotePkgConfig");
+        System.setProperty("cnd.remote.default.sync", "rfs");
     }
 
     @Override

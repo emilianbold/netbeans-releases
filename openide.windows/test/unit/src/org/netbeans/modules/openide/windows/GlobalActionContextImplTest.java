@@ -43,7 +43,10 @@
 package org.netbeans.modules.openide.windows;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import javax.swing.JButton;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -55,6 +58,10 @@ import org.openide.windows.TopComponent;
  */
 public class GlobalActionContextImplTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(GlobalActionContextImplTest.class);
+    }
+
     public GlobalActionContextImplTest(String n) {
         super(n);
     }

@@ -50,6 +50,7 @@ made subject to such option by the copyright holder.
         <mapID target="calibrating" url="helppages/calibrating.html"/>
 	<mapID target="custom_filtersets" url="helppages/custom_filtersets.html"/>
         <mapID target="heap_taking" url="helppages/heap_taking.html"/>
+        <mapID target="heap_compare" url="helppages/heap_comparing.html"/>
         <mapID target="heapwalking" url="helppages/heapwalker.html"/>
         <mapID target="profile_attach" url="helppages/profile_attach.html"/>
 	<mapID target="profile_analyze_short" url="helppages/profile_analyze_short.html"/>
@@ -125,10 +126,11 @@ made subject to such option by the copyright holder.
         <mapID target="FreeFormProjectTypeProfiler.AntTaskSelectPanel.HelpCtx" url="helppages/profile_freeform.html"/>
         
         <!--CSH ID for root methods dialogs -->
-        <mapID target="RootMethodsPanel.HelpCtx" url="helppages/csh/csh_rootmethod_editing.html"/>
         <mapID target="ManualMethodSelect.HelpCtx" url="helppages/csh/csh_rootmethod_definenew.html"/>
-        <!-- not sure if this one is still used -->
-        <mapID target="ProjectSelectRootMethodsPanel.HelpCtx" url="helppages/profile_rootmethod.html"/>
+        <mapID target="ProjectSelectRootMethodsPanel.HelpCtx" url="helppages/csh/csh_rootmethod_edit.html"/>
+        <!-- Advanced dialog for Edit Root Methods -->
+        <mapID target="RootMethodsPanel.HelpCtx" url="helppages/csh/csh_rootmethod_editing.html"/>
+        <mapID target="ProjectSelectorPanel.HelpCtx" url="helppages/csh/csh_rootmethod_project.html"/>
 
         <!--CSH ID for set profiling points wizard -->
         <mapID target="PPointsWizardPanel1UI.HelpCtx" url="helppages/csh/csh_profilingpoint_new.html"/>

@@ -41,15 +41,15 @@
  */
 package org.netbeans.modules.uihandler;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
+import java.awt.GraphicsEnvironment;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.junit.Test;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -58,13 +58,16 @@ import org.netbeans.junit.NbTestCase;
  */
 public class ScreenSizeTest extends NbTestCase {
 
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ScreenSizeTest.class);
+    }
+
     private Object[] params = null;
 
     public ScreenSizeTest(String name) {
         super(name);
     }
 
-    @Test
     public void testScreenResolutionLogging() {
         Logger logger = Logger.getLogger("org.netbeans.ui");
         logger.setLevel(Level.ALL);

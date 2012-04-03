@@ -148,26 +148,26 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         return owners;
     }
     
-    private JComponent [] createVersioningSystemItems (VersioningSystem owner, Node[] nodes, boolean displayConnectAction) {
+    private JComponent [] createVersioningSystemItems (VersioningSystem vs, Node[] nodes, boolean displayConnectAction) {
         VCSContext ctx = VCSContext.forNodes(nodes);
         Action [] actions = null;
         if (displayConnectAction && ctx.getRootFiles().size() == 1) {
             // we have only one root. If it's disconnected, display only the Connect action instead of other actions (import, init etc. do not make sense)
-            VCSFileProxy root = owner.getTopmostManagedAncestor(ctx.getRootFiles().iterator().next());
+            VCSFileProxy root = vs.getTopmostManagedAncestor(ctx.getRootFiles().iterator().next());
             if (root != null) {
-                if (VersioningConfig.getDefault().isDisconnected(owner, root)) {
+                if (VersioningConfig.getDefault().isDisconnected(vs, root)) {
                     // repository is indeed disconnected, display only Connect action
-                    String displayName = owner.getMenuLabel();
-                    actions = new Action[] { new VersioningMainMenu.ConnectAction(owner, root, NbBundle.getMessage(ProjectMenuItem.class, "CTL_ConnectAction.name.vcs", displayName)) }; //NOI18N
+                    String displayName = vs.getMenuLabel();
+                    actions = new Action[] { new VersioningMainMenu.ConnectAction(vs, root, NbBundle.getMessage(ProjectMenuItem.class, "CTL_ConnectAction.name.vcs", displayName)) }; //NOI18N
                 }
             }
         }
         if (actions == null) {
             // repository is connected or the context not yet versioned
-            if (owner instanceof DelegatingVCS) {
-                actions = ((DelegatingVCS) owner).getInitActions(ctx);
+            if (vs instanceof DelegatingVCS) {
+                actions = ((DelegatingVCS) vs).getInitActions(ctx);
             } else {
-                VCSAnnotator an = owner.getVCSAnnotator();
+                VCSAnnotator an = vs.getVCSAnnotator();
                 if (an == null) return null; 
                 actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
             }
@@ -287,8 +287,8 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
             return super.getPopupMenu();
         }
 
-        private boolean addVersioningSystemItems (VersioningSystem owner, Node[] nodes, boolean displayConnectAction) {
-            JComponent[] items = createVersioningSystemItems(owner, nodes, displayConnectAction);
+        private boolean addVersioningSystemItems (VersioningSystem vs, Node[] nodes, boolean displayConnectAction) {
+            JComponent[] items = createVersioningSystemItems(vs, nodes, displayConnectAction);
             if (items != null && items.length > 0) {
                 for (JComponent item : items) {
                     add(item);

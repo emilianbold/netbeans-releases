@@ -112,7 +112,6 @@ public final class SuiteActions implements ActionProvider, ExecProject {
     private static final String COMMAND_DEBUG_JNLP = "debug-jnlp";
     private static final String COMMAND_DEBUG_OSGI = "debug-osgi";
     private static final String COMMAND_NBMS = "nbms";
-    private static final String COMMAND_PROFILE = "profile";
     private static final String COMMAND_PROFILE_OSGI = "profile-osgi";
     private static final String COMMAND_RUN_JNLP = "run-jnlp";
     private static final String COMMAND_RUN_OSGI = "run-osgi";
@@ -245,13 +244,14 @@ public final class SuiteActions implements ActionProvider, ExecProject {
         return ProjectSensitiveActions.projectCommandAction(COMMAND_DEBUG_OSGI, SUITE_ACTION_debug_osgi(), null);
     }
 
-    @ActionID(category="Project", id="org.netbeans.modules.apisupport.project.suite.profileOsgi")
-    @ActionRegistration(displayName="#SUITE_ACTION_profile_osgi", lazy=false)
-    @ActionReference(path=SUITE_OSGI_ACTIONS_PATH, position=500)
-    @Messages("SUITE_ACTION_profile_osgi=Profile in Felix")
-    public static Action profileOsgi() {
-        return ProjectSensitiveActions.projectCommandAction(COMMAND_PROFILE_OSGI, SUITE_ACTION_profile_osgi(), null);
-    }
+    // #203519: Action registration has been moved to org.netbeans.modules.profiler.nbimpl.actions.AntActions#profileOsgi()
+//    @ActionID(category="Project", id="org.netbeans.modules.apisupport.project.suite.profileOsgi")
+//    @ActionRegistration(displayName="#SUITE_ACTION_profile_osgi", lazy=false)
+//    @ActionReference(path=SUITE_OSGI_ACTIONS_PATH, position=500)
+//    @Messages("SUITE_ACTION_profile_osgi=Profile in Felix")
+//    public static Action profileOsgi() {
+//        return ProjectSensitiveActions.projectCommandAction(COMMAND_PROFILE_OSGI, SUITE_ACTION_profile_osgi(), null);
+//    }
 
     @ActionID(category="Project", id="org.netbeans.modules.apisupport.project.suite.branding")
     @ActionRegistration(displayName="#SUITE_ACTION_branding", lazy=false)

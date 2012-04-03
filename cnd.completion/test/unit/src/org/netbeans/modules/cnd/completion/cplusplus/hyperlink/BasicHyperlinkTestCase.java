@@ -889,6 +889,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug207843.cpp", 12, 11, "bug207843.cpp", 12, 5);
     }    
     
+    public void testBug210186() throws Exception {
+        // Bug 210186 - Unresolved variable like expression declaration
+        performTest("bug210186.cpp", 7, 17, "bug210186.cpp", 7, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

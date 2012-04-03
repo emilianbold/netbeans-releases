@@ -42,13 +42,16 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.test.RemoteApiTest;
-import org.openide.filesystems.FileObject;
+import org.openide.filesystems.*;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -122,6 +125,97 @@ public class RemoteLinksChangeLinkTestCase extends RemoteFileTestBase {
             assertTrue("New implementor should be valid", newImplementorValid);
             assertTrue("Child should be valid", childValid);
             assertTrue("Parent should be valid", parentValid);
+        } finally {
+            removeRemoteDirIfNotNull(baseDir);
+        }
+    }
+
+    @ForAllEnvironments
+    public void testChangedLinkListeners() throws Exception {
+        String baseDir = null;
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+
+            String fileName = "file";
+            String realDir1 = baseDir + "/real_dir_1";
+            String realDir2 = baseDir + "/real_dir_2";
+            String linkDirName = "link_dir";
+            String linkDir = baseDir + '/' + linkDirName;
+            String realFile1 = realDir1 + "/" + fileName;
+            String realFile2 = realDir2 + "/" + fileName;
+            String linkFile1 = linkDir + "/" + fileName;
+
+            String creationScript =
+                    "cd " + baseDir + "; " +
+                    "mkdir -p " + realDir1 + "; " +
+                    "mkdir -p " + realDir2 + "; " +
+                    "ln -s " + realDir1 + ' ' + linkDirName + "; " +
+                    "echo 123 > " + realFile1;
+
+            ProcessUtils.ExitStatus res1 = ProcessUtils.execute(execEnv, "sh", "-c", creationScript);
+            assertEquals("Error executing script \"" + creationScript + "\": " + res1.error, 0, res1.exitCode);
+
+            RemoteFileObject baseDirFO = getFileObject(baseDir);
+            RemoteFileObject realDirFO1 = getFileObject(realDir1);
+            RemoteFileObject realDirFO2 = getFileObject(realDir2);
+            RemoteFileObject linkDirFO = getFileObject(linkDir);
+            RemoteFileObject realFileFO1 = getFileObject(realFile1);
+            RemoteFileObject realFileFO2 = getFileObject(realFile1);
+
+            final List<FileEvent> eventList = Collections.synchronizedList(new ArrayList<FileEvent>());
+
+            FileChangeListener listener = new FileChangeListener() {
+                @Override
+                public void fileChanged(FileEvent fe) {
+                    eventList.add(fe);
+                }
+
+                @Override
+                public void fileAttributeChanged(FileAttributeEvent fe) {
+                    eventList.add(fe);
+                }
+
+                @Override
+                public void fileDataCreated(FileEvent fe) {
+                    eventList.add(fe);
+                }
+
+                @Override
+                public void fileFolderCreated(FileEvent fe) {
+                    eventList.add(fe);
+                }
+
+                @Override
+                public void fileRenamed(FileRenameEvent fe) {
+                    eventList.add(fe);
+                }
+
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    eventList.add(fe);
+                }
+            };
+            linkDirFO.addFileChangeListener(listener);
+            FileUtil.createData(realDirFO1, "file_2");
+            assertFalse("No events came after programmatic file creatin in dir 1", eventList.isEmpty());
+
+            String changeScript =
+                    "cd " + baseDir + "; " +
+                    "rm " + linkDirName + "; " +
+                    "ln -s " + realDir2 + ' ' + linkDirName + "; " +
+                    "";
+
+            ProcessUtils.ExitStatus res2 = ProcessUtils.execute(execEnv, "sh", "-c", changeScript);
+            assertEquals("Error executing script \"" + creationScript + "\": " + res1.error, 0, res1.exitCode);
+
+            eventList.clear();
+            baseDirFO.refresh();
+            FileUtil.createData(realDirFO1, "file_3");
+            assertTrue("Event list should be empty", eventList.isEmpty());
+            FileUtil.createData(realDirFO2, "file_4");
+            assertFalse("No events came after programmatic file creatin in dir 1", eventList.isEmpty());
+
+
         } finally {
             removeRemoteDirIfNotNull(baseDir);
         }

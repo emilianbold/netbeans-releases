@@ -147,6 +147,7 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
     @Override
     public void javaContextLeft() {
         attributes = null;
+        //table = null;
         idClass = null;
     }
 
@@ -195,6 +196,9 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
     }
 
     public Table getTable() {
+//        if(table == null){
+//            refresh(getTypeElement());
+//        }
         return table;
     }
 

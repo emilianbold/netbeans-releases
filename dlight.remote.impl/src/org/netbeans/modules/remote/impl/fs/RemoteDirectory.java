@@ -97,6 +97,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     /*package*/ RemoteDirectory(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
         super(wrapper, fileSystem, execEnv, parent, remotePath, cache);
+        if (cache.exists() && ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            // see issue #210125 Remote file system does not refresh directory that wasn't instantiated at connect time
+            fileSystem.getRefreshManager().scheduleRefresh(Arrays.<RemoteFileObjectBase>asList(this), false);
+        }
     }
 
     @Override

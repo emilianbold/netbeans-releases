@@ -41,16 +41,17 @@
  */
 package org.netbeans.modules.netbinox;
 
+import java.awt.GraphicsEnvironment;
 import org.netbeans.core.startup.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Locale;
 import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.SetupHid;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  * How does OSGi integration deals with dependency on swing?
@@ -58,21 +59,17 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jaroslav Tulach
  */
 public class NetigsoUsesSwingTest extends SetupHid {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NetigsoUsesSwingTest.class);
+    }
+
     private static Module m1;
     private static ModuleManager mgr;
     private File simpleModule;
 
     public NetigsoUsesSwingTest(String name) {
         super(name);
-    }
-
-    public static Test suite() {
-        Test t = null;
-//        t = new NetigsoTest("testOSGiCanRequireBundleOnNetBeans");
-        if (t == null) {
-            t = new NbTestSuite(NetigsoUsesSwingTest.class);
-        }
-        return t;
     }
 
     protected @Override void setUp() throws Exception {

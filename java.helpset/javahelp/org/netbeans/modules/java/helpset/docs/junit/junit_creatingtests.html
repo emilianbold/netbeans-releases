@@ -7,13 +7,13 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Creating a JUnit Test</title>
+<title>Creating a Unit Test</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>Creating a JUnit Test</h2>
+<h2>Creating a Unit Test</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The JUnit test generator enables you to create compilable test classes 
+<p>The unit test generator enables you to create compilable test classes 
   for use as skeletons in your unit tests. You can create unit tests for single
   classes and entire packages, as well as empty test skeletons to be used with
   sources you create later.</p>
@@ -30,14 +30,16 @@ you can <a href="#specify">specify a test directory in the project properties di
 <p><b>To create a test for a single class:</b></p>
 <ul>
   <li>Right-click the class in the Projects window and choose Tools &gt; Create 
-    JUnit Tests (Ctrl-Shift-U) to open the Create Tests dialog box.</li>
-    <li>Select the desired code generation options and click OK.</li>
+    Tests (Ctrl-Shift-U) to open the Create Tests dialog box.</li>
+  <li>Select a unit test framework.</li>
+  <li>Select the desired code generation options and click OK.</li>
 </ul>
 <p><b>To create a test suite:</b></p>
 <ol>
   <li>Right-click the package node containing the source files for which you want 
     to generate the test suite in the Projects window and choose Tools &gt; Create 
-    JUnit Tests (Ctrl-Shift-U) from the popup menu. </li>
+    Tests (Ctrl-Shift-U) from the popup menu. </li>
+  <li>Select a unit test framework.</li>
   <li>Select the Generate Test Suites checkbox.</li>
   <li>Select the desired code generation options and click OK.
     <p>The IDE generates test classes for all enclosed classes and stores them 
@@ -49,15 +51,15 @@ you can <a href="#specify">specify a test directory in the project properties di
 </ol>
 <ul class="note">
     <li>You can also create test suites by using the New File wizard
-    and selecting Test Suite in the the JUnit category.
+    and selecting Test Suite in the the JUnit category or the TestNG category.
     </li>
 </ul>
 
 <p><b>To create an empty test:</b></p>
 <ol>
   <li>Choose File  &gt; New File from the main menu.</li>
-  <li>In the New File wizard, select JUnit in the Categories pane  and JUnit
-    Test in the File Types pane. Click Next.</li>
+  <li>In the New File wizard, select JUnit or TestNG in the Categories pane and JUnit
+    Test or TestNG Test Case in the File Types pane. Click Next.</li>
     <li>Specify the test class name, folder and package.</li>
     <li>Select the desired code generation options and click Finish.</li>
 </ol>
@@ -69,7 +71,7 @@ you can <a href="#specify">specify a test directory in the project properties di
   <li>Define the properties of the test packages folder in the Test Package Folders list.
   You can add or remove the folders that are used for test packages and modify the names of the test packages folder
   as it appears in the Projects window. Click Close.
-  <p><b>Your project must have a test package folder to generate JUnit tests.</b></p></li>
+  <p><b>Your project must have a test package folder to generate unit tests.</b></p></li>
 </ol>
 <ul class="note">
     <li>If the test packages folder for your project is missing or unavailable, you can create a new folder in your project and 
@@ -78,8 +80,8 @@ then designate the new folder as the test packages folder in the project's Prope
 
 <dl> 
   <dt><a name="seealso">See Also</a></dt>
-  <dd><a href="junit_runningtests.html">Running a JUnit Test</a></dd>
-  <dd><a href="junit_about.html">About JUnit</a></dd>
+  <dd><a href="junit_runningtests.html">Running a Unit Test</a></dd>
+  <dd><a href="junit_about.html">About Unit Testing</a></dd>
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>

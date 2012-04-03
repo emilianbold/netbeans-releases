@@ -46,6 +46,7 @@ package org.openide.explorer.view;
 
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.lang.ref.Reference;
@@ -61,6 +62,8 @@ import javax.swing.JFrame;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
@@ -80,6 +83,10 @@ import org.openide.util.actions.SystemAction;
  * @author  Marian Petras, Andrei Badea
  */
 public final class TreeViewTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TreeViewTest.class);
+    }
 
     protected @Override int timeOut() {
         return 500000;

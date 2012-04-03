@@ -44,21 +44,22 @@
 
 package org.netbeans.modules.cnd.dwarfdump.reader;
 
-import org.netbeans.modules.cnd.dwarfdump.FileMagic;
-import org.netbeans.modules.cnd.dwarfdump.Magic;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
-import org.netbeans.modules.cnd.dwarfdump.elf.ElfHeader;
-import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
-import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
-import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
-import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.FileMagic;
+import org.netbeans.modules.cnd.dwarfdump.Magic;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
+import org.netbeans.modules.cnd.dwarfdump.elf.ElfHeader;
+import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
+import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
+import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
+import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 import org.netbeans.modules.cnd.dwarfdump.section.SymTabSection;
-import org.netbeans.modules.cnd.dwarfdump.trace.TraceDwarf;
 
 /**
  *
@@ -277,8 +278,8 @@ public class ElfReader extends ByteStreamReader {
         for (int j = 0; j < ncmds; j++){
             int cmd = readInt();
             int cmdSize = readInt();
-            if (TraceDwarf.TRACED) {
-                System.out.println("Load command: " + LoadCommand.valueOf(cmd) + " (" + cmd + ")"); //NOI18N
+            if (Dwarf.LOG.isLoggable(Level.FINE)) {
+                Dwarf.LOG.log(Level.FINE, "Load command: {0} ({1})", new Object[]{LoadCommand.valueOf(cmd), cmd}); //NOI18N
             }
             if (LoadCommand.LC_SEGMENT.is(cmd) || LoadCommand.LC_SEGMENT_64.is(cmd) ) { //LC_SEGMENT LC_SEGMENT64
                 skipBytes(16);
@@ -327,8 +328,10 @@ public class ElfReader extends ByteStreamReader {
                 skipBytes(cmdSize - 8);
             }
         }
-        if (TraceDwarf.TRACED && stringTableSection!=null ) {
-            stringTableSection.dump(System.out);
+        if (stringTableSection!=null ) {
+            if (Dwarf.LOG.isLoggable(Level.FINE)) {
+                stringTableSection.dump(System.out);
+            }
         }
         if (headers.isEmpty() || stringTableSection == null){
             if (isThereAnyLinkedObjectFiles(stringTableSection)) {
@@ -419,8 +422,8 @@ public class ElfReader extends ByteStreamReader {
             h.sh_offset = offset;
             h.sh_flags = segFlags;
             return h;
-        } else if (TraceDwarf.TRACED) {
-            System.out.println("Segment,Section: " + segment + "," + section); //NOI18N
+        } else if (Dwarf.LOG.isLoggable(Level.FINE)) {
+            Dwarf.LOG.log(Level.FINE, "Segment,Section: {0},{1}", new Object[]{segment, section}); //NOI18N
         }
         return null;
     }
@@ -540,7 +543,7 @@ public class ElfReader extends ByteStreamReader {
         
         byte[] bytes = new byte[8];
         read(bytes);
-        String name = null;
+        String name;
         if (bytes[0] == '/'){
             int length = 0;
             for (int j = 1; j < 8; j++){
@@ -569,7 +572,7 @@ public class ElfReader extends ByteStreamReader {
         return h;
     }
     
-    public ElfSection getSection(String sectionName) {
+    public ElfSection getSection(String sectionName) throws IOException {
         Integer sectionIdx = sectionsMap.get(sectionName);
         
         if (sectionIdx == null) {
@@ -587,7 +590,7 @@ public class ElfReader extends ByteStreamReader {
         return sectionsMap.get(sectionName);
     }
     
-    ElfSection initSection(Integer sectionIdx, String sectionName) {
+    ElfSection initSection(Integer sectionIdx, String sectionName) throws IOException {
         return null;
     }
     

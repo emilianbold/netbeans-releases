@@ -44,10 +44,12 @@
 
 package org.netbeans;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import junit.textui.TestRunner;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
@@ -58,6 +60,11 @@ import org.openide.util.datatransfer.ExClipboard;
  * @see "#40693"
  */
 public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NbClipboardIsUsedBySwingComponentsTest.class);
+    }
+
     private Clip clip;
     private javax.swing.JTextField field;
     

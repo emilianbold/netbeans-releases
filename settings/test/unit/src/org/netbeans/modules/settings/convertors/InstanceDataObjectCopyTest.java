@@ -45,9 +45,12 @@
 package org.netbeans.modules.settings.convertors;
 
 import java.awt.Button;
+import java.awt.GraphicsEnvironment;
 import java.util.Date;
 import java.io.*;
 import javax.swing.Action;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.openide.awt.Actions;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
@@ -60,6 +63,11 @@ import org.openide.util.*;
  * @author Jaroslav Tulach
  */
 public class InstanceDataObjectCopyTest extends org.netbeans.junit.NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(InstanceDataObjectCopyTest.class);
+    }
+
     private FileObject fo;
     private Action openAction;
     

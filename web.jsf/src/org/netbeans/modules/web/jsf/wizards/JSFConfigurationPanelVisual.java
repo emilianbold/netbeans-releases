@@ -51,6 +51,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,9 +87,13 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -103,15 +109,12 @@ import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentProvider;
 import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel.LibraryType;
 import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel.PreferredLanguage;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -120,6 +123,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener  {
 
+    private static final RequestProcessor RP = new RequestProcessor("JSF worker", 1);
     private static final Logger LOG = Logger.getLogger(JSFConfigurationPanelVisual.class.getName());
 
     private static final String JSF_SERVLET_NAME="Faces Servlet";   //NOI18N
@@ -147,8 +151,9 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private JSFComponentsTableModel jsfComponentsTableModel;
     private TreeMap<String, JsfComponentCustomizer> jsfComponentCustomizers = new TreeMap<String, JsfComponentCustomizer>();
 
-    private static final Lookup.Result<? extends JsfComponentProvider> jsfComponentProviders =
-            Lookups.forPath(JsfComponentProvider.COMPONENTS_PATH).lookupResult(JsfComponentProvider.class);
+    private static final Collection<? extends JsfComponentProvider> jsfComponentProviders =
+            new ArrayList<JsfComponentProvider>(Lookups.forPath(JsfComponentProvider.COMPONENTS_PATH).
+            lookupResult(JsfComponentProvider.class).allInstances());
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -191,11 +196,52 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         initLibraries();
         initJsfComponentsLibraries();
 
+        // in customizer preselected included JSF library
+        if (customizer) {
+            preselectJsfLibrary();
+        }
+
         if (customizer) {
             enableComponents(false);
         } else {
             updateLibrary();
         }
+    }
+
+    private void preselectJsfLibrary() {
+        Runnable jsfLibararyUiSwitcher = new Runnable() {
+            @Override
+            public void run() {
+                Project project = FileOwnerQuery.getOwner(panel.getWebModule().getDocumentBase());
+                ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+                ClassPath compileClassPath = cpp.findClassPath(panel.getWebModule().getDocumentBase(), ClassPath.COMPILE);
+                compileClassPath.entries();
+                for (ClassPath.Entry entry : compileClassPath.entries()) {
+                    for (final LibraryItem jsfLibrary : jsfLibraries) {
+                        try {
+                            List<URI> cps = jsfLibrary.getLibrary().getURIContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
+                            for (URI uri : cps) {
+                                if (entry.getRoot().equals(URLMapper.findFileObject(uri.toURL()))) {
+                                    Mutex.EVENT.readAccess(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            rbRegisteredLibrary.setSelected(true);
+                                            enableComponents(false);
+                                            cbLibraries.setSelectedItem(jsfLibrary.getLibrary().getDisplayName());
+                                        }
+                                    });
+                                    return;
+                                }
+                            }
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+        };
+
+        RP.post(jsfLibararyUiSwitcher);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -278,7 +324,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 }
             }
         };
-        RequestProcessor.getDefault().post(libraryFinder);
+        RP.post(libraryFinder);
 
         libsInitialized = true;
 //        repaint();
@@ -290,7 +336,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             return;
 
         List<JsfComponentImplementation> jsfComponentDescriptors = new ArrayList<JsfComponentImplementation>();
-        for (JsfComponentProvider provider: jsfComponentProviders.allInstances()) {
+        for (JsfComponentProvider provider: jsfComponentProviders) {
             jsfComponentDescriptors.addAll(provider.getJsfComponents());
         }
 
@@ -1709,6 +1755,8 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 }
             };
             dialogDescriptor.setButtonListener(buttonsListener);
+            // set appropriate state of opened dialog - issue #206424
+            fireJsfDialogUpdate(jsfCustomizer, dialogDescriptor);
             DialogDisplayer.getDefault().notify(dialogDescriptor);
         }
 

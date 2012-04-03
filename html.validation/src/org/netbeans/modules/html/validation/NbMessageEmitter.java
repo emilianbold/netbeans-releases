@@ -32,7 +32,7 @@ import nu.validator.messages.ResultHandler;
 import nu.validator.messages.TextMessageTextHandler;
 import nu.validator.messages.types.MessageType;
 import nu.validator.source.SourceHandler;
-import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;

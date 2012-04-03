@@ -46,11 +46,14 @@ package org.openide.text;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
@@ -63,6 +66,11 @@ import org.openide.windows.CloneableTopComponent;
  */
 public class WrapEditorComponentTest extends NbTestCase
 implements CloneableEditorSupport.Env {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(WrapEditorComponentTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

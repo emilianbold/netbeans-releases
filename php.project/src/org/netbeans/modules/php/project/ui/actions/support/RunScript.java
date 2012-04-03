@@ -50,12 +50,9 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.awt.HtmlBrowser;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -179,14 +176,9 @@ public class RunScript {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(tmpFile.toURI().toURL());
                 }
                 if (options.isOpenResultInEditor()) {
-                    FileObject fo = FileUtil.toFileObject(tmpFile);
-                    DataObject dobj = DataObject.find(fo);
-                    EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                    ec.open();
+                    PhpProjectUtils.openFile(tmpFile);
                 }
             } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (CancellationException ex) {
                 // ignored

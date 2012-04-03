@@ -169,6 +169,10 @@ public class SanitizeSourceTest extends ParserTestBase {
         performTest("sanitize/sanitize016", "/*marker*/public function name(){^");
     }
 
+    public void testIssue204588() throws Exception {
+        performTest("sanitize/issue204588", "function __con^");
+    }
+
     // disabling the test, unitl I find out what is wrong
 //    public void test145494() throws Exception {
 //        performTest("sanitize/sanitize145494");

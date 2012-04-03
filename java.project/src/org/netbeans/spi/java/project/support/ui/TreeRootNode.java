@@ -65,7 +65,6 @@ import org.netbeans.modules.java.project.PackageDisplayUtils;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -81,7 +80,6 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
@@ -414,10 +412,16 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                 super.destroy();
             }
         }
+
+        @Override public boolean canRename() {
+            return parent == null; // XXX #210107
+        }
         
         @Override
         public void setName (final String name) {
             if (parent != null) {
+                throw new IllegalArgumentException("not supported"); // XXX #210107
+                /*
                 if (PackageViewChildren.isValidPackageName(name)) {
                     PackageRenameHandler h = Lookup.getDefault().lookup(PackageRenameHandler.class);
                     if (h != null) {
@@ -461,6 +465,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_InvalidPackageName(), NotifyDescriptor.INFORMATION_MESSAGE));
                 }
                 return;
+                */
             }
             if (Utilities.isJavaIdentifier (name)) {
                 super.setName (name);

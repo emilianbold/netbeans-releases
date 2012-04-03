@@ -160,7 +160,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
                 return parent.getMagic(this.getImplementor());
             }
         } catch (IOException ex) {
-            ex.printStackTrace(System.err);
+            System.err.println(ex.getMessage());
         }
         return null;
     }

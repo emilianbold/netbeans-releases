@@ -54,7 +54,9 @@ class APIAccessorImpl extends APIAccessor {
     @Override
     public VCSFileProxy createFlatFileProxy(FileObject fo) {
         VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
-        proxy.setFlat(true);
+        if(proxy != null) {
+            proxy.setFlat(true);
+        }
         return proxy;
     }
 

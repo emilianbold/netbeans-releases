@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * The toplevel Node in the LocalHistoryView
+ * The toplevel Node in the HistoryView
  * 
  * @author Tomas Stupka
  *
