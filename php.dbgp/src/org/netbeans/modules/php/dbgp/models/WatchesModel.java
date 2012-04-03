@@ -404,7 +404,7 @@ public class WatchesModel extends ViewModelSupport
             if(evt.getSource() instanceof Watch) {
                 Object node;
                 synchronized(getWatchesMap()) {
-                    node = getWatchesMap().get(evt.getSource());
+                    node = getWatchesMap().get((Watch) evt.getSource());
                 }
                 if(node != null) {
                     fireTableValueChanged(node, null);
