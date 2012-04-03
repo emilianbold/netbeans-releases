@@ -66,7 +66,6 @@ public class MergeRevisionsPanel extends ChangesetPickerPanel {
         super(repo, roots);
         initComponents();
         setInitMessageInfoFetcher(new HeadsInfoFetcher());
-        loadRevisions();
     }
 
     @Override
@@ -82,6 +81,11 @@ public class MergeRevisionsPanel extends ChangesetPickerPanel {
             accepted = !rev.getCSetShortID().equals(parentRevision.getChangesetId());
         }
         return accepted;
+    }
+
+    @Override
+    protected void loadRevisions () {
+        super.loadRevisions();
     }
 
     private void initComponents() {
