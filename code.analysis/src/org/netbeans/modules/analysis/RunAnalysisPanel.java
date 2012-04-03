@@ -106,7 +106,8 @@ import org.openide.util.NbBundle.Messages;
  * @author lahvac
  */
 public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListener {
-    
+
+    private static final String COMBO_PROTOTYPE = "999999999999999999999999999999999999999999999999999999999999";
     private final JPanel progress;
     private final RequiredPluginsPanel requiredPlugins;
     private       Collection<? extends AnalyzerFactory> analyzers;
@@ -400,6 +401,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jLabel2, gridBagConstraints);
 
+        configurationCombo.setPrototypeDisplayValue(COMBO_PROTOTYPE);
         configurationCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configurationComboActionPerformed(evt);
@@ -454,6 +456,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(singleInspectionRadio, gridBagConstraints);
 
+        inspectionCombo.setPrototypeDisplayValue(COMBO_PROTOTYPE);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
