@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
+import javax.swing.FocusManager;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
@@ -198,7 +199,7 @@ public final class ResultView extends TopComponent {
             return false;
     }
 
-    private ResultViewPanel getCurrentResultViewPanel(){
+    public ResultViewPanel getCurrentResultViewPanel(){
         if (getComponentCount() > 0) {
             Component comp = getComponent(0);
             if (comp instanceof JTabbedPane) {
@@ -460,13 +461,15 @@ public final class ResultView extends TopComponent {
      */
     ResultViewPanel addTab(SearchTask searchTask) {
 
+        int tabIndex = tryReuse();
         ResultViewPanel panel = new ResultViewPanel(searchTask);
         SearchComposition<?> composition = searchTask.getComposition();
         String title = composition.getSearchResultsDisplayer().getTitle();
 
         Component comp = getComponent(0);
         if (comp instanceof JTabbedPane) {
-            ((JTabbedPane) comp).addTab(title, null, panel, panel.getToolTipText());
+            ((JTabbedPane) comp).insertTab(title, null, panel,
+                    panel.getToolTipText(), tabIndex);
             ((JTabbedPane) comp).setSelectedComponent(panel);
             comp.validate();
         } else {
@@ -490,5 +493,33 @@ public final class ResultView extends TopComponent {
         validate();
         requestActive();
         return panel;
+    }
+
+    private int tryReuse() {
+        ResultViewPanel toReuse = SearchPanel.getTabToReuse();
+        Component comp = getComponent(0);
+        if (!(comp instanceof JTabbedPane)) {
+            return 0;
+        }
+        JTabbedPane tabs = (JTabbedPane) comp;
+        if (toReuse != null) {
+            for (int i = 0; i < tabs.getTabCount(); i++) {
+                if (tabs.getComponentAt(i) == toReuse) {
+                    removePanel(toReuse);
+                    return i;
+                }
+            }
+        }
+        return tabs.getTabCount();
+    }
+
+    public boolean isFocused() {
+        ResultViewPanel rvp = getCurrentResultViewPanel();
+        if (rvp != null) {
+            Component owner = FocusManager.getCurrentManager().getFocusOwner();
+            return owner != null && SwingUtilities.isDescendingFrom(owner, rvp);
+        } else {
+            return false;
+        }
     }
 }
