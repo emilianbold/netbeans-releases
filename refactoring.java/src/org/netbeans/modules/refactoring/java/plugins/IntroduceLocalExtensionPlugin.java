@@ -106,6 +106,7 @@ public final class IntroduceLocalExtensionPlugin extends JavaRefactoringPlugin {
             fastCheckProblem = createProblem(fastCheckProblem, true, msg);
             return fastCheckProblem;
         }
+
         String targetPackageName = refactoring.getPackageName();
         if (!RefactoringUtils.isValidPackageName(targetPackageName)) {
             String msg = NbBundle.getMessage(IntroduceLocalExtensionPlugin.class, "ERR_InvalidPackage", targetPackageName);
@@ -114,8 +115,13 @@ public final class IntroduceLocalExtensionPlugin extends JavaRefactoringPlugin {
         }
         
         FileObject targetRoot = refactoring.getSourceRoot();
+        if(targetRoot == null) {
+            String msg = NbBundle.getMessage(IntroduceLocalExtensionPlugin.class, "ERR_TargetFolderNotSet", targetPackageName);
+            fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+            return fastCheckProblem;
+        }
+        
         FileObject targetF = targetRoot.getFileObject(targetPackageName.replace('.', '/'));
-
         if ((targetF!=null && !targetF.canWrite())) {
             String msg = NbBundle.getMessage(IntroduceLocalExtensionPlugin.class, "ERR_PackageIsReadOnly", targetPackageName);
             fastCheckProblem = createProblem(fastCheckProblem, true, msg);
