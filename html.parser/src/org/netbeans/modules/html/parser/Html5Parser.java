@@ -56,19 +56,12 @@ import java.util.regex.Pattern;
 import nu.validator.htmlparser.impl.ErrorReportingTokenizer;
 import nu.validator.htmlparser.impl.Tokenizer;
 import nu.validator.htmlparser.io.Driver;
-import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
-import org.netbeans.modules.html.editor.lib.api.ParseException;
-import org.netbeans.modules.html.editor.lib.api.DefaultHtmlParseResult;
-import org.netbeans.modules.html.editor.lib.api.HelpResolver;
+import org.netbeans.modules.html.editor.lib.api.*;
 import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
-import org.netbeans.modules.html.editor.lib.api.HtmlParseResult;
-import org.netbeans.modules.html.editor.lib.api.HtmlParser;
-import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.html.editor.lib.api.model.NamedCharRef;
@@ -90,15 +83,23 @@ public class Html5Parser implements HtmlParser {
 
     private static final String PARSER_NAME = String.format("validator.nu html5 parser (%s).", Html5Parser.class); //NOI18N
     private static final HtmlModel HTML5MODEL = new Html5Model();
-    private static final Pattern TEMPLATING_MARKS_PATTERN = Pattern.compile("@@@"); //NOI18N
-    private static final String TEMPLATING_MARKS_MASK = "   "; //NOI18N
 
     @Override
     public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException {
-        String code = maskTemplatingMarks(source.getSourceCode().toString());
         try {
-            InputSource is = new InputSource(new StringReader(code));
-            final ParseTreeBuilder treeBuilder = new ParseTreeBuilder(code);
+            CharSequence sourceCode = source.getSourceCode();
+            MaskedAreas maskedAreas = lookup.lookup(MaskedAreas.class);
+
+            InputSource is;
+            //backward compatibility
+            if(maskedAreas == null) {
+                //pre html.editor.lib/3.2
+                is = new InputSource(new StringReader(sourceCode.toString()));
+            } else {
+                is = new InputSource(new MaskingChSReader(sourceCode, maskedAreas.positions(), maskedAreas.lens()));
+            }
+            
+            final ParseTreeBuilder treeBuilder = new ParseTreeBuilder(sourceCode);
             final Tokenizer tokenizer = new ErrorReportingTokenizer(treeBuilder);
 
             Driver driver = new Driver(tokenizer);
@@ -188,11 +189,6 @@ public class Html5Parser implements HtmlParser {
     public String getName() {
         return PARSER_NAME;
     }
-
-    static String maskTemplatingMarks(String code) {
-        return TEMPLATING_MARKS_PATTERN.matcher(code).replaceAll(TEMPLATING_MARKS_MASK);
-    }
-
     private static class Html5ParserResult extends DefaultHtmlParseResult {
 
         public Html5ParserResult(HtmlSource source, Node root, Collection<ProblemDescription> problems, HtmlVersion version) {
