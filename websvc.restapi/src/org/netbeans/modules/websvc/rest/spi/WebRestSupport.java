@@ -95,9 +95,15 @@ public abstract class WebRestSupport extends RestSupport {
     
     public static final String PROP_REST_RESOURCES_PATH = "rest.resources.path";//NOI18N
     public static final String PROP_REST_CONFIG_TYPE = "rest.config.type"; //NOI18N
+    public static final String PROP_REST_JERSEY = "rest.jersey.type";      //NOI18N
+    
     public static final String CONFIG_TYPE_IDE = "ide"; //NOI18N
     public static final String CONFIG_TYPE_USER= "user"; //NOI18N
     public static final String CONFIG_TYPE_DD= "dd"; //NOI18N
+    
+    public static final String JERSEY_CONFIG_IDE="ide";         //NOI18N
+    public static final String JERSEY_CONFIG_SERVER="server";   //NOI18N
+    
     public static final String REST_CONFIG_TARGET="generate-rest-config"; //NOI18N
     protected static final String JERSEY_SPRING_JAR_PATTERN = "jersey-spring.*\\.jar";//NOI18N
     protected static final String JERSEY_PROP_PACKAGES = "com.sun.jersey.config.property.packages"; //NOI18N
@@ -508,46 +514,41 @@ public abstract class WebRestSupport extends RestSupport {
         if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
             String configType = configPanel.getConfigType();
             setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, configType);
+            RestConfig rc = null;
             if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
                 String applicationPath = configPanel.getApplicationPath();
                 if (applicationPath.startsWith("/")) {
                     applicationPath = applicationPath.substring(1);
                 }
                 setProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH, applicationPath);
-                RestConfig rc = RestConfig.IDE;
+                rc = RestConfig.IDE;
                 rc.setResourcePath(applicationPath);
-                rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
-                rc.setServerJerseyLibSelected(configPanel.isServerJerseyLibSelected());
-                return rc;
+                
             } else if (WebRestSupport.CONFIG_TYPE_DD.equals(configType)) {
-                RestConfig rc = RestConfig.DD;
+                rc = RestConfig.DD;
                 rc.setResourcePath(configPanel.getApplicationPath());
-                /*
-                 * Fix for BZ#190982 -  Option "Add Jersey library" is 
-                 * ignored when RESTful webservice is created for JEE5
-                 * 
-                 * This is result of annotationConfigAvailable=false
-                 * which leads to configType==CONFIG_TYPE_DD.
-                 * So either it is important and jersey library 
-                 * SHOULD be really added or panel property is just 
-                 * ignored.
-                 * In the first case jersey library checkbox should 
-                 * be removed from UI at all. And user will
-                 * not be able to change its value.
-                 * 
-                 * Here is the fix for second case.
-                 * 
-                 * rc.setJerseyLibSelected(true);
-                 */
+            }
+            if ( rc!= null ){
                 rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
-                rc.setServerJerseyLibSelected(configPanel.isServerJerseyLibSelected());
-                return rc;
+                rc.setServerJerseyLibSelected(configPanel.isServerJerseyLibSelected()); 
+                if ( configPanel.isServerJerseyLibSelected() ){
+                    setProjectProperty(PROP_REST_JERSEY, JERSEY_CONFIG_SERVER );
+                }
+                else if ( configPanel.isJerseyLibSelected()){
+                    setProjectProperty(PROP_REST_JERSEY, JERSEY_CONFIG_IDE);
+                }
             }
         } else {
             setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, WebRestSupport.CONFIG_TYPE_USER);
             RestConfig rc = RestConfig.USER;
             rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
             rc.setServerJerseyLibSelected(configPanel.isServerJerseyLibSelected());
+            if ( configPanel.isServerJerseyLibSelected() ){
+                setProjectProperty(PROP_REST_JERSEY, JERSEY_CONFIG_SERVER );
+            }
+            else if ( configPanel.isJerseyLibSelected()){
+                setProjectProperty(PROP_REST_JERSEY, JERSEY_CONFIG_IDE);
+            }
             return rc;
         }
         return RestConfig.USER;
