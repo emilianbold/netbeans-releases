@@ -290,6 +290,9 @@ public class JspParserImpl implements JspParserAPI {
             if (name.startsWith("org.apache.tools.ant.")) { // NOI18N
                 Class<?> clazz = findClass(name);
                 return clazz;
+            } else if (name.startsWith("org.apache.jasper.")) { // NOI18N
+                Class<?> clazz = findClass(name);
+                return clazz;
             }
             return super.loadClass(name, resolve);
         }
