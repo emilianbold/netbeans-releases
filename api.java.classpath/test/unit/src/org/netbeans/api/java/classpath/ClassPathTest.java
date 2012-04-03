@@ -797,4 +797,27 @@ public class ClassPathTest extends NbTestCase {
         assertEquals(root, fo);
     }
 
+    public void testEquality() throws Exception {
+        assertTrue(ClassPath.EMPTY.equals(ClassPath.EMPTY));
+        assertFalse(ClassPath.EMPTY.equals(ClassPathSupport.createClassPath(new URL[0])));
+        assertFalse(ClassPathSupport.createClassPath(new URL[0]).equals(ClassPathSupport.createClassPath(new URL[0]))); // TBD; could revisit
+        class Custom implements ClassPathImplementation {
+            @Override public List<? extends PathResourceImplementation> getResources() {
+                return Collections.emptyList();
+            }
+            @Override public void addPropertyChangeListener(PropertyChangeListener listener) {}
+            @Override public void removePropertyChangeListener(PropertyChangeListener listener) {}
+            @Override public boolean equals(Object obj) {
+                return obj instanceof Custom;
+            }
+            @Override public int hashCode() {
+                return 0;
+            }
+        }
+        ClassPathImplementation cpi = new Custom();
+        assertTrue(ClassPathFactory.createClassPath(cpi).equals(ClassPathFactory.createClassPath(cpi)));
+        assertTrue(ClassPathFactory.createClassPath(cpi).equals(ClassPathFactory.createClassPath(new Custom())));
+        assertFalse(ClassPathFactory.createClassPath(cpi).equals(ClassPathSupport.createClassPath(new URL[0])));
+    }
+
 }
