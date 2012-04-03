@@ -41,12 +41,21 @@
  */
 package org.netbeans.modules.groovy.grailsproject.actions;
 
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage.ACTIONS;
+import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.CTL_GenerateAllAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle.Messages;
 
+@Messages("CTL_GenerateAllAction=Generate All")
+@ActionID(id = "org.netbeans.modules.groovy.grailsproject.actions.GenerateAllAction", category = "Build")
+@ActionRegistration(lazy = false, displayName = "#CTL_GenerateAllAction")
+@ActionReference(path = ACTIONS, position = 20,separatorAfter=50)
 public final class GenerateAllAction extends GenerateAction {
 
     public GenerateAllAction() {
-        super("generate-all", NbBundle.getMessage(GenerateAllAction.class, "CTL_GenerateAllAction"));
+        super("generate-all", CTL_GenerateAllAction());
     }
 
 }

@@ -113,8 +113,11 @@ public class RestConfigurationAction extends NodeAction  {
             if (!oldApplicationPath.startsWith(("/"))) { //NOI18N
                 oldApplicationPath="/"+oldApplicationPath;
             }
+            String oldJerseyConfig = restSupport.getProjectProperty(WebRestSupport.PROP_REST_JERSEY);
             // needs detect if Jersey Lib is present
-            boolean isJerseyLib = isOnClasspath(project,"com/sun/jersey/spi/container/servlet/ServletContainer.class"); //NOI18N
+            boolean isJerseyLib = oldJerseyConfig!= null;/*isOnClasspath(project,
+                    "com/sun/jersey/spi/container/servlet/ServletContainer.class")  //NOI18N
+                     */
             try {
                 ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
                         oldConfigType,
@@ -122,17 +125,19 @@ public class RestConfigurationAction extends NodeAction  {
                         isJerseyLib,
                         restSupport.getAntProjectHelper() != null 
                             && RestUtils.isAnnotationConfigAvailable(project),
-                        restSupport.hasServerJerseyLibrary());
+                        restSupport.hasServerJerseyLibrary(), oldJerseyConfig);
 
                 DialogDescriptor desc = new DialogDescriptor(configPanel,
-                    NbBundle.getMessage(RestConfigurationAction.class, "TTL_ApplicationConfigPanel"));
+                    NbBundle.getMessage(RestConfigurationAction.class, 
+                            "TTL_ApplicationConfigPanel"));                         // NOI18N
                 DialogDisplayer.getDefault().notify(desc);
                 if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
                     String newConfigType = configPanel.getConfigType();
                     String newApplicationPath = configPanel.getApplicationPath();
                     boolean addJersey = configPanel.isJerseyLibSelected();
-                    if (!oldConfigType.equals(newConfigType) || !oldApplicationPath.equals(newApplicationPath)) {
-
+                    if (!oldConfigType.equals(newConfigType) || 
+                            !oldApplicationPath.equals(newApplicationPath)) 
+                    {
                         if (!oldConfigType.equals(newConfigType)) {
                             // set up rest.config.type property
                             restSupport.setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, newConfigType);
@@ -178,19 +183,51 @@ public class RestConfigurationAction extends NodeAction  {
                             }
                         }
                     }
-                    if (!isOnClasspath(project,"com/sun/jersey/spi/container/servlet/ServletContainer.class")) {
+                    //if (!isOnClasspath(project,"com/sun/jersey/spi/container/servlet/ServletContainer.class")) {
                         // add jersey library
-                        boolean added = false;
-                        if ( configPanel.isServerJerseyLibSelected() ){
-                            JaxRsStackSupport support = restSupport.getJaxRsStackSupport();
-                            if ( support != null ){
-                                added = support.extendsJerseyProjectClasspath(project);
+                    boolean added = false;
+                    JaxRsStackSupport support = restSupport.getJaxRsStackSupport();
+                    if (configPanel.isServerJerseyLibSelected()) {
+                        restSupport.setProjectProperty(WebProjectRestSupport.PROP_REST_JERSEY, 
+                                WebProjectRestSupport.JERSEY_CONFIG_SERVER );
+                        if (support != null) {
+                            if ( WebProjectRestSupport.JERSEY_CONFIG_IDE.
+                                    equals(oldJerseyConfig))
+                            {
+                                JaxRsStackSupport.getDefault().
+                                    removeJaxRsLibraries(project);
                             }
-                        }
-                        if (!added || addJersey) {
-                            JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
+                            added = support
+                                    .extendsJerseyProjectClasspath(project);
                         }
                     }
+                    if (!added && addJersey) {
+                        restSupport.setProjectProperty(WebProjectRestSupport.PROP_REST_JERSEY, 
+                                WebProjectRestSupport.JERSEY_CONFIG_IDE );
+                        if ( WebProjectRestSupport.JERSEY_CONFIG_SERVER.
+                                equals(oldJerseyConfig) && support!= null )
+                        {
+                            support.removeJaxRsLibraries(project);
+                        }
+                        added = JaxRsStackSupport.getDefault()
+                                .extendsJerseyProjectClasspath(project);
+                    }
+                    if  (!added) {
+                        if ( WebProjectRestSupport.JERSEY_CONFIG_SERVER.
+                                equals(oldJerseyConfig) && support!= null )
+                        {
+                            support.removeJaxRsLibraries(project);
+                        }
+                        if ( WebProjectRestSupport.JERSEY_CONFIG_IDE.
+                                equals(oldJerseyConfig))
+                        {
+                            JaxRsStackSupport.getDefault().
+                                removeJaxRsLibraries(project);
+                        }
+                        restSupport.removeProjectProperties(new String[]{
+                                WebProjectRestSupport.PROP_REST_JERSEY});
+                    }
+                    //}
                  }
             } catch (IOException ex) {
                 ex.printStackTrace();

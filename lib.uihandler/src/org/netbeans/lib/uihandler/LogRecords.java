@@ -163,6 +163,13 @@ public final class LogRecords {
         } catch (RuntimeException ex) {
             LOG.log(Level.WARNING, "Input file corruption", ex);
             throw new IOException(ex);
+        } finally {
+            List<SAXParseException> fatalErrors = parser.getFatalErrors();
+            if (fatalErrors != null) {
+                for (SAXParseException ex : fatalErrors) {
+                    LOG.log(Level.WARNING, "Fatal SAX Parse Exception: Line = "+ex.getLineNumber()+", column = "+ex.getColumnNumber(), ex);
+                }
+            }
         }
     }   
 
@@ -188,29 +195,38 @@ public final class LogRecords {
         private Queue<FakeException> exceptions;
         private List<String> params;
         private StringBuilder chars = new StringBuilder();
-        private int fatalErrors;
+        private List<SAXParseException> fatalErrors;
         
         public Parser(Handler c) {
             this.callback = c;
         }
         
+        public List<SAXParseException> getFatalErrors() {
+            return fatalErrors;
+        }
         
+        @Override
         public void setDocumentLocator(Locator locator) {
         }
 
+        @Override
         public void startDocument() throws SAXException {
         }
 
+        @Override
         public void endDocument() throws SAXException {
             callback.flush();
         }
 
+        @Override
         public void startPrefixMapping(String prefix, String uri) throws SAXException {
         }
 
+        @Override
         public void endPrefixMapping(String prefix) throws SAXException {
         }
 
+        @Override
         public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.log(Level.FINEST, "uri: {0} localName: {1} qName: {2} atts: {3}", new Object[] { uri, localName, qName, atts });
@@ -228,6 +244,7 @@ public final class LogRecords {
             chars = new StringBuilder();
         }
         
+        @Override
         public void endElement(String uri, String localName, String qName) throws SAXException {
             if (current != null) {
                 String v = chars.toString();
@@ -373,21 +390,30 @@ public final class LogRecords {
             return result;
         }
         
+        @Override
         public void characters(char[] ch, int start, int length) throws SAXException {
             chars.append(ch, start, length);
         }
 
+        @Override
         public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
         }
 
+        @Override
         public void processingInstruction(String target, String data) throws SAXException {
         }
 
+        @Override
         public void skippedEntity(String name) throws SAXException {
         }
 
+        @Override
         public void fatalError(SAXParseException e) throws SAXException {
-            if (fatalErrors++ > 1000) {
+            if (fatalErrors == null) {
+                fatalErrors = new LinkedList<SAXParseException>();
+            }
+            fatalErrors.add(e);
+            if (fatalErrors.size() > 100) {
                 throw e;
             }
         }
@@ -404,6 +430,7 @@ public final class LogRecords {
         }
 
     
+        @Override
         protected Object handleGetObject(String arg0) {
             if (key.equals(arg0)) {
                 return value;
@@ -412,6 +439,7 @@ public final class LogRecords {
             }
         }
 
+        @Override
         public Enumeration<String> getKeys() {
             return Collections.enumeration(Collections.singleton(key));
         }
@@ -428,10 +456,12 @@ public final class LogRecords {
             more = 0;
         }
        
+        @Override
         public StackTraceElement[] getStackTrace() {
             return trace.toArray(new StackTraceElement[0]);
         }
 
+        @Override
         public String getMessage() {
             return message;
         }
@@ -444,6 +474,7 @@ public final class LogRecords {
          * org.netbeans.lib.uihandler.LogRecords$FakeException: NullPointerException ...
          * is not the best message - it's better to suppress FakeException
          */
+        @Override
         public String toString(){
             return message;
         }
