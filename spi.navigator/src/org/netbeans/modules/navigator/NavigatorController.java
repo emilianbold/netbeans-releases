@@ -88,8 +88,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.NodeListener;
-import org.openide.util.NbPreferences;
-import org.openide.util.WeakListeners;
+import org.openide.util.*;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
 
@@ -153,6 +152,9 @@ public final class NavigatorController implements LookupListener,
 
     private static final Logger LOG = Logger.getLogger(NavigatorController.class.getName());
     private boolean closed;
+
+    /***/
+    private RequestProcessor requestProcessor = new RequestProcessor(NavigatorController.class);
 
     /** Creates a new instance of NavigatorController */
     public NavigatorController(NavigatorDisplayer navigatorTC) {
@@ -290,14 +292,16 @@ public final class NavigatorController implements LookupListener,
      *
      * @force if true that update is forced even if it means clearing navigator content
      */
-    private void updateContext (boolean force) {
+    private void updateContext (final boolean force) {
         LOG.fine("updateContext entered, force: " + force);
         // #105327: don't allow reentrancy, may happen due to listening to node changes
         if (inUpdate) {
             LOG.fine("Exit because inUpdate already, force: " + force);
             return;
         }
+        boolean loadingProviders = false;
         inUpdate = true;
+        navigatorTC.getTopComponent().makeBusy(true);
 
         try {
         // #67599,108066: Some updates runs delayed, so it's possible that
@@ -309,7 +313,7 @@ public final class NavigatorController implements LookupListener,
 
         // #80155: don't empty navigator for Properties window and similar
         // which don't define activated nodes
-        Collection<? extends Node> nodes = curNodesRes.allInstances();
+        final Collection<? extends Node> nodes = curNodesRes.allInstances();
         if (nodes.isEmpty() && !shouldUpdate() && !force) {
             LOG.fine("Exit because act nodes empty, force: " + force);
             return;
@@ -336,70 +340,103 @@ public final class NavigatorController implements LookupListener,
                 curNode.addNodeListener(weakNodeL);
             }
         }
-
-        List<NavigatorPanel> providers = obtainProviders(nodes);
-        List oldProviders = currentPanels;
-
-        final boolean areNewProviders = providers != null && !providers.isEmpty();
-
-        // navigator remains empty, do nothing
-        if (oldProviders == null && providers == null) {
-            LOG.fine("Exit because nav remain empty, force: " + force);
-            return;
-        }
-
-        NavigatorPanel selPanel = navigatorTC.getSelectedPanel();
-
-        // don't call panelActivated/panelDeactivated if the same provider is
-        // still available, it's client's responsibility to listen to
-        // context changes while active
-        if (oldProviders != null && oldProviders.contains(selPanel) &&
-            providers != null && providers.contains(selPanel)) {
-            // trigger resultChanged() call on client side
-            clientsLookup.lookup(Node.class);
-            // #93123: refresh providers list if needed
-            if (!oldProviders.equals(providers)) {
-                currentPanels = providers;
-                navigatorTC.setPanels(providers, selPanel);
+        loadingProviders = true;
+        requestProcessor.post(new Runnable() {
+            @Override
+            public void run() {
+                final List<NavigatorPanel> providers = obtainProviders(nodes);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        showProviders(providers, force);
+                    }
+                });
             }
-            // #100122: update activated nodes of Navigator TC
-            updateActNodesAndTitle();
-
-            LOG.fine("Exit because same provider and panel, notified. Force: " + force);
-            return;
+        });
+        } finally {
+            if (!loadingProviders) {
+                inUpdate = false;
+                navigatorTC.getTopComponent().makeBusy(false);
+            }
         }
+    }
 
-        if (selPanel != null) {
-            // #61334: don't deactivate previous providers if there are no new ones
-            if (!areNewProviders && !force && null != providers) {
-                LOG.fine("Exit because no new providers, force: " + force);
+    
+    /** Shows obtained navigator providers
+     * @param providers obtained providers
+     * @force if true that update is forced even if it means clearing navigator content
+     */
+    private void showProviders(List<NavigatorPanel> providers, boolean force) {
+
+        try {
+            List oldProviders = currentPanels;
+
+            final boolean areNewProviders = providers != null && !providers.isEmpty();
+
+            // navigator remains empty, do nothing
+            if (oldProviders == null && providers == null) {
+                LOG.fine("Exit because nav remain empty, force: " + force);
                 return;
             }
-            selPanel.panelDeactivated();
-        }
 
-        // #67849: curNode's lookup cleanup, held through ClientsLookup delegates
-        clientsLookup.lookup(Node.class);
+            NavigatorPanel selPanel = navigatorTC.getSelectedPanel();
 
-        NavigatorPanel newSel = null;
-        if (areNewProviders) {
-            newSel = getLastSelPanel(providers);
-            if (newSel == null) {
-                newSel = providers.get(0);
+            // don't call panelActivated/panelDeactivated if the same provider is
+            // still available, it's client's responsibility to listen to
+            // context changes while active
+            if (oldProviders != null && oldProviders.contains(selPanel)
+                    && providers != null && providers.contains(selPanel)) {
+                // trigger resultChanged() call on client side
+                clientsLookup.lookup(Node.class);
+                // #93123: refresh providers list if needed
+                if (!oldProviders.equals(providers)) {
+                    currentPanels = providers;
+                    navigatorTC.setPanels(providers, selPanel);
+                }
+                // #100122: update activated nodes of Navigator TC
+                updateActNodesAndTitle();
+
+                LOG.fine("Exit because same provider and panel, notified. Force: " + force);
+                return;
             }
-            newSel.panelActivated(clientsLookup);
-        }
-        currentPanels = providers;
-        navigatorTC.setPanels(providers, newSel);
-        // selected panel changed, update selPanelLookup to listen correctly
-        panelLookup.lookup(Object.class);
 
-        updateActNodesAndTitle();
+            if (selPanel != null) {
+                // #61334: don't deactivate previous providers if there are no new ones
+                if (!areNewProviders && !force && null != providers) {
+                    LOG.fine("Exit because no new providers, force: " + force);
+                    return;
+                }
+                selPanel.panelDeactivated();
+            }
 
-        LOG.fine("Normal exit, change to new provider, force: " + force);
+            // #67849: curNode's lookup cleanup, held through ClientsLookup delegates
+            clientsLookup.lookup(Node.class);
+
+            NavigatorPanel newSel = null;
+            if (areNewProviders) {
+                newSel = getLastSelPanel(providers);
+                if (newSel == null) {
+                    newSel = providers.get(0);
+                }
+                newSel.panelActivated(clientsLookup);
+            }
+            currentPanels = providers;
+            navigatorTC.setPanels(providers, newSel);
+            // selected panel changed, update selPanelLookup to listen correctly
+            panelLookup.lookup(Object.class);
+
+            updateActNodesAndTitle();
+
+            LOG.fine("Normal exit, change to new provider, force: " + force);
         } finally {
-        inUpdate = false;
+            inUpdate = false;
+            navigatorTC.getTopComponent().makeBusy(false);
         }
+    }
+
+    /**for tests only */
+    boolean isInUpdate() {
+        return inUpdate;
     }
 
     /** Updates activated nodes of Navigator TopComponent and updates its
