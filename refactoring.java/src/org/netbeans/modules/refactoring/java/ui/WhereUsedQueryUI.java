@@ -136,6 +136,8 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         Scope customScope = panel.getCustomScope();
         if (customScope != null) {
             query.getContext().add(customScope);
+        } else {
+            query.getContext().remove(Scope.class);
         }
         if (kind == ElementKind.METHOD) {
             setForMethod();
