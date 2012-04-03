@@ -52,7 +52,6 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
@@ -105,7 +104,7 @@ import org.openide.util.Utilities;
  * @author Tomas Zezula
  */
 //@NotTreadSafe
-public class LuceneIndex implements Index.Transactional {
+public class LuceneIndex implements Index.Transactional, Runnable {
 
     private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N
     private static final String PROP_CACHE_SIZE = "java.index.size";    //NOI18N
@@ -341,6 +340,11 @@ public class LuceneIndex implements Index.Transactional {
         }
         return result;
     }
+    
+    @Override
+    public void run() {
+        dirCache.beginTx();
+    }
 
     @Override
     public void commit() throws IOException {
@@ -365,7 +369,7 @@ public class LuceneIndex implements Index.Transactional {
                         new Object[] { this, toAdd.size(), toDelete.size() }
                         );
             }
-            _doStore(toAdd, toDelete, docConvertor, queryConvertor, wr, false);
+            _doStore(toAdd, toDelete, docConvertor, queryConvertor, wr);
         } finally {
             // nothing committed upon failure - readers not affected
             boolean ok = false;
@@ -382,9 +386,12 @@ public class LuceneIndex implements Index.Transactional {
         }
     }
     
-    private <S, T> void _doStore(Collection<T> data, 
-            Collection<S> toDelete, Convertor<? super T, ? extends Document> docConvertor, 
-            Convertor<? super S, ? extends Query> queryConvertor, IndexWriter[] ret, boolean optimize) throws IOException {
+    private <S, T> void _doStore(
+            @NonNull final Collection<T> data, 
+            @NonNull final Collection<S> toDelete,
+            @NonNull final Convertor<? super T, ? extends Document> docConvertor, 
+            @NonNull final Convertor<? super S, ? extends Query> queryConvertor,
+            @NonNull final IndexWriter[] ret) throws IOException {
         final IndexWriter out = dirCache.acquireWriter();
         try {
             ret[0] = out;
@@ -450,7 +457,7 @@ public class LuceneIndex implements Index.Transactional {
         
         IndexWriter[] wr = new IndexWriter[1];
         try {
-            _doStore(data, toDelete, docConvertor, queryConvertor, wr, optimize);
+            _doStore(data, toDelete, docConvertor, queryConvertor, wr);
         } finally {
             LOGGER.log(Level.FINE, "Committing {0}", this);
             dirCache.close(wr[0]);
@@ -543,7 +550,7 @@ public class LuceneIndex implements Index.Transactional {
         private IndexReader reader;
         private volatile boolean closed;
         private volatile Status validCache;
-        private long lastUsedWriter;
+        private final OwnerReference owner = new OwnerReference();
         private final ReadWriteLock rwLock = new java.util.concurrent.locks.ReentrantReadWriteLock();
         
         /**
@@ -642,6 +649,7 @@ public class LuceneIndex implements Index.Transactional {
                 if (txWriter.get() == writer) {
                     LOGGER.log(Level.FINE, "TX writer cleared for {0}", this);
                     txWriter.remove();
+                    owner.clear();
                     refreshReader();
                 }
             }
@@ -757,13 +765,17 @@ public class LuceneIndex implements Index.Transactional {
                     return true;
                 } finally {
                     txWriter.remove();
+                    owner.clear();
                 }
             } else {
                 return false;
             }
         }
         
-        private static final long STALE_WRITER_THRESHOLD = 120 /* sec */ * 1000;
+        void beginTx() {
+            owner.assertNoModifiedWriter();
+            owner.setOwner(Thread.currentThread());
+        }
         
         /**
          * The writer operates under readLock(!) since we do not want to lock out readers,
@@ -782,11 +794,7 @@ public class LuceneIndex implements Index.Transactional {
             IndexWriter writer = txWriter.get();
             try {
                 if (writer != null) {
-                    long current = System.currentTimeMillis();
-                    if (current - lastUsedWriter > STALE_WRITER_THRESHOLD) {
-                        LOGGER.log(Level.WARNING, "Using stale writer, possibly forgotten call to store ?", new Throwable());
-                    }
-                    lastUsedWriter = current;
+                    owner.assertSingleThreadWriter();
                     ok = true;
                     return writer;
                 }
@@ -804,8 +812,8 @@ public class LuceneIndex implements Index.Transactional {
                         iwc.setMergePolicy(mergePolicy);
                     }
                     final IndexWriter iw = new FlushIndexWriter (this.fsDir, iwc);
-                    lastUsedWriter = System.currentTimeMillis();
                     txWriter.set(iw);
+                    owner.modified();
                     ok = true;
                     return iw;
                 } catch (IOException ioe) {
@@ -1010,6 +1018,58 @@ public class LuceneIndex implements Index.Transactional {
                 per = DEFAULT_CACHE_SIZE;
             }
             return (long) (per * Runtime.getRuntime().maxMemory());
+        }
+                
+        private final class OwnerReference {
+            
+            //@GuardedBy("this")
+            private Thread txThread;
+            //@GuardedBy("this")
+            private boolean modified;
+            
+            synchronized void setOwner (@NullAllowed final Thread thread) {
+                txThread = thread;
+                modified = false;
+            }
+            
+            synchronized void clear() {
+                txThread = null;
+                modified = false;
+            }
+            
+            synchronized void modified() {
+                modified = true;
+            }
+            
+            synchronized void assertNoModifiedWriter() {
+                if (txThread != null && modified) {
+                    final Throwable t = new Throwable(String.format(
+                        "Using stale writer, possibly forgotten call to store, " +  //NOI18N
+                        "old owner Thread %s, " +           //NOI18N
+                        "new owner Thread %s .",            //NOI18N
+                            txThread,
+                            Thread.currentThread()));
+                    LOGGER.log(
+                        Level.WARNING,
+                        "Using stale writer",   //NOI18N
+                        t);
+                }
+            }
+            
+            synchronized void assertSingleThreadWriter() {
+                if (txThread != null && txThread != Thread.currentThread()) {
+                    final Throwable t = new Throwable(String.format(
+                        "Other thread using opened writer, " +       //NOI18N
+                        "old owner Thread %s , " +          //NOI18N
+                        "new owner Thread %s.",             //NOI18N
+                            txThread,
+                            Thread.currentThread()));
+                    LOGGER.log(
+                        Level.WARNING,
+                        "Multiple writers",   //NOI18N
+                        t);
+                }
+            }
         }
         
         private final class CleanReference extends SoftReference<RAMDirectory[]> implements Runnable {
