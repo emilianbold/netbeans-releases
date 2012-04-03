@@ -84,6 +84,9 @@ function foo() {
 
 echo $argc;
 echo $argv;
+echo $php_errormsg;
+echo $HTTP_RAW_POST_DATA;
+echo $http_response_header;
 
 //END
 ?>

@@ -73,7 +73,14 @@ public class CppUtils {
             return string;
         }
         
+        final String FAKE_ENDING = "##!?!##"; // NOI18N        
         boolean firstToken = true;
+        // We need to take case about the following strings: "str\\    " (without quotes)
+        // Should be converted to: "str\\ " (without quotes)
+        boolean endsWithSpace = string.endsWith(" ") && string.trim().endsWith("\\"); // NOI18N
+        if (endsWithSpace) {
+            string = string.trim() + ' ' + FAKE_ENDING; // NOI18N
+        }
         ArrayList<String> tokens = tokenizeString(string);
         StringBuilder formattedString = new StringBuilder(string.length());
         for (String token : tokens) {
@@ -85,8 +92,8 @@ public class CppUtils {
             formattedString.append(token);
             firstToken = false;
         }
-        
-        return formattedString.toString();
+       
+        return endsWithSpace? formattedString.toString().replace(FAKE_ENDING, ""): formattedString.toString(); // NOI18N
     }
     
     public static ArrayList<String> tokenizeString(String string)  {
