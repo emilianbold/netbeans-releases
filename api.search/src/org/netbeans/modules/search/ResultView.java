@@ -50,6 +50,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
@@ -57,7 +58,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
 import javax.swing.FocusManager;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -71,7 +71,6 @@ import org.openide.awt.ActionReferences;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.NbBundle;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -97,6 +96,8 @@ public final class ResultView extends TopComponent {
 
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); //NOI18N
+    private static final String CARD_NAME_EMPTY = "empty";              //NOI18N
+    private static final String CARD_NAME_TABS = "tabs";                //NOI18N
     
     /** unique ID of <code>TopComponent</code> (singleton) */
     static final String ID = "search-results";                  //NOI18N
@@ -106,6 +107,7 @@ public final class ResultView extends TopComponent {
     private CloseListener closeL;
 
     private JPanel emptyPanel;
+    private JTabbedPane tabs;
 
     /**
      * Returns a singleton of this class.
@@ -140,12 +142,23 @@ public final class ResultView extends TopComponent {
         closeL = new CloseListener();
         
         emptyPanel = new JPanel();
-        add(emptyPanel, BorderLayout.CENTER);
-        if( isMacLaf ) {
+        emptyPanel.setOpaque(true);
+        tabs = TabbedPaneFactory.createCloseButtonTabbedPane();
+        tabs.setMinimumSize(new Dimension(0, 0));
+        tabs.addMouseListener(popL);
+        tabs.addPropertyChangeListener(closeL);
+        add(emptyPanel, CARD_NAME_EMPTY);
+        add(tabs, CARD_NAME_TABS);
+        if (isMacLaf) {
             emptyPanel.setBackground(macBackground);
+            tabs.setBackground(macBackground);
+            tabs.setOpaque(true);
             setBackground(macBackground);
             setOpaque(true);
+        } else {
+            emptyPanel.setBackground(SystemColor.text);
         }
+        contentCards.show(this, CARD_NAME_EMPTY);
     }
 
     @Deprecated
@@ -202,8 +215,8 @@ public final class ResultView extends TopComponent {
     public ResultViewPanel getCurrentResultViewPanel(){
         if (getComponentCount() > 0) {
             Component comp = getComponent(0);
-            if (comp instanceof JTabbedPane) {
-                comp = ((JTabbedPane)comp).getSelectedComponent();
+            if (tabs.getTabCount() > 0) {
+                comp = tabs.getSelectedComponent();
                 if (comp instanceof ResultViewPanel) {
                     return (ResultViewPanel) comp;
                 }
@@ -214,34 +227,6 @@ public final class ResultView extends TopComponent {
         return null;
     }
 
-    private void addTabPanel(JPanel panel) {
-        Component comp = getComponent(0);
-        if (comp instanceof JTabbedPane) {
-            ((JTabbedPane) comp).addTab(getTabTitle(panel), null, panel, panel.getToolTipText());
-            ((JTabbedPane) comp).setSelectedComponent(panel);
-            comp.validate();
-        } else {
-            remove(comp);
-            JTabbedPane pane = TabbedPaneFactory.createCloseButtonTabbedPane();
-            pane.setMinimumSize(new Dimension(0, 0));
-            pane.addMouseListener(popL);
-            pane.addPropertyChangeListener(closeL);
-            if( isMacLaf ) {
-                pane.setBackground(macBackground);
-                pane.setOpaque(true);
-            }
-            add(pane, BorderLayout.CENTER);
-            if (comp instanceof ResultViewPanel){
-                pane.addTab(getTabTitle(comp), null, comp, ((JPanel) comp).getToolTipText());
-            }
-            pane.addTab(getTabTitle(panel), null, panel, panel.getToolTipText());
-            pane.setSelectedComponent(panel);
-            pane.validate();
-        }
-        validate();
-        requestActive();
-    }
-
     private String getTabTitle(Component panel){
         return NbBundle.getMessage(ResultView.class,
                                    "TEXT_MSG_RESULTS_FOR_X",   //NOI18N
@@ -250,19 +235,16 @@ public final class ResultView extends TopComponent {
 
     private void updateTabTitle(JPanel panel) {
         if (getComponentCount() != 0) {
-            Component comp = getComponent(0);
-            if (comp instanceof JTabbedPane) {
-                JTabbedPane pane = (JTabbedPane)comp;
-                int index = pane.indexOfComponent(panel);
-                pane.setTitleAt(index, getTabTitle(panel));
-                pane.setToolTipTextAt(index, panel.getToolTipText());
+            if (tabs.getTabCount() > 0) {
+                int index = tabs.indexOfComponent(panel);
+                tabs.setTitleAt(index, getTabTitle(panel));
+                tabs.setToolTipTextAt(index, panel.getToolTipText());
             }
         }
     }
     private void removePanel(JPanel panel) {
         Component comp = getComponentCount() > 0 ? getComponent(0) : null;
-        if (comp instanceof JTabbedPane) {
-            JTabbedPane tabs = (JTabbedPane) comp;
+        if (tabs.getTabCount() > 0) {
             if (panel == null) {
                 panel = (JPanel) tabs.getSelectedComponent();
             }
@@ -271,14 +253,10 @@ public final class ResultView extends TopComponent {
                 rvp.getSearchComposition().terminate();
             }
             tabs.remove(panel);
-            if (tabs.getComponentCount() == 1) {
-                Component c = tabs.getComponent(0);
-                tabs.removeMouseListener(popL);
-                tabs.removePropertyChangeListener(closeL);
-                remove(tabs);
-                add(c, BorderLayout.CENTER);
-                setName(((JPanel)c).getToolTipText());
+            if (tabs.getTabCount() == 0) {
+                contentCards.show(this, CARD_NAME_EMPTY);
             }
+            this.repaint();
         } else if (comp instanceof ResultViewPanel)  {
             ResultViewPanel rvp = (ResultViewPanel)comp;
             if (rvp.isSearchInProgress()){
@@ -399,9 +377,7 @@ public final class ResultView extends TopComponent {
     private Map<SearchTask, ReplaceTask> searchToReplaceMap = new HashMap();
 
     private void closeAll(boolean butCurrent) {
-        Component comp = getComponent(0);
-        if (comp instanceof JTabbedPane) {
-            JTabbedPane tabs = (JTabbedPane) comp;
+        if (tabs.getTabCount() > 0) {
             Component current = tabs.getSelectedComponent();
             Component[] c =  tabs.getComponents();
             for (int i = 0; i< c.length; i++) {
@@ -467,11 +443,14 @@ public final class ResultView extends TopComponent {
         String title = composition.getSearchResultsDisplayer().getTitle();
 
         Component comp = getComponent(0);
-        if (comp instanceof JTabbedPane) {
-            ((JTabbedPane) comp).insertTab(title, null, panel,
+        if (tabs != null) {
+            if (tabs.getTabCount() == 0) {
+                contentCards.show(this, CARD_NAME_TABS);
+            }
+            tabs.insertTab(title, null, panel,
                     panel.getToolTipText(), tabIndex);
-            ((JTabbedPane) comp).setSelectedComponent(panel);
-            comp.validate();
+            tabs.setSelectedComponent(panel);
+            tabs.validate();
         } else {
             remove(comp);
             JTabbedPane pane = TabbedPaneFactory.createCloseButtonTabbedPane();
@@ -497,17 +476,14 @@ public final class ResultView extends TopComponent {
 
     private int tryReuse() {
         ResultViewPanel toReuse = SearchPanel.getTabToReuse();
-        Component comp = getComponent(0);
-        if (!(comp instanceof JTabbedPane)) {
+        if (tabs.getTabCount() == 0) {
             return 0;
         }
-        JTabbedPane tabs = (JTabbedPane) comp;
         if (toReuse != null) {
-            for (int i = 0; i < tabs.getTabCount(); i++) {
-                if (tabs.getComponentAt(i) == toReuse) {
-                    removePanel(toReuse);
-                    return i;
-                }
+            int index = tabs.indexOfComponent(toReuse);
+            if (index >= 0) {
+                removePanel(toReuse);
+                return index;
             }
         }
         return tabs.getTabCount();
