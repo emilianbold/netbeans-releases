@@ -762,6 +762,11 @@ public class ElementsFactory {
             this.matchingCloseTag = closeTag;
         }
         
+        @Override
+        public String toString() {
+            return new StringBuilder().append(name()).append("(").append(type().name()).append(")").append("; (virtual)").toString();
+        }
+
     }
 
     //it would be better design/memory usage not to reuse commonopentag, but since there's just

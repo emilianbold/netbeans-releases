@@ -46,9 +46,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.classpath.CommonPhpSourcePath;
+import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
 import org.netbeans.modules.php.project.classpath.PhpSourcePathImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -95,10 +97,27 @@ public final class PhpSourcePath {
     public static FileType getFileType(FileObject file) {
         Parameters.notNull("file", file);
 
-        PhpSourcePathImplementation phpSourcePath = getPhpOptionsForProjectFile(file);
-        if (phpSourcePath != null) {
-            return phpSourcePath.getFileType(file);
+        // first, check source CP
+        ClassPath classPath = ClassPath.getClassPath(file, SOURCE_CP);
+        if (classPath != null && classPath.contains(file)) {
+            // it is a source file
+            return getPhpSourcePathForProjectFile(file).getFileType(file);
         }
+        // now, check include path of opened projects
+        classPath = IncludePathClassPathProvider.findProjectIncludePath(file);
+        if (classPath != null && classPath.contains(file)) {
+            // internal?
+            for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
+                if (dir.equals(file)
+                        || FileUtil.isParentOf(dir, file)) {
+                    return FileType.INTERNAL;
+                }
+            }
+            // include
+            return FileType.INCLUDE;
+        }
+        // perhaps a file without a project or a file on global include path
+        // in fact, this is not supported by the editor yet (model does not work for a file without a project)
         return DEFAULT_PHP_SOURCE_PATH.getFileType(file);
     }
 
@@ -146,7 +165,7 @@ public final class PhpSourcePath {
         if (file == null) {
             return DEFAULT_PHP_SOURCE_PATH.getIncludePath();
         }
-        PhpSourcePathImplementation phpSourcePath = getPhpOptionsForProjectFile(file);
+        PhpSourcePathImplementation phpSourcePath = getPhpSourcePathForProjectFile(file);
         if (phpSourcePath != null) {
             return phpSourcePath.getIncludePath();
         }
@@ -167,14 +186,14 @@ public final class PhpSourcePath {
             throw new IllegalArgumentException("valid directory needed");
         }
 
-        PhpSourcePathImplementation phpSourcePath = getPhpOptionsForProjectFile(directory);
+        PhpSourcePathImplementation phpSourcePath = getPhpSourcePathForProjectFile(directory);
         if (phpSourcePath != null) {
             return phpSourcePath.resolveFile(directory, fileName);
         }
         return DEFAULT_PHP_SOURCE_PATH.resolveFile(directory, fileName);
     }
 
-    private static PhpSourcePathImplementation getPhpOptionsForProjectFile(FileObject file) {
+    private static PhpSourcePathImplementation getPhpSourcePathForProjectFile(FileObject file) {
         Project project = FileOwnerQuery.getOwner(file);
         if (project == null) {
             return null;
