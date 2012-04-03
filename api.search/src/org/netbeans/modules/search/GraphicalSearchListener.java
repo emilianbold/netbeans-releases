@@ -56,7 +56,6 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.search.ui.FileObjectPropertySet;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.SearchFilterDefinition;
-import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
@@ -117,6 +116,7 @@ class GraphicalSearchListener<R> extends SearchListener {
             }
         });
         progressHandle.start();
+        resultViewPanel.searchStarted();
         searchComposition.getSearchResultsDisplayer().searchStarted();
         Collection<? extends Savable> unsaved =
                 Savable.REGISTRY.lookupAll(Savable.class);
@@ -132,6 +132,7 @@ class GraphicalSearchListener<R> extends SearchListener {
             progressHandle.finish();
             progressHandle = null;
         }
+        resultViewPanel.searchFinished();
         searchComposition.getSearchResultsDisplayer().searchFinished();
     }
 

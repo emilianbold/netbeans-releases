@@ -67,7 +67,6 @@ import org.apache.maven.index.updater.IndexUpdateRequest;
 import org.apache.maven.index.updater.IndexUpdater;
 import org.apache.maven.index.updater.ResourceFetcher;
 import org.apache.maven.index.updater.WagonHelper;
-import org.apache.maven.settings.Mirror;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
@@ -95,8 +94,6 @@ import org.openide.modules.Places;
 import org.openide.util.*;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.util.repository.DefaultMirrorSelector;
 
 @ServiceProviders({
     @ServiceProvider(service=RepositoryIndexerImplementation.class),
@@ -236,7 +233,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             initIndexer();
 
             IndexingContext context = indexer.getIndexingContexts().get(info.getId());
-            String indexUpdateUrl = findIndexUpdateUrlConsideringMirrors(info);
+            String indexUpdateUrl = info.getIndexUpdateUrl();
             if (context != null) {
                 String contexturl = context.getIndexUpdateUrl();
                 File contextfile = context.getRepository();
@@ -315,45 +312,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
         }
         return index;
-    }
-
-    private String findIndexUpdateUrlConsideringMirrors(RepositoryInfo info) { // #192064
-        String direct = info.getIndexUpdateUrl();
-        if (direct == null) {
-            return null; // local
-        }
-        MavenEmbedder embedder2 = EmbedderFactory.getOnlineEmbedder();
-        DefaultMirrorSelector selectorNoGroups = new DefaultMirrorSelector();
-        DefaultMirrorSelector selectorWithGroups = new DefaultMirrorSelector();
-        for (Mirror mirror : embedder2.getSettings().getMirrors()) {
-            String mirrorOf = mirror.getMirrorOf();
-            if (!mirrorOf.contains("*")/* XXX list might be used just for variant repo names: && !mirrorOf.contains(",")*/) {
-                selectorNoGroups.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirrorOf, mirror.getMirrorOfLayouts());
-            }
-            selectorWithGroups.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirrorOf, mirror.getMirrorOfLayouts());
-        }
-        RemoteRepository original = new RemoteRepository(info.getId(), /* XXX do we even support any other layout?*/"default", info.getRepositoryUrl());
-        RemoteRepository mirrored = selectorNoGroups.getMirror(original);
-        if (mirrored != null) {
-            String index = addIndex(mirrored.getUrl());
-            LOGGER.log(Level.FINE, "Mirroring {0} to {1}", new Object[] {direct, index});
-            return index;
-        } else {
-            mirrored = selectorWithGroups.getMirror(original);
-            if (mirrored != null) {
-                // XXX consider displaying warning in GUI; use NbPreferences.root().node("org/netbeans/modules/maven/showQuestions")
-                LOGGER.log(Level.WARNING, "Will not mirror {0} to {1}", new Object[] {direct, addIndex(mirrored.getUrl())});
-            } else {
-                LOGGER.log(Level.FINE, "No mirror for {0}", direct);
-            }
-            return direct;
-        }
-    }
-    private String addIndex(String baseURL) {
-        if (!baseURL.endsWith("/")) {
-            baseURL += "/";
-        }
-        return baseURL + ".index/"; // NOI18N
     }
 
     /**

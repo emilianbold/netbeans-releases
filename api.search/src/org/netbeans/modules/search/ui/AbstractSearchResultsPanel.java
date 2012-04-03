@@ -51,12 +51,14 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import org.netbeans.api.search.SearchControl;
+import org.netbeans.modules.search.ResultView;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.openide.explorer.ExplorerManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -180,6 +182,13 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         }
 
         toolBar.add(btnStop);
+
+        btnStop.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ResultView.class,
+                "ACS_TEXT_BUTTON_STOP"));                               //NOI18N
+        btnModifySearch.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ResultView.class,
+                "ACS_TEXT_BUTTON_CUSTOMIZE"));                          //NOI18N
     }
 
     protected void sizeButton(AbstractButton button) {

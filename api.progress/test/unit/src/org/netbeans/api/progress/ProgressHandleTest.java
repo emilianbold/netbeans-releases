@@ -332,7 +332,7 @@ public class ProgressHandleTest extends NbTestCase {
         }
     }
 
-  
+    @RandomlyFails // NB-Core-Build #808
     public void testIfLongOnesGetProcessed() throws Exception {
         assert !SwingUtilities.isEventDispatchThread();
         PingingUI ui = new PingingUI();
@@ -347,7 +347,8 @@ public class ProgressHandleTest extends NbTestCase {
         proghandle.finish();
         assertTrue(ui.pinged);
     } 
-    
+
+    @RandomlyFails // if sleep is too short
     public void testIfCustomLongOnesGetProcessed() throws Exception {
         assert !SwingUtilities.isEventDispatchThread();
         PingingUI ui = new PingingUI();

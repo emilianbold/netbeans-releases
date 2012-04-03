@@ -95,12 +95,14 @@ final class SearchTask implements Runnable, Cancellable {
     /** Runs the search task. */
     @Override
     public void run() {
+        if (searchComposition.isTerminated()) {
+            return;
+        }
         if (isSearchAndReplace()) {
             LifecycleManager.getDefault().saveAll();
         }
         if (this.resultViewPanel == null) {
-            this.resultViewPanel = ResultView.getInstance().addTab(
-                    searchComposition);
+            this.resultViewPanel = ResultView.getInstance().addTab(this);
         }
         GraphicalSearchListener searchListener =
                 this.resultViewPanel.createListener();

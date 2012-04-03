@@ -49,14 +49,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -78,14 +75,11 @@ import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.parser.PHPDocCommentParser;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -100,8 +94,8 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
-        TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
         final Model[] model = new Model[1];
+        final TokenHierarchy<?>[] tokenHierarchy = new TokenHierarchy<?>[1];
         try {
             ParserManager.parse(Collections.singletonList(Source.create(doc)), new UserTask() {
 
@@ -109,15 +103,19 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 public void run(ResultIterator resultIterator) throws Exception {
                     PHPParseResult parserResult = (PHPParseResult) resultIterator.getParserResult();
                     model[0] = parserResult.getModel();
+                    tokenHierarchy[0] = resultIterator.getSnapshot().getTokenHierarchy();
                 }
             });
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
+        TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(tokenHierarchy[0], caretOffset);
         return getReferenceSpan(ts, caretOffset, model[0]);
     }
 
     public static OffsetRange getReferenceSpan(TokenSequence<PHPTokenId> ts, final int caretOffset, final Model model) {
+        Parameters.notNull("ts", model); //NOI18N
+        Parameters.notNull("model", model); //NOI18N
         return new ReferenceSpanFinder(model).getReferenceSpan(ts, caretOffset);
     }
 

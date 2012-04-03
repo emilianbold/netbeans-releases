@@ -512,9 +512,25 @@ public final class NbMavenProjectImpl implements Project {
         File[] roots = new File(uri).listFiles();
         if (roots != null) {
             for (File root : roots) {
+                if (!test && root.getName().startsWith("test-")) {
+                    continue;
+                }
                 File[] kids = root.listFiles();
                 if (kids != null && /* #190626 */kids.length > 0) {
                     uris.add(root.toURI());
+                }
+            }
+        }
+        if (test) { // MCOMPILER-167
+            roots = new File(FileUtilities.getDirURI(getProjectDirectory(), "target/generated-sources")).listFiles();
+            if (roots != null) {
+                for (File root : roots) {
+                    if (root.getName().startsWith("test-")) {
+                        File[] kids = root.listFiles();
+                        if (kids != null && kids.length > 0) {
+                            uris.add(root.toURI());
+                        }
+                    }
                 }
             }
         }

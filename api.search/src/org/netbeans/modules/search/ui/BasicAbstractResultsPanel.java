@@ -50,6 +50,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ResourceBundle;
+import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractButton;
 import javax.swing.ActionMap;
 import javax.swing.JButton;
@@ -133,6 +135,9 @@ public abstract class BasicAbstractResultsPanel
                 FindDialogMemory.getDefault().getResultsViewMode())) {
             resultsOutlineSupport.setFolderTreeMode();
         }
+        setRootDisplayName(NbBundle.getMessage(ResultView.class,
+                "TEXT_SEARCHING___"));                                  //NOI18N
+        initAccessibility();
     }
 
     private void initSelectionListeners() {
@@ -257,9 +262,34 @@ public abstract class BasicAbstractResultsPanel
                 fillOutput();
             }
         });
-
+        if (showDetailsButton != null) {
+            showDetailsButton.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(ResultView.class,
+                    "ACS_TEXT_BUTTON_FILL"));                           //NOI18N
+        }
         return new AbstractButton[]{prevButton, nextButton, expandButton,
                     toggleViewButton, showDetailsButton};
+    }
+
+    private void initAccessibility() {
+        ResourceBundle bundle = NbBundle.getBundle(ResultView.class);
+
+        AccessibleContext accessCtx;
+        OutlineView outlineView = resultsOutlineSupport.getOutlineView();
+
+        accessCtx = outlineView.getHorizontalScrollBar().getAccessibleContext();
+        accessCtx.setAccessibleName(
+                bundle.getString("ACSN_HorizontalScrollbar"));          //NOI18N
+
+        accessCtx = outlineView.getVerticalScrollBar().getAccessibleContext();
+        accessCtx.setAccessibleName(
+                bundle.getString("ACSN_VerticalScrollbar"));            //NOI18N
+
+        accessCtx = outlineView.getAccessibleContext();
+        accessCtx.setAccessibleName(
+                bundle.getString("ACSN_ResultTree"));                   //NOI18N
+        accessCtx.setAccessibleDescription(
+                bundle.getString("ACSD_ResultTree"));                   //NOI18N
     }
 
     private void shift(int direction) {
@@ -284,7 +314,9 @@ public abstract class BasicAbstractResultsPanel
             boolean canExpand) {
         Node[] selected = getExplorerManager().getSelectedNodes();
         Node n = null;
-        if (selected == null || selected.length == 0) {
+        if ((selected == null || selected.length == 0)
+                && getExplorerManager().getRootContext()
+                == resultsOutlineSupport.getRootNode()) {
             n = resultsOutlineSupport.getResultsNode();
         } else if (selected.length == 1) {
             n = selected[0];
@@ -405,13 +437,6 @@ public abstract class BasicAbstractResultsPanel
         if (!expand) {
             getOutlineView().collapseNode(root);
         }
-    }
-
-    @Override
-    public void searchStarted() {
-        super.searchStarted();
-        setRootDisplayName(NbBundle.getMessage(ResultView.class,
-                "TEXT_SEARCHING___"));                                  //NOI18N
     }
 
     @Override

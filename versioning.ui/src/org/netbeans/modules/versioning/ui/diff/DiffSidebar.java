@@ -264,7 +264,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         Difference returnedDiff = next;
         JTextComponent component = textComponent;
         if (component != null) {
-            BaseTextUI textUI = (BaseTextUI) component.getUI();
+            TextUI textUI = component.getUI();
             try {
                 Rectangle rec = textUI.modelToView(component, textUI.viewToModel(component, new Point(0, event.getY())));
                 if (rec != null && event.getY() < rec.getY() + rec.getHeight() / 2) {
@@ -468,6 +468,15 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         // not interested
     }
 
+    private int getPosFromY(JTextComponent component, TextUI textUI, int y) throws BadLocationException {
+        if(textUI instanceof BaseTextUI) {
+            return ((BaseTextUI) textUI).getPosFromY(y);
+        } else {
+            // fallback to ( less otimized than ((BaseTextUI) textUI).getPosFromY(y) )
+            return textUI.modelToView(component, textUI.viewToModel(component, new Point(0, y))).y;
+        }
+    }
+
     private static class DiffTopComponent extends TopComponent {
         
         private JComponent diffView;
@@ -516,7 +525,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             try{
                 JTextComponent component = editorUI.getComponent();
                 if (component != null) {
-                    BaseTextUI textUI = (BaseTextUI)component.getUI();
+                    TextUI textUI = component.getUI();
                     int clickOffset = textUI.viewToModel(component, new Point(0, e.getY()));
                     line = Utilities.getLineOffset(document, clickOffset);
                 }
@@ -640,11 +649,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
         JTextComponent component = textComponent;
-        TextUI textui = component.getUI();
-        if(!(textui instanceof BaseTextUI)) {
-            return;
-        }
-        BaseTextUI textUI = (BaseTextUI)component.getUI();
+        TextUI textUI = component.getUI();
         EditorUI editorUI = Utilities.getEditorUI(textComponent);
         View rootView = Utilities.getDocumentView(component);
         if (rootView == null) {
@@ -657,7 +662,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         try{
-            int startPos = textUI.getPosFromY(clip.y);
+            int startPos = getPosFromY(component, textUI, clip.y);
             int startViewIndex = rootView.getViewIndex(startPos,Position.Bias.Forward);
             int rootViewCount = rootView.getViewCount();
 

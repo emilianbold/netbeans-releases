@@ -46,6 +46,7 @@ import java.util.Collections;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -63,6 +64,7 @@ public class ResultsModelTest extends NbTestCase {
     /** Tests behavior of model when providers are filling it quickly - changes
      * firing for listeners should be coalesced.
      */
+    @RandomlyFails // NB-Core-Build #8071: Actual fire change count was 6 times, but expected count was in range of 3-5 times
     public void testFireCoalescing () {
         changeCounter = 0;
         
