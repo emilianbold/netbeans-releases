@@ -88,6 +88,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
 import org.xml.sax.SAXException;
@@ -125,6 +126,8 @@ final class NbInstaller extends ModuleInstaller {
     private final Map<Module.PackageExport,List<Module>> hiddenClasspathPackagesReverse = new HashMap<Module.PackageExport,List<Module>>();
     /** caches important values from module manifests */
     private final Cache cache = new Cache();
+    /** Processing @OnStart/@OnStop calls */
+    private final NbStartStop onStartStop = new NbStartStop(null, null);
         
     /** Create an NbInstaller.
      * You should also call {@link #registerManager} and if applicable
@@ -327,6 +330,11 @@ final class NbInstaller extends ModuleInstaller {
     protected void classLoaderUp(ClassLoader cl) {
         MainLookup.systemClassLoaderChanged(cl);
         ev.log(Events.PERF_TICK, "META-INF/services/ additions registered"); // NOI18N
+        onStartStop.initialize();
+    }
+
+    final void waitOnStart() {
+        onStartStop.waitOnStart();
     }
     
     @Override
@@ -656,7 +664,7 @@ final class NbInstaller extends ModuleInstaller {
         
     public boolean closing(List<Module> modules) {
         Util.err.fine("closing: " + modules);
-	for (Module m: modules) {
+        for (Module m: modules) {
             Class<? extends ModuleInstall> instClazz = installs.get(m);
             if (instClazz != null) {
                 try {
@@ -673,13 +681,14 @@ final class NbInstaller extends ModuleInstaller {
                 }
             }
         }
-        return true;
+        return onStartStop.closing(modules);
     }
     
     public void close(List<Module> modules) {
         Util.err.fine("close: " + modules);
         ev.log(Events.CLOSE);
         moduleList.shutDown();
+        List<Task> waitFor = onStartStop.startClose(modules);
         // [PENDING] this may need to write out changed ModuleInstall externalized
         // forms...is that really necessary to do here, or isn't it enough to
         // do right after loading etc.? Currently these are only written when
@@ -699,6 +708,9 @@ final class NbInstaller extends ModuleInstaller {
                     // oh well
                 }
             }
+        }
+        for (Task t : waitFor) {
+            t.waitFinished();
         }
     }
 

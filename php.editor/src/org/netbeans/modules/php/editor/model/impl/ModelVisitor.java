@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.io.IOException;
 import java.util.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -51,9 +50,7 @@ import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.Cache;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
@@ -74,7 +71,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathV
 import org.netbeans.modules.php.project.api.PhpEditorExtender;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -716,45 +712,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             VariableNameImpl varN = findVariable(modelBuilder.getCurrentScope(), fieldAccess.getDispatcher());
             if (varN != null) {
                 varN.createLazyFieldAssignment(fieldAccess, node, scope);
-                ClassScope classScope = null;
-                final ASTNodeInfo<FieldAccess> fieldAccessInfo = ASTNodeInfo.create(fieldAccess);
-                if (varN.representsThis()) {
-                    if (scope instanceof ClassScope) {
-                        classScope = (ClassScope) scope;
-                    } else if (scope.getInScope() instanceof ClassScope) {
-                        classScope = (ClassScope) scope.getInScope();
-                    }
-                } else {
-                    Collection<? extends String> typeNames = varN.getTypeNames(fieldAccessInfo.getRange().getStart());
-                    Set<ElementFilter> filters = new HashSet<ElementFilter>();
-                    for (String tName : typeNames) {
-                        filters.add(ElementFilter.forName(NameKind.exact(QualifiedName.create(tName))));
-                    }
-                    Set<ClassScope> declaredClasses = new HashSet<ClassScope>();
-                    declaredClasses.addAll(ModelUtils.getDeclaredClasses(fileScope));
-                    Set<ClassScope> refClasses = ElementFilter.anyOf(filters).filter(declaredClasses);
-                    if (!refClasses.isEmpty()) {
-                        classScope = refClasses.iterator().next();
-                    }
-
-                }
-                if (classScope != null) {
-                    final String name = fieldAccessInfo.getName();
-                    if (name == null) {
-                        showAssertionFor185229(fieldAccessInfo.getOriginalNode());
-                    } else {
-                        Set<FieldElement> declaredFields = new HashSet<FieldElement>();
-                        declaredFields.addAll(classScope.getDeclaredFields());
-                        declaredFields = ElementFilter.forName(NameKind.exact(name)).filter(declaredFields);
-                        if (declaredFields.isEmpty()) {
-                            String typeName = VariousUtils.extractVariableTypeFromExpression(rightHandSide, new HashMap<String, AssignmentImpl>());
-                            String typeFQName = VariousUtils.qualifyTypeNames(typeName, fieldAccess.getStartOffset(), scope);
-                            new FieldElementImpl(classScope, typeName, typeFQName, fieldAccessInfo);
-                        }
-                    }
-                }
             }
-
         } else if (leftHandSide instanceof StaticFieldAccess) {
             StaticFieldAccess sfa = (StaticFieldAccess) leftHandSide;
             //TODO:
@@ -762,35 +720,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
 
         super.scan(rightHandSide);
-    }
-
-    private void showAssertionFor185229(final FieldAccess originalNode) {
-        boolean showAssertFor185229 = false;
-        assert showAssertFor185229 = true;
-        if (showAssertFor185229) {
-            Variable field = originalNode.getField();
-            if (field instanceof ReflectionVariable) {
-                return;
-            }
-            if (field instanceof ArrayAccess) {
-                ArrayAccess arrayAccess = (ArrayAccess) field;
-                VariableBase name = arrayAccess.getName();
-                if (name instanceof ReflectionVariable) {
-                    return;
-                }
-            }
-        }
-        if (showAssertFor185229) {
-            final FileObject fileObject = fileScope.getFileObject();
-            if (fileObject != null) {
-                try {
-                    assert false : fileObject.asText();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            assert false;
-        }
     }
 
     @Override
