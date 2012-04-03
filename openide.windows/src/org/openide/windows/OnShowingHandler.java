@@ -41,33 +41,29 @@
  */
 package org.openide.windows;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class OnShowingHandler implements LookupListener {
+final class OnShowingHandler implements LookupListener, Runnable {
     private final Set<String> onShowing = new HashSet<String>();
     private final Lookup lkpShowing;
     private final WindowManager wm;
     private Lookup.Result<Runnable> resShow;
     
 
+    @SuppressWarnings("LeakingThisInConstructor")
     OnShowingHandler(Lookup lkp, WindowManager wm) {
         lkpShowing = lkp;
         this.wm = wm;
+        this.wm.invokeWhenUIReady(this);
     }
     
     void initialize() {
@@ -95,6 +91,11 @@ final class OnShowingHandler implements LookupListener {
 
     @Override
     public void resultChanged(LookupEvent ev) {
+        initialize();
+    }
+
+    @Override
+    public void run() {
         initialize();
     }
 }
