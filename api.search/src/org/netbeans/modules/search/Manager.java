@@ -145,7 +145,7 @@ public final class Manager {
         ResultView resultView = ResultView.getInstance();
         resultView.open();
         resultView.requestActive();
-        task.setResultViewPanel(resultView.addTab(task.getComposition()));
+        task.setResultViewPanel(resultView.addTab(task));
         pendingTasks.add(task);
         processNextPendingTask();
     }
@@ -269,15 +269,7 @@ public final class Manager {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(getClass(), "MSG_Success"));    //NOI18N
             if (searchWindowOpen) {
-                Method theMethod;
-                try {
-                    theMethod = ResultView.class.getDeclaredMethod(
-                                                        "closeAndSendFocusToEditor",  //NOI18N
-                                                        ReplaceTask.class);
-                } catch (NoSuchMethodException ex) {
-                    throw new IllegalStateException(ex);
-                }
-                callOnWindowFromAWT(theMethod, new Object[]{task} , false);//NOI18N
+                task.getPanel().showFinishedInfo();
             }
         } else {
             String msgKey = (resultStatus == PRE_CHECK_FAILED)

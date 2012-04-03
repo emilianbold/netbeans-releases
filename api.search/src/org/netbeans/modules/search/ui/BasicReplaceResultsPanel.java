@@ -53,7 +53,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import org.netbeans.api.search.SearchControl;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.ContextView;
 import org.netbeans.modules.search.Manager;
@@ -61,6 +60,8 @@ import org.netbeans.modules.search.ReplaceTask;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.ResultView;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -107,6 +108,9 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
 
         getContentPanel().add(splitPane);
         initResultModelListener();
+        replaceButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ResultView.class,
+                "ACS_TEXT_BUTTON_REPLACE"));                            //NOI18N
     }
 
     private void replace() {
@@ -194,5 +198,27 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
                 composition.getMatcher(), composition.getBasicSearchCriteria(),
                 composition.getScopeDisplayName());
         Manager.getInstance().scheduleSearchTask(bc, true);
+    }
+
+    public void showFinishedInfo() {
+        final AbstractNode an = new AbstractNode(Children.LEAF);
+        an.setIconBaseWithExtension(
+                "org/netbeans/modules/search/res/info.png");            //NOI18N
+        an.setDisplayName(NbBundle.getMessage(ResultView.class,
+                "TEXT_INFO_REPLACE_FINISHED", //NOI18N
+                resultModel.getSelectedMatchesCount()));
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override
+            public void run() {
+                getOutlineView().getOutline().setRootVisible(true);
+                getExplorerManager().setRootContext(an);
+                getOutlineView().validate();
+                getOutlineView().repaint();
+                nextButton.setEnabled(false);
+                prevButton.setEnabled(false);
+                toggleViewButton.setEnabled(false);
+                expandButton.setEnabled(false);
+            }
+        });
     }
 }

@@ -159,10 +159,6 @@ public final class ResultView extends TopComponent {
         ResourceBundle bundle = NbBundle.getBundle(ResultView.class);
         getAccessibleContext().setAccessibleName (bundle.getString ("ACSN_ResultViewTopComponent"));                   //NOI18N
         getAccessibleContext().setAccessibleDescription (bundle.getString ("ACSD_ResultViewTopComponent"));            //NOI18N
-    }       
-
-    public void fillOutput() {
-        getCurrentResultViewPanel().fillOutput();
     }
 
     /**
@@ -271,7 +267,7 @@ public final class ResultView extends TopComponent {
             }
             ResultViewPanel rvp = (ResultViewPanel)panel;
             if (rvp.isSearchInProgress()){
-                Manager.getInstance().stopSearching(viewToSearchMap.get(panel));
+                rvp.getSearchComposition().terminate();
             }
             tabs.remove(panel);
             if (tabs.getComponentCount() == 1) {
@@ -343,9 +339,8 @@ public final class ResultView extends TopComponent {
                 default:
                     assert false;
             }
-            panel.setRootDisplayName(NbBundle.getMessage(ResultView.class, msgKey));
+            panel.showInfo(NbBundle.getMessage(ResultView.class, msgKey));
             panel.setBtnStopEnabled(true);
-            panel.setBtnReplaceEnabled(false);
         }
     }
     
@@ -401,57 +396,6 @@ public final class ResultView extends TopComponent {
 
     private Map<ReplaceTask, SearchTask> replaceToSearchMap = new HashMap();
     private Map<SearchTask, ReplaceTask> searchToReplaceMap = new HashMap();
-
-    synchronized ResultViewPanel initiateResultView(SearchTask task){
-        assert EventQueue.isDispatchThread();
-
-        ResultViewPanel panel = searchToViewMap.get(task);
-        if (panel == null){
-            panel = new ResultViewPanel(
-                    task.getComposition());
-            if( isMacLaf ) {
-                panel.setBackground(macBackground);
-            }
-
-            addSearchPair(panel, task);
-            // #176312 tab name needs to be set so scrolling is performed correctly
-            // after setSelectedComponent() in addTabPanel()
-            panel.setName(getPanelName(task));
-            addTabPanel(panel);
-        } else {
-            panel.setName(getPanelName(task));
-        }
-        return panel;
-    }
-
-
-
-    /** Get string that will be used as name of the panel.
-     * 
-     * @param task
-     * @return 
-     */
-    private String getPanelName(SearchTask task) {
-
-        return task.getDisplayer().getTitle();
-    }
-    
-    /**
-     */
-    void closeAndSendFocusToEditor(ReplaceTask task) {
-        assert EventQueue.isDispatchThread();
-
-        removePanel(searchToViewMap.get(replaceToSearchMap.get(task)));
-//        close();
-        
-        Mode m = WindowManager.getDefault().findMode("editor");         //NOI18N
-        if (m != null) {
-            TopComponent tc = m.getSelectedTopComponent();
-            if (tc != null) {
-                tc.requestActive();
-            }
-        }
-    }
 
     private void closeAll(boolean butCurrent) {
         Component comp = getComponent(0);
@@ -514,10 +458,11 @@ public final class ResultView extends TopComponent {
     /**
      * Add a tab for a new displayer.
      */
-    ResultViewPanel addTab(SearchComposition<?> searchComposition) {
+    ResultViewPanel addTab(SearchTask searchTask) {
 
-        ResultViewPanel panel = new ResultViewPanel(searchComposition);
-        String title = searchComposition.getSearchResultsDisplayer().getTitle();
+        ResultViewPanel panel = new ResultViewPanel(searchTask);
+        SearchComposition<?> composition = searchTask.getComposition();
+        String title = composition.getSearchResultsDisplayer().getTitle();
 
         Component comp = getComponent(0);
         if (comp instanceof JTabbedPane) {
