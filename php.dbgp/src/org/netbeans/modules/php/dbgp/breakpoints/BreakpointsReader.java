@@ -159,7 +159,7 @@ public class BreakpointsReader implements Properties.Reader {
             return null;
         }
 
-        LineCookie lineCookie = dataObject.getCookie(LineCookie.class);
+        LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
         if (lineCookie == null) {
             return null;
         }
