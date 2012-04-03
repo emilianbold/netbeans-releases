@@ -389,7 +389,10 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             if (parent != null) {
                 DataObject d = getLookup().lookup(DataObject.class);
                 if (d != null) {
-                    return FileUtil.getRelativePath(parent.getPrimaryFile(), d.getPrimaryFile()).replace('/', '.');
+                    String rel = FileUtil.getRelativePath(parent.getPrimaryFile(), d.getPrimaryFile());
+                    if (rel != null) {
+                        return rel.replace('/', '.');
+                    }
                 }
             }
             return super.getName();
