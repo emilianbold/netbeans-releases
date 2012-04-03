@@ -90,6 +90,9 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
         UNCHECKED_VARIABLES.add("_ENV"); //NOI18N
         UNCHECKED_VARIABLES.add("argc"); //NOI18N
         UNCHECKED_VARIABLES.add("argv"); //NOI18N
+        UNCHECKED_VARIABLES.add("HTTP_RAW_POST_DATA"); //NOI18N
+        UNCHECKED_VARIABLES.add("php_errormsg"); //NOI18N
+        UNCHECKED_VARIABLES.add("http_response_header"); //NOI18N
     }
 
     @Override

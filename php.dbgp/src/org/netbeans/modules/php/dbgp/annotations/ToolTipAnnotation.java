@@ -47,13 +47,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -83,6 +81,8 @@ import org.openide.util.RequestProcessor;
 public class ToolTipAnnotation extends Annotation
     implements PropertyChangeListener
 {
+
+    private static final RequestProcessor RP = new RequestProcessor("Tool Tip Annotation"); //NOI18N
 
     /* (non-Javadoc)
      * @see org.openide.text.Annotation#getAnnotationType()
@@ -157,8 +157,7 @@ public class ToolTipAnnotation extends Annotation
         if ( !isPhpDataObject( dataObject) ){
             return;
         }
-        EditorCookie editorCookie = (EditorCookie)dataObject.
-            getCookie(EditorCookie.class);
+        EditorCookie editorCookie = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
         StyledDocument document = editorCookie.getDocument();
         if (document == null) {return;}
         final int offset = NbDocument.findLineOffset(document,
@@ -180,7 +179,7 @@ public class ToolTipAnnotation extends Annotation
                         sendPropertyGetCommand(identifier);
                     }
                 };
-                RequestProcessor.getDefault().post(runnable);
+                RP.post(runnable);
             }
         }
         //TODO: review, replace the code depending on lexer.model - part I
