@@ -125,11 +125,26 @@ public class ModelUtils {
         return result;
     }
     
-    public static JsObject findJsObjectByName(Model model, String fqName) {
-        JsObject result = model.getGlobalObject();
+    public static JsObject findJsObjectByName(JsObject global, String fqName) {
+        JsObject result = global;
         for (StringTokenizer stringTokenizer = new StringTokenizer(fqName, "."); stringTokenizer.hasMoreTokens() && result != null;) {
             String token = stringTokenizer.nextToken();
             result = result.getProperty(token);
+            if (result == null) {
+                break;
+            }
+        }
+        return result;
+    }
+    
+    public static JsObject findJsObjectByName(Model model, String fqName) {
+        return findJsObjectByName(model.getGlobalObject(), fqName);
+    }
+    
+    public static JsObject getGlobalObject(JsObject jsObject) {
+        JsObject result = jsObject;
+        while(result.getJSKind() != JsElement.Kind.FILE) {
+            result = result.getParent();
         }
         return result;
     }

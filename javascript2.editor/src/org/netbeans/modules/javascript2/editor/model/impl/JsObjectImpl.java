@@ -251,6 +251,65 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             unresolved.addAll(resolved);
         }
         
+        if (parent != null && !isAnonymous() && assignments.isEmpty()) {
+            // try to recount occurrences
+            JsObject global = ModelUtils.getGlobalObject(parent);
+            List<Occurrence> correctedOccurrences = new ArrayList<Occurrence>();
+
+            JsObjectImpl obAssignment = findRightTypeAssignment(getDeclarationName().getOffsetRange().getStart(), global);
+            if(obAssignment != null) {
+                obAssignment.addOccurrence(getDeclarationName().getOffsetRange());
+            }
+            
+            for(Occurrence occurrence: occurrences) {
+                obAssignment = findRightTypeAssignment(occurrence.getOffsetRange().getStart(), global);
+                if(obAssignment != null) {
+                    obAssignment.addOccurrence(occurrence.getOffsetRange());
+                } else {
+                    correctedOccurrences.add(occurrence);
+                }
+            }
+
+            if (occurrences.size() != correctedOccurrences.size()) {
+                occurrences.clear();
+                occurrences.addAll(correctedOccurrences);
+            }
+        }
+        
+    }
+    
+    /**
+     * This methods returns JsObject that represents a type for an assignment. 
+     * @param offset
+     * @return return the object
+     */
+    private JsObjectImpl findRightTypeAssignment(int offset, JsObject global) {
+        Collection<? extends TypeUsage> findedAssignments;
+        JsObject current;
+        JsObject currentParent  = this;
+        // save the properties in a list to reuse it later
+        List<String> propertyPath = new ArrayList<String>();
+        do {
+            current = currentParent;
+            findedAssignments = current.getAssignmentForOffset(offset);
+            propertyPath.add(current.getName());
+            currentParent = current.getParent();
+        } while (findedAssignments.isEmpty() && currentParent != null);
+        
+        for (TypeUsage type : findedAssignments) {
+            // find the appropriate object for the type in the model
+            current = ModelUtils.findJsObjectByName(global, type.getType());
+
+            // map back the properties from the propertyPath to get the right object
+            for (int i = propertyPath.size() - 2; i > -1 && current != null; i--) {
+                current = current.getProperty(propertyPath.get(i));
+            }
+            if (current != null) {
+                return (JsObjectImpl)current;
+            }
+        }
+        
+        return null;
     }
     
 }
