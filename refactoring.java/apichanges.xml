@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
             <class package="org.netbeans.modules.refactoring.java.api"
                    name="ReplaceConstructorWithBuilderRefactoring"/>
             <class package="org.netbeans.modules.refactoring.java.api"
-                   name="InvertBoolean"/>
+                   name="InvertBooleanRefactoring"/>
             <issue number="208240"/>
         </change>
         
