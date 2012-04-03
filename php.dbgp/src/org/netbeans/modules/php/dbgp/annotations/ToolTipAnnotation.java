@@ -84,6 +84,8 @@ public class ToolTipAnnotation extends Annotation
     implements PropertyChangeListener
 {
 
+    private static final RequestProcessor RP = new RequestProcessor("Tool Tip Annotation"); //NOI18N
+
     /* (non-Javadoc)
      * @see org.openide.text.Annotation#getAnnotationType()
      */
@@ -180,7 +182,7 @@ public class ToolTipAnnotation extends Annotation
                         sendPropertyGetCommand(identifier);
                     }
                 };
-                RequestProcessor.getDefault().post(runnable);
+                RP.post(runnable);
             }
         }
         //TODO: review, replace the code depending on lexer.model - part I
