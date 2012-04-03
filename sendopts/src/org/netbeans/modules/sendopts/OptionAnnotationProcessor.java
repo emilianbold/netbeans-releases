@@ -75,7 +75,6 @@ public final class OptionAnnotationProcessor implements Processor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        System.err.println("delegate: " + delegate());
         if (delegate() != null) {
             return delegate().getSupportedAnnotationTypes();
         } else {
