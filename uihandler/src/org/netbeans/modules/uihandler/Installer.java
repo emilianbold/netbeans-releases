@@ -599,21 +599,19 @@ public class Installer extends ModuleInstall implements Runnable {
 
     /** Append content of source to target */
     private static void appendFile (File source, File target) {
+        byte[] buf = new byte[8192];
         try {
             FileInputStream is = null;
             FileOutputStream os = null;
             try {
                 is = new FileInputStream(source);
-                BufferedInputStream bis = new BufferedInputStream(is);
-
                 os = new FileOutputStream(target, true);
-                BufferedOutputStream bos = new BufferedOutputStream(os);
 
-                int c;
-                while ((c = bis.read()) != -1) {
-                    bos.write(c);
+                int l;
+                while ((l = is.read(buf)) != -1) {
+                    os.write(buf, 0, l);
                 }
-                bos.flush();
+                os.flush();
             } finally {
                 if (is != null) {
                     is.close();
