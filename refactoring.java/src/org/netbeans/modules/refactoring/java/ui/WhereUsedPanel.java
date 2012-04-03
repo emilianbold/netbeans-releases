@@ -256,7 +256,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                     public void run() {
                         innerPanel.removeAll();
                         innerPanel.add(panel, BorderLayout.CENTER);
-                        innerPanel.invalidate();
                         panel.setVisible(true);
 
                         if(enableScope && currentProject!=null) {
@@ -275,7 +274,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         } else {
                             scopePanel.setVisible(false);
                         }
-                        validate();
                     }
                 });
             }};
@@ -475,13 +473,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 .addContainerGap()
                 .addComponent(scopeLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scope, 0, 174, Short.MAX_VALUE)
+                .addComponent(scope, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCustomScope)
                 .addContainerGap())
         );
         scopePanelLayout.setVerticalGroup(
-            scopePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+            scopePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(scopePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(scopePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -503,7 +501,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(scopePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(innerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(innerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
