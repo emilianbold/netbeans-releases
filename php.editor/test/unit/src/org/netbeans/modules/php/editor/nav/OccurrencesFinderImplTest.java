@@ -892,6 +892,18 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "Second::$first->fMe^thod();", true);
     }
 
+    public void testIssue207346_01() throws Exception {
+        checkOccurrences(getTestPath(), "public $invalid^LinkMode;", true);
+    }
+
+    public void testIssue207346_02() throws Exception {
+        checkOccurrences(getTestPath(), "$this->invalid^LinkMode = 10;", true);
+    }
+
+    public void testIssue207346_03() throws Exception {
+        checkOccurrences(getTestPath(), "$this->invalid^LinkMode;", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
