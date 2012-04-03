@@ -46,14 +46,10 @@ package org.netbeans.modules.php.dbgp.breakpoints;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.php.dbgp.breakpoints.FunctionBreakpoint.Type;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
