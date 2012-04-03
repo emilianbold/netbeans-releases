@@ -54,6 +54,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
@@ -68,6 +69,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.project.ProjectWebModule;
 
@@ -115,6 +117,7 @@ import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 
@@ -312,6 +315,8 @@ final public class WebProjectProperties {
     private static final Integer BOOLEAN_KIND_TF = new Integer( 0 );
     private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
     private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
+    
+    private final List<ActionListener> optionListeners = new CopyOnWriteArrayList<ActionListener>();
 
     WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
@@ -1021,6 +1026,21 @@ final public class WebProjectProperties {
         excludes = v.getExcludePattern();
     }
 
+    @NonNull
+    Iterable<? extends ActionListener> getOptionListeners() {
+        return optionListeners;
+    }
+
+    void addOptionListener(@NonNull final ActionListener al) {
+        Parameters.notNull("al", al);   //NOI18N
+        optionListeners.add(al);
+    }
+
+    void removeOptionListener(@NonNull final ActionListener al) {
+        Parameters.notNull("al", al);   //NOI18N
+        optionListeners.remove(al);
+    }
+     
     private static class CallbackImpl implements J2EEProjectProperties.Callback {
 
         private WebProject project;
