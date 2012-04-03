@@ -42,6 +42,7 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -90,56 +91,22 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        m_overriders = new javax.swing.JCheckBox();
-        m_usages = new javax.swing.JCheckBox();
+        buttonGroup1 = new javax.swing.ButtonGroup();
         label = new javax.swing.JLabel();
         searchInComments = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         jComboBox1 = new javax.swing.JComboBox();
         lbl_usagesof = new javax.swing.JLabel();
+        spacer = new javax.swing.JPanel();
+        btn_usages = new javax.swing.JRadioButton();
+        btn_overriders = new javax.swing.JRadioButton();
+        btn_usages_overriders = new javax.swing.JRadioButton();
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(m_overriders, org.openide.util.NbBundle.getMessage(WhereUsedPanelMethod.class, "LBL_FindOverridingMethods")); // NOI18N
-        m_overriders.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                m_overridersStateChanged(evt);
-            }
-        });
-        m_overriders.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                m_overridersActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 0);
-        add(m_overriders, gridBagConstraints);
-
-        m_usages.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(m_usages, org.openide.util.NbBundle.getMessage(WhereUsedPanelMethod.class, "LBL_FindUsages")); // NOI18N
-        m_usages.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                m_usagesStateChanged(evt);
-            }
-        });
-        m_usages.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                m_usagesActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
-        add(m_usages, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(label, "<<Element>>"); // NOI18N
+        label.setText("<<Element>>"); // NOI18N
         label.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        label.setDoubleBuffered(true);
         label.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -189,23 +156,43 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(lbl_usagesof, gridBagConstraints);
+
+        spacer.setMinimumSize(new java.awt.Dimension(0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
+        add(spacer, gridBagConstraints);
+
+        buttonGroup1.add(btn_usages);
+        btn_usages.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(btn_usages, org.openide.util.NbBundle.getMessage(WhereUsedPanelMethod.class, "LBL_FindUsages")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(btn_usages, gridBagConstraints);
+
+        buttonGroup1.add(btn_overriders);
+        org.openide.awt.Mnemonics.setLocalizedText(btn_overriders, org.openide.util.NbBundle.getMessage(WhereUsedPanelMethod.class, "LBL_FindOverridingMethods")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(btn_overriders, gridBagConstraints);
+
+        buttonGroup1.add(btn_usages_overriders);
+        org.openide.awt.Mnemonics.setLocalizedText(btn_usages_overriders, org.openide.util.NbBundle.getMessage(WhereUsedPanelMethod.class, "LBL_FindUsagesOverridingMethods")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(btn_usages_overriders, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void m_overridersStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_m_overridersStateChanged
-        parent.stateChanged(null);
-    }//GEN-LAST:event_m_overridersStateChanged
-
-    private void m_overridersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_overridersActionPerformed
-        parent.stateChanged(null);
-    }//GEN-LAST:event_m_overridersActionPerformed
-
-    private void m_usagesStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_m_usagesStateChanged
-        parent.stateChanged(null);
-    }//GEN-LAST:event_m_usagesStateChanged
-
-    private void m_usagesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_usagesActionPerformed
-        parent.stateChanged(null);
-    }//GEN-LAST:event_m_usagesActionPerformed
 
     private void searchInCommentsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchInCommentsItemStateChanged
         // used for change default value for searchInComments check-box.
@@ -214,13 +201,16 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
         RefactoringModule.setOption("searchInComments.whereUsed", b); // NOI18N
     }//GEN-LAST:event_searchInCommentsItemStateChanged
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton btn_overriders;
+    private javax.swing.JRadioButton btn_usages;
+    private javax.swing.JRadioButton btn_usages_overriders;
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel label;
     private javax.swing.JLabel lbl_usagesof;
-    private javax.swing.JCheckBox m_overriders;
-    private javax.swing.JCheckBox m_usages;
     private javax.swing.JCheckBox searchInComments;
+    private javax.swing.JPanel spacer;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -229,7 +219,7 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
         final Set<Modifier> modifiers = method.getModifiers();
         final Icon labelIcon = ElementIcons.getElementIcon(element.getKind(), element.getModifiers());
         final List<Pair<Pair<String, Icon>, TreePathHandle>> classes = new LinkedList<Pair<Pair<String, Icon>, TreePathHandle>>();
-        final String labelText = UIUtilities.createHtmlHeader(method, info.getElements().isDeprecated(element), false, true);
+        final String labelText = UIUtilities.createHeader(method, info.getElements().isDeprecated(element), false, false, true);
         Element enclosingElement = method.getEnclosingElement();
         String methodDeclaringClass = enclosingElement.getSimpleName().toString();
         Icon icon = ElementIcons.getElementIcon(enclosingElement.getKind(), enclosingElement.getModifiers());
@@ -246,14 +236,17 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                label.setText("<html>" + labelText + "</html>"); // NOI18N
+                Dimension preferredSize = label.getPreferredSize();
+                label.setText(labelText);
                 label.setIcon(labelIcon);
-                m_usages.setVisible(!modifiers.contains(Modifier.STATIC));
-                m_overriders.setVisible(!(modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE) || element.getKind() == ElementKind.CONSTRUCTOR));
+                label.setPreferredSize(preferredSize);
+                label.setMinimumSize(preferredSize);
+                btn_usages.setVisible(!modifiers.contains(Modifier.STATIC));
+                btn_overriders.setVisible(!(modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE) || element.getKind() == ElementKind.CONSTRUCTOR));
+                btn_usages_overriders.setVisible(btn_usages.isVisible() && btn_overriders.isVisible());
                 jComboBox1.setModel(new DefaultComboBoxModel(classes.toArray(new Pair[classes.size()])));
                 jComboBox1.setSelectedIndex(1 % jComboBox1.getItemCount());
                 jComboBox1.setEnabled(classes.size() > 1);
-                invalidate();
             }
         });
     }
@@ -275,11 +268,11 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
     }
 
     public boolean isMethodOverriders() {
-        return m_overriders.isSelected();
+        return btn_overriders.isSelected() || btn_usages_overriders.isSelected();
     }
 
     public boolean isMethodFindUsages() {
-        return m_usages.isSelected();
+        return btn_usages.isSelected() || btn_usages_overriders.isSelected();
     }
 
     @Override
@@ -297,9 +290,14 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            @SuppressWarnings("unchecked")
-            Pair<Pair<String, Icon>, TreePathHandle> selectedPair = (Pair<Pair<String, Icon>, TreePathHandle>) value;
-
+            if(value instanceof String) {
+                setText((String)value);
+            } else {
+                Pair<Pair<String, Icon>, TreePathHandle> selectedPair = (Pair<Pair<String, Icon>, TreePathHandle>) value;
+                setText(selectedPair.first.first);
+                setIcon(selectedPair.first.second);
+            }
+            setFont(list.getFont());
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
@@ -307,11 +305,6 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
-
-            setText(selectedPair.first.first);
-            setIcon(selectedPair.first.second);
-            setFont(list.getFont());
-
             return this;
         }
     }
