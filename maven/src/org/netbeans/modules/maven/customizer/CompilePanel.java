@@ -62,7 +62,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
-import org.netbeans.modules.maven.api.customizer.ModelHandle2.CustomizerOperation;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.classpath.BootClassPathImpl;
