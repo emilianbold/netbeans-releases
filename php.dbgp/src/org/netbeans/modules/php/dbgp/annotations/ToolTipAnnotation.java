@@ -159,8 +159,7 @@ public class ToolTipAnnotation extends Annotation
         if ( !isPhpDataObject( dataObject) ){
             return;
         }
-        EditorCookie editorCookie = (EditorCookie)dataObject.
-            getCookie(EditorCookie.class);
+        EditorCookie editorCookie = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
         StyledDocument document = editorCookie.getDocument();
         if (document == null) {return;}
         final int offset = NbDocument.findLineOffset(document,
