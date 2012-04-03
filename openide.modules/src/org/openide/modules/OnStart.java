@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,32 +34,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.i18n.form;
-
-import org.netbeans.modules.form.FormPropertyEditorManager;
-import org.openide.modules.OnStart;
-
-/**
- * Installation class for i18n to form cross dependency module.
- * It registers <code>FormI18nStringEditor</code> to form property editors.
  *
- * @author Peter Zavadsky
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-@OnStart
-public class I18nFormCrossModule implements Runnable {
-    /** Registers property editor in form module and factory in i18n module. */
-    @Override
-    public void run() {
-        Class newEditorClass = FormI18nStringEditor.class;
-        Class newEditorClassInteger = FormI18nIntegerEditor.class;
-        Class newEditorClassMnemonic = FormI18nMnemonicEditor.class;
-              
-        // Register new property editor.
-        FormPropertyEditorManager.registerEditor (String.class, newEditorClass);
-        FormPropertyEditorManager.registerEditor (int.class, newEditorClassInteger);
-        FormPropertyEditorManager.registerEditor (int.class, newEditorClassMnemonic);
-    }
+package org.openide.modules;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.openide.util.lookup.NamedServiceDefinition;
+
+/** An annotation to place on a {@link Runnable} with public default constructor
+ * that you wish to be instantiated and invoked on start of your module.
+ * Runnables defined by various modules are invoked in parallel and as soon
+ * as possible. It is guaranteed that execution of all runnables is finished
+ * before the startup sequence is claimed over.
+ * <p>
+ * Typical initialization code follows:
+ * <pre>
+ * {@code @OnStart}
+ * <b>public class</b> InitializeMe <b>implements</b> Runnable {
+ *     <b>public void</b> run() {
+ *       <em>// invoke initialization code</em>
+ *     }
+ * }
+ * </pre>
+ * Some modules may want to invoke code when the UI is initialized. In such
+ * case consider using <a href="@org-openide-windows@/org/openide/windows/OnShowing.html">
+ * {@code @OnShowing}</a> annotation.
+ * 
+ * @since 7.29
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+@NamedServiceDefinition(
+    path="Modules/Start", // NOI18N
+    serviceType=Runnable.class
+)
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.TYPE)
+public @interface OnStart {
 }
