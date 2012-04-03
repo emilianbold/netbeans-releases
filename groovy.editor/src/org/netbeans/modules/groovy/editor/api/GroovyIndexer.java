@@ -54,8 +54,8 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.StructureAnalyzer.AnalysisResult;
-import org.netbeans.modules.groovy.editor.api.elements.ast.AstClassElement;
-import org.netbeans.modules.groovy.editor.api.elements.ast.AstElement;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTClass;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -69,8 +69,8 @@ import java.util.logging.Level;
 import org.codehaus.groovy.ast.FieldNode;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.groovy.editor.api.elements.ast.AstFieldElement;
-import org.netbeans.modules.groovy.editor.api.elements.ast.AstMethodElement;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTField;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTMethod;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
@@ -286,47 +286,47 @@ public class GroovyIndexer extends EmbeddingIndexer {
             }
 
             AnalysisResult ar = result.getStructure();
-            List<?extends AstElement> children = ar.getElements();
+            List<? extends ASTElement> children = ar.getElements();
 
             if ((children == null) || (children.size() == 0)) {
                 return;
             }
 
-            for (AstElement child : children) {
+            for (ASTElement child : children) {
                 switch (child.getKind()) {
                     case CLASS:
-                        analyzeClass((AstClassElement) child);
+                        analyzeClass((ASTClass) child);
                         break;
                 }
             }
 
         }
 
-        private void analyzeClass(AstClassElement element) {
+        private void analyzeClass(ASTClass element) {
             IndexDocument document = support.createDocument(indexable);
             documents.add(document);
             indexClass(element, document);
 
-            for (AstElement child : element.getChildren()) {
+            for (ASTElement child : element.getChildren()) {
                 switch (child.getKind()) {
                     case METHOD:
-                        indexMethod((AstMethodElement) child, document);
+                        indexMethod((ASTMethod) child, document);
                         break;
                     case FIELD:
-                        indexField((AstFieldElement) child, document);
+                        indexField((ASTField) child, document);
                         break;
                 }
             }
         }
 
-        private void indexClass(AstClassElement element, IndexDocument document) {
+        private void indexClass(ASTClass element, IndexDocument document) {
             final String name = element.getName();
             document.addPair(FQN_NAME, element.getFqn(), true, true);
             document.addPair(CLASS_NAME, name, true, true);
             document.addPair(CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase(), true, true);
         }
 
-        private void indexField(AstFieldElement child, IndexDocument document) {
+        private void indexField(ASTField child, IndexDocument document) {
 
             StringBuilder sb = new StringBuilder(child.getName());
             FieldNode node = (FieldNode) child.getNode();
@@ -350,7 +350,7 @@ public class GroovyIndexer extends EmbeddingIndexer {
             document.addPair(FIELD_NAME, sb.toString(), true, true);
         }
 
-        private void indexMethod(AstMethodElement child, IndexDocument document) {
+        private void indexMethod(ASTMethod child, IndexDocument document) {
 
             MethodNode childNode = (MethodNode) child.getNode();
             StringBuilder sb = new StringBuilder(AstUtilities.getDefSignature(childNode));

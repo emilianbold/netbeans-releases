@@ -61,10 +61,10 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.groovy.editor.api.elements.ast.AstClassElement;
-import org.netbeans.modules.groovy.editor.api.elements.ast.AstElement;
-import org.netbeans.modules.groovy.editor.api.elements.ast.AstFieldElement;
-import org.netbeans.modules.groovy.editor.api.elements.ast.AstMethodElement;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTClass;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTField;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTMethod;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
@@ -93,10 +93,10 @@ import org.netbeans.modules.csl.spi.ParserResult;
  */
 public class StructureAnalyzer implements StructureScanner {
 
-    private List<AstElement> structure;
-    private Map<AstClassElement, Set<FieldNode>> fields;
-    private Map<AstClassElement, Set<PropertyNode>> properties;
-    private List<AstMethodElement> methods;
+    private List<ASTElement> structure;
+    private Map<ASTClass, Set<FieldNode>> fields;
+    private Map<ASTClass, Set<PropertyNode>> properties;
+    private List<ASTMethod> methods;
     
     private static final Logger LOG = Logger.getLogger(StructureAnalyzer.class.getName());
 
@@ -104,14 +104,15 @@ public class StructureAnalyzer implements StructureScanner {
         return scan(result);
     }
 
+    @Override
     public List<? extends StructureItem> scan(ParserResult info) {
         GroovyParserResult result = AstUtilities.getParseResult(info);
 
         AnalysisResult ar = result.getStructure();
-        List<?extends AstElement> elements = ar.getElements();
+        List<? extends ASTElement> elements = ar.getElements();
         List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
 
-        for (AstElement e : elements) {
+        for (ASTElement e : elements) {
             if (isVisible(e)) {
                 itemList.add(new GroovyStructureItem(e, info));
             }
@@ -129,10 +130,10 @@ public class StructureAnalyzer implements StructureScanner {
             return analysisResult;
         }
 
-        structure = new ArrayList<AstElement>();
-        fields = new HashMap<AstClassElement, Set<FieldNode>>();
-        methods = new ArrayList<AstMethodElement>();
-        properties = new HashMap<AstClassElement, Set<PropertyNode>>();
+        structure = new ArrayList<ASTElement>();
+        fields = new HashMap<ASTClass, Set<FieldNode>>();
+        methods = new ArrayList<ASTMethod>();
+        properties = new HashMap<ASTClass, Set<PropertyNode>>();
 
         AstPath path = new AstPath();
         path.descend(root);
@@ -143,7 +144,7 @@ public class StructureAnalyzer implements StructureScanner {
         // Process fields
         Map<String, FieldNode> names = new HashMap<String, FieldNode>();
 
-        for (AstClassElement clz : fields.keySet()) {
+        for (ASTClass clz : fields.keySet()) {
             Set<FieldNode> assignments = fields.get(clz);
 
             // Find unique variables
@@ -154,7 +155,7 @@ public class StructureAnalyzer implements StructureScanner {
 
                 // Add unique fields
                 for (FieldNode field : names.values()) {
-                    AstFieldElement co = new AstFieldElement(result, field);
+                    ASTField co = new ASTField(result, field);
                     //co.setIn(AstUtilities.getClassOrModuleName(clz));
                     co.setIn(clz.getFqn());
 
@@ -189,12 +190,12 @@ public class StructureAnalyzer implements StructureScanner {
         return analysisResult;
     }
 
-    private void scan(GroovyParserResult result, ASTNode node, AstPath path, String in, Set<String> includes, AstElement parent) {
+    private void scan(GroovyParserResult result, ASTNode node, AstPath path, String in, Set<String> includes, ASTElement parent) {
         if (node instanceof AnnotatedNode
                 && !((AnnotatedNode) node).hasNoRealSourcePosition()) {
 
             if (node instanceof ClassNode) {
-                AstClassElement co = new AstClassElement(result, node);
+                ASTClass co = new ASTClass(result, node);
                 co.setFqn(((ClassNode) node).getName());
 
                 if (parent != null) {
@@ -205,20 +206,20 @@ public class StructureAnalyzer implements StructureScanner {
 
                 parent = co;
             } else if (node instanceof FieldNode) {
-                if (parent instanceof AstClassElement) {
+                if (parent instanceof ASTClass) {
                     // We don't have unique declarations, only assignments (possibly many)
                     // so stash these in a map and extract unique fields when we're done
                     Set<FieldNode> assignments = fields.get(parent);
 
                     if (assignments == null) {
                         assignments = new HashSet<FieldNode>();
-                        fields.put((AstClassElement) parent, assignments);
+                        fields.put((ASTClass) parent, assignments);
                     }
 
                     assignments.add((FieldNode) node);
                 }
             } else if (node instanceof MethodNode) {
-                AstMethodElement co = new AstMethodElement(result, node);
+                ASTMethod co = new ASTMethod(result, node);
                 methods.add(co);
                 co.setIn(in);
 
@@ -233,7 +234,7 @@ public class StructureAnalyzer implements StructureScanner {
 
                 if (declarations == null) {
                     declarations = new HashSet<PropertyNode>();
-                    properties.put((AstClassElement) parent, declarations);
+                    properties.put((ASTClass) parent, declarations);
                 }
 
                 declarations.add((PropertyNode) node);
@@ -250,6 +251,7 @@ public class StructureAnalyzer implements StructureScanner {
         }
     }
 
+    @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
         ASTNode root = AstUtilities.getRoot(info);
 
@@ -273,6 +275,7 @@ public class StructureAnalyzer implements StructureScanner {
         final List<OffsetRange> commentsRanges = new ArrayList<OffsetRange>();
 
         doc.render(new Runnable() {
+            @Override
             public void run() {
                 TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
 
@@ -326,9 +329,9 @@ public class StructureAnalyzer implements StructureScanner {
         return folds;
     }
 
-    private void addFolds(BaseDocument doc, List<? extends AstElement> elements,
+    private void addFolds(BaseDocument doc, List<? extends ASTElement> elements,
             Map<String,List<OffsetRange>> folds, List<OffsetRange> codeblocks) throws BadLocationException {
-        for (AstElement element : elements) {
+        for (ASTElement element : elements) {
             ElementKind kind = element.getKind();
             switch (kind) {
             case FIELD:
@@ -362,7 +365,7 @@ public class StructureAnalyzer implements StructureScanner {
                 break;
             }
 
-            List<? extends AstElement> children = element.getChildren();
+            List<? extends ASTElement> children = element.getChildren();
 
             if (children != null && children.size() > 0) {
                 addFolds(doc, children, folds, codeblocks);
@@ -370,14 +373,15 @@ public class StructureAnalyzer implements StructureScanner {
         }
     }
 
+    @Override
     public Configuration getConfiguration() {
         return null;
     }
 
-    private static boolean isVisible(AstElement element) {
+    private static boolean isVisible(ASTElement element) {
         // FIXME perhaps we should store synthetic atributte in AstElement
         if ((element.getKind() == ElementKind.METHOD)) {
-            AstMethodElement method = (AstMethodElement) element;
+            ASTMethod method = (ASTMethod) element;
             ASTNode node = method.getNode();
             return !(node instanceof MethodNode) 
                     || (!((MethodNode) node).isSynthetic() && ((MethodNode) node).getLineNumber() >= 0);
@@ -387,20 +391,20 @@ public class StructureAnalyzer implements StructureScanner {
 
     public static final class AnalysisResult {
 
-        private List<?extends AstElement> elements;
+        private List<ASTElement> elements;
 
         Set<String> getRequires() {
             throw new UnsupportedOperationException("Not yet implemented");
         }
 
-        List<?extends AstElement> getElements() {
+        List<ASTElement> getElements() {
             if (elements == null) {
                 return Collections.emptyList();
             }
             return elements;
         }
 
-        private void setElements(List<?extends AstElement> elements) {
+        private void setElements(List<ASTElement> elements) {
             this.elements = elements;
         }
 
@@ -408,7 +412,7 @@ public class StructureAnalyzer implements StructureScanner {
 
     private static class GroovyStructureItem implements StructureItem {
 
-        private final AstElement node;
+        private final ASTElement node;
 
         private final ElementKind kind;
 
@@ -417,7 +421,7 @@ public class StructureAnalyzer implements StructureScanner {
         @NullAllowed
         private final BaseDocument doc;
 
-        private GroovyStructureItem(AstElement node, ParserResult info) {
+        private GroovyStructureItem(ASTElement node, ParserResult info) {
             this.node = node;
             this.kind = node.getKind();
             this.info = info;
@@ -425,16 +429,18 @@ public class StructureAnalyzer implements StructureScanner {
             this.doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         }
 
+        @Override
         public String getName() {
             return node.getName();
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.appendText(node.getName());
 
             if ((kind == ElementKind.METHOD) || (kind == ElementKind.CONSTRUCTOR)) {
                 // Append parameters
-                AstMethodElement jn = (AstMethodElement) node;
+                ASTMethod jn = (ASTMethod) node;
 
                 Collection<String> parameters = jn.getParameters();
 
@@ -462,18 +468,22 @@ public class StructureAnalyzer implements StructureScanner {
             return formatter.getText();
         }
 
+        @Override
         public ElementHandle getElementHandle() {
             return node;
         }
 
+        @Override
         public ElementKind getKind() {
             return kind;
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return node.getModifiers();
         }
 
+        @Override
         public boolean isLeaf() {
             switch (kind) {
             case ATTRIBUTE:
@@ -496,15 +506,16 @@ public class StructureAnalyzer implements StructureScanner {
             }
         }
 
+        @Override
         public List<?extends StructureItem> getNestedItems() {
-            List<AstElement> nested = node.getChildren();
+            List<ASTElement> nested = node.getChildren();
 
             if ((nested != null) && (nested.size() > 0)) {
                 List<GroovyStructureItem> children = new ArrayList<GroovyStructureItem>(nested.size());
 
                 // FIXME: the same old problem: AstElement != ElementHandle.
 
-                for (AstElement co : nested) {
+                for (ASTElement co : nested) {
                     if (isVisible(co)) {
                         children.add(new GroovyStructureItem(co, info));
                     }
@@ -516,6 +527,7 @@ public class StructureAnalyzer implements StructureScanner {
             }
         }
 
+        @Override
         public long getPosition() {
             if (doc != null) {
                 OffsetRange range = AstUtilities.getRangeFull(node.getNode(), doc);
@@ -525,6 +537,7 @@ public class StructureAnalyzer implements StructureScanner {
             return 0;
         }
 
+        @Override
         public long getEndPosition() {
             if (doc != null) {
                 OffsetRange range = AstUtilities.getRangeFull(node.getNode(), doc);
@@ -571,10 +584,12 @@ public class StructureAnalyzer implements StructureScanner {
             return getName();
         }
 
+        @Override
         public String getSortText() {
             return getName();
         }
 
+        @Override
         public ImageIcon getCustomIcon() {
             return null;
         }

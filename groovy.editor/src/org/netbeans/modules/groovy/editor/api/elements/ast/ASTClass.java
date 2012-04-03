@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,22 +41,80 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.groovy.editor.api.elements;
 
-import java.util.List;
-import org.netbeans.modules.csl.api.ElementHandle;
+package org.netbeans.modules.groovy.editor.api.elements.ast;
 
-/**
- * Groovy-Elements that correspond to methods will implement this interface
- * whether they are from an AST or from an index
- *
- * @author Tor Norbye
- */
-public interface MethodElement extends ElementHandle {
+import java.util.Set;
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.elements.common.IClassElement;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 
-    List<String> getParameters();
+public class ASTClass extends ASTElement implements IClassElement {
+
+    private String fqn;
+    private Set<String> includes;
+
+
+    public ASTClass(GroovyParserResult info, ASTNode node) {
+        super(info, node);
+    }
+
+    @Override
+    public String getName() {
+        if (name == null) {
+            if (node instanceof ClassNode) {
+                name = ((ClassNode) node).getNameWithoutPackage();
+            }
+
+            if (name == null) {
+                name = node.toString();
+            }
+        }
+
+        return name;
+    }
+
+    @Override
+    public String getIn() {
+        if (in == null) {
+            if (node instanceof ClassNode) {
+                in = ((ClassNode) node).getPackageName();
+            }
+
+            if (in == null) {
+                in = ""; // NOI18N
+            }
+        }
+
+        return in;
+    }
+
+    @Override
+    public String getFqn() {
+        if (fqn == null) {
+            return getName();
+        }
+
+        return fqn;
+    }
+
+    public void setFqn(String fqn) {
+        this.fqn = fqn;
+    }
+
+    @Override
+    public Set<String> getIncludes() {
+        return includes;
+    }
     
-    boolean isTopLevel();
-    boolean isInherited();
-    boolean isDeprecated();
+    public void setIncludes(Set<String> includes) {
+        this.includes = includes;
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.CLASS;
+    }
 }

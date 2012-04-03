@@ -52,12 +52,12 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Adamek
  */
-public class AstRootElement extends AstElement {
+public class ASTRoot extends ASTElement {
 
     private final FileObject fileObject;
     private final ModuleNode moduleNode;
 
-    public AstRootElement(FileObject fo, GroovyParserResult info, ModuleNode moduleNode) {
+    public ASTRoot(FileObject fo, GroovyParserResult info, ModuleNode moduleNode) {
         super(info, moduleNode);
         this.fileObject = fo;
         this.moduleNode = moduleNode;

@@ -47,7 +47,7 @@ package org.netbeans.modules.groovy.editor.api.elements.index;
 import java.util.Set;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
-import org.netbeans.modules.groovy.editor.api.elements.ClassElement;
+import org.netbeans.modules.groovy.editor.api.elements.common.IClassElement;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
@@ -57,7 +57,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
  * @author Tor Norbye
  * @author Martin Adamek
  */
-public final class IndexedClass extends IndexedElement implements ClassElement {
+public final class IndexedClass extends IndexedElement implements IClassElement {
 
     /** This class is a module rather than a proper class */
     public static final int MODULE = 1 << 6;

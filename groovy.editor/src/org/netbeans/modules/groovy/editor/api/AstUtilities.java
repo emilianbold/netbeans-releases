@@ -91,7 +91,7 @@ import org.netbeans.editor.FinderFactory;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.groovy.editor.api.elements.ast.AstElement;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
@@ -441,7 +441,7 @@ public class AstUtilities {
                     if (index != -1) {
                         signature = signature.substring(index + 1);
                     }
-                    for (AstElement element : result.getStructure().getElements()) {
+                    for (ASTElement element : result.getStructure().getElements()) {
                         ASTNode node = findBySignature(element, signature);
                         if (node != null) {
                             nodes[0] = node;
@@ -478,12 +478,12 @@ public class AstUtilities {
         return nodes[0];
     }
 
-    private static ASTNode findBySignature(AstElement root, String signature) {
+    private static ASTNode findBySignature(ASTElement root, String signature) {
 
         if (signature.equals(root.getSignature())) {
             return root.getNode();
         } else {
-            for (AstElement element : root.getChildren()) {
+            for (ASTElement element : root.getChildren()) {
                 ASTNode node = findBySignature(element, signature);
                 if (node != null) {
                     return node;

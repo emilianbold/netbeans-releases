@@ -43,8 +43,6 @@ package org.netbeans.modules.groovy.editor.api.elements.ast;
 
 import groovy.lang.MetaMethod;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
@@ -53,25 +51,26 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.groovy.editor.api.elements.MethodElement;
+import org.netbeans.modules.groovy.editor.api.elements.common.IMethodElement;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 
-public class AstMethodElement extends AstElement implements MethodElement {
+public class ASTMethod extends ASTElement implements IMethodElement {
+
     private List<String> parameters;
-    private Modifier access = Modifier.PUBLIC;
     private Class clz;
     private MetaMethod method;
-    boolean GDK;
+    private boolean GDK;
     private String methodSignature;
 
-    public AstMethodElement(GroovyParserResult info, ASTNode node) {
+    
+    public ASTMethod(GroovyParserResult info, ASTNode node) {
         super(info, node);
     }
     
     // We need this variant to drag the Class to which this Method belongs with us.
     // This is used in the CodeCompleter complete/document pair.
     
-    public AstMethodElement(GroovyParserResult info, ASTNode node,
+    public ASTMethod(GroovyParserResult info, ASTNode node,
             Class clz, MetaMethod method, boolean GDK) {
 
         super(info, node);
@@ -92,6 +91,7 @@ public class AstMethodElement extends AstElement implements MethodElement {
         return clz;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public List<String> getParameters() {
         if (parameters == null) {
@@ -123,18 +123,13 @@ public class AstMethodElement extends AstElement implements MethodElement {
         return methodSignature;
     }
 
-    public boolean isDeprecated() {
-        // XXX TODO: When wrapping java objects I guess these functions -could- be deprecated, right?
-        return false;
-    }
-
     @Override
     public String getName() {
         if (name == null) {
             if (node instanceof ConstructorNode) {
-                name = ((ConstructorNode)node).getDeclaringClass().getNameWithoutPackage();
+                name = ((ConstructorNode) node).getDeclaringClass().getNameWithoutPackage();
             } else if (node instanceof MethodNode) {
-                name = ((MethodNode)node).getName();
+                name = ((MethodNode) node).getName();
             }
 
             if (name == null) {
@@ -149,15 +144,6 @@ public class AstMethodElement extends AstElement implements MethodElement {
         this.modifiers = modifiers;
     }
 
-    public void setAccess(Modifier access) {
-        this.access = access;
-        if (modifiers != null && modifiers.contains(Modifier.STATIC)) {
-            modifiers = EnumSet.of(Modifier.STATIC, access);
-        } else {
-            modifiers = null;
-        }
-    }
-
     @Override
     public ElementKind getKind() {
         if (node instanceof ConstructorNode) {
@@ -170,6 +156,7 @@ public class AstMethodElement extends AstElement implements MethodElement {
     /**
      * @todo Compute answer
      */
+    @Override
     public boolean isTopLevel() {
         return false;
     }
@@ -177,7 +164,14 @@ public class AstMethodElement extends AstElement implements MethodElement {
     /**
      * @todo Compute answer
      */
+    @Override
     public boolean isInherited() {
+        return false;
+    }
+
+    @Override
+    public boolean isDeprecated() {
+        // XXX TODO: When wrapping java objects I guess these functions -could- be deprecated, right?
         return false;
     }
 }

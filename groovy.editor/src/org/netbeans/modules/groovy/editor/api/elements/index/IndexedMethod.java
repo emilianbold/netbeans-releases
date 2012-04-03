@@ -48,7 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
-import org.netbeans.modules.groovy.editor.api.elements.MethodElement;
+import org.netbeans.modules.groovy.editor.api.elements.common.IMethodElement;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
@@ -58,7 +58,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
  * @author Tor Norbye
  * @author Martin Adamek
  */
-public final class IndexedMethod extends IndexedElement implements MethodElement {
+public final class IndexedMethod extends IndexedElement implements IMethodElement {
     /** This method takes a (possibly optional, see BLOCK_OPTIONAL) block */
     public static final int BLOCK = 1 << 6;
     /** This method takes an optional block */
