@@ -780,6 +780,14 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "Second::$first->fMe^thod();", "public function ^fMethod()");
     }
 
+    public void testIssue207346_01() throws Exception {
+        checkDeclaration(getTestPath(), "$this->invalid^LinkMode = 10;", "public $^invalidLinkMode;");
+    }
+
+    public void testIssue207346_02() throws Exception {
+        checkDeclaration(getTestPath(), "$this->invalid^LinkMode;", "public $^invalidLinkMode;");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
