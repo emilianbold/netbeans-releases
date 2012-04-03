@@ -164,12 +164,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
             }
         }
 
-//        for (FileObject dir : PhpSourcePath.getPreindexedFolders()) {
-//            if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
-//                return FileType.INTERNAL;
-//            }
-//        }
-
         for (FileObject dir : getPlatformPath()) {
             if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
                 return FileType.INCLUDE;
