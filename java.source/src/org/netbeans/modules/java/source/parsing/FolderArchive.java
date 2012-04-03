@@ -46,7 +46,6 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -54,7 +53,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.JavaFileObject;
@@ -65,6 +63,7 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementa
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -154,14 +153,29 @@ public class FolderArchive implements Archive {
         }
         try {
             final URL srcRoot = getBaseSourceRoot(this.root.toURI().toURL());
-            if (srcRoot != null) {
-                final File folder = new File(srcRoot.toURI());
-                file = new File (folder,path);
-                if (file.exists()) {
-                    return FileObjects.fileFileObject(file,folder,null,encoding);
+            if (srcRoot != null && JavaIndex.hasSourceCache(srcRoot, false)) {
+                if ("file".equals(srcRoot.getProtocol())) {         //NOI18N
+                    final File folder = new File(srcRoot.toURI());
+                    file = new File (folder,path);
+                    if (file.exists()) {
+                        return FileObjects.fileFileObject(file,folder,null,encoding);
+                    }
+                } else {
+                    final FileObject srcRootFo = URLMapper.findFileObject(srcRoot);
+                    if (srcRootFo != null) {
+                        final FileObject resource = srcRootFo.getFileObject(name);
+                        if (resource != null) {
+                            return  FileObjects.nbFileObject(resource, srcRootFo);
+                        }
+                    }
                 }
+            } else {
+                LOG.log(
+                    Level.FINE,
+                    "No source in: {0}.",    //NOI18N
+                    srcRoot);
             }
-        } catch (MalformedURLException e) {
+        } catch (IOException e) {
             Exceptions.printStackTrace(e);
         } catch (URISyntaxException e) {
             Exceptions.printStackTrace(e);
