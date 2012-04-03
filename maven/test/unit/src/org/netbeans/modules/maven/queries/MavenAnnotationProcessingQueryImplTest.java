@@ -115,9 +115,17 @@ public class MavenAnnotationProcessingQueryImplTest extends NbTestCase {
                 + "<configuration><annotationProcessors><annotationProcessor>p1.Proc1</annotationProcessor><annotationProcessor>p2.Proc2</annotationProcessor></annotationProcessors></configuration></plugin></plugins></build>",
             "enabled=[ON_SCAN, IN_EDITOR] run=[p1.Proc1, p2.Proc2] s=.../target/generated-sources/annotations/ opts={}", "src/main/java");
     }
+
+    public void testTestRoots() throws Exception { // #208286
+        String pom = "<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId><executions>"
+                + "<execution><id>main</id><goals><goal>compile</goal></goals><configuration><annotationProcessors><annotationProcessor>p.MainProc</annotationProcessor></annotationProcessors></configuration></execution>"
+                + "<execution><id>tests</id><goals><goal>testCompile</goal></goals><configuration><annotationProcessors><annotationProcessor>p.TestProc</annotationProcessor></annotationProcessors></configuration></execution>"
+                + "</executions></plugin></plugins></build>";
+        assertOpts(pom, "enabled=[ON_SCAN, IN_EDITOR] run=[p.MainProc] s=.../target/generated-sources/annotations/ opts={}", "src/main/java");
+        assertOpts(pom, "enabled=[ON_SCAN, IN_EDITOR] run=[p.TestProc] s=.../target/generated-sources/test-annotations/ opts={}", "src/test/java");
+    }
     
     // XXX compilerArgument unformatted vs. compilerArguments
     // XXX <compilerArguments><Averbose>true</></> (MCOMPILER-135)
-    // XXX test root
 
 }
