@@ -82,8 +82,8 @@ public class Html5ParserTest extends NbTestCase {
         super(name);
     }
 
-    public static Test xsuite() {
-        String testName = "testScriptTagInBody";
+    public static Test suite() {
+        String testName = "testParseFileLongerThan2048chars";
 
         System.err.println("Only " + testName + " test is going to be run!!!!");
         System.err.println("******************************************************\n");
@@ -467,12 +467,12 @@ public class Html5ParserTest extends NbTestCase {
                 + "</html>\n";
 
 
-//        NodeTreeBuilder.DEBUG_STATES = true;
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
         HtmlParseResult result = parse(code);
         Node root = result.root();
 
         assertNotNull(root);
-//        NodeUtils.dumpTree(root);
+//        ElementUtils.dumpTree(root);
 
         OpenTag body = ElementUtils.query(result.root(), "html/body");
         assertNotNull(body);
@@ -586,12 +586,7 @@ public class Html5ParserTest extends NbTestCase {
 
 //        NodeUtils.dumpTree(root);
     }
-
-    public void testMaskTemplatingMarksPattern() throws ParseException {
-        String code = "@@@<div> @@@ </div>";
-        assertEquals("   <div>     </div>", Html5Parser.maskTemplatingMarks(code));
-    }
-
+    
     public void testParseFileTest1() throws ParseException {
         parse(getTestFile("testfiles/test1.html"));
     }
