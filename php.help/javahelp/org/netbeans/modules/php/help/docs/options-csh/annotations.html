@@ -1,0 +1,71 @@
+<!--       
+*     Copyright © 1997, 2012, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+        <link rel="stylesheet" href=
+              "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type=
+              "text/css">
+        <meta name="keywords" content="php annotations, custom annotation">
+
+        <title>PHP Options: Annotations</title>
+    </head>
+
+    <body>
+        <h2>PHP Options: Annotations</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+        <p>Use this panel to create and manage custom PHP annotations in code completion. The panel
+            opens in Tools &gt; Options &gt; PHP &gt; Annotations.</p>
+        <ul>
+            <li><strong>Custom Annotations table.</strong> This table lists all custom annotations
+            that you define. The table has two columns: one for the annotation name, and one for the 
+            annotation context ('For'). The possible contexts are function, class/interface (type),
+            method, and field.</li>
+            <li><strong>Add.</strong> Adds an annotation to the table. Clicking this button opens
+                the <a href="#custom-annotation-dialog">Custom Annotation dialog</a>.</li>
+            <li><strong>Edit.</strong> Select an annotation in the table and click this button to edit 
+            the selected annotation. Clicking this button opens
+                the <a href="#custom-annotation-dialog">Custom Annotation dialog</a>.</li>
+            <li><strong>Delete.</strong> Select an annotation in the table and click this button to delete 
+            the selected annotation.</li>
+            <li><strong>Export.</strong> Export the custom annotation definitions to a ZIP archive file.</li>
+            <li><strong>Import.</strong> Import custom annotation definitions from a ZIP archive file. </li>
+        </ul>
+        <h3 id="custom-annotation-dialog">Custom Annotation Dialog</h3>
+        <p>Use the Custom Annotation dialog to add or edit a custom annotation.</p>
+        <ul>
+            <li><strong>Name.</strong> Name of the custom annotation.</li>
+            <li><strong>For.</strong> The context associated with the annotation. Choose one
+            from the following:<ul><li>function</li>
+            <li>class/interface (type)</li>
+            <li>method</li> 
+            <li>field</li></ul></li>
+            <li><strong>Template.</strong> The template for the annotation. By default, the 
+                field contains a sample annotation
+            template is provided, which you can edit. The template for the annotation uses the
+            same syntax as <a href=
+              "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/configure/csh/editor/editor_template_syntax.html">code templates</a>.</li>
+              <li><strong>Documentation.</strong> The HTML documentation for the annotation. By default, the 
+                <strong>Source</strong> tab contains sample annotation documentation, which you can edit. The Preview tab renders the HTML that is in the Source tab, showing you how the documentation appears when a user invokes code completion and selects this annotation. </li>
+        </ul>
+
+
+        <dl> 
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="https://blogs.oracle.com/netbeansphp/entry/brand_new_annotations_support">
+                    <param name="text" value="<html><u>Brand New Annotations Support </u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object> (NetBeansPHP blog)</dd>
+            <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/configure/csh/editor/code-templates.html">Code Templates</a></dd>
+            </dl>
+        <hr>
+        <p>
+            <small><a href="../credits.html">Legal Notices</a></small>
+        </p>
+    </body>
+</html>
