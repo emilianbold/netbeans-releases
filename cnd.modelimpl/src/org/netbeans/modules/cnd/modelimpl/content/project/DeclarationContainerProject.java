@@ -102,7 +102,7 @@ public class DeclarationContainerProject extends DeclarationContainer {
     };
 
     public DeclarationContainerProject(ProjectBase project) {
-        super(new ProjectDeclarationContainerKey(project.getUniqueName()), false);
+        super(new ProjectDeclarationContainerKey(project.getUniqueName()));
         friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<CsmFriend>>>();
         put();
     }
@@ -116,7 +116,7 @@ public class DeclarationContainerProject extends DeclarationContainer {
 
     // only for EMPTY static field
     private DeclarationContainerProject() {
-        super((Key) null, false);
+        super((Key) null);
         friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<CsmFriend>>>();
     }
 

@@ -80,8 +80,8 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
     private final TreeMap<CharSequence, Object> declarations;
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
 
-    protected DeclarationContainer(Key key, boolean hangInRepository) {
-        super(key, hangInRepository);
+    protected DeclarationContainer(Key key) {
+        super(key);
         declarations = new TreeMap<CharSequence, Object>(CharSequences.comparator());
     }
 
