@@ -64,19 +64,20 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.TabbedPaneUI;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FileSystemAction;
-import org.openide.awt.MouseUtils;
 import org.openide.awt.JPopupMenuPlus;
+import org.openide.awt.MouseUtils;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
-import org.openide.windows.Workspace;
-import org.openide.util.*;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -107,8 +108,9 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         mergeTabbedPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MergeDialogComponent.class, "ACSD_Merge_Tabbed_Pane")); // NOI18N
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(MergeDialogComponent.class);
+        return new HelpCtx("org.netbeans.modules.merge.builtin.visualizer.MergeDialogComponent"); //NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -233,6 +235,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         }
     }//GEN-LAST:event_cancelButtonActionPerformed
     
+    @Override
     protected void componentClosed() {
         Component[] panels;
         synchronized (this) {
@@ -256,14 +259,17 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     @Override
     protected void componentOpened () {
         refreshName();
+        requestActive();
     }
     
     /** @return Preferred size of editor top component  */
+    @Override
     public Dimension getPreferredSize() {
         Rectangle bounds = WindowManager.getDefault().getCurrentWorkspace().getBounds();
         return new Dimension(bounds.width / 2, (int) (bounds.height / 1.25));
     }
 
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
@@ -276,6 +282,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     private javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
     
+    @Override
     public void addNotify() {
         super.addNotify();
                 javax.swing.JRootPane root = getRootPane();
@@ -293,11 +300,6 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     private void initListeners() {
         mergeTabbedPane.addMouseListener(new PopupMenuImpl());
         mergeTabbedPane.addChangeListener(this);
-    }
-
-    public void open(Workspace workspace) {
-        super.open(workspace);
-        requestActive();
     }
     
     public synchronized void addMergePanel(MergePanel panel) {
@@ -363,6 +365,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     }
     
     /** Listen on tabbed pane merge panel selection */
+    @Override
     public void stateChanged(javax.swing.event.ChangeEvent changeEvent) {
         MergePanel panel = (MergePanel) mergeTabbedPane.getSelectedComponent();
         if (panel != null) {
@@ -481,6 +484,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         
         /** Called when the seqeunce of mouse events should lead to actual
          *  showing of the popup menu. */
+        @Override
         protected void showPopup(java.awt.event.MouseEvent mouseEvent) {
             TabbedPaneUI tabUI = mergeTabbedPane.getUI();
             int clickTab = tabUI.tabForCoordinate(mergeTabbedPane, mouseEvent.getX(), mouseEvent.getY());
@@ -517,6 +521,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
             getCookieSet().remove(saveCookie);
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
             if (MergePanel.PROP_CAN_BE_SAVED.equals(propertyChangeEvent.getPropertyName())) {
                 activateSave();
@@ -528,6 +533,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         
         private class SaveCookieImpl implements SaveCookie {
         
+            @Override
             public void save() throws java.io.IOException {
                 try {
                     MergeDialogComponent.this.fireVetoableChange(PROP_PANEL_SAVE, null, mergePanelRef.get());
@@ -539,14 +545,13 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
                         throw new java.io.IOException(vetoEx.getLocalizedMessage());
                     }
                 }
-                //System.out.println("SAVE called.");
-                //deactivateSave();
             }
         }
         
         private class CloseCookieImpl extends Object implements CloseCookie {
             public CloseCookieImpl () {}
         
+            @Override
             public boolean close() {
                 try {
                     MergeDialogComponent.this.fireVetoableChange(PROP_PANEL_CLOSING, null, mergePanelRef.get());
