@@ -219,7 +219,8 @@ public class AddServerInstanceWizard extends WizardDescriptor {
                 if (result instanceof ServerInstance) {
                     return (ServerInstance) result;
                 } else {
-                    LOGGER.log(Level.WARNING, "Some localized warning"); // NOI18N
+                    LOGGER.log(Level.WARNING, NbBundle.getMessage(
+                            AddServerInstanceWizard.class, "MSG_WrongServerIntance", result)); // NOI18N
                     return null;
                 }
             }
