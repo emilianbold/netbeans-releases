@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.apisupport.project.api.UIUtil;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.openide.WizardDescriptor;
@@ -67,7 +68,8 @@ public class NewJavaHintIterator extends BasicWizardIterator {
     protected Panel[] createPanels(WizardDescriptor wiz) {
         data = new DataModel(wiz);
         return new BasicWizardIterator.Panel[] {
-            new JavaHintPanel(wiz, data)
+            new JavaHintDataPanel(wiz, data),
+            new JavaHintLocationPanel(wiz, data)
         };
     }
 
@@ -91,9 +93,6 @@ public class NewJavaHintIterator extends BasicWizardIterator {
         String className = model.getClassName();
         FileObject hintTemplate = CreatedModifiedFiles.getTemplate("javaHint.java"); // NOI18N
         assert hintTemplate != null;
-
-        // XXX better to add a package selector to JavaHintPanel
-        model.setPackageName(model.getModuleInfo().getCodeNameBase());
 
         String hintPath = model.getDefaultPackagePath(className + ".java", false); // NOI18N
 
@@ -130,6 +129,7 @@ public class NewJavaHintIterator extends BasicWizardIterator {
         private String warningMessage;
         private boolean doFix;
         private String fixText;
+        private String codeNameBase;
 
         DataModel(WizardDescriptor wiz) {
             super(wiz);
@@ -199,6 +199,23 @@ public class NewJavaHintIterator extends BasicWizardIterator {
             this.warningMessage = warningMessage;
         }
 
+        public @Override String getPackageName() {
+            String retValue;
+            retValue = super.getPackageName();
+            if (retValue == null) {
+                retValue = getCodeNameBase();
+                super.setPackageName(retValue);
+            }
+            return retValue;
+        }
+
+        private String getCodeNameBase() {
+            if (codeNameBase == null) {
+                NbModuleProvider mod = getProject().getLookup().lookup(NbModuleProvider.class);
+                codeNameBase = mod.getCodeNameBase();
+            }
+            return codeNameBase;
+        }
     }
 
 }
