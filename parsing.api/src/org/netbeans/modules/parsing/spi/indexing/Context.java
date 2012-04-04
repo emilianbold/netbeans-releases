@@ -186,7 +186,9 @@ public final class Context {
                 false,
                 true,
                 true,
-                LogContext.create(LogContext.EventType.INDEXER, null, logContext));
+                LogContext.create(LogContext.EventType.INDEXER, null, logContext).
+                    withRoot(root).addFiles(files)
+                );
     }
 
     /**
