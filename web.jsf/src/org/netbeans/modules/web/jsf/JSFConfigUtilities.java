@@ -128,6 +128,12 @@ public class JSFConfigUtilities {
     public static boolean hasJsfFramework(FileObject fileObject) {
         if (fileObject != null) {
             WebModule webModule = WebModule.getWebModule(fileObject);
+            // Issue #210646 - ideally shouldn't happen since fileObject is got as wm.getDocumentBase().
+            // Probably related to hacks with recreation of webModule by saving maven's web project's server.
+            // Should happen rarely since the hack was almost fixed. Anyway nothing better to do with that here.
+            if (webModule == null) {
+                return false;
+            }
             //Check for faces-config is present
             String[] configFiles = JSFConfigUtilities.getConfigFiles(webModule);
             if (configFiles != null && configFiles.length > 0) {

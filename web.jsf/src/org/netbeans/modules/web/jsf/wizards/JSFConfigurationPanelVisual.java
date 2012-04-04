@@ -221,7 +221,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         try {
                             List<URI> cps = jsfLibrary.getLibrary().getURIContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
                             for (URI uri : cps) {
-                                if (entry.getRoot().equals(URLMapper.findFileObject(uri.toURL()))) {
+                                if (entry.getRoot() != null
+                                        && entry.getRoot().equals(URLMapper.findFileObject(uri.toURL()))) {
                                     Mutex.EVENT.readAccess(new Runnable() {
                                         @Override
                                         public void run() {

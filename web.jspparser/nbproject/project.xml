@@ -233,16 +233,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.facelets</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
                 <friend>org.netbeans.modules.web.jsf.simplesnippets</friend>
-                <package>com.sun.el</package>
-                <package>com.sun.el.lang</package>
-                <package>com.sun.el.parser</package>
-                <package>com.sun.el.util</package>
                 <package>org.netbeans.modules.web.jsps.parserapi</package>
             </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/glassfish-jspparser-3.0.jar</runtime-relative-path>
-                <binary-origin>../web.jspparser/external/glassfish-jspparser-3.0.jar</binary-origin>
-            </class-path-extension>
             <extra-compilation-unit>
                 <package-root>extsrc</package-root>
                 <classpath>${module.classpath}:${cluster}/${module.jar}:${extsrc.cp.extra}</classpath>

@@ -101,7 +101,12 @@ public final class PhpSourcePath {
         ClassPath classPath = ClassPath.getClassPath(file, SOURCE_CP);
         if (classPath != null && classPath.contains(file)) {
             // it is a source file
-            return getPhpSourcePathForProjectFile(file).getFileType(file);
+            PhpSourcePathImplementation phpSourcePath = getPhpSourcePathForProjectFile(file);
+            if (phpSourcePath != null) {
+                return phpSourcePath.getFileType(file);
+            }
+            // happens at least in tests
+            return FileType.UNKNOWN;
         }
         // now, check include path of opened projects
         classPath = IncludePathClassPathProvider.findProjectIncludePath(file);
