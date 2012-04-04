@@ -3,3 +3,18 @@ if ($obj instanceof I|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 CLASS      InstanceOfBar                   [PUBLIC]   issue204958.php
 CLASS      InstanceOfFoo                   [PUBLIC]   issue204958.php
+------------------------------------
+CLASS      Imagick                         [PUBLIC]   PHP Platform
+CLASS      ImagickDraw                     [PUBLIC]   PHP Platform
+CLASS      ImagickDrawException            [PUBLIC]   PHP Platform
+CLASS      ImagickException                [PUBLIC]   PHP Platform
+CLASS      ImagickPixel                    [PUBLIC]   PHP Platform
+CLASS      ImagickPixelException           [PUBLIC]   PHP Platform
+CLASS      ImagickPixelIterator            [PUBLIC]   PHP Platform
+CLASS      ImagickPixelIteratorException   [PUBLIC]   PHP Platform
+CLASS      InfiniteIterator                [PUBLIC]   PHP Platform
+CLASS      IntlDateFormatter               [PUBLIC]   PHP Platform
+CLASS      InvalidArgumentException        [PUBLIC]   PHP Platform
+CLASS      Iterator                        [PUBLIC]   PHP Platform
+CLASS      IteratorAggregate               [PUBLIC]   PHP Platform
+CLASS      IteratorIterator                [PUBLIC]   PHP Platform
