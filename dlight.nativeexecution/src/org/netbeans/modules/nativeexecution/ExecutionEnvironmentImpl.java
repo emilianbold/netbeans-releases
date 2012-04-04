@@ -226,6 +226,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment, Ser
     
     private static class SerializedForm implements Serializable {
         
+        static final long serialVersionUID = -1;
         private final String id;
 
         public SerializedForm(String id) {

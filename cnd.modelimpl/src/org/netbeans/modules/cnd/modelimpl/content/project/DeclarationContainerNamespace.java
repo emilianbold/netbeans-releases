@@ -66,7 +66,7 @@ public class DeclarationContainerNamespace extends DeclarationContainer {
     };
 
     public DeclarationContainerNamespace(CsmNamespace ns) {
-        super(new NamespaceDeclarationContainerKey(ns), false);
+        super(new NamespaceDeclarationContainerKey(ns));
         put();
     }
 
@@ -76,7 +76,7 @@ public class DeclarationContainerNamespace extends DeclarationContainer {
 
     // only for EMPTY static field
     private DeclarationContainerNamespace() {
-        super((Key) null, false);
+        super((Key) null);
     }
 
     public static DeclarationContainerNamespace empty() {
