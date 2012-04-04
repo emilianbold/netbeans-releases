@@ -87,6 +87,7 @@ abstract class NexusTestBase extends NbTestCase {
     }
 
     protected final void install(File f, String groupId, String artifactId, String version, String packaging) throws Exception {
+        //XXX: this can behave unpredictably when ~/.m2/settings.xml file contains mirror declarations. can result in failed tests
         artifactInstaller.install(f, embedder.createArtifact(groupId, artifactId, version, packaging), defaultArtifactRepository);
     }
 
