@@ -61,6 +61,7 @@ import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -97,6 +98,7 @@ public class TTVTest extends NbTestCase {
         //new TTVTest("bleble").testNodesReleasing();
     }
 
+    @RandomlyFails // NB-Core-Build #8093
     public void testNodesReleasing () {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
