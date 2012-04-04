@@ -93,6 +93,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     public static final String PROP_PANEL_SAVE = "panelSave"; // NOI18N
     
     private Map<MergePanel, MergeNode> nodesForPanels = new HashMap<MergePanel, MergeNode>();
+    private boolean internallyClosing;
     
     /** Creates new form MergeDialogComponent */
     public MergeDialogComponent() {
@@ -190,95 +191,26 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     }// </editor-fold>//GEN-END:initComponents
     
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        // Add your handling code here:
-        //List panelsToCloseList;
+        if (!beforeClose()) {
+            return;
+        }
         Component[] panels;
         synchronized (this) {
             panels = mergeTabbedPane.getComponents();
         }
-        boolean warning = false;
-        ArrayList<String> unsavedPanelNames = new ArrayList<String>();
-        ArrayList<SaveCookie> saveCookies = new ArrayList<SaveCookie>();
-        for (int i = 0; i < panels.length; i++) {
-            MergePanel panel = (MergePanel) panels[i];
-            if((panel.getNumUnresolvedConflicts() > 0) && (!warning))
-                warning = true;
-            MergeNode node = nodesForPanels.get(panel);
-            SaveCookie sc;
-            if ((sc = node.getCookie(SaveCookie.class)) != null) {
-                unsavedPanelNames.add(panel.getName());
-                saveCookies.add(sc);
-            }
-        }
-        Object ret;
-        // XXX can format with one format string
-        if (unsavedPanelNames.size() == 1) {           
-            ret = DialogDisplayer.getDefault().notify(
-            new NotifyDescriptor.Confirmation((warning)?NbBundle.getMessage(MergeDialogComponent.class,"SaveFileWarningQuestion",unsavedPanelNames.get(0)):
-                                              NbBundle.getMessage(MergeDialogComponent.class,"SaveFileQuestion",unsavedPanelNames.get(0)),
-                                              NotifyDescriptor.YES_NO_CANCEL_OPTION));
-        } else if (unsavedPanelNames.size() > 1) {
-            ret = DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Confirmation((warning)?NbBundle.getMessage(MergeDialogComponent.class,"SaveFilesWarningQuestion",new Integer(unsavedPanelNames.size())):
-                                                  NbBundle.getMessage(MergeDialogComponent.class,"SaveFilesQuestion",new Integer(unsavedPanelNames.size())),
-                                                  NotifyDescriptor.YES_NO_CANCEL_OPTION));
-        } else {
-            if(warning){
-                ret = DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Confirmation(NbBundle.getMessage(MergeDialogComponent.class,"WarningQuestion",new Integer(unsavedPanelNames.size())),
-                                                  NotifyDescriptor.OK_CANCEL_OPTION));
-                if(ret.equals(NotifyDescriptor.NO_OPTION))
-                    return;
-            }else
-                ret = NotifyDescriptor.YES_OPTION;
-        }
-        if (!NotifyDescriptor.YES_OPTION.equals(ret) && !NotifyDescriptor.NO_OPTION.equals(ret)) return ;
-        if (NotifyDescriptor.YES_OPTION.equals(ret) || NotifyDescriptor.OK_OPTION.equals(ret)) {
-            for (SaveCookie sc: saveCookies) {
-                IOException ioException = null;
+        try {
+            internallyClosing = true;
+            for (int i = 0; i < panels.length; i++) {
+                MergePanel panel = (MergePanel) panels[i];
                 try {
-                    sc.save();
-                } catch (UserQuestionException uqex) {
-                    Object status = DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Confirmation(uqex.getLocalizedMessage()));
-                    if (status == NotifyDescriptor.OK_OPTION || status == NotifyDescriptor.YES_OPTION) {
-                        boolean success;
-                        try {
-                            uqex.confirmed();
-                            success = true;
-                        } catch (IOException ioex) {
-                            success = false;
-                            ioException = ioex;
-                        }
-                        if (success) {
-                            try {
-                                sc.save();
-                            } catch (IOException ioex) {
-                                ioException = ioex;
-                            }
-                        }
-                    } else if (status != NotifyDescriptor.NO_OPTION) {
-                        // cancel
-                        return ;
-                    }
-                } catch (IOException ioEx) {
-                    ioException = ioEx;
-                }
-                if (ioException != null) {
-                    ErrorManager.getDefault().notify(ioException);
-                    // cancel the close - there was an error on save
+                    fireVetoableChange(PROP_PANEL_CLOSING, null, panel);
+                } catch (PropertyVetoException pvex) {
                     return ;
                 }
+                removeMergePanel(panel);
             }
-        }
-        for (int i = 0; i < panels.length; i++) {
-            MergePanel panel = (MergePanel) panels[i];
-            try {
-                fireVetoableChange(PROP_PANEL_CLOSING, null, panel);
-            } catch (PropertyVetoException pvex) {
-                return ;
-            }
-            removeMergePanel(panel);
+        } finally {
+            internallyClosing = false;
         }
     }//GEN-LAST:event_okButtonActionPerformed
     
@@ -292,7 +224,12 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
             try {
                 fireVetoableChange(PROP_ALL_CANCELLED, null, null);
             } catch (PropertyVetoException pvex) {}
-            close();
+            try {
+                internallyClosing = true;
+                close();
+            } finally {
+                internallyClosing = false;
+            }
         }
     }//GEN-LAST:event_cancelButtonActionPerformed
     
@@ -309,6 +246,16 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
             MergePanel panel = (MergePanel) panels[i];
             removeMergePanel(panel);
         }
+    }
+
+    @Override
+    public boolean canClose () {
+        return super.canClose() && (internallyClosing || beforeClose());
+    }
+
+    @Override
+    protected void componentOpened () {
+        refreshName();
     }
     
     /** @return Preferred size of editor top component  */
@@ -425,6 +372,108 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
             }
         }
     }
+
+    private void refreshName () {
+        String name = org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "MergeDialogComponent.title");
+        Component[] panels;
+        synchronized (this) {
+            panels = mergeTabbedPane.getComponents();
+        }
+        for (int i = 0; i < panels.length; i++) {
+            MergePanel panel = (MergePanel) panels[i];
+            MergeNode node = nodesForPanels.get(panel);
+            if (node.getLookup().lookup(SaveCookie.class) != null) {
+                name = "<html><b>" + name + "*</b></html>"; //NOI18N
+                break;
+            }
+        }
+        setName(name);
+    }
+
+    private boolean beforeClose () {
+        Component[] panels;
+        synchronized (this) {
+            panels = mergeTabbedPane.getComponents();
+        }
+        boolean warning = false;
+        ArrayList<String> unsavedPanelNames = new ArrayList<String>();
+        ArrayList<SaveCookie> saveCookies = new ArrayList<SaveCookie>();
+        for (int i = 0; i < panels.length; i++) {
+            MergePanel panel = (MergePanel) panels[i];
+            if((panel.getNumUnresolvedConflicts() > 0) && (!warning))
+                warning = true;
+            MergeNode node = nodesForPanels.get(panel);
+            SaveCookie sc;
+            if ((sc = node.getLookup().lookup(SaveCookie.class)) != null) {
+                unsavedPanelNames.add(panel.getName());
+                saveCookies.add(sc);
+            }
+        }
+        Object ret;
+        // XXX can format with one format string
+        if (unsavedPanelNames.size() == 1) {           
+            ret = DialogDisplayer.getDefault().notify(
+            new NotifyDescriptor.Confirmation(warning 
+                    ? NbBundle.getMessage(MergeDialogComponent.class,"SaveFileWarningQuestion",unsavedPanelNames.get(0))
+                    : NbBundle.getMessage(MergeDialogComponent.class,"SaveFileQuestion",unsavedPanelNames.get(0)),
+                      NotifyDescriptor.YES_NO_CANCEL_OPTION));
+        } else if (unsavedPanelNames.size() > 1) {
+            ret = DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Confirmation(warning
+                    ? NbBundle.getMessage(MergeDialogComponent.class,"SaveFilesWarningQuestion",new Integer(unsavedPanelNames.size()))
+                    : NbBundle.getMessage(MergeDialogComponent.class,"SaveFilesQuestion",new Integer(unsavedPanelNames.size())),
+                      NotifyDescriptor.YES_NO_CANCEL_OPTION));
+        } else {
+            if (warning) {
+                ret = DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Confirmation(
+                      NbBundle.getMessage(MergeDialogComponent.class,"WarningQuestion",new Integer(unsavedPanelNames.size())),
+                      NotifyDescriptor.OK_CANCEL_OPTION));
+            } else {
+                ret = NotifyDescriptor.YES_OPTION;
+            }
+        }
+        if (!NotifyDescriptor.YES_OPTION.equals(ret) && !NotifyDescriptor.NO_OPTION.equals(ret)) return false;
+        if (NotifyDescriptor.YES_OPTION.equals(ret) || NotifyDescriptor.OK_OPTION.equals(ret)) {
+            for (SaveCookie sc: saveCookies) {
+                IOException ioException = null;
+                try {
+                    sc.save();
+                } catch (UserQuestionException uqex) {
+                    Object status = DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Confirmation(uqex.getLocalizedMessage()));
+                    if (status == NotifyDescriptor.OK_OPTION || status == NotifyDescriptor.YES_OPTION) {
+                        boolean success;
+                        try {
+                            uqex.confirmed();
+                            success = true;
+                        } catch (IOException ioex) {
+                            success = false;
+                            ioException = ioex;
+                        }
+                        if (success) {
+                            try {
+                                sc.save();
+                            } catch (IOException ioex) {
+                                ioException = ioex;
+                            }
+                        }
+                    } else if (status != NotifyDescriptor.NO_OPTION) {
+                        // cancel
+                        return false;
+                    }
+                } catch (IOException ioEx) {
+                    ioException = ioEx;
+                }
+                if (ioException != null) {
+                    ErrorManager.getDefault().notify(ioException);
+                    // cancel the close - there was an error on save
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
     
     /** Popup menu reaction implementation */
     private class PopupMenuImpl extends MouseUtils.PopupMouseAdapter {
@@ -447,24 +496,25 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         
     }
     
-    private class MergeNode extends org.openide.nodes.AbstractNode implements PropertyChangeListener, SaveCookie {
+    private class MergeNode extends org.openide.nodes.AbstractNode implements PropertyChangeListener {
         
         private Reference<MergePanel> mergePanelRef;
+        private final SaveCookieImpl saveCookie;
         
         public MergeNode(MergePanel panel) {
             super(org.openide.nodes.Children.LEAF);
             panel.addPropertyChangeListener(WeakListeners.propertyChange(this, panel));
             mergePanelRef = new WeakReference<MergePanel>(panel);
             getCookieSet().add(new CloseCookieImpl());
-            //activateSave();
+            saveCookie = new SaveCookieImpl();
         }
         
         private void activateSave() {
-            getCookieSet().add(this);
+            getCookieSet().add(saveCookie);
         }
         
         private void deactivateSave() {
-            getCookieSet().remove(this);
+            getCookieSet().remove(saveCookie);
         }
         
         public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
@@ -473,21 +523,25 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
             } else if (MergePanel.PROP_CAN_NOT_BE_SAVED.equals(propertyChangeEvent.getPropertyName())) {
                 deactivateSave();
             }
+            MergeDialogComponent.this.refreshName();
         }
         
-        public void save() throws java.io.IOException {
-            try {
-                MergeDialogComponent.this.fireVetoableChange(PROP_PANEL_SAVE, null, mergePanelRef.get());
-            } catch (PropertyVetoException vetoEx) {
-                Throwable cause = vetoEx.getCause();
-                if (cause instanceof IOException) {
-                    throw (IOException) cause;
-                } else {
-                    throw new java.io.IOException(vetoEx.getLocalizedMessage());
+        private class SaveCookieImpl implements SaveCookie {
+        
+            public void save() throws java.io.IOException {
+                try {
+                    MergeDialogComponent.this.fireVetoableChange(PROP_PANEL_SAVE, null, mergePanelRef.get());
+                } catch (PropertyVetoException vetoEx) {
+                    Throwable cause = vetoEx.getCause();
+                    if (cause instanceof IOException) {
+                        throw (IOException) cause;
+                    } else {
+                        throw new java.io.IOException(vetoEx.getLocalizedMessage());
+                    }
                 }
+                //System.out.println("SAVE called.");
+                //deactivateSave();
             }
-            //System.out.println("SAVE called.");
-            //deactivateSave();
         }
         
         private class CloseCookieImpl extends Object implements CloseCookie {
