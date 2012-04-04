@@ -89,7 +89,6 @@ import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludePathStorage;
@@ -2261,6 +2260,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return disposing.get();
     }
 
+    /**
+     * called under disposeLock.writeLock() to clean up internals if needed
+     */
+    protected void onDispose() {
+    }
+    
     public final void dispose(final boolean cleanPersistent) {
 
         long time = 0;
@@ -2280,7 +2285,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             validator.storeSettings();
             getUnresolved().dispose();
             RepositoryUtils.closeUnit(getUID(), getRequiredUnits(), cleanPersistent);
-
+            onDispose();
             platformProject = null;
             unresolved = null;
             uid = null;
