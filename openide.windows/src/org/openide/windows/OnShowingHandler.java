@@ -59,11 +59,9 @@ final class OnShowingHandler implements LookupListener, Runnable {
     private Lookup.Result<Runnable> resShow;
     
 
-    @SuppressWarnings("LeakingThisInConstructor")
     OnShowingHandler(Lookup lkp, WindowManager wm) {
         lkpShowing = lkp;
         this.wm = wm;
-        this.wm.invokeWhenUIReady(this);
     }
     
     void initialize() {
