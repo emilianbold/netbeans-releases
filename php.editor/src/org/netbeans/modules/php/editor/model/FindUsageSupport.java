@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -168,8 +169,9 @@ public final class FindUsageSupport {
                     name = element.getInScope().getName();
                 }
                 for(FileObject fo : index.getLocationsForIdentifiers(name)) {
-                    if (PhpSourcePath.getFileType(fo) == PhpSourcePath.FileType.SOURCE
-                            || PhpSourcePath.getFileType(fo) == PhpSourcePath.FileType.TEST) {
+                    FileType fileType = PhpSourcePath.getFileType(fo);
+                    if (fileType == PhpSourcePath.FileType.SOURCE
+                            || fileType == PhpSourcePath.FileType.TEST) {
                         this.files.add(fo);
                     }
                 }

@@ -48,9 +48,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -76,7 +74,7 @@ public class IncludePathClassPathProvider implements ClassPathProvider {
         });
     }
 
-    public static synchronized void removeProjectIncludePath(final ClassPath classPath) {
+    public static void removeProjectIncludePath(final ClassPath classPath) {
         runUnderWriteLock(new Runnable() {
             @Override
             public void run() {
@@ -85,23 +83,28 @@ public class IncludePathClassPathProvider implements ClassPathProvider {
         });
     }
 
+    public static ClassPath findProjectIncludePath(FileObject file) {
+        PROJECT_INCLUDES_LOCK.readLock().lock();
+        try {
+            for (ClassPath classPath : PROJECT_INCLUDES) {
+                if (classPath.contains(file)) {
+                    return classPath;
+                }
+            }
+        } finally {
+            PROJECT_INCLUDES_LOCK.readLock().unlock();
+        }
+        return null;
+    }
+
     @Override
     public ClassPath findClassPath(FileObject file, String type) {
-        if (!FileUtils.isPhpFile(file)) {
+        if (!PhpSourcePath.BOOT_CP.equals(type)) {
             return null;
         }
-        FileType fileType = PhpSourcePath.getFileType(file);
-        if (fileType == FileType.UNKNOWN) {
-            PROJECT_INCLUDES_LOCK.readLock().lock();
-            try {
-                for (ClassPath classPath : PROJECT_INCLUDES) {
-                    if (classPath.contains(file)) {
-                        return classPath;
-                    }
-                }
-            } finally {
-                PROJECT_INCLUDES_LOCK.readLock().unlock();
-            }
+        ClassPath cp = findProjectIncludePath(file);
+        if (cp != null) {
+            return cp;
         }
         // not found, then return CP for include path
         List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
