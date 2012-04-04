@@ -84,7 +84,6 @@ public class SearchPanel extends JPanel implements FocusListener,
     private boolean projectWide = Utils.hasProjectSearchScope();
     private List<PresenterProxy> presenters;
     private DialogDescriptor dialogDescr;
-    private static WeakReference<ResultViewPanel> tabToReuse;
     /**
      * OK button.
      */
@@ -334,7 +333,7 @@ public class SearchPanel extends JPanel implements FocusListener,
 
     private void cancel() {
         close();
-        setTabToReuse(null);
+        ResultView.getInstance().clearReusableTab();
     }
 
     /**
@@ -485,18 +484,5 @@ public class SearchPanel extends JPanel implements FocusListener,
             initChangeListener(presenter);
             panel.validate();
         }
-    }
-
-    public synchronized static void setTabToReuse(
-            ResultViewPanel resultViewPanel) {
-        tabToReuse = resultViewPanel == null
-                ? null
-                : new WeakReference<ResultViewPanel>(resultViewPanel);
-    }
-
-    public synchronized static ResultViewPanel getTabToReuse() {
-        return tabToReuse == null || tabToReuse.get() == null
-                ? null
-                : tabToReuse.get();
     }
 }
