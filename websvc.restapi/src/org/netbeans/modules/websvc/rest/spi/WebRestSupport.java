@@ -537,7 +537,9 @@ public abstract class WebRestSupport extends RestSupport {
                 else if ( configPanel.isJerseyLibSelected()){
                     setProjectProperty(PROP_REST_JERSEY, JERSEY_CONFIG_IDE);
                 }
+                return rc;
             }
+            
         } else {
             setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, WebRestSupport.CONFIG_TYPE_USER);
             RestConfig rc = RestConfig.USER;
