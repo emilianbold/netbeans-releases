@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
 import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.ProjectComponent;
@@ -169,6 +170,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         weakFileContainer = new WeakContainer<FileContainer>(this, fileContainerKey);
         graphStorageKey = new GraphContainerKey(getUniqueName());
         weakGraphContainer = new WeakContainer<GraphContainer>(this, graphStorageKey);
+        includedFileContainer = new IncludedFileContainer(this);
         initFields();
     }
 
@@ -1316,6 +1318,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
+    private final IncludedFileContainer includedFileContainer;
     private static final boolean TRACE_FILE = (TraceFlags.TRACE_FILE_NAME != null);
     /**
      * called to inform that file was #included from another file with specific preprocHandler
@@ -1405,6 +1408,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     return csmFile;
                 }
                 synchronized (entry.getLock()) {
+                    PreprocessorStatePair newStatePair = new PreprocessorStatePair(newState, pcState);
+                    // register included file and it's states in start project under file lock
+                    startProject.includedFileContainer.addPair(this, csmFile, newStatePair);
+                    
+                    // decide if parse is needed
                     List<PreprocessorStatePair> statesToKeep = new ArrayList<PreprocessorStatePair>(4);
                     AtomicBoolean newStateFound = new AtomicBoolean();
                     Collection<PreprocessorStatePair> entryStatePairs = entry.getStatePairs();
@@ -1477,7 +1485,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                             }
                         }
                         csmFile.setAPTCacheEntry(preprocHandler, aptCacheEntry, clean);
-                        entry.setStates(statesToKeep, new PreprocessorStatePair(newState, pcState));
+                        entry.setStates(statesToKeep, newStatePair);
                         if (!TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
                             ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
                                     clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
@@ -2968,6 +2976,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         ProjectComponent.writeKey(declarationsSorageKey, aStream);
         ProjectComponent.writeKey(graphStorageKey, aStream);
         ProjectComponent.writeKey(classifierStorageKey, aStream);
+        this.includedFileContainer.write(aStream);
 
         PersistentUtils.writeUTF(this.uniqueName, aStream);
         aStream.writeBoolean(hasFileSystemProblems);
@@ -3017,6 +3026,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert classifierStorageKey != null : "classifierStorageKey can not be null";
         weakClassifierContainer = new WeakContainer<ClassifierContainer>(this, classifierStorageKey);
 
+        includedFileContainer = new IncludedFileContainer(this, aStream);
+        
         uniqueName = PersistentUtils.readUTF(aStream, ProjectNameCache.getManager());
         assert uniqueName != null : "uniqueName can not be null";
 
