@@ -54,6 +54,7 @@ import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -108,6 +109,7 @@ public final class ResultView extends TopComponent {
 
     private JPanel emptyPanel;
     private JTabbedPane tabs;
+    private WeakReference<ResultViewPanel> tabToReuse;
 
     /**
      * Returns a singleton of this class.
@@ -212,7 +214,7 @@ public final class ResultView extends TopComponent {
             return false;
     }
 
-    public ResultViewPanel getCurrentResultViewPanel(){
+    private ResultViewPanel getCurrentResultViewPanel(){
         if (getComponentCount() > 0) {
             Component comp = getComponent(0);
             if (tabs.getTabCount() > 0) {
@@ -475,7 +477,7 @@ public final class ResultView extends TopComponent {
     }
 
     private int tryReuse() {
-        ResultViewPanel toReuse = SearchPanel.getTabToReuse();
+        ResultViewPanel toReuse = getTabToReuse();
         if (tabs.getTabCount() == 0) {
             return 0;
         }
@@ -497,5 +499,33 @@ public final class ResultView extends TopComponent {
         } else {
             return false;
         }
+    }
+
+    private synchronized void setTabToReuse(
+            ResultViewPanel resultViewPanel) {
+        tabToReuse = resultViewPanel == null
+                ? null
+                : new WeakReference<ResultViewPanel>(resultViewPanel);
+    }
+
+    private synchronized ResultViewPanel getTabToReuse() {
+        return tabToReuse == null || tabToReuse.get() == null
+                ? null
+                : tabToReuse.get();
+    }
+
+    /**
+     * Mark the currenly selected tab as reusable.
+     */
+    public synchronized void markCurrentTabAsReusable() {
+        setTabToReuse(getCurrentResultViewPanel());
+    }
+
+    /**
+     * Set that no tab should be reused. Clears effect of the last invocation of
+     * method {@link #markCurrentTabAsReusable() }
+     */
+    public synchronized void clearReusableTab() {
+        setTabToReuse(null);
     }
 }
