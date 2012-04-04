@@ -76,6 +76,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.LoaderTransfer;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
@@ -1184,6 +1185,19 @@ public class PackageViewTest extends NbTestCase {
         Node n = NodeOp.findPath(r, new String[] {"org.netbeans", "modules.stuff"});
         n.destroy();
         assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
+    }
+
+    public void testReducedTreeCut() throws Exception { // #210314
+        SourceGroup g = sampleGroup();
+        Node r = new TreeRootNode(g, true);
+        Node n = NodeOp.findPath(r, new String[] {"org.netbeans", "modules.stuff"});
+        Transferable t = n.clipboardCut();
+        DataObject moving = LoaderTransfer.getDataObject(t, LoaderTransfer.MOVE);
+        assertEquals(g.getRootFolder().getFileObject("org/netbeans/modules"), moving.getPrimaryFile());
+        n = NodeOp.findPath(r, new String[] {"org.netbeans", "spi.stuff", "support"});
+        t = n.clipboardCut();
+        moving = LoaderTransfer.getDataObject(t, LoaderTransfer.MOVE);
+        assertEquals(g.getRootFolder().getFileObject("org/netbeans/spi/stuff/support"), moving.getPrimaryFile());
     }
 
     public void testReducedTreePathFinder() throws Exception {

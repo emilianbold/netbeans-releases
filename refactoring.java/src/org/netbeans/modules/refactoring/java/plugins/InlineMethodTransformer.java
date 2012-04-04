@@ -139,15 +139,15 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     }
 
     @Override
-    public Tree visitMethodInvocation(MethodInvocationTree node, Element p) {
+    public Tree visitMethodInvocation(MethodInvocationTree node, Element methodElement) {
         final TreePath methodInvocationPath = getCurrentPath();
         ExecutableElement el = (ExecutableElement) trees.getElement(methodInvocationPath);
-        if (p.equals(el)) {
+        if (methodElement.equals(el)) {
             Map<Tree, List<StatementTree>> original2TranslatedForBlock = queue.getLast();
             List<StatementTree> newStatementList = new LinkedList<StatementTree>();
             final HashMap<Tree, Tree> original2TranslatedBody = new HashMap<Tree, Tree>();
 
-            final TypeElement bodyEnclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(p);
+            final TypeElement bodyEnclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(methodElement);
             TreePath findEnclosingClass = JavaRefactoringUtils.findEnclosingClass(workingCopy, methodInvocationPath, true, true, true, true, true);
             final Element invocationEnclosingTypeElement = workingCopy.getTrees().getElement(findEnclosingClass);
 
@@ -158,7 +158,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
 
             BlockTree body = methodTree.getBody();
 
-            scanForNameClash(methodInvocationPath, body, p);
+            scanForNameClash(methodInvocationPath, body, methodElement);
             if (problem != null && problem.isFatal()) {
                 return node;
             }
@@ -169,7 +169,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
 
             body = (BlockTree) workingCopy.getTreeUtilities().translate(body, original2TranslatedBody);
             
-            TreePath methodPath = trees.getPath(p);
+            TreePath methodPath = trees.getPath(methodElement);
             TreePath bodyPath = new TreePath(methodPath, methodTree.getBody());
             Scope scope = workingCopy.getTrees().getScope(methodInvocationPath);
             
@@ -222,7 +222,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             newStatementList.add(translate);
             original2TranslatedForBlock.put(statementTree, newStatementList);
         }
-        return super.visitMethodInvocation(node, p);
+        return super.visitMethodInvocation(node, methodElement);
     }
 
     private Tree fixReferences(Tree tree, TreePath treePath, final ExecutableElement method, final Scope scope, final ExpressionTree methodSelect) {
@@ -247,7 +247,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                         problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_InlineNotAccessible", el, declaredType)));
                     }
                     TypeElement invocationEnclosingTypeElement = elementUtilities.enclosingTypeElement(el);
-                    if (bodyEnclosingTypeElement.equals(invocationEnclosingTypeElement)) {
+                    if (el.getKind() != ElementKind.LOCAL_VARIABLE && bodyEnclosingTypeElement.equals(invocationEnclosingTypeElement)) {
                         if (el.getModifiers().contains(Modifier.STATIC)) {
                             Tree newTree = make.QualIdent(el);
                             orig2trans.put(node, newTree);
@@ -381,14 +381,16 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     }
 
     private void replaceParametersWithArguments(final HashMap<Tree, Tree> original2TranslatedBody, ExecutableElement el, MethodInvocationTree node, BlockTree body) {
+        Element resolved = tph.getElementHandle().resolve(workingCopy);
+        final CompilationUnitTree compilationUnitTree = workingCopy.getTrees().getPath(resolved).getCompilationUnit();
         TreeScanner<Void, Pair<Element, ExpressionTree>> idScan = new TreeScanner<Void, Pair<Element, ExpressionTree>>() {
             @Override
             public Void visitIdentifier(IdentifierTree node, Pair<Element, ExpressionTree> p) {
-                TreePath currentPath = trees.getPath(workingCopy.getCompilationUnit(), node);
-                Element el = trees.getElement(currentPath);
-                if (p.first.equals(el)) {
-                    original2TranslatedBody.put(node, p.second);
-                }
+                TreePath currentPath = trees.getPath(compilationUnitTree, node);
+                    Element el = trees.getElement(currentPath);
+                    if (p.first.equals(el)) {
+                        original2TranslatedBody.put(node, p.second);
+                    }
                 return super.visitIdentifier(node, p);
             }
         };

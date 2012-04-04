@@ -66,4 +66,5 @@
     <mapID target="org.netbeans.modules.php.smarty.ui.options.SmartyOptions" url="options-csh/smarty.html"/>
     <mapID target="org.netbeans.modules.php.project.ui.options.PhpAnnotationsPanelController" url="options-csh/annotations.html"/>
     <mapID target="org.netbeans.modules.php.apigen.ui.options.Options" url="options-csh/apigen.html"/>
+    <mapID target="org.netbeans.modules.php.doctrine2.Options" url="options-csh/doctrine.html"/>
 </map>

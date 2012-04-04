@@ -43,11 +43,13 @@
 package org.netbeans.modules.maven.queries;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.versioning.ComparableVersion;
@@ -55,6 +57,7 @@ import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluatio
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -72,27 +75,28 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
         this.prj = prj;
     }
 
-    public @Override Result getAnnotationProcessingOptions(FileObject file) {
+    public @Override Result getAnnotationProcessingOptions(final FileObject file) {
         return new Result() {
             public @Override Set<? extends Trigger> annotationProcessingEnabled() {
                 String version = PluginPropertyUtils.getPluginVersion(prj.getLookup().lookup(NbMavenProject.class).getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
                 if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("2.2")) < 0) {
                     return EnumSet.noneOf(Trigger.class);
                 }
-                String compilerArgument = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", null);
+                String compilerArgument = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", tests() ? "testCompile" : "compile");
                 if ("-proc:none".equals(compilerArgument)) {
                     return EnumSet.noneOf(Trigger.class);
                 }
                 return EnumSet.allOf(Trigger.class);
             }
             public @Override Iterable<? extends String> annotationProcessorsToRun() {
-                String[] procs = PluginPropertyUtils.getPluginPropertyList(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "annotationProcessors", "annotationProcessor", null);
+                String[] procs = PluginPropertyUtils.getPluginPropertyList(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "annotationProcessors", "annotationProcessor", tests() ? "testCompile" : "compile");
                 return procs != null ? Arrays.asList(procs) : null;
             }
             public @Override URL sourceOutputDirectory() {
-                String generatedSourcesDirectory = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "generatedSourcesDirectory", null);
+                boolean tests = tests();
+                String generatedSourcesDirectory = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "generatedSourcesDirectory", tests ? "testCompile" : "compile");
                 if (generatedSourcesDirectory == null) {
-                    generatedSourcesDirectory = "${project.build.directory}/generated-sources/annotations";
+                    generatedSourcesDirectory = tests ? /* XXX MCOMPILER-167 */"${project.build.directory}/generated-sources/test-annotations" : "${project.build.directory}/generated-sources/annotations";
                 }
                 try {
                     return FileUtil.urlForArchiveOrDir(new File((String) PluginPropertyUtils.createEvaluator(prj.getLookup().lookup(NbMavenProject.class).getMavenProject()).evaluate(generatedSourcesDirectory)));
@@ -101,12 +105,47 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
                 }
             }
             public @Override Map<? extends String, ? extends String> processorOptions() {
-                 Map<String, String> options = new LinkedHashMap<String, String>();
+                Map<String,String> options = new LinkedHashMap<String,String>();
                 options.put("eclipselink.canonicalmodel.use_static_factory", "false"); // #192101
+                String goal = tests() ? "testCompile" : "compile";
+                Properties props = PluginPropertyUtils.getPluginPropertyParameter(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArguments", goal);
+                if (props != null) {
+                    for (Map.Entry<?,?> entry : props.entrySet()) {
+                        String k = (String) entry.getKey();
+                        if (k.startsWith("A")) {
+                            String v = (String) entry.getValue();
+                            options.put(k.substring(1), v.isEmpty() ? null : v);
+                        }
+                    }
+                }
+                String compilerArgument = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", goal);
+                if (compilerArgument != null && compilerArgument.startsWith("-A")) {
+                    int idx = compilerArgument.indexOf('=');
+                    if (idx != -1) {
+                        options.put(compilerArgument.substring(2, idx), compilerArgument.substring(idx + 1));
+                    } else {
+                        options.put(compilerArgument.substring(2), null);
+                    }
+                }
                 return options;
             }
             public @Override void addChangeListener(ChangeListener l) {}
             public @Override void removeChangeListener(ChangeListener l) {}
+            private boolean tests() {
+                NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
+                String actual = file.toURI().toString();
+                for (URI r : project.getSourceRoots(true)) {
+                    if (actual.startsWith(r.toString())) {
+                        return true;
+                    }
+                }
+                for (URI r : project.getGeneratedSourceRoots(true)) {
+                    if (actual.startsWith(r.toString())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
         };
     }
 

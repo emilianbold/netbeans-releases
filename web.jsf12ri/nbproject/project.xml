@@ -42,10 +42,6 @@
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_1</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_2</friend>
                 <friend>org.netbeans.modules.visualweb.propertyeditors</friend>
-                <package>com.sun.el</package>
-                <package>com.sun.el.lang</package>
-                <package>com.sun.el.parser</package>
-                <package>com.sun.el.util</package>
                 <package>com.sun.faces</package>
                 <package>com.sun.faces.application</package>
                 <package>com.sun.faces.config</package>
@@ -76,10 +72,6 @@
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jsf-1_2/jsf-impl.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/glassfish-jspparser-3.0.jar</runtime-relative-path>
-                <binary-origin>../web.jspparser/external/glassfish-jspparser-3.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

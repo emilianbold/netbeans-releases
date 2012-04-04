@@ -95,7 +95,7 @@ public class SyntaxAnalyzerResult {
     public Iterator<Element> getElementsIterator() {
         return new ElementsIterator(source);
     }
-    
+
     /**
      * @deprecated use {@link #getElementsIterator() } instead
      */
@@ -186,7 +186,6 @@ public class SyntaxAnalyzerResult {
                 ? getAllDeclaredNamespaces().get(version.getDefaultNamespace())
                 : null;
 
-
         Iterator<Element> original = new ElementsIterator(source);
         Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
             @Override
@@ -214,8 +213,7 @@ public class SyntaxAnalyzerResult {
             }
         });
 
-
-        LocalSourceContext context = createLocalContext(new TagsFilter() {
+        MaskedAreas maskedAreas = findMaskedAreas(new TagsFilter() {
             @Override
             public boolean accepts(Named tag, CharSequence prefix) {
                 if (prefix == null) {
@@ -232,14 +230,16 @@ public class SyntaxAnalyzerResult {
             }
         });
 
-        CharSequence clearedSource = clearIgnoredAreas(getSource().getSourceCode(), context.getIgnoredAreas());
-
         //create a new html source with the cleared areas
-        HtmlSource newSource = new HtmlSource(clearedSource, source.getSnapshot(), source.getSourceFileObject());
+        HtmlSource newSource = new HtmlSource(
+                source.getSourceCode(), 
+                source.getSnapshot(), 
+                source.getSourceFileObject());
 
         //add the syntax elements to the lookup since the old html4 parser needs them
         InstanceContent content = new InstanceContent();
         content.add(new IteratorOfElements(filteredIterator));
+        content.add(maskedAreas);
         Lookup lookup = new AbstractLookup(content);
 
         return parser.parse(newSource, getHtmlVersion(), lookup);
@@ -342,7 +342,7 @@ public class SyntaxAnalyzerResult {
 
     }
 
-    private LocalSourceContext createLocalContext(TagsFilter filter) {
+    private MaskedAreas findMaskedAreas(TagsFilter filter) {
         //html5 parser:
         //since the nu.validator.htmlparser parser cannot properly handle the
         //'foreign' namespace content it needs to be filtered from the source
@@ -351,10 +351,10 @@ public class SyntaxAnalyzerResult {
         //so following content needs to be filtere out:
         //1. xmlns non default declarations <html xmlns:f="http:/...
         //2. the prefixed tags and attributes <f:if ...
-        List<IgnoredArea> ignoredAreas = new ArrayList<IgnoredArea>();
+        List<MaskedArea> ignoredAreas = new ArrayList<MaskedArea>();
 
         Iterator<Element> itr = new ElementsIterator(source);
-        while(itr.hasNext()) {
+        while (itr.hasNext()) {
             Element e = itr.next();
             if (e.type() == ElementType.OPEN_TAG || e.type() == ElementType.CLOSE_TAG) {
                 Named tag = (Named) e;
@@ -366,17 +366,26 @@ public class SyntaxAnalyzerResult {
                         OpenTag ot = (OpenTag) tag;
                         for (Attribute a : ot.attributes()) {
                             if (LexerUtils.startsWith(a.name(), "xmlns:", true, false)) { //NOI18N
-                                ignoredAreas.add(new IgnoredArea(a.nameOffset(), a.valueOffset() + a.value().length()));
+                                ignoredAreas.add(new MaskedArea(a.nameOffset(), a.valueOffset() + a.value().length()));
                             }
                         }
                     }
 
                 } else {
-                    ignoredAreas.add(new IgnoredArea(e.from(), e.to()));
+                    ignoredAreas.add(new MaskedArea(e.from(), e.to()));
                 }
             }
         }
-        return new LocalSourceContext(ignoredAreas);
+        
+        int[] positions = new int[ignoredAreas.size()];
+        int[] lens = new int[ignoredAreas.size()];
+        for (int i = 0; i < positions.length; i++) {
+            SyntaxAnalyzerResult.MaskedArea ia = ignoredAreas.get(i);
+            positions[i] = ia.from;
+            lens[i] = ia.to - ia.from;
+        }
+
+        return new MaskedAreas(positions, lens);
 
     }
 
@@ -533,19 +542,6 @@ public class SyntaxAnalyzerResult {
         return text;
     }
 
-    private static class LocalSourceContext {
-
-        private Collection<IgnoredArea> ignoredAreas;
-
-        public LocalSourceContext(Collection<IgnoredArea> ignoredAreas) {
-            this.ignoredAreas = ignoredAreas;
-        }
-
-        public Collection<IgnoredArea> getIgnoredAreas() {
-            return ignoredAreas;
-        }
-    }
-
     private static interface TagsFilter {
 
         public boolean accepts(Named tag, CharSequence prefix);
@@ -589,11 +585,11 @@ public class SyntaxAnalyzerResult {
         }
     }
 
-    private static class IgnoredArea {
+    private static class MaskedArea {
 
         int from, to;
 
-        public IgnoredArea(int from, int to) {
+        public MaskedArea(int from, int to) {
             this.from = from;
             this.to = to;
         }
@@ -602,13 +598,5 @@ public class SyntaxAnalyzerResult {
     //sequence w/ the specifed areas being ws-paced than doing this dynamically.
     private static final char REPLACE_CHAR = ' '; //ws //NOI18N
 
-    private static CharSequence clearIgnoredAreas(CharSequence source, Collection<IgnoredArea> areas) {
-        StringBuilder sb = new StringBuilder(source);
-        for (IgnoredArea area : areas) {
-            for (int i = area.from; i < area.to; i++) {
-                sb.setCharAt(i, REPLACE_CHAR);
-            }
-        }
-        return sb;
-    }
+
 }

@@ -724,6 +724,14 @@ public final class ClassPath {
         return toString(PathConversionMode.PRINT);
     }
 
+    @Override public boolean equals(Object obj) {
+        return obj instanceof ClassPath && impl.equals(((ClassPath) obj).impl);
+    }
+
+    @Override public int hashCode() {
+        return impl.hashCode() ^ 22;
+    }
+
     /**
      * Represents an individual entry in the ClassPath. An entry is a description
      * of a folder, which is one of the ClassPath roots. Since the Entry does not
