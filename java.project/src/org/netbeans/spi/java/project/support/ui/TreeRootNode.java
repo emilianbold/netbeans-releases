@@ -46,6 +46,7 @@ package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -56,6 +57,7 @@ import java.util.StringTokenizer;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AccessibilityQuery;
@@ -389,7 +391,10 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             if (parent != null) {
                 DataObject d = getLookup().lookup(DataObject.class);
                 if (d != null) {
-                    return FileUtil.getRelativePath(parent.getPrimaryFile(), d.getPrimaryFile()).replace('/', '.');
+                    String rel = FileUtil.getRelativePath(parent.getPrimaryFile(), d.getPrimaryFile());
+                    if (rel != null) {
+                        return rel.replace('/', '.');
+                    }
                 }
             }
             return super.getName();
@@ -474,7 +479,41 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_InvalidPackageName(), NotifyDescriptor.INFORMATION_MESSAGE));
             }
         }
-        
+
+        private @CheckForNull DataFolder topPackage() {
+            if (parent == null) {
+                return null;
+            }
+            DataFolder here = getLookup().lookup(DataFolder.class);
+            while (here != null) {
+                DataFolder there = here.getFolder();
+                if (there != null && there != parent) {
+                    here = there;
+                } else {
+                    break;
+                }
+            }
+            return here;
+        }
+
+        @Override public Transferable clipboardCut() throws IOException {
+            DataFolder top = topPackage();
+            if (top != null) {
+                return top.getNodeDelegate().clipboardCut();
+            } else {
+                return super.clipboardCut();
+            }
+        }
+
+        @Override public Transferable clipboardCopy() throws IOException {
+            DataFolder top = topPackage();
+            if (top != null) {
+                return top.getNodeDelegate().clipboardCopy();
+            } else {
+                return super.clipboardCopy();
+            }
+        }
+
         @Override
         public Image getIcon (int type) {
             return getIcon(type, false);
