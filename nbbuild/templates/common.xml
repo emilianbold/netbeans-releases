@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -681,7 +681,7 @@ made subject to such option by the copyright holder.
                 <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
             </sequential>
         </macrodef>
-        <junit-impl test.type="${run.test.type}" />
+        <junit-impl test.type="${run.test.type}" disable.apple.ui="${disable.apple.ui}"/>
     </target>
 
     <target name="-do-testng" depends="test-init">
@@ -707,7 +707,7 @@ made subject to such option by the copyright holder.
                 <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
             </sequential>
         </macrodef>
-        <testng-impl test.type="${run.test.type}"/>
+        <testng-impl test.type="${run.test.type}" disable.apple.ui="${disable.apple.ui}"/>
     </target>
 
     <target name="test-generate-html" depends="-build-dir-init">

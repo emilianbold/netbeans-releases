@@ -147,7 +147,7 @@ public class EarDeploymentConfiguration extends WLDeploymentConfiguration
 
     @Override
     public boolean isDescriptorRequired() {
-        return serverVersion == null || !serverVersion.isAboveOrEqual(NO_DESCRIPTOR_REQUIRED);
+        return true;
     }
 
     // FIXME this is not a proper implementation - deployment PLAN should be saved
