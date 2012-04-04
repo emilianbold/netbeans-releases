@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>New Profiling Point Wizard: Triggered Take Snapshot</title>
+        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+
+        <h2>New Profiling Point Wizard: Triggered Take Snapshot</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The New Profiling Point wizard enables you to set a new profiling point
+            that will invoke a profiling action. 
+            In this wizard you specify the type of profiling point that you want to set
+            according to the profiling action that want to be invoked.
+            </p>
+        
+        <p>You use this profiling point to take profiling snapshots
+            or heap dumps when specific conditions are met.</p>
+        
+        <p>You open this wizard in the following ways.</p>
+        <ul>
+            <li>Right-click in a line in your source code and choose Profiling &gt; Insert Profiling Point.</li>
+            <li>Click Add Profiling Point in the toolbar of the Profiling Points window.</li>
+            <li>Click Edit Profiling Point in the toolbar of the Profiling Points window
+                when a Triggered Take Snapshot profiling point is selected.</li>
+        </ul>
+            
+        
+        
+        <p>In this page of the wizard you specify the following properties.</p>
+        
+        <ul>
+            <li><b>Name.</b> Type the name that you want to use to identify
+            the profiling point. 
+            This name will be used to identify the profiling point in the
+            Profiling Points window.</li>
+            <li><b>Settings.</b> Set the following options for the snapshot:
+                <ul>
+                    <li><b>Take.</b> Select the type of snapshot that you want to take.</li>
+                    <li><b>Save.</b> Select the location for the saved snapshots.
+                        You can save snapshots to the default directory in your project
+                        or you can specify a location on your local system.</li>
+                    <li><b>Reset results after taking snapshot.</b> When selected
+                    the collected profiling results are reset after each snapshot is taken.</li>
+                </ul>
+            </li>
+            <li><b>Trigger.</b> Specify the conditions that trigger the IDE to take the snapshot.
+                Select a condition from the Take When dropdown list.
+                You then select a value according to the type of condition that you select.
+                <p>
+                You can select Take Once if you want the IDE to take the snapshot only the first
+                time that the selected condition is met.
+                Select Take Every Time if you want the IDE to take a snapshot each 
+                time that the selected condition is met.</p></li>
+        </ul>
+        
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../profile_profilepoints.html">Setting Profiling Points</a></dd>
+            <dd><a href="../snap_taking.html">Taking a Snapshot</a></dd>
+            <dd><a href="../heap_taking.html">Taking a Heap Dump</a></dd>
+            <dd><a href="../profile_analyze_short.html">Analyzing Application Performance</a></dd>
+            <dd><a href="../profile_memory_short.html">Analyzing Memory Performance</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
+</html>

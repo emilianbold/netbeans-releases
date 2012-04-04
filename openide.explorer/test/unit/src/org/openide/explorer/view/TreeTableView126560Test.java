@@ -43,8 +43,11 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
+import java.awt.GraphicsEnvironment;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
@@ -58,6 +61,11 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Holy
  */
 public class TreeTableView126560Test extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TreeTableView126560Test.class);
+    }
+
     static {
         System.setProperty("sun.awt.exception.handler", "org.openide.explorer.view.TreeTableView126560Test$AWTHandler"); // NOI18N
     }

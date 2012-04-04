@@ -41,14 +41,16 @@
  */
 package org.netbeans.api.progress;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.netbeans.junit.Log;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 
 /**
@@ -56,6 +58,10 @@ import org.openide.util.Exceptions;
  * @author Tomas Holy
  */
 public class RunOffEDTTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(RunOffEDTTest.class);
+    }
 
     {
         System.setProperty("org.netbeans.modules.progress.ui.WARNING_TIME", "1000");
@@ -217,6 +223,7 @@ public class RunOffEDTTest extends NbTestCase {
         assertEquals("Should run once", 1, r.runCount);
     }
 
+    @RandomlyFails
     public void testISEThrownIfCanceledOperationNotFinishedInTime() throws Exception {
         final R r = new R();
         r.l = new CountDownLatch(1);

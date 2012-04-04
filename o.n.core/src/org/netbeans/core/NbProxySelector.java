@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,18 +46,8 @@ package org.netbeans.core;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.SocketAddress;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.StringTokenizer;
+import java.net.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -71,23 +61,32 @@ import java.util.regex.PatternSyntaxException;
  */
 public final class NbProxySelector extends ProxySelector {
     
-    private ProxySelector original = null;
+    private final ProxySelector original;
     private static final Logger LOG = Logger.getLogger (NbProxySelector.class.getName ());
     private static Object useSystemProxies;
         
     /** Creates a new instance of NbProxySelector */
-    public NbProxySelector () {
-        original = ProxySelector.getDefault ();
-        if (original == null) {
-            LOG.warning ("No default system ProxySelector was found thus NetBeans ProxySelector won't delegate on it");
-        } else {
-            LOG.fine ("Override the original ProxySelector: " + original);
-        }
+    private NbProxySelector (ProxySelector delegate) {
+        original = delegate;
         LOG.fine ("java.net.useSystemProxies has been set to " + useSystemProxies ());
         LOG.fine ("In launcher was detected netbeans.system_http_proxy: " + System.getProperty ("netbeans.system_http_proxy", "N/A"));
         LOG.fine ("In launcher was detected netbeans.system_socks_proxy: " + System.getProperty ("netbeans.system_socks_proxy", "N/A"));
         ProxySettings.addPreferenceChangeListener (new ProxySettingsListener ());
         copySettingsToSystem ();
+    }
+    
+    static ProxySelector create(ProxySelector delegate) {
+        return new NbProxySelector(delegate);
+    }
+    
+    static void register() {
+        ProxySelector prev = ProxySelector.getDefault();
+        if (prev == null) {
+            LOG.warning("No default system ProxySelector was found thus NetBeans ProxySelector won't delegate on it");
+        } else {
+            LOG.log(Level.FINE, "Override the original ProxySelector: {0}", prev);
+        }
+        ProxySelector.setDefault(create(prev));
     }
     
     @Override

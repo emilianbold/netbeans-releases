@@ -53,6 +53,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.tasklist.impl.Accessor;
 import org.netbeans.modules.tasklist.impl.TaskComparator;
 import org.netbeans.modules.tasklist.impl.TaskList;
@@ -67,6 +69,7 @@ class FoldingTaskListModel extends TaskListModel {
     
     private final LinkedList<FoldingGroup> groups = new LinkedList<FoldingGroup>();
     private HashMap<String,FoldingGroup> groupMap = new HashMap<String,FoldingGroup>(10);
+    private final Logger LOG = Logger.getLogger(this.getClass().getName());
     
     /** Creates a new instance of FoldingTaskListModel */
     public FoldingTaskListModel( TaskList taskList ) {
@@ -103,7 +106,11 @@ class FoldingTaskListModel extends TaskListModel {
             for( FoldingGroup g : groups ) {
                 synchronized (g.TASK_LOCK) {
                     if( row < groupRow+g.getRowCount() ) {
-                        return g.getTaskAt( row-groupRow-1 );
+                        int indexInGroup = row-groupRow-1;
+                        if (indexInGroup < 0) {
+                            LOG.log(Level.WARNING, "wrong index calculated: indexInGroup={0}, row={1}, groupRow={2}", new Object[] {indexInGroup, row, groupRow});
+                        }
+                        return g.getTaskAt( indexInGroup);
                     }
                     groupRow += g.getRowCount();
                 }

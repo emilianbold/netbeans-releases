@@ -56,8 +56,30 @@ made subject to such option by the copyright holder.
         <echo message="Default target is not set, you must specify which target you want to run."/>
     </target>
 
-    <target name="-init-platform" unless="platform.home">
+    <target name="-substitute-platform-home" unless="platform.home">
         <property name="platform.home" value="${java.home}"/>
+    </target>
+
+    <target name="-init-platform" depends="-substitute-platform-home">
+        <condition property="java.exe.found">
+            <or>
+                <available file="${platform.home}${file.separator}bin${file.separator}java"/>
+                <available file="${platform.home}${file.separator}bin${file.separator}java.exe"/>
+            </or>
+        </condition>
+        <fail message="Error: java executable not found in current platform." unless="java.exe.found"/>
+        <local name="version-output"/>
+        <exec executable="${platform.home}${file.separator}bin${file.separator}java" outputproperty="version-output">
+            <arg value="-version"/>
+        </exec>
+        <echo message="java executable version-output:${line.separator}${version-output}" level="verbose"/>
+        <condition property="have-jdk-7u4-mac">
+            <and>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_04"/>
+                <os family="mac"/>
+            </and>
+        </condition>
+        <fail message="Error:${line.separator}JDK 7u4 Mac does not support WebStart technology.${line.separator}Please upgrade to JDK 7u6 or later." if="have-jdk-7u4-mac"/>
     </target>
 
     <!-- Main target -->

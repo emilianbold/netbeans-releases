@@ -113,6 +113,7 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
             r[0] = new Runnable() {
                 @Override public void run() {
                     Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
+                    // XXX #64991: handle >1 project (tricky since must pass subset of selection to each)
                     if ( projects.length != 1 ) {
                         if (projects.length == 0 && globalProvider(context) != null) {
                             enable[0] = true;

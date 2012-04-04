@@ -88,6 +88,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.maven.NbArtifactFixer;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -357,6 +358,9 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 return ProjectUtils.getInformation(prj).getDisplayName();
             }
         }
+        if (NbArtifactFixer.isFallbackFile(art.getFile())) {
+            return art.getArtifactId() + "-" + art.getBaseVersion() + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "." + art.getArtifactHandler().getExtension();
+        }
         return art.getFile().getName();
     }
 
@@ -440,7 +444,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     }
 
     public boolean isLocal() {
-        return art.getFile().exists();
+        return art.getFile().exists() && !NbArtifactFixer.isFallbackFile(art.getFile());
     }
 
     public boolean hasJavadocInRepository() {

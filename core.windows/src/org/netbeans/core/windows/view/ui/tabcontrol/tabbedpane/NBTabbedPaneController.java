@@ -256,7 +256,10 @@ public class NBTabbedPaneController {
     }
 
     private void addToContainer( TabData tabData, int index ) {
+        if( index > container.getTabCount() )
+            index = -1;
         container.add( tabData.getComponent(), index );
+        index = container.indexOf( tabData.getComponent() );
         container.setTabComponentAt( index, new CloseableTabComponent( tabData.getIcon(),
                 tabData.getText(), true, tabData.getTooltip(), container, controller ) );
     }

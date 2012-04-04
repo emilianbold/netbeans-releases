@@ -83,8 +83,9 @@ public class ElementGripFactory {
     
     public ElementGrip get(FileObject fileObject, int position) {
         Interval start = map.get(fileObject);
-        if (start==null)
+        if (start==null) {
             return null;
+        }
         try {
             return start.get(position).item;
         } catch (RuntimeException e) {
@@ -114,8 +115,9 @@ public class ElementGripFactory {
             if (from<=position && to >=position) {
                 for (Interval o:subintervals) {
                     Interval ob = o.get(position);
-                    if (ob!=null)
+                    if (ob!=null) {
                         return ob;
+                    }
                 }
                 return this;
             }
@@ -154,13 +156,15 @@ public class ElementGripFactory {
                 if (root != null) {
                     Interval o = root.get(start);
                     if (o!= null && current!=null && current.equals(o.item.resolveElement(info))) {
-                        if (p!=null)
-                            o.subintervals.add(p);
+                        if (p!=null) {
+                        o.subintervals.add(p);
+                    }
                         return null;
                     }
                 }
-                if (i==null)
-                    i = new Interval();
+                if (i==null) {
+                i = new Interval();
+            }
                 if (i.from != start) {
                     i.from = start;
                     i.to = end;

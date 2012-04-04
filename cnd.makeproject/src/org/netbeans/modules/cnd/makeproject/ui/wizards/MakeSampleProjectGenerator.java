@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,12 +66,13 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.makeproject.MakeProjectHelperImpl;
 import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
-import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PostProjectCreationProcessor;
@@ -88,11 +90,11 @@ import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
-import org.w3c.dom.Element;
 
 /**
  * Create a sample web project by unzipping a template into some directory
@@ -455,7 +457,16 @@ public class MakeSampleProjectGenerator {
                     FileObject f = FileUtil.createData(targetFolder, ent.getName());
                     OutputStream out = f.getOutputStream();
                     try {
-                        copy(zip, out);
+                        String ls;
+                        if (ent.getName().toLowerCase().indexOf("makefile") >= 0) { // NOI18N
+                            ls = "\n"; // NOI18N
+                        } else {
+                            ls = (String) f.getAttribute(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);
+                            if (ls == null) {
+                                ls = System.getProperty("line.separator"); // NOI18N
+                            }
+                        }
+                        copy(zip, out, ls);
                     } finally {
                         out.close();
                     }
@@ -476,13 +487,13 @@ public class MakeSampleProjectGenerator {
      * @param os The Output Stream
      * @throws java.io.IOException
      */
-    private static void copy(InputStream is, OutputStream os) throws IOException {
+    private static void copy(InputStream is, OutputStream os, String ls) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
         String line;
 
         while ((line = br.readLine()) != null) {
-            bw.write(line + "\n"); // NOI18N
+            bw.write(line + ls); // NOI18N
         }
         bw.flush();
     }
@@ -511,9 +522,12 @@ public class MakeSampleProjectGenerator {
         FileObject xml = FileUtil.createData(dir, path);
         FileLock lock = xml.lock();
         try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
+            final byte[] data = MakeProjectHelperImpl.convertLineSeparator(baos, xml, xml.getParent());
             OutputStream os = SmartOutputStream.getSmartOutputStream(xml, lock);
             try {
-                XMLUtil.write(doc, os, "UTF-8"); // NOI18N
+                os.write(data);
             } finally {
                 os.close();
             }

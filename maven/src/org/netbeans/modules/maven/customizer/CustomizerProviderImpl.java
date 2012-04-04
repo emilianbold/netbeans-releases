@@ -45,14 +45,13 @@ package org.netbeans.modules.maven.customizer;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -73,6 +72,7 @@ import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
@@ -86,6 +86,7 @@ import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -103,10 +104,12 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import static org.netbeans.modules.maven.customizer.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * maven implementation of CustomizerProvider, handles the general workflow,
- *for panel creation depegates to M2CustomizerPanelProvider instances.
+ *for panel creation delegates to M2CustomizerPanelProvider instances.
  * @author Milos Kleint 
  */
 @ProjectServiceProvider(service={CustomizerProvider.class, CustomizerProviderImpl.class}, projectType="org-netbeans-modules-maven")
@@ -114,6 +117,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     private final Project project;
     private ModelHandle handle;
+    private ModelHandle2 handle2;
     
     private static final String BROKEN_NBACTIONS = "BROKENNBACTIONS";  //NOI18N
     
@@ -131,34 +135,34 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         showCustomizer( preselectedCategory, null );
     }
     
+    @Messages({
+               "TIT_Project_Properties=Project Properties - {0}", 
+               "ERR_MissingPOM=Project's pom.xml file contains invalid xml content. Please fix the file before proceeding."})
     public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
         try {
-            init();
+            POMModel mdl = init();
             //#171958 start
-            try {
-                handle.getPOMModel().sync();
-            } catch (IOException ex) {
-                Logger.getLogger(CustomizerProviderImpl.class.getName()).log(Level.INFO, "Error while syncing the editor document with model for pom.xml file", ex); //NOI18N
-            }
-            if (!handle.getPOMModel().getState().equals(State.VALID)) {
-                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(CustomizerProviderImpl.class, "ERR_MissingPOM"), NotifyDescriptor.ERROR_MESSAGE);
+            if (!mdl.getState().equals(State.VALID)) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(ERR_MissingPOM(), NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
                 return;
             }
             //#171958 end
 
-            handle.getPOMModel().startTransaction();
-            project.getLookup().lookup(MavenProjectPropsImpl.class).startTransaction();
+//            handle.getPOMModel().startTransaction();
+//            project.getLookup().lookup(MavenProjectPropsImpl.class).startTransaction();
             OptionListener listener = new OptionListener();
-            Lookup context = Lookups.fixed(new Object[] { project, handle});
+            Lookup context = Lookups.fixed(new Object[] { project, handle, handle2});
             Dialog dialog = ProjectCustomizer.createCustomizerDialog("Projects/org-netbeans-modules-maven/Customizer", //NOI18N
                                              context, 
-                                             preselectedCategory, listener, listener, new HelpCtx("maven_settings"));
-            dialog.addWindowListener( listener );
-            listener.setDialog(dialog);
-            dialog.setTitle( MessageFormat.format(
-                    org.openide.util.NbBundle.getMessage(CustomizerProviderImpl.class, "TIT_Project_Properties"),
-                    new Object[] { ProjectUtils.getInformation(project).getDisplayName() } ) );
+                                             preselectedCategory, 
+                                             new ActionListener() {
+                                                @Override
+                                                public void actionPerformed(ActionEvent ae) {
+                                                    //noop
+                                                }
+                                            }, listener, new HelpCtx("maven_settings"));
+            dialog.setTitle( TIT_Project_Properties(ProjectUtils.getInformation(project).getDisplayName()));
             dialog.setModal(true);
             dialog.setVisible(true);
         } catch (FileNotFoundException ex) {
@@ -174,13 +178,14 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         } 
     }
     
-    private void init() throws XmlPullParserException, IOException {
+    private POMModel init() throws XmlPullParserException, IOException {
         FileObject pom = FileUtil.toFileObject(project.getLookup().lookup(NbMavenProjectImpl.class).getPOMFile());
         if (pom == null || !pom.isValid()) {
             throw new FileNotFoundException("No pom file exists."); //NOI18N
         }
         ModelSource source = Utilities.createModelSource(pom);
-        POMModel model = POMModelFactory.getDefault().getModel(source);
+        POMModel model = POMModelFactory.getDefault().createFreshModel(source);
+        
         Map<String, ActionToGoalMapping> mapps = new HashMap<String, ActionToGoalMapping>();
         NetbeansBuildActionXpp3Reader reader = new NetbeansBuildActionXpp3Reader();
         List<ModelHandle.Configuration> configs = new ArrayList<ModelHandle.Configuration>();
@@ -230,9 +235,14 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         handle = ACCESSOR.createHandle(model,
                 project.getLookup().lookup(NbMavenProject.class).getMavenProject(), mapps, configs, active,
                 project.getLookup().lookup(MavenProjectPropsImpl.class));
+        handle2 = ACCESSOR2.createHandle(model,
+                project.getLookup().lookup(NbMavenProject.class).getMavenProject(), mapps, new ArrayList<ModelHandle2.Configuration>(configs), active, 
+                project.getLookup().lookup(MavenProjectPropsImpl.class));
+        return model;
     }
     
     public static ModelAccessor ACCESSOR = null;
+    public static ModelAccessor2 ACCESSOR2 = null;
 
     static {
         // invokes static initializer of ModelHandle.class
@@ -243,6 +253,12 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        c = ModelHandle2.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+    }    
     }    
     
     
@@ -252,96 +268,59 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 List<ModelHandle.Configuration> configs, ModelHandle.Configuration active, MavenProjectPropsImpl auxProps);
         
     }
-    /** Listens to the actions on the Customizer's option buttons */
-    private class OptionListener extends WindowAdapter implements ActionListener {
-        private Dialog dialog;
-        private boolean weAreSaving = false;
+        
+    public static abstract class ModelAccessor2 {
+        
+        public abstract ModelHandle2 createHandle(POMModel model, MavenProject proj, Map<String, ActionToGoalMapping> mapp,
+                List<ModelHandle2.Configuration> configs, ModelHandle2.Configuration active, MavenProjectPropsImpl auxProps);
+        
+        public abstract TreeMap<String, String> getModifiedAuxProps(ModelHandle2 handle, boolean shared);
+        
+        public abstract boolean isConfigurationModified(ModelHandle2 handle);
+        
+        public abstract boolean isModified(ModelHandle2 handle, ActionToGoalMapping mapp);
+        
+        }
+        
+    /** Listens to the actions on the Customizer's option buttons
+        ONLY STORE listener now.
+     */
+    private class OptionListener implements ActionListener {
         
         OptionListener() {
         }
         
-        void setDialog(Dialog dlg) {
-            dialog = dlg;
-        }
         
         // Listening to OK button ----------------------------------------------
         
         @Override
         public void actionPerformed( ActionEvent e ) {
-            if (SwingUtilities.isEventDispatchThread()) { // OK option listener
-                if ( dialog != null ) {
-                    dialog.setVisible(false);
-                    dialog.dispose();
-                    dialog = null;
-                    weAreSaving = true;
+                final FileObject pom = FileUtil.toFileObject(project.getLookup().lookup(NbMavenProjectImpl.class).getPOMFile());
+                if (pom == null || !pom.isValid()) {
+                    return; //TODO
                 }
-            } else { // store listener
-                //we need to finish transactions in the same thread we initiated them, doh..
-                // but #189854: this cannot be while holding project mutex
-                // and #192051: must happen before the other stuff
-                SwingUtilities.invokeLater(new Runnable() {
-                    public @Override void run() {
-                        if (handle.getPOMModel().isIntransaction()) {
-                            if (handle.isModified(handle.getPOMModel())) {
-                                handle.getPOMModel().endTransaction();
-                            } else {
-                                handle.getPOMModel().rollbackTransaction();
-                            }
-                        }
+                
                         try {
-                            project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                                @Override
-                                public void run() throws IOException {
-                                    project.getLookup().lookup(MavenProjectPropsImpl.class).commitTransaction();
-                                    writeAll(handle, project.getLookup().lookup(NbMavenProjectImpl.class));
-                                }
-                            });
+                    writeAll(handle2, project.getLookup().lookup(NbMavenProjectImpl.class));
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                             //TODO error reporting on wrong model save
                         }
                     }
-                });
             }
-        }
         
-        // Listening to window events ------------------------------------------
-        
-        @Override
-        public void windowClosed( WindowEvent e) {
-            if (!weAreSaving) {
-                //TODO where to put elsewhere?
-                project.getLookup().lookup(MavenProjectPropsImpl.class).cancelTransaction();
-                if (handle.getPOMModel().isIntransaction()) {
-                    handle.getPOMModel().rollbackTransaction();
-                }
-                assert !handle.getPOMModel().isIntransaction();
-            }
-        }
-        
-        @Override
-        public void windowClosing(WindowEvent e) {
-            if ( dialog != null ) {
-                dialog.setVisible(false);
-                dialog.dispose();
-                dialog = null;
-            }
-        }
-
-    }
-    
     static interface SubCategoryProvider {
         public void showSubCategory(String name);
     }
 
-   public static void writeAll(ModelHandle handle, NbMavenProjectImpl project) throws IOException {
+   static void writeAll(ModelHandle2 handle, NbMavenProjectImpl project) throws IOException {
        //save configs before pom, to save reloads in case both pom and configs were changed.
        boolean performConfigsInvokedReload = false;
         M2ConfigProvider prv = project.getLookup().lookup(M2ConfigProvider.class);
-        if (handle.isModified(handle.getConfigurations())) {
+        if (ACCESSOR2.isConfigurationModified(handle)) {
             List<M2Configuration> shared = new ArrayList<M2Configuration>();
             List<M2Configuration> nonshared = new ArrayList<M2Configuration>();
-            for (ModelHandle.Configuration mdlConf : handle.getConfigurations()) {
+            for (ModelHandle2.Configuration mdlConf : handle.getConfigurations()) {
                 if (!mdlConf.isDefault() && !mdlConf.isProfileBased()) {
                     M2Configuration c = new M2Configuration(mdlConf.getId(), project);
                     c.setActivatedProfiles(mdlConf.getActivatedProfiles());
@@ -355,9 +334,18 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             prv.setConfigurations(shared, nonshared, true);
             performConfigsInvokedReload = true;
         }
+        final FileObject pom = FileUtil.toFileObject(project.getLookup().lookup(NbMavenProjectImpl.class).getPOMFile());
+        Utilities.performPOMModelOperations(pom, handle.getPOMOperations());
 
-        Utilities.saveChanges(handle.getPOMModel());
-        if (handle.isModified(handle.getActionMappings())) {
+        AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
+        if (!ACCESSOR2.getModifiedAuxProps(handle, true).isEmpty()) {
+            MavenProjectPropsImpl.writeAuxiliaryData(aux, ACCESSOR2.getModifiedAuxProps(handle, true), true);
+        }
+        if (!ACCESSOR2.getModifiedAuxProps(handle, false).isEmpty()) {
+            MavenProjectPropsImpl.writeAuxiliaryData(aux, ACCESSOR2.getModifiedAuxProps(handle, false), false);
+        }
+
+        if (ACCESSOR2.isModified(handle, handle.getActionMappings())) {
             writeNbActionsModel(project, handle.getActionMappings(), M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
         }
 
@@ -369,12 +357,12 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             }
         }
         //save action mappings for configurations..
-        for (ModelHandle.Configuration c : handle.getConfigurations()) {
-            if (handle.isModified(handle.getActionMappings(c))) {
+        for (ModelHandle2.Configuration c : handle.getConfigurations()) {
+            if (ACCESSOR2.isModified(handle,handle.getActionMappings(c))) {
                 writeNbActionsModel(project, handle.getActionMappings(c), M2Configuration.getFileNameExt(c.getId()));
             }
         }
-        if (performConfigsInvokedReload) {
+        if (performConfigsInvokedReload && handle.getPOMOperations().isEmpty()) { //#only do the reload if no change to po file was done. can be actually figured now with operations
             //#174637
             NbMavenProject.fireMavenProjectReload(project);
         }

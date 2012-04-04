@@ -209,13 +209,11 @@ public class APTDriverImpl {
             // we do not cache full apt
             return;
         }
-        if (bufType == APTFileBuffer.BufferType.START_FILE && APTTraceFlags.APT_OPTIMIZE_MEMORY) {
-            // do not cache light apt at all for files which are not queried for light apt
-            // see APTTokenStreamBuilder.traceActivity, start files uses only full apt
-            return;
-        }
         if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
             if (bufType == APTFileBuffer.BufferType.START_FILE) {
+                // this kind of buffer worth to cache to not loose in scalability as shown by measurements. 
+                // It helps to do multi reparses of the same file
+                // without touching disk
                 file2ref2apt.put(path, new WeakReference<APTFile>(apt));
             } else {
                 file2ref2apt.put(path, new SoftReference<APTFile>(apt));

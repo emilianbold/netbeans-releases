@@ -319,7 +319,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
     @Override
     public boolean isRestSupportOn() {
-        return true;
+        return getProjectProperty(PROP_REST_CONFIG_TYPE) != null;
     }
     
     @Override
@@ -487,6 +487,11 @@ public class MavenProjectRestSupport extends WebRestSupport {
             return prefs.get(name, null);
         }
         return null;
+    }
+    
+    @Override
+    public void setPrivateProjectProperty(String name, String value) {
+        setProjectProperty(name, value);
     }
 
     @Override

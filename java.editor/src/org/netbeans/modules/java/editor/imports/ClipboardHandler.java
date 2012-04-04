@@ -84,12 +84,15 @@ import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ActionFactory.CutToLineBeginOrEndAction;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseKit.CutAction;
@@ -327,11 +330,11 @@ public class ClipboardHandler {
 
                 return (Transferable)method.invoke(delegate, new Object[] {c});
             } catch (NoSuchMethodException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             } catch (java.lang.reflect.InvocationTargetException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
             return null;
         }
@@ -350,11 +353,11 @@ public class ClipboardHandler {
                 method.setAccessible(true);
                 method.invoke(delegate, new Object[] {source, data, new Integer(action)});
             } catch (NoSuchMethodException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             } catch (java.lang.reflect.InvocationTargetException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
         }
 
@@ -452,7 +455,7 @@ public class ClipboardHandler {
                     final JTextComponent tc = (JTextComponent) comp;
                     final int caret = tc.getSelectionStart();
 
-                    if (result = delegate.importData(comp, t)) {
+                    if (result = delegatedImportData(comp, t)) {
                         final ImportsWrapper imports = (ImportsWrapper) t.getTransferData(IMPORT_FLAVOR);
                         final FileObject file = NbEditorUtilities.getFileObject(tc.getDocument());
                         final Document doc = tc.getDocument();
@@ -495,7 +498,45 @@ public class ClipboardHandler {
                 return result;
             }
 
+            return delegatedImportData(comp, t);
+        }
+        
+        private boolean delegatedImportData(final JComponent comp, final Transferable t) {
+            if (comp instanceof JTextComponent && insideStringLiteral((JTextComponent) comp)) {
+                return delegate.importData(comp, new Transferable() {
+                    @Override
+                    public DataFlavor[] getTransferDataFlavors() {
+                        return t.getTransferDataFlavors();
+                    }
+
+                    @Override
+                    public boolean isDataFlavorSupported(DataFlavor flavor) {
+                        return t.isDataFlavorSupported(flavor);
+                    }
+
+                    @Override
+                    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+                        Object data = t.getTransferData(flavor);
+                        if (data instanceof String) {
+                            String s = (String) data;
+                            s = s.replace("\\","\\\\"); //NOI18N
+                            s = s.replace("\"","\\\""); //NOI18N
+                            s = s.replace("\n","\\n\" +\n\""); //NOI18N
+                            data = s;
+                        }
+                        return data;
+                    }
+                });
+            }
             return delegate.importData(comp, t);
+        }
+        
+        private boolean insideStringLiteral(JTextComponent jtc) {
+            int offset = jtc.getCaretPosition();
+            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(jtc.getDocument()), offset);
+            if (ts == null || !ts.moveNext() && !ts.movePrevious() || offset == ts.offset())
+                return false;        
+            return ts.token().id() == JavaTokenId.STRING_LITERAL;
         }
     }
 

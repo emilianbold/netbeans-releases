@@ -265,6 +265,9 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
                     ResolverFactory.releaseResolver(aResolver2);
                 }
             }
+            if(result == null || CsmKindUtilities.isTypedef(result)) {
+                result = ((ProjectBase) getContainingFile().getProject()).findClassifier(name);
+            }
             if (result == null) {
                 result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(nameParts, getContainingFile(), getStartOffset());
             }

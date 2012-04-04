@@ -252,7 +252,9 @@ public final class TapPanel extends javax.swing.JPanel {
     }
 
     public void paintChildren (Graphics g) {
-        if ( !expanded ) return;
+        if ( !expanded ) {
+            return;
+        }
         super.paintChildren(g);
     }
 

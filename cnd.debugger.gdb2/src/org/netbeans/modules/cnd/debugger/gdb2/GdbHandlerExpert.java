@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
@@ -57,6 +58,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBrea
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpointType;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
+import org.netbeans.modules.cnd.debugger.common2.debugger.Constants;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.ExceptionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.ExceptionBreakpointType;
 
@@ -66,6 +68,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.Line
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.SysCallBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.SysCallBreakpointType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.VariableBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.utils.props.Property;
 
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
@@ -89,8 +92,7 @@ public class GdbHandlerExpert implements HandlerExpert {
     Handler newHandler(NativeBreakpoint template,
 		       MIResult result,
 		       NativeBreakpoint breakpoint) {
-
-	assert result.variable().equals("bkpt") || result.variable().equals("wpt");
+        assertBkptResult(result);
 	MIValue bkptValue = result.value();
 	MITList props = bkptValue.asTuple();
 
@@ -107,8 +109,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 
     Handler replaceHandler(NativeBreakpoint template,
                            Handler originalHandler, MIResult result) {
-
-	assert result.variable().equals("bkpt");
+        assertBkptResult(result);
 	MIValue bkptValue = result.value();
 	MITList props = bkptValue.asTuple();
 
@@ -117,6 +118,11 @@ public class GdbHandlerExpert implements HandlerExpert {
 	Handler handler = new Handler(debugger, breakpoint);
 	setGenericProperties(handler, props);
 	return handler;
+    }
+    
+    private static void assertBkptResult(MIResult result) {
+        assert result.variable().equals(GdbDebuggerImpl.MI_BKPT) || 
+                result.variable().equals(GdbDebuggerImpl.MI_WPT) : "Result " + result + " is not a breakpoint"; //NOI18N
     }
 
     public ReplacementPolicy replacementPolicy() {
@@ -161,11 +167,9 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    cmd.append(" -p ").append(breakpoint.getThread());		// NOI18N
         }
 
-	// Only gdb 6.8 and newer understand -d
-	/* LATER
-	if (! breakpoint.isEnabled())
-	    cmd += " -d";					// NOI18N
-	*/
+	if (!breakpoint.isEnabled()) {
+            cmd.append(debugger.getGdbVersionPeculiarity().breakDisabledFlag());
+        }
     }
 
     // interface HandlerExpert
@@ -269,15 +273,56 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    return HandlerCommand.makeError(null);
 	}
 
-	return HandlerCommand.makeCommand(cmd.toString());
+	return new GdbHandlerCommand(GdbHandlerCommand.Type.REPLACE, cmd.toString());
     }
 
     // interface HandlerExpert
     @Override
-    public HandlerCommand commandFormCustomize(NativeBreakpoint clonedBreakpoint, 
-		                       NativeBreakpoint repairedBreakpoint) {
-
-	return commandFormNew(clonedBreakpoint);
+    public HandlerCommand commandFormCustomize(final NativeBreakpoint clonedBreakpoint, 
+		                       final NativeBreakpoint repairedBreakpoint) {
+        Set<Property> diff = NativeBreakpoint.diff(repairedBreakpoint, clonedBreakpoint);
+        GdbHandlerCommand cmd = null;
+        for (final Property property : diff) {
+            GdbHandlerCommand old = cmd;
+            if (Constants.PROP_BREAKPOINT_COUNTLIMIT.equals(property.key())) {
+                String value = "0"; //NOI18N
+                if (property.getAsObject() != null) {
+                    value = property.getAsObject().toString();
+                }
+                cmd = new GdbHandlerCommand(GdbHandlerCommand.Type.CHANGE, 
+                        "-break-after " + repairedBreakpoint.getId() + //NOI18N
+                        ' ' + value) {
+                            @Override
+                            void onDone() {
+                                repairedBreakpoint.setCountLimit(clonedBreakpoint.getCountLimit(), clonedBreakpoint.hasCountLimit());
+                                repairedBreakpoint.update();
+                            }
+                        };
+                cmd.setNext(old);
+            } else if (Constants.PROP_BREAKPOINT_CONDITION.equals(property.key())) {
+                String value = "";
+                if (property.getAsObject() != null) {
+                    value = property.getAsObject().toString();
+                }
+                cmd = new GdbHandlerCommand(GdbHandlerCommand.Type.CHANGE, 
+                        "-break-condition " + repairedBreakpoint.getId() + //NOI18N
+                        ' ' + value) {
+                            @Override
+                            void onDone() {
+                                repairedBreakpoint.setCondition(clonedBreakpoint.getCondition());
+                                repairedBreakpoint.update();
+                            }
+                        };
+                cmd.setNext(old);
+            } else {
+                return commandFormNew(clonedBreakpoint);
+            }
+        }
+        if (cmd != null) {
+            return cmd;
+        } else {
+            return commandFormNew(clonedBreakpoint);
+        }
     }
 
     private static NativeBreakpoint createBreakpoint(MITList results,
@@ -510,8 +555,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 			       NativeBreakpoint breakpoint,
 			       NativeBreakpoint template,
 			       MIResult result) {
-
-	assert result.variable().equals("bkpt") || result.variable().equals("wpt");
+        assertBkptResult(result);
 	MIValue bkptValue = result.value();
 	MITList props = bkptValue.asTuple();
 

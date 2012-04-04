@@ -64,7 +64,7 @@ import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
@@ -82,6 +82,7 @@ import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
@@ -95,11 +96,14 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.StatusDisplayer;
+import org.openide.execution.ExecutorTask;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -128,7 +132,10 @@ public class ActionProviderImpl implements ActionProvider {
         COMMAND_DEBUG_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
         "debug.fix", //NOI18N
-
+        COMMAND_PROFILE,
+        COMMAND_PROFILE_SINGLE,
+        COMMAND_PROFILE_TEST_SINGLE,
+        
         //operations
         COMMAND_DELETE,
         COMMAND_RENAME,
@@ -137,6 +144,7 @@ public class ActionProviderImpl implements ActionProvider {
     };
     
     Lookup.Result<? extends MavenActionsProvider> result;
+    private RequestProcessor RP = new RequestProcessor(ActionProviderImpl.class.getName(), 3);
 
     public ActionProviderImpl(Project proj) {
         this.proj = proj;
@@ -206,7 +214,7 @@ public class ActionProviderImpl implements ActionProvider {
         }
 
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     invokeAction(action, lookup);
@@ -236,7 +244,17 @@ public class ActionProviderImpl implements ActionProvider {
 
         } else {
             setupTaskName(action, rc, lookup);
-            RunUtils.run(rc);
+            final ActionProgress listener = ActionProgress.start(lookup);
+            final ExecutorTask task = RunUtils.run(rc);
+            if (task != null) {
+                task.addTaskListener(new TaskListener() {
+                    @Override public void taskFinished(Task _) {
+                        listener.finished(task.result() == 0);
+                    }
+                });
+            } else {
+                listener.finished(false);
+            }
         }
     }
 
@@ -251,6 +269,7 @@ public class ActionProviderImpl implements ActionProvider {
     @Messages({
         "# {0} - artifactId", "TXT_Run=Run {0}",
         "# {0} - artifactId", "TXT_Debug=Debug {0}",
+        "# {0} - artifactId", "TXT_Profile=Profile {0}",
         "# {0} - artifactId", "TXT_Test=Test {0}",
         "# {0} - artifactId", "TXT_Build=Build {0}"
     })
@@ -267,12 +286,16 @@ public class ActionProviderImpl implements ActionProvider {
             title = TXT_Run(prj.getMavenProject().getArtifactId());
         } else if (ActionProvider.COMMAND_DEBUG.equals(action)) {
             title = TXT_Debug(prj.getMavenProject().getArtifactId());
+        } else if (ActionProvider.COMMAND_PROFILE.equals(action)) {
+            title = TXT_Profile(prj.getMavenProject().getArtifactId());
         } else if (ActionProvider.COMMAND_TEST.equals(action)) {
             title = TXT_Test(prj.getMavenProject().getArtifactId());
         } else if (action.startsWith(ActionProvider.COMMAND_RUN_SINGLE)) {
             title = TXT_Run(dobjName);
         } else if (action.startsWith(ActionProvider.COMMAND_DEBUG_SINGLE) || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action)) {
             title = TXT_Debug(dobjName);
+        } else if (action.startsWith(ActionProvider.COMMAND_PROFILE_SINGLE) || ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(action)) {
+            title = TXT_Profile(dobjName);
         } else if (ActionProvider.COMMAND_TEST_SINGLE.equals(action)) {
             title = TXT_Test(dobjName);
         } else {
@@ -362,7 +385,7 @@ public class ActionProviderImpl implements ActionProvider {
                         mapping.setActionName(tit);
                         mapping.setDisplayName(pnl.isRememberedAs());
                         //TODO shall we write to configuration based files or not?
-                        ModelHandle.putMapping(mapping, proj, conf.getDefaultConfig());
+                        ModelHandle2.putMapping(mapping, proj, conf.getDefaultConfig());
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
@@ -440,7 +463,7 @@ public class ActionProviderImpl implements ActionProvider {
 
             menu.add(loading);
             /*using lazy construction strategy*/
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {

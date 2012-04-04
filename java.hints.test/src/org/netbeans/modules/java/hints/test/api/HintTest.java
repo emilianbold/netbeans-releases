@@ -94,6 +94,7 @@ import org.netbeans.modules.java.hints.providers.code.FSWrapper.ClassWrapper;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
+import org.netbeans.modules.java.hints.spiimpl.SyntheticFix;
 import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.test.Utilities.TestLookup;
@@ -344,10 +345,10 @@ public class HintTest {
     public HintTest input(String fileName, String code, boolean compilable) throws Exception {
         int caret = -1;
 
-        if (caretMarker != null) {
+        if (caretMarker != null && testFile == null) {
             caret = code.indexOf(caretMarker);
 
-            assertNotSame(-1, caret);
+            assertNotSame("A caret location must be specified", -1, caret);
 
             code = code.substring(0, caret) + code.substring(caret + 1);
         }
@@ -838,6 +839,27 @@ public class HintTest {
             LifecycleManager.getDefault().saveAll();
 
             return new AppliedFix();
+        }
+        /**Verifies that the current warning provides the given fixes.
+         *
+         * @param fixes the {@link Fix#getText() } of the expected fixes
+         * @return itself
+         * @throws AssertionError if the expected fixes do not match the provided fixes
+         * @since 1.1
+         */
+        public HintWarning assertFixes(String... expectedFixes) throws Exception {
+            assertTrue("Must be computed", warning.getFixes().isComputed());
+
+            List<String> fixNames = new LinkedList<String>();
+
+            for (Fix f : warning.getFixes().getFixes()) {
+                if (f instanceof SyntheticFix) continue;
+                fixNames.add(f.getText());
+            }
+
+            assertEquals("Fixes for the current warning do not match the expected fixes. All fixes: " + fixNames.toString(), Arrays.asList(expectedFixes), fixNames);
+
+            return this;
         }
     }
 

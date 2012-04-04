@@ -138,6 +138,8 @@ public class ModifiersCheckHint extends AbstractRule {
     }
 
     @Messages({
+        "# {0} - Field name",
+        "# {1} - Modifier name",
         "InvalidField=Field \"{0}\" can not be declared {1}"
     })
     private void processFieldElement(FieldElement fieldElement) {
@@ -156,8 +158,11 @@ public class ModifiersCheckHint extends AbstractRule {
     }
 
     @Messages({
+        "# {0} - Method name",
         "AbstractFinalMethod=Method \"{0}\" can not be declared abstract and final",
+        "# {0} - Method name",
         "AbstractWithBlockMethod=Abstract method \"{0}\" can not contain body",
+        "# {0} - Method name",
         "AbstractPrivateMethod=Abstract method \"{0}\" can not be declared private"
     })
     private void processMethodScope(MethodScope methodScope) {
@@ -188,7 +193,10 @@ public class ModifiersCheckHint extends AbstractRule {
     }
 
     @Messages({
+        "# {0} - Method name",
+        "# {1} - Modifier name",
         "InvalidIfaceMethod=Interface method \"{0}\" can not be declared {1}",
+        "# {0} - Method name",
         "IfaceMethodWithBlock=Interface method \"{0}\" can not contain body"
     })
     private void processInterfaceMethodScope(MethodScope methodScope) {
@@ -207,14 +215,16 @@ public class ModifiersCheckHint extends AbstractRule {
             invalidModifier = "final"; //NOI18N
             fixes = Collections.<HintFix>singletonList(new RemoveModifierFix(doc, invalidModifier, methodScope.getOffset()));
             hints.add(new SimpleHint(Bundle.InvalidIfaceMethod(methodScope.getName(), invalidModifier), methodScope.getNameRange(), fixes));
-        } else if (methodScope.getBlockRange() != null) {
+        } else if (methodScope.getBlockRange() != null && methodScope.getBlockRange().getLength() != 1) {
             fixes = Collections.<HintFix>singletonList(new RemoveBodyFix(doc, methodScope));
             hints.add(new SimpleHint(Bundle.IfaceMethodWithBlock(methodScope.getName()), methodScope.getNameRange(), fixes));
         }
     }
 
     @Messages({
+        "# {0} - Class name",
         "PossibleAbstractClass=Class \"{0}\" contains abstract methods and must be declared abstract",
+        "# {0} - Class name",
         "FinalPossibleAbstractClass=Class \"{0}\" contains abstract methods and can not be declared final"
     })
     private void processPossibleAbstractClass(ClassScope classScope) {
@@ -269,7 +279,10 @@ public class ModifiersCheckHint extends AbstractRule {
         }
 
         @Override
-        @Messages("RemoveBodyFixDesc=Remove body of the method: {0}")
+        @Messages({
+            "# {0} - Method name",
+            "RemoveBodyFixDesc=Remove body of the method: {0}"
+        })
         public String getDescription() {
             return Bundle.RemoveBodyFixDesc(methodScope.getName());
         }
@@ -294,7 +307,10 @@ public class ModifiersCheckHint extends AbstractRule {
         }
 
         @Override
-        @Messages("RemoveModifierFixDesc=Remove modifier: {0}")
+        @Messages({
+            "# {0} - Modifier name",
+            "RemoveModifierFixDesc=Remove modifier: {0}"
+        })
         public String getDescription() {
             return Bundle.RemoveModifierFixDesc(modifier);
         }
@@ -322,7 +338,10 @@ public class ModifiersCheckHint extends AbstractRule {
         }
 
         @Override
-        @Messages("AddModifierFixDesc=Add modifier: {0}")
+        @Messages({
+            "# {0} - Modifier name",
+            "AddModifierFixDesc=Add modifier: {0}"
+        })
         public String getDescription() {
             return Bundle.AddModifierFixDesc(modifier);
         }

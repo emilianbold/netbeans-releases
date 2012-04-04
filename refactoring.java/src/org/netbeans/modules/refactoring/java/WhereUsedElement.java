@@ -77,8 +77,9 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         this.bounds = bounds;
         this.displayText = displayText;
         this.parentFile = parentFile;
-        if (tp!=null)
+        if (tp!=null) {
             ElementGripFactory.getDefault().put(parentFile, tp, info);
+        }
     }
 
     @Override
@@ -89,8 +90,9 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     @Override
     public Lookup getLookup() {
         Object composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
-        if (composite==null) 
+        if (composite==null) {
             composite = parentFile;
+        }
         return Lookups.singleton(composite);
     }
 

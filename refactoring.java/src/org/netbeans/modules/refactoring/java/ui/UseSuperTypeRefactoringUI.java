@@ -172,13 +172,14 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI, JavaRefactoring
      */
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(UseSuperTypeRefactoringUI.class.getName());
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.UseSuperTypeRefactoringUI"); // NOI18N
     }
     
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
-        if(panel == null)
+        if(panel == null) {
             panel = new UseSuperTypePanel(refactoring, className);
+        }
         return panel;
     }
 

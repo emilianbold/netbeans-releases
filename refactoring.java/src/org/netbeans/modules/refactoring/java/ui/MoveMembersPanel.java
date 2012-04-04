@@ -407,26 +407,36 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         for (Description description : original) {
 
             if (description.isConstructor()) {
-                if(description.getSelected() == Boolean.TRUE) warn |= true;
+                if(description.getSelected() == Boolean.TRUE) {
+                    warn |= true;
+                }
                 continue;
             }
             if (!inherited && description.isInherited()) {
-                if(description.getSelected() == Boolean.TRUE) warn |= true;
+                if(description.getSelected() == Boolean.TRUE) {
+                    warn |= true;
+                }
                 continue;
             }
             if (!non_public
                     && !description.getModifiers().contains(Modifier.PUBLIC)) {
-                if(description.getSelected() == Boolean.TRUE) warn |= true;
+                if(description.getSelected() == Boolean.TRUE) {
+                    warn |= true;
+                }
                 continue;
             }
 
             if (!statik && description.getModifiers().contains(Modifier.STATIC)) {
-                if(description.getSelected() == Boolean.TRUE) warn |= true;
+                if(description.getSelected() == Boolean.TRUE) {
+                    warn |= true;
+                }
                 continue;
             }
 
             if (!fields && description.getKind() == ElementKind.FIELD) {
-                if(description.getSelected() == Boolean.TRUE) warn |= true;
+                if(description.getSelected() == Boolean.TRUE) {
+                    warn |= true;
+                }
                 continue;
             }
             result.add(description);
@@ -1052,14 +1062,14 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
 
             if (e instanceof TypeElement) {
                 d.setSubs(new HashSet<Description>());
-                d.setHtmlHeader(UIUtilities.createHtmlHeader((TypeElement) e, info.getElements().isDeprecated(e), d.isInherited()));
+                d.setHtmlHeader(UIUtilities.createHeader((TypeElement) e, info.getElements().isDeprecated(e), d.isInherited(), true, false));
             } else if (e instanceof ExecutableElement) {
-                d.setHtmlHeader(UIUtilities.createHtmlHeader((ExecutableElement) e, info.getElements().isDeprecated(e), d.isInherited()));
+                d.setHtmlHeader(UIUtilities.createHeader((ExecutableElement) e, info.getElements().isDeprecated(e), d.isInherited(), true, false));
             } else if (e instanceof VariableElement) {
                 if (!(e.getKind() == ElementKind.FIELD || e.getKind() == ElementKind.ENUM_CONSTANT)) {
                     return null;
                 }
-                d.setHtmlHeader(UIUtilities.createHtmlHeader((VariableElement) e, info.getElements().isDeprecated(e), d.isInherited()));
+                d.setHtmlHeader(UIUtilities.createHeader((VariableElement) e, info.getElements().isDeprecated(e), d.isInherited(), true, false));
             }
 
             d.setModifiers(e.getModifiers());

@@ -45,14 +45,12 @@ public class BracketCompletionSingleTestCase extends EditorBase  {
     
     public void testIdentFunctionName()  throws Exception {
         setDefaultsOptions("GNU");
-        setLoadDocumentText(
-            "tree\n" +
-            "        |"
-            );
-        typeChar('d',true);
-        assertDocumentTextAndCaret("Incorrect identing of main",
-            "tree\n" +
-            "d|"
-            );
+        typeCharactersInText(
+                "tree\n" +
+                "        |",
+                "d", // "Incorrect identing of main"
+                "tree\n" +
+                "d|"
+                );
     }
 }

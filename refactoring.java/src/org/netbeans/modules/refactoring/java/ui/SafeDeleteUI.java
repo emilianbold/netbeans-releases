@@ -167,8 +167,7 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
     
     @Override
     public org.openide.util.HelpCtx getHelpCtx() {
-        
-        return new HelpCtx(SafeDeleteUI.class.getName());
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.SafeDeleteUI"); // NOI18N
     }
     
     @Override
@@ -180,8 +179,9 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         //TODO:Do you want to just use Arrays.asList?
-        if(panel == null)
+        if(panel == null) {
             panel = new SafeDeletePanel(refactoring, regulardelete, parent);
+        }
         return panel;
     }
     
@@ -292,7 +292,7 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
         if (packages.length == 1) {
             return new SafeDeleteUI(packages[0], b);
         }
-        if (handles.length == 0) {
+        if (handles.length == 0 || (files!=null && files.length > 1)) {
             return new SafeDeleteUI(files, Arrays.asList(handles), b);
         }
         TreePathHandle selectedElement = handles[0];

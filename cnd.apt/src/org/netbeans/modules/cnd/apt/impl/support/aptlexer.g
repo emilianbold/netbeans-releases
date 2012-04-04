@@ -317,6 +317,19 @@ tokens {
     LITERAL_char16_t="char16_t"; // NOI18N
     LITERAL_char32_t="char32_t"; // NOI18N
     LITERAL_noexcept="noexcept"; // NOI18N
+    LITERAL___decltype="__decltype"; // NOI18N
+    LITERAL___complex="__complex"; // NOI18N
+    LITERAL___forceinline="__forceinline"; // NOI18N
+    LITERAL___clrcall="__clrcall"; // NOI18N
+    LITERAL___try="__try"; // NOI18N
+    LITERAL___finally="__finally"; // NOI18N
+    LITERAL___null="__null"; // NOI18N
+    LITERAL___alignof="__alignof"; // NOI18N
+    LITERAL___is_class="__is_class"; // NOI18N
+    LITERAL___is_pod="__is_pod"; // NOI18N
+    LITERAL___is_base_of="__is_base_of"; // NOI18N
+    LITERAL___has_trivial_constructor="__has_trivial_constructor"; // NOI18N
+
     LAST_LITERAL_TOKEN;
 
     // Extension points

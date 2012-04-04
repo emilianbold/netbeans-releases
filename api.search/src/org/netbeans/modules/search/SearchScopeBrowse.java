@@ -210,6 +210,10 @@ public class SearchScopeBrowse {
     private FileObject[] chooseRoots() {
         FileChooserBuilder chooserBuilder =
                 new FileChooserBuilder(SearchScopeBrowse.class);
+        chooserBuilder.setTitle(UiUtils.getText(
+                "LBL_ScopeBrowseFileChooserTitle"));                    //NOI18N
+        chooserBuilder.setApproveText(UiUtils.getText(
+                "LBL_ScopeBrowseFileChooserApprove"));                  //NOI18N
         File[] files = chooserBuilder.showMultiOpenDialog();
         if (files == null) {
             files = new File[0];

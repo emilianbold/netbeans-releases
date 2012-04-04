@@ -46,23 +46,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
-import org.netbeans.modules.maven.indexer.spi.BaseQueries;
-import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
-import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery;
-import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
-import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
-import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
-import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
+import org.netbeans.modules.maven.indexer.NexusRepositoryIndexerImpl;
+import org.netbeans.modules.maven.indexer.spi.*;
+import org.openide.util.Lookup;
 
 /**
  * Searches Maven repositories in various ways.
@@ -79,28 +75,140 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public final static class Result<T> {
-        private boolean skipped = false;
+        private final List<RepositoryInfo> skipped = new ArrayList<RepositoryInfo>();
         private List<T> results = new ArrayList<T>();
+        private ChangeListener listener;
+        private final Redo<T> redoAction;
+        
+        /**
+         * used internally by the repository indexing/searching engine(s)
+         */
+        Result(Redo<T> redo) {
+            redoAction = redo;
+        }
         
         /**
          * returns true is one or more indexes were skipped, eg because the indexing was taking place.
          * @return 
          */
         public boolean isPartial() {
-            return skipped;
+            return !skipped.isEmpty();
         }
         
         /**
          * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
          */
-        public void markAsPartial() {
-            skipped = true;
+        void addSkipped(RepositoryInfo info) {
+            skipped.add(info);
         }
         
-        public List<T> getResults() {
-            return results;
+        /**
+         * waits for currently unaccessible indexes to finish, not to be called in AWT thread.
+         */
+        public void waitForSkipped() {
+            assert !SwingUtilities.isEventDispatchThread();
+            redoAction.run(this);
+            skipped.clear();
         }
+        
+        synchronized void setResults(Collection<T> newResults) {
+            results.clear();
+            results.addAll(newResults);
+        }
+        
+        public synchronized List<T> getResults() {
+            return Collections.unmodifiableList(results);
+        }
+        
+        
+        /**
+         * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
+         */
+        void addSkipped(Collection<RepositoryInfo> infos) {
+            skipped.addAll(infos);
+        }
+        
+        /**
+         * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
+         */
+        List<RepositoryInfo> getSkipped() {
+            return skipped;
+        }
+        
     } 
+    
+    
+    static {
+        AccessorImpl impl = new AccessorImpl();
+        impl.assign();
+    }
+    
+    
+    
+    static class AccessorImpl extends NexusRepositoryIndexerImpl.Accessor {
+        
+         public void assign() {
+             if (NexusRepositoryIndexerImpl.ACCESSOR == null) {
+                 NexusRepositoryIndexerImpl.ACCESSOR = this;
+             }
+         }
+
+        @Override
+        public void addSkipped(Result<?> result, Collection<RepositoryInfo> infos) {
+            result.addSkipped(infos);
+        }
+
+        @Override
+        public List<RepositoryInfo> getSkipped(Result<?> result) {
+            return result.getSkipped();
+        }
+
+        @Override
+        public void addSkipped(Result<?> result, RepositoryInfo info) {
+            result.addSkipped(info);
+        }
+
+        @Override
+        public Result<String> createStringResult(Redo<String> redo) {
+            return new Result<String>(redo);
+        }
+
+        @Override
+        public Result<NBVersionInfo> createVersionResult(Redo<NBVersionInfo> redo) {
+            return new Result<NBVersionInfo>(redo);
+        }
+
+        @Override
+        public void setStringResults(Result<String> result, Collection<String> newResults) {
+            result.setResults(newResults);
+        }
+
+        @Override
+        public void setVersionResults(Result<NBVersionInfo> result, Collection<NBVersionInfo> newResults) {
+            result.setResults(newResults);
+        }
+
+        @Override
+        public Result<NBGroupInfo> createGroupResult(Redo<NBGroupInfo> redo) {
+            return new Result<NBGroupInfo>(redo);
+        }
+
+        @Override
+        public void setGroupResults(Result<NBGroupInfo> result, Collection<NBGroupInfo> newResults) {
+            result.setResults(newResults);
+        }
+
+        @Override
+        public Result<ClassUsage> createClassResult(Redo<ClassUsage> redo) {
+            return new Result<ClassUsage>(redo);
+        }
+
+        @Override
+        public void setClassResults(Result<ClassUsage> result, Collection<ClassUsage> newResults) {
+            result.setResults(newResults);
+        }
+    }
+    
     
    /**
      * One usage result.
@@ -131,7 +239,7 @@ public final class RepositoryQueries {
     
     
     private static @NonNull BaseQueries findBaseQueries() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(BaseQueries.class);
+        return Lookup.getDefault().lookup(BaseQueries.class);
     }
 
     /**
@@ -196,7 +304,7 @@ public final class RepositoryQueries {
 
     
     private static @NonNull DependencyInfoQueries findDIQ() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(DependencyInfoQueries.class);
+        return Lookup.getDefault().lookup(DependencyInfoQueries.class);
     }
     
     /**
@@ -209,44 +317,9 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<NBGroupInfo> findDependencyUsageResult(String groupId, String artifactId, String version, @NullAllowed List<RepositoryInfo> repos) {
-        //tempmaps
-        Map<String, NBGroupInfo> groupMap = new HashMap<String, NBGroupInfo>();
-        Map<String, NBArtifactInfo> artifactMap = new HashMap<String, NBArtifactInfo>();
-        List<NBGroupInfo> groupInfos = new ArrayList<NBGroupInfo>();
-        final Result<NBGroupInfo> result = new Result<NBGroupInfo>();
-        Result<NBVersionInfo> res = findDIQ().findDependencyUsage(groupId, artifactId, version, repos);
-        convertToNBGroupInfo(res.getResults(),
-                groupMap, artifactMap, groupInfos);
-        if (res.isPartial()) {
-            result.markAsPartial();
-        }
-        result.getResults().addAll(groupInfos);
-        return result;
+        return findDIQ().findDependencyUsageGroups(groupId, artifactId, version, repos);
     }
     
-    private static void convertToNBGroupInfo(Collection<NBVersionInfo> artifactInfos, 
-                                      Map<String, NBGroupInfo> groupMap, 
-                                      Map<String, NBArtifactInfo> artifactMap,
-                                      List<NBGroupInfo> groupInfos) {
-        for (NBVersionInfo ai : artifactInfos) {
-            String groupId = ai.getGroupId();
-            String artId = ai.getArtifactId();
-
-            NBGroupInfo ug = groupMap.get(groupId);
-            if (ug == null) {
-                ug = new NBGroupInfo(groupId);
-                groupInfos.add(ug);
-                groupMap.put(groupId, ug);
-            }
-            NBArtifactInfo ua = artifactMap.get(artId);
-            if (ua == null) {
-                ua = new NBArtifactInfo(artId);
-                ug.addArtifactInfo(ua);
-                artifactMap.put(artId, ua);
-            }
-            ua.addVersionInfo(ai);
-        }
-    }
     
     /**
      * 
@@ -262,26 +335,25 @@ public final class RepositoryQueries {
         } catch (IOException ex) {
             Logger.getLogger(RepositoryQueries.class.getName()).log(Level.INFO, "Could not determine SHA-1 of " + file, ex);
         }
-        return new Result<NBVersionInfo>();
+        return NexusRepositoryIndexerImpl.ACCESSOR.createVersionResult(new Redo<NBVersionInfo>() {
+            @Override
+            public void run(Result<NBVersionInfo> result) {
+                //noop
+            }
+        });
         
     }
     
     private static ChecksumQueries findChecksumQueries() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ChecksumQueries.class);
+        return Lookup.getDefault().lookup(ChecksumQueries.class);
     }    
 
     private static Result<NBVersionInfo> findBySHA1(String sha1, @NullAllowed List<RepositoryInfo> repos) {
-        ChecksumQueries cq = findChecksumQueries();
-        if (cq != null) {
-            return findChecksumQueries().findBySHA1(sha1, repos);
-        } else {
-            //this is here only because of ClassPathProviderImplTest
-            return new Result<NBVersionInfo>();
-        }
+        return findChecksumQueries().findBySHA1(sha1, repos);
     }
     
     private static @NonNull ClassesQuery findClassesQueries() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ClassesQuery.class);
+        return Lookup.getDefault().lookup(ClassesQuery.class);
     }    
     /**
      * 
@@ -336,7 +408,7 @@ public final class RepositoryQueries {
     }
     
     private static @NonNull ClassUsageQuery findClassUsageQuery() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ClassUsageQuery.class);        
+        return Lookup.getDefault().lookup(ClassUsageQuery.class);
     }
 
     /**
@@ -353,7 +425,7 @@ public final class RepositoryQueries {
 
     
     private static @NonNull ArchetypeQueries findArchetypeQueries() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ArchetypeQueries.class);
+        return Lookup.getDefault().lookup(ArchetypeQueries.class);
     }
     
     /**
@@ -394,7 +466,7 @@ public final class RepositoryQueries {
 
 
     private static @NonNull GenericFindQuery findFindQuery() {
-        return RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(GenericFindQuery.class);
+        return Lookup.getDefault().lookup(GenericFindQuery.class);
     }
     
     /**
@@ -450,7 +522,8 @@ public final class RepositoryQueries {
     
     public static @NonNull List<RepositoryInfo> getLoadedContexts() {
         List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
-        ContextLoadedQuery clq = RepositoryIndexer.findImplementation().getCapabilityLookup().lookup(ContextLoadedQuery.class);
+        ContextLoadedQuery clq = Lookup.getDefault().lookup(ContextLoadedQuery.class);
+        assert clq != null;
         toRet.addAll(clq.getLoaded(RepositoryPreferences.getInstance().getRepositoryInfos()));
         return toRet;
     }

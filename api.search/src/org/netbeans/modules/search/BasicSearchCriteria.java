@@ -167,6 +167,7 @@ public final class BasicSearchCriteria {
     void setTextPattern(String pattern) {
 
         searchPattern = searchPattern.changeSearchExpression(pattern);
+        boolean wasValid = textPatternValid;
 
         if (pattern == null || pattern.equals("")) {
             textPattern = null;
@@ -178,7 +179,7 @@ public final class BasicSearchCriteria {
         }
 
         replacePatternValid = validateReplacePattern();
-        updateUsability();
+        updateUsability(textPatternValid != wasValid);
     }
 
     private void updateFileNamePattern() {
@@ -275,7 +276,7 @@ public final class BasicSearchCriteria {
         if (this.searcherOptions.isRegexp() != fileNameRegexp) {
             searcherOptions.setRegexp(fileNameRegexp);
             updateFileNamePattern();
-            updateUsability();
+            updateUsability(true);
         }
     }
 
@@ -308,7 +309,7 @@ public final class BasicSearchCriteria {
         searchPattern = searchPattern.changeRegExp(regexp);
         updateTextPattern();
         replacePatternValid = validateReplacePattern();
-        updateUsability();
+        updateUsability(true);
     }
 
     boolean isWholeWords() {
@@ -361,7 +362,7 @@ public final class BasicSearchCriteria {
     }
 
     void setFileNamePattern(String pattern) {
-
+        boolean wasValid = fileNamePatternValid;
         searcherOptions.setPattern(pattern);
         if (searcherOptions.getPattern().isEmpty()) {
             fileNamePatternSpecified = false;
@@ -369,7 +370,7 @@ public final class BasicSearchCriteria {
             fileNamePatternSpecified = true;
             updateFileNamePattern();
         }
-        updateUsability();
+        updateUsability(wasValid != fileNamePatternValid);
     }
 
     //--------------------------------------------------------------------------
@@ -426,10 +427,10 @@ public final class BasicSearchCriteria {
     }
 
     //--------------------------------------------------------------------------
-    private void updateUsability() {
+    private void updateUsability(boolean force) {
         boolean wasUsable = criteriaUsable;
         criteriaUsable = isUsable();
-        if (criteriaUsable != wasUsable) {
+        if (criteriaUsable != wasUsable || force) {
             fireUsabilityChanged();
         }
     }

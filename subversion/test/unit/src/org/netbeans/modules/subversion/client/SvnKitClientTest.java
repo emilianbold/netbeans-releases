@@ -70,11 +70,11 @@ public class SvnKitClientTest extends NbTestCase {
         TestSuite suite = new TestSuite();        
         suite.addTestSuite(AddTestHidden.class);
         suite.addTestSuite(BlameTestHidden.class);
-        // suite.addTestSuite(CancelTest.class); XXX works only for cli
         suite.addTestSuite(CatTestHidden.class);
         suite.addTestSuite(CheckoutTestHidden.class);
         suite.addTestSuite(CommitTestHidden.class);
         suite.addTestSuite(CopyTestHidden.class);
+        suite.addTestSuite(DifferentWorkingDirsTestHidden.class);
         suite.addTestSuite(ImportTestHidden.class);
         suite.addTestSuite(InfoTestHidden.class);
         suite.addTestSuite(ListTestHidden.class);

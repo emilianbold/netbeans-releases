@@ -264,7 +264,6 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         }
     }
 
-    /* when browserExecutable is changed, ddeServer has to be changed accordingly */
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(ExtWebBrowser.PROP_BROWSER_EXECUTABLE)) {
             Object np = evt.getNewValue();

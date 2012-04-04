@@ -57,10 +57,10 @@ import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.elements.DiffElement;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
-import org.netbeans.modules.cnd.refactoring.support.RefactoringCommit;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 

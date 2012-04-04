@@ -167,7 +167,7 @@ public class UpdateAllProjects {
         for (Map.Entry<File, ProjectsAndDestination> entry : workspaceProjectsMap.entrySet()) {
             ImportProjectAction.performImport(ProjectSelectionPanel.getFlattenedProjects(entry.getValue().eps), 
                     entry.getValue().dest == null ? null : entry.getValue().dest.getPath(), null, 
-                    entry.getValue().eps.size(), false, false, true, importProblems, createdProjects);
+                    entry.getValue().eps.size(), false, true, importProblems, createdProjects);
         }
         return Boolean.TRUE;
     }

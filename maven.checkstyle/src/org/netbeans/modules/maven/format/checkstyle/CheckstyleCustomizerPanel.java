@@ -44,7 +44,7 @@
 package org.netbeans.modules.maven.format.checkstyle;
 
 import javax.swing.JComponent;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -66,7 +66,7 @@ public class CheckstyleCustomizerPanel implements ProjectCustomizer.CompositeCat
 
     @Override
     public JComponent createComponent(ProjectCustomizer.Category cat, Lookup look) {
-        ModelHandle handle = look.lookup(ModelHandle.class);
+        ModelHandle2 handle = look.lookup(ModelHandle2.class);
         return new CheckstylePanel(handle, cat);
     }
 

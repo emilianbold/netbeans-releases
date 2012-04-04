@@ -43,10 +43,8 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.FocusTraversalPolicy;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -76,24 +74,24 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.DebugUrl;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.DebugUrl;
-import org.openide.NotificationLineSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -174,7 +172,7 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(RunAsWebAdvanced.class);
+        return new HelpCtx("org.netbeans.modules.php.project.ui.customizer.RunAsWebAdvanced"); // NOI18N
     }
 
     public boolean open() {
@@ -689,30 +687,16 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
                 JButton button = localPathCell.getButton();
                 if (e.getX() > (cellRect.x + cellRect.width - button.getWidth())) {
                     //inside changeButton
-                    File newLocation = Utils.browseLocationAction(table, getLastFolder(), NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_SelectProjectFolder"));
+                    File newLocation = Utils.browseLocationAction(LastUsedFolders.DEBUGGER_PATH_MAPPING,
+                            NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_SelectProjectFolder"), FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)));
                     if (newLocation != null) {
                         localPathCell.setPath(newLocation.getAbsolutePath());
-                        LastUsedFolders.setPathMapping(newLocation);
                     }
                     validateFields();
                 }
             }
         }
 
-        private File getLastFolder() {
-            File lastFolder = LastUsedFolders.getPathMapping();
-            if (lastFolder == null) {
-                return null;
-            }
-            FileObject fo = FileUtil.toFileObject(lastFolder);
-            if (fo == null) {
-                return null;
-            }
-            if (!CommandUtils.isUnderAnySourceGroup(project, fo, false)) {
-                return FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project));
-            }
-            return lastFolder;
-        }
     }
 
     public static final class Properties {

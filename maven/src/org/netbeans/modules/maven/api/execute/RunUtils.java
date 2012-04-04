@@ -173,7 +173,7 @@ public final class RunUtils {
             return false;
         }
         String cos = auxprops.get(Constants.HINT_COMPILE_ON_SAVE, true);
-        return cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos));
+        return cos == null || "all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos);
     }
 
     /**
@@ -201,8 +201,7 @@ public final class RunUtils {
             return true;
         }
         String cos = auxprops.get(Constants.HINT_COMPILE_ON_SAVE, true);
-        //COS for tests is the default value.
-        return cos == null || ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
+        return cos != null && ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
     }
     /**
      *

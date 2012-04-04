@@ -44,9 +44,11 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
+import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -123,10 +125,21 @@ public class StatusTestHidden extends AbstractCommandTestCase {
         File external = createExternal("externals");
         
         File[] files = new File[] { notmanagedfile, notmanagedfolder, unversioned, added, uptodate, deleted, ignoredFile, ignoredFolder, fileInIgnoredFolder, external };
-        ISVNStatus[] sNb = getNbClient().getStatus(files);        
+        ISVNStatus[] sNb;
+        if (isCommandLine() || isSvnkit()) {
+            try {
+                getNbClient().getStatus(files);
+                fail("Should fail with this client, status throws a warning");
+            } catch (SVNClientException ex) {
+                assertTrue(SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()));
+                files = new File[] { notmanagedfolder, added, uptodate, deleted, ignoredFile, ignoredFolder, external };
+            }
+        }
+        sNb = getNbClient().getStatus(files);
         
-        assertEquals(10, sNb.length);
-        fail("implement status assert against expected values");
+        assertEquals(files.length, sNb.length);
+        ISVNStatus[] sRef = getFullWorkingClient().getStatus(files);
+        assertStatus(sRef, sNb);
     }
 
     /**
@@ -200,21 +213,21 @@ public class StatusTestHidden extends AbstractCommandTestCase {
         remove(deleted);
                         
         //                          descend  getAll contactServer  ignoreExternals
-        status(notmanagedfolder,    false,   true,  false,          true            , 1);               
-        status(notmanagedfolder,    false,   false, false,          true            , 1);               
-        status(notmanagedfile,      false,   true,  false,          true            , 1);               
-        status(notmanagedfile,      false,   false, false,          true            , 1);               
-        status(unversioned,         false,   true,  false,          true            , 1);               
-        status(unversioned,         false,   false, false,          true            , 1);               
-        status(added,               false,   true,  false,          true            , 1);               
-        status(added,               false,   false, false,          true            , 1);               
-        status(uptodate,            false,   true,  false,          true            , 1);               
-        status(uptodate,            false,   false, false,          true            , 0);               
-        status(deleted,             false,   true,  false,          true            , 1);               
-        status(deleted,             false,   false, false,          true            , 1);               
-        status(ignoredFile,         false,   false, false,          true            , isCommandLine() ? 0 : 1); // cli returns 1 entry for ignored; javahl & svnkit noen
-        status(ignoredFolder,       false,   false, false,          true            , 0);
-        status(fileInIgnoredFolder, false,   false, false,          true            , 0);
+        status(notmanagedfolder,    false,   true,  false,          true            , 1, false);               
+        status(notmanagedfolder,    false,   false, false,          true            , 1, false);               
+        status(notmanagedfile,      false,   true,  false,          true            , 1, isSvnkit());               
+        status(notmanagedfile,      false,   false, false,          true            , 1, isSvnkit());               
+        status(unversioned,         false,   true,  false,          true            , 1, isSvnkit());               
+        status(unversioned,         false,   false, false,          true            , 1, isSvnkit());               
+        status(added,               false,   true,  false,          true            , 1, false);               
+        status(added,               false,   false, false,          true            , 1, false);               
+        status(uptodate,            false,   true,  false,          true            , 1, false);               
+        status(uptodate,            false,   false, false,          true            , 0, false);               
+        status(deleted,             false,   true,  false,          true            , 1, false);               
+        status(deleted,             false,   false, false,          true            , 1, false);               
+        status(ignoredFile,         false,   false, false,          true            , 1, false);
+        status(ignoredFolder,       false,   false, false,          true            , 1, false);
+        status(fileInIgnoredFolder, false,   false, false,          true            , 1, isSvnkit());
   
     }        
     
@@ -258,43 +271,56 @@ public class StatusTestHidden extends AbstractCommandTestCase {
         File externals = createExternal("externals");
         
         //                        descend  getAll contactServer  ignoreExternals
-        status(notmanagedFolder1,  false,  true,  false,          true           , 1);               
-        status(notmanagedFolder1,  true,   true,  false,          true           , 1);               
-        status(notmanagedFolder2,  false,  false, false,          true           , 1);               
-        status(notmanagedFolder2,  true,   false, false,          true           , 1);               
+        status(notmanagedFolder1,  false,  true,  false,          true           , 1, false);               
+        status(notmanagedFolder1,  true,   true,  false,          true           , 1, false);               
+        status(notmanagedFolder2,  false,  false, false,          true           , 1, isSvnkit());               
+        status(notmanagedFolder2,  true,   false, false,          true           , 1, isSvnkit());               
                 
-        status(unversionedFolder1, false,  true,  false,          true          , 1);               
-        status(unversionedFolder1, true,   true,  false,          true          , 1);                       
-        status(unversionedFolder2, false,  true,  false,          true          , 1);               
-        status(unversionedFolder2, true,   true,  false,          true          , 1);                       
+        status(unversionedFolder1, false,  true,  false,          true          , 1, false);               
+        status(unversionedFolder1, true,   true,  false,          true          , 1, false);                       
+        status(unversionedFolder2, false,  true,  false,          true          , 1, isSvnkit());               
+        status(unversionedFolder2, true,   true,  false,          true          , 1, isSvnkit());                       
         
-        status(addedFolder1,       false,  true,  false,          true          , 2);               
-        status(addedFolder1,       true,   true,  false,          true          , 3);                       
+        status(addedFolder1,       false,  true,  false,          true          , 2, false);               
+        status(addedFolder1,       true,   true,  false,          true          , 3, false);                       
         
-        status(uptodateFolder1,    false,  true,  false,          true          , 2);               
-        status(uptodateFolder1,    true,   true,  false,          true          , 3);               
-        status(uptodateFolder1,    false,  false, false,          true          , 0);               
-        status(uptodateFolder1,    true,   false, false,          true          , 0);               
+        status(uptodateFolder1,    false,  true,  false,          true          , 2, false);               
+        status(uptodateFolder1,    true,   true,  false,          true          , 3, false);               
+        status(uptodateFolder1,    false,  false, false,          true          , 0, false);               
+        status(uptodateFolder1,    true,   false, false,          true          , 0, false);               
         
-        status(deletedFolder1,     false,  true,  false,          true          , 2);               
-        status(deletedFolder1,     true,   false, false,          true          , 3);               
+        status(deletedFolder1,     false,  true,  false,          true          , 2, false);               
+        status(deletedFolder1,     true,   false, false,          true          , 3, false);               
         
-        status(ignoredFolder,      false,  true,  false,          true          , 1);               
-        status(ignoredFolder,      true,   false, false,          true          , 1);               
+        status(ignoredFolder,      false,  true,  false,          true          , 1, false);               
+        status(ignoredFolder,      true,   false, false,          true          , 1, false);               
         
-        status(externals,          false,  true,  false,          false         , 2);               
-        status(externals,          true,   true,  false,          false         , 4);               
-        status(externals,          true,   false, false,          false         , 1);               
-        status(externals,          false,  false, false,          false         , 1);               
+        status(externals,          false,  true,  false,          false         , 2, false);               
+        status(externals,          true,   true,  false,          false         , 4, false);               
+        status(externals,          true,   false, false,          false         , 1, false);               
+        status(externals,          false,  false, false,          false         , 1, false);               
         
-        status(externals,          false,  true,  false,          true          , 2);               
-        status(externals,          true,   false, false,          true          , 1);               
+        status(externals,          false,  true,  false,          true          , 2, false);               
+        status(externals,          true,   false, false,          true          , 1, false);               
     }        
         
-    private void status(File file, boolean descend, boolean getAll, boolean contactServer, boolean ignoreExternals, int c) throws Exception {        
-        ISVNStatus[] sNb  = getNbClient().getStatus(file, descend, getAll, contactServer, ignoreExternals);
+    private void status(File file, boolean descend, boolean getAll, boolean contactServer, boolean ignoreExternals, int c, boolean shouldFail) throws Exception {        
+        ISVNStatus[] sNb;
+        try {
+            sNb  = getNbClient().getStatus(file, descend, getAll, contactServer, ignoreExternals);
+            if (shouldFail) {
+                // there's an issue with tyhe selected client, works differently from javahl client
+                // when this starts failing, it means the client's behavior is fixed
+                fail("This should fail: " + file);
+            }
+        } catch (SVNClientException ex) {
+            assertTrue("Not supposed to fail:" + ex.getMessage(), shouldFail);
+            assertTrue(SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()));
+            return;
+        }
         assertEquals(c, sNb.length);
-        fail("implement status assert against expected values");
+        ISVNStatus[] sRef = getFullWorkingClient().getStatus(file, descend, getAll, contactServer, ignoreExternals);
+        assertStatus(sRef, sNb);
     }
 
     private void assertStatus(ISVNStatus[] refs, ISVNStatus[] nbs) {
@@ -306,10 +332,17 @@ public class StatusTestHidden extends AbstractCommandTestCase {
             assertEquals(refs[i].getConflictNew(),          nbs[i].getConflictNew());
             assertEquals(refs[i].getConflictOld(),          nbs[i].getConflictOld());
             assertEquals(refs[i].getConflictWorking(),      nbs[i].getConflictWorking());
-            assertEquals(refs[i].getLastChangedDate(),      nbs[i].getLastChangedDate());
+            if (refs[i].getLastChangedDate() != null) {
+                assertEquals(DateFormat.getDateTimeInstance().format(refs[i].getLastChangedDate()),
+                        DateFormat.getDateTimeInstance().format(nbs[i].getLastChangedDate()));
+            }
             assertEquals(refs[i].getFile(),                 nbs[i].getFile());
-            assertEquals(refs[i].getLastChangedRevision(),  nbs[i].getLastChangedRevision());
-            assertEquals(refs[i].getLastCommitAuthor(),     nbs[i].getLastCommitAuthor());
+            if (refs[i].getLastChangedRevision() != null) {
+                assertEquals(refs[i].getLastChangedRevision(),  nbs[i].getLastChangedRevision());
+            }
+            if (refs[i].getLastCommitAuthor() != null) {
+                assertEquals(refs[i].getLastCommitAuthor(),     nbs[i].getLastCommitAuthor());
+            }
             assertEquals(refs[i].getLockComment(),          nbs[i].getLockComment());
             assertEquals(refs[i].getLockCreationDate(),     nbs[i].getLockCreationDate());
             assertEquals(refs[i].getLockOwner(),            nbs[i].getLockOwner());
@@ -318,7 +351,9 @@ public class StatusTestHidden extends AbstractCommandTestCase {
             assertEquals(refs[i].getPropStatus(),           nbs[i].getPropStatus());
             assertEquals(refs[i].getRepositoryPropStatus(), nbs[i].getRepositoryPropStatus());
             assertEquals(refs[i].getRepositoryTextStatus(), nbs[i].getRepositoryTextStatus());
-            assertEquals(refs[i].getRevision(),             nbs[i].getRevision());
+            if (refs[i].getRevision() != null) {
+                assertEquals(refs[i].getRevision(),             nbs[i].getRevision());
+            }
             assertEquals(refs[i].getTextStatus(),           nbs[i].getTextStatus());
             assertEquals(refs[i].getUrl(),                  nbs[i].getUrl());
             assertEquals(refs[i].getUrlString(),            nbs[i].getUrlString());                       

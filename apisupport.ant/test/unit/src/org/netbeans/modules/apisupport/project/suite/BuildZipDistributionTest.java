@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.apisupport.project.suite;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -75,8 +74,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Checks building of ZIP support.
@@ -156,13 +153,9 @@ public class BuildZipDistributionTest extends TestBase {
         
         DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
 
-        ExecutorTask[] taskHolder = new ExecutorTask[1];
-        ActionEvent ev = new ActionEvent(taskHolder, 0, "waitFinished"); // NOI18N
-        ProxyLookup lkp = new ProxyLookup(suite.getLookup(), Lookups.singleton(ev));
-        p.invokeAction("build-zip", lkp);
-        assertNotNull("Task was started", taskHolder[0]);
-        assertTrue("Finished already", taskHolder[0].isFinished());
-        assertEquals("Finished ok", 0, taskHolder[0].result());
+        ExecutorTask task = p.invokeActionImpl("build-zip", suite.getLookup());
+        assertNotNull("Task was started", task);
+        assertEquals("Finished ok", 0, task.result());
         
         FileObject[] arr = suite.getProjectDirectory().getChildren();
         List<FileObject> subobj = new ArrayList<FileObject>(Arrays.asList(arr));

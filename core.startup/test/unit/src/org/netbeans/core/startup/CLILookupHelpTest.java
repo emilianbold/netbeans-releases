@@ -108,7 +108,7 @@ public class CLILookupHelpTest extends NbTestCase {
         assertEquals("Usage user", 1, User.usageCnt); assertEquals("CLI", 0, User.cliCnt);
     }
 
-    static void createJAR(File cluster, String moduleName, Class metaInfHandler) 
+    static File createJAR(File cluster, String moduleName, Class metaInfHandler) 
     throws IOException {
         File xml = new File(new File(new File(cluster, "config"), "Modules"), moduleName + ".xml");
         File jar = new File(new File(cluster, "modules"), moduleName + ".jar");
@@ -123,8 +123,10 @@ public class CLILookupHelpTest extends NbTestCase {
         mf.getMainAttributes().putValue("OpenIDE-Module-Public-Packages", "-");
         
         JarOutputStream os = new JarOutputStream(new FileOutputStream(jar), mf);
-        os.putNextEntry(new JarEntry("META-INF/services/org.netbeans.CLIHandler"));
-        os.write(metaInfHandler.getName().getBytes());
+        if (metaInfHandler != null) {
+            os.putNextEntry(new JarEntry("META-INF/services/org.netbeans.CLIHandler"));
+            os.write(metaInfHandler.getName().getBytes());
+        }
         os.close();
         
         FileWriter w = new FileWriter(xml);
@@ -142,6 +144,8 @@ public class CLILookupHelpTest extends NbTestCase {
 "    <param name=\"specversion\">3.4.0.1</param>\n" +
 "</module>\n");
         w.close();
+        
+        return jar;
     }
 
     

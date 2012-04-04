@@ -52,9 +52,9 @@ import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
-import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -323,7 +323,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public void scheduleRefresh(FileObject fileObject) {
         if (fileObject instanceof RemoteFileObject) {
             RemoteFileObject fo = (RemoteFileObject) fileObject;
-            fo.getFileSystem().getRefreshManager().scheduleRefresh(Arrays.asList(fo.getImplementor()));
+            fo.getFileSystem().getRefreshManager().scheduleRefresh(Arrays.asList(fo.getImplementor()), true);
         } else {
             RemoteLogger.getInstance().log(Level.WARNING, "Unexpected fileObject class: {0}", fileObject.getClass());
         }

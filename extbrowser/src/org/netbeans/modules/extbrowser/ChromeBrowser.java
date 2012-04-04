@@ -81,7 +81,7 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
             return Boolean.TRUE;
         }
         
-        return false;
+        return Boolean.FALSE;
     }
 
     /** Getter for browser name

@@ -265,6 +265,9 @@ public class TemplateUtils {
                         switch (varDecl.getType()) {
                             case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
                                 AST pn = varDecl.getFirstChild();
+                                if (pn != null && pn.getType() == CPPTokenTypes.ELLIPSIS) {
+                                    pn = pn.getNextSibling();
+                                }
                                 if (pn != null) {
                                     res.add(new TemplateParameterImpl(parameterStart, AstUtil.getText(pn), file, scope, global));
                                 }

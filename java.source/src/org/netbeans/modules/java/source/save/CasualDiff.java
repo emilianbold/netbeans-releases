@@ -591,7 +591,7 @@ public class CasualDiff {
                 }
                 else {
                     printer.print(newT.name);
-                    diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameMethod") + " " + oldT.name);
+                    diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameMethod",oldT.name));
                     localPointer = oldT.pos + oldT.name.length();
                 }
             } else {
@@ -692,7 +692,7 @@ public class CasualDiff {
         if (nameChanged(oldT.name, newT.name)) {
             copyTo(localPointer, oldT.pos);
             printer.print(newT.name);
-            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameVariable") + " " + oldT.name);
+            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameVariable",oldT.name));
             localPointer = oldT.pos + oldT.name.length();
         }
         if (newT.init != null && oldT.init != null) {
@@ -729,7 +729,7 @@ public class CasualDiff {
             if (nameChanged(oldT.name, newT.name)) {
                 copyTo(localPointer, oldT.pos);
                 printer.print(newT.name);
-                diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameEnumConstant") + " " + oldT.name);
+                diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameEnumConstant",oldT.name));
                 localPointer = oldT.pos + oldT.name.length();
             }
             JCNewClass oldInit = (JCNewClass) oldT.init;
@@ -770,7 +770,7 @@ public class CasualDiff {
                 printer.print(" ");
             }
             printer.print(newT.name);
-            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameVariable") + " " + oldT.name);
+            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameVariable",oldT.name));
             if (!isOldError) {
                 localPointer = oldT.pos + oldT.name.length();
             }
@@ -1690,7 +1690,7 @@ public class CasualDiff {
         }
         if (nameChanged(oldT.name, newT.name)) {
             printer.print(newT.name);
-            diffInfo.put(localPointer, NbBundle.getMessage(CasualDiff.class,"TXT_UpdateReferenceTo") + " " + oldT.name);
+            diffInfo.put(localPointer, NbBundle.getMessage(CasualDiff.class,"TXT_UpdateReferenceTo",oldT.name));
             localPointer = localPointer + oldT.name.length();
         }
         copyTo(localPointer, bounds[1]);
@@ -1705,7 +1705,7 @@ public class CasualDiff {
         if (nameChanged(oldT.name, newT.name)) {
             copyTo(bounds[0], oldT.pos);
             printer.print(newT.name);
-            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_UpdateReferenceTo") + " " + oldT.name);
+            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_UpdateReferenceTo",oldT.name));
         } else {
             copyTo(bounds[0], bounds[1]);
         }
@@ -1835,7 +1835,7 @@ public class CasualDiff {
             }
             copyTo(localPointer, localPointer = endPos);
         }
-        localPointer = diffParameterList(oldT.args, newT.args, parens, localPointer, Measure.ARGUMENT);
+        localPointer = diffParameterList(oldT.args, newT.args, oldT, parens, localPointer, Measure.ARGUMENT);
         copyTo(localPointer, bounds[1]);
 
         return bounds[1];
@@ -2322,11 +2322,36 @@ public class CasualDiff {
             int pos,
             Comparator<JCTree> measure)
     {
-        return diffParameterList(oldList, newList, makeAround, pos, measure, diffContext.style.spaceBeforeComma(), diffContext.style.spaceAfterComma(), false, ",");   //NOI18N
+        return diffParameterList(oldList, newList, null, makeAround, pos, measure);
     }
     private int diffParameterList(
             List<? extends JCTree> oldList,
             List<? extends JCTree> newList,
+            JCTree parent,
+            JavaTokenId[] makeAround,
+            int pos,
+            Comparator<JCTree> measure)
+    {
+        return diffParameterList(oldList, newList, parent, makeAround, pos, measure, diffContext.style.spaceBeforeComma(), diffContext.style.spaceAfterComma(), false, ",");   //NOI18N
+    }
+    private int diffParameterList(
+            List<? extends JCTree> oldList,
+            List<? extends JCTree> newList,
+            JavaTokenId[] makeAround,
+            int pos,
+            Comparator<JCTree> measure,
+            boolean spaceBefore,
+            boolean spaceAfter,
+            boolean isEnum,
+            String separator)
+    {
+        return diffParameterList(oldList, newList, null, makeAround, pos, measure, spaceBefore, spaceAfter, isEnum, separator);
+    }
+    
+    private int diffParameterList(
+            List<? extends JCTree> oldList,
+            List<? extends JCTree> newList,
+            JCTree parent,
             JavaTokenId[] makeAround,
             int pos,
             Comparator<JCTree> measure,
@@ -2377,7 +2402,7 @@ public class CasualDiff {
                     tokenSequence.moveNext();
                     int start = tokenSequence.offset();
                     copyTo(start, bounds[0], printer);
-                    diffTree(tree, item.element, bounds);
+                    diffTree(tree, item.element, parent, bounds);
                     tokenSequence.move(bounds[1]);
                     moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                     if (!commaNeeded(result, item) &&
@@ -2643,7 +2668,8 @@ public class CasualDiff {
         List<JCVariableDecl> fieldGroup = new ArrayList<JCVariableDecl>();
         List<JCVariableDecl> enumConstants = new ArrayList<JCVariableDecl>();
         for (JCTree tree : list) {
-            if (Kind.VARIABLE == tree.getKind()) {
+            if (tree.pos == (-1)) continue;
+            else if (Kind.VARIABLE == tree.getKind()) {
                 JCVariableDecl var = (JCVariableDecl) tree;
                 if ((var.mods.flags & Flags.ENUM) != 0) {
                     // collect enum constants, make a field group from them
@@ -2888,7 +2914,7 @@ public class CasualDiff {
         List<Comment> newPrecedingComments = cs.getComments(CommentSet.RelativePosition.PRECEDING);
         if (sameComments(oldPrecedingComments, newPrecedingComments))
             return localPointer;
-        return diffCommentLists(oldT, newT, oldPrecedingComments, newPrecedingComments, false, localPointer);
+        return diffCommentLists(oldT, newT, oldPrecedingComments, newPrecedingComments, false, true, localPointer);
     }
 
     protected int diffTrailingComments(JCTree oldT, JCTree newT, int localPointer) {
@@ -2901,7 +2927,13 @@ public class CasualDiff {
         if (sameComments(oldInlineComments, newInlineComments) && sameComments(oldTrailingComments, newTrailingComments))
             return localPointer;
 
-        localPointer = diffCommentLists(oldT, newT, oldInlineComments, newInlineComments, false, localPointer);
+        //XXX: hack: the upper diff might already add '\n' to the result, need to skip it if diffing inline comments
+        if (!sameComments(oldInlineComments, newInlineComments)) {
+            while (printer.out.isWhitespaceLine())
+                printer.eatChars(1);
+        }
+        
+        localPointer = diffCommentLists(oldT, newT, oldInlineComments, newInlineComments, false, false, localPointer);
 
         boolean containedEmbeddedNewLine = false;
         boolean containsEmbeddedNewLine = false;
@@ -2918,7 +2950,7 @@ public class CasualDiff {
             printer.print("\n");
         }
 
-        return diffCommentLists(oldT, newT, oldTrailingComments, newTrailingComments, true, localPointer);
+        return diffCommentLists(oldT, newT, oldTrailingComments, newTrailingComments, true, false, localPointer);
     }
 
     private boolean sameComments(List<Comment> oldList, List<Comment> newList) {
@@ -2938,7 +2970,7 @@ public class CasualDiff {
     
     // refactor it! make it better
     private int diffCommentLists(JCTree oldT, JCTree newT, List<Comment>oldList,
-                                  List<Comment>newList, boolean trailing, int localPointer) {
+                                  List<Comment>newList, boolean trailing, boolean preceding, int localPointer) {
         Iterator<Comment> oldIter = oldList.iterator();
         Iterator<Comment> newIter = newList.iterator();
         Comment oldC = safeNext(oldIter);
@@ -2973,7 +3005,7 @@ public class CasualDiff {
                 }
             }
             else {
-                if (!firstNewCommentPrinted && !trailing) {
+                if (!firstNewCommentPrinted && preceding) {
                     copyTo(localPointer, localPointer = getOldPos(oldT));
                 }
                 printer.print(newC.getText());
@@ -2995,10 +3027,10 @@ public class CasualDiff {
         while (newC != null) {
             if (Style.WHITESPACE != newC.style()) {
 //                printer.print(newC.getText());                
-                if (!firstNewCommentPrinted && !trailing) {
+                if (!firstNewCommentPrinted && preceding) {
                     copyTo(localPointer, localPointer = getOldPos(oldT));
                 }
-                printer.printComment(newC, !trailing, false);
+                printer.printComment(newC, !trailing, false, !preceding && !trailing);
                 firstNewCommentPrinted = true;
             }
             newC = safeNext(oldIter);

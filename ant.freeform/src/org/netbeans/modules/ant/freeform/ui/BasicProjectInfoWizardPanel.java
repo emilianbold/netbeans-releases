@@ -48,7 +48,6 @@ import java.awt.Component;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -110,7 +109,6 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
         wizardDescriptor.putProperty(NewFreeformProjectSupport.PROP_PROJECT_LOCATION, component.getProjectLocation());
         wizardDescriptor.putProperty(NewFreeformProjectSupport.PROP_PROJECT_FOLDER, component.getProjectFolder());
         wizardDescriptor.putProperty("NewProjectWizard_Title", null); // NOI18N
-        Templates.setDefinesMainProject(wizardDescriptor, component.getMainProject());
     }
     
     public void stateChanged(ChangeEvent e) {

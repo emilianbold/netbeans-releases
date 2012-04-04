@@ -148,7 +148,7 @@ class Model extends AbstractTableModel {
             items = documents;
         else if( columnIndex == viewCol )
             items = views;
-        if( null == items || rowIndex >= items.length )
+        if( null == items || rowIndex >= items.length || rowIndex < 0 )
             return null;
         return items[rowIndex];
     }
@@ -206,6 +206,10 @@ class Model extends AbstractTableModel {
             selectedTopItem = selCol == documentCol ? documents[selRow] : views[selRow];
             if( selectedTopItem.hasSubItems() ) {
                 newRowCount = Math.max( rowCount, selectedTopItem.getActivatableSubItems().length+selRow);
+            } else {
+                selCol = -1;
+                selRow = -1;
+                selectedTopItem = null;
             }
         }
         if( documentCol >= 0 )

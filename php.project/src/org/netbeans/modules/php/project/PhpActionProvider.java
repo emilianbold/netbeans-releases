@@ -62,6 +62,7 @@ import org.netbeans.modules.php.project.ui.actions.RunProjectCommand;
 import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestsCommand;
+import org.netbeans.modules.php.project.ui.actions.SyncCommand;
 import org.netbeans.modules.php.project.ui.actions.TestProjectCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.spi.project.ActionProvider;
@@ -96,6 +97,7 @@ public class PhpActionProvider implements ActionProvider {
             // file sensitive actions
             new DownloadCommand(project),
             new UploadCommand(project),
+            new SyncCommand(project),
         };
         for (Command command : commandArray) {
             commands.put(command.getCommandId(), command);
@@ -136,6 +138,10 @@ public class PhpActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled(String commandId, Lookup lookup) {
+        // hotfix for #210502
+        if (commandId.startsWith("profile")) { // NOI18N
+            return false;
+        }
         return getCommand(commandId).isActionEnabled(lookup);
     }
 

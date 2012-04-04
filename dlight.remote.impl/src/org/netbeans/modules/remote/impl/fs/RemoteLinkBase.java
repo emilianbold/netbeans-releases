@@ -72,8 +72,12 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         super(wrapper, fileSystem, execEnv, parent, remotePath, null);
     }
     
-    protected final void initListeners() {
-        getFileSystem().getFactory().addFileChangeListener(getDelegateNormalizedPath(), this);
+    protected final void initListeners(boolean add) {
+        if (add) {
+            getFileSystem().getFactory().addFileChangeListener(getDelegateNormalizedPath(), this);
+        } else {
+            getFileSystem().getFactory().removeFileChangeListener(getDelegateNormalizedPath(), this);
+        }
     }
 
     public abstract RemoteFileObjectBase getDelegate();
@@ -103,8 +107,8 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         } else {
             childAbsPath = RemoteFileSystemUtils.normalize(getPath() + '/' + relativePath);
         }
-        RemoteLinkChild result = getFileSystem().getFactory().createRemoteLinkChild(this, childAbsPath, fo.getImplementor());
-        result.initListeners();
+        // NB: here it can become not a remote link child (in the case it changed remotely and refreshed concurrently)
+        RemoteFileObjectBase result = getFileSystem().getFactory().createRemoteLinkChild(this, childAbsPath, fo.getImplementor());
         return result.getOwnerFileObject();
     }
 
@@ -210,7 +214,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     protected final void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         // TODO: this dummy implementation is far from optimal in terms of performance. It needs to be improved.
         if (getParent() != null) {
-            getParent().refreshImpl(recursive, antiLoop, expected);
+            getParent().refreshImpl(false, antiLoop, expected);
         }
     }    
     
@@ -347,8 +351,9 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
                 return this.getOwnerFileObject();
             }
             if (originalFO.getParent() == delegate) {
-                String path = RemoteLinkBase.this.getPath() + '/' + fo.getNameExt();                
-                RemoteLinkChild linkChild = getFileSystem().getFactory().createRemoteLinkChild(this, path, originalFO);
+                String path = RemoteLinkBase.this.getPath() + '/' + fo.getNameExt();
+                // NB: here it can become not a remote link child (in the case it changed remotely and refreshed concurrently)
+                RemoteFileObjectBase linkChild = getFileSystem().getFactory().createRemoteLinkChild(this, path, originalFO);
                 return linkChild.getOwnerFileObject();
             }
         }

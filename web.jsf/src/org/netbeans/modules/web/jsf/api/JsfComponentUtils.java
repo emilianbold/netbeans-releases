@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.jsf.api;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -50,19 +49,14 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 /**
  * Contains utilities methods for JSF components plugins.
@@ -85,27 +79,39 @@ public class JsfComponentUtils {
      * @return library with pom content (the original library if the content wasn't added)
      * @throws IOException when original library cannot be deleted or recreated
      */
-    public static Library enhanceLibraryWithPomContent(Library library, List<URI> poms) throws IOException {
+    public static Library enhanceLibraryWithPomContent(final Library library, final List<URI> poms) throws IOException {
         List<URL> mavenContent = library.getContent("maven-pom"); //NOI18N
+        final String name = library.getName();
         if (mavenContent == null || mavenContent.isEmpty()) {
-            // copy existing contents
-            Map<String, List<URI>> content = new HashMap<String, List<URI>>();
-            content.put("classpath", library.getURIContent("classpath"));
-            content.put("src", library.getURIContent("src"));
-            content.put("javadoc", library.getURIContent("javadoc"));
+            final Runnable call = new Runnable() {
+                @Override
+                public void run() {
+                    // copy existing contents
+                    final String type = library.getType();
+                    final String name = library.getName();
+                    final String displayName = library.getDisplayName();
+                    final String desc = library.getDescription();
+                    Map<String, List<URI>> content = new HashMap<String, List<URI>>();
+                    content.put("classpath", library.getURIContent("classpath")); //NOI18N
+                    content.put("src", library.getURIContent("src")); //NOI18N
+                    content.put("javadoc", library.getURIContent("javadoc")); //NOI18N
 
-            // include references to maven-pom artifacts
-            content.put("maven-pom", poms);
+                    // include references to maven-pom artifacts
+                    content.put("maven-pom", poms); //NOI18N
 
-            LibraryManager.getDefault().removeLibrary(library);
-            return LibraryManager.getDefault().createURILibrary(
-                    library.getType(),
-                    library.getName(),
-                    library.getDisplayName(),
-                    library.getDescription(),
-                    content);
+                    try {
+                        LibraryManager.getDefault().removeLibrary(library);
+                        LibraryManager.getDefault().createURILibrary(type, name, displayName, desc, content);
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    } catch (IllegalArgumentException iae) {
+                        Exceptions.printStackTrace(iae);
+                    }
+                }
+            };
+            Mutex.EVENT.writeAccess(call);
         }
-        return library;
+        return LibraryManager.getDefault().getLibrary(name);
     }
 
     /**

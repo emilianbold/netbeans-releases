@@ -544,6 +544,22 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         return moved;
     }
 
+    public synchronized TransferFile listFile(FileObject baseLocalDir, FileObject file) throws RemoteException {
+        ensureConnected();
+
+        String baseLocalAbsolutePath = FileUtil.toFile(baseLocalDir).getAbsolutePath();
+        TransferFile localTransferFile = TransferFile.fromFile(null, FileUtil.toFile(file), baseLocalAbsolutePath, baseRemoteDirectory);
+        RemoteFile remoteFile = remoteClient.listFile(localTransferFile.getRemoteAbsolutePath());
+        if (remoteFile != null) {
+            // remote file found
+            LOGGER.log(Level.FINE, "Remote file {0} found", localTransferFile.getRemotePath());
+            return TransferFile.fromRemoteFile(localTransferFile.hasParent() ? localTransferFile.getParent() : null, remoteFile, this, localTransferFile.getBaseLocalDirectoryPath());
+        }
+        // remote file not found
+        LOGGER.log(Level.FINE, "Remote file {0} not found", localTransferFile.getRemotePath());
+        return null;
+    }
+
     public Set<TransferFile> prepareDownload(FileObject baseLocalDirectory, FileObject... filesToDownload) throws RemoteException {
         assert baseLocalDirectory != null;
         assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
@@ -797,6 +813,61 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         } else {
             transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_UnknownFileType", file.getRemotePath()));
         }
+    }
+
+    /**
+     * Download {@link TransferFile remote file} to a given {@link TmpLocalFile temporary file}.
+     * <p>
+     * @param tmpFile temporary file to be used for download
+     * @param file remote file to be downloaded
+     * @return {@code true} if successful, {@code false} otherwise
+     * @throws RemoteException if any remote error occurs (not a file, file not found, cannot be read etc.)
+     */
+    @NbBundle.Messages({
+        "RemoteClient.error.notFile=Given remote file is not a file.",
+        "# {0} - file name",
+        "RemoteClient.error.cannotOpenTmpLocalFile=Cannot open a local temporary file {0}."
+    })
+    public boolean downloadTemporary(TmpLocalFile tmpFile, TransferFile file) throws RemoteException {
+        if (!file.isFile()) {
+            throw new RemoteException(Bundle.RemoteClient_error_notFile());
+        }
+        if (!cdBaseRemoteDirectory(file.getParentRemotePath(), false)) {
+            LOGGER.log(Level.FINE, "Remote directory {0} does not exist => cannot download file {1}", new Object[] {file.getParentRemotePath(), file.getRemotePath()});
+            return false;
+        }
+
+        boolean success = false;
+        OutputStream os = tmpFile.getOutputStream();
+        if (os == null) {
+            // definitely should not happen
+            throw new RemoteException(Bundle.RemoteClient_error_cannotOpenTmpLocalFile(tmpFile));
+        }
+        try {
+            for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
+                boolean fileRetrieved;
+                synchronized (this) {
+                    fileRetrieved = remoteClient.retrieveFile(file.getName(), os);
+                }
+                if (fileRetrieved) {
+                    success = true;
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("The %d. attempt to download '%s' was successful", i, file.getRemotePath()));
+                    }
+                    break;
+                } else if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("The %d. attempt to download '%s' was NOT successful", i, file.getRemotePath()));
+                }
+            }
+        } finally {
+            try {
+                os.close();
+            } catch (IOException ex) {
+                // can be safely ignored, in fact, cannot happen
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+        return success;
     }
 
     private TmpLocalFile createTmpLocalFile(TransferFile file) {

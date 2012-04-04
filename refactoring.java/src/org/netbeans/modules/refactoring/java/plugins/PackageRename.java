@@ -276,8 +276,9 @@ public class PackageRename implements RefactoringPluginFactory{
                     return folder.getChildren().length==0;
                 }
                 for (FileObject child:folder.getChildren()) {
-                    if (VisibilityQuery.getDefault().isVisible(child))
+                    if (VisibilityQuery.getDefault().isVisible(child)) {
                         return false;
+                    }
                 }
                 return true;
             }

@@ -338,8 +338,9 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                         CompilationUnitTree cut = co.getCompilationUnit();
                         for (Tree t: cut.getTypeDecls()) {
                             TreePathHandle handle = TreePathHandle.create(TreePath.getPath(cut, t), co);
-                            if (!containsHandle(handle, co))
+                            if (!containsHandle(handle, co)) {
                                 grips.add(handle);
+                            }
                         }
                     }
                 }, true);
@@ -367,8 +368,9 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
 //          Fix for issue 63050. Doesn't make sense to check usages of a Resource.Ignore it.
 //            if(whereUsedQueries[i].getRefactoredObject() instanceof Resource)
 //                continue;
-            if((problemFromUsage = whereUsedQueries[i].checkParameters()) != null)
+            if((problemFromUsage = whereUsedQueries[i].checkParameters()) != null) {
                 return problemFromUsage;
+            }
         }
         return null;
     }

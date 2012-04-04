@@ -66,7 +66,7 @@ public class TinyTest extends NbTestCase {
                        "     }\n" +
                        "}\n")
                 .run(Tiny.class)
-                .findWarning("3:18-3:24:hint:Flip .equals")
+                .findWarning("3:19-3:19:hint:Flip .equals")
                 .applyFix("Flip .equals")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -90,7 +90,7 @@ public class TinyTest extends NbTestCase {
                        "     }\n" +
                        "}\n")
                 .run(Tiny.class)
-                .findWarning("3:16-3:22:hint:Flip .equals")
+                .findWarning("3:17-3:17:hint:Flip .equals")
                 .applyFix("Flip .equals")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -111,7 +111,7 @@ public class TinyTest extends NbTestCase {
                        "     private final int I = 1|8;\n" +
                        "}\n")
                 .run(Tiny.class)
-                .findWarning("2:27-2:29:hint:ERR_convertToDifferentBase")
+                .findWarning("2:28-2:28:hint:ERR_convertToDifferentBase")
                 .applyFix("FIX_convertToDifferentBase_16")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -130,7 +130,7 @@ public class TinyTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(Tiny.class)
-                .findWarning("2:27-2:29:hint:ERR_convertToDifferentBase")
+                .findWarning("2:28-2:28:hint:ERR_convertToDifferentBase")
                 .applyFix("FIX_convertToDifferentBase_2")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -149,7 +149,7 @@ public class TinyTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(Tiny.class)
-                .findWarning("2:28-2:39:hint:ERR_convertToDifferentBase")
+                .findWarning("2:30-2:30:hint:ERR_convertToDifferentBase")
                 .applyFix("FIX_convertToDifferentBase_16")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -168,7 +168,7 @@ public class TinyTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(Tiny.class)
-                .findWarning("2:28-2:40:hint:ERR_convertToDifferentBase")
+                .findWarning("2:31-2:31:hint:ERR_convertToDifferentBase")
                 .applyFix("FIX_convertToDifferentBase_16")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -187,7 +187,7 @@ public class TinyTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(Tiny.class)
-                .findWarning("2:28-2:47:hint:ERR_convertToDifferentBase")
+                .findWarning("2:38-2:38:hint:ERR_convertToDifferentBase")
                 .applyFix("FIX_convertToDifferentBase_10")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -206,7 +206,7 @@ public class TinyTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(Tiny.class)
-                .findWarning("2:27-2:29:hint:ERR_convertToDifferentBase")
+                .findWarning("2:28-2:28:hint:ERR_convertToDifferentBase")
                 .applyFix("FIX_convertToDifferentBase_16")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -227,7 +227,7 @@ public class TinyTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(Tiny.class)
-                .findWarning("3:12-3:13:hint:ERR_splitDeclaration")
+                .findWarning("3:15-3:15:hint:ERR_splitDeclaration")
                 .applyFix("FIX_splitDeclaration")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -251,7 +251,7 @@ public class TinyTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(Tiny.class)
-                .findWarning("3:18-3:19:hint:ERR_splitDeclaration")
+                .findWarning("3:21-3:21:hint:ERR_splitDeclaration")
                 .applyFix("FIX_splitDeclaration")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -277,7 +277,7 @@ public class TinyTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(Tiny.class)
-                .findWarning("4:45-4:46:hint:ERR_splitDeclaration")
+                .findWarning("4:48-4:48:hint:ERR_splitDeclaration")
                 .applyFix("FIX_splitDeclaration")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -287,6 +287,169 @@ public class TinyTest extends NbTestCase {
                               "        @SuppressWarnings(\"dummy\") final int I;" +
                               "        I = -1;\n" +
                               "        System.err.println(2);\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+
+    public void testFillSwitch1() throws Exception {
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public enum Test {\n" +
+                       "    A, B, C;\n" +
+                       "    private static void t(Test a) {\n" +
+                       "        sw|itch (a) {\n" +
+                       "            case A: break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .preference(Tiny.KEY_DEFAULT_ENABLED, false)
+                .run(Tiny.class)
+                .findWarning("4:10-4:10:hint:ERR_Tiny.fillSwitchCases")
+                .applyFix("FIX_Tiny.fillSwitchCases")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public enum Test {\n" +
+                              "    A, B, C;\n" +
+                              "    private static void t(Test a) {\n" +
+                              "        switch (a) {\n" +
+                              "            case A: break;\n" +
+                              "            case B: break;\n" +
+                              "            case C: break;\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+
+    public void testFillSwitch2() throws Exception {
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public enum Test {\n" +
+                       "    A, B, C;\n" +
+                       "    private static void t(Object a) {\n" +
+                       "        sw|itch ((Test) a) {\n" +
+                       "            case A: break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .preference(Tiny.KEY_DEFAULT_ENABLED, false)
+                .run(Tiny.class)
+                .findWarning("4:10-4:10:hint:ERR_Tiny.fillSwitchCases")
+                .applyFix("FIX_Tiny.fillSwitchCases")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public enum Test {\n" +
+                              "    A, B, C;\n" +
+                              "    private static void t(Object a) {\n" +
+                              "        switch ((Test) a) {\n" +
+                              "            case A: break;\n" +
+                              "            case B: break;\n" +
+                              "            case C: break;\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+
+    public void testFillSwitchDefault() throws Exception {
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public enum Test {\n" +
+                       "    A, B, C;\n" +
+                       "    private static void t(Object a) {\n" +
+                       "        sw|itch ((Test) a) {\n" +
+                       "            case A: break;\n" +
+                       "            default: break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(Tiny.class)
+                .findWarning("4:10-4:10:hint:ERR_Tiny.fillSwitchCases")
+                .applyFix("FIX_Tiny.fillSwitchCases")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public enum Test {\n" +
+                              "    A, B, C;\n" +
+                              "    private static void t(Object a) {\n" +
+                              "        switch ((Test) a) {\n" +
+                              "            case A: break;\n" +
+                              "            case B: break;\n" +
+                              "            case C: break;\n" +
+                              "            default: break;\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+
+    public void testFillSwitchGenerateDefault() throws Exception {
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public enum Test {\n" +
+                       "    A, B, C;\n" +
+                       "    private static void t(Object a) {\n" +
+                       "        sw|itch ((Test) a) {\n" +
+                       "            case A: break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(Tiny.class)
+                .findWarning("4:10-4:10:hint:ERR_Tiny.fillSwitchCasesAndDefault")
+                .applyFix("FIX_Tiny.fillSwitchCasesAndDefault")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public enum Test {\n" +
+                              "    A, B, C;\n" +
+                              "    private static void t(Object a) {\n" +
+                              "        switch ((Test) a) {\n" +
+                              "            case A: break;\n" +
+                              "            case B: break;\n" +
+                              "            case C: break;\n" +
+                              "            default: throw new AssertionError(((Test) a).name());\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+
+    public void testFillSwitchOnlyGenerateDefault() throws Exception {
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public enum Test {\n" +
+                       "    A, B, C;\n" +
+                       "    private static void t(Object a) {\n" +
+                       "        sw|itch ((Test) a) {\n" +
+                       "            case A: break;\n" +
+                       "            case B: break;\n" +
+                       "            case C: break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(Tiny.class)
+                .findWarning("4:10-4:10:hint:ERR_Tiny.fillSwitchDefault")
+                .applyFix("FIX_Tiny.fillSwitchDefault")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public enum Test {\n" +
+                              "    A, B, C;\n" +
+                              "    private static void t(Object a) {\n" +
+                              "        switch ((Test) a) {\n" +
+                              "            case A: break;\n" +
+                              "            case B: break;\n" +
+                              "            case C: break;\n" +
+                              "            default: throw new AssertionError(((Test) a).name());\n" +
+                              "        }\n" +
                               "    }\n" +
                               "}\n");
     }

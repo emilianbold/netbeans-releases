@@ -61,7 +61,6 @@ public class ModuleUISettings {
     private static final String LAST_USED_PLATFORM_ID = "lastUsedPlatformID"; // NOI18N
     private static final String HARNESSES_UPGRADED = "harnessesUpgraded"; // NOI18N
     private static final String LAST_USED_CLUSTER_LOCATION = "lastUsedClusterLocation";    // NOI18N
-    private static final String SET_AS_MAIN = "setAsMain"; // NOI18N
 
     public static ModuleUISettings getDefault() {
         return new ModuleUISettings(); // stateless
@@ -137,14 +136,6 @@ public class ModuleUISettings {
 
     public void setHarnessesUpgraded(boolean b) {
         prefs().putBoolean(HARNESSES_UPGRADED, b);
-    }
-
-    public boolean getSetAsMain() {
-        return prefs().getBoolean(SET_AS_MAIN, true);
-    }
-
-    public void setSetAsMain(boolean b) {
-        prefs().putBoolean(SET_AS_MAIN, b);
     }
 
 }

@@ -141,9 +141,11 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
         FileSystem fileSystem = (FileSystem) workDir.getFileSystem();
         fileSystem.addFileStatusListener(statusListener);
         statusListener.startAnnotation(expectedLabelAnnotations.keySet());
-        Thread.sleep(500);
         // annotations should not be ready yet, test that
         for (Map.Entry<FileObject, String> e : expectedLabelAnnotations.entrySet()) {
+            while (!statusListener.annotationsIcons.containsKey(e.getKey())) {
+                Thread.sleep(100);
+            }
             assertEquals(e.getKey().getNameExt(), statusListener.annotationsLabels.get(e.getKey()));
             Image annotatedIcon = statusListener.annotationsIcons.get(e.getKey());
             assertTrue(10 == annotatedIcon.getWidth(null));
@@ -223,8 +225,8 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
                         annotationsIcons.put(fo, image);
                     }
                     time = System.currentTimeMillis() - time;
-                    if (time > 500) {
-                        ex = new Exception("Annotation takes more than 200ms");
+                    if (time > 2000) {
+                        ex = new Exception("Annotation takes more than 2000ms");
                     }
                 }
             });

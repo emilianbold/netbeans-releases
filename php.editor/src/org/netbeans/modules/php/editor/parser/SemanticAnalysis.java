@@ -339,6 +339,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                     }
                 }
             }
+            super.visit(node);
         }
 
         @Override

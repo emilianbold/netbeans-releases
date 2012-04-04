@@ -113,11 +113,11 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     }
     
     public void resultChanged(org.openide.util.LookupEvent ev){
-        setMenu();
+        postSetMenu();
     }
     
     public void stateChanged(ChangeEvent e)    {
-        setMenu();
+        postSetMenu();
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {
@@ -194,6 +194,15 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
         Collection<? extends ActionMap> am = globalActionMap.allInstances();
         return am.size() > 0 ? am.iterator().next() : null;
     }
+    
+    protected final void postSetMenu() {
+        Utilities.runInEventDispatchThread(new Runnable() {
+            @Override
+            public void run() {
+                setMenu();
+            }
+        });
+    }
 
     /** Sets the state of JMenuItem. Should be called from subclasses constructors
      * after their initialization is done.
@@ -204,7 +213,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
             // TopComponent is really focused - this causes problems in getComponent method
             EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    setMenu();
+                    postSetMenu();
                 }
             });
             kbs = MimeLookup.getLookup(MimePath.EMPTY).lookupResult(KeyBindingSettings.class);
@@ -413,7 +422,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static class GoToSourceAction extends MainMenuAction{
         public GoToSourceAction(){
             super(true, BLANK_ICON);
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText(){
@@ -430,7 +439,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static class GoToSuperAction extends MainMenuAction{
         public GoToSuperAction(){
             super(true, BLANK_ICON);
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText(){
@@ -446,7 +455,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static class GoToDeclarationAction extends MainMenuAction{
         public GoToDeclarationAction(){
             super();
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText(){
@@ -464,7 +473,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class JumpBackAction extends MainMenuAction {
         public JumpBackAction () {
             super(true, BLANK_ICON);
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -482,7 +491,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class JumpForwardAction extends MainMenuAction {
         public JumpForwardAction () {
             super(true, BLANK_ICON);
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -500,7 +509,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class FormatAction extends MainMenuAction {
         public FormatAction () {
             super();
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -524,7 +533,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class ShiftLineLeftAction extends MainMenuAction {
         public ShiftLineLeftAction () {
             super();
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -542,7 +551,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class ShiftLineRightAction extends MainMenuAction {
         public ShiftLineRightAction () {
             super();
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -560,7 +569,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class CommentAction extends MainMenuAction {
         public CommentAction () {
             super();
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -579,7 +588,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class UncommentAction extends MainMenuAction {
         public UncommentAction () {
             super();
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -598,7 +607,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class ToggleCommentAction extends MainMenuAction {
         public ToggleCommentAction () {
             super();
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -617,7 +626,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class WordMatchNextAction extends MainMenuAction {
         public WordMatchNextAction () {
             super();
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -635,7 +644,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class WordMatchPrevAction extends MainMenuAction {
         public WordMatchPrevAction () {
             super();
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -653,7 +662,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class FindNextAction extends MainMenuAction {
         public FindNextAction () {
             super(true, BLANK_ICON);
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -672,7 +681,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class FindPreviousAction extends MainMenuAction {
         public FindPreviousAction () {
             super(true, BLANK_ICON);
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -690,7 +699,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class FindSelectionAction extends MainMenuAction {
         public FindSelectionAction () {
             super(true, BLANK_ICON);
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -714,7 +723,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class StartMacroRecordingAction extends MainMenuAction {
         public StartMacroRecordingAction () {
             super(true, BLANK_ICON);
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -731,7 +740,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class SelectAllAction extends MainMenuAction {
         public SelectAllAction() {
             super(true, BLANK_ICON);
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -747,7 +756,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class SelectIdentifierAction extends MainMenuAction {
         public SelectIdentifierAction() {
             super(true, BLANK_ICON);
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -765,7 +774,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class StopMacroRecordingAction extends MainMenuAction {
         public StopMacroRecordingAction () {
             super(true, BLANK_ICON);
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText () {
@@ -783,7 +792,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class RemoveTrailingSpacesAction extends MainMenuAction {
         public RemoveTrailingSpacesAction() {
             super(true, null);
-            setMenu();
+            postSetMenu();
         }
 
         protected String getMenuItemText () {
@@ -801,7 +810,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     public static final class PasteFormattedAction extends MainMenuAction {
         public PasteFormattedAction() {
             super(true, BLANK_ICON);
-            setMenu();
+            postSetMenu();
         }
 
         protected String getMenuItemText () {

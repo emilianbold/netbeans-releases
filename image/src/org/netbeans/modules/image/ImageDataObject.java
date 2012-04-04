@@ -70,6 +70,7 @@ import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 
 /** 
@@ -81,36 +82,40 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
     
     @MIMEResolver.ExtensionRegistration(
         displayName="#ImageMimeResolverJPG",
-        mimeType="image/jpeg",
+        mimeType=ImageDataLoader.JPEG_MIME_TYPE,
         extension={"jpg", "JPG", "jpe", "JPE", "jpeg", "JPEG"},
         position=110
     )
+    @Messages("ImageMimeResolverJPG=JPEG Image Files")
     /** Generated serialized version UID. */
     static final long serialVersionUID = -6035788991669336965L;
 
     @MIMEResolver.ExtensionRegistration(
         displayName="#ImageMimeResolverGIF",
-        mimeType="image/gif",
+        mimeType=ImageDataLoader.GIF_MIME_TYPE,
         extension={"gif", "GIF"},
         position=111
     )
+    @Messages("ImageMimeResolverGIF=GIF Image Files")
     /** Base for image resource. */
     private static final String IMAGE_ICON_BASE = "org/netbeans/modules/image/imageObject.png"; // NOI18N
     
     @MIMEResolver.ExtensionRegistration(
         displayName="#ImageMimeResolverPNG",
-        mimeType="image/png",
+        mimeType=ImageDataLoader.PNG_MIME_TYPE,
         extension={"png", "PNG"},
         position=112
     )
+    @Messages("ImageMimeResolverPNG=PNG Image Files")
     /** Open support for this image data object. */
     private transient ImageOpenSupport openSupport;
     @MIMEResolver.ExtensionRegistration(
         displayName="#ImageMimeResolverBMP",
-        mimeType="image/bmp",
+        mimeType=ImageDataLoader.BMP_MIME_TYPE,
         extension={"bmp", "BMP"},
         position=113
     )
+    @Messages("ImageMimeResolverBMP=BMP Image Files")
     /** Print support for this image data object **/
     private transient ImagePrintSupport printSupport;
  

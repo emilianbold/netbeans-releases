@@ -39,8 +39,8 @@
 package org.netbeans.modules.maven.queries;
 
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -68,7 +68,7 @@ public class MavenAnnotationProcessingQueryImplTest extends NbTestCase {
         assertNotNull(rootFO);
         AnnotationProcessingQuery.Result r = AnnotationProcessingQuery.getAnnotationProcessingOptions(rootFO);
         URL sOD = r.sourceOutputDirectory();
-        Map<String,String> opts = new HashMap<String,String>(r.processorOptions());
+        Map<String,String> opts = new TreeMap<String,String>(r.processorOptions());
         assertEquals("false", opts.remove("eclipselink.canonicalmodel.use_static_factory"));
         assertEquals(expected,
                 "enabled=" + r.annotationProcessingEnabled() +
@@ -115,9 +115,21 @@ public class MavenAnnotationProcessingQueryImplTest extends NbTestCase {
                 + "<configuration><annotationProcessors><annotationProcessor>p1.Proc1</annotationProcessor><annotationProcessor>p2.Proc2</annotationProcessor></annotationProcessors></configuration></plugin></plugins></build>",
             "enabled=[ON_SCAN, IN_EDITOR] run=[p1.Proc1, p2.Proc2] s=.../target/generated-sources/annotations/ opts={}", "src/main/java");
     }
-    
-    // XXX compilerArgument unformatted vs. compilerArguments
-    // XXX <compilerArguments><Averbose>true</></> (MCOMPILER-135)
-    // XXX test root
 
+    public void testTestRoots() throws Exception { // #208286
+        String pom = "<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId><executions>"
+                + "<execution><id>main</id><goals><goal>compile</goal></goals><configuration><annotationProcessors><annotationProcessor>p.MainProc</annotationProcessor></annotationProcessors></configuration></execution>"
+                + "<execution><id>tests</id><goals><goal>testCompile</goal></goals><configuration><annotationProcessors><annotationProcessor>p.TestProc</annotationProcessor></annotationProcessors></configuration></execution>"
+                + "</executions></plugin></plugins></build>";
+        assertOpts(pom, "enabled=[ON_SCAN, IN_EDITOR] run=[p.MainProc] s=.../target/generated-sources/annotations/ opts={}", "src/main/java");
+        assertOpts(pom, "enabled=[ON_SCAN, IN_EDITOR] run=[p.TestProc] s=.../target/generated-sources/test-annotations/ opts={}", "src/test/java");
+    }
+
+    public void testArgs() throws Exception {
+        // Note MCOMPILER-135: <Averbose>true</Averbose> will only work in 2.4+ plugin
+        assertOpts("<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId>"
+                + "<configuration><compilerArguments><Aflag/><Averbose>true</Averbose></compilerArguments><compilerArgument>-Awhich=this</compilerArgument></configuration></plugin></plugins></build>",
+            "enabled=[ON_SCAN, IN_EDITOR] run=null s=.../target/generated-sources/annotations/ opts={flag=null, verbose=true, which=this}", "src/main/java");
+    }
+    
 }

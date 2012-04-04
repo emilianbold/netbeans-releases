@@ -55,21 +55,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
-import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
@@ -81,8 +82,6 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class LogReader {
-    private static boolean TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.log"); // NOI18N
-
     private String workingDir;
     private String guessWorkingDir;
     private String baseWorkingDir;
@@ -143,7 +142,9 @@ public class LogReader {
     }
 
     private void run(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
-        if (TRACE) {System.out.println("LogReader is run for " + fileName);} //NOI18N
+        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+            DwarfSource.LOG.log(Level.FINE, "LogReader is run for {0}", fileName); //NOI18N
+        }
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         result = new ArrayList<SourceFileProperties>();
         File file = new File(fileName);
@@ -200,13 +201,13 @@ public class LogReader {
                         progress.done();
                     }
                 }
-                if (TRACE) {
-                    System.out.println("Files found: " + nFoundFiles); //NOI18N
-                    System.out.println("Files included in result: "+ result.size()); //NOI18N
+                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE, "Files found: {0}", nFoundFiles); //NOI18N
+                    DwarfSource.LOG.log(Level.FINE, "Files included in result: {0}", result.size()); //NOI18N
                 }
                 in.close();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                 DwarfSource.LOG.log(Level.INFO, "Cannot read file "+fileName, ex); // NOI18N
             }
         }
     }
@@ -295,8 +296,17 @@ public class LogReader {
     private String convertWindowsRelativePath(String path) {
         if (Utilities.isWindows()) {
             if (path.startsWith("/") || path.startsWith("\\")) { // NOI18N
-                if (root.length()>1 && root.charAt(1)== ':') {
-                    path = root.substring(0,2)+path;
+                if (path.length() > 3 && (path.charAt(2) == '/' || path.charAt(2) == '\\') && Character.isLetter(path.charAt(1))) {
+                    // MinGW path:
+                    //make[1]: Entering directory `/c/Test/qlife-qt4-0.9/build'
+                    path = ""+path.charAt(1)+":"+path.substring(2); // NOI18N
+                } else if (path.startsWith("/cygdrive/")) { // NOI18N
+                    path = path.substring("/cygdrive/".length()); // NOI18N
+                    path = "" + path.charAt(0) + ':' + path.substring(1); // NOI18N
+                } else {
+                    if (root.length()>1 && root.charAt(1)== ':') {
+                        path = root.substring(0,2)+path;
+                    }
                 }
                 
             }
@@ -310,11 +320,15 @@ public class LogReader {
         if (line.startsWith(CURRENT_DIRECTORY)) {
             workDir = convertPath(line.substring(CURRENT_DIRECTORY.length() + 1).trim());
             workDir = convertWindowsRelativePath(workDir);
-            if (TRACE) {message = "**>> by [" + CURRENT_DIRECTORY + "] ";} //NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                message = "**>> by [" + CURRENT_DIRECTORY + "] "; //NOI18N
+            }
         } else if (line.indexOf(ENTERING_DIRECTORY) >= 0) {
             String dirMessage = line.substring(line.indexOf(ENTERING_DIRECTORY) + ENTERING_DIRECTORY.length() + 1).trim();
             workDir = convertPath(dirMessage.replaceAll("`|'|\"", "")); //NOI18N
-            if (TRACE) {message = "**>> by [" + ENTERING_DIRECTORY + "] ";} //NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                message = "**>> by [" + ENTERING_DIRECTORY + "] "; //NOI18N
+            }
             workDir = convertWindowsRelativePath(workDir);
             baseWorkingDir = workDir;
             enterMakeStack(workDir, getMakeLevel(line));
@@ -322,7 +336,9 @@ public class LogReader {
             String dirMessage = line.substring(line.indexOf(LEAVING_DIRECTORY) + LEAVING_DIRECTORY.length() + 1).trim();
             workDir = convertPath(dirMessage.replaceAll("`|'|\"", "")); //NOI18N
             workDir = convertWindowsRelativePath(workDir);
-            if (TRACE) {message = "**>> by [" + LEAVING_DIRECTORY + "] ";} //NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                message = "**>> by [" + LEAVING_DIRECTORY + "] "; //NOI18N
+            }
             int level = getMakeLevel(line);
             if (leaveMakeStack(workDir, level)){
                 List<String> paths = getMakeTop(level);
@@ -340,7 +356,9 @@ public class LogReader {
         } else if (line.startsWith(LABEL_CD)) {
             int end = line.indexOf(MAKE_DELIMITER);
             workDir = convertPath((end == -1 ? line : line.substring(0, end)).substring(LABEL_CD.length()).trim());
-            if (TRACE) {message = "**>> by [ " + LABEL_CD + "] ";} //NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                message = "**>> by [ " + LABEL_CD + "] "; //NOI18N
+            }
             if (workDir.startsWith("/")){ // NOI18N
                 workDir = convertWindowsRelativePath(workDir);
                 baseWorkingDir = workDir;
@@ -348,7 +366,9 @@ public class LogReader {
         } else if (line.startsWith("/") && line.indexOf(" ") < 0) {  //NOI18N
             workDir = convertPath(line.trim());
             workDir = convertWindowsRelativePath(workDir);
-            if (TRACE) {message = "**>> by [just path string] ";} //NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                message = "**>> by [just path string] "; //NOI18N
+            }
         }
 
         if (workDir == null || workDir.length() == 0) {
@@ -361,7 +381,9 @@ public class LogReader {
 
         if (workDir.charAt(0) == '/' || workDir.charAt(0) == '\\' || (workDir.length() > 1 && workDir.charAt(1) == ':')) {
             if ((new File(workDir).exists())) {
-                if (TRACE) {System.err.print(message);}
+                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE,message);
+                }
                 setWorkingDir(workDir);
                 return true;
             } else {
@@ -373,7 +395,9 @@ public class LogReader {
         }
         String dir = workingDir + File.separator + workDir;
         if (new File(dir).exists()) {
-            if (TRACE) {System.err.print(message);}
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE,message);
+            }
             setWorkingDir(dir);
             return true;
         }
@@ -382,7 +406,9 @@ public class LogReader {
             workDir.charAt(2)=='/'){
             String d = ""+workDir.charAt(1)+":"+workDir.substring(2); // NOI18N
             if (new File(d).exists()) {
-                if (TRACE) {System.err.print(message);}
+                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE,message);
+                }
                 setWorkingDir(d);
                 return true;
             }
@@ -390,7 +416,9 @@ public class LogReader {
         if (baseWorkingDir != null) {
             dir = baseWorkingDir + File.separator + workDir;
             if (new File(dir).exists()) {
-                if (TRACE) {System.err.print(message);}
+                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE,message);
+                }
                 setWorkingDir(dir);
                 return true;
             }
@@ -588,12 +616,16 @@ public class LogReader {
     }
 
     private void setWorkingDir(String workingDir) {
-        if (TRACE) {System.err.println("**>> new working dir: " + workingDir);}
+        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+            DwarfSource.LOG.log(Level.FINE, "**>> new working dir: {0}", workingDir);
+        }
         this.workingDir = CndFileUtils.normalizeFile(new File(workingDir)).getAbsolutePath();
     }
 
     private void setGuessWorkingDir(String workingDir) {
-        if (TRACE) {System.err.println("**>> alternative guess working dir: " + workingDir);}
+        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+            DwarfSource.LOG.log(Level.FINE, "**>> alternative guess working dir: {0}", workingDir);
+        }
         this.guessWorkingDir = CndFileUtils.normalizeFile(new File(workingDir)).getAbsolutePath();
     }
 
@@ -737,35 +769,49 @@ public class LogReader {
             }
             File f = new File(file);
             if (f.exists() && f.isFile()) {
-                if (TRACE) {System.err.println("**** Gotcha: " + file);}
+                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
+                }
                 result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, storage));
                 continue;
             }
             if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
                 f = new File(guessWorkingDir+"/"+what);  //NOI18N
                 if (f.exists() && f.isFile()) {
-                    if (TRACE) {System.err.println("**** Gotcha guess: " + file);}
+                    if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                        DwarfSource.LOG.log(Level.FINE, "**** Gotcha guess: {0}", file);
+                    }
                     result.add(new CommandLineSource(li, languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached, storage));
                     continue;
                 }
             }
-            if (TRACE)  {System.err.println("**** Not found "+file);} //NOI18N
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "**** Not found {0}", file); //NOI18N
+            }
             if (!what.startsWith("/") && userIncludes.size()+userMacros.size() > 0){  //NOI18N
                 List<String> res = findFiles(what);
                 if (res == null || res.isEmpty()) {
-                    if (TRACE) {System.err.println("** And there is no such file under root");}
+                    if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                        DwarfSource.LOG.log(Level.FINE, "** And there is no such file under root");
+                    }
                 } else {
                     if (res.size() == 1) {
                         result.add(new CommandLineSource(li, languageArtifacts, res.get(0), what, userIncludes, userMacros, storage));
-                        if (TRACE) {System.err.println("** Gotcha: " + res.get(0) + File.separator + what);}
+                        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                            DwarfSource.LOG.log(Level.FINE, "** Gotcha: {0}{1}{2}", new Object[]{res.get(0), File.separator, what});
+                        }
                         // kinda adventure but it works
                         setGuessWorkingDir(res.get(0));
                         continue;
                     } else {
-                        if (TRACE) {System.err.println("**There are several candidates and I'm not clever enough yet to find correct one.");}
+                        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                            DwarfSource.LOG.log(Level.FINE, "**There are several candidates and I'm not clever enough yet to find correct one.");
+                        }
                     }
                 }
-                if (TRACE) {System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]");} //NOI18N
+                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE, "{0} [{1}]", new Object[]{line.length() > 120 ? line.substring(0,117) + ">>>" : line, what}); //NOI18N
+                }
             }
         }
     }
@@ -896,18 +942,17 @@ public class LogReader {
         }
         String objFileName = args[0];
         String root = args[1];
-        LogReader.TRACE = true;
+        DwarfSource.LOG.setLevel(Level.ALL);
         LogReader clrf = new LogReader(objFileName, root, null);
         List<SourceFileProperties> list = clrf.getResults(null, new AtomicBoolean(false), null);
-        System.err.print("\n*** Results: ");
+        DwarfSource.LOG.log(Level.FINE, "\n*** Results: ");
         for (SourceFileProperties sourceFileProperties : list) {
             String fileName = sourceFileProperties.getItemName();
             while (fileName.indexOf("../") == 0) { //NOI18N
                 fileName = fileName.substring(3);
             }
-            System.err.print(fileName + " ");
+            DwarfSource.LOG.log(Level.FINE, "{0} ", fileName);
         }
-        System.err.println();
     }
 
     private List<String> getFiles(String name){
@@ -945,7 +990,7 @@ public class LogReader {
                 } else {
                     if (subFolder == null) {
                         String path = s;
-                        if (path.endsWith(relativeFolder)) {
+                        if (path.endsWith(relativeFolder) && path.length() > relativeFolder.length() + 1) {
                             path = path.substring(0,path.length()-relativeFolder.length()-1);
                             res.add(path);
                             if (res.size() > 1) {

@@ -47,9 +47,13 @@ package org.netbeans;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.security.AllPermission;
 import java.security.CodeSource;
@@ -57,6 +61,7 @@ import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -75,6 +80,7 @@ import org.openide.LifecycleManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
+import org.openide.modules.Places;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
@@ -112,7 +118,7 @@ public final class ModuleManager extends Modules {
     private static final Set<Union2<Dependency,InvalidException>> EMPTY_COLLECTION = Collections.<Union2<Dependency, InvalidException>>emptySet();
 
     // modules providing a given requires token; set may never be empty
-    private final Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>(25);
+    private final ProvidersOf providersOf = new ProvidersOf();
 
     private final ModuleInstaller installer;
     private ModuleFactory moduleFactory;
@@ -122,6 +128,7 @@ public final class ModuleManager extends Modules {
     private final Object classLoaderLock = new String("ModuleManager.classLoaderLock"); // NOI18N
 
     private final Events ev;
+    private final ModuleDataCache mdc = new ModuleDataCache();
 
     /** Create a manager, initially with no managed modules.
      * The handler for installing modules is given.
@@ -308,6 +315,10 @@ public final class ModuleManager extends Modules {
         return new HashSet<Module>(modules);
     }
 
+    final int getModuleCount() {
+        return modules.size();
+    }
+
     /** Get a set of modules managed which are currently enabled.
      * Convenience method only.
      * @see #PROP_ENABLED_MODULES
@@ -348,7 +359,7 @@ public final class ModuleManager extends Modules {
      */
     @Deprecated
     public Set<Module> getModuleInterdependencies(Module m, boolean reverse, boolean transitive) {
-        return Util.moduleInterdependencies(m, reverse, transitive, true, modules, modulesByName, providersOf);
+        return Util.moduleInterdependencies(m, reverse, transitive, true, modules, modulesByName, getProvidersOf());
     }
 
     /**
@@ -367,7 +378,7 @@ public final class ModuleManager extends Modules {
      * @since org.netbeans.bootstrap/1 > 2.48
      */
     public Set<Module> getModuleInterdependencies(Module m, boolean reverse, boolean transitive, boolean considerNeeds) {
-        return Util.moduleInterdependencies(m, reverse, transitive, considerNeeds, modules, modulesByName, providersOf);
+        return Util.moduleInterdependencies(m, reverse, transitive, considerNeeds, modules, modulesByName, getProvidersOf());
     }
 
     /** Get a classloader capable of loading from any
@@ -497,6 +508,91 @@ public final class ModuleManager extends Modules {
             }
         }
         return cnt;
+    }
+
+    /** Checks whether the module is supposed be OSGi or not 
+     * @return null if it is not known
+     */
+    final Boolean isOSGi(File jar) {
+        return mdc.isOSGi(jar.getPath());
+    }
+    
+    /** Obtains (and destroys) data for given JAR file.
+     * @return stream with data or null if not found in cache
+     */
+    final InputStream dataFor(File jar) {
+        if (jar == null) {
+            return null;
+        }
+        byte[] arr = mdc.getModuleState(jar.getPath());
+        return arr == null ? null : new ByteArrayInputStream(arr);
+    }
+    /** Obtains cnb for given JAR file.
+     * @return stream with data or null if not found in cache
+     */
+    final String cnbFor(File jar) {
+        if (jar == null) {
+            return null;
+        }
+        return mdc.getCnb(jar.getPath());
+    }
+
+    private Map<String, Set<Module>> getProvidersOf() {
+        return providersOf.getProvidersOf();
+    }
+
+    static void registerProviders(Module m, Map<String, Set<Module>> po) {
+        String[] provides = m.getProvides();
+        for (int i = 0; i < provides.length; i++) {
+            Set<Module> providing = po.get(provides[i]);
+            if (providing == null) {
+                providing = new HashSet<Module>(16);
+                po.put(provides[i], providing);
+            }
+            providing.add(m);
+        }
+    }
+
+    private class ProvidersOf {
+        private Map<String,Set<Module>> providersOf;
+        
+        public ProvidersOf() {
+        }
+        
+        final synchronized Map<String, Set<Module>> getProvidersOf() {
+            if (providersOf == null) {
+                providersOf = new HashMap<String, Set<Module>>();
+                for (Module m : modules) {
+                    possibleProviderAdded(m);
+                }
+            }
+            return providersOf;
+        }
+
+        final synchronized void possibleProviderAdded(Module m) {
+            if (providersOf == null) {
+                return;
+            }
+            registerProviders(m, providersOf);
+        }
+
+        final synchronized void possibleProviderRemoved(Module m) {
+            if (providersOf == null) {
+                return;
+            }
+            for (String token : m.getProvides()) {
+                Set<Module> providing = providersOf.get(token);
+                if (providing != null) {
+                    providing.remove(m);
+                    if (providing.isEmpty()) {
+                        providersOf.remove(token);
+                    }
+                } else {
+                    // Else we called reload and m.reload threw IOException, so
+                    // it has already removed its provider list
+                }
+            }
+        }
     }
 
     /** A classloader giving access to all the module classloaders at once. */
@@ -769,14 +865,13 @@ public final class ModuleManager extends Modules {
     }
 
     private void subCreate(Module m) throws DuplicateException {
-        Util.err.log(Level.FINE, "created: {0}", m);
         Module old = get(m.getCodeNameBase());
         if (old != null) {
             throw new DuplicateException(old, m);
         }
         modules.add(m);
         modulesByName.put(m.getCodeNameBase(), m);
-        possibleProviderAdded(m);
+        providersOf.possibleProviderAdded(m);
         lookup.add(m);
         firer.created(m);
         firer.change(new ChangeFirer.Change(this, PROP_MODULES, null, null));
@@ -786,17 +881,6 @@ public final class ModuleManager extends Modules {
         // problems arising from inter-module dependencies.
         clearProblemCache();
         firer.fire();
-    }
-    private void possibleProviderAdded(Module m) {
-        String[] provides = m.getProvides();
-        for (int i = 0; i < provides.length; i++) {
-            Set<Module> providing = providersOf.get(provides[i]);
-            if (providing == null) {
-                providing = new HashSet<Module>(16);
-                providersOf.put(provides[i], providing);
-            }
-            providing.add(m);
-        }
     }
 
     /** Remove a module from the managed set.
@@ -810,7 +894,7 @@ public final class ModuleManager extends Modules {
         ev.log(Events.DELETE_MODULE, m);
         modules.remove(m);
         modulesByName.remove(m.getCodeNameBase());
-        possibleProviderRemoved(m);
+        providersOf.possibleProviderRemoved(m);
         lookup.remove(m);
         firer.deleted(m);
         firer.change(new ChangeFirer.Change(this, PROP_MODULES, null, null));
@@ -819,20 +903,6 @@ public final class ModuleManager extends Modules {
         clearProblemCache();
         m.destroy();
         firer.fire();
-    }
-    private void possibleProviderRemoved(Module m) {
-        for (String token : m.getProvides()) {
-            Set<Module> providing = providersOf.get(token);
-            if (providing != null) {
-                providing.remove(m);
-                if (providing.isEmpty()) {
-                    providersOf.remove(token);
-                }
-            } else {
-                // Else we called reload and m.reload threw IOException, so
-                // it has already removed its provider list
-            }
-        }
     }
 
     /** Reload a module.
@@ -854,7 +924,7 @@ public final class ModuleManager extends Modules {
         Util.err.fine("reload: " + m);
         if (m.isFixed()) throw new IllegalArgumentException("reload fixed module: " + m); // NOI18N
         if (m.isEnabled()) throw new IllegalArgumentException("reload enabled module: " + m); // NOI18N
-        possibleProviderRemoved(m);
+        providersOf.possibleProviderRemoved(m);
         try {
             m.reload();
         } catch (IOException ioe) {
@@ -862,7 +932,7 @@ public final class ModuleManager extends Modules {
             delete(m);
             throw ioe;
         }
-        possibleProviderAdded(m);
+        providersOf.possibleProviderAdded(m);
         firer.change(new ChangeFirer.Change(m, Module.PROP_MANIFEST, null, null));
         // Some problem with this module may now have gone away. In turn, some
         // other modules may now no longer have problems. So clear the cache
@@ -966,25 +1036,9 @@ public final class ModuleManager extends Modules {
                     }
                     fallback.addFirst(m);
                     Util.err.fine("enable: bringing up: " + m);
-                    ev.log(Events.PERF_START, "bringing up classloader on " + m.getCodeName() ); // NOI18N
+                    ev.log(Events.PERF_START, "bringing up classloader on " + m.getCodeNameBase()); // NOI18N
                     try {
-                        // Calculate the parents to initialize the classloader with.
-                        Dependency[] dependencies = m.getDependenciesArray();
-                        Set<Module> parents = new HashSet<Module>(dependencies.length * 4 / 3 + 1);
-                        for (int i = 0; i < dependencies.length; i++) {
-                            Dependency dep = dependencies[i];
-                            if (dep.getType() != Dependency.TYPE_MODULE) {
-                                // Token providers do *not* go into the parent classloader
-                                // list. The providing module must have been turned on first.
-                                // But you cannot automatically access classes from it.
-                                continue;
-                            }
-                            String name = (String)Util.parseCodeName(dep.getName())[0];
-                            Module parent = get(name);
-                            // Should not happen:
-                            if (parent == null) throw new IOException("Parent " + name + " not found!"); // NOI18N
-                            parents.add(parent);
-                        }
+                        Set<Module> parents = calculateParents(m);
                         m.classLoaderUp(parents);
                     } catch (IOException ioe) {
                         tryingClassLoaderUp = true;
@@ -993,7 +1047,7 @@ public final class ModuleManager extends Modules {
                         throw ie;
                     }
                     m.setEnabled(true);
-                    ev.log(Events.PERF_END, "bringing up classloader on " + m.getCodeName() ); // NOI18N
+                    ev.log(Events.PERF_END, "bringing up classloader on " + m.getCodeNameBase() ); // NOI18N
                     // Check package dependencies.
 //                    ev.log(Events.PERF_START, "package dependency check on " + m.getCodeName() ); // NOI18N
                     Util.err.fine("enable: checking package dependencies for " + m);
@@ -1020,10 +1074,10 @@ public final class ModuleManager extends Modules {
             } catch (InvalidException ie) {
                 // Remember that there was a problem with this guy.
                 Module bad = ie.getModule();
-                if (bad == null) throw new IllegalStateException("Problem with no associated module: " + ie); // NOI18N
+                if (bad == null) throw new IllegalStateException("Problem with no associated module: " + ie, ie); // NOI18N
                 Set<Union2<Dependency,InvalidException>> probs = moduleProblemsWithNeeds.get(bad);
-                if (probs == null) throw new IllegalStateException("Were trying to install a module that had never been checked: " + bad); // NOI18N
-                if (! probs.isEmpty()) throw new IllegalStateException("Were trying to install a module that was known to be bad: " + bad); // NOI18N
+                if (probs == null) throw new IllegalStateException("Were trying to install a module that had never been checked: " + bad, ie); // NOI18N
+                if (! probs.isEmpty()) throw new IllegalStateException("Were trying to install a module that was known to be bad: " + bad + " " + probs, ie); // NOI18N
                 // Record for posterity.
                 if (probs == EMPTY_COLLECTION) {
                     probs = new HashSet<Union2<Dependency,InvalidException>>(8);
@@ -1094,7 +1148,7 @@ public final class ModuleManager extends Modules {
             Util.err.fine("enable: fixing classloader");
             installer.classLoaderUp(classLoader);
             Util.err.fine("enable: continuing to installation");
-            Set<Module> enableMore = NetigsoFramework.turnOn(this, classLoader, this.modules);
+            Set<Module> enableMore = NetigsoFramework.turnOn(this, classLoader, Collections.unmodifiableCollection(new ArrayList<Module>(this.modules)));
             if (!enableMore.isEmpty()) {
                 Util.err.log(Level.FINE, "netigso needs additional modules: {0}", enableMore);
                 List<Module> toEnableMore = simulateEnable(enableMore, false);
@@ -1187,6 +1241,30 @@ public final class ModuleManager extends Modules {
             return m1.getCodeNameBase().compareTo(m2.getCodeNameBase());
         }
     }
+    
+    private final Set<Module> calculateParents(Module m) throws NumberFormatException, IOException {
+        // Calculate the parents to initialize the classloader with.
+        Dependency[] dependencies = m.getDependenciesArray();
+        Set<Module> res = new HashSet<Module>(dependencies.length * 4 / 3 + 1);
+        for (int i = 0; i < dependencies.length; i++) {
+            Dependency dep = dependencies[i];
+            if (dep.getType() != Dependency.TYPE_MODULE) {
+                // Token providers do *not* go into the parent classloader
+                // list. The providing module must have been turned on first.
+                // But you cannot automatically access classes from it.
+                continue;
+            }
+            String name = (String) Util.parseCodeName(dep.getName())[0];
+            Module parent = get(name);
+            // Should not happen:
+            if (parent == null) {
+                throw new IOException("Parent " + name + " not found!"); // NOI18N
+            }
+            res.add(parent);
+        }
+        return res;
+    }
+
 
     /** Simulate what would happen if a set of modules were to be enabled.
      * None of the listed modules may be autoload modules, nor eager, nor currently enabled,
@@ -1221,6 +1299,15 @@ public final class ModuleManager extends Modules {
         return simulateEnable(modules, true);
     }
     final List<Module> simulateEnable(Set<Module> modules, boolean honorAutoloadEager) throws IllegalArgumentException {
+        List<String> cnbs = mdc.simulateEnable(modules);
+        if (cnbs != null) {
+            List<Module> arr = new ArrayList<Module>(cnbs.size());
+            for (String cnb : cnbs) {
+                arr.add(get(cnb));
+            }
+            assert !arr.contains(null) : arr;
+            return arr;
+        }
         /* Not quite, eager modules may change this:
         if (modules.isEmpty()) {
             return Collections.EMPTY_LIST;
@@ -1247,10 +1334,11 @@ public final class ModuleManager extends Modules {
             }
         }
         while (searchForPossibleEager(willEnable, stillDisabled, modules)) {/* search again */}
-        Map<Module,List<Module>> deps = Util.moduleDependencies(willEnable, modulesByName, providersOf);
+        Map<Module,List<Module>> deps = Util.moduleDependencies(willEnable, modulesByName, getProvidersOf());
         try {
             List<Module> l = Utilities.topologicalSort(willEnable, deps);
             Collections.reverse(l);
+            mdc.registerEnable(modules, l);
             return l;
         } catch (TopologicalSortException ex) {
             // Some kind of cycle involving prov-req deps. Should be extremely rare.
@@ -1297,7 +1385,7 @@ public final class ModuleManager extends Modules {
                 dep.getType() == Dependency.TYPE_NEEDS ||
                 dep.getType() == Dependency.TYPE_RECOMMENDS
             ) {
-                Set<Module> providers = providersOf.get(dep.getName());
+                Set<Module> providers = getProvidersOf().get(dep.getName());
                 if (providers == null) {
                     assert dep.getType() == Dependency.TYPE_RECOMMENDS : "Should have found a provider of " + dep;
                     continue;
@@ -1382,7 +1470,7 @@ public final class ModuleManager extends Modules {
                 if (other == null) throw new IllegalStateException("Should have found module: " + codeNameBase); // NOI18N
                 if (!couldBeEnabledWithEagers(other, willEnable, recursion)) return false;
             } else if (dep.getType() == Dependency.TYPE_REQUIRES || dep.getType() == Dependency.TYPE_NEEDS) {
-                Set<Module> providers = providersOf.get(dep.getName());
+                Set<Module> providers = getProvidersOf().get(dep.getName());
                 if (providers == null) throw new IllegalStateException("Should have found a provider of: " + dep.getName()); // NOI18N
                 // Just need *one* to match.
                 boolean foundOne = false;
@@ -1403,7 +1491,7 @@ public final class ModuleManager extends Modules {
     public List<Module> simulateJaveleonReload(Module moduleToReload) throws IllegalArgumentException {
         Set<Module> transitiveDependents = new HashSet<Module>(20);
         addToJaveleonDisableList(transitiveDependents, moduleToReload);
-        Map<Module,List<Module>> deps = Util.moduleDependencies(transitiveDependents, modulesByName, providersOf);
+        Map<Module,List<Module>> deps = Util.moduleDependencies(transitiveDependents, modulesByName, getProvidersOf());
         try {
             LinkedList<Module> orderedForEnabling = new LinkedList<Module>();
             for (Module m : Utilities.topologicalSort(transitiveDependents, deps)) {
@@ -1468,7 +1556,7 @@ public final class ModuleManager extends Modules {
         Set<Module> stillEnabled = new HashSet<Module>(getEnabledModules());
         stillEnabled.removeAll(willDisable);
         while (searchForUnusedAutoloads(willDisable, stillEnabled)) {/* search again */}
-        Map<Module,List<Module>> deps = Util.moduleDependencies(willDisable, modulesByName, providersOf);
+        Map<Module,List<Module>> deps = Util.moduleDependencies(willDisable, modulesByName, getProvidersOf());
         try {
             return Utilities.topologicalSort(willDisable, deps);
         } catch (TopologicalSortException ex) {
@@ -1688,7 +1776,7 @@ public final class ModuleManager extends Modules {
                         // Works much like a regular module dependency. However it only
                         // fails if there are no satisfying modules with no problems.
                         String token = dep.getName();
-                        Set<Module> providers = providersOf.get(token);
+                        Set<Module> providers = getProvidersOf().get(token);
                         if (providers == null) {
                             // Nobody provides it. This dep failed.
                             probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
@@ -1811,7 +1899,11 @@ public final class ModuleManager extends Modules {
     public boolean shutDown(Runnable midHook) {
         assertWritable();
         Set<Module> unorderedModules = getEnabledModules();
-        Map<Module,List<Module>> deps = Util.moduleDependencies(unorderedModules, modulesByName, providersOf);
+        Map<String, Set<Module>> providersMap = new HashMap<String, Set<Module>>();
+        for (Module m : unorderedModules) {
+            registerProviders(m, providersMap);
+        }
+        Map<Module,List<Module>> deps = Util.moduleDependencies(unorderedModules, modulesByName, providersMap);
         List<Module> sortedModules;
         try {
             sortedModules = Utilities.topologicalSort(unorderedModules, deps);
@@ -1848,5 +1940,178 @@ public final class ModuleManager extends Modules {
                 }
             }
         });
+    }
+    private class ModuleDataCache implements Stamps.Updater {
+        private static final String CACHE = "all-manifests.dat";
+        private final Map<String,byte[]> path2Data;
+        private final Map<String,Boolean> path2OSGi;
+        private final Map<String,String> path2Cnb;
+        private final int moduleCount;
+        private Set<String> toEnable;
+        private List<String> willEnable;
+        
+        public ModuleDataCache() {
+            InputStream is = Stamps.getModulesJARs().asStream(CACHE);
+            Map<String,byte[]> map = null;
+            Map<String,Boolean> osgi = null;
+            Map<String,String> cnbs = null;
+            Set<String> toEn = null;
+            List<String> toWi = null;
+            int cnt = -1;
+            if (is != null) try {
+                DataInputStream dis = new DataInputStream(is);
+                map = new HashMap<String, byte[]>();
+                osgi = new HashMap<String, Boolean>();
+                cnbs = new HashMap<String, String>();
+                cnt = dis.readInt();
+                for (;;) {
+                    String path = Stamps.readRelativePath(dis);
+                    if (path.isEmpty()) {
+                        break;
+                    }
+                    boolean isOSGi = dis.readBoolean();
+                    osgi.put(path, isOSGi);
+                    cnbs.put(path, dis.readUTF());
+                    int len = dis.readInt();
+                    byte[] data = new byte[len];
+                    dis.readFully(data);
+                    map.put(path, data);
+                }
+                toEn = readCnbs(dis, new HashSet<String>());
+                toWi = readCnbs(dis, new ArrayList<String>());
+                dis.close();
+            } catch (IOException ex) {
+                Util.err.log(Level.FINE, "Cannot read " + Places.getCacheSubfile(CACHE), ex);
+                map = null;
+                osgi = null;
+                cnbs = null;
+                toEn = null;
+                toWi = null;
+            }
+            path2Data = map;
+            path2OSGi = osgi;
+            path2Cnb = cnbs;
+            toEnable = toEn;
+            willEnable = toWi;
+            moduleCount = cnt;
+            if (map == null) {
+                reset();
+            }
+        }
+        
+        public Boolean isOSGi(String path) {
+            if (path2OSGi == null) {
+                return null;
+            }
+            return path2OSGi.get(path);
+        }
+        
+        public synchronized byte[] getModuleState(String path) {
+            byte[] res = null;
+            if (path2Data != null) {
+                res = path2Data.remove(path);
+            }
+            if (res == null) {
+                reset();
+            }
+            return res;
+        }
+        final String getCnb(String path) {
+            return path2Cnb == null ? null : path2Cnb.get(path);
+        }
+        
+        @Override
+        public void flushCaches(DataOutputStream os) throws IOException {
+            Set<Module> store = getModules();
+            os.writeInt(store.size());
+            for (Module m : store) {
+                final File path = m.getJarFile();
+                if (path == null) {
+                    assert m instanceof FixedModule : "Only fixed modules are excluded from caches " + m;
+                    continue;
+                }
+                Stamps.writeRelativePath(path.getPath(), os);
+                os.writeBoolean(m.isNetigso());
+                os.writeUTF(m.getCodeNameBase());
+                
+                ByteArrayOutputStream data = new ByteArrayOutputStream();
+                ObjectOutputStream dos = new ObjectOutputStream(data);
+                m.writeData(dos);
+                dos.close();
+                
+                byte[] arr = data.toByteArray();
+                os.writeInt(arr.length);
+                os.write(arr);
+            }
+            Stamps.writeRelativePath("", os);
+            synchronized (this) {
+                writeCnbs(os, toEnable);
+                writeCnbs(os, willEnable);
+            }
+        }
+        @Override
+        public void cacheReady() {
+        }
+        
+        private synchronized void reset() {
+            toEnable = null;
+            willEnable = null;
+        }
+
+        synchronized final void registerEnable(Set<Module> modules, List<Module> l) {
+            toEnable = new HashSet<String>();
+            for (Module m : modules) {
+                toEnable.add(m.getCodeNameBase());
+            }
+            List<String> arr = new ArrayList<String>(l.size());
+            for (Module m : l) {
+                arr.add(m.getCodeNameBase());
+            }
+            willEnable = Collections.unmodifiableList(arr);
+            Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
+        }
+
+        synchronized final List<String> simulateEnable(Set<Module> modules) {
+            if (
+                toEnable != null &&
+                modules.size() == toEnable.size() &&
+                moduleCount == getModuleCount()
+            ) {
+                Set<String> clone = new HashSet<String>(toEnable);
+                for (Module m : modules) {
+                    if (!clone.remove(m.getCodeNameBase())) {
+                        return null;
+                    }
+                }
+                if (clone.isEmpty()) {
+                    return willEnable;
+                }
+            }
+            return null;
+        }
+
+        private <T extends Collection<String>> T readCnbs(DataInputStream dis, T fill) throws IOException {
+            int size = dis.readInt();
+            if (size == -1) {
+                return null;
+            }
+            
+            while (size-- > 0) {
+                fill.add(dis.readUTF());
+            }
+            return fill;
+        }
+
+        private void writeCnbs(DataOutputStream os, Collection<String> cnbs) throws IOException {
+            if (cnbs == null) {
+                os.writeInt(-1);
+                return;
+            }
+            
+            os.writeInt(cnbs.size());
+            for (String s : cnbs) {
+                os.writeUTF(s);
+            }
+        }
     }
 }

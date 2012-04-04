@@ -57,6 +57,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -132,6 +133,7 @@ public final class JavaAntLoggerTest extends NbTestCase {
     }
     
     /** See #44328. */
+    @RandomlyFails
     public void testHyperlinkTest() throws Exception {
         FileObject buildXml = FileUtil.toFileObject(new File(simpleAppDir, "build.xml"));
         assertNotNull("have build.xml as a FileObject", buildXml);

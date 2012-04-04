@@ -95,7 +95,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
                 new Object[] { panel.okButton, NotifyDescriptor.CANCEL_OPTION },
                 panel.okButton,
                 DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(EditClusterPanel.class),
+                new HelpCtx("org.netbeans.modules.apisupport.project.ui.customizer.EditClusterPanel"),
                 null);
         descriptor.setClosingOptions(null);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
@@ -135,7 +135,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
                 new Object[] { panel.okButton, NotifyDescriptor.CANCEL_OPTION },
                 panel.okButton,
                 DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(EditClusterPanel.class),
+                new HelpCtx("org.netbeans.modules.apisupport.project.ui.customizer.EditClusterPanel"),
                 null);
         descriptor.setClosingOptions(null);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);

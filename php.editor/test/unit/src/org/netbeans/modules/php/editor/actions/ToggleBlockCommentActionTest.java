@@ -58,7 +58,7 @@ import org.openide.filesystems.FileObject;
  * @author Petr Pisl
  */
 public class ToggleBlockCommentActionTest extends PHPTestBase {
-    
+
     public ToggleBlockCommentActionTest(String testName) {
         super(testName);
     }
@@ -83,23 +83,27 @@ public class ToggleBlockCommentActionTest extends PHPTestBase {
     protected boolean runInEQ() {
         return true;
     }
-    
+
     public void testIssue198269_01()throws Exception {
         testInFile("testfiles/actions/issue198269_01.php");
     }
-    
+
     public void testIssue198269_02()throws Exception {
         testInFile("testfiles/actions/issue198269_02.php");
     }
-    
+
     public void testIssue198269_03()throws Exception {
         testInFile("testfiles/actions/issue198269_03.php");
     }
-    
+
     public void testIssue198269_04()throws Exception {
         testInFile("testfiles/actions/issue198269_04.php");
     }
-    
+
+    public void testIsue207153()throws Exception {
+        testInFile("testfiles/actions/issue207153.php");
+    }
+
     protected void testInFile(String file) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);

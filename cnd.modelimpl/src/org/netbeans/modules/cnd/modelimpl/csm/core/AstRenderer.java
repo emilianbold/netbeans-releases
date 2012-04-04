@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -618,7 +619,8 @@ public class AstRenderer {
             return false;
         }
         processedProjects.add(project);
-        if (project.findDeclaration(uname) != null) {
+        final CsmDeclaration decl = project.findDeclaration(uname);
+        if (decl != null && CsmIncludeResolver.getDefault().isObjectVisible(file, decl)) {
             return true;
         }
         for (CsmProject lib : project.getLibraries()) {
@@ -819,6 +821,9 @@ public class AstRenderer {
     @SuppressWarnings("fallthrough")
     protected void renderVariableInClassifier(AST ast, ClassEnumBase<?> classifier,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
+        if(AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_typedef)) {
+            return;
+        }        
         AST token = ast.getFirstChild();
         boolean unnamedStaticUnion = false;
         boolean _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
@@ -945,11 +950,12 @@ public class AstRenderer {
 
         Pair results = new Pair();
 
-        AST typedefNode = ast.getFirstChild();
-
-        if (typedefNode != null && typedefNode.getType() == CPPTokenTypes.LITERAL_typedef) {
-
-            AST classNode = typedefNode.getNextSibling();
+        AST node = ast.getFirstChild();
+        if (node != null && AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_typedef)) {
+            if(node.getType() == CPPTokenTypes.LITERAL_typedef) {
+                node = node.getNextSibling();
+            }
+            AST classNode = node;
             while (classNode != null && isVolatileQualifier(classNode.getType()) || isConstQualifier(classNode.getType())) {
                 classNode = classNode.getNextSibling();
             }
@@ -1549,7 +1555,7 @@ public class AstRenderer {
         boolean _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
         AST typeAST = ast.getFirstChild();
         AST tokType = typeAST;
-        if (tokType != null && tokType.getType() == CPPTokenTypes.LITERAL_template) {
+        while (tokType != null && tokType.getType() == CPPTokenTypes.LITERAL_template) {
             typeAST = tokType = skipTemplateSibling(tokType);
         }
         tokType = getFirstSiblingSkipQualifiers(tokType);

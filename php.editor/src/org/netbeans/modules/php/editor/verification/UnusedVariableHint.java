@@ -160,7 +160,10 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
             this.fileObject = fileObject;
         }
 
-        @Messages("UnusedVariableHintCustom=Variable ${0} seems to be unused in its scope")
+        @Messages({
+            "# {0} - Name of the variable",
+            "UnusedVariableHintCustom=Variable ${0} seems to be unused in its scope"
+        })
         public List<Hint> getHints() {
             List<Hint> hints = new LinkedList<Hint>();
             for (ASTNode scopeNode : unusedVariables.keySet()) {
@@ -510,11 +513,6 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
             scan(node.getClassName());
             forceVariableAsUsed = false;
             scan(node.getMethod());
-        }
-
-        @Override
-        public void visit(SwitchCase node) {
-            scan(node.getActions());
         }
 
         @Override

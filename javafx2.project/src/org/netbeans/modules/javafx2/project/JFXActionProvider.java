@@ -44,21 +44,24 @@ package org.netbeans.modules.javafx2.project;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  * Skeleton of JFX Action Provider
@@ -90,32 +93,33 @@ public class JFXActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(@NonNull String command, @NonNull Lookup context) throws IllegalArgumentException {
-        String target;
-        if ((target=(command))!=null) {
+        if (command != null) {
             FileObject buildFo = findBuildXml();
             assert buildFo != null && buildFo.isValid();
             String runAs = JFXProjectUtils.getFXProjectRunAs(prj);
             if(runAs == null) {
                 runAs = JFXProjectProperties.RunAsType.STANDALONE.getString();
             }
+            final ActionProgress listener = ActionProgress.start(context);
             try {
+                String target;
                 if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.STANDALONE.getString())) {
                     target = "jfxsa-".concat(command); //NOI18N
-                    final Properties p = new Properties();
-                    ActionUtils.runTarget(buildFo, new String[] {target}, p);    //NOI18N
                 } else {
                     if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
                         target = "jfxws-".concat(command); //NOI18N
-                        final Properties p = new Properties();
-                        ActionUtils.runTarget(buildFo, new String[] {target}, p);    //NOI18N
                     } else { //JFXProjectProperties.RunAsType.INBROWSER
                         target = "jfxbe-".concat(command); //NOI18N
-                        final Properties p = new Properties();
-                        ActionUtils.runTarget(buildFo, new String[] {target}, p);    //NOI18N
                     }
                 }
+                ActionUtils.runTarget(buildFo, new String[] {target}, null).addTaskListener(new TaskListener() {
+                    @Override public void taskFinished(Task task) {
+                        listener.finished(((ExecutorTask) task).result() == 0);
+                    }
+                });
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+                listener.finished(false);
             }
         } else {
             throw new IllegalArgumentException(command);

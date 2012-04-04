@@ -366,8 +366,9 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         }
         
         Problem checkParameterName(Problem p, String s) {
-            if ((s == null || s.length() < 1))
-                p = createProblem(p, true, newParMessage("ERR_parname")); // NOI18N
+            if ((s == null || s.length() < 1)) {
+                p = createProblem(p, true, newParMessage("ERR_parname"));
+            } // NOI18N
             else {
                 if (!Utilities.isJavaIdentifier(s)) {
                     p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_InvalidIdentifier",s)); // NOI18N

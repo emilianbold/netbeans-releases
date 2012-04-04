@@ -46,7 +46,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private static final MessageFormat parentFormat = getFormat("parentFormat");      // NOI18N
 
     private final JiraQuery jiraQuery;
-    private final Query query;
+    private Query query;
     private final QueryTableCellRenderer defaultIssueRenderer;
     private TwoLabelPanel twoLabelPanel;
     private MultiLabelPanel multiLabelPanel;
@@ -62,17 +62,6 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         this.defaultIssueRenderer = defaultIssueRenderer;
         this.issueTable = issueTable;
         this.jiraQuery = jiraQuery;
-        Repository repository = JiraUtils.getRepository(jiraQuery.getRepository());
-        Collection<Query> queries = repository.getQueries();
-        Query aQuery = null;
-        for (Query q : queries) {
-            if(q.getDisplayName().equals(jiraQuery.getDisplayName())) {
-                aQuery = q;
-                break;
-            }
-        }
-        this.query = aQuery;
-        assert query != null;
     }
 
     @Override
@@ -165,7 +154,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private TableCellStyle getStyle(JTable table, IssueProperty p, boolean isSelected, int row) {
         TableCellStyle style = null;
         if (jiraQuery.isSaved()) {
-            style = QueryTableCellRenderer.getCellStyle(table, query, issueTable, p, isSelected, row);
+            style = QueryTableCellRenderer.getCellStyle(table, getQuery(), issueTable, p, isSelected, row);
         } else {
             style = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, p, isSelected, row);
         }
@@ -259,6 +248,23 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
                 }
             }
         });
+    }
+
+    private Query getQuery() {
+        if(query == null) {
+            Repository repository = JiraUtils.getRepository(jiraQuery.getRepository());
+            Collection<Query> queries = repository.getQueries();
+            Query aQuery = null;
+            for (Query q : queries) {
+                if(q.getDisplayName().equals(jiraQuery.getDisplayName())) {
+                    aQuery = q;
+                    break;
+                }
+            }
+            this.query = aQuery;
+            assert query != null;        
+        }
+        return query;
     }
 
     private class TwoLabelPanel extends JPanel {

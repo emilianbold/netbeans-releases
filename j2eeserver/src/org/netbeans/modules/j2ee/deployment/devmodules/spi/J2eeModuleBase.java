@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Iterator;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.filesystems.FileObject;
@@ -91,9 +92,9 @@ public interface J2eeModuleBase {
      * interface. If the J2eeModule instance describes a j2ee application,
      * the result should not contain module archives.
      * 
-     * @return Iterator through {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.RootedEntry}s
+     * @return entries
      */
-    Iterator getArchiveContents() throws java.io.IOException;
+    Iterator<J2eeModule.RootedEntry> getArchiveContents() throws java.io.IOException;
 
     /** This call is used in in-place deployment. 
      *  Returns the directory staging the contents of the archive

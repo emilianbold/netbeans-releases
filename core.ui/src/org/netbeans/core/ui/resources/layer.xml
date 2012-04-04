@@ -152,6 +152,7 @@ made subject to such option by the copyright holder.
                 <attr name="noIconInMenu" boolvalue="true"/>
                 <attr name="iconBase" stringvalue="org/openide/loaders/saveAll.gif"/>
                 <attr name="type" stringvalue="org.netbeans.api.actions.Savable"/>
+                <attr name="weight" intvalue="1000"/>
             </file>
             <file name="org-openide-actions-SaveAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
@@ -162,6 +163,7 @@ made subject to such option by the copyright holder.
                 <attr name="noIconInMenu" boolvalue="true"/>
                 <attr name="iconBase" stringvalue="org/openide/resources/actions/save.png"/>
                 <attr name="type" stringvalue="org.netbeans.api.actions.Savable"/>
+                <attr name="weight" intvalue="1000"/>
             </file>
             <file name="org-openide-actions-SaveAsAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.actions.SaveAsAction.create"/>

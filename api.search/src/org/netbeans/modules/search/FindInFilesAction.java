@@ -113,6 +113,15 @@ public class FindInFilesAction extends CallableSystemAction {
     private static final String VAR_LAST_SEARCH_SCOPE_TYPE
                                 = "lastScopeType";                      //NOI18N
 
+    protected boolean preferScopeSelection = false;
+
+    public FindInFilesAction() {
+    }
+
+    protected FindInFilesAction(boolean preferScopeSelection) {
+        this.preferScopeSelection = preferScopeSelection;
+    }
+
     @Override
     protected void initialize() {
         super.initialize();
@@ -204,11 +213,6 @@ public class FindInFilesAction extends CallableSystemAction {
     /** Perform this action. */
     @Override
     public void performAction() {
-        performAction(getLastSearchScope());
-    }
-
-    private void performAction(String preferredSearchScopeType) {
-        
         assert EventQueue.isDispatchThread();
 
         boolean replacing = (Boolean) getProperty(REPLACING);
@@ -219,31 +223,17 @@ public class FindInFilesAction extends CallableSystemAction {
                 current.focusDialog();
             } else {
                 current.close();
-                new SearchPanel(replacing).showDialog();
+                showSearchDialog(replacing);
             }
         } else {
-            new SearchPanel(replacing).showDialog();
+            showSearchDialog(replacing);
         }
     }
 
-    /**
-     * Returns the type Id of the last used search scope.
-     * @return  type-identifier of the last used search scope, or {@code null}
-     *          if no information about last used search scope is available
-     * @see  #storeLastSearchScope
-     */
-    private String getLastSearchScope() {
-        Object o = getProperty(VAR_LAST_SEARCH_SCOPE_TYPE);
-        return (o instanceof String) ? (String) o : null;
-    }
-
-    /**
-     * Stores the given type Id of a search scope as the last used search scope.
-     * @param  typeId  type Id to be stored
-     * @see  #getLastSearchScope
-     */
-    private void storeLastSearchScope(String typeId) {
-        putProperty(VAR_LAST_SEARCH_SCOPE_TYPE, typeId, false);
+    private void showSearchDialog(boolean replacing) {
+        SearchPanel sp = new SearchPanel(replacing);
+        sp.setPreferScopeSelection(preferScopeSelection);
+        sp.showDialog();
     }
 
     @Override
@@ -269,5 +259,10 @@ public class FindInFilesAction extends CallableSystemAction {
         LOG.finer(shortClassName + ": " + msg);
     }
 
+    public static class Selection extends FindInFilesAction {
 
+        public Selection() {
+            super(true);
+        }
+    }
 }

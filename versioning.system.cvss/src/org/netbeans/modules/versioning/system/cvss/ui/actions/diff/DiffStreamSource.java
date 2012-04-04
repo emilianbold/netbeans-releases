@@ -119,7 +119,7 @@ public class DiffStreamSource extends StreamSource {
         init(group);
         if (revision == null || remoteFile == null || binary) return null;
         FileObject remoteFo = FileUtil.toFileObject(remoteFile);
-        return Utils.createReader(remoteFo);
+        return remoteFo == null ? null : Utils.createReader(remoteFo);
     }
 
     public Writer createWriter(Difference[] conflicts) throws IOException {

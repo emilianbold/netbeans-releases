@@ -49,44 +49,73 @@ import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Handle for a DOM element. It contains data necessary to locate
- * the element in various structures (DOM, AST, etc.)
+ * Handle for a DOM element. It contains data necessary to locate the element in
+ * various structures (DOM, AST, etc.)
  *
  * @author Jan Stola
  */
 public class ElementHandle {
-    /** Name of JSON attribute where ID is stored. */
+
+    /**
+     * Name of JSON attribute where ID is stored.
+     */
     private static final String JSON_ID = "id"; // NOI18N
-    /** Name of JSON attribute where class is stored. */
+    /**
+     * Name of JSON attribute where class is stored.
+     */
     private static final String JSON_CLASS = "className"; // NOI18N
-    /** Name of JSON attribute where parent is stored. */
+    /**
+     * Name of JSON attribute where parent is stored.
+     */
     private static final String JSON_PARENT = "parent"; // NOI18N
-    /** Name of JSON attribute where index of the element (in parent) is stored. */
+    /**
+     * Name of JSON attribute where index of the element (in parent) is stored.
+     */
     private static final String JSON_INDEX_IN_PARENT = "indexInParent"; // NOI18N
-    /** Name of JSON attribute where tag names of all children of the parent are stored. */
+    /**
+     * Name of JSON attribute where tag names of all children of the parent are
+     * stored.
+     */
     private static final String JSON_SIBLING_TAG_NAMES = "siblingTagNames"; // NOI18N
-    /** Key in element's user data under which the handle is cached. */
+    /**
+     * Key in element's user data under which the handle is cached.
+     */
     private static final String ELEMENT_USER_DATA_HANDLE = "handle"; // NOI18N
-    /** Name of attribute that holds element's ID. */
+    /**
+     * Name of attribute that holds element's ID.
+     */
     private static final String ATTR_ID = "id"; // NOI18N
-    /** Name of attribute that holds element's class. */
+    /**
+     * Name of attribute that holds element's class.
+     */
     private static final String ATTR_CLASS = "class"; // NOI18N
-    /** Element's ID. */
+    /**
+     * Element's ID.
+     */
     private String id;
-    /** Element's class(es). */
+    /**
+     * Element's class(es).
+     */
     private String className;
-    /** Index of the element among parent's sub-elements. */
+    /**
+     * Index of the element among parent's sub-elements.
+     */
     private int indexInParent;
-    /** Tag names of all parent's sub-elements. */
+    /**
+     * Tag names of all parent's sub-elements.
+     */
     private String[] siblingTagNames;
-    /** Handle for parent element. */
+    /**
+     * Handle for parent element.
+     */
     private ElementHandle parent;
 
     // Handles should be created using factory methods only.
@@ -95,7 +124,7 @@ public class ElementHandle {
 
     /**
      * Returns the handle for the parent element.
-     * 
+     *
      * @return handle for the parent element or {@code null} if the element
      * doesn't have a parent.
      */
@@ -105,7 +134,7 @@ public class ElementHandle {
 
     /**
      * Returns tag name of the element.
-     * 
+     *
      * @return tag name of the element.
      */
     public String getTagName() {
@@ -114,7 +143,7 @@ public class ElementHandle {
 
     /**
      * Returns element's ID.
-     * 
+     *
      * @return element's ID.
      */
     public String getID() {
@@ -123,7 +152,7 @@ public class ElementHandle {
 
     /**
      * Returns element's class(es).
-     * 
+     *
      * @return element's class(es).
      */
     public String getClassName() {
@@ -131,9 +160,9 @@ public class ElementHandle {
     }
 
     /**
-     * Returns an element handle for its JSON representation
-     * (obtained from the browser plugin).
-     * 
+     * Returns an element handle for its JSON representation (obtained from the
+     * browser plugin).
+     *
      * @param json JSON representation of the handle.
      * @return handle that corresponds to the one given in JSON format.
      */
@@ -153,29 +182,28 @@ public class ElementHandle {
             handle.indexInParent = json.getInt(JSON_INDEX_IN_PARENT);
             JSONArray siblings = json.getJSONArray(JSON_SIBLING_TAG_NAMES);
             handle.siblingTagNames = new String[siblings.length()];
-            for (int i=0; i<siblings.length(); i++) {
+            for (int i = 0; i < siblings.length(); i++) {
                 handle.siblingTagNames[i] = siblings.getString(i);
             }
             return handle;
         } catch (JSONException ex) {
-            Logger.getLogger(ElementHandle.class.getName()).log(Level.INFO, null, ex);            
+            Logger.getLogger(ElementHandle.class.getName()).log(Level.INFO, null, ex);
         }
         return null;
     }
 
     /**
-     * Returns an element handle for the specified DOM element.
-     * The handles are cached, i.e., the same handle is returned
-     * for the same DOM element instance when the method is called
-     * more than once.
-     * 
+     * Returns an element handle for the specified DOM element. The handles are
+     * cached, i.e., the same handle is returned for the same DOM element
+     * instance when the method is called more than once.
+     *
      * @param element DOM element for which the handle should be created.
      * @return handle that corresponds to the given DOM element.
      */
     public static ElementHandle forElement(Element element) {
         Object storedHandle = element.getUserData(ELEMENT_USER_DATA_HANDLE);
         if (storedHandle instanceof ElementHandle) {
-            return (ElementHandle)storedHandle;
+            return (ElementHandle) storedHandle;
         }
 
         ElementHandle handle = new ElementHandle();
@@ -184,15 +212,15 @@ public class ElementHandle {
         handle.className = element.getAttribute(ATTR_CLASS);
         Node parentNode = element.getParentNode();
         if (parentNode.getNodeType() == Node.ELEMENT_NODE) {
-            Element parentElement = (Element)parentNode;
+            Element parentElement = (Element) parentNode;
             ElementHandle parentHandle = forElement(parentElement);
             handle.parent = parentHandle;
             NodeList siblings = parentElement.getChildNodes();
             List<String> siblingTags = new ArrayList<String>(siblings.getLength());
-            for (int i=0; i<siblings.getLength(); i++) {
+            for (int i = 0; i < siblings.getLength(); i++) {
                 Node siblingNode = siblings.item(i);
                 if (siblingNode.getNodeType() == Node.ELEMENT_NODE) {
-                    Element siblingElement = (Element)siblingNode;
+                    Element siblingElement = (Element) siblingNode;
                     if (siblingElement == element) {
                         handle.indexInParent = siblingTags.size();
                     }
@@ -202,7 +230,7 @@ public class ElementHandle {
             handle.siblingTagNames = siblingTags.toArray(new String[siblingTags.size()]);
         } else {
             handle.indexInParent = 0;
-            handle.siblingTagNames = new String[] {element.getTagName()};
+            handle.siblingTagNames = new String[]{element.getTagName()};
         }
 
         element.setUserData(ELEMENT_USER_DATA_HANDLE, handle, null);
@@ -210,38 +238,36 @@ public class ElementHandle {
     }
 
     /**
-     * Finds {@code AstNode} that corresponds to this handle.
-     * 
+     * Finds {@code org.netbeans.modules.html.editor.lib.api.elements.Node} that
+     * corresponds to this handle.
+     *
      * @param root root of AST tree where this handle should be located.
-     * @return array with two items, the first item is {@code AstNode}
-     * that seem to match the handle exactly. If no such node was found
-     * then the first item is {@code null} and the second item is the nearest
-     * node to this handle.
+     * @return array with two items, the first item is {@code org.netbeans.modules.html.editor.lib.api.elements.Node}
+     * that seem to match the handle exactly. If no such node was found then the
+     * first item is {@code null} and the second item is the nearest node to
+     * this handle.
      */
-    public AstNode[] locateInAst(AstNode root) {
-        AstNode nearest;
+    public org.netbeans.modules.html.editor.lib.api.elements.Node[] locateInAst(org.netbeans.modules.html.editor.lib.api.elements.Node root) {
+        org.netbeans.modules.html.editor.lib.api.elements.Node nearest;
         ElementHandle parentHandle = parent;
         if (parentHandle != null) {
-            AstNode[] result = parentHandle.locateInAst(root);
+            org.netbeans.modules.html.editor.lib.api.elements.Node[] result = parentHandle.locateInAst(root);
             if (result[0] == null) {
                 return result;
             } else {
-                AstNode astParent = result[0];
+                org.netbeans.modules.html.editor.lib.api.elements.Node astParent = result[0];
                 int index = 0;
                 String name = siblingTagNames[index].toLowerCase();
-                for (AstNode child : astParent.children()) {
-                    if (isTag(child)) {
-                        String astName = child.name().toLowerCase();
-                        if (name.equals(astName)) {
-                            if (index == indexInParent) {
-                                return new AstNode[] {child, null};
+                for (OpenTag child : astParent.children(OpenTag.class)) {
+                    if(LexerUtils.equals(name, child.name(), true, false)) {
+                        if (index == indexInParent) {
+                            return new org.netbeans.modules.html.editor.lib.api.elements.Node[]{child, null};
+                        } else {
+                            index++;
+                            if (index == siblingTagNames.length) {
+                                break; // AST doesn't match the handle
                             } else {
-                                index++;
-                                if (index == siblingTagNames.length) {
-                                    break; // AST doesn't match the handle
-                                } else {
-                                    name = siblingTagNames[index].toLowerCase();
-                                }
+                                name = siblingTagNames[index].toLowerCase();
                             }
                         }
                     }
@@ -250,40 +276,24 @@ public class ElementHandle {
             }
         } else {
             String elemName = getTagName().toLowerCase();
-            for (AstNode child : root.children()) {
-                if (isTag(child)) {
-                    String astName = child.name().toLowerCase();
-                    if (elemName.equals(astName)) {
-                        return new AstNode[] {child, null};
+            for (OpenTag child : root.children(OpenTag.class)) {
+                    if(LexerUtils.equals(elemName, child.name(), true, false)) {
+                        return new org.netbeans.modules.html.editor.lib.api.elements.Node[]{child, null};
                     }
-                }
             }
             nearest = root;
         }
-        return new AstNode[] {null, nearest};
-    }
-
-    /**
-     * Helper method (for {@code locateInAst()} method) that determines
-     * whether the specified node represents a tag.
-     * 
-     * @param node node to check.
-     * @return {@code true} when the specified node is a tag,
-     * returns {@code false} otherwise.
-     */
-    private boolean isTag(AstNode node) {
-        AstNode.NodeType type = node.type();
-        return (type == AstNode.NodeType.OPEN_TAG) || (type == AstNode.NodeType.UNKNOWN_TAG);
+        return new org.netbeans.modules.html.editor.lib.api.elements.Node[]{null, nearest};
     }
 
     /**
      * Finds {@code Element} that corresponds to this handle.
-     * 
+     *
      * @param document document where this handle should be located.
-     * @return array with two items, the first item is {@code Element}
-     * that seem to match the handle exactly. If no such element was found
-     * then the first item is {@code null} and the second item is the nearest
-     * element to this handle.
+     * @return array with two items, the first item is {@code Element} that seem
+     * to match the handle exactly. If no such element was found then the first
+     * item is {@code null} and the second item is the nearest element to this
+     * handle.
      */
     public Element[] locateInDocument(Document document) {
         Element nearest;
@@ -297,14 +307,14 @@ public class ElementHandle {
                 int index = 0;
                 String name = siblingTagNames[index].toLowerCase();
                 NodeList childNodes = parentElement.getChildNodes();
-                for (int i=0; i<childNodes.getLength(); i++) {
+                for (int i = 0; i < childNodes.getLength(); i++) {
                     Node child = childNodes.item(i);
                     if (child.getNodeType() == Node.ELEMENT_NODE) {
-                        Element childElement = (Element)child;
+                        Element childElement = (Element) child;
                         String childName = childElement.getTagName().toLowerCase();
                         if (name.equals(childName)) {
                             if (index == indexInParent) {
-                                return new Element[] {childElement, null};
+                                return new Element[]{childElement, null};
                             } else {
                                 index++;
                                 if (index == siblingTagNames.length) {
@@ -323,18 +333,18 @@ public class ElementHandle {
             Element documentElement = document.getDocumentElement();
             String documentElementName = documentElement.getTagName().toLowerCase();
             if (elemName.equals(documentElementName)) {
-                return new Element [] {documentElement, null};
+                return new Element[]{documentElement, null};
             } else {
                 nearest = documentElement;
             }
         }
-        return new Element[] {null, nearest};
+        return new Element[]{null, nearest};
     }
 
     /**
-     * Returns JSON representation of this handle (suitable for passing
-     * to browser plugin).
-     * 
+     * Returns JSON representation of this handle (suitable for passing to
+     * browser plugin).
+     *
      * @return JSON representation of this handle.
      */
     public JSONObject toJSONObject() {
@@ -354,5 +364,4 @@ public class ElementHandle {
         }
         return null;
     }
-    
 }

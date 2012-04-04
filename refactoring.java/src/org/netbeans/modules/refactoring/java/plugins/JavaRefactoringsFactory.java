@@ -136,6 +136,12 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return new EncapsulateFieldsPlugin((EncapsulateFieldsRefactoring) refactoring);
             } else if (refactoring instanceof InlineRefactoring) {
                 return new InlineRefactoringPlugin((InlineRefactoring) refactoring);
+            } else if (refactoring instanceof ReplaceConstructorWithFactoryRefactoring) {
+                return new ReplaceConstructorWithFactoryPlugin((ReplaceConstructorWithFactoryRefactoring) refactoring);
+            } else if (refactoring instanceof InvertBooleanRefactoring) {
+                return new InvertBooleanRefactoringPlugin((InvertBooleanRefactoring) refactoring);
+            } else if (refactoring instanceof ReplaceConstructorWithBuilderRefactoring) {
+                return new ReplaceConstructorWithBuilderPlugin((ReplaceConstructorWithBuilderRefactoring) refactoring);
             }
         }
         return null;
@@ -180,8 +186,9 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return false;
             }
         }
-        if (object.lookup(TreePathHandle.class)!=null)
+        if (object.lookup(TreePathHandle.class)!=null) {
             return true;
+        }
         
         return a;
     }

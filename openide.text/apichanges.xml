@@ -49,6 +49,26 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+      <change id="NbDocument.openDocument">
+          <api name="text"/>
+          <summary>Added methods <code>NbDocument.getDocument</code>, 
+          <code>NbDocument.openDocument</code> with offset parameter and 
+          <code>NbDocument.openDocument</code> with line and column parameter</summary>
+          <version major="6" minor="46"/>
+          <date day="21" month="3" year="2012"/>
+          <author login="theofanis"/>
+          <compatibility addition="yes"/>
+          <description>
+              <p>
+                  First method gets the StyledDocument associated with a file while the other two 
+                  are used to open the document associated with a file in the Editor window
+                  in a position specified by the offset or line and column while
+                  controlling open and visibility behavior.
+              </p>
+          </description>
+          <class package="org.openide.text" name="NbDocument"/>
+          <issue number="209058"/>
+      </change>
     <change id="mark-commit-group">
         <api name="text"/>
         <summary>fix hole in commit-groups about empty commit group</summary>

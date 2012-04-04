@@ -52,6 +52,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.modules.search.SearchPanel;
 import org.netbeans.modules.search.SearchScopeList;
 import org.netbeans.spi.search.SearchScopeDefinition;
 import org.openide.util.WeakListeners;
@@ -69,21 +70,31 @@ public final class ScopeController extends ComponentController<JComboBox> {
     ChangeListener searchScopeChangeListenerWeak;
     private SearchScopeDefinition selectedSearchScope;
     private ScopeController.ManualSelectionListener manualSelectionListener;
+    private String preferredId = null;
     private String manuallySelectedId = null;
     private boolean active = false;
     SearchScopeList scopeList;
     SearchScopeDefinition[] extraSearchScopes;
 
-    ScopeController(JComboBox jComboBox, String prefferedId,
+    ScopeController(JComboBox jComboBox, String preferredId,
             SearchScopeDefinition... extraSearchScopes) {
         super(jComboBox);
-        this.manuallySelectedId = prefferedId;
+        this.preferredId = preferredId;
+        this.manuallySelectedId = null;
         this.extraSearchScopes = extraSearchScopes;
         component.addHierarchyListener(new ScopeComboBoxHierarchyListener());
         component.setEditable(false);
     }
 
-    private void updateScopeItems(String prefferedId) {
+    private String chooseId() {
+        if (SearchPanel.isOpenedForSelection()) {
+            return "node selection";                                    //NOI18N
+        } else {
+            return preferredId;
+        }
+    }
+
+    private void updateScopeItems(String preferredId) {
 
         component.removeAllItems();
         selectedSearchScope = null;
@@ -93,7 +104,7 @@ public final class ScopeController extends ComponentController<JComboBox> {
                 ScopeItem si = new ScopeItem(ss);
                 component.addItem(si);
                 if (selectedSearchScope == null) {
-                    if (ss.getTypeId().equals(prefferedId)) {
+                    if (ss.getTypeId().equals(preferredId)) {
                         selectedSearchScope = ss;
                         component.setSelectedItem(si);
                     }
@@ -258,6 +269,9 @@ public final class ScopeController extends ComponentController<JComboBox> {
         }
 
         private void initListeners() {
+            if (manuallySelectedId == null) {
+                manuallySelectedId = chooseId();
+            }
             scopeList = new SearchScopeList(extraSearchScopes);
             manualSelectionListener = new ManualSelectionListener();
             searchScopeChangeListener = new SearchScopeChangeListener();

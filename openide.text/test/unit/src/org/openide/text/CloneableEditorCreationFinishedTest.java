@@ -46,6 +46,7 @@ package org.openide.text;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
@@ -64,6 +65,8 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.EditorKit;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditorCookie;
 import org.openide.text.CloneableEditorSupport.Pane;
@@ -83,6 +86,11 @@ import org.openide.windows.CloneableTopComponent;
  */
 public class CloneableEditorCreationFinishedTest extends NbTestCase
 implements CloneableEditorSupport.Env, PropertyChangeListener {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(CloneableEditorCreationFinishedTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

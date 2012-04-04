@@ -385,7 +385,22 @@ bool NbLauncher::findUserDir(const char *str) {
 
 bool NbLauncher::findCacheDir(const char *str) {
     logMsg("NbLauncher::findCacheDir()");
-    if (strncmp(str, DEFAULT_CACHEDIR_ROOT_TOKEN, strlen(DEFAULT_CACHEDIR_ROOT_TOKEN)) == 0) {
+    if (strncmp(str, HOME_TOKEN, strlen(HOME_TOKEN)) == 0) {
+        if (userHome.empty()) {
+            char *userProfile = getenv(ENV_USER_PROFILE);
+            if (userProfile) {
+                userHome = userProfile;
+            } else {
+
+                if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DESKTOP_NAME, userHome)) {
+                    return false;
+                }
+                userHome.erase(userHome.rfind('\\'));
+            }
+            logMsg("User home: %s", userHome.c_str());
+        }
+        cacheDir = userHome + (str + strlen(HOME_TOKEN));
+    } else if (strncmp(str, DEFAULT_CACHEDIR_ROOT_TOKEN, strlen(DEFAULT_CACHEDIR_ROOT_TOKEN)) == 0) {
         if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DEFAULT_CACHEDIR_ROOT, defCacheDirRoot)) {
             return false;
         }
@@ -475,7 +490,10 @@ bool NbLauncher::areWeOn32bits() {
         pGNSI(&siSysInfo);
     else
         GetSystemInfo(&siSysInfo);
-    return (siSysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL);
+    logMsg("NbLauncher::areWeOn32bits returns (0=false, 1=true)? %i", ((siSysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL) ||
+            (strstr(NBEXEC_FILE_PATH, "64") == NULL)));
+    return ((siSysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL) ||
+            (strstr(NBEXEC_FILE_PATH, "64") == NULL));
 }
 
 // Search if -Xmx and -XX:MaxPermSize are specified in existing arguments
@@ -499,6 +517,7 @@ void NbLauncher::adjustHeapAndPermGenSize() {
         }
         char tmp[32];
         snprintf(tmp, 32, " -J-Xmx%dm", memory);
+        logMsg("Memory settings: -J-Xmx%dm", memory);
         nbOptions += tmp;
     }
     if (nbOptions.find("-J-XX:MaxPermSize") == string::npos) {
@@ -508,6 +527,7 @@ void NbLauncher::adjustHeapAndPermGenSize() {
         else
             memory = 384;
         char tmp[32];
+        logMsg("Memory settings: -J-XX:MaxPermSize=%dm", memory);
         snprintf(tmp, 32, " -J-XX:MaxPermSize=%dm", memory);
         nbOptions += tmp;
     }

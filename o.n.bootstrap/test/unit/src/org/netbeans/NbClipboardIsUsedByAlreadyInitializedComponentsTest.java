@@ -44,23 +44,21 @@
 
 package org.netbeans;
 
-import java.awt.datatransfer.*;
-import java.io.IOException;
-import java.util.*;
-import javax.swing.JComboBox;
+import java.awt.GraphicsEnvironment;
 import javax.swing.TransferHandler;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
-import org.openide.util.datatransfer.*;
-import org.openide.util.datatransfer.ExClipboard;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /** Test that verifies that Clipboard is used by swing components.
  * @author Jaroslav Tulach
  * @see "#40693"
  */
 public class NbClipboardIsUsedByAlreadyInitializedComponentsTest extends NbClipboardIsUsedBySwingComponentsTest {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NbClipboardIsUsedByAlreadyInitializedComponentsTest.class);
+    }
+
     private javax.swing.JTextField field;
     
     public NbClipboardIsUsedByAlreadyInitializedComponentsTest (String name) {

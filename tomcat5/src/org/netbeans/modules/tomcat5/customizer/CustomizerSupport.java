@@ -72,6 +72,7 @@ import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -206,7 +207,7 @@ public final class CustomizerSupport {
                         // and use the new token with the drive prefix...
                     } else {
                         // Something else, leave alone.
-                        l.add(fileToUrl(new File(Character.toString(dosHack))));
+                        l.add(Util.fileToUrl(new File(Character.toString(dosHack))));
                         // and continue with this token too...
                     }
                     dosHack = '\0';
@@ -221,28 +222,19 @@ public final class CustomizerSupport {
                         continue;
                     }
                 }
-                l.add(fileToUrl(new File(s)));
+                l.add(Util.fileToUrl(new File(s)));
             }
             if (dosHack != '\0') {
                 //the dosHack was the last letter in the input string (not followed by the ':')
                 //so obviously not a drive letter.
                 //Fix for issue #57304
-                l.add(fileToUrl(new File(Character.toString(dosHack))));
+                l.add(Util.fileToUrl(new File(Character.toString(dosHack))));
             }
             return l;
         } catch (MalformedURLException e) {
             Exceptions.printStackTrace(e);
             return new ArrayList();
         }
-    }
-    
-    /** Return URL representation of the specified file. */
-    private static URL fileToUrl(File file) throws MalformedURLException {
-        URL url = file.toURI().toURL();
-        if (FileUtil.isArchiveFile(url)) {
-            url = FileUtil.getArchiveRoot(url);
-        }
-        return url;
     }
     
     /** Return string representation of the specified URL. */

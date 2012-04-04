@@ -170,9 +170,15 @@ public class JarClassLoaderTest extends NbTestCase {
     
     private void doCanLoadCached(String covPkg) throws Exception {
         final File jar = new File(getWorkDir(), "default-package-resource-cached.jar");
-        TestFileUtils.writeZipFile(jar, "resource.txt:content", "package/resource.txt:content", "META-INF/MANIFEST.MF:Covered-Packages: " + covPkg + ",\n");
+        TestFileUtils.writeZipFile(jar, "resource.txt:content", "package/resource.txt:content", 
+            "META-INF/MANIFEST.MF:OpenIDE-Module: x.y.z\nCovered-Packages: " + covPkg + ",\n"
+        );
 
-        Module fake = new Module(null, null, null, null) {
+        MockModuleInstaller inst = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
+        ModuleManager mm = new ModuleManager(inst, ev);
+        
+        Module fake = new Module(mm, null, null, null) {
 	    public List<File> getAllJars() {throw new UnsupportedOperationException();}
             public void setReloadable(boolean r) { throw new UnsupportedOperationException();}
             public void reload() throws IOException { throw new UnsupportedOperationException();}

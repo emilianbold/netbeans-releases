@@ -8,6 +8,9 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/gsf/testrunner/resources/testResults.png"/>
             </file>
         </folder> <!-- Window -->
+        <folder name="UnitTests">
+            <file name="org-netbeans-modules-gsf-testrunner-TestCreatorAction.instance"/>
+        </folder>
 
     </folder>
     <folder name="Menu">
@@ -31,5 +34,12 @@
         <folder name="Components">
             <file name="gsf-testrunner-results.settings" url="gsf-testrunner-results.settings"/>
         </folder>
+    </folder>
+
+    <!-- shortcuts -->
+    <folder name="Shortcuts">
+        <file name="DS-U.shadow">
+            <attr name="originalFile" stringvalue="Actions/UnitTests/org-netbeans-modules-gsf-testrunner-TestCreatorAction.instance"/>
+        </file>
     </folder>
 </filesystem>

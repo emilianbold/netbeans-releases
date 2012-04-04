@@ -70,6 +70,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.project.BrokenIncludes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -122,6 +123,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     private boolean brokenIncludes;
     private boolean brokenProject;
     private boolean incorrectVersion;
+    private boolean incorrectPlatform;
     private boolean checkVersion = true;
     private Folder folder;
     private final Lookup.Result<BrokenIncludes> brokenIncludesResult;
@@ -160,6 +162,16 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
                 });
             }
         }
+        incorrectPlatform = isIncorrectPlatform();
+        if (incorrectPlatform) {
+            EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    (new ResolveIncorrectPlatformAction(MakeLogicalViewRootNode.this)).actionPerformed(null);                
+                }
+            });
+        }                    
         // Handle annotations
         setForceAnnotation(true);
         if (folder != null) {
@@ -194,12 +206,12 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     
     private String getHtmlDisplayName2() {
         String ret;
-        if (brokenLinks || incorrectVersion) {
+        if (brokenLinks || incorrectVersion || incorrectPlatform) {
             ret = getName();
         } else {
             ret = super.getHtmlDisplayName();
         }
-        if (brokenLinks || incorrectVersion) {
+        if (brokenLinks || incorrectVersion || incorrectPlatform) {
             try {
                 ret = XMLUtil.toElementContent(ret);
             } catch (CharConversionException ex) {
@@ -233,11 +245,20 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         stateChanged(null);
     }
     
+    void reInitWithRemovedPrivate() {
+        try {
+            provider.getMakeConfigurationDescriptor().getNbPrivateProjectFileObject().delete();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }        
+        reInit(provider.getMakeConfigurationDescriptor());
+    }
+    
     void reInitWithUnsupportedVersion() {
         checkVersion = false;
         reInit(provider.getMakeConfigurationDescriptor());
     }
-
+    
     private void setRealProjectFolder(Folder folder) {
         assert folder != null;
         if (this.folder != null) {
@@ -360,7 +381,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
         @Override
         public void run() {
-            if (brokenProject || incorrectVersion) {
+            if (brokenProject || incorrectVersion || incorrectPlatform) {
                 MakeLogicalViewRootNode.this.setChildren(Children.LEAF);
             }
             fireIconChange();
@@ -369,6 +390,20 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
     }
 
+    private boolean isIncorrectPlatform() {
+        if (gotMakeConfigurationDescriptor()) {
+            Configuration[] confs = provider.getMakeConfigurationDescriptor().getConfs().toArray();
+            for (int i = 0; i < confs.length; i++) {
+                MakeConfiguration conf = (MakeConfiguration) confs[i];
+                if (conf.getDevelopmentHost().isLocalhost() && 
+                    CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     /*
      * Something in the folder has changed
      **/
@@ -379,6 +414,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         MakeConfigurationDescriptor makeConfigurationDescriptor = provider.getMakeConfigurationDescriptor();
         if (makeConfigurationDescriptor != null) {
             brokenProject =  makeConfigurationDescriptor.getState() == State.BROKEN;
+            incorrectPlatform = isIncorrectPlatform();
             incorrectVersion = !isCorectVersion(makeConfigurationDescriptor.getVersion());
             if (gotMakeConfigurationDescriptor() && provider.getMakeConfigurationDescriptor().getConfs().size() == 0 ) {
                 brokenProject = true;
@@ -432,7 +468,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenLinkBadge, 8, 0);
         } else if (brokenIncludes) {
             return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenIncludeBadge, 8, 0);
-        } else if (brokenProject || incorrectVersion) {
+        } else if (brokenProject || incorrectVersion || incorrectPlatform) {
             return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenProjectBadge, 8, 0);
         }
         return original;
@@ -483,6 +519,9 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             }
             if (incorrectVersion) {
                 actions.add(new ResolveIncorrectVersionAction(this, new VisualUpdater()));
+            }
+            if (incorrectPlatform) {
+                actions.add(new ResolveIncorrectPlatformAction(this));
             }
             //actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());

@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.php.editor.actions;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.swing.Icon;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
@@ -59,6 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
+@NbBundle.Messages("DoNotUseType=Don't use type.")
 public class ImportDataCreator {
     public static final String NS_SEPARATOR = "\\"; //NOI18N
     private final Map<String, List<UsedNamespaceName>> usedNames;
@@ -75,10 +73,6 @@ public class ImportDataCreator {
         this.options = options;
     }
 
-    @NbBundle.Messages({
-        "CanNotBeResolved=<html><font color='#FF0000'>&lt;cannot be resolved&gt;",
-        "DoNotUseType=Don't use type."
-    })
     public ImportData create() {
         data = new ImportData(usedNames.size());
         int index = 0;
@@ -93,11 +87,11 @@ public class ImportDataCreator {
     private void processTypeName(final int index, final String typeName) {
         data.names[index] = typeName;
         Set<TypeElement> possibleTypes = fetchPossibleTypes(typeName);
-        if (possibleTypes.isEmpty()) {
+        Set<TypeElement> filteredDuplicates = filterDuplicates(possibleTypes);
+        Set<TypeElement> filteredTypeElements = filterExactUnqualifiedName(filteredDuplicates, typeName);
+        if (filteredTypeElements.isEmpty()) {
             insertEmptyData(index);
         } else {
-            Set<TypeElement> filteredDuplicates = filterDuplicates(possibleTypes);
-            Set<TypeElement> filteredTypeElements = filterExactUnqualifiedName(filteredDuplicates, typeName);
             insertPossibleData(index, filteredTypeElements, typeName);
         }
     }
@@ -111,6 +105,7 @@ public class ImportDataCreator {
         return possibleTypes;
     }
 
+    @NbBundle.Messages("CanNotBeResolved=<html><font color='#FF0000'>&lt;cannot be resolved&gt;")
     private void insertEmptyData(final int index) {
         data.variants[index] = new String[1];
         data.variants[index][0] = Bundle.CanNotBeResolved();
@@ -145,6 +140,7 @@ public class ImportDataCreator {
                 data.defaults[index] = data.variants[index][i];
             }
         }
+        Arrays.sort(data.variants[index], new VariantsComparator());
     }
 
     private Set<TypeElement> filterDuplicates(final Set<TypeElement> possibleTypes) {
@@ -210,6 +206,20 @@ public class ImportDataCreator {
             }
         }
         return result;
+    }
+
+    private class VariantsComparator implements Comparator<String> {
+
+        @Override
+        public int compare(String o1, String o2) {
+            int result = 0;
+            if (o1.equals(Bundle.DoNotUseType())) {
+                result = -1;
+            } else {
+                result = o1.compareToIgnoreCase(o2);
+            }
+            return result;
+        }
     }
 
 }

@@ -201,5 +201,15 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 209746 - Unresolved template parameter    
         performTest("bug209746.cpp", 2, 15, "bug209746.cpp", 2, 10);
     }
+
+    public void testBug203374() throws Exception {
+        // Bug 203374 - C++ lexer reports unexpected token: template when initializing static member of nested templates
+        performTest("bug203374.cpp", 12, 20, "bug203374.cpp", 12, 11);
+    }
+    
+    public void testBug209929() throws Exception {
+        // Bug 209929 - Regression on Boost: parser failed on template parameters
+        performTest("bug209929.cpp", 2, 11, "bug209929.cpp", 2, 5);
+    }
     
 }

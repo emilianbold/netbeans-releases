@@ -55,6 +55,7 @@ import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.web.el.CompilationContext;
 import org.netbeans.modules.web.el.ELElement;
@@ -116,7 +117,7 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
         }
         modificationResult.addDifferences(file, differences);
 
-        refactoringElementsBag.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
+        refactoringElementsBag.registerTransaction(new RefactoringCommit(Collections.singletonList(modificationResult)));
         for (Difference diff : modificationResult.getDifferences(file)) {
             DiffElement diffElem = DiffElement.create(diff, file, modificationResult);
             refactoringElementsBag.add(refactoring, diffElem);

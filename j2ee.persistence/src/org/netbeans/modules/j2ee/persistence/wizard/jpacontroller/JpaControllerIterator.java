@@ -308,7 +308,7 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
 
         WizardDescriptor.Panel secondPanel = new ValidationPanel(
                 new PersistenceClientEntitySelection(NbBundle.getMessage(JpaControllerIterator.class, "LBL_EntityClasses"),
-                new HelpCtx("org.netbeans.modules.j2ee.persistence.wizard.jpacontroller"), wizard)); // NOI18N
+                new HelpCtx("org.netbeans.modules.j2ee.persistence.wizard.jpacontroller$"+PersistenceClientEntitySelection.class.getSimpleName()), wizard)); // NOI18N
         WizardDescriptor.Panel thirdPanel = new JpaControllerSetupPanel(project, wizard);
         String names[] = null;
         //

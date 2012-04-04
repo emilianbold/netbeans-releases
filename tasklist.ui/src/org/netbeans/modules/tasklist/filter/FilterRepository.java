@@ -184,20 +184,7 @@ public final class FilterRepository {
             filters.add( filter );
         }
         boolean shouldSave = false;
-        //make sure there's some default filter on the first start
-        if( prefs.getBoolean( "firstTimeStart", true ) ) { //NOI18N
-            prefs.putBoolean( "firstTimeStart", false ); //NOI18N
-            TaskFilter filter = createNewFilter();
-            filter.setName( NbBundle.getMessage( FilterRepository.class, "LBL_DefaultFilter" ) ); //NOI18N
-            TypesFilter types = new TypesFilter();
-            types.setTaskCountLimit( 100 );
-            filter.setTypesFilter( types );
-            filter.setKeywordsFilter( new KeywordsFilter() );
-            filters.add( filter );
-            setActive( filter );
-            shouldSave = true;
-        }
-            
+        //TODO remove this filter after dahboard is introduced
         if( prefs.getBoolean( "firstTimeStartWithIssue", true ) ) { //NOI18N
             prefs.putBoolean( "firstTimeStartWithIssue", false ); //NOI18N
             TaskFilter filter = createNewFilter();

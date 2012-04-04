@@ -9,4 +9,9 @@ struct Struct202433 {
     int field2;
 };
 
+namespace ns210384 {
+    void foo210384() {
+    }
+}
+
 #endif

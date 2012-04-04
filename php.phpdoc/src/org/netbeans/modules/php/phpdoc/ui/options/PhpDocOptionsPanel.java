@@ -157,25 +157,23 @@ public final class PhpDocOptionsPanel extends JPanel {
         phpDocUsageLabel = new JLabel();
         installationInfoLabel = new JLabel();
         installationLearnMoreLabel = new JLabel();
-        configInfoLabel = new JLabel();
-        configLearnMoreLabel = new JLabel();
         errorLabel = new JLabel();
-        Mnemonics.setLocalizedText(phpDocLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.phpDocLabel.text"));
-        Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.browseButton.text"));
+        Mnemonics.setLocalizedText(phpDocLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.phpDocLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.searchButton.text"));
+        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.searchButton.text")); // NOI18N
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 searchButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(phpDocUsageLabel, "HINT");
-        Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.installationInfoLabel.text"));
-        Mnemonics.setLocalizedText(installationLearnMoreLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.installationLearnMoreLabel.text"));
+        Mnemonics.setLocalizedText(phpDocUsageLabel, "HINT"); // NOI18N
+        Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.installationInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(installationLearnMoreLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.installationLearnMoreLabel.text")); // NOI18N
         installationLearnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 installationLearnMoreLabelMouseEntered(evt);
@@ -184,71 +182,27 @@ public final class PhpDocOptionsPanel extends JPanel {
                 installationLearnMoreLabelMousePressed(evt);
             }
         });
-        Mnemonics.setLocalizedText(configInfoLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.configInfoLabel.text"));
-        Mnemonics.setLocalizedText(configLearnMoreLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.configLearnMoreLabel.text"));
-        configLearnMoreLabel.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent evt) {
-                configLearnMoreLabelMouseEntered(evt);
-            }
-            public void mousePressed(MouseEvent evt) {
-                configLearnMoreLabelMousePressed(evt);
-            }
-        });
-        Mnemonics.setLocalizedText(errorLabel, "ERROR");
+        Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(errorLabel)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(errorLabel).addComponent(installationInfoLabel).addComponent(installationLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addContainerGap()).addGroup(layout.createSequentialGroup()
                 .addComponent(phpDocLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+
+                .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                         .addComponent(phpDocUsageLabel)
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(phpDocTextField, GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(browseButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(searchButton))))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(installationInfoLabel)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(installationLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(configInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(configLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                        .addContainerGap()).addGroup(layout.createSequentialGroup()
+                        .addComponent(phpDocTextField)
+
+                        .addPreferredGap(ComponentPlacement.RELATED).addComponent(browseButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(searchButton))))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(phpDocLabel)
-                    .addComponent(phpDocTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(searchButton)
-                    .addComponent(browseButton))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(phpDocUsageLabel)
-                .addGap(18, 18, 18)
-                .addComponent(installationInfoLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(installationLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(configInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(configLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(errorLabel))
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(phpDocLabel).addComponent(phpDocTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(searchButton).addComponent(browseButton)).addPreferredGap(ComponentPlacement.RELATED).addComponent(phpDocUsageLabel).addGap(18, 18, 18).addComponent(installationInfoLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(installationLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -301,30 +255,15 @@ public final class PhpDocOptionsPanel extends JPanel {
 
     private void installationLearnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_installationLearnMoreLabelMousePressed
         try {
-            URL url = new URL("http://manual.phpdoc.org/HTMLSmartyConverter/HandS/ric_INSTALL.html"); // NOI18N
+            URL url = new URL("http://www.phpdoc.org/"); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
     }//GEN-LAST:event_installationLearnMoreLabelMousePressed
 
-    private void configLearnMoreLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_configLearnMoreLabelMouseEntered
-        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_configLearnMoreLabelMouseEntered
-
-    private void configLearnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_configLearnMoreLabelMousePressed
-        try {
-            URL url = new URL("http://manual.phpdoc.org/HTMLframesConverter/default/phpDocumentor/tutorial_phpDocumentor.howto.pkg.html#using.command-line"); // NOI18N
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }//GEN-LAST:event_configLearnMoreLabelMousePressed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton browseButton;
-    private JLabel configInfoLabel;
-    private JLabel configLearnMoreLabel;
     private JLabel errorLabel;
     private JLabel installationInfoLabel;
     private JLabel installationLearnMoreLabel;

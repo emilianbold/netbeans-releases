@@ -59,6 +59,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.api.BrandingUtils;
@@ -73,6 +74,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -92,6 +94,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -109,7 +112,6 @@ public final class SuiteActions implements ActionProvider, ExecProject {
     private static final String COMMAND_DEBUG_JNLP = "debug-jnlp";
     private static final String COMMAND_DEBUG_OSGI = "debug-osgi";
     private static final String COMMAND_NBMS = "nbms";
-    private static final String COMMAND_PROFILE = "profile";
     private static final String COMMAND_PROFILE_OSGI = "profile-osgi";
     private static final String COMMAND_RUN_JNLP = "run-jnlp";
     private static final String COMMAND_RUN_OSGI = "run-osgi";
@@ -242,13 +244,14 @@ public final class SuiteActions implements ActionProvider, ExecProject {
         return ProjectSensitiveActions.projectCommandAction(COMMAND_DEBUG_OSGI, SUITE_ACTION_debug_osgi(), null);
     }
 
-    @ActionID(category="Project", id="org.netbeans.modules.apisupport.project.suite.profileOsgi")
-    @ActionRegistration(displayName="#SUITE_ACTION_profile_osgi", lazy=false)
-    @ActionReference(path=SUITE_OSGI_ACTIONS_PATH, position=500)
-    @Messages("SUITE_ACTION_profile_osgi=Profile in Felix")
-    public static Action profileOsgi() {
-        return ProjectSensitiveActions.projectCommandAction(COMMAND_PROFILE_OSGI, SUITE_ACTION_profile_osgi(), null);
-    }
+    // #203519: Action registration has been moved to org.netbeans.modules.profiler.nbimpl.actions.AntActions#profileOsgi()
+//    @ActionID(category="Project", id="org.netbeans.modules.apisupport.project.suite.profileOsgi")
+//    @ActionRegistration(displayName="#SUITE_ACTION_profile_osgi", lazy=false)
+//    @ActionReference(path=SUITE_OSGI_ACTIONS_PATH, position=500)
+//    @Messages("SUITE_ACTION_profile_osgi=Profile in Felix")
+//    public static Action profileOsgi() {
+//        return ProjectSensitiveActions.projectCommandAction(COMMAND_PROFILE_OSGI, SUITE_ACTION_profile_osgi(), null);
+//    }
 
     @ActionID(category="Project", id="org.netbeans.modules.apisupport.project.suite.branding")
     @ActionRegistration(displayName="#SUITE_ACTION_branding", lazy=false)
@@ -395,24 +398,18 @@ public final class SuiteActions implements ActionProvider, ExecProject {
                 }
             }
             ExecutorTask task = null;
-            ActionEvent ev;
             try {
                 task = invokeActionImpl(command, context);
             } catch (IOException e) {
                 Util.err.notify(e);
             }
-            if (
-                task != null &&
-                (ev = context.lookup(ActionEvent.class)) != null &&
-                "waitFinished".equals(ev.getActionCommand()) // NOI18N
-            ) {
-                task.waitFinished();
-                if (ev.getSource() instanceof ExecutorTask[]) {
-                    ExecutorTask[] arr = (ExecutorTask[])ev.getSource();
-                    if (arr.length > 0) {
-                        arr[0] = task;
+            if (task != null) {
+                final ActionProgress listener = ActionProgress.start(context);
+                task.addTaskListener(new TaskListener() {
+                    @Override public void taskFinished(Task task) {
+                        listener.finished(((ExecutorTask) task).result() == 0);
                     }
-                }
+                });
             }
         }
     }
@@ -420,7 +417,7 @@ public final class SuiteActions implements ActionProvider, ExecProject {
     /** Used from tests to start the build script and get task that allows to track its progress.
      * @return null or task that was started
      */
-    public ExecutorTask invokeActionImpl(String command, Lookup context) throws IllegalArgumentException, IOException {
+    public @CheckForNull ExecutorTask invokeActionImpl(String command, Lookup context) throws IllegalArgumentException, IOException {
         String[] targetNames;
         Properties p = new Properties();
 

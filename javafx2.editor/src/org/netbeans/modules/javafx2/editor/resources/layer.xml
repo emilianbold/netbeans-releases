@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
                 <folder name="Factories">
                     <file name="FXMLDataLoader.instance">
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.javafx2.editor.fxml.FXMLDataObject"/>
-                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/editor/resources/fxmlObject.gif"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/editor/resources/fxmlObject.png"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/x-fxml+xml"/>
                     </file>

@@ -48,8 +48,9 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.HtmlParsingResult;
+import org.netbeans.modules.html.editor.lib.api.HtmlParsingResult;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -59,7 +60,6 @@ import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.ElementHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -73,7 +73,7 @@ import org.w3c.dom.Element;
 public class GoToElementSourceAction extends NodeAction  {
 
     @Override
-    protected void performAction(Node[] activatedNodes) {
+    protected void performAction(org.openide.nodes.Node[] activatedNodes) {
         Element element = activatedNodes[0].getLookup().lookup(Element.class);
         String uriTxt = element.getOwnerDocument().getDocumentURI();
         try {
@@ -96,7 +96,7 @@ public class GoToElementSourceAction extends NodeAction  {
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes) {
+    protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
         if (activatedNodes.length == 1) {
             Element element = activatedNodes[0].getLookup().lookup(Element.class);
             if (element == null) {
@@ -149,21 +149,21 @@ public class GoToElementSourceAction extends NodeAction  {
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
             HtmlParsingResult result = (HtmlParsingResult)resultIterator.getParserResult();
-            AstNode root = result.root();
-            AstNode[] searchResult = element.locateInAst(root);
-            AstNode node = searchResult[0];
+            Node root = result.root();
+            Node[] searchResult = element.locateInAst(root);
+            Node node = searchResult[0];
             if (node == null) {
                 // Exact match not found, use the nearest node
                 node = searchResult[1];
             }
-            while (node.isVirtual()) {
+            while (ElementUtils.isVirtualNode(node)) {
                 node = node.parent();
             }
-            final AstNode nodeToShow = node;
+            final Node nodeToShow = node;
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    CSSUtils.open(fob, nodeToShow.startOffset());
+                    CSSUtils.open(fob, nodeToShow.from());
                 }
             });
         }

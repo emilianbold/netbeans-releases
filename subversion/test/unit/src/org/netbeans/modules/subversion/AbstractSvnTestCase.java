@@ -225,7 +225,7 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
                 }
             }
         }
-        if(file.isFile()) {
+        if(file.isFile() || status.getTextStatus().equals(SVNStatusKind.IGNORED)) {
             return; 
         }
         File[] files = file.listFiles();
@@ -302,12 +302,8 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
             if(files != null) {
                 for (File file : files) {
                     if(!file.getName().equals("cache")) { // do not delete the cache
-                        FileObject fo = FileUtil.toFileObject(file);
-                        if (fo != null) {
-                            fo.delete();
-                            if (file.exists()) {
-                                Utils.deleteRecursively(file);
-                            }
+                        if (file.exists()) {
+                            Utils.deleteRecursively(file);
                         }
                     }                    
                 }
@@ -464,7 +460,7 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
     }
     
     protected ISVNLogMessage[] getCompleteLog(SVNUrl url) throws SVNClientException {
-        return getFullWorkingClient().getLogMessages(url, new SVNRevision.Number(0), new SVNRevision.Number(0), SVNRevision.HEAD, true, false, 0L);
+        return getFullWorkingClient().getLogMessages(url, SVNRevision.HEAD, new SVNRevision.Number(0), SVNRevision.HEAD, true, false, 0L);
     }
     
     protected ISVNLogMessage[] getLog(SVNUrl url) throws SVNClientException {

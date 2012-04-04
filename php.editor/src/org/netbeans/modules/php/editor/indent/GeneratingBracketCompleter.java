@@ -41,13 +41,7 @@
  */
 
 package org.netbeans.modules.php.editor.indent;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -68,30 +62,11 @@ import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.Comment;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
-import org.netbeans.modules.php.editor.parser.astnodes.Reference;
-import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.ThrowStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -99,110 +74,11 @@ import org.openide.util.Exceptions;
  */
 public class GeneratingBracketCompleter {
 
+    private static final RequestProcessor RP = new RequestProcessor("Generating Bracket Completer"); //NOI18N
+
     static void generateDocTags(final BaseDocument doc, final int offset, final int indent) {
-        FileObject file = NavUtils.getFile(doc);
-
-        if (file == null) {
-            return ;
-        }
-        try {
-            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
-
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    final ParserResult parserResult = (ParserResult) resultIterator.getParserResult();
-                    if (parserResult != null) {
-                        //find coresponding ASTNode:
-                        //TODO: slow and ugly:
-                        class Result extends Error {
-
-                            private ASTNode node;
-
-                            public Result(ASTNode node) {
-                                this.node = node;
-                            }
-                        }
-                        ASTNode n = null;
-                        try {
-                            new DefaultVisitor() {
-
-                                @Override
-                                public void scan(ASTNode node) {
-                                    if (node != null) {
-                                        Comment c = Utils.getCommentForNode(Utils.getRoot(parserResult), node);
-
-                                        if (c != null && c.getStartOffset() <= offset && offset <= c.getEndOffset()) {
-                                            //found:
-                                            throw new Result(node);
-                                        }
-                                    }
-                                    super.scan(node);
-                                }
-                            }.scan(Utils.getRoot(parserResult));
-                        } catch (Result r) {
-                            n = r.node;
-                        }
-
-                        if (n == null) {
-                            //no found
-                            return;
-                        }
-
-                        if (n instanceof FunctionDeclaration) {
-                            generateFunctionDoc(doc, offset, indent, parserResult, (FunctionDeclaration) n);
-                        }
-
-                        if (n instanceof MethodDeclaration) {
-                            generateFunctionDoc(doc, offset, indent, parserResult, ((MethodDeclaration) n).getFunction());
-                        }
-
-                        if (n instanceof ExpressionStatement) {
-                            if (((ExpressionStatement)n).getExpression() instanceof Assignment) {
-                                Assignment assignment = (Assignment)((ExpressionStatement) n).getExpression();
-                                if (assignment.getLeftHandSide() instanceof ArrayAccess) {
-                                    ArrayAccess arrayAccess = (ArrayAccess)assignment.getLeftHandSide();
-                                    if (arrayAccess.getName() instanceof Variable) {
-                                        Variable variable = (Variable)arrayAccess.getName();
-                                        if (variable.isDollared()
-                                                && variable.getName() instanceof Identifier
-                                                && "GLOBALS".equals(((Identifier)variable.getName()).getName())
-                                                && arrayAccess.getDimension().getIndex() instanceof Scalar) {
-                                            String index = ((Scalar)arrayAccess.getDimension().getIndex()).getStringValue().trim();
-                                            if(index.length() > 0
-                                                    && (index.charAt(0) == '\'' || index.charAt(0) == '"')) {
-                                                index = index.substring(1, index.length() - 1);
-                                            }
-                                            String type = null;
-                                            if (assignment.getRightHandSide() instanceof Scalar) {
-                                                switch(((Scalar)assignment.getRightHandSide()).getScalarType()) {
-                                                    case INT:
-                                                        type = "integer";   //NOI18N
-                                                        break;
-                                                    case REAL:
-                                                        type = "float";     //NOI18N
-                                                        break;
-                                                    case STRING:
-                                                        type = "string";    //NOI18N
-                                                        break;
-                                                }
-                                            }
-                                            generateGlobalVariableDoc(doc, offset, indent, index, type);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (n instanceof FieldsDeclaration) {
-                            generateFieldDoc(doc, offset, indent, parserResult, (FieldsDeclaration) n);
-                        }
-                    }
-                }
-            });
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
+        Runnable docTagsGenerator = new DocTagsGenerator(doc, offset, indent);
+        RP.post(docTagsGenerator);
     }
 
     static final String TYPE_PLACEHOLDER = "type";
@@ -444,6 +320,124 @@ public class GeneratingBracketCompleter {
 
         @Override
         public void visit(ClassDeclaration node) {
+        }
+
+    }
+
+    private static class DocTagsGenerator implements Runnable {
+        private final BaseDocument doc;
+        private final int offset;
+        private final int indent;
+
+        public DocTagsGenerator(final BaseDocument doc, final int offset, final int indent) {
+            this.doc = doc;
+            this.offset = offset;
+            this.indent = indent;
+        }
+
+        @Override
+        public void run() {
+            FileObject file = NavUtils.getFile(doc);
+            if (file == null) {
+                return ;
+            }
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        final ParserResult parserResult = (ParserResult) resultIterator.getParserResult();
+                        if (parserResult != null) {
+                            //find coresponding ASTNode:
+                            //TODO: slow and ugly:
+                            class Result extends Error {
+
+                                private ASTNode node;
+
+                                public Result(ASTNode node) {
+                                    this.node = node;
+                                }
+                            }
+                            ASTNode n = null;
+                            try {
+                                new DefaultVisitor() {
+
+                                    @Override
+                                    public void scan(ASTNode node) {
+                                        if (node != null) {
+                                            Comment c = Utils.getCommentForNode(Utils.getRoot(parserResult), node);
+
+                                            if (c != null && c.getStartOffset() <= offset && offset <= c.getEndOffset()) {
+                                                //found:
+                                                throw new Result(node);
+                                            }
+                                        }
+                                        super.scan(node);
+                                    }
+                                }.scan(Utils.getRoot(parserResult));
+                            } catch (Result r) {
+                                n = r.node;
+                            }
+
+                            if (n == null) {
+                                //no found
+                                return;
+                            }
+
+                            if (n instanceof FunctionDeclaration) {
+                                generateFunctionDoc(doc, offset, indent, parserResult, (FunctionDeclaration) n);
+                            }
+
+                            if (n instanceof MethodDeclaration) {
+                                generateFunctionDoc(doc, offset, indent, parserResult, ((MethodDeclaration) n).getFunction());
+                            }
+
+                            if (n instanceof ExpressionStatement) {
+                                if (((ExpressionStatement)n).getExpression() instanceof Assignment) {
+                                    Assignment assignment = (Assignment)((ExpressionStatement) n).getExpression();
+                                    if (assignment.getLeftHandSide() instanceof ArrayAccess) {
+                                        ArrayAccess arrayAccess = (ArrayAccess)assignment.getLeftHandSide();
+                                        if (arrayAccess.getName() instanceof Variable) {
+                                            Variable variable = (Variable)arrayAccess.getName();
+                                            if (variable.isDollared()
+                                                    && variable.getName() instanceof Identifier
+                                                    && "GLOBALS".equals(((Identifier)variable.getName()).getName())
+                                                    && arrayAccess.getDimension().getIndex() instanceof Scalar) {
+                                                String index = ((Scalar)arrayAccess.getDimension().getIndex()).getStringValue().trim();
+                                                if(index.length() > 0
+                                                        && (index.charAt(0) == '\'' || index.charAt(0) == '"')) {
+                                                    index = index.substring(1, index.length() - 1);
+                                                }
+                                                String type = null;
+                                                if (assignment.getRightHandSide() instanceof Scalar) {
+                                                    switch(((Scalar)assignment.getRightHandSide()).getScalarType()) {
+                                                        case INT:
+                                                            type = "integer";   //NOI18N
+                                                            break;
+                                                        case REAL:
+                                                            type = "float";     //NOI18N
+                                                            break;
+                                                        case STRING:
+                                                            type = "string";    //NOI18N
+                                                            break;
+                                                    }
+                                                }
+                                                generateGlobalVariableDoc(doc, offset, indent, index, type);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (n instanceof FieldsDeclaration) {
+                                generateFieldDoc(doc, offset, indent, parserResult, (FieldsDeclaration) n);
+                            }
+                        }
+                    }
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
     }

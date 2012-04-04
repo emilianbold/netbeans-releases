@@ -66,13 +66,14 @@ public abstract class AbstractCategoryNode extends TreeListNode implements Compa
         updateNodes();
     }
 
-    private void updateNodes() {
+    final void updateNodes() {
         AppliedFilters appliedFilters = DashboardViewer.getInstance().getAppliedFilters();
         List<Issue> tasks = category.getTasks();
         taskNodes = new ArrayList<TaskNode>(tasks.size());
         filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
         for (Issue issue : tasks) {
             TaskNode taskNode = new TaskNode(issue, this);
+            taskNode.setCategory(category);
             taskNodes.add(taskNode);
             if (appliedFilters.isInFilter(issue)) {
                 filteredTaskNodes.add(taskNode);
@@ -94,8 +95,7 @@ public abstract class AbstractCategoryNode extends TreeListNode implements Compa
 
     protected abstract Action getCategoryAction();
 
-    protected void refresh() {
-    }
+    abstract void updateContent();
 
     public List<TaskNode> getTaskNodes() {
         return new ArrayList<TaskNode>(taskNodes);
@@ -116,7 +116,7 @@ public abstract class AbstractCategoryNode extends TreeListNode implements Compa
     }
 
     public List<TaskNode> getFilteredTaskNodes() {
-        return new ArrayList<TaskNode>(filteredTaskNodes);
+        return filteredTaskNodes;
     }
 
     public void setFilteredTaskNodes(List<TaskNode> filteredTaskNodes) {

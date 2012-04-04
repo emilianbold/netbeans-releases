@@ -158,7 +158,7 @@ public class AntBasedProcessor extends LayerGeneratingProcessor {
                 stringvalue("privateName", reg.privateName()).
                 stringvalue("privateNamespace", reg.privateNamespace()).
                 stringvalue("className", classname).
-                stringvalue("instanceClass", AntBasedProjectType.class.getName()).
+                stringvalue("instanceOf", AntBasedProjectType.class.getName()).
                 methodvalue("instanceCreate", AntBasedProjectFactorySingleton.class.getName(), "create");
 
             if (methodname != null) {

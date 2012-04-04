@@ -76,6 +76,9 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.swing.text.BadLocationException;
 import javax.tools.JavaFileObject;
+
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ForLoopTree;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
@@ -136,9 +139,9 @@ public class WorkingCopy extends CompilationController {
         textualChanges = new HashSet<Diff>();
         userInfo = new HashMap<Integer, String>();
 
-        if (getContext().get(ElementOverlay.class) == null) {
-            getContext().put(ElementOverlay.class, overlay);
-        }
+        //#208490: force the current ElementOverlay:
+        getContext().put(ElementOverlay.class, (ElementOverlay) null);
+        getContext().put(ElementOverlay.class, overlay);
     }
     
     private Context getContext() {
@@ -362,6 +365,25 @@ public class WorkingCopy extends CompilationController {
                     addNonSyntheticTree(diffContext, node);
                     return super.scan(node, p);
                 }
+
+                @Override
+                public Void visitForLoop(ForLoopTree node, Void p) {
+                    try {
+                        return super.visitForLoop(node, p);
+                    } finally {
+                        oldTrees.removeAll(node.getInitializer());
+                    }
+                }
+
+                @Override
+                public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+                    try {
+                        return super.visitEnhancedForLoop(node, p);
+                    } finally {
+                        oldTrees.remove(node.getVariable());
+                    }
+                }
+                
             }.scan(diffContext.origUnit, null);
         } else {
             new TreeScanner<Void, Void>() {

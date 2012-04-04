@@ -45,6 +45,7 @@
 package org.netbeans.spi.project.ui.support;
 
 import java.awt.Dialog;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.Reference;
@@ -52,6 +53,8 @@ import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.CategoryComponentProvider;
@@ -68,6 +71,10 @@ import org.openide.util.Lookup;
  */
 public class ProjectCustomizerTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ProjectCustomizerTest.class);
+    }
+
     public ProjectCustomizerTest(String testName) {
         super(testName);
     }

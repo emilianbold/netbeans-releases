@@ -305,8 +305,8 @@ public class CommitDataTest extends JellyTestCase {
         log.addHandler(mh);
         nodePack = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
         cmo = CommitOperator.invoke(nodePack);
-        cmo.selectCommitAction("xx", "Exclude Recursively");
-        cmo.selectCommitAction("xx", "Include Recursively");
+        //cmo.selectCommitAction("xx", "Exclude Recursively");
+        //cmo.selectCommitAction("xx", "Include Recursively");
         start = System.currentTimeMillis();
         cmo.commit();
         new EventTool().waitNoEvent(2000);

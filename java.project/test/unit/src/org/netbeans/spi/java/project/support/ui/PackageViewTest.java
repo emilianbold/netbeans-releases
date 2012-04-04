@@ -62,24 +62,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.LoaderTransfer;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
@@ -1145,6 +1142,7 @@ public class PackageViewTest extends NbTestCase {
         assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, spi.stuff.support{AbstractStuffImplementation.java}}}", n);
     }
 
+    /* XXX #210107
     @RandomlyFails // NB-Core-Build #7974
     public void testReducedTreeRename() throws Exception {
         final AtomicReference<Node> node = new AtomicReference<Node>();
@@ -1178,6 +1176,7 @@ public class PackageViewTest extends NbTestCase {
         assertEquals("org.netbeans.api.stuph", newName.get());
         assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, modulez.stuph{resources{stuff.png}, Bundle.properties, StuffUtils.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
     }
+    */
 
     public void testReducedTreeDelete() throws Exception {
         SourceGroup g = sampleGroup();
@@ -1186,6 +1185,19 @@ public class PackageViewTest extends NbTestCase {
         Node n = NodeOp.findPath(r, new String[] {"org.netbeans", "modules.stuff"});
         n.destroy();
         assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
+    }
+
+    public void testReducedTreeCut() throws Exception { // #210314
+        SourceGroup g = sampleGroup();
+        Node r = new TreeRootNode(g, true);
+        Node n = NodeOp.findPath(r, new String[] {"org.netbeans", "modules.stuff"});
+        Transferable t = n.clipboardCut();
+        DataObject moving = LoaderTransfer.getDataObject(t, LoaderTransfer.MOVE);
+        assertEquals(g.getRootFolder().getFileObject("org/netbeans/modules"), moving.getPrimaryFile());
+        n = NodeOp.findPath(r, new String[] {"org.netbeans", "spi.stuff", "support"});
+        t = n.clipboardCut();
+        moving = LoaderTransfer.getDataObject(t, LoaderTransfer.MOVE);
+        assertEquals(g.getRootFolder().getFileObject("org/netbeans/spi/stuff/support"), moving.getPrimaryFile());
     }
 
     public void testReducedTreePathFinder() throws Exception {

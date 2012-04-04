@@ -183,6 +183,10 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
     @Override
     public void errorText(String line) {
+        if (line.toLowerCase().contains("killed by signal")) {
+            // commandline normal output on linux for ssh connections
+            return;
+        }
         cmdError.add(line);
         if (isErrorMessage(line)) hasFailed = true;
         notificationHandler.logError(line);
@@ -271,7 +275,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         String[] lines = new String[files.length];
         for (int i = 0; i < files.length; i++) {
             lines[i] = files[i].getAbsolutePath();            
-            if (files[i].getName().indexOf('@') != -1) {
+            if (files[i].getAbsolutePath().indexOf('@') != -1) {
                 lines[i] += '@';
             }
         }

@@ -46,10 +46,11 @@ package org.netbeans.modules.gototest;
 
 import java.awt.EventQueue;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
-import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.spi.gototest.TestLocator.FileType;
 import org.netbeans.spi.gototest.TestLocator.LocationListener;
@@ -59,8 +60,10 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -163,7 +166,13 @@ public class GotoOppositeAction extends CallableSystemAction {
     private void handleResult(LocationResult opposite) {
         FileObject fileObject = opposite.getFileObject();
         if (fileObject != null) {
-            UiUtils.open(fileObject, opposite.getOffset());
+            DataObject dobj = null;
+            try {
+                dobj = DataObject.find(fileObject);
+            } catch (DataObjectNotFoundException ex) {
+                Logger.getLogger(GotoOppositeAction.class.getName()).log(Level.WARNING, null, ex);
+            }
+            NbDocument.openDocument(dobj, opposite.getOffset(), Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         } else if (opposite.getErrorMessage() != null) {
             String msg = opposite.getErrorMessage();
             NotifyDescriptor descr = new NotifyDescriptor.Message(msg, 

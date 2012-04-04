@@ -233,7 +233,23 @@ You must shut it down before trying to run it again.
         </antcall>
     </target>
     
-    <target name="profile" description="Profile a project in the IDE.">
+    <target name="-profile-check" if="netbeans.home">
+        <condition property="profiler.configured">
+            <or>
+                <contains string="${run.args.ide}" substring="-agentpath:" casesensitive="true"/>
+                <contains string="${run.args.ide}" substring="-javaagent:" casesensitive="true"/>
+            </or>
+        </condition>
+    </target>
+    
+    <target name="profile" depends="-profile-check,-profile-pre72" if="profiler.configured" unless="profiler.info.jvmargs.agent" description="Profile a project in the IDE." unless="profiler.info.jvmargs.agent">        
+        <startprofiler/>
+        <antcall target="run">
+            <reference refid="cluster.path.id"/>
+        </antcall>
+    </target>
+    
+    <target name="-profile-pre72" description="Profile a project in the IDE." if="profiler.info.jvmargs.agent">
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
         <nbprofiledirect 
             jvmargsprefix="-J" 
@@ -260,5 +276,4 @@ You must shut it down before trying to run it again.
             <reference refid="cluster.path.id"/>
         </antcall>
     </target>
-    
 </project>

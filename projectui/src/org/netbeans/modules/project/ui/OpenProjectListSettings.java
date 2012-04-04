@@ -70,7 +70,6 @@ public class OpenProjectListSettings {
     private static final String PROP_PROJECT_CATEGORY = "lastSelectedProjectCategory"; //NOI18N - String
     private static final String PROP_PROJECT_TYPE = "lastSelectedProjectType"; //NOI18N - String
     private static final String MAIN_PROJECT_URL = "mainProjectURL"; //NOI18N -URL
-    private static final String OPEN_AS_MAIN = "openAsMain"; //NOI18N - boolean
     private static final String OPEN_PROJECTS_URLS = "openProjectsURLs"; //NOI18N - List of URLs
     private static final String OPEN_PROJECTS_DISPLAY_NAMES = "openProjectsDisplayNames"; //NOI18N - List of names
     private static final String OPEN_PROJECTS_ICONS = "openProjectsIcons"; //NOI18N - List of icons
@@ -233,14 +232,6 @@ public class OpenProjectListSettings {
     
     public void setOpenSubprojects( boolean openSubprojects ) {
         getPreferences().putBoolean(OPEN_SUBPROJECTS, openSubprojects);
-    }
-    
-    public boolean isOpenAsMain() {        
-        return getPreferences().getBoolean(OPEN_AS_MAIN, false);
-    }
-    
-    public void setOpenAsMain( boolean openAsMain ) {
-        getPreferences().putBoolean(OPEN_AS_MAIN, openAsMain);
     }
     
     public URL getMainProjectURL() {

@@ -205,12 +205,12 @@ public class GetOwnerTest extends NbTestCase {
         assertTrue(VersioningSupport.isExcluded(new File(userdir, "ffff")));
         assertFalse(VersioningSupport.isExcluded(userdir.getParentFile()));
 
-        assertEquals(4, ((VCSFileProxy[]) f.get(Utils.class)).length);
+        assertEquals(4, ((String[]) f.get(Utils.class)).length);
 
         // what if someone still wants to have userdir versioned?
         System.setProperty("versioning.netbeans.user.versioned", "true");
         
-        f.set(Utils.class, (VCSFileProxy[]) null);
+        f.set(Utils.class, (String[]) null);
         
         assertTrue(VersioningSupport.isExcluded(a));
         assertTrue(VersioningSupport.isExcluded(b));
@@ -219,7 +219,7 @@ public class GetOwnerTest extends NbTestCase {
         assertFalse(VersioningSupport.isExcluded(new File(userdir, "ffff")));
         assertFalse(VersioningSupport.isExcluded(userdir.getParentFile()));
 
-        assertEquals(3, ((VCSFileProxy[]) f.get(Utils.class)).length);
+        assertEquals(3, ((String[]) f.get(Utils.class)).length);
     }
 
     private void testFileOwnerCache(boolean isVersioned, boolean isFolder) throws IOException {

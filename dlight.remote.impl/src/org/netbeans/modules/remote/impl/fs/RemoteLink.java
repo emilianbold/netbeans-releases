@@ -60,7 +60,7 @@ public final class RemoteLink extends RemoteLinkBase {
 
     /*package*/ RemoteLink(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath, String link) {
         super(wrapper, fileSystem, execEnv, parent, remotePath);        
-        setLink(link, parent);
+        this.normalizedTargetPath = normalize(link, parent);
     }
 
     private static String normalize(String link, RemoteFileObjectBase parent) {
@@ -93,7 +93,16 @@ public final class RemoteLink extends RemoteLinkBase {
     }
 
     /*package*/ final void setLink(String link, RemoteFileObjectBase parent) {
+        initListeners(false);
         this.normalizedTargetPath = normalize(link, parent);
+        RemoteFileObjectBase delegate = getDelegate();
+        if (delegate != null && delegate.isFolder()) {
+            for (RemoteFileObject child: delegate.getChildren()) {
+                String childAbsPath = getPath() + '/' + child.getNameExt();
+                getFileSystem().getFactory().createRemoteLinkChild(this, childAbsPath, child.getImplementor());
+            }
+        }
+        initListeners(true);
     }
 
     @Override

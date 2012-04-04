@@ -55,6 +55,8 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -65,6 +67,8 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Ondra Vrabec
  */
+@ActionID(id = "org.netbeans.modules.subversion.ui.wcadmin.UpgradeAction", category = "Subversion")
+@ActionRegistration(displayName = "CTL_Upgrade_Title")
 public class UpgradeAction extends ContextAction {
 
     @Override

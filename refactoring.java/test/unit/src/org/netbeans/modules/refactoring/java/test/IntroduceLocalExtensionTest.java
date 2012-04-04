@@ -392,12 +392,24 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("}");
         //</editor-fold>
     }
+    
+    public void test210496() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/SingleList.java", sb.toString()),
+                new File("t/A.java", "package t; import java.util.List; public class A { public static void main(String[] args) { SingleList<String> lijst = new SingleList<String>(); SingleList<String> cloned = lijst.clone(); } }"));
+        performIntroduceLocalExtension("", true, true, "t", new Problem(true, "ERR_InvalidIdentifier"));
+        
+        writeFilesAndWaitForScan(src,
+                new File("t/SingleList.java", sb.toString()),
+                new File("t/A.java", "package t; import java.util.List; public class A { public static void main(String[] args) { SingleList<String> lijst = new SingleList<String>(); SingleList<String> cloned = lijst.clone(); } }"));
+        performIntroduceLocalExtension("MyList", true, true, "...", new Problem(true, "ERR_InvalidPackage"));
+    }
 
     public void testWrapper() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/SingleList.java", sb.toString()),
                 new File("t/A.java", "package t; import java.util.List; public class A { public static void main(String[] args) { SingleList<String> lijst = new SingleList<String>(); SingleList<String> cloned = lijst.clone(); } }"));
-        performIntroduceLocalExtension("MyList", true, true);
+        performIntroduceLocalExtension("MyList", true, true, "t");
         StringBuilder sb1 = new StringBuilder();
         //<editor-fold defaultstate="collapsed" desc="Result">
         sb1.append("/*")
@@ -739,7 +751,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         writeFilesAndWaitForScan(src,
                 new File("t/SingleList.java", sb.toString()),
                 new File("t/A.java", "package t; import java.util.List; public class A { public static void main(String[] args) { List<String> lijst = new SingleList<String>(); } }"));
-        performIntroduceLocalExtension("MyList", false, true);
+        performIntroduceLocalExtension("MyList", false, true, "t");
         StringBuilder sb1 = new StringBuilder();
         //<editor-fold defaultstate="collapsed" desc="Result">
         sb1.append("/*")
@@ -780,7 +792,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
     public void testNameClash() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; import java.util.*; public class A { public static void main(String[] args) { List<String> lijst = new ArrayList<String>(); } }"));
-        performIntroduceLocalExtension("ArrayList", false, true);
+        performIntroduceLocalExtension("ArrayList", false, true, "t");
         StringBuilder sb1 = new StringBuilder();
         //<editor-fold defaultstate="collapsed" desc="Result">
         sb1.append("/*")
@@ -816,7 +828,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 new File("t/ArrayList.java", sb1.toString()));
     }
 
-    private void performIntroduceLocalExtension(final String name, final boolean wrap, final boolean replace, Problem... expectedProblems) throws Exception {
+    private void performIntroduceLocalExtension(final String name, final boolean wrap, final boolean replace, final String packageName, Problem... expectedProblems) throws Exception {
         final IntroduceLocalExtensionRefactoring[] r = new IntroduceLocalExtensionRefactoring[1];
 
         JavaSource.forFileObject(src.getFileObject("t/A.java")).runUserActionTask(new Task<CompilationController>() {
@@ -835,7 +847,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 TreePath tp = TreePath.getPath(cut, identifier);
                 r[0] = new IntroduceLocalExtensionRefactoring(TreePathHandle.create(tp, parameter));
                 r[0].setNewName(name);
-                r[0].setPackageName("t");
+                r[0].setPackageName(packageName);
                 r[0].setSourceRoot(src);
                 r[0].setWrap(wrap);
                 r[0].setReplace(replace);
@@ -846,9 +858,15 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         List<Problem> problems = new LinkedList<Problem>();
 
         addAllProblems(problems, r[0].preCheck());
-        addAllProblems(problems, r[0].checkParameters());
-        addAllProblems(problems, r[0].prepare(rs));
-        addAllProblems(problems, rs.doRefactoring(true));
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, r[0].checkParameters());
+        }
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, r[0].prepare(rs));
+        }
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, rs.doRefactoring(true));
+        }
 
         assertProblems(Arrays.asList(expectedProblems), problems);
     }

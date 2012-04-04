@@ -57,7 +57,8 @@ import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
+//import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.CreateTestParam;
 import static javax.lang.model.element.Modifier.ABSTRACT;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.STATIC;
@@ -221,6 +222,10 @@ public final class TestGeneratorSetup implements TestabilityJudge {
                                         CreateTestParam.INC_SETUP));
         generateTestTearDown = Boolean.TRUE.equals(params.get(
                                         CreateTestParam.INC_TEAR_DOWN));
+        generateClassSetUp = Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_CLASS_SETUP));
+        generateClassTearDown = Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_CLASS_TEAR_DOWN));
         
         generateMainMethod = settings.isGenerateMainMethod();
     }
@@ -252,6 +257,8 @@ public final class TestGeneratorSetup implements TestabilityJudge {
         generateSourceCodeHints = settings.isBodyComments();
         generateTestSetUp = settings.isGenerateSetUp();
         generateTestTearDown = settings.isGenerateTearDown();
+        generateClassSetUp = settings.isGenerateClassSetUp();
+        generateClassTearDown = settings.isGenerateClassTearDown();
         generateMainMethod = settings.isGenerateMainMethod();
     }
     

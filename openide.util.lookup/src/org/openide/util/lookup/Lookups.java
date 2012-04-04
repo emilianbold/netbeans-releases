@@ -221,6 +221,7 @@ public class Lookups {
      * @param path the path identifying the lookup, e.g. <code>Servers/J2EEWrapper</code>
      * @return lookup associated with this path
      * @since 7.9
+     * @see NamedServiceDefinition
      */
     public static Lookup forPath(String path) {
         if (!path.endsWith("/")) {

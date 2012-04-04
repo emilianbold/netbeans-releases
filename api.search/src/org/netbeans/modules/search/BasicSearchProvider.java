@@ -52,6 +52,7 @@ import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.modules.search.IgnoreListPanel.IgnoreListManager;
 import org.netbeans.modules.search.MatchingObject.Def;
+import org.netbeans.modules.search.matcher.AbstractMatcher;
 import org.netbeans.modules.search.matcher.DefaultMatcher;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.SearchFilterDefinition;
@@ -159,9 +160,7 @@ public class BasicSearchProvider extends SearchProvider {
         @Override
         public JComponent getForm() {
             if (form == null) {
-                String scopeToUse = scopeId == null
-                        ? FindDialogMemory.getDefault().getScopeTypeId()
-                        : scopeId;
+                String scopeToUse = chooseSearchScope(scopeId);
                 form = new BasicSearchForm(scopeToUse, isReplacing(),
                         explicitCriteria, extraSearchScopes);
                 form.setUsabilityChangeListener(new ChangeListener() {
@@ -172,6 +171,12 @@ public class BasicSearchProvider extends SearchProvider {
                 });
             }
             return form;
+        }
+
+        private String chooseSearchScope(String preferredscopeId) {
+            return preferredscopeId == null
+                    ? FindDialogMemory.getDefault().getScopeTypeId()
+                    : preferredscopeId;
         }
 
         @Override
@@ -205,18 +210,30 @@ public class BasicSearchProvider extends SearchProvider {
                 so.addFilter(new IgnoreListFilter());
             }
             SearchInfo ssi = form.getSearchInfo();
+            AbstractMatcher am = new DefaultMatcher(
+                    basicSearchCriteria.getSearchPattern());
+            am.setStrict(isReplacing());
             return new BasicComposition(
-                    ssi,
-                    new DefaultMatcher(basicSearchCriteria.getSearchPattern()),
-                    basicSearchCriteria, form.getSelectedScopeName());
+                    ssi, am, basicSearchCriteria, form.getSelectedScopeName());
         }
 
         @Override
         public boolean isUsable(NotificationLineSupport notifySupport) {
             boolean usable = form.isUsable();
             if (!usable) {
-                notifySupport.setErrorMessage(UiUtils.getText(
-                        "BasicSearchForm.txtErrorMissingCriteria"));    //NOI18N
+                BasicSearchCriteria bsc = form.getBasicSearchCriteria();
+                String msg;
+                if (bsc.isTextPatternInvalid()) {
+                    msg = "BasicSearchForm.txtErrorTextPattern";        //NOI18N
+                } else if (bsc.isSearchAndReplace()
+                        && bsc.isReplacePatternInvalid()) {
+                    msg = "BasicSearchForm.txtErrorReplacePattern";     //NOI18N
+                } else if (bsc.isFileNamePatternInvalid()) {
+                    msg = "BasicSearchForm.txtErrorFileName";           //NOI18N
+                } else {
+                    msg = "BasicSearchForm.txtErrorMissingCriteria";    //NOI18N
+                }
+                notifySupport.setErrorMessage(UiUtils.getText(msg));
             } else {
                 notifySupport.clearMessages();
             }

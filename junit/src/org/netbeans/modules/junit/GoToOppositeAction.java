@@ -64,7 +64,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
-import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
+//import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.Location;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -341,6 +342,16 @@ public final class GoToOppositeAction implements TestLocator {
     }
     
     public boolean appliesTo(FileObject fo) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project != null) {
+            JUnitPlugin plugin = TestUtil.getPluginForProject(project);
+            if (plugin instanceof DefaultPlugin) {
+                Location loc = new Location(fo);
+                Location test = ((DefaultPlugin) plugin).getTestLocation(loc);
+                Location tested = ((DefaultPlugin) plugin).getTestedLocation(loc);
+                return TestUtil.isJavaFile(fo) && (test != null || tested != null);
+            }
+        }
         return TestUtil.isJavaFile(fo);
     }
 

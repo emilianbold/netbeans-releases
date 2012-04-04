@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 
@@ -3044,5 +3045,22 @@ public abstract class NativeBreakpoint
 	lb.setFileAndLine(fileName, lineNo, fs);
 	return lb;
     }
-
+    
+    /**
+     * Returns a list of changed properties (with the new values)
+     * @param oldBpt
+     * @param newBpt
+     */
+    public static Set<Property> diff(NativeBreakpoint oldBpt, NativeBreakpoint newBpt) {
+        assert oldBpt.getClass() == newBpt.getClass() : "Only compares similar breakpoints"; //NOI18N
+        
+        Set<Property> res = new HashSet<Property>();
+        for (Property pOld : oldBpt.pos) {
+            Property pNew = newBpt.pos.propertyByName(pOld.name());
+            if (!pOld.matches(pNew)) {
+                res.add(pNew);
+            }
+        }
+        return res;
+    }
 }

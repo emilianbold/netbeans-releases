@@ -381,7 +381,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
                 return canonicalParent.getSize(this);
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            reportIOException(ex);
         }
         return 0;
     }
@@ -410,7 +410,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
                 return canonicalParent.canRead(getNameExt());
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            reportIOException(ex);
             return true;
         }
     }
@@ -425,7 +425,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
                 return canonicalParent.canExecute(getNameExt());
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            reportIOException(ex);
             return true;
         }
     }
@@ -470,7 +470,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
         } catch (ConnectException ex) {
             return false;
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            reportIOException(ex);
             return false;
         }
     }
@@ -479,6 +479,22 @@ public abstract class RemoteFileObjectBase implements Serializable {
     }
     
     protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {        
+    }
+
+    /*package*/ void nonRecursiveRefresh() {
+        try {
+            refreshImpl(false, null, true);
+        } catch (ConnectException ex) {
+            RemoteLogger.finest(ex, this);
+        } catch (IOException ex) {
+            RemoteLogger.info(ex, this);
+        } catch (InterruptedException ex) {
+            RemoteLogger.finest(ex, this);
+        } catch (CancellationException ex) {
+            RemoteLogger.finest(ex, this);
+        } catch (ExecutionException ex) {
+            RemoteLogger.info(ex, this);
+        }
     }
 
     public void refresh(boolean expected) {
@@ -531,9 +547,13 @@ public abstract class RemoteFileObjectBase implements Serializable {
                 return canonicalParent.lastModified(this);
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            reportIOException(ex);
         }
         return new Date(0); // consistent with File.lastModified(), which returns 0 for inexistent file
+    }
+
+    private void reportIOException(IOException ex) {
+        System.err.printf("Error in %s: %s\n", remotePath, ex.getMessage());
     }
 
     public final FileLock lock() throws IOException {

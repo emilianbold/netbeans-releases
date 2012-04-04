@@ -100,7 +100,7 @@ final class JavaParsingContext {
     private FQN2Files fqn2Files;    
     private Iterable<? extends JavaIndexerPlugin> pluginsCache;
 
-    JavaParsingContext(final Context context, final boolean allowNonExistentRoot) throws IOException, NoSuchAlgorithmException {
+    JavaParsingContext(final Context context, final boolean allowNonExistentRoot) throws IOException {
         ctx = context;
         rootNotNeeded = allowNonExistentRoot && context.getRoot() == null;
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
@@ -132,7 +132,7 @@ final class JavaParsingContext {
     }
 
     public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath,
-            final Collection<? extends CompileTuple> virtualSources) throws IOException, NoSuchAlgorithmException {
+            final Collection<? extends CompileTuple> virtualSources) throws IOException {
         ctx = context;
         rootNotNeeded = false;
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);

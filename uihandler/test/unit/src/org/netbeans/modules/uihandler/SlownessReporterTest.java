@@ -54,6 +54,8 @@ import static org.junit.Assert.*;
  * @author Jindrich Sedek
  */
 public class SlownessReporterTest extends NbTestCase {
+    
+    private long now;
 
     public SlownessReporterTest(String name) {
         super(name);
@@ -73,7 +75,7 @@ public class SlownessReporterTest extends NbTestCase {
         assertNotNull(installer);
         installer.restored();
 
-        long now = System.currentTimeMillis();
+        now = System.currentTimeMillis();
         LogRecord rec = new LogRecord(Level.FINE, "UI_ACTION_EDITOR");
         Object[] params = new Object[]{null, null, null, null, "undo"};
         rec.setMillis(now - SlownessReporter.LATEST_ACTION_LIMIT/2);
@@ -94,15 +96,14 @@ public class SlownessReporterTest extends NbTestCase {
     @Test
     public void testGetLatestAction() {
         SlownessReporter reporter = new SlownessReporter();
-        String latestAction = reporter.getLatestAction(10L, System.currentTimeMillis());
+        String latestAction = reporter.getLatestAction(10L, now);
         assertEquals("redo", latestAction);
     }
 
     @Test
     public void testIgnoreOldActions() throws InterruptedException {
         SlownessReporter reporter = new SlownessReporter();
-        Thread.sleep(SlownessReporter.LATEST_ACTION_LIMIT * 2);
-        String latestAction = reporter.getLatestAction(10L, System.currentTimeMillis());
+        String latestAction = reporter.getLatestAction(10L, now + SlownessReporter.LATEST_ACTION_LIMIT * 2);
         assertNull(latestAction);
     }
 
@@ -110,7 +111,7 @@ public class SlownessReporterTest extends NbTestCase {
     public void testGetIdeStartup() {
         SlownessReporter reporter = new SlownessReporter();
         Logger.getLogger("org.netbeans.ui.test").log(new LogRecord(Level.CONFIG, Installer.IDE_STARTUP));
-        String latestAction = reporter.getLatestAction(100L, System.currentTimeMillis());
+        String latestAction = reporter.getLatestAction(100L, now);
         assertNotNull(latestAction);
         assertEquals(NbBundle.getMessage(SlownessReporter.class, "IDE_STARTUP"), latestAction);
     }

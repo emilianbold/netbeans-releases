@@ -57,6 +57,7 @@ public class CustomerDBClientSampleWizardPanel extends SampleWizardPanel {
         super();
     }
 
+    @Override
     public SampleWizardPanelVisual getComponent() {
         if (myComponent == null) {
             myComponent = new CustomerDBClientSamplePanelVisual(this);

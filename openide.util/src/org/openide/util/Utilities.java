@@ -99,6 +99,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JMenuItem;
@@ -217,20 +218,6 @@ public final class Utilities {
 
     /** The operating system on which NetBeans runs*/
     private static int operatingSystem = -1;
-    private static final String[] keywords = new String[] {
-            
-            //If adding to this, insert in alphabetical order!
-            "abstract", "assert", "boolean", "break", "byte", "case", //NOI18N
-            "catch", "char", "class", "const", "continue", "default", //NOI18N
-            "do", "double", "else", "enum", "extends", "false", "final", //NOI18N
-            "finally", "float", "for", "goto", "if", "implements", //NOI18N
-            "import", "instanceof", "int", "interface", "long", //NOI18N
-            "native", "new", "null", "package", "private", //NOI18N
-            "protected", "public", "return", "short", "static", //NOI18N
-            "strictfp", "super", "switch", "synchronized", "this", //NOI18N
-            "throw", "throws", "transient", "true", "try", "void", //NOI18N
-            "volatile", "while" //NOI18N
-        };
     private static Timer clearIntrospector;
     private static ActionListener doClear;
     private static final int CTRL_WILDCARD_MASK = 32768;
@@ -389,27 +376,14 @@ public final class Utilities {
     /** Test whether a given string is a valid Java identifier.
     * @param id string which should be checked
     * @return <code>true</code> if a valid identifier
+    * @see SourceVersion#isIdentifier
+    * @see SourceVersion#isKeyword
     */
     public static boolean isJavaIdentifier(String id) {
         if (id == null) {
             return false;
         }
-
-        if (id.isEmpty()) {
-            return false;
-        }
-
-        if (!(java.lang.Character.isJavaIdentifierStart(id.charAt(0)))) {
-            return false;
-        }
-
-        for (int i = 1; i < id.length(); i++) {
-            if (!(java.lang.Character.isJavaIdentifierPart(id.charAt(i)))) {
-                return false;
-            }
-        }
-
-        return Arrays.binarySearch(keywords, id) < 0;
+        return SourceVersion.isIdentifier(id) && !SourceVersion.isKeyword(id);
     }
 
     /** Central method for obtaining <code>BeanInfo</code> for potential JavaBean classes.
@@ -2468,7 +2442,8 @@ widthcheck:  {
     }
 
     /** Provides support for parts of the system that deal with classnames
-     * (use <code>Class.forName</code>, <code>NbObjectInputStream</code>, etc.).
+     * (use <code>Class.forName</code>, <code>NbObjectInputStream</code>, etc.) or filenames
+     * in layers.
      * <P>
      * Often class names (especially package names) changes during lifecycle
      * of a module. When some piece of the system stores the name of a class
@@ -2513,8 +2488,21 @@ widthcheck:  {
      * className is not listed as one that is to be renamed, the returned
      * string == className, if the className is registered to be renamed
      * than the className != returned value, even in a case when className.equals (retValue)
+     * <p/>
+     * Similar behaviour applies to <b>filenames</b> provided by layers (system filesystem). Filenames
+     * can be also translated to adapt to location changes e.g. in action registrations. Note that 
+     * <b>no spaces or special characters</b> are allowed in both translated filenames or translation 
+     * results. Filenames must conform to regexp {@code ^[/a-zA-Z0-9$_.+-]+$}. Keys and values are treated
+     * as paths from fs root.
+     * 
+     * <p/>
+     * Example of file path translation (action registration file has moved):
+     * <pre>
+     * # registration ID has changed
+     * Actions/Refactoring/RefactoringWhereUsed.instance=Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance
+     * </pre>
      *
-     * @param className fully qualified name of a class to translate
+     * @param className fully qualified name of a class, or file path to translate
      * @return new name of the class according to renaming rules.
      */
     public static String translate(final String className) {

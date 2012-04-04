@@ -65,9 +65,16 @@ public class ModuleFactory {
     public Module create(File jar, Object history, boolean reloadable,
             boolean autoload, boolean eager, ModuleManager mgr, Events ev)
     throws IOException {
+        final Boolean osgiStatus = mgr.isOSGi(jar);
+        if (Boolean.TRUE.equals(osgiStatus)) {
+            return new NetigsoModule(null, jar, mgr, ev, history, reloadable, autoload, eager);
+        }
+        Module m;
         try {
-            StandardModule m = new StandardModule(mgr, ev, jar, history, reloadable, autoload, eager);
-            return m;
+            m = new StandardModule(mgr, ev, jar, history, reloadable, autoload, eager);
+            if (osgiStatus == null) {
+                m.dataWithCheck();
+            }
         } catch (InvalidException ex) {
             Manifest mani = ex.getManifest();
             if (mani != null) {
@@ -75,10 +82,15 @@ public class ModuleFactory {
                 if (name == null) {
                     throw ex;
                 }
-                return new NetigsoModule(mani, jar, mgr, ev, history, reloadable, autoload, eager);
+                m = new NetigsoModule(mani, jar, mgr, ev, history, reloadable, autoload, eager);
+                if (osgiStatus == null) {
+                    m.dataWithCheck();
+                }
+            } else {
+                throw ex;
             }
-            throw ex;
         }
+        return m;
     }
     
     /**

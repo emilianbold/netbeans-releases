@@ -89,7 +89,7 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         NbTestSuite suite = new NbTestSuite();
         Compile compile = new Compile("testCompile");
         suite.addTest(compile);
-        NbModuleSuite.Configuration common = NbModuleSuite.emptyConfiguration().clusters(".*").enableClasspathModules(false)
+        NbModuleSuite.Configuration common = NbModuleSuite.emptyConfiguration().clusters("(?!ergonomics).*").enableClasspathModules(false)
                 .gui(false).honorAutoloadEager(true);
         {
             NbModuleSuite.Configuration conf = common.reuseUserDir(false).addTest(CachingPreventsFileTouchesTest.class, "testInitUserDir");
@@ -175,6 +175,13 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
 
     public void testStartAgain() throws Exception {
         CachingAndExternalPathsTest.doNecessarySetup();
+        final String dirs = System.getProperty("netbeans.dirs");
+        for (String s : dirs.split(File.pathSeparator)) {
+            if (s.endsWith("ergonomics")) {
+                fail("There should be no ergonomics cluster in netbeans.dirs: " + dirs);
+            }
+        }
+        
         // will be reset next time the system starts
         System.getProperties().remove("netbeans.dirs");
         // initializes counting, but waits till netbeans.dirs are provided

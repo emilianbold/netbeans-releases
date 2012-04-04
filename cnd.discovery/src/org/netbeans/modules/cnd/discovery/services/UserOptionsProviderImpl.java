@@ -60,13 +60,10 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -119,10 +116,17 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     }
 
     private void convertOptionsToMacros(AbstractCompiler compiler, String options, List<String> res) {
+        if (compiler == null || compiler.getDescriptor() == null) {
+            return;
+        }
+        final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
+        if (predefinedMacros == null || predefinedMacros.isEmpty()) {
+            return;
+        }
         String[] split = options.split(" "); //NOI18N
         for(String s : split) {
             if (s.startsWith("-")) { //NOI18N
-                for(ToolchainManager.PredefinedMacro macro :compiler.getDescriptor().getPredefinedMacros()){
+                for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
                     if (macro.getFlags() != null && macro.getFlags().equals(s)) {
                         if (macro.isHidden()) {
                             // TODO remove macro
@@ -141,25 +145,18 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             String options = compilerOptions.getAllOptions(compiler);            
             if (compiler.getKind() == PredefinedToolKind.CCompiler) {
-                IntConfiguration cStandard = makeConfiguration.getCCompilerConfiguration().getCStandard();
                 if (options.indexOf("-xc99") >= 0) { // NOI18N
                     return LanguageFlavor.C99;
                 } else if (options.indexOf("-std=c89") >= 0) { // NOI18N
                     return LanguageFlavor.C89;
                 } else if (options.indexOf("-std=c99") >= 0) { // NOI18N
                     return LanguageFlavor.C99;
-                } else if (cStandard.getValue() == CCompilerConfiguration.STANDARD_C89) {
-                    return LanguageFlavor.C89;
-                } else if (cStandard.getValue() == CCompilerConfiguration.STANDARD_C99) {
-                    return LanguageFlavor.C99;
                 }
             } else if (compiler.getKind() == PredefinedToolKind.CCCompiler) {
-                IntConfiguration cppStandard = makeConfiguration.getCCCompilerConfiguration().getCppStandard();
                 if (options.indexOf("-std=c++0x") >= 0 || // NOI18N
                         options.indexOf("-std=c++11") >= 0 || // NOI18N
                         options.indexOf("-std=gnu++0x") >= 0 || // NOI18N
-                        options.indexOf("-std=gnu++11") >= 0 || // NOI18N
-                        cppStandard.getValue() == CCCompilerConfiguration.STANDARD_CPP11) {
+                        options.indexOf("-std=gnu++11") >= 0) { // NOI18N
                     return LanguageFlavor.CPP11;
                 } else {
                     return LanguageFlavor.CPP;
@@ -167,7 +164,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             } else if (compiler.getKind() == PredefinedToolKind.FortranCompiler) {
                 // TODO
             }
-        }
+        } 
         return LanguageFlavor.UNKNOWN;
     }
     

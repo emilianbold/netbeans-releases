@@ -368,7 +368,14 @@ class OccurenceBuilder {
         if (canBePrepared(classDeclaration, scope)) {
             ClassDeclarationInfo node = ClassDeclarationInfo.create(classDeclaration);
             clasDeclarations.put(node, scope);
-            prepare(Kind.CLASS, classDeclaration.getSuperClass(), scope);
+            QualifiedName superClassName = QualifiedName.create(classDeclaration.getSuperClass());
+            if (superClassName != null) {
+                if (VariousUtils.isAlias(superClassName, classDeclaration.getStartOffset(), scope)) {
+                    prepare(Kind.USE_ALIAS, classDeclaration.getSuperClass(), scope);
+                } else {
+                    prepare(Kind.CLASS, classDeclaration.getSuperClass(), scope);
+                }
+            }
             List<Expression> interfaes = classDeclaration.getInterfaes();
             for (Expression iface : interfaes) {
                 prepare(Kind.IFACE, iface, scope);
@@ -830,7 +837,6 @@ class OccurenceBuilder {
     private void buildTypeConstants(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
         final Exact methodName = NameKind.exact(elementInfo.getName());
         QualifiedName clzName = elementInfo.getTypeQualifiedName();
-        clzName = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), elementInfo.getScope());
         final Set<TypeConstantElement> constants = new HashSet<TypeConstantElement>();
         Scope scope = elementInfo.getScope() instanceof TypeScope ? elementInfo.getScope() : elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {

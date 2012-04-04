@@ -49,17 +49,31 @@ made subject to such option by the copyright holder.
 	<folder name="Services">
 		<folder name="Collaboration">
 			<folder name="Channels">
-				<file name="org-netbeans-modules-collab-channel-filesharing-FilesharingCollabletFactory.instance"/>
+                                <!-- XXX consider using @ServiceProvider instead -->
+				<file name="org-netbeans-modules-collab-channel-filesharing-FilesharingCollabletFactory.instance">
+                                    <attr name="instanceOf" stringvalue="com.sun.collablet.CollabletFactory"/>
+                                </file>
 				<file name="org-netbeans-modules-collab-channel-filesharing-ui-FilesharingCollabletFactorySettings.settings" url="FilesharingCollabletFactorySettings.settings">
 					<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.filesharing.ui.Bundle"/>
 					<attr name="SystemFileSystem.layer" stringvalue="session"/>
 				</file>
 				<folder name="FileHandlers">
-					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabTextFileHandlerFactory.instance"/>
-					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabJavaFileHandlerFactory.instance"/>
-					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabXMLFileHandlerFactory.instance"/>
-					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabFormFileHandlerFactory.instance"/>
-					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabDefaultFileHandlerFactory.instance"/>
+                                    <!-- XXX consider using @ServiceProvider instead (and delete FileHandlerMapParser) -->
+					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabTextFileHandlerFactory.instance">
+                                            <attr name="instanceOf" stringvalue="org.netbeans.modules.collab.channel.filesharing.filehandler.CollabFileHandlerFactory"/>
+                                        </file>
+					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabJavaFileHandlerFactory.instance">
+                                            <attr name="instanceOf" stringvalue="org.netbeans.modules.collab.channel.filesharing.filehandler.CollabFileHandlerFactory"/>
+                                        </file>
+					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabXMLFileHandlerFactory.instance">
+                                            <attr name="instanceOf" stringvalue="org.netbeans.modules.collab.channel.filesharing.filehandler.CollabFileHandlerFactory"/>
+                                        </file>
+					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabFormFileHandlerFactory.instance">
+                                            <attr name="instanceOf" stringvalue="org.netbeans.modules.collab.channel.filesharing.filehandler.CollabFileHandlerFactory"/>
+                                        </file>
+					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabDefaultFileHandlerFactory.instance">
+                                            <attr name="instanceOf" stringvalue="org.netbeans.modules.collab.channel.filesharing.filehandler.CollabFileHandlerFactory"/>
+                                        </file>
 				</folder>
 			</folder>
 		</folder>

@@ -452,6 +452,7 @@ public final class CompletionSupport implements DocumentListener {
                     case DOXYGEN_LINE_COMMENT:
                     case CHAR_LITERAL:
                     case STRING_LITERAL:
+                    case RAW_STRING_LITERAL:
                     case PREPROCESSOR_USER_INCLUDE:
                     case PREPROCESSOR_SYS_INCLUDE:
                     case PREPROCESSOR_DEFINED:

@@ -243,7 +243,10 @@ public class IdenticalComparisonHint extends AbstractRule {
         }
 
         @Override
-        @Messages("WithRightTypeFixDesc=Fix comparison: === ({0}) ")
+        @Messages({
+            "# {0} - Type name",
+            "WithRightTypeFixDesc=Fix comparison: === ({0}) "
+        })
         public String getDescription() {
             return Bundle.WithRightTypeFixDesc(fixInfo.getTypeName());
         }

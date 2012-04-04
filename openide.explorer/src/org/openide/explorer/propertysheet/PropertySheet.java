@@ -929,6 +929,9 @@ public class PropertySheet extends JPanel {
             //neverTabs is a debugging option to force tab use one tab per property set
             if (!neverTabs) {
                 for (int i = 0; (i < ps.length) && !needTabs; i++) {
+                    if (ps[i] == null) {
+                        throw new NullPointerException("Node " + n + " contains null in its getPropertySets() array"); // NOI18N
+                    }
                     needTabs |= (ps[i].getValue("tabName") != null); //NOI18N
                 }
             }

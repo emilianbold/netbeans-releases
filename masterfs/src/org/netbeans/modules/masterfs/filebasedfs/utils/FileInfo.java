@@ -45,6 +45,7 @@
 package org.netbeans.modules.masterfs.filebasedfs.utils;
 
 import java.io.File;
+import java.io.IOException;
 import javax.swing.filechooser.FileSystemView;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
@@ -53,16 +54,6 @@ import org.openide.filesystems.FileObject;
 
 
 public final class FileInfo {
-    private static final FileSystemView FILESYSTEMVIEW;
-    static {
-        FileSystemView fsv;
-        try {
-            fsv = FileSystemView.getFileSystemView();
-        } catch (Throwable ex) {
-            fsv = null;
-        }
-        FILESYSTEMVIEW = fsv;
-    }
     private static boolean IS_WINDOWS = org.openide.util.Utilities.isWindows();
 
     private int isFile = -1;
@@ -122,12 +113,27 @@ public final class FileInfo {
         return (exists == 0) ? false : true;
     }
 
-    public boolean isComputeNode() {
+    private static FileSystemView FILESYSTEMVIEW;
+    private static synchronized FileSystemView fsView() {
         if (FILESYSTEMVIEW == null) {
-            return false;
+            try {
+                FILESYSTEMVIEW = FileSystemView.getFileSystemView();
+            } catch (Throwable ex) {
+                FILESYSTEMVIEW = new FileSystemView() {
+                    @Override public File createNewFolder(File containingDir) throws IOException {
+                        throw new IOException();
+                    }
+                    @Override public boolean isComputerNode(File dir) {
+                        return false;
+                    }
+                };
+            }
         }
+        return FILESYSTEMVIEW;
+    }
+    private boolean isComputeNode() {
         if (isComputeNode == -1) {
-            isComputeNode = (FileInfo.FILESYSTEMVIEW.isComputerNode(getFile())) ? 1 : 0;
+            isComputeNode = fsView().isComputerNode(getFile()) ? 1 : 0;
         }
 
         return (isComputeNode == 1) ? true : false;

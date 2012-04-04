@@ -48,16 +48,21 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import org.apache.tools.ant.module.api.AntProjectCookie;
+import static org.apache.tools.ant.module.loader.AntProjectDataObject.*;
 import org.apache.tools.ant.module.nodes.AntProjectNode;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObject.Registration;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
@@ -68,13 +73,30 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 @MIMEResolver.Registration(
-    displayName="#AntResolver",
-    position=310,
-    resource="../resources/ant-mime-resolver.xml"
+        displayName="#AntResolver",
+        position=310,
+        resource="../resources/ant-mime-resolver.xml"
 )
+@Registration(displayName="#AntProjectDataObject", iconBase="org/apache/tools/ant/module/resources/AntIcon.gif", mimeType=MIME_TYPE)
+@ActionReferences({
+    @ActionReference(id=@ActionID(category="System", id="org.openide.actions.OpenAction"), path=ACTIONS, position=100),
+    @ActionReference(id=@ActionID(category="Edit", id="org.openide.actions.CutAction"), path=ACTIONS, position=600, separatorBefore=500),
+    @ActionReference(id=@ActionID(category="Edit", id="org.openide.actions.CopyAction"), path=ACTIONS, position=700, separatorAfter=800),
+    @ActionReference(id=@ActionID(category="Edit", id="org.openide.actions.DeleteAction"), path=ACTIONS, position=900),
+    @ActionReference(id=@ActionID(category="System", id="org.openide.actions.RenameAction"), path=ACTIONS, position=1000, separatorAfter=1100),
+    @ActionReference(id=@ActionID(category="System", id="org.openide.actions.SaveAsTemplateAction"), path=ACTIONS, position=1200),
+    @ActionReference(id=@ActionID(category="System", id="org.openide.actions.FileSystemAction"), path=ACTIONS, position=1250, separatorAfter=1300),
+    @ActionReference(id=@ActionID(category="System", id="org.openide.actions.ToolsAction"), path=ACTIONS, position=1400),
+    @ActionReference(id=@ActionID(category="System", id="org.openide.actions.PropertiesAction"), path=ACTIONS, position=1500)
+})
+@Messages({
+    "AntProjectDataObject=Ant Scripts",
+    "AntResolver=Ant <project> XML files"
+})
 public class AntProjectDataObject extends MultiDataObject implements PropertyChangeListener {
 
     public static final String MIME_TYPE = "text/x-ant+xml"; // NOI18N
+    public static final String ACTIONS = "Loaders/text/x-ant+xml/Actions";
 
     public AntProjectDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);

@@ -46,6 +46,7 @@ import javax.swing.AbstractAction;
 import org.netbeans.modules.tasks.ui.dashboard.AbstractRepositoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -62,7 +63,6 @@ class RemoveRepositoryAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        repositoryNode.getRepository().remove();
         DashboardViewer.getInstance().removeRepository(repositoryNode);
     }
 }

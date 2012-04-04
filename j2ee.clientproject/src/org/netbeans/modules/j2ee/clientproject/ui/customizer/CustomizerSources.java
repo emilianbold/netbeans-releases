@@ -54,13 +54,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.plaf.UIResource;
@@ -175,6 +169,19 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         });
         
         this.uiProperties = uiProperties;
+        uiProperties.addOptionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CellEditor cellEditor = sourceRoots.getCellEditor();
+                if (cellEditor != null) {
+                    cellEditor.stopCellEditing();
+                }
+                cellEditor = testRoots.getCellEditor();
+                if (cellEditor != null) {
+                    cellEditor.stopCellEditing();
+                }
+            }
+        });
     }
 
     public HelpCtx getHelpCtx() {

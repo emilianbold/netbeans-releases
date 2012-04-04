@@ -42,25 +42,25 @@
 
 package org.netbeans.modules.web.jsf.editor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Document;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.HtmlParsingResult;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.html.editor.lib.api.HtmlParsingResult;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
-import org.netbeans.modules.web.jsfapi.spi.InputTextTagValueProvider;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.JsfUtils;
+import org.netbeans.modules.web.jsfapi.spi.InputTextTagValueProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -109,13 +109,19 @@ public class FaceletsInputTextTagValueProvider implements InputTextTagValueProvi
                     htmlLibPrefix = DefaultLibraryInfo.HTML.getDefaultPrefix();
                 }
                 String tagName = new StringBuilder().append(htmlLibPrefix).append('.').append(INPUT_TEXT_TAG_NAME).toString();
-                List<AstNode> foundNodes = findValue(hresult.root(DefaultLibraryInfo.HTML.getNamespace()).children(), tagName, new ArrayList<AstNode>());
+                Collection<OpenTag> foundNodes = findValue(hresult.root(DefaultLibraryInfo.HTML.getNamespace()).children(), tagName, new ArrayList<OpenTag>());
 
                 Map<String, String> map = new HashMap<String, String>();
-                for (AstNode node : foundNodes) {
-                    String value = node.getAttribute(VALUE_ATTR_NAME).unquotedValue();
-                    String key = generateKey(value, map);
-                    map.put(key, value);
+                for (OpenTag node : foundNodes) {
+                    Attribute attr = node.getAttribute(VALUE_ATTR_NAME);
+                    if(attr != null) {
+                        CharSequence value = attr.unquotedValue();
+                        if(value != null) {
+                            String svalue = value.toString();
+                            String key = generateKey(svalue, map);
+                            map.put(key, svalue);
+                        }
+                    }
                 }
                 return map;
             }
@@ -126,18 +132,21 @@ public class FaceletsInputTextTagValueProvider implements InputTextTagValueProvi
         return null;
     }
 
-    private List<AstNode> findValue(List<AstNode> nodes, String tagName, List<AstNode> foundNodes) {
+    private Collection<OpenTag> findValue(Collection<Element> nodes, String tagName, Collection<OpenTag> foundNodes) {
         if (nodes == null) {
             return foundNodes;
         }
-        for (int i = 0; i < nodes.size(); i++) {
-            AstNode node = nodes.get(i);
-            if (tagName.equals(node.name())) {
-                foundNodes.add(node);
-            } else {
-                foundNodes = findValue(node.children(), tagName, foundNodes);
+        
+        for(Element e : nodes) {
+            if(e.type() != ElementType.OPEN_TAG) {
+                continue;
             }
-
+            OpenTag openTag = (OpenTag)e;
+            if(LexerUtils.equals(tagName, openTag.name(), true, false)) {
+                foundNodes.add(openTag);
+            } else {
+                foundNodes = findValue(openTag.children(), tagName, foundNodes);
+            }
         }
         return foundNodes;
     }

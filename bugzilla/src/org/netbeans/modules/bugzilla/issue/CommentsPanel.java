@@ -133,7 +133,7 @@ public class CommentsPanel extends JPanel {
                     public void run() {
                         BugzillaIssue is = issue.getRepository().getIssue(issueKey);
                         if (is != null) {
-                            BugzillaUtil.openIssue(issue);
+                            BugzillaUtil.openIssue(is);
                         }
                     }
                 });

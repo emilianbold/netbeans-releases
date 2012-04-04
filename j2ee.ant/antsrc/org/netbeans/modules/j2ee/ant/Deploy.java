@@ -65,6 +65,11 @@ public class Deploy extends Task implements Deployment.Logger {
      */
     private boolean debugmode = false;
     
+    /**
+     * Holds value of property profilemode.
+     */
+    private boolean profilemode = false;
+    
     private boolean forceRedeploy = false;
     
     /**
@@ -104,7 +109,7 @@ public class Deploy extends Task implements Deployment.Logger {
 
             try {
                 String clientUrl = Deployment.getDefault ().deploy (jmp, 
-                        debugmode ? Deployment.Mode.DEBUG : Deployment.Mode.RUN,
+                        debugmode ? Deployment.Mode.DEBUG : (profilemode ? Deployment.Mode.PROFILE : Deployment.Mode.RUN),
                         clientModuleUri, clientUrlPart, forceRedeploy, this);
                 if (clientUrl != null) {
                     getProject().setProperty("client.url", clientUrl);
@@ -149,11 +154,27 @@ public class Deploy extends Task implements Deployment.Logger {
     }
     
     /**
+     * Getter for property profilemode.
+     * @return Value of property profilemode.
+     */
+    public boolean getProfilemode() {
+        return this.profilemode;
+    }
+    
+    /**
      * Setter for property debugmode.
      * @param debugmode New value of property debugmode.
      */
     public void setDebugmode(boolean debugmode) {
         this.debugmode = debugmode;
+    }
+    
+    /**
+     * Setter for property profilemode.
+     * @param debugmode New value of property profilemode.
+     */
+    public void setProfilemode(boolean profilemode) {
+        this.profilemode = profilemode;
     }
         
     public boolean getForceRedeploy() {

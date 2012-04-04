@@ -49,7 +49,7 @@ public class LineActionsMainMenu {
     public static final class MoveUp extends MainMenuAction {
         public MoveUp() {
             super();
-            setMenu();
+            postSetMenu();
         }
 
         protected String getMenuItemText() {
@@ -64,7 +64,7 @@ public class LineActionsMainMenu {
     public static final class MoveDown extends MainMenuAction {
         public MoveDown() {
             super();
-            setMenu();
+            postSetMenu();
         }
 
         protected String getMenuItemText() {
@@ -79,7 +79,7 @@ public class LineActionsMainMenu {
     public static final class DuplicateUp extends MainMenuAction {
         public DuplicateUp() {
             super();
-            setMenu();
+            postSetMenu();
         }
 
         protected String getMenuItemText() {
@@ -94,7 +94,7 @@ public class LineActionsMainMenu {
     public static final class DuplicateDown extends MainMenuAction {
         public DuplicateDown() {
             super();
-            setMenu();
+            postSetMenu();
         }
 
         protected String getMenuItemText() {

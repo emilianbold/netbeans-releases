@@ -41,6 +41,7 @@ import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Arrays;
@@ -159,6 +160,13 @@ public class Unbalanced {
         @TriggerPattern(value="$mods$ $type[] $name = $init$;")
         public static ErrorDescription after(HintContext ctx) {
             if (testElement(ctx) == null) return null;
+
+            Tree parent = ctx.getPath().getParentPath().getLeaf();
+
+            if (parent.getKind() == Kind.ENHANCED_FOR_LOOP
+                && ((EnhancedForLoopTree) parent).getVariable() == ctx.getPath().getLeaf()) {
+                return null;
+            }
             
             TreePath init = ctx.getVariables().get("$init$");
 

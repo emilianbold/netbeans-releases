@@ -472,9 +472,12 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                     Completion.get().hideDocumentation();
                     JTextComponent component = (JTextComponent)evt.getSource();
                     int caretOffset = component.getSelectionEnd();
-                    substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
-                    Completion.get().showCompletion();
-                    evt.consume();
+                    int len = caretOffset - substitutionOffset;
+                    if (len >= 0) {
+                        substituteText(component, substitutionOffset, len, Character.toString(evt.getKeyChar()));
+                        Completion.get().showCompletion();
+                        evt.consume();
+                    }
                 }
             }
         }

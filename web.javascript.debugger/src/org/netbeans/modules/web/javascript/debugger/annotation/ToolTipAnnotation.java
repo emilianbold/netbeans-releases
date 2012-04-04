@@ -63,6 +63,7 @@ import org.openide.text.Annotation;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -72,6 +73,8 @@ import org.openide.text.NbDocument;
 public class ToolTipAnnotation extends Annotation
     implements PropertyChangeListener
 {
+
+    private static final RequestProcessor RP = new RequestProcessor("Tool Tip Annotation"); //NOI18N
 
     /* (non-Javadoc)
      * @see org.openide.text.Annotation#getAnnotationType()

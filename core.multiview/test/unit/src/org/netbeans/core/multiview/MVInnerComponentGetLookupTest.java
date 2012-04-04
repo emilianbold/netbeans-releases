@@ -44,7 +44,10 @@
 
 package org.netbeans.core.multiview;
 
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeListener;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
@@ -58,6 +61,10 @@ import org.openide.windows.TopComponent;
  */
 public class MVInnerComponentGetLookupTest extends org.openide.windows.TopComponentGetLookupTest {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(MVInnerComponentGetLookupTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

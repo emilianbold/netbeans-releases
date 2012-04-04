@@ -60,6 +60,7 @@ import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.logging.BaseLoggerManager;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.embedder.impl.ExtensionModule;
 import org.openide.filesystems.FileUtil;
@@ -73,11 +74,16 @@ import org.openide.util.Utilities;
 public final class EmbedderFactory {
 
     private static final String PROP_COMMANDLINE_PATH = "commandLineMavenPath";
+    
+    //same prop constant in MavenSettings.java
+    static final String PROP_DEFAULT_OPTIONS = "defaultOptions"; 
 
     private static final Logger LOG = Logger.getLogger(EmbedderFactory.class.getName());
 
     private static MavenEmbedder project;
+    private static final Object PROJECT_LOCK = new Object();
     private static MavenEmbedder online;
+    private static final Object ONLINE_LOCK = new Object();
 
     private EmbedderFactory() {
     }
@@ -85,9 +91,13 @@ public final class EmbedderFactory {
     /**
      * embedder seems to cache some values..
      */
-    public synchronized static void resetCachedEmbedders() {
-        project = null;
-        online = null;
+    public static void resetCachedEmbedders() {
+        synchronized (PROJECT_LOCK) {
+            project = null;
+        }
+        synchronized (ONLINE_LOCK) {
+            online = null;
+        }
     }
 
     public static File getDefaultMavenHome() {
@@ -114,6 +124,33 @@ public final class EmbedderFactory {
             getPreferences().put(PROP_COMMANDLINE_PATH, FileUtil.normalizeFile(path).getAbsolutePath());
         }
         resetCachedEmbedders();
+    }
+    
+    
+    static Map<String, String> getCustomSystemProperties() {
+        Map<String, String> toRet = new HashMap<String, String>();
+        String options = getPreferences().get(PROP_DEFAULT_OPTIONS, "");
+        try {
+            
+            String[] cmdlines = CommandLineUtils.translateCommandline(options);
+            if (cmdlines != null) {
+                for (String cmd : cmdlines) {
+                    if (cmd != null && cmd.startsWith("-D")) {
+                        cmd = cmd.substring("-D".length());
+                        int ind = cmd.indexOf('=');
+                        if (ind > -1) {
+                            String key = cmd.substring(0, ind);
+                            String val = cmd.substring(ind + 1);
+                            toRet.put(key, val);
+                        }
+                    }
+                }
+            }
+            return toRet;
+        } catch (Exception ex) {
+            LOG.log(Level.FINE, "cannot parse " + options, ex);
+            return Collections.emptyMap();
+        }
     }
 
     private static File getSettingsXml() {
@@ -185,6 +222,7 @@ public final class EmbedderFactory {
 
         Properties props = new Properties();
         props.putAll(System.getProperties());
+        props.putAll(getCustomSystemProperties());
         EmbedderConfiguration configuration = new EmbedderConfiguration(pc, fillEnvVars(props), true, getSettingsXml());
         
         try {
@@ -207,29 +245,32 @@ public final class EmbedderFactory {
         }
     }
 
-    public synchronized static @NonNull MavenEmbedder getProjectEmbedder() {
-        if (project == null) {
-            try {
-                project = createProjectLikeEmbedder();
-            } catch (PlexusContainerException ex) {
-                rethrowThreadDeath(ex);
-                throw new IllegalStateException(ex);
+    public static @NonNull MavenEmbedder getProjectEmbedder() {
+        synchronized (PROJECT_LOCK) {
+            if (project == null) {
+                try {
+                    project = createProjectLikeEmbedder();
+                } catch (PlexusContainerException ex) {
+                    rethrowThreadDeath(ex);
+                    throw new IllegalStateException(ex);
+                }
             }
+            return project;
         }
-        return project;
     }
 
-    public synchronized static @NonNull MavenEmbedder getOnlineEmbedder() {
-        if (online == null) {
-            try {
-                online = createOnlineEmbedder();
-            } catch (PlexusContainerException ex) {
-                rethrowThreadDeath(ex);
-                throw new IllegalStateException(ex);
+    public static @NonNull MavenEmbedder getOnlineEmbedder() {
+        synchronized (ONLINE_LOCK) {
+            if (online == null) {
+                try {
+                    online = createOnlineEmbedder();
+                } catch (PlexusContainerException ex) {
+                    rethrowThreadDeath(ex);
+                    throw new IllegalStateException(ex);
+                }
             }
+            return online;
         }
-        return online;
-
     }
 
     /*public*/ @NonNull static MavenEmbedder createOnlineEmbedder() throws PlexusContainerException {
@@ -243,6 +284,7 @@ public final class EmbedderFactory {
 
         Properties props = new Properties();
         props.putAll(System.getProperties());
+        props.putAll(getCustomSystemProperties());        
         EmbedderConfiguration req = new EmbedderConfiguration(pc, fillEnvVars(props), false, getSettingsXml());
 
 //        //TODO remove explicit activation

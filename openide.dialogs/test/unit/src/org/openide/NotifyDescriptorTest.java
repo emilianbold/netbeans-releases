@@ -43,13 +43,20 @@
  */
 package org.openide;
 
+import java.awt.GraphicsEnvironment;
 import javax.swing.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.*;
 
 /** Testing issue 56878.
  * @author  Jiri Rechtacek
  */
 public class NotifyDescriptorTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NotifyDescriptorTest.class);
+    }
 
     public NotifyDescriptorTest (String name) {
         super(name);

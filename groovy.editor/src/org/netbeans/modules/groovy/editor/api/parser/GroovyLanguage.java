@@ -71,10 +71,14 @@ import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import static org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage.*;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -88,24 +92,39 @@ import org.openide.windows.TopComponent;
 @MIMEResolver.ExtensionRegistration(
     displayName="#GroovyResolver",
     extension={ "groovy" },
-    mimeType="text/x-groovy",
+    mimeType=GROOVY_MIME_TYPE,
     position=281
 )
-@LanguageRegistration(mimeType="text/x-groovy", useMultiview=true)
-@PathRecognizerRegistration(mimeTypes="text/x-groovy", sourcePathIds=ClassPath.SOURCE, libraryPathIds={}, binaryLibraryPathIds={}) //NOI18N
+@LanguageRegistration(mimeType=GROOVY_MIME_TYPE, useMultiview=true)
+@PathRecognizerRegistration(mimeTypes=GROOVY_MIME_TYPE, sourcePathIds=ClassPath.SOURCE, libraryPathIds={}, binaryLibraryPathIds={}) //NOI18N
+@ActionReferences({
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.OpenAction"), path = ACTIONS, position = 100),
+    @ActionReference(id = @ActionID(category = "Edit", id = "org.openide.actions.CutAction"), path = ACTIONS, position = 300, separatorBefore = 200),
+    @ActionReference(id = @ActionID(category = "Edit", id = "org.openide.actions.CopyAction"), path = ACTIONS, position = 400),
+    @ActionReference(id = @ActionID(category = "Edit", id = "org.openide.actions.PasteAction"), path = ACTIONS, position = 500, separatorAfter = 600),
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.NewAction"), path = ACTIONS, position = 700),
+    @ActionReference(id = @ActionID(category = "Edit", id = "org.openide.actions.DeleteAction"), path = ACTIONS, position = 800),
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.RenameAction"), path = ACTIONS, position = 900, separatorAfter = 1000),
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.SaveAsTemplateAction"), path = ACTIONS, position = 1100, separatorAfter = 1200),
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.FileSystemAction"), path = ACTIONS, position = 1300, separatorAfter = 1400),
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.ToolsAction"), path = ACTIONS, position = 1500),
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.PropertiesAction"), path = ACTIONS, position = 1600)
+})
 public class GroovyLanguage extends DefaultLanguageConfig {
 
+    public static final String GROOVY_MIME_TYPE ="text/x-groovy";
+    public static final String ACTIONS = "Loaders/"+GROOVY_MIME_TYPE+"/Actions";
+    
     // Copy of groovy/support/resources icon because some API change caused
     // that it's not possible to refer to resource from different module
     private static final String GROOVY_FILE_ICON_16x16 = "org/netbeans/modules/groovy/editor/resources/GroovyFile16x16.png";
-
-
+    
     public GroovyLanguage() {
     }
 
     @MultiViewElement.Registration(
         displayName = "#CTL_SourceTabCaption",
-        mimeType = "text/x-groovy",
+        mimeType = GROOVY_MIME_TYPE,
         iconBase = GROOVY_FILE_ICON_16x16,
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID = "groovy.source",

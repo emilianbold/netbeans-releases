@@ -463,7 +463,11 @@ public class J2SEProjectProperties {
                                 if (mark != null) {
                                     final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
                                     assert ap != null;
-                                    ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
+                                    Mutex.EVENT.writeAccess(new Runnable() {
+                                        @Override public void run() {
+                                            ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
+                                        }
+                                    });
                                 }
                             }
                         }

@@ -56,7 +56,6 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.search.ui.FileObjectPropertySet;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.SearchFilterDefinition;
-import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
@@ -117,13 +116,13 @@ class GraphicalSearchListener<R> extends SearchListener {
             }
         });
         progressHandle.start();
+        resultViewPanel.searchStarted();
         searchComposition.getSearchResultsDisplayer().searchStarted();
         Collection<? extends Savable> unsaved =
                 Savable.REGISTRY.lookupAll(Savable.class);
         if (unsaved.size() > 0) {
             String msg = NbBundle.getMessage(ResultView.class,
-                    "TEXT_INFO_WARNING_UNSAVED",
-                    unsaved.iterator().next().toString(), unsaved.size());
+                    "TEXT_INFO_WARNING_UNSAVED");
             eventChildren.addEvent(new EventNode(EventType.WARNING, msg));
         }
     }
@@ -133,6 +132,7 @@ class GraphicalSearchListener<R> extends SearchListener {
             progressHandle.finish();
             progressHandle = null;
         }
+        resultViewPanel.searchFinished();
         searchComposition.getSearchResultsDisplayer().searchFinished();
     }
 
@@ -188,8 +188,17 @@ class GraphicalSearchListener<R> extends SearchListener {
         String msg = NbBundle.getMessage(ResultView.class,
                 "TEXT_INFO_ERROR_MATCHING", fileName(path), //NOI18N
                 t.getMessage());
-        eventChildren.addEvent(new PathEventNode(EventType.ERROR, msg, path));
-        LOG.log(Level.INFO, path + ": " + t.getMessage(), t);           //NOI18N
+        String tooltip = NbBundle.getMessage(ResultView.class,
+                "TEXT_INFO_ERROR_MATCHING", path, //NOI18N
+                t.getMessage());
+        eventChildren.addEvent(new PathEventNode(EventType.ERROR, msg, path,
+                tooltip));
+        String logMsg = path + ": " + t.getMessage();                   //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, logMsg, t);
+        } else {
+            LOG.log(Level.INFO, logMsg);
+        }
     }
 
     /**
@@ -208,36 +217,10 @@ class GraphicalSearchListener<R> extends SearchListener {
     @Override
     public void fileSkipped(FileObject fileObject,
             SearchFilterDefinition filter, String message) {
-        String fileName = fileObject.getNameExt();
-        if (filter == null) {
-            String infoMsg;
-            if (message == null) {
-                infoMsg = NbBundle.getMessage(ResultView.class,
-                        "TEXT_INFO_SKIPPED", fileName);                 //NOI18N
-            } else {
-                infoMsg = NbBundle.getMessage(ResultView.class,
-                        "TEXT_INFO_SKIPPED_MESSAGE", fileName, message);//NOI18N
-            }
-            eventChildren.addEvent(new FileObjectEventNode(EventType.WARNING,
-                    infoMsg, fileObject));
-        } else if (!SearchInfoDefinitionFactory.DEFAULT_FILTER_DEFS.contains(
-                filter)) {
-            String infoMsg = NbBundle.getMessage(ResultView.class,
-                    "TEXT_INFO_SKIPPED_FILTER", //NOI18N
-                    fileName, getFilterName(filter));
-            eventChildren.addEvent(new FileObjectEventNode(EventType.INFO,
-                    infoMsg, fileObject));
-        }
         LOG.log(Level.INFO, "{0} skipped {1} {2}", new Object[]{ //NOI18N
                     fileObject.getPath(),
                     filter != null ? filter.getClass().getName() : "", //NOI18N
                     message != null ? message : ""});                   //NOI18N
-    }
-
-    private String getFilterName(SearchFilterDefinition filter) {
-        return filter.getClass().getSimpleName().isEmpty()
-                ? filter.getClass().getName()
-                : filter.getClass().getSimpleName();
     }
 
     public Node getInfoNode() {
@@ -350,10 +333,18 @@ class GraphicalSearchListener<R> extends SearchListener {
     private class PathEventNode extends EventNode {
 
         private String path;
+        private String tooltip;
 
-        public PathEventNode(EventType type, String message, String path) {
+        public PathEventNode(EventType type, String message, String path,
+                String tooltip) {
             super(type, message);
             this.path = path;
+            this.tooltip = tooltip;
+        }
+
+        @Override
+        public String getShortDescription() {
+            return tooltip;
         }
 
         @Override

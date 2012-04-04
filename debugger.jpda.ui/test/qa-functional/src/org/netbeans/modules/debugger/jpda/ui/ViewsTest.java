@@ -50,7 +50,9 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.OutlineOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.OutlineNode;
@@ -125,7 +127,7 @@ public class ViewsTest extends DebuggerTestCase {
         Utilities.toggleBreakpoint(eo, 92);
         new EventTool().waitNoEvent(1500);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:92");
         assertNotNull("Variables view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.variablesViewTitle, 0));
         assertNotNull("Breakpoints view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.breakpointsViewTitle, 0));
     }
@@ -135,7 +137,7 @@ public class ViewsTest extends DebuggerTestCase {
         new EventTool().waitNoEvent(500);
         Utilities.toggleBreakpoint(eo, 92);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:92");
         Utilities.showDebuggerView(Utilities.callStackViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.callStackViewTitle));
         assertEquals("MemoryView.updateStatus:92", Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()));
@@ -148,7 +150,7 @@ public class ViewsTest extends DebuggerTestCase {
         new EventTool().waitNoEvent(500);
         Utilities.toggleBreakpoint(eo, 92);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:92");
         Utilities.showDebuggerView(Utilities.classesViewTitle);
         OutlineOperator outlineOperator = new OutlineOperator(new TopComponentOperator(Utilities.classesViewTitle));
         new OutlineNode(outlineOperator, "Application Class Loader|examples.advanced|MemoryView|1").expand();
@@ -163,7 +165,7 @@ public class ViewsTest extends DebuggerTestCase {
         new EventTool().waitNoEvent(500);
         Utilities.toggleBreakpoint(eo, 92);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:92");
         Utilities.showDebuggerView(Utilities.classesViewTitle);
         TopComponentOperator tco = new TopComponentOperator(Utilities.classesViewTitle);
         JTableOperator jTableOperator = new JTableOperator(tco);
@@ -181,7 +183,7 @@ public class ViewsTest extends DebuggerTestCase {
         new EventTool().waitNoEvent(500);
         Utilities.toggleBreakpoint(eo, 92);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:92");
         Utilities.showDebuggerView(Utilities.classesViewTitle);
 
         TopComponentOperator tco = new TopComponentOperator(Utilities.classesViewTitle);
@@ -199,7 +201,7 @@ public class ViewsTest extends DebuggerTestCase {
         new EventTool().waitNoEvent(500);
         Utilities.toggleBreakpoint(eo, 92);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:92");
         Utilities.showDebuggerView(Utilities.threadsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.threadsViewTitle));
         assertTrue("Thread group system is not shown in threads view", "system".equals(Utilities.removeTags(jTableOperator.getValueAt(0,0).toString())));
@@ -215,7 +217,7 @@ public class ViewsTest extends DebuggerTestCase {
         new EventTool().waitNoEvent(500);
         Utilities.toggleBreakpoint(eo, 92);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:92");
         Utilities.showDebuggerView(Utilities.sessionsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.sessionsViewTitle));
         assertEquals("examples.advanced.MemoryView", Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()));
@@ -235,7 +237,7 @@ public class ViewsTest extends DebuggerTestCase {
         new EventTool().waitNoEvent(500);
         Utilities.toggleBreakpoint(eo, 92);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:92");
         Utilities.showDebuggerView(Utilities.sourcesViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.sourcesViewTitle));
         String debugAppSource = "debugTestProject" + java.io.File.separator + "src (Project debugTestProject)";
@@ -257,7 +259,7 @@ public class ViewsTest extends DebuggerTestCase {
         new EventTool().waitNoEvent(500);
         Utilities.toggleBreakpoint(eo, 92);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:92");
         new TopComponentOperator(Utilities.variablesViewTitle).close();
         //new TopComponentOperator(Utilities.watchesViewTitle).close();
         new TopComponentOperator(Utilities.callStackViewTitle).close();

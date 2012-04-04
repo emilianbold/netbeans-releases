@@ -131,6 +131,10 @@ public class PhpStructureScannerTest extends ParserTestBase{
         performTest("traitsStructure_02");
     }
 
+    public void testIssue170712() throws Exception {
+        performTest("issue170712");
+    }
+
     public void testFoldingMethod() throws Exception {
         checkFolds("testfiles/parser/foldingMethod.php");
     }

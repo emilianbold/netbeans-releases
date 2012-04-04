@@ -437,4 +437,38 @@ public class TinyTest extends NbTestCase {
                 .run(Tiny.class)
                 .assertWarnings();
     }
+
+    public void testCollectionsToArray() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "     private String[] test(java.util.Collection<String> col) {\n" +
+                       "         return col.toArray(new String[0]);\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .findWarning("3:20-3:27:verifier:ERR_Tiny_collectionsToArray")
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "     private String[] test(java.util.Collection<String> col) {\n" +
+                              "         return col.toArray(new String[col.size()]);\n" +
+                              "     }\n" +
+                              "}\n");
+    }
+
+    public void testCollectionsToArray2() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "     private java.util.Collection<String> col() { return null; }\n" +
+                       "     private String[] test() {\n" +
+                       "         return col().toArray(new String[0]);\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .findWarning("4:22-4:29:verifier:ERR_Tiny_collectionsToArray")
+                .assertFixes();
+    }
 }

@@ -261,10 +261,12 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     }
 
     public static class UnknownLibraryTypeException extends SAXException {
+        public final String type;
         private UnknownLibraryTypeException(
             final String libraryName,
             final String libraryType) {
             super ("Cannot create library: "+libraryName+" of unknown type: " +libraryType,null);
+            this.type = libraryType;
         }
     }
     

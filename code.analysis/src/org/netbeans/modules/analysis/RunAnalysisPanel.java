@@ -45,6 +45,8 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
+import java.beans.BeanInfo;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -57,41 +59,193 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
 import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.modules.analysis.ui.AdjustConfigurationPanel;
+import org.netbeans.modules.refactoring.api.Scope;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author lahvac
  */
-public class RunAnalysisPanel extends javax.swing.JPanel {
+public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListener {
     
     private final JPanel progress;
-    private final DefaultComboBoxModel configurationModel;
     private final RequiredPluginsPanel requiredPlugins;
-    private final Collection<? extends AnalyzerFactory> analyzers;
+    private       Collection<? extends AnalyzerFactory> analyzers;
+    private final Lookup.Result<AnalyzerFactory> analyzersResult;
     private final Map<String, WarningDescription> warningId2Description = new HashMap<String, WarningDescription>();
 
-    public RunAnalysisPanel(ProgressHandle handle, Collection<? extends AnalyzerFactory> analyzers) {
-        this.analyzers = analyzers;
+    public RunAnalysisPanel(ProgressHandle handle, Lookup context) {
+        this.analyzersResult = Lookup.getDefault().lookupResult(AnalyzerFactory.class);
+        this.analyzersResult.addLookupListener(this);
         
-        configurationModel = new DefaultComboBoxModel();
+        initComponents();
+
+        List<ScopeDescription> scopes = new ArrayList<ScopeDescription>();
+        Icon currentProjectIcon = null;
+        NonRecursiveFolder pack = context.lookup(NonRecursiveFolder.class);
+        FileObject currentFile = context.lookup(FileObject.class);
+
+        if (currentFile != null && currentFile.isData()) {
+            scopes.add(new FileScopeDescription(currentFile));
+        }
+        
+        if (pack != null && currentFile == null) {
+            currentFile = pack.getFolder();
+        }
+        
+        if (currentFile != null) {
+            Project p = FileOwnerQuery.getOwner(currentFile);
+
+            if (p != null) {
+                ProjectInformation pi = ProjectUtils.getInformation(p);
+
+                scopes.add(0, new CurrentProjectScopeDescription(p));
+                currentProjectIcon = pi.getIcon();
+
+                if (pack == null) {
+                    ClassPath bootCP = ClassPath.getClassPath(currentFile, ClassPath.BOOT);
+
+                    if (bootCP != null) {
+                        final FileObject packFO = currentFile.getParent();
+                        pack = new NonRecursiveFolder() {
+                            @Override public FileObject getFolder() {
+                                return packFO;
+                            }
+                        };
+                    }
+                }
+            }
+        } else {
+            Project selected = context.lookup(Project.class);
+
+            if (selected == null) {
+                SourceGroup sg = context.lookup(SourceGroup.class);
+
+                if (sg != null) {
+                    selected = FileOwnerQuery.getOwner(sg.getRootFolder());
+                }
+            }
+
+            if (selected == null) {
+                DataFolder df = context.lookup(DataFolder.class);
+
+                if (df != null) {
+                    selected = FileOwnerQuery.getOwner(df.getPrimaryFile());
+                }
+            }
+
+            if (selected != null) {
+                ProjectInformation pi = ProjectUtils.getInformation(selected);
+
+                scopes.add(0, new CurrentProjectScopeDescription(selected));
+                currentProjectIcon = pi.getIcon();
+            }
+        }
+
+        if (pack != null) {
+            ClassPath source = ClassPath.getClassPath(pack.getFolder(), ClassPath.SOURCE);
+
+            if (source != null) {
+                String packName = source.getResourceName(pack.getFolder());
+
+                scopes.add(1, new PackageScopeDescription(pack, packName));
+            }
+        }
+
+        scopes.add(0, new AllProjectsScopeDescription(currentProjectIcon));
+
+        scopeCombo.setModel(new DefaultComboBoxModel(scopes.toArray(new ScopeDescription[0])));
+        scopeCombo.setRenderer(new ScopeRenderer());
+        scopeCombo.setSelectedIndex(scopes.size() - 1);
+
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridheight = 1;
+        gridBagConstraints.weightx = 1;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        progress = new JPanel(new CardLayout());
+        progress.add(new JPanel(), "empty");
+        progress.add(ProgressHandleFactory.createProgressComponent(handle), "progress");
+        progress.add(requiredPlugins = new RequiredPluginsPanel(), "plugins");
+        add(progress, gridBagConstraints);
+        ((CardLayout) progress.getLayout()).show(progress, "empty");
+
+        updateConfigurations(1, 2);//XXX: the values should be kept across invocations of the dialog
+        updateEnableDisable();
+
+        setBorder(new EmptyBorder(12, 12, 12, 12));
+    }
+
+    void started() {
+        ((CardLayout) progress.getLayout()).show(progress, "progress");
+        progress.invalidate();
+
+        //disable all elements in the dialog:
+        List<JComponent> todo = new LinkedList<JComponent>();
+
+        todo.add(this);
+
+        while (!todo.isEmpty()) {
+            JComponent c = todo.remove(0);
+
+            if (c == progress) continue;
+
+            c.setEnabled(false);
+
+            for (Component child : c.getComponents()) {
+                if (child instanceof JComponent) todo.add((JComponent) child);
+            }
+        }
+    }
+
+    private void updateConfigurations(int configurationComboPreselectIndex, int inspectionComboPreselectIndex) {
+        analyzers = analyzersResult.allInstances();
+        
+        DefaultComboBoxModel configurationModel = new DefaultComboBoxModel();
         configurationModel.addElement("Predefined");
         configurationModel.addElement(null);
 
@@ -108,9 +262,11 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         for (Configuration c : RunAnalysis.readConfigurations()) {
             configurationModel.addElement(c);
         }
-        
-        initComponents();
 
+        configurationCombo.setModel(configurationModel);
+        configurationCombo.setSelectedIndex(configurationComboPreselectIndex < configurationModel.getSize() ? configurationComboPreselectIndex : 1);
+
+        configurationRadio.setSelected(true);
         configurationCombo.setRenderer(new ConfigurationRenderer(true));
 
         DefaultComboBoxModel inspectionModel = new DefaultComboBoxModel();
@@ -147,54 +303,9 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
 
         inspectionCombo.setModel(inspectionModel);
         inspectionCombo.setRenderer(new InspectionRenderer());
-        inspectionCombo.setSelectedIndex(2);
-
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.gridheight = 1;
-        gridBagConstraints.weightx = 1;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        progress = new JPanel(new CardLayout());
-        progress.add(new JPanel(), "empty");
-        progress.add(ProgressHandleFactory.createProgressComponent(handle), "progress");
-        progress.add(requiredPlugins = new RequiredPluginsPanel(), "plugins");
-        add(progress, gridBagConstraints);
-        ((CardLayout) progress.getLayout()).show(progress, "empty");
+        inspectionCombo.setSelectedIndex(inspectionComboPreselectIndex < inspectionModel.getSize() ? inspectionComboPreselectIndex : 0);
 
         updatePlugins();
-        configurationCombo.setSelectedIndex(1);//XXX: the value should be kept across invocations of the dialog
-
-        configurationRadio.setSelected(true);
-        updateEnableDisable();
-
-        setBorder(new EmptyBorder(12, 12, 12, 12));
-    }
-
-    void started() {
-        ((CardLayout) progress.getLayout()).show(progress, "progress");
-        progress.invalidate();
-
-        //disable all elements in the dialog:
-        List<JComponent> todo = new LinkedList<JComponent>();
-
-        todo.add(this);
-
-        while (!todo.isEmpty()) {
-            JComponent c = todo.remove(0);
-
-            if (c == progress) continue;
-
-            c.setEnabled(false);
-
-            for (Component child : c.getComponents()) {
-                if (child instanceof JComponent) todo.add((JComponent) child);
-            }
-        }
     }
 
     private void updatePlugins() {
@@ -221,6 +332,10 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         }
     }
 
+    public Scope getSelectedScope(AtomicBoolean cancel) {
+        return ((ScopeDescription) scopeCombo.getSelectedItem()).getScope(cancel);
+    }
+    
     public AnalyzerFactory getSelectedAnalyzer() {
         if (!(configurationCombo.getSelectedItem() instanceof AnalyzerFactory)) return null;
         return (AnalyzerFactory) configurationCombo.getSelectedItem();
@@ -232,6 +347,10 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
 
         if (selected instanceof Configuration) return ((Configuration) selected).id();
         else return null;
+    }
+
+    public Collection<? extends AnalyzerFactory> getAnalyzers() {
+        return analyzers;
     }
 
     /**
@@ -264,7 +383,6 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
         add(jLabel1, gridBagConstraints);
 
-        scopeCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All Opened Projects" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -282,7 +400,6 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jLabel2, gridBagConstraints);
 
-        configurationCombo.setModel(configurationModel);
         configurationCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configurationComboActionPerformed(evt);
@@ -416,6 +533,15 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         return inspectionCombo.isEnabled() ? SPIAccessor.ACCESSOR.getWarningId((WarningDescription) inspectionCombo.getSelectedItem()) : null;
     }
 
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override public void run() {
+                updateConfigurations(configurationCombo.getSelectedIndex(), inspectionCombo.getSelectedIndex());
+            }
+        });
+    }
+
     public static final class ConfigurationRenderer extends DefaultListCellRenderer {
 
         private final boolean indent;
@@ -459,6 +585,136 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
                 setForeground(UIManager.getColor("Label.disabledForeground"));
 
                 return this;
+            }
+
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+    }
+
+    private interface ScopeDescription {
+        public String getDisplayName();
+        public Icon   getIcon();
+        public Scope  getScope(AtomicBoolean cancel);
+    }
+
+    private static final class AllProjectsScopeDescription implements ScopeDescription {
+        private final Icon icon;
+        public AllProjectsScopeDescription(Icon icon) {
+            this.icon = icon;
+        }
+        @Override
+        @Messages("DN_OpenProjects=Open Projects")
+        public String getDisplayName() {
+            return Bundle.DN_OpenProjects();
+        }
+        @Override
+        public Icon getIcon() {
+            return icon;
+        }
+
+        @Override
+        public Scope getScope(AtomicBoolean cancel) {
+            Map<Project, Map<FileObject, ClassPath>> projects2RegisteredContent = RunAnalysis.projects2RegisteredContent(cancel);
+
+            if (cancel.get()) return null;
+
+            Scope target = Scope.create(null, null, null);
+
+            for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+                if (cancel.get()) return null;
+                target = RunAnalysis.addProjectToScope(p, target, cancel, projects2RegisteredContent);
+            }
+
+            return target;
+        }
+    }
+
+    private static final class CurrentProjectScopeDescription implements ScopeDescription {
+        private final Project project;
+        public CurrentProjectScopeDescription(Project project) {
+            this.project = project;
+        }
+        @Override
+        @Messages("DN_CurrentProject=Current Project ({0})")
+        public String getDisplayName() {
+            return Bundle.DN_CurrentProject(ProjectUtils.getInformation(project).getDisplayName());
+        }
+        @Override
+        public Icon getIcon() {
+            return ProjectUtils.getInformation(project).getIcon();
+        }
+
+        @Override
+        public Scope getScope(AtomicBoolean cancel) {
+            Map<Project, Map<FileObject, ClassPath>> projects2RegisteredContent = RunAnalysis.projects2RegisteredContent(cancel);
+
+            return RunAnalysis.addProjectToScope(project, Scope.create(null, null, null), cancel, projects2RegisteredContent);
+        }
+    }
+
+    private static final class PackageScopeDescription implements ScopeDescription {
+        private final NonRecursiveFolder pack;
+        private final String packName;
+        public PackageScopeDescription(NonRecursiveFolder pack, String packName) {
+            this.pack = pack;
+            this.packName = packName;
+        }
+        @Override
+        @Messages("DN_CurrentPackage=Current Package ({0})")
+        public String getDisplayName() {
+            return Bundle.DN_CurrentPackage(packName);
+        }
+        @Override
+        public Icon getIcon() {
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/analysis/ui/resources/package.gif", false);
+        }
+
+        @Override
+        public Scope getScope(AtomicBoolean cancel) {
+            return Scope.create(null, Collections.singletonList(pack), null);
+        }
+    }
+
+    private static final class FileScopeDescription implements ScopeDescription {
+        private static final Logger LOG = Logger.getLogger(FileScopeDescription.class.getName());
+        private final FileObject file;
+        public FileScopeDescription(FileObject file) {
+            this.file = file;
+        }
+        @Override
+        @Messages("DN_CurrentFile=Current File ({0})")
+        public String getDisplayName() {
+            return Bundle.DN_CurrentFile(file.getNameExt());
+        }
+        @Override
+        public Icon getIcon() {
+            try {
+                DataObject d = DataObject.find(file);
+                Node n = d.getNodeDelegate();
+                return ImageUtilities.image2Icon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
+            } catch (DataObjectNotFoundException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            }
+        }
+
+        @Override
+        public Scope getScope(AtomicBoolean cancel) {
+            return Scope.create(null, null, Collections.singletonList(file));
+        }
+    }
+
+    private static final class ScopeRenderer extends DefaultListCellRenderer {
+
+        @Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if (value instanceof ScopeDescription) {
+                ScopeDescription sd = (ScopeDescription) value;
+
+                try {
+                    return super.getListCellRendererComponent(list, sd.getDisplayName(), index, isSelected, cellHasFocus);
+                } finally {
+                    setIcon(sd.getIcon());
+                }
             }
 
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);

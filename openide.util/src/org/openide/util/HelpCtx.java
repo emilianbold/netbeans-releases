@@ -88,7 +88,7 @@ public final class HelpCtx extends Object {
     * You must provide an ID of the
     * desired help for the item. The ID should refer to an
     * already installed help; this can be easily installed by specifying
-    * a JavaHelp help set for the module (see the Modules API for details).
+    * a JavaHelp help set for the module (see the JavaHelp API for details).
     *
     * @param helpID the JavaHelp ID of the help
     */
@@ -102,8 +102,10 @@ public final class HelpCtx extends Object {
     * the ID.
     *
     * @param clazz the class to take the name from
+    * @deprecated Too easily breaks IDs after code refactoring. Rather use {@link #HelpCtx(String)} with a constant value known to be in the JavaHelp map.
     */
-    public HelpCtx(Class clazz) {
+    @Deprecated
+    public HelpCtx(Class<?> clazz) {
         this(clazz.getName());
     }
 
