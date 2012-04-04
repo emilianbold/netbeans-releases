@@ -41,17 +41,26 @@
  */
 package org.netbeans.modules.profiler.nbimpl.providers;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
 import org.netbeans.modules.profiler.api.java.SourcePackageInfo.Scope;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.modules.profiler.nbimpl.javac.JavacClassInfo;
 import org.netbeans.modules.profiler.nbimpl.javac.JavacPackageInfo;
+import org.netbeans.modules.profiler.nbimpl.javac.ParsingUtils;
 import org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider;
 
 /**
@@ -59,41 +68,58 @@ import org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider;
  * @author Jaroslav Bachorik
  */
 abstract public class BaseProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvider {
+    private static final Logger LOG = Logger.getLogger(BaseProfilerTypeUtilsImpl.class.getName());
     @Override
-    final public Collection<SourcePackageInfo> getPackages(boolean subprojects, Scope scope) {
-        Collection<SourcePackageInfo> pkgs = new ArrayList<SourcePackageInfo>();
-        
-        ClasspathInfo cpInfo = getClasspathInfo(subprojects, scope == SourcePackageInfo.Scope.SOURCE, scope == SourcePackageInfo.Scope.DEPENDENCIES);
-        ClasspathInfo indexInfo = getClasspathInfo(subprojects, true, true);
+    final public Collection<SourcePackageInfo> getPackages(boolean subprojects, final Scope scope) {
+        final Collection<SourcePackageInfo> pkgs = new ArrayList<SourcePackageInfo>();
+
+        final ClasspathInfo cpInfo = getClasspathInfo(subprojects, scope == SourcePackageInfo.Scope.SOURCE, scope == SourcePackageInfo.Scope.DEPENDENCIES);
+        final ClasspathInfo indexInfo = getClasspathInfo(subprojects, true, true);
         
         // #170201: A misconfigured(?) project can have no source roots defined, returning NULL as its ClasspathInfo
         // ignore such a project
         if (cpInfo != null) {
-            for (String pkgName : cpInfo.getClassIndex().getPackageNames("", true, toSearchScope(Collections.singleton(scope)))) { // NOI18N
-                pkgs.add(new JavacPackageInfo(cpInfo, indexInfo, pkgName, pkgName, scope));
-            }
+            ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
+                @Override
+                public void run(CompilationController cc) {
+                    for (String pkgName : cpInfo.getClassIndex().getPackageNames("", true, toSearchScope(Collections.singleton(scope)))) { // NOI18N
+                        pkgs.add(new JavacPackageInfo(cpInfo, indexInfo, pkgName, pkgName, scope));
+                    }
+                }
+            });
         }        
         return pkgs;
     }
 
     @Override
-    final public SourceClassInfo resolveClass(String className) {
-        ClasspathInfo cpInfo = getClasspathInfo();
+    final public SourceClassInfo resolveClass(final String className) {
+        final JavacClassInfo[] cRef = new JavacClassInfo[1];
+        final ClasspathInfo cpInfo = getClasspathInfo();
         if (cpInfo != null) {
-            ElementHandle<TypeElement> eh = ElementUtilitiesEx.resolveClassByName(className, cpInfo, false);
-            return eh != null ? new JavacClassInfo(eh, cpInfo) : null;
+            ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
+                @Override
+                public void run(CompilationController cc) {
+                    ElementHandle<TypeElement> eh = ElementUtilitiesEx.resolveClassByName(className, cpInfo, false);
+                    cRef[0] = eh != null ? new JavacClassInfo(eh, cpInfo) : null;
+                }
+            });
         }
-        return null;
+        return cRef[1];
     }
 
     @Override
-    public Collection<SourceClassInfo> findClasses(String pattern, Set<Scope> scope) {
-        Collection<SourceClassInfo> clzs = new ArrayList<SourceClassInfo>();
-        ClasspathInfo cpInfo = getClasspathInfo();
+    public Collection<SourceClassInfo> findClasses(final String pattern, final Set<Scope> scope) {
+        final Collection<SourceClassInfo> clzs = new ArrayList<SourceClassInfo>();
+        final ClasspathInfo cpInfo = getClasspathInfo();
         if (cpInfo != null) {
-            for(ElementHandle<TypeElement> eh : cpInfo.getClassIndex().getDeclaredTypes(pattern, ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP, toSearchScope(scope))) {
-                clzs.add(new JavacClassInfo(eh, cpInfo));
-            }
+            ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
+                @Override
+                public void run(CompilationController cc) {
+                    for(ElementHandle<TypeElement> eh : cpInfo.getClassIndex().getDeclaredTypes(pattern, NameKind.CASE_INSENSITIVE_REGEXP, toSearchScope(scope))) {
+                        clzs.add(new JavacClassInfo(eh, cpInfo));
+                    }
+                }
+            });
         }
         
         return clzs;
