@@ -63,8 +63,8 @@ import org.openide.util.NbBundle;
  * @author ads
  */
 public class BreakpointModel extends ViewModelSupport
-        implements NodeModel 
-{ 
+        implements NodeModel
+{
 
     public static final String BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint";            // NOI18N
@@ -88,17 +88,17 @@ public class BreakpointModel extends ViewModelSupport
         "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpointHit";     // NOI18N
     public static final String DISABLED_LINE_CONDITIONAL_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/DisabledConditionalBreakpoint";// NOI18N
-    
-    private static final String METHOD                              = 
+
+    private static final String METHOD                              =
                                          "TXT_Method";                                          // NOI18N
-    
-    private static final String PARENS                              = 
+
+    private static final String PARENS                              =
                                          "()";                                                  // NOI18N
 
     public BreakpointModel() {
         myCurrentBreakpoints = new WeakHashMap<DebugSession, AbstractBreakpoint>();
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.ViewModelSupport#clearModel()
      */
@@ -115,12 +115,12 @@ public class BreakpointModel extends ViewModelSupport
             LineBreakpoint breakpoint = (LineBreakpoint)node;
             FileObject fileObject = breakpoint.getLine().getLookup().
                 lookup(FileObject.class);
-            return fileObject.getNameExt() + ":" + 
+            return fileObject.getNameExt() + ":" +
                 (breakpoint.getLine().getLineNumber() + 1);
         }
         else if ( node instanceof FunctionBreakpoint ) {
             FunctionBreakpoint breakpoint = (FunctionBreakpoint)node;
-            StringBuilder builder = new StringBuilder( 
+            StringBuilder builder = new StringBuilder(
                     NbBundle.getMessage( BreakpointModel.class, METHOD ) );
             builder.append( " ");
             builder.append( breakpoint.getFunction() );
@@ -148,8 +148,8 @@ public class BreakpointModel extends ViewModelSupport
                 return DISABLED_LINE_BREAKPOINT;
             }
             /*Line line = Utils.getCurrentLine();
-            if(line != null && 
-                    line.getLineNumber() == breakpoint.getLine().getLineNumber()) 
+            if(line != null &&
+                    line.getLineNumber() == breakpoint.getLine().getLineNumber())
             {
                 return CURRENT_LINE_BREAKPOINT;
             }*/
@@ -180,22 +180,21 @@ public class BreakpointModel extends ViewModelSupport
     public void setCurrentStack( Stack stack, DebugSession session ) {
         if ( stack == null ) {
             synchronized ( myCurrentBreakpoints ) {
-                AbstractBreakpoint breakpoint = 
+                AbstractBreakpoint breakpoint =
                     myCurrentBreakpoints.remove(session);
                 fireChangeEvent( new ModelEvent.NodeChanged( this , breakpoint) );
             }
             return;
         }
         String currentCommand = stack.getCurrentCommandName();
-        
-        if ( foundLineBreakpoint( stack.getLine() -1 , session)) {
+        if ( foundLineBreakpoint(stack.getFileName().replace("file:///", "file:/"),  stack.getLine() -1 , session)) { //NOI18N
             return;
         }
         else {
             foundFunctionBreakpoint( currentCommand , session );
         }
     }
-    
+
     private String getCurrentBreakpointIconBase( AbstractBreakpoint breakpoint ) {
         if ( breakpoint instanceof LineBreakpoint ) {
             return CURRENT_LINE_BREAKPOINT;
@@ -208,16 +207,16 @@ public class BreakpointModel extends ViewModelSupport
     private boolean foundFunctionBreakpoint( String currentCommand,
             DebugSession session )
     {
-        return foundBreakpoint( session , 
+        return foundBreakpoint( session ,
                 new FunctionBreakpointAcceptor( currentCommand) );
     }
 
-    private boolean foundLineBreakpoint( int line, DebugSession session ) {
-        return foundBreakpoint(session, new LineBreakpointAcceptor( line ));
+    private boolean foundLineBreakpoint(String fileName, int line, DebugSession session ) {
+        return foundBreakpoint(session, new LineBreakpointAcceptor( fileName, line ));
     }
-    
+
     private boolean foundBreakpoint( DebugSession session , Acceptor acceptor) {
-        Breakpoint[] breakpoints = 
+        Breakpoint[] breakpoints =
             DebuggerManager.getDebuggerManager().getBreakpoints();
         for (Breakpoint breakpoint : breakpoints) {
             if ( !( breakpoint instanceof AbstractBreakpoint) ) {
@@ -241,14 +240,15 @@ public class BreakpointModel extends ViewModelSupport
         }
         return false;
     }
-    
+
     private interface Acceptor {
         boolean accept( Breakpoint breakpoint );
     }
-    
+
     private class LineBreakpointAcceptor implements Acceptor {
-        
-        LineBreakpointAcceptor( int lineNumber ) {
+
+        LineBreakpointAcceptor( String currentFilePath, int lineNumber ) {
+            myCurrentFilePath = currentFilePath;
             myLine = lineNumber;
         }
 
@@ -258,17 +258,18 @@ public class BreakpointModel extends ViewModelSupport
                 return false;
             }
             LineBreakpoint lineBreakpoint = (LineBreakpoint) breakpoint;
-            return myLine == lineBreakpoint.getLine().getLineNumber();
+            return (myLine == lineBreakpoint.getLine().getLineNumber()) && (myCurrentFilePath.equals(lineBreakpoint.getFileUrl()));
         }
-        
+
         private int myLine;
+        private String myCurrentFilePath;
     }
-    
+
     private class FunctionBreakpointAcceptor implements Acceptor {
         FunctionBreakpointAcceptor( String function ){
-            myFunction = function; 
+            myFunction = function;
         }
-        
+
         @Override
         public boolean accept( Breakpoint breakpoint ) {
             if ( !( breakpoint instanceof FunctionBreakpoint )) {
@@ -276,7 +277,7 @@ public class BreakpointModel extends ViewModelSupport
             }
             String function = ((FunctionBreakpoint)breakpoint).getFunction();
             // TODO : need more accurate implementation for class methods f.e.
-            
+
             return function == null ? false : function.equals( myFunction );
         }
         private String myFunction;

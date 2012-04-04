@@ -759,7 +759,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     private static WLTargetModuleID createModuleId(Target target, File file,
             String host, String port, String name, J2eeModule.Type type) {
 
-        WLTargetModuleID moduleId = new WLTargetModuleID(target, name);
+        WLTargetModuleID moduleId = new WLTargetModuleID(target, name, file);
 
         try {
             String serverUrl = "http://" + host + ":" + port;
