@@ -31,7 +31,6 @@
     Module Utilities encompasses five small pseudo-modules providing different,
     unrelated, functionality:</p>
     <ul>
-        <li>Find in Files</li>
         <li>Open File</li>
         <li>URL</li>
         <li>PDF</li>
@@ -40,21 +39,6 @@
     <p>
     These modules have a common module installer, i.e. they cannot be
     installed or uninstalled individually.</p>
-
-    <h4>Find in Files</h4>
-
-    <p>
-    Although the name is Find in Files, the module actually searches
-    for <code>DataObject</code>s. It searches selected directories (or
-    filesystems) for <code>DataObject</code>s matching criteria specified by
-    the user. For a <code>DataObject</code> to be displayed in search results,
-    it must match all specified criteria.</p>
-
-    <p>
-    Criteria types are pluggable - any module may provide and register its own
-    type of criterion (see the SPI description below). The plugins are
-    registered using a system filesystem layer (see the API description
-    below). The Utilities module defines four default search types.</p>
 
     <h4>Open File</h4>
 
@@ -140,8 +124,7 @@
     <api name="OpenAPIs"
          group="java"
          type="import"
-         category="official"
-         url="http://www.netbeans.org/download/dev/javadoc/">
+         category="official">
     <code>org.openide</code>,
     <code>org.netbeans.modules.javahelp/1</code>,
     <code>org.netbeans.modules.settings/1</code>,
