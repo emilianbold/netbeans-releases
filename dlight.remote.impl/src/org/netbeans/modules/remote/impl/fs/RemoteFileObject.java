@@ -42,16 +42,17 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectStreamException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileAttributeEvent;
@@ -68,6 +69,7 @@ import org.openide.filesystems.FileRenameEvent;
  */
 public final class RemoteFileObject extends FileObject implements Serializable {
 
+    static final long serialVersionUID = 1931650016889811086L;
     private final RemoteFileSystem fileSystem;
     private RemoteFileObjectBase delegate;
     
@@ -95,7 +97,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
 
     public RemoteFileObjectBase getImplementor() {
         if (delegate == null) {
-            String errMsg = "Null delegate: " + getPath(); // NOI18N
+            String errMsg = "Null delegate"; // path is not avaliable! // NOI18N
             RemoteLogger.getInstance().log(Level.WARNING, errMsg, new NullPointerException(errMsg));
         }
         return delegate;
@@ -112,7 +114,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
 
     // <editor-fold desc="Moved from RemoteFileObjectFile.">
     
-    private ThreadLocal<AtomicInteger> magic = new ThreadLocal<AtomicInteger>() {
+    transient private ThreadLocal<AtomicInteger> magic = new ThreadLocal<AtomicInteger>() {
 
         @Override
         protected AtomicInteger initialValue() {
@@ -455,4 +457,29 @@ public final class RemoteFileObject extends FileObject implements Serializable {
         getImplementor().addFileChangeListener(fcl);
     }
     // </editor-fold>
+    
+   /* Java serialization*/ Object writeReplace() throws ObjectStreamException {
+        return new SerializedForm(getExecutionEnvironment(), getPath());
+    }
+    
+    private static class SerializedForm implements Serializable {
+        
+        static final long serialVersionUID = -1;
+        private final ExecutionEnvironment env;
+        private final String remotePath;
+
+        public SerializedForm(ExecutionEnvironment env, String remotePath) {
+            this.env = env;
+            this.remotePath = remotePath;
+        }
+                
+        /* Java serialization*/ Object readResolve() throws ObjectStreamException {
+            RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
+            FileObject fo = fs.findResource(remotePath);
+            if (fo == null) {
+                fo = InvalidFileObjectSupport.getInvalidFileObject(fs, remotePath);
+            }
+            return fo;
+        }
+    }    
 }
