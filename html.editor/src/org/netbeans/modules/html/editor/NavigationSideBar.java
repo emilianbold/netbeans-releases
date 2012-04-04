@@ -143,7 +143,11 @@ public class NavigationSideBar extends JPanel implements Accessible {
                 for (Element node : treePath.path()) { //really brilliant wording!!!!
                     if (node.type() == ElementType.OPEN_TAG && !ElementUtils.isVirtualNode(node)) {
                         OpenTag openTag = (OpenTag)node;
-                        nodesInPath.add(new OpenTagInfo(openTag.name().toString(), openTag.from()));
+                        int documentFrom = result.getSnapshot().getOriginalOffset(openTag.from());
+                        OpenTagInfo oti = new OpenTagInfo(
+                                openTag.name().toString(), 
+                                documentFrom);
+                        nodesInPath.add(oti);
                     }
                 }
             }
@@ -153,11 +157,11 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
             @Override
             public int compare(OpenTagInfo o1, OpenTagInfo o2) {
-                return o1.getOffset() - o2.getOffset();
+                return o1.getDocumentOffset() - o2.getDocumentOffset();
             }
         });
 
-        updateNestingInfo(info, nodesInPath);
+        updateNestingInfo(nodesInPath);
 
         if (testAccess != null) {
             testAccess.updated(nodesInPath);
@@ -165,7 +169,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
     }
 
-    private void updateNestingInfo(final Result tsource, List<OpenTagInfo> sortedPath) {
+    private void updateNestingInfo(List<OpenTagInfo> sortedPath) {
         nesting = sortedPath;
 
         //update UI
@@ -173,13 +177,13 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
             @Override
             public void run() {
-                updatePanelUI(tsource);
+                updatePanelUI();
             }
         });
 
     }
 
-    private void updatePanelUI(final Result tsource) {
+    private void updatePanelUI() {
         removeAll();
 
         for (final OpenTagInfo node : nesting) {
@@ -202,8 +206,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
                 @Override
                 public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    int documentOffset = tsource.getSnapshot().getOriginalOffset(node.getOffset());
-                    component.getCaret().setDot(documentOffset);
+                    component.getCaret().setDot(node.getDocumentOffset());
                 }
             });
 
@@ -271,19 +274,19 @@ public class NavigationSideBar extends JPanel implements Accessible {
     private static class OpenTagInfo {
         
         private String name;
-        private int offset;
+        private int documentOffset;
 
-        public OpenTagInfo(String name, int offset) {
+        public OpenTagInfo(String name, int documentOffset) {
             this.name = name;
-            this.offset = offset;
+            this.documentOffset = documentOffset;
         }
 
         public String getName() {
             return name;
         }
 
-        public int getOffset() {
-            return offset;
+        public int getDocumentOffset() {
+            return documentOffset;
         }
         
     }

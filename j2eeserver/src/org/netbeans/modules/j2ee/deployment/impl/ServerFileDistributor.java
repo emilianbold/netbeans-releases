@@ -310,8 +310,6 @@ public class ServerFileDistributor extends ServerProgress {
         }
         setStatusDistributeRunning(NbBundle.getMessage(ServerFileDistributor.class, "MSG_RunningIncrementalDeploy", target));
         try {
-            //get relative-path-key map from FDL
-            File dir = incremental.getDirectoryForModule(target);
             // mkdirs()/toFileObject is not tolerated any more
             FileObject destRoot = FileUtil.createFolder(destDir);
 
