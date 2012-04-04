@@ -816,7 +816,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                                 OpenTag ot = (OpenTag)s;
                                 Attribute classA = ot.getAttribute("class");
                                 if(classA != null) {
-                                    classes.add(classA.value().toString());
+                                    classes.add(classA.unquotedValue().toString());
                                 }
                             }
                         }
