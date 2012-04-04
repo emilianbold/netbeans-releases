@@ -253,6 +253,11 @@ public final class WLStartServer extends StartServer {
         return supportsStartDeploymentManager();
     }
 
+    @Override
+    public boolean needsRestart(Target target) {
+        return dm.isRestartNeeded();
+    }
+
     private static boolean ping(String host, int port, int timeout) {
         if (pingPath(host, port, timeout, "/console/login/LoginForm.jsp")) {
             return true;
@@ -360,6 +365,17 @@ public final class WLStartServer extends StartServer {
         return true;
     }
 
+    private static StringBuilder appendNonProxyHosts(StringBuilder sb) {
+        if (sb.indexOf("http.nonProxyHosts") < 0) { // NOI18N
+            String nonProxyHosts = NonProxyHostsHelper.getNonProxyHosts();
+            if (!nonProxyHosts.isEmpty()) {
+                sb.append(" -Dhttp.nonProxyHosts="); // NOI18N
+                sb.append('"').append(nonProxyHosts).append('"');
+            }
+        }
+        return sb;
+    }
+
     private class WLProfilingStartTask extends WLStartTask {
 
         public WLProfilingStartTask(String uri, WLServerProgress serverProgress,
@@ -393,15 +409,6 @@ public final class WLStartServer extends StartServer {
         @Override
         protected ExternalProcessBuilder setJavaOptionsEnv(ExternalProcessBuilder builder) {
             ExternalProcessBuilder result = builder;
-            /*JavaPlatform javaPlatform = getSettings().getJavaPlatform();
-            vendor = javaPlatform.getVendor();
-
-            String javaHome = getJavaHome(javaPlatform);
-            result = result.addEnvironmentVariable("JAVA_HOME", javaHome); // NOI18N
-            if (SUN.equals(vendor)) {
-                result = result.addEnvironmentVariable("SUN_JAVA_HOME", // NOI18N
-                        javaHome);
-            }*/
 
             StringBuilder javaOptsBuilder = new StringBuilder();
             String javaOpts = dm.getInstanceProperties().getProperty(
@@ -417,6 +424,8 @@ public final class WLStartServer extends StartServer {
                     javaOptsBuilder.append(' ').append(singleArg);
                 }
             }
+
+            appendNonProxyHosts(javaOptsBuilder);
             String toAdd = javaOptsBuilder.toString().trim();
             if (!toAdd.isEmpty()){
                 result = result.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE, 
@@ -446,9 +455,7 @@ public final class WLStartServer extends StartServer {
         }
 
         @Override
-        protected ExternalProcessBuilder setJavaOptionsEnv(
-                ExternalProcessBuilder builder )
-        {
+        protected ExternalProcessBuilder setJavaOptionsEnv(ExternalProcessBuilder builder) {
             int debugPort = 4000;
             debugPort = Integer.parseInt(dm.getInstanceProperties().getProperty(
                     WLPluginProperties.DEBUGGER_PORT_ATTR));
@@ -471,6 +478,8 @@ public final class WLStartServer extends StartServer {
                     javaOptsBuilder.append(' ').append(singleArg);
                 }
             }
+
+            appendNonProxyHosts(javaOptsBuilder);
             ExternalProcessBuilder result = builder.addEnvironmentVariable(
                     JAVA_OPTIONS_VARIABLE,
                     javaOptsBuilder.toString());   
@@ -629,7 +638,7 @@ public final class WLStartServer extends StartServer {
             }
         }
 
-        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder){
+        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
             ExternalProcessBuilder result = builder;
             
             result = setJavaOptionsEnv( result );
@@ -647,9 +656,7 @@ public final class WLStartServer extends StartServer {
             return result;
         }
         
-        protected ExternalProcessBuilder setJavaOptionsEnv( 
-                ExternalProcessBuilder builder)
-        {
+        protected ExternalProcessBuilder setJavaOptionsEnv(ExternalProcessBuilder builder) {
             ExternalProcessBuilder result = builder;
             String javaOpts = dm.getInstanceProperties().getProperty(WLPluginProperties.JAVA_OPTS);
             StringBuilder sb = new StringBuilder((javaOpts!= null && javaOpts.trim().length() > 0)
@@ -660,6 +667,8 @@ public final class WLStartServer extends StartServer {
                     sb.append(' ').append(singleArg);
                 }
             }
+
+            appendNonProxyHosts(sb);
             if (sb.length() > 0) {
                 result = builder.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,
                         sb.toString());
@@ -831,10 +840,5 @@ public final class WLStartServer extends StartServer {
                 LOGGER.log(Level.WARNING, null, e);
             }
         }
-    }
-
-    @Override
-    public boolean needsRestart(Target target) {
-        return dm.isRestartNeeded();
     }
 }
