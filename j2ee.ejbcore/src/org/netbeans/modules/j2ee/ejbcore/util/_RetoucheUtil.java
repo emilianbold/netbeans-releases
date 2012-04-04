@@ -244,21 +244,22 @@ public final class _RetoucheUtil {
             @Override
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                String newName = convertToJavaIdentifier(memberName, defaultValue);
+                String validName = convertToJavaIdentifier(memberName, defaultValue);
                 List<String> existingMethodNames = new ArrayList<String>();
                 TypeElement typeElement = controller.getElements().getTypeElement(className);
                 if (typeElement == null) {
-                    result[0] = newName;
+                    result[0] = validName;
                     return;
                 }
                 for (Element element : typeElement.getEnclosedElements()) {
                     existingMethodNames.add(element.getSimpleName().toString());
                 }
                 int uniquefier = 1;
-                while (existingMethodNames.contains(newName)){
-                    newName = memberName + uniquefier++;
+                String resultName = validName;
+                while (existingMethodNames.contains(resultName)){
+                    resultName = validName + uniquefier++;
                 }
-                result[0] = newName;
+                result[0] = resultName;
             }
         }, true);
         return result[0];

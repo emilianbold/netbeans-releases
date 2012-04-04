@@ -45,9 +45,6 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,11 +59,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Analyzes build.properties and cluster.properties and tries to diagnose any problems.
@@ -83,11 +75,6 @@ public final class CheckModuleConfigs extends Task {
         nbroot = f;
     }
 
-    private File masterProjectXml;
-    public void setMasterProjectXml(File masterProjectXml) {
-        this.masterProjectXml = masterProjectXml;
-    }
-    
     public @Override void execute() throws BuildException {
         if (nbroot == null) {
             throw new BuildException("Must define 'nbroot' param", getLocation());
@@ -99,13 +86,6 @@ public final class CheckModuleConfigs extends Task {
         Set<String> allClusterModules = new TreeSet<String>();
         for (Set<String> s : clusters.values()) {
             allClusterModules.addAll(s);
-        }
-        try {
-            writeMasterProjectXml(masterProjectXml, allClusterModules);
-        } catch (SAXException e) {
-            throw new BuildException("Could not write to " + masterProjectXml, e, getLocation());
-        } catch (IOException e) {
-            throw new BuildException("Could not write to " + masterProjectXml, e, getLocation());
         }
         // Check that javadoc <= full cluster config:
         Set<String> javadoc = splitToSet(getProject().getProperty("config.javadoc.all"), "config.javadoc.all");
@@ -192,40 +172,6 @@ public final class CheckModuleConfigs extends Task {
             clusters.put(cluster, new TreeSet<String>(splitToSet(l, fullConfig)));
         }
         return clusters;
-    }
-
-    private void writeMasterProjectXml(File masterProjectXml, Set<String> allClusterModules) throws IOException, SAXException {
-        if (masterProjectXml == null) {
-            return;
-        }
-        log("Writing module list to " + masterProjectXml);
-        Document doc = XMLUtil.parse(new InputSource(masterProjectXml.toURI().toString()), false, true, null, null);
-        NodeList nl = doc.getElementsByTagName("subprojects");
-        if (nl.getLength() != 1) {
-            throw new IOException("No or multiple <subprojects>");
-        }
-        Element sp  = (Element) nl.item(0);
-        nl = sp.getChildNodes();
-        while (nl.getLength() > 0) {
-            sp.removeChild(nl.item(0));
-        }
-        sp.appendChild(doc.createComment(" To update, run target listed above "));
-        for (String module : allClusterModules) {
-            if (new File(nbroot, (module + "/nbproject/project.xml").replace('/', File.separatorChar)).isFile()) {
-                Element e = doc.createElementNS("http://www.netbeans.org/ns/freeform-project/2", "project");
-                String path = "../../" + module;
-                e.appendChild(doc.createTextNode(path.replaceFirst("^\\.\\./\\.\\./ide/", "../")));
-                sp.appendChild(e);
-            } else {
-                sp.appendChild(doc.createComment(" Unprojectized: " + module + " "));
-            }
-        }
-        OutputStream os = new FileOutputStream(masterProjectXml);
-        try {
-            XMLUtil.write(doc, os);
-        } finally {
-            os.close();
-        }
     }
 
 }

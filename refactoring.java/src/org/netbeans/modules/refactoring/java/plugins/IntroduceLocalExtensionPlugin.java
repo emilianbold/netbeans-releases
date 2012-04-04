@@ -42,6 +42,8 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import java.io.IOException;
+import java.net.URL;
+import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -49,13 +51,16 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -90,6 +95,33 @@ public final class IntroduceLocalExtensionPlugin extends JavaRefactoringPlugin {
             return preCheckProblem;
         }
         return preCheckProblem;
+    }
+
+    @Override
+    public Problem fastCheckParameters() {
+        Problem fastCheckProblem = null;
+        String newName = refactoring.getNewName();
+        if (!Utilities.isJavaIdentifier(newName)) {
+            String msg = NbBundle.getMessage(IntroduceLocalExtensionPlugin.class, "ERR_InvalidIdentifier", newName);
+            fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+            return fastCheckProblem;
+        }
+        String targetPackageName = refactoring.getPackageName();
+        if (!RefactoringUtils.isValidPackageName(targetPackageName)) {
+            String msg = NbBundle.getMessage(IntroduceLocalExtensionPlugin.class, "ERR_InvalidPackage", targetPackageName);
+            fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+            return fastCheckProblem;
+        }
+        
+        FileObject targetRoot = refactoring.getSourceRoot();
+        FileObject targetF = targetRoot.getFileObject(targetPackageName.replace('.', '/'));
+
+        if ((targetF!=null && !targetF.canWrite())) {
+            String msg = NbBundle.getMessage(IntroduceLocalExtensionPlugin.class, "ERR_PackageIsReadOnly", targetPackageName);
+            fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+            return fastCheckProblem;
+        }
+        return super.fastCheckParameters();
     }
 
     private Set<FileObject> getRelevantFiles() {

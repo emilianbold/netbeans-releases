@@ -181,7 +181,7 @@ public class ActionsTest extends DebuggerTestCase {
         eo.close();
     }
 
-    public void testCheckEnabledActionsDebugging() {        
+    public void testCheckEnabledActionsDebugging() throws Throwable {        
         Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
         Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
         new OpenAction().performAPI(beanNode); // NOI18N
@@ -193,7 +193,7 @@ public class ActionsTest extends DebuggerTestCase {
         new DebugJavaFileAction().perform(beanNode);
         Utilities.getDebugToolbar().waitComponentVisible(true);
         //wait for breakpoint
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
+        assertTrue("Main thread was not stopped at breakpoint.", Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104."));
         //check actions
         //main menu actions
         //check main menu debug main project action
@@ -212,6 +212,7 @@ public class ActionsTest extends DebuggerTestCase {
                 new Action(pausePath, null).performMenu();
         }
         MainWindowOperator.getDefault().menuBar().closeSubmenus();
+        Utilities.setCaret(eo, 105);
         new EventTool().waitNoEvent(500);
         assertFalse(pausePath, Utilities.verifyMainMenu(pausePath, false));
         //continue

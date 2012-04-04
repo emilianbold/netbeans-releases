@@ -99,8 +99,6 @@ import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
@@ -142,11 +140,14 @@ class WebActionProvider extends BaseActionProvider {
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG,
         COMMAND_DEBUG_SINGLE,
+        COMMAND_PROFILE,
+        COMMAND_PROFILE_SINGLE,
         WebProjectConstants.COMMAND_REDEPLOY,
         JavaProjectConstants.COMMAND_JAVADOC,
         COMMAND_TEST,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
+        COMMAND_PROFILE_TEST_SINGLE,
         SingleMethod.COMMAND_RUN_SINGLE_METHOD,
         SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
@@ -163,10 +164,12 @@ class WebActionProvider extends BaseActionProvider {
         COMMAND_COMPILE_SINGLE,
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG_SINGLE,
+        COMMAND_PROFILE_SINGLE,
         JavaProjectConstants.COMMAND_JAVADOC,
         COMMAND_TEST,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
+        COMMAND_PROFILE_TEST_SINGLE,
         SingleMethod.COMMAND_RUN_SINGLE_METHOD,
         SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
     };
@@ -201,14 +204,18 @@ class WebActionProvider extends BaseActionProvider {
         commands.put(COMMAND_DEBUG, new String[]{"debug"}); // NOI18N
         // the target name is debug, except for Java files with main method, where it is debug-single-main
         commands.put(COMMAND_DEBUG_SINGLE, new String[]{"debug-single-main"}); // NOI18N
+        commands.put(COMMAND_PROFILE, new String[]{"profile"}); // NOI18N
+        commands.put(COMMAND_PROFILE_SINGLE, new String[]{"profile-single-main"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[]{"javadoc"}); // NOI18N
         commands.put(COMMAND_TEST, new String[]{"test"}); // NOI18N
         commands.put(COMMAND_TEST_SINGLE, new String[]{"test-single"}); // NOI18N
         commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[]{"debug-test"}); // NOI18N
+        commands.put(COMMAND_PROFILE_TEST_SINGLE, new String[]{"profile-test"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[]{"debug-fix"}); // NOI18N
         commands.put(COMMAND_VERIFY, new String[]{"verify"}); // NOI18N
         this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(
-            COMMAND_RUN_SINGLE
+            COMMAND_RUN_SINGLE,
+            COMMAND_PROFILE_SINGLE
         ));
 
         this.needJavaModelActions = new HashSet<String>(Arrays.asList(
@@ -254,9 +261,9 @@ class WebActionProvider extends BaseActionProvider {
 
     @Override
     protected void updateJavaRunnerClasspath(String command, Map<String, Object> execProperties) {
-        if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command) ||
+        if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command) || COMMAND_PROFILE_TEST_SINGLE.equals(command) ||
             SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) ||
-            COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
+            COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_PROFILE_SINGLE.equals(command)) {
             FileObject fo = (FileObject)execProperties.get(JavaRunner.PROP_EXECUTE_FILE);
             ClassPath cp = getCallback().findClassPath(fo, ClassPath.EXECUTE);
             ClassPath cp2 = ClassPathFactory.createClassPath(
@@ -287,7 +294,7 @@ class WebActionProvider extends BaseActionProvider {
 
     @Override
     protected boolean handleJavaClass(Properties p, FileObject javaFile, String command, List<String> targetNames) {
-        return runServlet(p, javaFile, "LBL_RunAction", false, targetNames);
+        return runServlet(p, javaFile, "LBL_RunAction", COMMAND_DEBUG_SINGLE.equals(command), COMMAND_PROFILE_SINGLE.equals(command), targetNames);
     }
 
     @Override
@@ -295,7 +302,8 @@ class WebActionProvider extends BaseActionProvider {
         if (command.equals(COMMAND_RUN_SINGLE) ||command.equals(COMMAND_RUN) ||
             command.equals(WebProjectConstants.COMMAND_REDEPLOY) ||command.equals(COMMAND_DEBUG) ||
             command.equals(COMMAND_DEBUG_SINGLE) || command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX) ||
-            command.equals( COMMAND_TEST_SINGLE) || command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
+            command.equals(COMMAND_PROFILE) || command.equals(COMMAND_PROFILE_SINGLE) ||
+            command.equals( COMMAND_TEST_SINGLE) || command.equals(COMMAND_DEBUG_TEST_SINGLE) || command.equals(COMMAND_PROFILE_TEST_SINGLE)) {
             setDirectoryDeploymentProperty(p);
         }
 
@@ -308,7 +316,7 @@ class WebActionProvider extends BaseActionProvider {
         if (isDebugged()) {
             p.setProperty("is.debugged", "true");
         }
-        if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE)) {
+        if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_PROFILE_SINGLE)) {
             String res[] = super.getTargetNames(command, context, p, doJavaChecks);
             if (res != null) {
                 return res;
@@ -319,10 +327,8 @@ class WebActionProvider extends BaseActionProvider {
             String targetNames[];
             if (command.equals(COMMAND_DEBUG_SINGLE)) {
                 targetNames = new String[]{"debug"};
-                boolean keepDebugging = setJavaScriptDebuggerProperties(p);
-                if (!keepDebugging) {
-                    return null;
-                }
+            } else if (command.equals(COMMAND_PROFILE_SINGLE)) {
+                targetNames = new String[]{"profile"};
             } else {
                 targetNames = new String[]{"run"};
             }
@@ -372,12 +378,13 @@ class WebActionProvider extends BaseActionProvider {
                 return null;
             }
             return commands.get(command);
-        } else if (command.equals(COMMAND_DEBUG)) {
+        } else if (command.equals(COMMAND_PROFILE)) {
             if (!isSelectedServer()) {
                 return null;
             }
-            boolean keepDebugging = setJavaScriptDebuggerProperties(p);
-            if (!keepDebugging) {
+            initWebServiceProperties(p);
+        } else if (command.equals(COMMAND_DEBUG)) {
+            if (!isSelectedServer()) {
                 return null;
             }
             initWebServiceProperties(p);
@@ -486,8 +493,10 @@ class WebActionProvider extends BaseActionProvider {
 
     // Fix for IZ#170419 - Invoking Run took 29110 ms.
     private boolean runServlet( Properties p, FileObject javaFile, String
-            actionName , boolean debug, List<String> targetNames) 
+            actionName , boolean debug, boolean profile, List<String> targetNames) 
     {
+        assert !(debug && profile);
+        
         // run servlet
         // PENDING - what about servlets with main method? servlet should take
         // precedence
@@ -576,7 +585,13 @@ class WebActionProvider extends BaseActionProvider {
             return runEmptyMapping(javaFile);
         }
         p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
-        targetNames.add("run"); // NOI18N
+        if (profile) {
+            targetNames.add("profile"); // NOI18N
+        } else if (debug) {
+            targetNames.add("debug"); // NOI18N
+        } else {
+            targetNames.add("run"); // NOI18N
+        }
         return true;
     }
 
@@ -610,29 +625,6 @@ class WebActionProvider extends BaseActionProvider {
                     NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
             return false;
-        }
-    }
-
-    private boolean setJavaScriptDebuggerProperties(Properties p) {
-        if (!WebClientToolsSessionStarterService.isAvailable()) {
-            // If JavaScript debugger is not available, set to server debugging only
-            p.setProperty("debug.client", "false"); // NOI18N
-            p.setProperty("debug.server", "true"); // NOI18N
-            return true;
-        } else {
-            // display Debug Project Dialog
-            boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(getProject());
-            if (!keepDebugging) {
-                return false;
-            }
-
-            boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(getProject());
-            boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(getProject());
-
-            p.setProperty("debug.client", String.valueOf(debugClient)); // NOI18N
-            p.setProperty("debug.server", String.valueOf(debugServer)); // NOI18N
-
-            return true;
         }
     }
 
@@ -784,7 +776,8 @@ class WebActionProvider extends BaseActionProvider {
         }
         if (command.equals(COMMAND_COMPILE_SINGLE) ||
             command.equals(COMMAND_DEBUG_SINGLE) ||
-            command.equals(COMMAND_RUN_SINGLE)) {
+            command.equals(COMMAND_RUN_SINGLE) ||
+            command.equals(COMMAND_PROFILE_SINGLE)) {
             if (findJsps(context) != null || findHtml(context) != null ) {
                 return true;
             } else {

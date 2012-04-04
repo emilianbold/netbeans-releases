@@ -87,7 +87,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
+//import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
 import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
 import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl.Accessor;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
@@ -202,38 +202,38 @@ public class BatchUtilities {
         }
     }
 
-    public static void removeUnusedImports(Collection<? extends FileObject> files) throws IOException {
-        Map<ClasspathInfo, Collection<FileObject>> sortedFastFiles = sortFiles(files);
-
-        for (Entry<ClasspathInfo, Collection<FileObject>> e : sortedFastFiles.entrySet()) {
-            JavaSource.create(e.getKey(), e.getValue()).runModificationTask(new RemoveUnusedImports()).commit();
-        }
-    }
-
-    private static final class RemoveUnusedImports implements Task<WorkingCopy> {
-        public void run(WorkingCopy wc) throws IOException {
-            Document doc = wc.getSnapshot().getSource().getDocument(true);
-            
-            if (wc.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                return;
-            }
-
-            //compute imports to remove:
-            List<TreePathHandle> unusedImports = SemanticHighlighter.computeUnusedImports(wc);
-            CompilationUnitTree cut = wc.getCompilationUnit();
-            // make the changes to the source
-            for (TreePathHandle handle : unusedImports) {
-                TreePath path = handle.resolve(wc);
-                assert path != null;
-                cut = wc.getTreeMaker().removeCompUnitImport(cut,
-                        (ImportTree) path.getLeaf());
-            }
-
-            if (!unusedImports.isEmpty()) {
-                wc.rewrite(wc.getCompilationUnit(), cut);
-            }
-        }
-    }
+//    public static void removeUnusedImports(Collection<? extends FileObject> files) throws IOException {
+//        Map<ClasspathInfo, Collection<FileObject>> sortedFastFiles = sortFiles(files);
+//
+//        for (Entry<ClasspathInfo, Collection<FileObject>> e : sortedFastFiles.entrySet()) {
+//            JavaSource.create(e.getKey(), e.getValue()).runModificationTask(new RemoveUnusedImports()).commit();
+//        }
+//    }
+//
+//    private static final class RemoveUnusedImports implements Task<WorkingCopy> {
+//        public void run(WorkingCopy wc) throws IOException {
+//            Document doc = wc.getSnapshot().getSource().getDocument(true);
+//            
+//            if (wc.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+//                return;
+//            }
+//
+//            //compute imports to remove:
+//            List<TreePathHandle> unusedImports = SemanticHighlighter.computeUnusedImports(wc);
+//            CompilationUnitTree cut = wc.getCompilationUnit();
+//            // make the changes to the source
+//            for (TreePathHandle handle : unusedImports) {
+//                TreePath path = handle.resolve(wc);
+//                assert path != null;
+//                cut = wc.getTreeMaker().removeCompUnitImport(cut,
+//                        (ImportTree) path.getLeaf());
+//            }
+//
+//            if (!unusedImports.isEmpty()) {
+//                wc.rewrite(wc.getCompilationUnit(), cut);
+//            }
+//        }
+//    }
 
     public static boolean applyFixes(WorkingCopy copy, Map<Project, Set<String>> processedDependencyChanges, Collection<? extends ErrorDescription> hints, Map<FileObject, byte[]> resourceContentChanges, Collection<? super RefactoringElementImplementation> fileChanges, Collection<? super MessageImpl> problems) throws IllegalStateException, Exception {
         List<JavaFix> fixes = new ArrayList<JavaFix>();

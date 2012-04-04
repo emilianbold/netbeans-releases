@@ -46,10 +46,12 @@ package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfMacroInfoSection;
 
 /**
@@ -82,32 +84,23 @@ public class DwarfMacinfoTable {
         }
     }
     
-    private List<DwarfMacinfoEntry> getBaseSourceTable() {
+    private List<DwarfMacinfoEntry> getBaseSourceTable() throws IOException {
         
         if (baseSourceTableRead) {
             return baseSourceTable;
         }
         
-        try {
-            readBaseSourceTable();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        readBaseSourceTable();
         
         return baseSourceTable;
     }
     
-    private List<DwarfMacinfoEntry> getFileSourceTable() {
+    private List<DwarfMacinfoEntry> getFileSourceTable() throws IOException {
         if (fileSourceTableRead) {
             return fileSourceTable;
         }
         
-        try {
-            readFileSourceTable();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
+        readFileSourceTable();
         return fileSourceTable;
     }
     
@@ -130,7 +123,7 @@ public class DwarfMacinfoTable {
         return commandIncludedFilesTable;
     }
 
-    public List<DwarfMacinfoEntry> getCommandLineMarcos() {
+    public List<DwarfMacinfoEntry> getCommandLineMarcos() throws IOException {
         List<DwarfMacinfoEntry> entries = getBaseSourceTable();
         int size = entries.size();
         
@@ -195,7 +188,7 @@ public class DwarfMacinfoTable {
         return result;
     }
     
-    public ArrayList<DwarfMacinfoEntry> getMacros(int fileIdx) {
+    public ArrayList<DwarfMacinfoEntry> getMacros(int fileIdx) throws IOException {
         ArrayList<DwarfMacinfoEntry> result = new ArrayList<DwarfMacinfoEntry>();
         
         for (DwarfMacinfoEntry entry : getFileSourceTable()) {
@@ -209,13 +202,16 @@ public class DwarfMacinfoTable {
         
     public void dump(PrintStream out) {
         out.printf("\nMACRO Table (offset = %d [0x%08x]):\n\n", baseSourceTableOffset, baseSourceTableOffset); // NOI18N
-        
-        for (DwarfMacinfoEntry entry : getBaseSourceTable()) {
-            entry.dump(out);
-        }
-        
-        for (DwarfMacinfoEntry entry : getFileSourceTable()) {
-            entry.dump(out);
+        try {
+            for (DwarfMacinfoEntry entry : getBaseSourceTable()) {
+                entry.dump(out);
+            }
+
+            for (DwarfMacinfoEntry entry : getFileSourceTable()) {
+                entry.dump(out);
+            }
+        } catch (IOException ex) {
+            Dwarf.LOG.log(Level.INFO, "Cannot read eteries", ex);
         }
     }
 

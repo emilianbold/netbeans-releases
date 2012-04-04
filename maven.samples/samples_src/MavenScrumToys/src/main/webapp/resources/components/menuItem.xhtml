@@ -46,18 +46,19 @@ Other names may be trademarks of their respective owners.
       xmlns:ui="http://java.sun.com/jsf/facelets">
 
     <composite:interface>
-        <composite:valueHolder name="label"  />
-        <composite:valueHolder name="destination" />
-        <composite:valueHolder name="menuid" />
+        <composite:attribute name="label"  />
+        <composite:attribute name="destination" />
+        <composite:attribute name="menuid" />
     </composite:interface>
 
     <composite:implementation>
 
         <td>
-            <h:outputLink styleClass="menuhandler" value="#{destination}" onmouseover="menuHighlight(#{menuid})" rendered="#{label!=''}">
-                <h:outputText value="#{label}"/>
+            <h:outputLink styleClass="menuhandler" value="#{cc.attrs.destination}"
+                          onmouseover="menuHighlight(#{cc.attrs.menuid})" rendered="#{cc.attrs.label!=''}">
+                <h:outputText value="#{cc.attrs.label}"/>
             </h:outputLink>
-            <composite:insertChildren rendered="#{label==''}"></composite:insertChildren>
+            <composite:insertChildren rendered="#{cc.attrs.label==''}"></composite:insertChildren>
 
         </td>
     </composite:implementation>

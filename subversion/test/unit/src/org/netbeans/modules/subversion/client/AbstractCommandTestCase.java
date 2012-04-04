@@ -152,10 +152,6 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
         Runtime.getRuntime().exec(cmd).waitFor();
     }
 
-    protected void assertDate(Date refdate, Date date) {
-        assertEquals(new Date(((long)(refdate.getTime() / 1000)) * 1000), new Date(((long)(date.getTime() / 1000)) * 1000));
-    }
-
     protected void assertInfos(ISVNInfo info, ISVNInfo refInfo) {
         assertNotNull(info);   
         assertNotNull(refInfo);   

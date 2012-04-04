@@ -105,9 +105,8 @@ public class RunAnalysis {
                "BN_Cancel=Cancel",
                "TL_Inspect=Inspect"})
     public static void showDialogAndRunAnalysis() {
-        final Collection<? extends AnalyzerFactory> analyzers = Lookup.getDefault().lookupAll(AnalyzerFactory.class);
         final ProgressHandle progress = ProgressHandleFactory.createHandle("Analyzing...", null, null);
-        final RunAnalysisPanel rap = new RunAnalysisPanel(progress, Utilities.actionsGlobalContext(),analyzers);
+        final RunAnalysisPanel rap = new RunAnalysisPanel(progress, Utilities.actionsGlobalContext());
         final JButton runAnalysis = new JButton(Bundle.BN_Inspect());
         JButton cancel = new JButton(Bundle.BN_Cancel());
         HelpCtx helpCtx = new HelpCtx(RunAnalysis.class);
@@ -121,12 +120,13 @@ public class RunAnalysis {
             @Override public void actionPerformed(ActionEvent e) {
                 runAnalysis.setEnabled(false);
 
-                rap.started();
-                progress.start();
-
                 final AnalyzerFactory toRun = rap.getSelectedAnalyzer();
                 final String configuration = rap.getConfiguration();
                 final String singleWarningId = rap.getSingleWarningId();
+                final Collection<? extends AnalyzerFactory> analyzers = rap.getAnalyzers();
+
+                rap.started();
+                progress.start();
 
                 WORKER.post(new Runnable() {
                     @Override public void run() {

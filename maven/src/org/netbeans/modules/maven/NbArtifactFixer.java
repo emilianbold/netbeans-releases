@@ -73,16 +73,32 @@ public class NbArtifactFixer implements ArtifactFixer {
         }
         ArtifactRepository local = EmbedderFactory.getProjectEmbedder().getLocalRepository();
         if (local.getLayout() != null) { // #189807: for unknown reasons, there is no layout when running inside MavenCommandLineExecutor.run
-            if (new File(local.getBasedir(), local.pathOf(new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), null, artifact.getExtension(), artifact.getClassifier(), new DefaultArtifactHandler(artifact.getExtension())))).exists()) {
+            
+            //the special snapshot handling is important in case of SNAPSHOT or x-SNAPSHOT versions, for some reason aether has slightly different
+            //handling of baseversion compared to maven artifact. we need to manually set the baseversion here..
+            boolean isSnapshot = artifact.isSnapshot();
+            DefaultArtifact art = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), null, artifact.getExtension(), artifact.getClassifier(), new DefaultArtifactHandler(artifact.getExtension()));
+            if (isSnapshot) {
+                art.setBaseVersion(artifact.getBaseVersion());
+            }
+            String path = local.pathOf(art);
+            if (new File(local.getBasedir(), path).exists()) {
                 return null; // for now, we prefer the repository version when available
             }
         }
         File pom = MavenFileOwnerQueryImpl.getInstance().getOwnerPOM(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
         if (pom != null) {
+            //instead of workarounds down the road, we set the artifact's file here.
+            // some stacktraces to maven/aether do set it after querying our code, but some don't for reasons unknown to me.
+            artifact.setFile(pom);
             return pom;
         }
         try {
-            return createFallbackPOM(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
+            File f = createFallbackPOM(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
+            //instead of workarounds down the road, we set the artifact's file here.
+            // some stacktraces to maven/aether do set it after querying our code, but some don't for reasons unknown to me.
+            artifact.setFile(f);
+            return f;
         } catch (IOException x) {
             Exceptions.printStackTrace(x);
             return null;
@@ -90,12 +106,22 @@ public class NbArtifactFixer implements ArtifactFixer {
     }
 
     public static final String FALLBACK_NAME = "F@LLB@CK";
+    
+    /**
+     * method attempting to tell if the given artifact's File is a File coming from this class
+     * @param file
+     * @return 
+     */
+    public static boolean isFallbackFile(File file) {
+        return file.getName().startsWith("fallback") && file.getName().endsWith("netbeans.pom"); 
+    }
+    
     private static Map<String,File> fallbackPOMs = new HashMap<String,File>();
     private static synchronized File createFallbackPOM(String groupId, String artifactId, String version) throws IOException {
         String k = groupId + ':' + artifactId + ':' + version;
         File fallbackPOM = fallbackPOMs.get(k);
         if (fallbackPOM == null) {
-            fallbackPOM = File.createTempFile("fallback", ".pom");
+            fallbackPOM = File.createTempFile("fallback", ".netbeans.pom");
             fallbackPOM.deleteOnExit();
             PrintWriter w = new PrintWriter(fallbackPOM);
             try {

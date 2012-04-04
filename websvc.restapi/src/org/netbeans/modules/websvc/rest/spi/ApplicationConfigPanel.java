@@ -67,11 +67,20 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
 
     public ApplicationConfigPanel(String configType, String resourcesPath, 
             boolean isJerseyLib, boolean annotationConfigAvailable, boolean
-            hasServerJerseyLibrary) 
+            hasServerJerseyLibrary, String jerseyConfig ) 
     {
         initComponents();
         if (!annotationConfigAvailable) {
             jRadioButton1.setVisible(false);
+        }
+        if ( WebRestSupport.JERSEY_CONFIG_SERVER.equals( jerseyConfig )){
+            jComboBox1.setSelectedIndex(0 );
+        }
+        else if (WebRestSupport.JERSEY_CONFIG_IDE.equals( jerseyConfig )){
+            jComboBox1.setSelectedIndex(1 );
+        }
+        if (!isJerseyLib) {
+            jCheckBox1.setSelected(false);
         }
         if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
             if (annotationConfigAvailable) jRadioButton1.setSelected(true);
@@ -82,9 +91,6 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
         } else if (WebRestSupport.CONFIG_TYPE_USER.equals(configType)) {
             jRadioButton2.setSelected(true);
             jTextField1.setEnabled(false);
-            if (!isJerseyLib) {
-                jCheckBox1.setSelected(false);
-            }
         } else {
             jRadioButton3.setSelected(true);
         }

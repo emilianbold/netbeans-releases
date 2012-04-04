@@ -491,6 +491,9 @@ public final class DeployOnSaveManager {
                 } catch (DatasourceAlreadyExistsException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                     state = DeploymentState.DEPLOYMENT_FAILED;
+                } catch (TargetServer.NoArchiveException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    state = DeploymentState.DEPLOYMENT_FAILED;
                 } finally {
                     ui.finish();
                 }

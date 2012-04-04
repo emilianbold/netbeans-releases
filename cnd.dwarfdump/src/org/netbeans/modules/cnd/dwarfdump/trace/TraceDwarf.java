@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.dwarfdump.trace;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
@@ -57,8 +58,6 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
  */
 public class TraceDwarf {
     
-    public static boolean TRACED = false;
-
     private TraceDwarf() {
     }
 
@@ -66,32 +65,29 @@ public class TraceDwarf {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        TRACED = true;
         String objFileName = args[0];
         Dwarf dump = null;
         try {
-            System.out.println("TraceDwarf.");  // NOI18N
+            Dwarf.LOG.log(Level.FINE, "TraceDwarf.");  // NOI18N
             dump = new Dwarf(objFileName);
             List<CompilationUnit> units = dump.getCompilationUnits();
             int idx = 0;
             if (units != null && units.size() > 0) {
-                System.out.println("\n**** Done. " + units.size() + " compilation units were found:"); // NOI18N
+                Dwarf.LOG.log(Level.FINE, "\n**** Done. {0} compilation units were found:", units.size()); // NOI18N
                 for (CompilationUnit compilationUnit : units) {
-                    System.out.println(++idx + ": " + compilationUnit.getSourceFileName());// NOI18N
+                    Dwarf.LOG.log(Level.FINE, "{0}: {1}", new Object[]{++idx, compilationUnit.getSourceFileName()});// NOI18N
                 }
 
             }
         } catch (FileNotFoundException ex) {
             // Skip Exception
-            System.out.println("File not found " + objFileName + ": " + ex.getMessage());  // NOI18N
+            Dwarf.LOG.log(Level.FINE, "File not found {0}: {1}", new Object[]{objFileName, ex.getMessage()});  // NOI18N
         } catch (WrongFileFormatException ex) {
-            System.out.println("Unsuported format of file " + objFileName + ": " + ex.getMessage());  // NOI18N
+            Dwarf.LOG.log(Level.FINE, "Unsuported format of file {0}: {1}", new Object[]{objFileName, ex.getMessage()});  // NOI18N
         } catch (IOException ex) {
-            System.err.println("Exception in file " + objFileName);  // NOI18N
-            ex.printStackTrace();
+            Dwarf.LOG.log(Level.FINE, "Exception in file " + objFileName, ex);  // NOI18N
         } catch (Exception ex) {
-            System.err.println("Exception in file " + objFileName);  // NOI18N
-            ex.printStackTrace();
+            Dwarf.LOG.log(Level.FINE, "Exception in file " + objFileName, ex);  // NOI18N
         } finally {
             if (dump != null) {
                 dump.dispose();

@@ -120,6 +120,12 @@ public class OptionalEE7APIsHint {
             return null;
         }
         Tree t = treePath.getLeaf();
+        int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t);
+        int end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), t);
+        // #205936
+        if (start == -1 || end == -1 || end < start) {
+            return null;
+        }
         List<Fix> fixes = new ArrayList<Fix>();
         return Collections.<ErrorDescription>singletonList(
                 ErrorDescriptionFactory.createErrorDescription(
@@ -127,8 +133,8 @@ public class OptionalEE7APIsHint {
                 OptionalEE7APIsHint_DisplayName(),
                 fixes,
                 info.getFileObject(),
-                (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t),
-                (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), t)));
+                start,
+                end));
     }
 
     private OptionalEE7APIsHint() {}

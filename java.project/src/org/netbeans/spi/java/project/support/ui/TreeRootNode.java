@@ -46,6 +46,7 @@ package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -56,6 +57,7 @@ import java.util.StringTokenizer;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AccessibilityQuery;
@@ -65,7 +67,6 @@ import org.netbeans.modules.java.project.PackageDisplayUtils;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -81,7 +82,6 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
@@ -391,7 +391,10 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             if (parent != null) {
                 DataObject d = getLookup().lookup(DataObject.class);
                 if (d != null) {
-                    return FileUtil.getRelativePath(parent.getPrimaryFile(), d.getPrimaryFile()).replace('/', '.');
+                    String rel = FileUtil.getRelativePath(parent.getPrimaryFile(), d.getPrimaryFile());
+                    if (rel != null) {
+                        return rel.replace('/', '.');
+                    }
                 }
             }
             return super.getName();
@@ -414,10 +417,16 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                 super.destroy();
             }
         }
+
+        @Override public boolean canRename() {
+            return parent == null; // XXX #210107
+        }
         
         @Override
         public void setName (final String name) {
             if (parent != null) {
+                throw new IllegalArgumentException("not supported"); // XXX #210107
+                /*
                 if (PackageViewChildren.isValidPackageName(name)) {
                     PackageRenameHandler h = Lookup.getDefault().lookup(PackageRenameHandler.class);
                     if (h != null) {
@@ -461,6 +470,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_InvalidPackageName(), NotifyDescriptor.INFORMATION_MESSAGE));
                 }
                 return;
+                */
             }
             if (Utilities.isJavaIdentifier (name)) {
                 super.setName (name);
@@ -469,7 +479,41 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_InvalidPackageName(), NotifyDescriptor.INFORMATION_MESSAGE));
             }
         }
-        
+
+        private @CheckForNull DataFolder topPackage() {
+            if (parent == null) {
+                return null;
+            }
+            DataFolder here = getLookup().lookup(DataFolder.class);
+            while (here != null) {
+                DataFolder there = here.getFolder();
+                if (there != null && there != parent) {
+                    here = there;
+                } else {
+                    break;
+                }
+            }
+            return here;
+        }
+
+        @Override public Transferable clipboardCut() throws IOException {
+            DataFolder top = topPackage();
+            if (top != null) {
+                return top.getNodeDelegate().clipboardCut();
+            } else {
+                return super.clipboardCut();
+            }
+        }
+
+        @Override public Transferable clipboardCopy() throws IOException {
+            DataFolder top = topPackage();
+            if (top != null) {
+                return top.getNodeDelegate().clipboardCopy();
+            } else {
+                return super.clipboardCopy();
+            }
+        }
+
         @Override
         public Image getIcon (int type) {
             return getIcon(type, false);

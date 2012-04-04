@@ -42,22 +42,22 @@
 
 package org.netbeans.modules.maven.profiler;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
-import org.netbeans.lib.profiler.common.ProfilingSettings;
-import org.netbeans.lib.profiler.common.SessionSettings;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
+import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher.Launcher;
+import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher.Session;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -68,10 +68,6 @@ import org.openide.util.Utilities;
  */
 @ProjectServiceProvider(service=LateBoundPrerequisitesChecker.class, projectType="org-netbeans-modules-maven")
 public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
-    
-    private static final String ACTION_PROFILE = "profile"; // NOI18N
-    private static final String ACTION_PROFILE_SINGLE = "profile-single"; // NOI18N
-        private static final String ACTION_PROFILE_TESTS = "profile-tests"; // NOI18N
 
     private static final Logger LOG = Logger.getLogger(RunCheckerImpl.class.getName());
     
@@ -83,97 +79,77 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     private static final String PROFILER_JDKHOME_OPT = "${profiler.jdkhome.opt}"; // NOI18N
     
     private final Project project;
-    private static final Map<Project, Properties> properties = new WeakHashMap();
-    private static final Map<Project, ProfilingSettings> profilingSettings = new WeakHashMap();
-    private static final Map<Project, SessionSettings> sessionSettings = new WeakHashMap();
 
+    @ProjectServiceProvider(service=ProfilerLauncher.LauncherFactory.class, projectType="org-netbeans-modules-maven")
+    final public static class MavenLauncherFactory implements ProfilerLauncher.LauncherFactory {
+        @Override
+        public Launcher createLauncher(final Session session) {
+            return new Launcher() {
+
+                @Override
+                public void launch(boolean rerun) {
+                    if (rerun) {
+                        RunConfig config = (RunConfig)session.getAttribute("mvn-run-checker.config");
+                        if (config != null) {
+                            RunUtils.executeMaven(config);
+                        }
+                    } else {
+                        Project p = session.getProject();
+                        if (p == null) {
+                            FileObject f = session.getFile();
+                            if (f != null) {
+                                p = FileOwnerQuery.getOwner(f);
+                            }
+                        }
+                        if (p != null) {
+                            ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+                            if (ap != null) {
+                                ap.invokeAction(session.getCommand(), session.getContext());
+                            }
+                        }
+                    }
+                }
+            };
+        }
+        
+    }
     
     public RunCheckerImpl(Project prj) {
         project = prj;
     }
     
-    static void configureProject(Project project, Properties p, ProfilingSettings ps, SessionSettings ss) {
-        properties.put(project, p);
-        profilingSettings.put(project, ps);
-        sessionSettings.put(project, ss);
-    }
-    
-    public boolean checkRunConfig(RunConfig config, ExecutionContext context) {
+    @Override
+    public boolean checkRunConfig(final RunConfig config, ExecutionContext context) {
         Map<? extends String,? extends String> configProperties = config.getProperties();
+        
+        if (ActionProvider.COMMAND_PROFILE.equals(config.getActionName()) ||
+               ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(config.getActionName()) ||
+              (config.getActionName() != null && config.getActionName().startsWith(ActionProvider.COMMAND_PROFILE_SINGLE))) {
+            Map<String, String> props = new HashMap<String, String>();
+            props.putAll(configProperties);
 
-        if (   ACTION_PROFILE.equals(config.getActionName()) ||
-               ACTION_PROFILE_TESTS.equals(config.getActionName()) ||
-              (config.getActionName() != null && config.getActionName().startsWith(ACTION_PROFILE_SINGLE))) { // action "profile"
-            // Resolve profiling configuration
-            Properties sessionProperties = properties.get(project);
-            if (sessionProperties == null) return false;
-            // Resolve profiling session properties
-            for (Object k : configProperties.keySet()) {
-                String key = (String)k;
-                
-                String value = configProperties.get(key);
-                if (value.contains(PROFILER_ARGS)) {
-                    value = value.replace(PROFILER_ARGS, profilerArgs(sessionProperties, false));
-                    config.setProperty(key, value.trim());
-                }
-                if (value.contains(PROFILER_ARGS_PREFIXED)) {
-                    value = value.replace(PROFILER_ARGS_PREFIXED, profilerArgs(sessionProperties, true));
-                    config.setProperty(key, value.trim());
-                }
-                if (value.contains(PROFILER_JAVA)) {
-                    String profilerJava = sessionProperties.getProperty("profiler.info.jvm"); // NOI18N
-                    value = value.replace(PROFILER_JAVA,
-                            (profilerJava != null && new File(profilerJava).isFile()) ? profilerJava : "java"); // NOI18N
-                    config.setProperty(key, value.trim());
-                }
-                if (value.contains(PROFILER_JDKHOME_OPT)) {
-                    String opt = "";
-                    String profilerJava = sessionProperties.getProperty("profiler.info.jvm"); // NOI18N
-                    if (profilerJava != null) {
-                        File binJava = new File(profilerJava);
-                        if (binJava.isFile() && binJava.getName().matches("java([.]exe)?") && binJava.getParentFile().getName().equals("bin")) {
-                            String jdkhome = binJava.getParentFile().getParent();
-                            opt = Utilities.escapeParameters(new String[] {"--jdkhome", jdkhome});
-                            LOG.log(Level.FINE, "from {0} escaped {1}", new Object[] {jdkhome, opt});
-                        }
-                    }
-                    value = value.replace(PROFILER_JDKHOME_OPT, opt);
-                    config.setProperty(key, value.trim());
-                }
-            }
+            ProfilerLauncher.Session session = ProfilerLauncher.getLastSession();
             
+            if (session == null) {
+                return false;
+            }
+                       
+            Map<String, String> sProps = session.getProperties();
+            if (sProps == null) return false;
+            
+            props.putAll(sProps);
+            
+            session.setAttribute("mvn-run-checker.config", config);
+                        
+            final ProfilerLauncher.Session s = session;
             // Attach profiler engine (in separate thread) to profiled process
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    ProfilingSettings ps = profilingSettings.get(project);
-                    SessionSettings ss = sessionSettings.get(project);
-                    Profiler.getDefault().connectToStartedApp(ps, ss);
+                    Profiler.getDefault().connectToStartedApp(s.getProfilingSettings(), s.getSessionSettings());
                 }
             });
-            
-//        } else if (ACTION_PROFILE_SINGLE.equals(actionName)) { // action "profile-single"
-//            // profile-single not supported yet, shouldn't get here
-//        } else if (ACTION_PROFILE_TESTS.equals(actionName)) {
-//            // profile-tests not supported yet, shouldn't get here // action "profile-tests"
         }
         
         return true;
     }
-
-    private String profilerArgs(Properties sessionProperties, boolean prefixed) {
-        List<String> args = new ArrayList<String>();
-        String jvmargs = sessionProperties.getProperty("profiler.info.jvmargs");
-        for (String arg : Utilities.parseParameters(jvmargs)) {
-            args.add(prefixed ? "-J" + arg : arg);
-        }
-        String agentarg = sessionProperties.getProperty("profiler.info.jvmargs.agent");
-        if (Utilities.isWindows()) {
-            agentarg = agentarg.replace('\\', '/'); // XXX is this still necessary given quoting?
-        }
-        args.add(prefixed ? "-J" + agentarg : agentarg);
-        String escaped = Utilities.escapeParameters(args.toArray(new String[args.size()]));
-        LOG.log(Level.FINE, "from {0} and {1} produced {2}", new Object[] {jvmargs, agentarg, escaped});
-        return escaped;
-    }
-
 }

@@ -156,6 +156,8 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
     private JCheckBox chkPackagePrivate;
     private JCheckBox chkSetUp;
     private JCheckBox chkTearDown;
+    private JCheckBox chkBeforeClass;
+    private JCheckBox chkAfterClass;
     private JCheckBox chkMethodBodies;
     private JCheckBox chkJavadoc;
     private JCheckBox chkHints;
@@ -425,10 +427,14 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
                 chkBoxes = GuiUtils.createCheckBoxes(new String[] {
                         GuiUtils.CHK_SETUP,
                         GuiUtils.CHK_TEARDOWN,
+                        GuiUtils.CHK_BEFORE_CLASS,
+                        GuiUtils.CHK_AFTER_CLASS,
                         GuiUtils.CHK_METHOD_BODIES}));
         chkSetUp = chkBoxes[0];
         chkTearDown = chkBoxes[1];
-        chkMethodBodies = chkBoxes[2];
+        chkBeforeClass = chkBoxes[2];
+        chkAfterClass = chkBoxes[3];
+        chkMethodBodies = chkBoxes[4];
         
         JComponent optComments = GuiUtils.createChkBoxGroup(
                 NbBundle.getMessage(
@@ -1361,6 +1367,10 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_SETUP)));
         chkTearDown.setSelected(
                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_TEARDOWN)));
+        chkBeforeClass.setSelected(
+                Boolean.TRUE.equals(settings.getProperty(GuiUtils.CHK_BEFORE_CLASS)));
+        chkAfterClass.setSelected(
+                Boolean.TRUE.equals(settings.getProperty(GuiUtils.CHK_AFTER_CLASS)));
         chkMethodBodies.setSelected(
            Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_METHOD_BODIES)));
         chkJavadoc.setSelected(
@@ -1386,6 +1396,10 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
                            Boolean.valueOf(chkSetUp.isSelected()));
         wizard.putProperty(GuiUtils.CHK_TEARDOWN,
                            Boolean.valueOf(chkTearDown.isSelected()));
+        settings.putProperty(GuiUtils.CHK_BEFORE_CLASS,
+                           Boolean.valueOf(chkBeforeClass.isSelected()));
+        settings.putProperty(GuiUtils.CHK_AFTER_CLASS,
+                           Boolean.valueOf(chkAfterClass.isSelected()));
         wizard.putProperty(GuiUtils.CHK_METHOD_BODIES,
                            Boolean.valueOf(chkMethodBodies.isSelected()));
         wizard.putProperty(GuiUtils.CHK_JAVADOC,

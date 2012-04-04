@@ -167,9 +167,16 @@ public class Occurrences {
                 
                 CloneableEditorSupport editor
                         = JSFEditorUtilities.findCloneableEditorSupport((JSFConfigDataObject)dataObject);
-                if (editor != null){
-                    PositionRef bgn = editor.createPositionRef(startOffset, Bias.Forward);
-                    PositionRef end = editor.createPositionRef(endOffset, Bias.Backward);
+                if (editor != null) {
+                    PositionRef bgn, end;
+                    if (startOffset == -1) {
+                        // issue #187924: start offset is -1 when the occurence doens't exist any more
+                        bgn = editor.createPositionRef(0, Bias.Forward);
+                        end = editor.createPositionRef(0, Bias.Backward);
+                    } else {
+                        bgn = editor.createPositionRef(startOffset, Bias.Forward);
+                        end = editor.createPositionRef(endOffset, Bias.Backward);
+                    }
                     return new PositionBounds(bgn, end);
                 }
             } catch (BadLocationException exception) {

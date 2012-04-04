@@ -148,23 +148,23 @@ public class BatchUtilitiesTest extends NbTestCase {
         assertTrue(file2New.toString(), file2New.isEmpty());
     }
 
-    public void testRemoveUnusedImports() throws Exception {
-        writeFilesAndWaitForScan(src1,
-                                 new File("test/Test1.java", "package test;\n import java.util.List;\n public class Test1 { }"));
-        writeFilesAndWaitForScan(src2,
-                                 new File("test/Test2.java", "package test;\n import java.util.LinkedList;\n public class Test2 { }"));
-
-        FileObject test1 = src1.getFileObject("test/Test1.java");
-        FileObject test2 = src2.getFileObject("test/Test2.java");
-
-        System.err.println(DataObject.find(test1).getClass());
-        BatchUtilities.removeUnusedImports(Arrays.asList(test1, test2));
-
-        LifecycleManager.getDefault().saveAll();
-
-        assertEquals("package test;\n public class Test1 { }", TestUtilities.copyFileToString(FileUtil.toFile(test1)));
-        assertEquals("package test;\n public class Test2 { }", TestUtilities.copyFileToString(FileUtil.toFile(test2)));
-    }
+//    public void testRemoveUnusedImports() throws Exception {
+//        writeFilesAndWaitForScan(src1,
+//                                 new File("test/Test1.java", "package test;\n import java.util.List;\n public class Test1 { }"));
+//        writeFilesAndWaitForScan(src2,
+//                                 new File("test/Test2.java", "package test;\n import java.util.LinkedList;\n public class Test2 { }"));
+//
+//        FileObject test1 = src1.getFileObject("test/Test1.java");
+//        FileObject test2 = src2.getFileObject("test/Test2.java");
+//
+//        System.err.println(DataObject.find(test1).getClass());
+//        BatchUtilities.removeUnusedImports(Arrays.asList(test1, test2));
+//
+//        LifecycleManager.getDefault().saveAll();
+//
+//        assertEquals("package test;\n public class Test1 { }", TestUtilities.copyFileToString(FileUtil.toFile(test1)));
+//        assertEquals("package test;\n public class Test2 { }", TestUtilities.copyFileToString(FileUtil.toFile(test2)));
+//    }
 
     private FileObject src1;
     private FileObject src2;

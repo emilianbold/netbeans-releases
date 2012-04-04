@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
 
@@ -55,7 +56,6 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
  * @author Alexander Simon
  */
 public class LddService {
-    private static final boolean TRACE_READ_EXCEPTIONS = false;
 
     private LddService() {
     }
@@ -70,7 +70,7 @@ public class LddService {
         try {
             dump(args[0],System.out);
         } catch (Throwable ex) {
-            ex.printStackTrace();
+            Dwarf.LOG.log(Level.INFO, "File "+args[0], ex);
         }
     }
     
@@ -111,24 +111,17 @@ public class LddService {
             dump = new Dwarf(objFileName);
             pubNames = dump.readPubNames();
         } catch (FileNotFoundException ex) {
-            // Skip Exception
-            if (TRACE_READ_EXCEPTIONS) {
-                System.out.println("File not found " + objFileName + ": " + ex.getMessage());  // NOI18N
+            if (Dwarf.LOG.isLoggable(Level.FINE)) {
+                Dwarf.LOG.log(Level.FINE, "File not found {0}: {1}", new Object[]{objFileName, ex.getMessage()});  // NOI18N
             }
         } catch (WrongFileFormatException ex) {
-            if (TRACE_READ_EXCEPTIONS) {
-                System.out.println("Unsuported format of file " + objFileName + ": " + ex.getMessage());  // NOI18N
+            if (Dwarf.LOG.isLoggable(Level.FINE)) {
+                Dwarf.LOG.log(Level.FINE, "Unsuported format of file {0}: {1}", new Object[]{objFileName, ex.getMessage()});  // NOI18N
             }
         } catch (IOException ex) {
-            if (TRACE_READ_EXCEPTIONS) {
-                System.err.println("Exception in file " + objFileName);  // NOI18N
-                ex.printStackTrace();
-            }
+            Dwarf.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
         } catch (Exception ex) {
-            if (TRACE_READ_EXCEPTIONS) {
-                System.err.println("Exception in file " + objFileName);  // NOI18N
-                ex.printStackTrace();
-            }
+            Dwarf.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
         } finally {
             if (dump != null) {
                 dump.dispose();

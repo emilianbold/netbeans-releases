@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.deploy;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.enterprise.deploy.spi.Target;
@@ -55,6 +56,8 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 public class WLTargetModuleID implements TargetModuleID {
 
     private final Target target;
+
+    private final File dir;
 
     private String jarName;
 
@@ -69,7 +72,12 @@ public class WLTargetModuleID implements TargetModuleID {
     }
 
     public WLTargetModuleID(Target target, String jarName) {
+        this(target, jarName, null);
+    }
+
+    public WLTargetModuleID(Target target, String jarName, File dir) {
         this.target = target;
+        this.dir = dir;
         this.setJarName(jarName);
     }
 
@@ -108,6 +116,10 @@ public class WLTargetModuleID implements TargetModuleID {
 
     public String getWebURL() {
         return contextUrl;
+    }
+
+    public File getDir() {
+        return dir;
     }
 
     @Override

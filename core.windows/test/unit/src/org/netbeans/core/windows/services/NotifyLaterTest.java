@@ -44,12 +44,15 @@
 
 package org.netbeans.core.windows.services;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.Window;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -59,6 +62,11 @@ import org.openide.NotifyDescriptor;
  * @author Jaroslav Tulach
  */
 public class NotifyLaterTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NotifyLaterTest.class);
+    }
+
     Logger LOG;
     
     

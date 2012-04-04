@@ -45,9 +45,8 @@ package org.netbeans.modules.subversion.client.commands;
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.util.Date;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.tigris.subversion.svnclientadapter.ISVNAnnotations;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
@@ -204,9 +203,9 @@ public class BlameTestHidden extends AbstractCommandTestCase {
         assertEquals(author2, a1.getAuthor(1));
         assertEquals(author3, a1.getAuthor(2));
 
-        assertDate(date1, a1.getChanged(0));
-        assertDate(date2, a1.getChanged(1));
-        assertDate(date3, a1.getChanged(2));
+        assertDate(date1, a1.getChanged(0), isCommandLine());
+        assertDate(date2, a1.getChanged(1), isCommandLine());
+        assertDate(date3, a1.getChanged(2), isCommandLine());
 
         assertEquals(rev1.getNumber(), a1.getRevision(0));
         assertEquals(rev2.getNumber(), a1.getRevision(1));
@@ -258,9 +257,9 @@ public class BlameTestHidden extends AbstractCommandTestCase {
         assertEquals(author2, a1.getAuthor(1));
         assertEquals(author3, a1.getAuthor(2));
 
-        assertEquals(date1.toString(), a1.getChanged(0).toString());
-        assertEquals(date2.toString(), a1.getChanged(1).toString());
-        assertEquals(date3.toString(), a1.getChanged(2).toString());
+        assertDate(date1, a1.getChanged(0), isCommandLine());
+        assertDate(date2, a1.getChanged(1), isCommandLine());
+        assertDate(date3, a1.getChanged(2), isCommandLine());
 
         assertEquals(rev1.getNumber(), a1.getRevision(0));
         assertEquals(rev2.getNumber(), a1.getRevision(1));
@@ -312,8 +311,8 @@ public class BlameTestHidden extends AbstractCommandTestCase {
         assertEquals(author1, a1.getAuthor(0));
         assertEquals(author2, a1.getAuthor(1));
         
-        assertDate(date1, a1.getChanged(0));
-        assertDate(date2, a1.getChanged(1));
+        assertDate(date1, a1.getChanged(0), isCommandLine());
+        assertDate(date2, a1.getChanged(1), isCommandLine());
 
         assertEquals(rev1.getNumber(), a1.getRevision(0));
         assertEquals(rev2.getNumber(), a1.getRevision(1));
@@ -380,4 +379,16 @@ public class BlameTestHidden extends AbstractCommandTestCase {
         }
         assertInputStreams(ref.getInputStream(), a.getInputStream());                
     }    
+
+    private void assertDate (Date refdate, Date date, boolean testTime) {
+        if (testTime) {
+            assertEquals(new Date(((long)(refdate.getTime() / 1000)) * 1000), new Date(((long)(date.getTime() / 1000)) * 1000));
+        } else {
+            if (new Date(((long)(refdate.getTime() / 1000)) * 1000).equals(new Date(((long)(date.getTime() / 1000)) * 1000))) {
+                // SvnClientAdapter now correctly parses svn:changed revprop
+                fail("Should be different, " + new Date(((long)(refdate.getTime() / 1000)) * 1000) + " --- " + new Date(((long)(date.getTime() / 1000)) * 1000));
+            }
+            assertEquals(DateFormat.getDateInstance().format(refdate), DateFormat.getDateInstance().format(refdate));
+        }
+    }
 }

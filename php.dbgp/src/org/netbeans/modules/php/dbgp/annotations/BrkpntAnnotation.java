@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.php.dbgp.annotations;
 
+import java.util.logging.Logger;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.Breakpoint;
@@ -71,6 +72,8 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
 
     private static final String BREAKPOINT                = "ANTN_BREAKPOINT";// NOI18N
 
+    private static final Logger LOGGER = Logger.getLogger(BrkpntAnnotation.class.getName());
+
     private Breakpoint breakpoint;
 
     public BrkpntAnnotation( Annotatable annotatable, Breakpoint breakpoint ) {
@@ -87,39 +90,44 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
             LineBreakpoint lineBreakpoint = (LineBreakpoint) breakpoint;
             Line line = lineBreakpoint.getLine();
             DataObject dataObject = DataEditorSupport.findDataObject(line);
-            EditorCookie editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+            EditorCookie editorCookie = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
             StyledDocument document = editorCookie.getDocument();
             if (document != null) {
-                int offset = NbDocument.findLineOffset(document, line.getLineNumber());
-                int l = line.getLineNumber();
-                int col = NbDocument.findLineColumn(document, offset);
-                Element lineElem = NbDocument.findLineRootElement(document).getElement(l);
-                int startOffset = lineElem.getStartOffset();
-                int endOffset = lineElem.getEndOffset();
-                TokenHierarchy th = TokenHierarchy.get(document);
-                TokenSequence<TokenId> ts = th.tokenSequence();
                 boolean isValid = false;
-                if (ts != null) {
-                    ts.move(startOffset);
-                    boolean moveNext = ts.moveNext();
-                    for (; moveNext && !isValid && ts.offset() < endOffset;) {
-                        TokenId id = ts.token().id();
-                        if (id == PHPTokenId.PHPDOC_COMMENT
-                                || id == PHPTokenId.PHPDOC_COMMENT_END
-                                || id == PHPTokenId.PHPDOC_COMMENT_START
-                                || id == PHPTokenId.PHP_LINE_COMMENT
-                                || id == PHPTokenId.PHP_COMMENT_START
-                                || id == PHPTokenId.PHP_COMMENT_END
-                                || id == PHPTokenId.PHP_COMMENT                            
-                                ) {
-                            break;
-                        }
+                try {
+                    int offset = NbDocument.findLineOffset(document, line.getLineNumber());
+                    int l = line.getLineNumber();
+                    int col = NbDocument.findLineColumn(document, offset);
+                    Element lineElem = NbDocument.findLineRootElement(document).getElement(l);
+                    int startOffset = lineElem.getStartOffset();
+                    int endOffset = lineElem.getEndOffset();
+                    TokenHierarchy th = TokenHierarchy.get(document);
+                    TokenSequence<TokenId> ts = th.tokenSequence();
+                    if (ts != null) {
+                        ts.move(startOffset);
+                        boolean moveNext = ts.moveNext();
+                        for (; moveNext && !isValid && ts.offset() < endOffset;) {
+                            TokenId id = ts.token().id();
+                            if (id == PHPTokenId.PHPDOC_COMMENT
+                                    || id == PHPTokenId.PHPDOC_COMMENT_END
+                                    || id == PHPTokenId.PHPDOC_COMMENT_START
+                                    || id == PHPTokenId.PHP_LINE_COMMENT
+                                    || id == PHPTokenId.PHP_COMMENT_START
+                                    || id == PHPTokenId.PHP_COMMENT_END
+                                    || id == PHPTokenId.PHP_COMMENT
+                                    ) {
+                                break;
+                            }
 
-                        isValid = id != PHPTokenId.T_INLINE_HTML && id != PHPTokenId.WHITESPACE;
-                        if (!ts.moveNext()) {
-                            break;
+                            isValid = id != PHPTokenId.T_INLINE_HTML && id != PHPTokenId.WHITESPACE;
+                            if (!ts.moveNext()) {
+                                break;
+                            }
                         }
                     }
+                } catch (IndexOutOfBoundsException ex) {
+                    LOGGER.fine("Line number is no more valid.");
+                    isValid = false;
                 }
                 if (!isValid) {
                     lineBreakpoint.setInvalid(null);

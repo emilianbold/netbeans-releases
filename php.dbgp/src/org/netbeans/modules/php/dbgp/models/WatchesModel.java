@@ -26,27 +26,15 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicReference;
-
 import javax.swing.JToolTip;
-
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.DebuggerManagerListener;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.Watch;
+import org.netbeans.api.debugger.*;
 import org.netbeans.modules.php.dbgp.ModelNode;
 import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.netbeans.modules.php.dbgp.models.nodes.VariableNode;
 import org.netbeans.modules.php.dbgp.packets.Property;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
-import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.netbeans.spi.viewmodel.*;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -54,14 +42,14 @@ import org.openide.util.RequestProcessor.Task;
 /**
  * @author ads
  */
-public class WatchesModel extends ViewModelSupport 
-    implements TreeModel, NodeModel, TableModel 
+public class WatchesModel extends ViewModelSupport
+    implements TreeModel, NodeModel, TableModel
 {
     public WatchesModel(ContextProvider lookupProvider) {
         myLookupProvider = lookupProvider;
         myWatcheNodes = new AtomicReference<ScriptWatchEvaluating[]>();
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.ViewModelSupport#clearModel()
      */
@@ -69,7 +57,7 @@ public class WatchesModel extends ViewModelSupport
     public void clearModel() {
         fireTreeChanged();
     }
-    
+
     public void updateExpressionValue( String expr, Property value ){
         ScriptWatchEvaluating[] nodes = myWatcheNodes.get();
         if ( nodes == null ) {
@@ -83,7 +71,7 @@ public class WatchesModel extends ViewModelSupport
             }
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#getRoot()
      */
@@ -96,8 +84,8 @@ public class WatchesModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TreeModel#getChildren(java.lang.Object, int, int)
      */
     @Override
-    public Object[] getChildren(Object parent, int from, int to) 
-        throws UnknownTypeException 
+    public Object[] getChildren(Object parent, int from, int to)
+        throws UnknownTypeException
     {
         if(parent == ROOT) {
             // get watches
@@ -107,7 +95,7 @@ public class WatchesModel extends ViewModelSupport
             Watch [] watches = new Watch [to - from];
             System.arraycopy(allWatches, from, watches, 0, to - from);
 
-            ScriptWatchEvaluating[] evaluatedWatches = 
+            ScriptWatchEvaluating[] evaluatedWatches =
                 getEvaluatingWatches(watches);
 
             if(myListener == null) {
@@ -160,13 +148,13 @@ public class WatchesModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TableModel#getValueAt(java.lang.Object, java.lang.String)
      */
     @Override
-    public Object getValueAt(Object node, String columnID) 
-        throws UnknownTypeException 
+    public Object getValueAt(Object node, String columnID)
+        throws UnknownTypeException
     {
         if(node instanceof JToolTip) {
             return getTooltip( ( (JToolTip) node), columnID);
         }
-            
+
         if(Constants.WATCH_TYPE_COLUMN_ID.equals(columnID)) {
             if(node instanceof ModelNode) {
                 return ((ModelNode)node).getType();
@@ -181,9 +169,9 @@ public class WatchesModel extends ViewModelSupport
                 catch (UnsufficientValueException e) {
                     /*
                      *  This should not happened for property in eval command
-                     *  becuase we are not able to send command property_value. 
+                     *  becuase we are not able to send command property_value.
                      */
-                    
+
                     return VariablesModel.NULL;
                 }
                 return value == null ? VariablesModel.NULL : value;
@@ -197,8 +185,8 @@ public class WatchesModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TableModel#isReadOnly(java.lang.Object, java.lang.String)
      */
     @Override
-    public boolean isReadOnly(Object node, String string) 
-        throws UnknownTypeException 
+    public boolean isReadOnly(Object node, String string)
+        throws UnknownTypeException
     {
         return true;
     }
@@ -207,11 +195,11 @@ public class WatchesModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TableModel#setValueAt(java.lang.Object, java.lang.String, java.lang.Object)
      */
     @Override
-    public void setValueAt(Object node, String string, Object value) 
-        throws UnknownTypeException 
+    public void setValueAt(Object node, String string, Object value)
+        throws UnknownTypeException
     {
         /*
-         * See comments in ScriptWatchEvaluating#isReadOnly() method. 
+         * See comments in ScriptWatchEvaluating#isReadOnly() method.
          */
         throw new UnknownTypeException(node);
     }
@@ -230,7 +218,7 @@ public class WatchesModel extends ViewModelSupport
         else if (node instanceof ModelNode) {
             return ((ModelNode)node).getName();
         }
-        
+
         throw new UnknownTypeException(node);
     }
 
@@ -245,7 +233,7 @@ public class WatchesModel extends ViewModelSupport
         else if (node instanceof ModelNode) {
             return ((ModelNode)node).getIconBase();
         }
-        
+
         throw new UnknownTypeException(node);
     }
 
@@ -260,10 +248,10 @@ public class WatchesModel extends ViewModelSupport
         else if (node instanceof ModelNode) {
             return ((ModelNode)node).getShortDescription();
         }
-        
+
         throw new UnknownTypeException(node);
     }
-    
+
     /*
      * This is how tooltips are implemented in the debugger views.
      */
@@ -292,7 +280,7 @@ public class WatchesModel extends ViewModelSupport
 
     private void fireWatchesChanged() {
         fireChangeEvent(
-                new ModelEvent.NodeChanged(this, ROOT, 
+                new ModelEvent.NodeChanged(this, ROOT,
                         ModelEvent.NodeChanged.CHILDREN_MASK));
     }
 
@@ -304,10 +292,10 @@ public class WatchesModel extends ViewModelSupport
     private void fireTableValueChangedComputed(Object node, String propertyName) {
         fireChangeEvent(new ModelEvent.TableValueChanged(this, node, propertyName));
     }
-    
+
     private ScriptWatchEvaluating[] getEvaluatingWatches( Watch[] watches ) {
         // create ScriptWatchEvaluating for Watches
-        ScriptWatchEvaluating[] evaluatingWatches = 
+        ScriptWatchEvaluating[] evaluatingWatches =
             new ScriptWatchEvaluating[watches.length];
         int i =0;
         for(Watch watch : watches) {
@@ -321,8 +309,8 @@ public class WatchesModel extends ViewModelSupport
         }
         return evaluatingWatches;
     }
-    
-    private static class ScriptWatchEvaluating extends 
+
+    private static class ScriptWatchEvaluating extends
         org.netbeans.modules.php.dbgp.models.nodes.ScriptWatchEvaluating
     {
 
@@ -330,7 +318,7 @@ public class WatchesModel extends ViewModelSupport
         {
             super(provider, watch);
         }
-        
+
         @Override
         protected synchronized void setEvaluated( Property value ){
             super.setEvaluated( value );
@@ -341,35 +329,35 @@ public class WatchesModel extends ViewModelSupport
             super.requestValue();
         }
     }
-    
-    
+
+
     private Map<Watch, ScriptWatchEvaluating> getWatchesMap(){
         return myWatches;
     }
-    
+
     private Listener myListener;
-    
+
     private ContextProvider myLookupProvider;
-    
+
     private Map<Watch, ScriptWatchEvaluating> myWatches=
             new WeakHashMap<Watch, ScriptWatchEvaluating>();
-    
+
     private AtomicReference<ScriptWatchEvaluating[]> myWatcheNodes;
-    
-    private static final ClearingThread<Listener> CLERAING_THREAD 
+
+    private static final ClearingThread<Listener> CLERAING_THREAD
         = new ClearingThread<Listener>();
-    
+
     static {
         CLERAING_THREAD.start();
     }
-    
+
     class Listener extends DebuggerManagerAdapter
-            implements PropertyChangeListener 
+            implements PropertyChangeListener
     {
 
         private Listener() {
 
-            myListener = 
+            myListener =
                 new WeakProxyListener<Listener>( this , CLERAING_THREAD.getQueue() );
             DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_WATCHES,
@@ -404,7 +392,7 @@ public class WatchesModel extends ViewModelSupport
             if(evt.getSource() instanceof Watch) {
                 Object node;
                 synchronized(getWatchesMap()) {
-                    node = getWatchesMap().get(evt.getSource());
+                    node = getWatchesMap().get((Watch) evt.getSource());
                 }
                 if(node != null) {
                     fireTableValueChanged(node, null);
@@ -414,7 +402,7 @@ public class WatchesModel extends ViewModelSupport
 
             myListener.setupTask();
         }
-        
+
         void fireTreeChanged() {
             WatchesModel.this.fireTreeChanged();
         }
@@ -425,11 +413,13 @@ public class WatchesModel extends ViewModelSupport
 
 }
 
-class WeakProxyListener<T extends 
-    org.netbeans.modules.php.dbgp.models.WatchesModel.Listener> 
-        extends WeakReference<T> 
-            implements PropertyChangeListener, DebuggerManagerListener 
+class WeakProxyListener<T extends
+    org.netbeans.modules.php.dbgp.models.WatchesModel.Listener>
+        extends WeakReference<T>
+            implements PropertyChangeListener, DebuggerManagerListener
 {
+
+    private static final RequestProcessor RP = new RequestProcessor("Watches Model - Weak Proxy Listener"); //NOI18N
 
     WeakProxyListener( T t , ReferenceQueue<T> queue) {
         super(t, queue);
@@ -437,11 +427,11 @@ class WeakProxyListener<T extends
 
     void setupTask() {
         if( getTask() == null) {
-            myTask = RequestProcessor.getDefault().create(
+            myTask = RP.create(
                 new Runnable() {
                     @Override
                     public void run() {
-                        org.netbeans.modules.php.dbgp.models.WatchesModel.Listener 
+                        org.netbeans.modules.php.dbgp.models.WatchesModel.Listener
                             listener = get();
                         if ( listener == null ){
                             return;
@@ -540,27 +530,27 @@ class WeakProxyListener<T extends
         T t = get();
         if ( t instanceof DebuggerManagerListener ){
             ((DebuggerManagerListener)t).watchRemoved(watch);
-        }        
+        }
     }
-    
+
     Task getTask(){
         return myTask;
     }
-    
+
     // currently waiting / running refresh task
     // there is at most one
     private Task myTask;
-    
+
 }
 
-class ClearingThread<T extends 
-    org.netbeans.modules.php.dbgp.models.WatchesModel.Listener> extends Thread 
+class ClearingThread<T extends
+    org.netbeans.modules.php.dbgp.models.WatchesModel.Listener> extends Thread
 {
-    
+
     ClearingThread(){
         myQueue = new ReferenceQueue<T>();
     }
-    
+
     @Override
     public void run()
     {
@@ -569,15 +559,15 @@ class ClearingThread<T extends
                 java.lang.ref.Reference<? extends T> ref = getQueue().remove(
                         1000);
                 if ( ref instanceof DebuggerManagerListener ){
-                    DebuggerManagerListener listener = 
+                    DebuggerManagerListener listener =
                         (DebuggerManagerListener) ref;
                     DebuggerManager.getDebuggerManager().removeDebuggerListener(
                             listener );
                 }
                 if ( ref instanceof PropertyChangeListener ){
-                    PropertyChangeListener listener = 
+                    PropertyChangeListener listener =
                         (PropertyChangeListener) ref;
-                    Watch[] watches = 
+                    Watch[] watches =
                         DebuggerManager.getDebuggerManager().getWatches();
                     for( Watch watch : watches ) {
                         watch.removePropertyChangeListener( listener );
@@ -592,10 +582,10 @@ class ClearingThread<T extends
             }
         }
     }
-    
+
     ReferenceQueue<T> getQueue(){
         return myQueue;
     }
-    
+
     private final ReferenceQueue<T> myQueue;
 }

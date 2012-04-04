@@ -42,9 +42,8 @@
     
     <p>To create a debug target for a free-form project:
     <ol>
-        <li>In the Projects window, right-click the project's node and choose Set Main Project.</li>
-        
-  <li>Choose Debug &gt; Debug Main Project.</li>
+        <li>In the Projects window, right-click the project's node and choose Set as Main Project.</li>
+        <li>Choose Debug &gt; Debug Main Project from the main menu.</li>
         <li>In the Debug Project dialog box that appears, click Generate.
         <p>A target called <tt>debug-nb</tt> is created in a file called <tt>ide-targets.xml</tt>. 
         The generated <tt>ide-targets.xml</tt> file is a build script that 
@@ -148,7 +147,8 @@ the location of the classpath items relative to your project directory. The proj
 &lt;/path&gt;</pre>
 		
 	
-    <a name="map_projectxml"><h3>Manually Mapping a Target to a Menu Item</h3></a>
+    <a name="map_projectxml"></a>
+        <h3>Manually Mapping a Target to a Menu Item</h3>
     <p>When you have the IDE generate a target, the IDE automatically provides 
     the mapping between the target and the IDE command's menu item. However, if you have 
     created the target manually, you need to also create the mapping manually.</p>

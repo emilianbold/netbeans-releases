@@ -50,6 +50,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
@@ -83,6 +84,7 @@ public class SearchPanel extends JPanel implements FocusListener,
     private boolean projectWide = Utils.hasProjectSearchScope();
     private List<PresenterProxy> presenters;
     private DialogDescriptor dialogDescr;
+    private static WeakReference<ResultViewPanel> tabToReuse;
     /**
      * OK button.
      */
@@ -103,6 +105,8 @@ public class SearchPanel extends JPanel implements FocusListener,
      * Selected Search presenter
      */
     private Presenter selectedPresenter = null;
+
+    private boolean preferScopeSelection = false;
 
     /**
      * Panel that can show form with settings for several search providers.
@@ -252,13 +256,13 @@ public class SearchPanel extends JPanel implements FocusListener,
         this.setDialogDescriptor(dialogDescriptor);
 
         dialog.pack();
+        setCurrentlyShown(this);
         dialog.setVisible(
                 true);
         dialog.requestFocus();
         this.requestFocusInWindow();
         updateHelp();
         updateUsability();
-        setCurrentlyShown(this);
         if (selectedPresenter == null) {
             chooseLastUsedPresenter();
         }
@@ -330,6 +334,7 @@ public class SearchPanel extends JPanel implements FocusListener,
 
     private void cancel() {
         close();
+        setTabToReuse(null);
     }
 
     /**
@@ -395,6 +400,23 @@ public class SearchPanel extends JPanel implements FocusListener,
     private void updateUsability() {
         okButton.setEnabled(selectedPresenter.isUsable(
                 dialogDescr.getNotificationLineSupport()));
+    }
+
+    public boolean isPreferScopeSelection() {
+        return preferScopeSelection;
+    }
+
+    public void setPreferScopeSelection(boolean preferScopeSelection) {
+        this.preferScopeSelection = preferScopeSelection;
+    }
+
+    public static boolean isOpenedForSelection() {
+        SearchPanel sp = getCurrentlyShown();
+        if (sp == null) {
+            return false;
+        } else {
+            return sp.isPreferScopeSelection();
+        }
     }
 
     /**
@@ -463,5 +485,18 @@ public class SearchPanel extends JPanel implements FocusListener,
             initChangeListener(presenter);
             panel.validate();
         }
+    }
+
+    public synchronized static void setTabToReuse(
+            ResultViewPanel resultViewPanel) {
+        tabToReuse = resultViewPanel == null
+                ? null
+                : new WeakReference<ResultViewPanel>(resultViewPanel);
+    }
+
+    public synchronized static ResultViewPanel getTabToReuse() {
+        return tabToReuse == null || tabToReuse.get() == null
+                ? null
+                : tabToReuse.get();
     }
 }

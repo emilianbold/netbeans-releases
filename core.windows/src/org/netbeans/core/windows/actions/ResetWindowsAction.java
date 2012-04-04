@@ -166,7 +166,8 @@ public class ResetWindowsAction implements ActionListener {
                         mode = editorMode;
                     if( null != mode )
                         mode.addOpenedTopComponentNoNotify(editors[i]);
-                    registry.topComponentOpened( editors[i] );
+                    //#210380 - do not call componentOpened on the editors 
+                    registry.addTopComponent( editors[i] );
                 }
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override

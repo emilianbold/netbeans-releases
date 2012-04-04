@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
@@ -262,15 +263,18 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                             if (res != null && res.size() > 0) {
                                 return res;
                             }
-                            boolean isLocalHost = true;
+                            boolean isDoSearch = false;
                             MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration((Project)p);
                             if (conf != null){
-                                isLocalHost = conf.getDevelopmentHost().isLocalhost();
+                                if (conf.getDevelopmentHost().isLocalhost()) {
+                                    isDoSearch = true;
+                                } else {
+                                    if (Boolean.valueOf(System.getProperty("cnd.pkg.search.enabled", "true"))) {
+                                        isDoSearch = ConnectionManager.getInstance().isConnectedTo(conf.getDevelopmentHost().getExecutionEnvironment());
+                                    }
+                                }
                             }
-                            boolean runPackagesSearchInRemote  =
-                                    Boolean.valueOf(System.getProperty("cnd.pkg.search.enabled", "false"));
-
-                            if (!packageSearch.isEmpty() && (isLocalHost || runPackagesSearchInRemote)) {
+                            if (!packageSearch.isEmpty() && isDoSearch) {
                                 for (UserOptionsProvider userOptionsProvider : packageSearch) {
                                     NativeFileSearch search = userOptionsProvider.getPackageFileSearch((Project)p);
                                     if (search != null) {

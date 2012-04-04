@@ -68,6 +68,7 @@ import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider.MemoryCache;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.openide.modules.Places;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -289,8 +290,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     static File getStorageRootFile() {
-        String userDir = System.getProperty("netbeans.user"); // NOI18N
-        return new File(new File(userDir, "var"), "filehistory"); // NOI18N
+        return new File(new File(Places.getUserDirectory(), "var"), "filehistory"); // NOI18N
     }
 
     private long lastModified(File file) {

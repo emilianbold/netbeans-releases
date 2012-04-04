@@ -61,16 +61,19 @@ import org.openide.util.WeakListeners;
  *
  * @author ads
  */
-public class LineBreakpoint extends AbstractBreakpoint {    
+public class LineBreakpoint extends AbstractBreakpoint {
 
     public LineBreakpoint(Line line) {
         myLine = line;
         myListener = new FileRemoveListener();
         FileObject fileObject = line.getLookup().lookup(FileObject.class);
         if( fileObject != null ){
-            myWeakListener = WeakListeners.create( 
+            myWeakListener = WeakListeners.create(
                     FileChangeListener.class, myListener, fileObject);
             fileObject.addFileChangeListener( myWeakListener );
+            myFileUrl = fileObject.toURL().toString();
+        } else {
+            myFileUrl = ""; //NOI18N
         }
     }
 
@@ -86,12 +89,16 @@ public class LineBreakpoint extends AbstractBreakpoint {
     public Line getLine() {
         return myLine;
     }
-    
+
+    public String getFileUrl() {
+        return myFileUrl;
+    }
+
     @Override
     public int isTemp() {
         return 0;
     }
-    
+
     @Override
     public boolean isSessionRelated( DebugSession session ){
         SessionId id = session != null ? session.getSessionId() : null;
@@ -104,7 +111,7 @@ public class LineBreakpoint extends AbstractBreakpoint {
         }
         return true;
     }
-    
+
     @Override
     public void removed(){
         FileObject fileObject = getLine().getLookup().lookup(FileObject.class);
@@ -112,7 +119,7 @@ public class LineBreakpoint extends AbstractBreakpoint {
             fileObject.removeFileChangeListener( myWeakListener );
         }
     }
-    
+
     private Project getProject() {
         Line line = getLine();
         if ( line == null ){
@@ -124,7 +131,7 @@ public class LineBreakpoint extends AbstractBreakpoint {
         }
         return FileOwnerQuery.getOwner( fileObject );
     }
-    
+
     private class FileRemoveListener extends FileChangeAdapter {
 
         /* (non-Javadoc)
@@ -132,16 +139,18 @@ public class LineBreakpoint extends AbstractBreakpoint {
          */
         @Override
         public void fileDeleted( FileEvent arg0 ) {
-            DebuggerManager.getDebuggerManager().removeBreakpoint( 
+            DebuggerManager.getDebuggerManager().removeBreakpoint(
                     LineBreakpoint.this);
         }
 
     }
-    
+
     private Line myLine;
-    
+
     private FileRemoveListener myListener;
-    
+
     private FileChangeListener myWeakListener;
+
+    private String myFileUrl;
 
 }

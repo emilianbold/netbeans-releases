@@ -45,8 +45,11 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
+import java.awt.GraphicsEnvironment;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JFrame;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
@@ -60,6 +63,10 @@ import org.openide.nodes.Sheet;
  */
 public final class TreeTableViewTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TreeTableViewTest.class);
+    }
+
     private MyNodeTableModel testModel;
     
     public TreeTableViewTest(String testName) {

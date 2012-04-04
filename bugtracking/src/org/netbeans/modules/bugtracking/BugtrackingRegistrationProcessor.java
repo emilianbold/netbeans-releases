@@ -73,15 +73,19 @@ public class BugtrackingRegistrationProcessor extends LayerGeneratingProcessor {
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         for (Element e : roundEnv.getElementsAnnotatedWith(BugtrackingConnector.Registration.class)) {
             Registration r = e.getAnnotation(BugtrackingConnector.Registration.class);
-            String s = processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString();
-            
-            File f = layer(e).file("Services/Bugtracking/" + s.replace('.','-') + ".instance"); // NOI18N
+            if (r == null) {
+                continue;
+            }
+            File f = layer(e).instanceFile("Services/Bugtracking", null, r, null);                   // NOI18N
             f.methodvalue("instanceCreate", DelegatingConnector.class.getName(), "create");          // NOI18N
-            f.newvalue("delegate", s);                                                               // NOI18N
+            f.stringvalue("instanceOf", BugtrackingConnector.class.getName());                       // NOI18N
+            f.instanceAttribute("delegate", BugtrackingConnector.class);                             // NOI18N
             f.bundlevalue("displayName", r.displayName());                                           // NOI18N
             f.bundlevalue("tooltip", r.tooltip());                                                   // NOI18N
-            f.bundlevalue("id", r.id());                                                             // NOI18N    
-            f.bundlevalue("conPath", r.iconPath());                                                  // NOI18N    
+            f.stringvalue("id", r.id());                                                             // NOI18N
+            if (!r.iconPath().isEmpty()) {
+                f.bundlevalue("iconPath", r.iconPath());                                             // NOI18N
+            }
             f.write();
         }
         return true;

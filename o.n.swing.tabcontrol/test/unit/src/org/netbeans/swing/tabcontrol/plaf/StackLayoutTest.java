@@ -45,11 +45,14 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -57,6 +60,10 @@ import org.netbeans.junit.NbTestCase;
  * @author Dafe Simonek
  */
 public class StackLayoutTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(StackLayoutTest.class);
+    }
 
     public StackLayoutTest(String testName) {
         super(testName);

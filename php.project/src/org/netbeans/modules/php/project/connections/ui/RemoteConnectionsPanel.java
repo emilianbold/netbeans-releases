@@ -264,20 +264,17 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         assert configListModel.indexOf(configuration) == -1 : "Configuration already in the list: " + configuration;
         configListModel.addElement(configuration);
         if (select) {
-            configList.setSelectedValue(configuration, true);
-            switchConfigurationPanel();
             descriptor.setValid(false);
+            configList.setSelectedValue(configuration, true);
         }
     }
 
     private void selectConfiguration(int index) {
         configList.setSelectedIndex(index);
-        switchConfigurationPanel();
     }
 
     private void selectConfiguration(String configName) {
         configList.setSelectedValue(configListModel.getElement(configName), true);
-        switchConfigurationPanel();
     }
 
     private void readActiveConfig(Configuration cfg) {
@@ -355,7 +352,6 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         configListModel.removeElement(configuration);
         if (toSelect != -1) {
             configList.setSelectedIndex(toSelect);
-            switchConfigurationPanel();
         }
     }
 
@@ -633,7 +629,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(RemoteConnectionsPanel.class);
+        return new HelpCtx("org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel"); // NOI18N
     }
 
     public static class ConfigListRenderer extends JLabel implements ListCellRenderer, UIResource {

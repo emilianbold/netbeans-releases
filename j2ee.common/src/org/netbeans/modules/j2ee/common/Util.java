@@ -53,6 +53,7 @@ import java.awt.Container;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import javax.swing.JComponent;
@@ -439,6 +440,30 @@ public class Util {
             }
         }
         return false;
+    }
+
+    /**
+     * Creates URL for the file to be used for classpath. This means for
+     * jar and zip file method will return jar: URL for other files or
+     * directories it will return file: URL.
+     *
+     * @param file the file to get URL for
+     * @return the proper URL
+     * @throws MalformedURLException thrown if URL could not be constructed
+     * @since 1.70
+     */
+    public static URL fileToUrl(File file) throws MalformedURLException {
+        URL url = file.toURI().toURL();
+        if (!file.isDirectory()) {
+            if (file.getName().endsWith(".zip") || file.getName().endsWith("jar")) {
+            // isArchiveFile reads the bytes from file which is forbidden
+            // to be done from UI - check fro extensions should be safe enough
+            // see #207440
+            //if (FileUtil.isArchiveFile(url)) {
+                url = FileUtil.getArchiveRoot(url);
+            }
+        }
+        return url;
     }
     
     /**

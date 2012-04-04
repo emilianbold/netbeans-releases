@@ -46,13 +46,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.dwarfdiscovery.litemodel.DwarfRenderer;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
-import org.netbeans.modules.cnd.dwarfdiscovery.litemodel.DwarfRenderer;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf.CompilationUnitIterator;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.litemodel.api.Declaration;
@@ -203,7 +203,7 @@ public class LiteWeightModelTest extends NbTestCase {
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);
-            Iterator<CompilationUnit> iterator = dump.iteratorCompilationUnits();
+            CompilationUnitIterator iterator = dump.iteratorCompilationUnits();
             while (iterator.hasNext()) {
                 CompilationUnit cu = iterator.next();
                 if (cu != null) {
@@ -228,13 +228,13 @@ public class LiteWeightModelTest extends NbTestCase {
                 }
             }
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (WrongFileFormatException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } finally {
             if (dump != null) {
                 dump.dispose();
