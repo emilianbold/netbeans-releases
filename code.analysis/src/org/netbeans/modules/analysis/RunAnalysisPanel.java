@@ -42,9 +42,12 @@
 package org.netbeans.modules.analysis;
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,6 +73,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -86,6 +90,7 @@ import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
 import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.modules.analysis.ui.AdjustConfigurationPanel;
+import org.netbeans.modules.analysis.ui.ConfigurationsComboModel;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -570,7 +575,13 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
 
                 return this;
             }
-            
+
+            if (index == list.getModel().getSize()-5 && list.getModel() instanceof ConfigurationsComboModel && ((ConfigurationsComboModel) list.getModel()).canModify()) {
+                setBorder(new Separator(list.getForeground()));
+            } else {
+                setBorder(null);
+            }
+
             return super.getListCellRendererComponent(list, (indent ? "  " : "") + value, index, isSelected, cellHasFocus);
         }
     }
@@ -721,6 +732,36 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
             }
 
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+    }
+
+    private static class Separator implements Border {
+
+        private Color fgColor;
+
+        Separator(Color color) {
+            fgColor = color;
+        }
+
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics gr = g.create();
+            if (gr != null) {
+                try {
+                    gr.translate(x, y);
+                    gr.setColor(fgColor);
+                    gr.drawLine(0, height - 1, width - 1, height - 1);
+                } finally {
+                    gr.dispose();
+                }
+            }
+        }
+
+        public boolean isBorderOpaque() {
+            return true;
+        }
+
+        public Insets getBorderInsets(Component c) {
+            return new Insets(0, 0, 1, 0);
         }
     }
 }
