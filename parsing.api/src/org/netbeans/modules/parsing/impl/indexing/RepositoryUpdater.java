@@ -4365,8 +4365,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                         work.logCtx = workInProgress.logCtx;
                                     }
                                 }
+                                canceled = true;
                             }
-                            canceled = true;
                         }
 
                         // coalesce ordinary jobs
