@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="appdir" value="${builddir}/app/${appname}.app"/>
     <property name="scriptsdir" value="${builddir}/scripts"/>
 
-    <target name="clean" depends="clean-servicetag">
+    <target name="clean">
         <delete dir="${builddir}"/>
     </target>
 
@@ -81,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>    
     
     
-    <target name="build-pkg" depends="init, build-app,build-servicetag">
+    <target name="build-pkg" depends="init, build-app">
         <echo file="${scriptsdir}/env.sh"><![CDATA[
 NETBEANS_INSTALL_DIR="${app.name}"
 NETBEANS_BUILDNUMBER="${buildnumber}"
@@ -91,6 +91,7 @@ TOMCAT_INSTALL_DIR="${tomcat.install.dir}"
 NB_CLUSTER_DIR="${nbClusterDir}"
 GLASSFISH_V3_INSTALL_DIR="${glassfish.v3.install.dir}"
 MYSQL_INSTALL_DIR="${mysql.install.dir}"
+DEFAULT_JDK7_HOME="${default.jdk7.home}"
 NB_ID="${nb.id}"
 GLASSFISHV3_ID="${glassfish.v3.id}"
 TOMCAT_ID="${tomcat.id}"

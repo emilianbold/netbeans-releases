@@ -94,6 +94,12 @@ public class Hk2DatasourceManager implements DatasourceManager {
     
     private static final String DOMAIN_XML_PATH = "config/domain.xml";
     
+    /** List of base file names containing server resources. */
+    public static final String[] RESOURCE_FILES = {
+        "glassfish-resources",
+        "sun-resources"
+    };
+
     private Hk2DeploymentManager dm;
 
    
@@ -144,11 +150,38 @@ public class Hk2DatasourceManager implements DatasourceManager {
     // ------------------------------------------------------------------------
     //  Used by ModuleConfigurationImpl since 
     // ------------------------------------------------------------------------
-    public static Set<Datasource> getDatasources(File resourceDir, String baseName) {
-        File resourcesXml = new File(resourceDir, baseName+".xml");
-        return readDatasources(resourcesXml, "/", resourceDir);
+
+    // Making this method private because there is no reason to provide resources
+    // file base names manually.
+    /**
+     * Get <code>Datasource</code> objects from first available resources file.
+     *
+     * @param resourceDir Directory containing resource files.
+     * @param baseNames List of resource file base names to search for.
+     * @return <code>Datasource</code> objects found in first available file.
+     */
+    private static Set<Datasource> getDatasources(File resourceDir, String[] baseNames) {
+        for (String baseName : baseNames) {
+            File file = new File(resourceDir, baseName+".xml");
+            // Return Datasource objects from first available file.
+            if (file.isFile())
+                return readDatasources(file, "/", resourceDir);
+        }
+        // Return empty set when no resource file was found.
+        return new HashSet<Datasource>();
     }
-    
+
+    /**
+     * Get <code>Datasource</code> objects from first available resources file.
+     * Default resource base names list is used.
+     *
+     * @param resourceDir Directory containing resource files.
+     * @return <code>Datasource</code> objects found in first available file.
+     */
+    public static Set<Datasource> getDatasources(File resourceDir) {
+        return getDatasources(resourceDir, RESOURCE_FILES);
+    }
+
 //    public Datasource createDataSource(String jndiName, String url, String username,
 //            String password, String driver, File resourceDir) throws DatasourceAlreadyExistsException {
 //        SunDatasource result = null;
@@ -196,9 +229,20 @@ public class Hk2DatasourceManager implements DatasourceManager {
     // ------------------------------------------------------------------------
     //  Internal logic
     // ------------------------------------------------------------------------
+
+    /**
+     * Parse resource file and build <code>Datasource</code> objects from it.
+     *
+     * @param xmlFile      Resource file to be read. This file must exists, and must
+     *                         be readable regular file containing XML.
+     * @param xPathPrefix  XML path prefix,
+     * @param resourcesDir Directory containing resource files.
+     * @return 
+     */
     private static Set<Datasource> readDatasources(File xmlFile, String xPathPrefix, File resourcesDir) {
         Set<Datasource> dataSources = new HashSet<Datasource>();
-        if(xmlFile.exists()) {
+
+        if (xmlFile.canRead()) {
             Map<String, JdbcResource> jdbcResourceMap = new HashMap<String, JdbcResource>();
             Map<String, ConnectionPool> connectionPoolMap = new HashMap<String, ConnectionPool>();
 

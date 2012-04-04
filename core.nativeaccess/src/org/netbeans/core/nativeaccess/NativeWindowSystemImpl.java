@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
+import org.openide.util.Utilities;
 
 
 /**
@@ -66,6 +67,11 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
 
     @Override
     public boolean isWindowAlphaSupported() {
+        if( Utilities.isMac() ) {
+            String version = System.getProperty("java.version"); //NOI18N
+            if( null != version && version.startsWith("1.7" ) ) //NOI18N
+                return false;
+        }
         boolean res = false;
         try {
             res = WindowUtils.isWindowAlphaSupported();

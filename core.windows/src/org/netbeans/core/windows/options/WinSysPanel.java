@@ -61,6 +61,10 @@ final class WinSysPanel extends javax.swing.JPanel {
         this.controller = controller;
         initComponents();
         // TODO listen to changes in form fields and call controller.changed()
+        boolean isMacJDK17 = isMacJDK7();
+        this.isDragImage.setEnabled(!isMacJDK17);
+        this.isDragImageAlpha.setEnabled(!isMacJDK17);
+        this.isAlphaFloating.setEnabled(!isMacJDK17);
     }
 
     /** This method is called from within the constructor to
@@ -178,11 +182,12 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 }//GEN-LAST:event_isSnappingActionPerformed
 
     void load() {
+        boolean isMacJDK17 = isMacJDK7();
         boolean isNotSolaris = Utilities.getOperatingSystem() != Utilities.OS_SOLARIS;
-        isDragImage.setSelected(prefs.getBoolean(WinSysPrefs.DND_DRAGIMAGE, isNotSolaris));
-        isDragImageAlpha.setSelected(prefs.getBoolean(WinSysPrefs.TRANSPARENCY_DRAGIMAGE, isNotSolaris));
+        isDragImage.setSelected(prefs.getBoolean(WinSysPrefs.DND_DRAGIMAGE, isNotSolaris && !isMacJDK17));
+        isDragImageAlpha.setSelected(prefs.getBoolean(WinSysPrefs.TRANSPARENCY_DRAGIMAGE, isNotSolaris && !isMacJDK17));
 
-        isAlphaFloating.setSelected(prefs.getBoolean(WinSysPrefs.TRANSPARENCY_FLOATING, true));
+        isAlphaFloating.setSelected(prefs.getBoolean(WinSysPrefs.TRANSPARENCY_FLOATING,!isMacJDK17));
         
         isSnapping.setSelected(prefs.getBoolean(WinSysPrefs.SNAPPING, true));
         isSnapScreenEdges.setSelected(prefs.getBoolean(WinSysPrefs.SNAPPING_SCREENEDGES, true));
@@ -247,6 +252,15 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
     }
     
+    private static boolean isMacJDK7() {
+        if( Utilities.isMac() ) {
+            String version = System.getProperty("java.version"); //NOI18N
+            if( null != version && version.startsWith("1.7" ) ) //NOI18N
+                return true;
+        }
+        return false;
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox isAlphaFloating;

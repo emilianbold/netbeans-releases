@@ -90,6 +90,22 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
                 File testSrcFile = testSrc != null ? FileUtil.normalizeFile(new File(testSrc)) : null;
                 toReturn = checkRoot(fil, srcFile, testSrcFile);
                 if (toReturn == null) {
+                    for (URI res : project.getResources(false)) {
+                        toReturn = checkRoot(fil, res, null);
+                        if (toReturn != null) {
+                            break;
+                        }
+                    }
+                }
+                if (toReturn == null) {
+                    for (URI res : project.getResources(true)) {
+                        toReturn = checkRoot(fil, null, res);
+                        if (toReturn != null) {
+                            break;
+                        }
+                    }
+                }
+                if (toReturn == null) {
                     for (URI gen : project.getGeneratedSourceRoots(false)) {
                         toReturn = checkRoot(fil, gen, null);
                         if (toReturn != null) {

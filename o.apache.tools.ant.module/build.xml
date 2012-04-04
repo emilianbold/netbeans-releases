@@ -110,7 +110,7 @@ made subject to such option by the copyright holder.
             <fileset dir="${cluster}">
                 <include name="ant/lib/*.jar"/>
             </fileset>
-            <mapper type="glob" from="ant${file.separator}lib${file.separator}*.jar" to="apache-*-1.8.2.jar"/>
+            <mapper type="glob" from="ant${file.separator}lib${file.separator}*.jar" to="apache-*-1.8.3.jar"/>
         </copy>
         <copy file="${cluster}/ant/nblib/bridge.jar" tofile="${dir}/org-apache-tools-ant-module-bridge.jar"/>
         <!-- XXX ought to only do this in case jnlp.sign.jars=true -->
@@ -164,7 +164,7 @@ made subject to such option by the copyright holder.
             release.version: version of Ant being bundled, e.g. "1.6"
             release.path: full path to the Ant binary distribution, e.g. "/tmp/apache-ant-1.6.0"
         </fail>
-        <property name="orig.manual" location="${release.path}/docs/manual"/>
+        <property name="orig.manual" location="${release.path}/manual"/>
         <echo>2.  Creating the Ant manual from ${orig.manual}...</echo>
         <property name="online.manual" location="build/release-work/online-manual"/>
         <delete dir="${online.manual}"/>
