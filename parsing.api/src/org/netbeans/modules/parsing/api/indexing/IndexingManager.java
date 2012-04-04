@@ -435,7 +435,7 @@ public final class IndexingManager {
             wait,
             forceRefresh,
             steady,
-            LogContext.create(LogContext.EventType.MANAGER, null));
+            LogContext.create(LogContext.EventType.MANAGER, null).withRoot(rootUrl));
     }
 
     static {
