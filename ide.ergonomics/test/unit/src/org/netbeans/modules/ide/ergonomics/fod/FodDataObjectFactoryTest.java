@@ -179,9 +179,16 @@ public class FodDataObjectFactoryTest extends NbTestCase {
         assertEquals("Edit cookie is available and same as open one", oc, ec);
         ec.edit();
         assertTrue("Autoupdate is enabled", au.isEnabled());
-        DataObject newObj = DataObject.find(fo);
-        if (obj == newObj) {
-            fail("New object shall be created: " + newObj);
+        for (int i = 0; ; i++) {
+            DataObject newObj = DataObject.find(fo);
+            if (obj == newObj) {
+                if (i < 50) {
+                    Thread.sleep(1000);
+                    continue;
+                }
+                fail("New object shall be created: " + newObj);
+            }
+            break;
         }
         assertFalse("Old is no longer valid", obj.isValid());
 
