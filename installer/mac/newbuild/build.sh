@@ -26,6 +26,7 @@ if [ -z "$1" ] || [ -z "$2" ]|| [ -z "$3" ] || [ -z "$4" ]; then
     echo "prefix is the distro filename prefix, e.g. netbeans-hudson-trunk in netbeans-hudson-trunk-2464"
     echo "buildnumber is the distro buildnumber, e.g. 2464 in netbeans-hudson-trunk-2464"
     echo "ml_build is 1 if ml builds are required and 0 if not"
+    echo "build_jdk7 is 1 if bundle jdk7 are required and 0 if not"
     echo "nb_locales is the string with the list of locales (for ml builds)"
     exit 1
 fi
@@ -34,10 +35,10 @@ work_dir=$1
 prefix=$2
 buildnumber=$3
 ml_build=$4
-if [ -n "$5" ] ; then
-  nb_locales="$5"
+build_jdk7=$5
+if [ -n "$6" ] ; then
+  nb_locales="$6"
 fi
-build_jdk7=$BUILD_NBJDK7
 
 basename=`dirname "$0"`
 . "$basename"/build-private.sh
@@ -46,8 +47,9 @@ cd "$basename"
 chmod -R a+x *.sh
 
 commonname=$work_dir/zip/moduleclusters/$prefix-$buildnumber 
-if [ 0 -eq $build.jdk7 ] ; then
+if [ -z $build_jdk7 ] || [ 0 -eq $build_jdk7 ] ; then
     target="build-all-dmg"
+    build_jdk7=0
 else
     target="build-jdk-bundle-dmg"
 fi
