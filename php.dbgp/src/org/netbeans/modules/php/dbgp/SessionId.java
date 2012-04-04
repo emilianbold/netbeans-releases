@@ -44,7 +44,6 @@
 package org.netbeans.modules.php.dbgp;
 
 import java.io.File;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
