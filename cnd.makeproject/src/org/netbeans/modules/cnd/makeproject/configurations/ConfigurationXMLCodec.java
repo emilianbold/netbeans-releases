@@ -279,7 +279,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     itemConfiguration.setTool(PredefinedToolKind.getTool(tool));
                     String flavor = atts.getValue(ItemXMLCodec.FLAVOR_ATTR);
                     if (flavor != null) {
-                        itemConfiguration.setLanguageFlavor(LanguageFlavor.values()[Integer.parseInt(flavor)]);
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.fromExternal(Integer.parseInt(flavor)));
                     }
                 }
             } else {
