@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
@@ -79,10 +80,15 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages({"ERR_NothingSelected=Nothing selected to move",
     "ERR_MoveToLibrary=Cannot move to a library",
     "ERR_MoveFromLibrary=Cannot move from a library",
+    "ERR_MoveFromClass=Can only move members of a class",
     "ERR_MoveToSameClass=Target can not be the same as the source class",
     "ERR_MoveToSuperClass=Cannot move to a superclass, maybe you need the Pull Up Refactoring?",
     "ERR_MoveToSubClass=Cannot move to a subclass, maybe you need the Push Down Refactoring?",
     "ERR_MoveGenericField=Cannot move a generic field",
+    "# {0} - Method name",
+    "ERR_MoveAbstractMember=Cannot move abstract method \"{0}\"",
+    "# {0} - Method name",
+    "ERR_MoveMethodPolymorphic=Cannot move polymorphic method \"{0}\"",
     "WRN_InitNoAccess=Field initializer uses local accessors which will not be accessible",
     "# {0} - File displayname : line number",
     "WRN_NoAccessor=No accessor found to invoke the method from: {0}",
@@ -141,7 +147,22 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         if (preCheckProblem != null) {
             return preCheckProblem;
         }
-        
+
+        Element element = properties.getPreSelectedMembers()[0].resolveElement(info);
+        TreePath path = info.getTrees().getPath(element);
+        if (path != null) {
+            TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(info, path, true, true, true, true, false);
+            if (enclosingClassPath != null) {
+                Element typeElement = info.getTrees().getElement(enclosingClassPath);
+                if (typeElement == null || !typeElement.getKind().isClass() || enclosingClassPath.getLeaf().getKind() == Tree.Kind.INTERFACE) {
+                    return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveFromClass"));
+                }
+            } else {
+                return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveFromClass"));
+            }
+        } else {
+            return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveFromClass"));
+        }
         return preCheckProblem;
     }
 
@@ -184,6 +205,19 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
                 VariableElement var = (VariableElement) element;
                 if(var.asType().getKind() == TypeKind.TYPEVAR) {
                     return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveGenericField"));
+                }
+            }
+            if(element.getKind() == ElementKind.METHOD) {
+                ExecutableElement method = (ExecutableElement) element;
+                if(method.getModifiers().contains(Modifier.ABSTRACT)) {
+                    return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveAbstractMember", element.getSimpleName()));
+                }
+                
+                // Method can not be polymorphic
+                Collection<ExecutableElement> overridenMethods = JavaRefactoringUtils.getOverriddenMethods(method, javac);
+                Collection<ExecutableElement> overridingMethods = JavaRefactoringUtils.getOverridingMethods(method, javac, cancelRequested);
+                if (overridenMethods.size() > 0 || overridingMethods.size() > 0) {
+                    return new Problem(true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_MoveMethodPolymorphic", method.getSimpleName())); //NOI18N
                 }
             }
         }
