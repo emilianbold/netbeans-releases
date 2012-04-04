@@ -52,15 +52,16 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionResult;
-import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakSet;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.util.*;
 
 /**
  * This class gets informed about started and finished JUnit test sessions
@@ -343,6 +344,8 @@ public final class Manager {
 
     /**
      */
+    @NbBundle.Messages({"# {0} - project", "LBL_NotificationDisplayer_title=Tests finished successfully for project: {0}",
+        "LBL_NotificationDisplayer_detailsText=No errors or failures"})
     private void displayInWindow(final TestSession session,
                                  final ResultDisplayHandler displayHandler,
                                  final boolean sessionEnd) {
@@ -361,6 +364,24 @@ public final class Manager {
             } else if (promote) {
                 Mutex.EVENT.writeAccess(new Displayer(null, promote));
             }
+        } else {
+            if (sessionEnd) {
+                Mutex.EVENT.writeAccess(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        final ResultWindow window = ResultWindow.getInstance();
+                        if (window.isOpened()) {
+                            window.promote();
+                        } else {
+                            Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/testResults.png"));   //NOI18N
+                            String projectname = ProjectUtils.getInformation(session.getProject()).getDisplayName();
+                            NotificationDisplayer.getDefault().notify(Bundle.LBL_NotificationDisplayer_title(projectname), icon,
+                                    Bundle.LBL_NotificationDisplayer_detailsText(), null);
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -378,7 +399,7 @@ public final class Manager {
         public void run() {
             final ResultWindow window = ResultWindow.getInstance();
             if (promote) {
-               window.promote();
+                window.promote();
             }
         }
     }
