@@ -202,6 +202,10 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue198032_05() throws Exception {
         checkOccurrences("testfiles/coloring/issue198032.js", "this.lev^el2_1 = function(){", true);
     }
+    
+    public void testIssue198032_06() throws Exception {
+        checkOccurrences("testfiles/coloring/issue198032.js", "var fir^st = \"defined in level0\";// Try rename refactor from here", true);
+    }
         
     @Override
     protected void assertDescriptionMatches(FileObject fileObject,

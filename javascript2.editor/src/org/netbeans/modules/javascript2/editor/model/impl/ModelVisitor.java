@@ -398,6 +398,18 @@ public class ModelVisitor extends PathNodeVisitor {
                 scope.addDeclaredScope(fncScope);
                 // push the current function in the model builder stack
                 modelBuilder.setCurrentObject((JsObjectImpl)fncScope);
+                // create variables that are declared in the function
+                // They has to be created here for tracking occurrences
+                for(VarNode varNode : functionNode.getDeclarations()) {
+                    Identifier varName = new IdentifierImpl(varNode.getName().getName(),
+                        ModelUtils.documentOffsetRange(parserResult, varNode.getName().getStart(), varNode.getName().getFinish()));
+                    JsObjectImpl variable = new JsObjectImpl(fncScope, varName, varName.getOffsetRange());
+                    variable.setDeclared(true);
+                    // here are the variables allways private
+                    variable.getModifiers().remove(Modifier.PUBLIC);
+                    variable.getModifiers().add(Modifier.PRIVATE);
+                    fncScope.addProperty(varName.getName(), variable);
+                }
             }
 
             for (FunctionNode fn : functions) {
@@ -639,15 +651,20 @@ public class ModelVisitor extends PathNodeVisitor {
     public Node visit(VarNode varNode, boolean onset) {
         if (onset && !(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
             JsObject parent = modelBuilder.getCurrentObject();
-            Identifier name = new IdentifierImpl(varNode.getName().getName(),
-                    ModelUtils.documentOffsetRange(parserResult, varNode.getName().getStart(), varNode.getName().getFinish()));
-            JsObjectImpl variable = new JsObjectImpl(parent, name, name.getOffsetRange());
-            variable.setDeclared(true);
-            if (parent.getJSKind() != JsElement.Kind.FILE) {
-                variable.getModifiers().remove(Modifier.PUBLIC);
-                variable.getModifiers().add(Modifier.PRIVATE);
+            JsObjectImpl variable = (JsObjectImpl)parent.getProperty(varNode.getName().getName());
+            if (variable == null) {
+                // variable si not defined, so it has to be from global scope
+                // or from a code structure like for cycle
+                Identifier name = new IdentifierImpl(varNode.getName().getName(),
+                        ModelUtils.documentOffsetRange(parserResult, varNode.getName().getStart(), varNode.getName().getFinish()));
+                variable = new JsObjectImpl(parent, name, name.getOffsetRange());
+                variable.setDeclared(true);
+                if (parent.getJSKind() != JsElement.Kind.FILE) {
+                    variable.getModifiers().remove(Modifier.PUBLIC);
+                    variable.getModifiers().add(Modifier.PRIVATE);
+                }
+                parent.addProperty(name.getName(), variable);
             }
-            parent.addProperty(name.getName(), variable);
             modelBuilder.setCurrentObject(variable);
             if (varNode.getInit() instanceof IdentNode) {
                 addOccurence((IdentNode)varNode.getInit());
@@ -655,7 +672,7 @@ public class ModelVisitor extends PathNodeVisitor {
             if (!(varNode.getInit() instanceof UnaryNode)) {
                 Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(varNode.getInit());
                 for (TypeUsage type : types) {
-                    variable.addAssignment(type, name.getOffsetRange().getEnd());
+                    variable.addAssignment(type, variable.getDeclarationName().getOffsetRange().getEnd());
                 }
             }
         }

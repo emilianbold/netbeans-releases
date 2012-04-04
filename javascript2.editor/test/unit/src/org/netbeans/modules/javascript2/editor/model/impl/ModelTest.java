@@ -363,7 +363,7 @@ public class ModelTest extends JsTestBase {
         
         JsObject  object = model.getGlobalObject();
         // TODO this is wrong, needs to be handled parameters
-        assertEquals(3, object.getProperties().size());
+        assertEquals(2, object.getProperties().size());
         
         object = object.getProperty("$function");
         assertEquals(true, object.isDeclared());
