@@ -4352,12 +4352,13 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final List<Work> follow = new ArrayList<Work>(1);
                         if (workInProgress != null) {
                             if (workInProgress.cancelBy(work,follow)) {
-                            // make the WiP absorbed by this follow-up work:
-                            if (workInProgress.logCtx != null) {
-                                if (work.logCtx != null) {
-                                    work.logCtx.absorb(workInProgress.logCtx);
-                                } else {
-                                    work.logCtx = workInProgress.logCtx;
+                                // make the WiP absorbed by this follow-up work:
+                                if (workInProgress.logCtx != null) {
+                                    if (work.logCtx != null) {
+                                        work.logCtx.absorb(workInProgress.logCtx);
+                                    } else {
+                                        work.logCtx = workInProgress.logCtx;
+                                    }
                                 }
                             }
                             canceled = true;
