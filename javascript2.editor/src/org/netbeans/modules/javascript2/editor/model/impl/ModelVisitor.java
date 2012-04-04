@@ -301,6 +301,7 @@ public class ModelVisitor extends PathNodeVisitor {
             JsObjectImpl inObject = modelBuilder.getGlobal();
             addToPath(functionNode);
             List<FunctionNode> functions = new ArrayList<FunctionNode>(functionNode.getFunctions().size());
+            // store all function nodes in cache
             for (FunctionNode fn : functionNode.getFunctions()) {
                 functions.add(fn);
             }
@@ -311,6 +312,8 @@ public class ModelVisitor extends PathNodeVisitor {
             boolean isPrivilage = false;
             int pathSize = getPath().size();
             if (pathSize > 1 && getPath().get(pathSize - 2) instanceof ReferenceNode) {
+                // is the function declared as variable or field
+                //      var fn = function () {} or in object literal or this.fn = function () {}
                 List<FunctionNode> siblings = functionStack.get(functionStack.size() - 1);
                 siblings.remove(functionNode);
 
@@ -340,6 +343,8 @@ public class ModelVisitor extends PathNodeVisitor {
             }
 
             if (name == null || name.isEmpty()) {
+                // function is declared as 
+                //      function fn () {}
                 name = new ArrayList<Identifier>(1);
                 int start = functionNode.getIdent().getStart();
                 int end = functionNode.getIdent().getFinish();
@@ -360,9 +365,9 @@ public class ModelVisitor extends PathNodeVisitor {
             }
             functionStack.add(functions);
 
-            // todo parameters;
             JsFunctionImpl fncScope = null;
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
+                // create the function object
                 DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
                 fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder);
                 boolean isAnonymous = false;
@@ -391,11 +396,13 @@ public class ModelVisitor extends PathNodeVisitor {
                     modifiers.add(Modifier.STATIC);
                 }
                 scope.addDeclaredScope(fncScope);
+                // push the current function in the model builder stack
                 modelBuilder.setCurrentObject((JsObjectImpl)fncScope);
             }
 
             for (FunctionNode fn : functions) {
                 if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
+                    // go through all functions defined via reference
                     String functionName = fn.getIdent().getName();
                     if (!(functionName.startsWith("get ") || functionName.startsWith("set "))) {  //NOI18N
                         // don't visit setter and getters in object literal
@@ -404,13 +411,14 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
 
+            // go through all function statements
             for (Node node : functionNode.getStatements()) {
                 node.accept(this);
             }
 
             
             if (fncScope != null) {
-                
+                // check parameters and return types of the function.
                 List<Type> types = docProvider.getReturnType(functionNode);
                 if (types != null && !types.isEmpty()) {
                     for(Type type : types) {
@@ -434,11 +442,13 @@ public class ModelVisitor extends PathNodeVisitor {
             }
                 
             for (FunctionNode fn : functions) {
+                // go through all functions defined as function fn () {...}
                 if (fn.getIdent().getStart() >= fn.getIdent().getFinish()) {
                     fn.accept(this);
                 }
             }
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
+                // pop the current level from model builder stack
                 modelBuilder.reset();
             }
             functionStack.remove(functionStack.size() - 1);
