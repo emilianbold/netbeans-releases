@@ -10,3 +10,69 @@ METHOD     methodA6()                      [PUBLIC]   clsA
 METHOD     methodA7()                      [PUBLIC]   clsA
 VARIABLE   clsA fld                        [PUBLIC]   clsA
 VARIABLE   clsA fld2                       [PUBLIC]   clsA
+------------------------------------
+METHOD     autocommit($mode)               [PUBLIC]   mysqli
+METHOD     change_user($user, $password,   [PUBLIC]   mysqli
+METHOD     character_set_name()            [PUBLIC]   mysqli
+METHOD     client_encoding()               [PUBLIC]   mysqli
+METHOD     close()                         [PUBLIC]   mysqli
+METHOD     commit()                        [PUBLIC]   mysqli
+METHOD     connect($host, $user, $passwor  [PUBLIC]   mysqli
+METHOD     debug($message)                 [PUBLIC]   mysqli
+METHOD     dump_debug_info()               [PUBLIC]   mysqli
+METHOD     escape_string($string_to_escap  [PUBLIC]   mysqli
+METHOD     get_charset()                   [PUBLIC]   mysqli
+METHOD     get_client_info()               [PUBLIC]   mysqli
+METHOD     get_server_info()               [PUBLIC]   mysqli
+METHOD     get_warnings()                  [PUBLIC]   mysqli
+METHOD     init()                          [PUBLIC]   mysqli
+METHOD     kill($processid)                [PUBLIC]   mysqli
+METHOD     more_results()                  [PUBLIC]   mysqli
+METHOD     multi_query($query)             [PUBLIC]   mysqli
+METHOD     mysqli($host, $user, $password  [PUBLIC]   mysqli
+METHOD     next_result()                   [PUBLIC]   mysqli
+METHOD     options($option, $value)        [PUBLIC]   mysqli
+METHOD     ping()                          [PUBLIC]   mysqli
+METHOD     prepare($query)                 [PUBLIC]   mysqli
+METHOD     query($query)                   [PUBLIC]   mysqli
+METHOD     query($query, $resultmode = ..  [PUBLIC]   mysqli
+METHOD     real_connect($host = null)      [PUBLIC]   mysqli
+METHOD     real_connect($host = null, $us  [PUBLIC]   mysqli
+METHOD     real_connect($host = null, $us  [PUBLIC]   mysqli
+METHOD     real_connect($host = null, $us  [PUBLIC]   mysqli
+METHOD     real_connect($host = null, $us  [PUBLIC]   mysqli
+METHOD     real_connect($host = null, $us  [PUBLIC]   mysqli
+METHOD     real_connect($host = null, $us  [PUBLIC]   mysqli
+METHOD     real_connect()                  [PUBLIC]   mysqli
+METHOD     real_escape_string($escapestr)  [PUBLIC]   mysqli
+METHOD     real_query($query)              [PUBLIC]   mysqli
+METHOD     refresh($options)               [PUBLIC]   mysqli
+METHOD     rollback()                      [PUBLIC]   mysqli
+METHOD     select_db($dbname)              [PUBLIC]   mysqli
+METHOD     set_charset($charset)           [PUBLIC]   mysqli
+METHOD     set_local_infile_default(mysql  [PUBLIC]   mysqli
+METHOD     set_local_infile_handler(mysql  [PUBLIC]   mysqli
+METHOD     set_opt($option, $value)        [PUBLIC]   mysqli
+METHOD     ssl_set($key, $cert, $ca, $cap  [PUBLIC]   mysqli
+METHOD     stat()                          [PUBLIC]   mysqli
+METHOD     stmt_init()                     [PUBLIC]   mysqli
+METHOD     store_result()                  [PUBLIC]   mysqli
+METHOD     thread_safe()                   [PUBLIC]   mysqli
+METHOD     use_result()                    [PUBLIC]   mysqli
+VARIABLE   ? field_count                   [PUBLIC]   mysqli
+VARIABLE   int affected_rows               [PUBLIC]   mysqli
+VARIABLE   int client_version              [PUBLIC]   mysqli
+VARIABLE   int errno                       [PUBLIC]   mysqli
+VARIABLE   int server_version              [PUBLIC]   mysqli
+VARIABLE   int thread_id                   [PUBLIC]   mysqli
+VARIABLE   int warning_count               [PUBLIC]   mysqli
+VARIABLE   mixed insert_id                 [PUBLIC]   mysqli
+VARIABLE   string client_info              [PUBLIC]   mysqli
+VARIABLE   string connect_errno            [PUBLIC]   mysqli
+VARIABLE   string connect_error            [PUBLIC]   mysqli
+VARIABLE   string error                    [PUBLIC]   mysqli
+VARIABLE   string host_info                [PUBLIC]   mysqli
+VARIABLE   string info                     [PUBLIC]   mysqli
+VARIABLE   string protocol_version         [PUBLIC]   mysqli
+VARIABLE   string server_info              [PUBLIC]   mysqli
+VARIABLE   string sqlstate                 [PUBLIC]   mysqli

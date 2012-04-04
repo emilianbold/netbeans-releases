@@ -5,3 +5,45 @@ PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 CLASS      ExMyException                   [PUBLIC]   issue194875.php
 CLASS      Exception                       [PUBLIC]   issue194875.php
+------------------------------------
+CLASS      BadFunctionCallException        [PUBLIC]   PHP Platform
+CLASS      BadMethodCallException          [PUBLIC]   PHP Platform
+CLASS      DOMException                    [PUBLIC]   PHP Platform
+CLASS      DomainException                 [PUBLIC]   PHP Platform
+CLASS      ErrorException                  [PUBLIC]   PHP Platform
+CLASS      Exception                       [PUBLIC]   PHP Platform
+CLASS      HttpEncodingException           [PUBLIC]   PHP Platform
+CLASS      HttpException                   [PUBLIC]   PHP Platform
+CLASS      HttpHeaderException             [PUBLIC]   PHP Platform
+CLASS      HttpInvalidParamException       [PUBLIC]   PHP Platform
+CLASS      HttpMalformedHeadersException   [PUBLIC]   PHP Platform
+CLASS      HttpMessageTypeException        [PUBLIC]   PHP Platform
+CLASS      HttpQueryStringException        [PUBLIC]   PHP Platform
+CLASS      HttpRequestException            [PUBLIC]   PHP Platform
+CLASS      HttpRequestMethodException      [PUBLIC]   PHP Platform
+CLASS      HttpRequestPoolException        [PUBLIC]   PHP Platform
+CLASS      HttpResponseException           [PUBLIC]   PHP Platform
+CLASS      HttpRuntimeException            [PUBLIC]   PHP Platform
+CLASS      HttpSocketException             [PUBLIC]   PHP Platform
+CLASS      HttpUrlException                [PUBLIC]   PHP Platform
+CLASS      ImagickDrawException            [PUBLIC]   PHP Platform
+CLASS      ImagickException                [PUBLIC]   PHP Platform
+CLASS      ImagickPixelException           [PUBLIC]   PHP Platform
+CLASS      ImagickPixelIteratorException   [PUBLIC]   PHP Platform
+CLASS      InvalidArgumentException        [PUBLIC]   PHP Platform
+CLASS      LengthException                 [PUBLIC]   PHP Platform
+CLASS      LogicException                  [PUBLIC]   PHP Platform
+CLASS      MemcachedException              [PUBLIC]   PHP Platform
+CLASS      OutOfBoundsException            [PUBLIC]   PHP Platform
+CLASS      OutOfRangeException             [PUBLIC]   PHP Platform
+CLASS      OverflowException               [PUBLIC]   PHP Platform
+CLASS      PDOException                    [PUBLIC]   PHP Platform
+CLASS      PharException                   [PUBLIC]   PHP Platform
+CLASS      RangeException                  [PUBLIC]   PHP Platform
+CLASS      ReflectionException             [PUBLIC]   PHP Platform
+CLASS      RuntimeException                [PUBLIC]   PHP Platform
+CLASS      SQLiteException                 [PUBLIC]   PHP Platform
+CLASS      SoapFault                       [PUBLIC]   PHP Platform
+CLASS      UnderflowException              [PUBLIC]   PHP Platform
+CLASS      UnexpectedValueException        [PUBLIC]   PHP Platform
+CLASS      mysqli_sql_exception            [PUBLIC]   PHP Platform

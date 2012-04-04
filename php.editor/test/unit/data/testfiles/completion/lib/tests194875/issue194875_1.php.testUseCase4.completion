@@ -3,5 +3,7 @@ Code completion result for source line:
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 PACKAGE    Extra                           [PUBLIC]   null
 ------------------------------------
+CLASS      ErrorException                  [PUBLIC]   PHP Platform
 CLASS      ExMyException                   [PUBLIC]   issue194875.php
+CLASS      Exception                       [PUBLIC]   PHP Platform
 CLASS      Exception                       [PUBLIC]   issue194875.php
