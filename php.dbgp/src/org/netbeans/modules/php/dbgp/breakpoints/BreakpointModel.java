@@ -292,6 +292,6 @@ public class BreakpointModel extends ViewModelSupport
 
     }
 
-    private Map<DebugSession, AbstractBreakpoint> myCurrentBreakpoints;
+    private final Map<DebugSession, AbstractBreakpoint> myCurrentBreakpoints;
 
 }
