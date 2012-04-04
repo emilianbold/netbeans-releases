@@ -55,7 +55,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.lang.model.element.Element;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JRootPane;
@@ -480,11 +479,9 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     public void addNotify () {
         super.addNotify ();
         SwingUtilities.invokeLater (new Runnable () {
-
             @Override
             public void run () {
                 applyFilter (true);
-                filterTextField.requestFocusInWindow ();
             }
         });
     }
@@ -547,6 +544,12 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
             }
             lastFocusedComponent = null;
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                filterTextField.requestFocusInWindow ();
+            }
+        });
     }
 
     private void applyFilter () {
