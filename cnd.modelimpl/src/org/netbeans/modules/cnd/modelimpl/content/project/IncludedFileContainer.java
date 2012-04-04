@@ -105,6 +105,7 @@ public final class IncludedFileContainer {
      */
     public void addPair(ProjectBase includedFileOwner, FileImpl includedFile, PreprocessorStatePair pair) {
         assert includedFileOwner == includedFile.getProjectImpl(true);
+        if (true) return;
         Storage storage = getOrCreateStorageForProject(srorageListOwner, includedFileOwner);
         storage.add(includedFile, pair);
     }
