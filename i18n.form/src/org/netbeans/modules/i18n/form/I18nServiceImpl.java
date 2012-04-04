@@ -356,7 +356,7 @@ public class I18nServiceImpl implements I18nService {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         if (dobj == null) {
-            return new String[][] {};
+            return new String[][] {{},null};
         }
 
         List list = new ArrayList();
