@@ -19,8 +19,10 @@
 
 set -x -e 
 
-if [ -z "$1" ] || [ -z "$2" ]|| [ -z "$3" ] || [ -z "$4" ]; then
-    echo "usage: $0 zipdir prefix buildnumber ml_build [nb_locales]"
+echo Given parameters: $1 $2 $3 $4 $5 $5
+
+if [ -z "$1" ] || [ -z "$2" ]|| [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ]; then
+    echo "usage: $0 zipdir prefix buildnumber ml_build build_jdk7 [nb_locales]"
     echo ""
     echo "zipdir is the dir which contains the zip/modulclusters and zip-ml/moduleclusters"
     echo "prefix is the distro filename prefix, e.g. netbeans-hudson-trunk in netbeans-hudson-trunk-2464"
