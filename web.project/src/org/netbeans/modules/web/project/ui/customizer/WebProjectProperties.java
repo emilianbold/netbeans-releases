@@ -530,36 +530,23 @@ final public class WebProjectProperties {
                 DDHelper.createWebXml(j2eeProfile, webInf);
             }
 
-            // extend project with selected frameworks
-            // It should be called outside mutex, which is used above. See issue#68118
             if (newExtenders != null) {
-                // #120108
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        for (int i = 0; i < newExtenders.size(); i++) {
-                            ((WebModuleExtender) newExtenders.get(i)).extend(project.getAPIWebModule());
-                        }
-                        newExtenders.clear();
-                        project.resetTemplates();
-                    }
-                });
+                for (int i = 0; i < newExtenders.size(); i++) {
+                    ((WebModuleExtender) newExtenders.get(i)).extend(project.getAPIWebModule());
+                }
+                newExtenders.clear();
+                project.resetTemplates();
             }
 
              // try to save already included extenders
             if (existingExtenders != null) {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        for (WebModuleExtender webModuleExtender : existingExtenders) {
-                            if (webModuleExtender instanceof WebModuleExtender.Savable) {
-                                ((WebModuleExtender.Savable) webModuleExtender).save(project.getAPIWebModule());
-                            }
-                        }
-                        existingExtenders.clear();
-                        project.resetTemplates();
+                for (WebModuleExtender webModuleExtender : existingExtenders) {
+                    if (webModuleExtender instanceof WebModuleExtender.Savable) {
+                        ((WebModuleExtender.Savable) webModuleExtender).save(project.getAPIWebModule());
                     }
-                });
+                }
+                existingExtenders.clear();
+                project.resetTemplates();
             }
 
             // ui logging of the added frameworks
