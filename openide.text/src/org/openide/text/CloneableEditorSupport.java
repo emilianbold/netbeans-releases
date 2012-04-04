@@ -1557,7 +1557,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @param s the new MIME type
     */
     public void setMIMEType(String s) {
-        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this, true);
         if (redirect != null) {
             redirect.setMIMEType(s);
             return;
