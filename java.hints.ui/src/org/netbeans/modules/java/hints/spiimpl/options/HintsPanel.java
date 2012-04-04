@@ -82,6 +82,8 @@ import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -91,6 +93,8 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.analysis.spi.Analyzer.CustomizerContext;
+import org.netbeans.modules.java.hints.analysis.AnalyzerImpl;
 import org.netbeans.modules.java.hints.spiimpl.RulesManager;
 import org.netbeans.modules.java.hints.spiimpl.refactoring.Configuration;
 import org.netbeans.modules.java.hints.spiimpl.refactoring.ConfigurationRenderer;
@@ -165,11 +169,23 @@ public final class HintsPanel extends javax.swing.JPanel   {
         init(null, false, true, true, true);
         configCombo.setSelectedItem(preselected);
     }
-    public HintsPanel(HintMetadata preselected, ClassPathBasedHintWrapper cpBased) {
+    public HintsPanel(HintMetadata preselected, @NullAllowed final CustomizerContext<?, ?> cc, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
-        init(null, false, false, true, false);
+        init(null, false, false, cc == null, false);
         select(preselected);
         configurationsPanel.setVisible(false);
+        
+        if (cc != null) {
+            errorTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
+                @Override public void valueChanged(TreeSelectionEvent e) {
+                    HintMetadata hm = getSelectedHint();
+
+                    if (hm != null) {
+                        cc.setSelectedId(AnalyzerImpl.ID_JAVA_HINTS_PREFIX + hm.id);
+                    }
+                }
+            });
+        }
     }
 
     public HintsPanel(Preferences configurations, ClassPathBasedHintWrapper cpBased) {

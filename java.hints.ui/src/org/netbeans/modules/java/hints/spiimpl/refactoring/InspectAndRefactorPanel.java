@@ -640,7 +640,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     private synchronized void manageRefactorings(boolean single) {
         HintsPanel panel;
         if (single) {
-            panel = new HintsPanel((HintMetadata) singleRefactoringCombo.getSelectedItem(), cpBased);
+            panel = new HintsPanel((HintMetadata) singleRefactoringCombo.getSelectedItem(), null, cpBased);
         } else {
             panel = new HintsPanel((Configuration) configurationCombo.getSelectedItem(), cpBased);
         }
