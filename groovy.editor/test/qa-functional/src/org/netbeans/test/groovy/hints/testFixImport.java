@@ -39,94 +39,61 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.test.groovy.cc;
+package org.netbeans.test.groovy.hints;
 
-import java.awt.event.InputEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.groovy.GeneralGroovy;
 
 /**
  *
- * @author Vladimir Riha
+ * @author vriha
  */
-public class testCCProperties extends GeneralGroovy {
+public class testFixImport extends GeneralGroovy {
 
     static final String TEST_BASE_NAME = "groovy_";
     static int name_iterator = 0;
 
-    public testCCProperties(String args) {
+    public testFixImport(String args) {
         super(args);
     }
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(testCCProperties.class).addTest(
+                NbModuleSuite.createConfiguration(testFixImport.class).addTest(
                 "CreateApplication",
-                "GroovyFieldsSameFile" ,
-                "GroovyFieldsDifferentFile"
-                ).enableModules(".*").clusters(".*"));
+                "FixImportHint").enableModules(".*").clusters(".*"));
     }
 
     public void CreateApplication() {
         startTest();
         createJavaApplication(TEST_BASE_NAME + name_iterator);
-        testCCProperties.name_iterator++;
+        testFixImport.name_iterator++;
         endTest();
     }
 
-    public void GroovyFieldsSameFile() {
+    public void FixImportHint() {
         startTest();
-        
         createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "AA");
         EditorOperator file = new EditorOperator("AA.groovy");
-        file.setCaretPosition("AA {", false);
-        type(file, "\n  def String x");
-        type(file, "\n  def String xx");
-        type(file, "\n  def function1 = {\n");
+        file.setCaretPosition("AA ", false);
+        type(file, "extends AEADBadTagException");
+        new EventTool().waitNoEvent(1000);
+        Object[] anns = getAnnotations(file);
 
-        file.setCaretPosition("class AA {", true);
-        type(file, "\n ");
-        file.setCaretPositionToLine(file.getLineNumber() - 1);
-        type(file, "class BB {\n def BB(){ \n");
-        type(file, "foo = new AA().");
-        file.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(1000);
-
-        CompletionInfo completion = getCompletion();
-        completion.listItself.clickOnItem("x");
-        String[] res = {"x", "xx", "function1"};
-        checkCompletionItems(completion.listItself, res);
-        completion.listItself.hideAll();
+        assertEquals("More annotations than expected", 1, anns.length);
+        String ideal = "Add import for javax.crypto.AEADBadTagException\n"
+                + "----\n"
+                + "(Alt-Enter shows hints)";
+        
+        for (Object object : anns) {
+            String desc = EditorOperator.getAnnotationShortDescription(object);
+            desc = desc.replaceAll("<.*>", "");
+            assertTrue(TEST_BASE_NAME, ideal.equals(desc.trim()));
+        }
 
         endTest();
     }
-
-    public void GroovyFieldsDifferentFile() {
-        startTest();
-
-        createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "DD");
-        EditorOperator file = new EditorOperator("DD.groovy");
-        file.setCaretPosition("DD {", false);
-        type(file, "\n  def String x");
-        type(file, "\n  def String xx");
-        type(file, "\n  def function1 = {\n");
-
-        createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "CC");
-        file = new EditorOperator("CC.groovy");
-        file.setCaretPosition("CC {", false);
-        type(file, "\n def CC(){ \n");
-        type(file, "foo = new DD().");
-        file.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(1000);
-
-        CompletionInfo completion = getCompletion();
-        completion.listItself.clickOnItem("x");
-        String[] res = {"x", "xx", "function1"};
-        checkCompletionItems(completion.listItself, res);
-        completion.listItself.hideAll();
-
-        endTest();
-    }    
 }

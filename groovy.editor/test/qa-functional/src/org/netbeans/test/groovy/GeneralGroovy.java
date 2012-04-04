@@ -295,6 +295,13 @@ public class GeneralGroovy extends JellyTestCase {
             }
         }
     }
+    
+    protected Object[] getAnnotations(EditorOperator eOp) {
+        eOp.makeComponentVisible();
+        evt.waitNoEvent(1000);
+        Object[] anns = eOp.getAnnotations();
+        return anns;
+    }
 
     protected void checkCompletionItems(CompletionJListOperator jlist, String[] asIdeal) {
         String completionList = "";

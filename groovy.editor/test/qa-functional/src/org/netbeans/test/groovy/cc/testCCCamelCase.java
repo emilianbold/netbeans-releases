@@ -42,6 +42,7 @@
 package org.netbeans.test.groovy.cc;
 
 import java.awt.event.InputEvent;
+import java.util.List;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -51,82 +52,99 @@ import org.netbeans.test.groovy.GeneralGroovy;
  *
  * @author Vladimir Riha
  */
-public class testCCProperties extends GeneralGroovy {
+public class testCCCamelCase extends GeneralGroovy {
 
     static final String TEST_BASE_NAME = "groovy_";
     static int name_iterator = 0;
 
-    public testCCProperties(String args) {
+    public testCCCamelCase(String args) {
         super(args);
     }
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(testCCProperties.class).addTest(
+                NbModuleSuite.createConfiguration(testCCCamelCase.class).addTest(
                 "CreateApplication",
-                "GroovyFieldsSameFile" ,
-                "GroovyFieldsDifferentFile"
-                ).enableModules(".*").clusters(".*"));
+                "ExtendsUpperCaseClass",
+                "ExtendsMixedCaseClass",
+                "EmptyLowerCaseClass",
+                "EmptyMixedCaseClass").enableModules(".*").clusters(".*"));
     }
 
     public void CreateApplication() {
         startTest();
         createJavaApplication(TEST_BASE_NAME + name_iterator);
-        testCCProperties.name_iterator++;
+        testCCCamelCase.name_iterator++;
         endTest();
     }
 
-    public void GroovyFieldsSameFile() {
+    public void ExtendsUpperCaseClass() {
         startTest();
-        
+
         createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "AA");
         EditorOperator file = new EditorOperator("AA.groovy");
-        file.setCaretPosition("AA {", false);
-        type(file, "\n  def String x");
-        type(file, "\n  def String xx");
-        type(file, "\n  def function1 = {\n");
-
-        file.setCaretPosition("class AA {", true);
-        type(file, "\n ");
-        file.setCaretPositionToLine(file.getLineNumber() - 1);
-        type(file, "class BB {\n def BB(){ \n");
-        type(file, "foo = new AA().");
+        file.setCaretPosition("AA ", false);
+        type(file, "extends AC");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
-        CompletionInfo completion = getCompletion();
-        completion.listItself.clickOnItem("x");
-        String[] res = {"x", "xx", "function1"};
+        GeneralGroovy.CompletionInfo completion = getCompletion();
+        String[] res = {"AbstractCollection", "AutoCloseable"};
         checkCompletionItems(completion.listItself, res);
         completion.listItself.hideAll();
 
         endTest();
     }
 
-    public void GroovyFieldsDifferentFile() {
+    public void ExtendsMixedCaseClass() {
         startTest();
-
-        createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "DD");
-        EditorOperator file = new EditorOperator("DD.groovy");
-        file.setCaretPosition("DD {", false);
-        type(file, "\n  def String x");
-        type(file, "\n  def String xx");
-        type(file, "\n  def function1 = {\n");
-
-        createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "CC");
-        file = new EditorOperator("CC.groovy");
-        file.setCaretPosition("CC {", false);
-        type(file, "\n def CC(){ \n");
-        type(file, "foo = new DD().");
+        createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "BB");
+        EditorOperator file = new EditorOperator("BB.groovy");
+        file.setCaretPosition("BB ", false);
+        type(file, "extends AbC");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
-        CompletionInfo completion = getCompletion();
-        completion.listItself.clickOnItem("x");
-        String[] res = {"x", "xx", "function1"};
+        GeneralGroovy.CompletionInfo completion = getCompletion();
+        String[] res = {"AbstractCollection"};
         checkCompletionItems(completion.listItself, res);
         completion.listItself.hideAll();
 
+
         endTest();
-    }    
+    }
+
+    public void EmptyLowerCaseClass() {
+        startTest();
+        createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "CC");
+        EditorOperator file = new EditorOperator("CC.groovy");
+        file.setCaretPosition("CC ", false);
+        type(file, "extends os");
+        file.typeKey(' ', InputEvent.CTRL_MASK);
+        evt.waitNoEvent(1000);
+
+        GeneralGroovy.CompletionInfo completion = getCompletion();
+        List items = completion.listItems;
+        assertTrue("Code completion offers something but should not", items.get(0).equals("No suggestions"));
+        completion.listItself.hideAll();
+
+        endTest();
+    }
+
+    public void EmptyMixedCaseClass() {
+        startTest();
+        EditorOperator file = new EditorOperator("CC.groovy");
+        file.setCaretPosition("extends ", false);
+        type(file, "D");
+        file.setCaretPosition("Dos", false);
+        file.typeKey(' ', InputEvent.CTRL_MASK);
+        evt.waitNoEvent(1000);
+
+        GeneralGroovy.CompletionInfo completion = getCompletion();
+        List items = completion.listItems;
+        assertTrue("Code completion offers something but should not", items.get(0).equals("No suggestions"));
+        completion.listItself.hideAll();
+
+        endTest();
+    }
 }
