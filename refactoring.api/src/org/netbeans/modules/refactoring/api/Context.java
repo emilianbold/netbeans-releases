@@ -83,6 +83,17 @@ public final class Context extends Lookup {
         }
         instanceContent.add(value);
     }
+    
+    /**
+     * Removes value instance from this context.
+     */
+    public void remove(@NonNull Class<?> clazz) {
+        Parameters.notNull("clazz", clazz); // NOI18N
+        Object old = lookup(clazz);
+        if (old!=null) {
+            instanceContent.remove(old);
+        }
+    }
 
     @Override
     public <T> T lookup(Class<T> clazz) {

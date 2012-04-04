@@ -85,24 +85,18 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
     private WhereUsedQueryUI() {
     }
 
-    private WhereUsedQueryUI(TreePathHandle handle, CompilationInfo info) {
+    private WhereUsedQueryUI(TreePathHandle handle, Element el) {
         this.query = new WhereUsedQuery(Lookups.singleton(handle));
         // ClasspathInfo needs to be in context until all other modules change there
         // implementation to use scopes #199779. This is used by at least JPA refactoring and
         // API support.
         this.query.getContext().add(RefactoringUtils.getClasspathInfoFor(handle));
         this.element = handle;
-        Element el = handle.resolveElement(info);
-        if (el != null) {
-            if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
-                elementHandle = ElementHandle.create(el);
-            }
-            name = el.getSimpleName().toString();
-            kind = el.getKind();
-        } else {
-            name = ""; //NOI18N
-            kind = ElementKind.OTHER;
+        if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
+            elementHandle = ElementHandle.create(el);
         }
+        name = el.getSimpleName().toString();
+        kind = el.getKind();
     }
 
     public WhereUsedQueryUI(TreePathHandle jmiObject, String name, AbstractRefactoring delegate) {
@@ -136,6 +130,8 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         Scope customScope = panel.getCustomScope();
         if (customScope != null) {
             query.getContext().add(customScope);
+        } else {
+            query.getContext().remove(Scope.class);
         }
         if (kind == ElementKind.METHOD) {
             setForMethod();
@@ -270,10 +266,15 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
 
     @Override
     public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
-        if(handles.length < 1) {
+        if(handles.length < 1 || handles[0] == null) {
             return null;
         }
-        return new WhereUsedQueryUI(handles[0], info);
+        TreePathHandle handle = handles[0];
+        Element el = handle.resolveElement(info);
+        if (el == null) {
+            return null;
+        }
+        return new WhereUsedQueryUI(handle, el);
     }
 
     public static JavaRefactoringUIFactory factory() {

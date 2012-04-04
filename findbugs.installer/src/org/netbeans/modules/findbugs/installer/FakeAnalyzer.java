@@ -85,14 +85,7 @@ public class FakeAnalyzer implements Analyzer {
 
         @Override
         public CustomizerProvider<?, ?> getCustomizerProvider() {
-            return new CustomizerProvider<Void, JComponent>() {
-                @Override public Void initialize() {
-                    return null;
-                }
-                @Override public JComponent createComponent(CustomizerContext<Void, JComponent> context) {
-                    return new JPanel();
-                }
-            };
+            return null;
         }
 
         @Override

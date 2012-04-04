@@ -237,7 +237,6 @@ public abstract class ClassIndexImpl {
     
     public static interface Writer {
         void clear() throws IOException;
-        void deleteEnclosedAndStore (final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> topLevels) throws IOException;
         void deleteAndStore(final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> toDelete) throws IOException;
         /**
          * Different from deleteAndStore in that the data is NOT committed, but just flushed. Make sure, deleteAndStore is called from the

@@ -709,10 +709,10 @@
     
     <!-- Legacy targets kept for compatibility with older build-impl.xml scripts -->
 
-    <!-- Note: target "-check-javafx" is referenced from NB 7.1 build-impl.xml -->
-    <target name="-check-javafx" depends="-check-jdk-version, -check-jfx-runtime, -check-jfx-deployment"/>
+    <!-- Note: target "-check-javafx" is not necessary any more but is referenced from NB 7.1 build-impl.xml -->
+    <target name="-check-javafx"/>
     <!-- Note: target "-javafx-check-error" is not necessary any more but is referenced from NB 7.1 build-impl.xml -->
-    <target name="-javafx-check-error" depends="-check-javafx"/>    
+    <target name="-javafx-check-error"/>    
     <!-- Note: target "-init-javafx" is not necessary any more but is referenced from NB 7.1 build-impl.xml -->
     <target name="-init-javafx"/>
 
@@ -1841,9 +1841,9 @@
 
     <!-- Running/Debugging Standalone -->
 
-    <target name="jfxsa-run" depends="run"/>
+    <target name="jfxsa-run" depends="-check-jfx-runtime,run"/>
 
-    <target name="jfxsa-debug" depends="jar,debug"/>
+    <target name="jfxsa-debug" depends="jar,-check-jfx-runtime,debug"/>
 
 
     <!-- Shared Debugging init -->
@@ -1891,14 +1891,14 @@
         <antcall target="-check-jnlp-file"/>
     </target>
 
-    <target name="jfxws-run" if="jnlp-file-exists" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file" description="Start fx javaws execution">
+    <target name="jfxws-run" if="jnlp-file-exists" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime" description="Start fx javaws execution">
         <echo message="Executing ${jfx.deployment.jnlp} using ${active.webstart.executable}"/>
         <exec executable="${active.webstart.executable}">
             <arg file="${jfx.deployment.jnlp}"/>
         </exec>
     </target>
     
-    <target name="jfxws-debug" if="jnlp-file-exists+netbeans.home" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-debug-start-debugger,-debug-javaws-debuggee" 
+    <target name="jfxws-debug" if="jnlp-file-exists+netbeans.home" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,-debug-start-debugger,-debug-javaws-debuggee" 
         description="Debug fx javaws project in IDE"/>
         
     <target name="-debug-javaws-debuggee" depends="-init-debug-args">
@@ -1951,7 +1951,7 @@
         </condition>
     </target>
 
-    <target name="jfxbe-run" if="html-file-exists" depends="-check-jdk-7u4-mac,jar,-check-selected-browser-path,-set-html-file" description="Start JavaFX execution in browser">
+    <target name="jfxbe-run" if="html-file-exists" depends="-check-jdk-7u4-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime" description="Start JavaFX execution in browser">
         <echo message="Executing ${jfx.deployment.html} using ${javafx.run.inbrowser}"/>
         <echo message="(${javafx.run.inbrowser.path})"/>
         <exec executable="${javafx.run.inbrowser.path}">
@@ -1959,7 +1959,7 @@
         </exec>
     </target>
     
-    <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="-check-jdk-7u4-mac,jar,-check-selected-browser-path,-set-html-file,-debug-start-debugger,-debug-jfxbe-debuggee" 
+    <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="-check-jdk-7u4-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime,-debug-start-debugger,-debug-jfxbe-debuggee" 
         description="Debug JavaFX project in browser"/>
         
     <target name="-debug-jfxbe-debuggee" depends="-init-debug-args">

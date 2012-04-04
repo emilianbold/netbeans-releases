@@ -45,16 +45,17 @@ import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardItera
 import org.netbeans.modules.apisupport.project.ui.wizard.javahint.NewJavaHintIterator.DataModel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author lahvac
  */
-public class JavaHintPanel extends BasicWizardIterator.Panel {
+public class JavaHintDataPanel extends BasicWizardIterator.Panel {
 
     private final DataModel data;
 
-    JavaHintPanel(WizardDescriptor wiz, DataModel data) {
+    JavaHintDataPanel(WizardDescriptor wiz, DataModel data) {
         super(wiz);
         this.data = data;
         initComponents();
@@ -87,7 +88,7 @@ public class JavaHintPanel extends BasicWizardIterator.Panel {
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(className);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(JavaHintPanel.class, "JavaHintPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(JavaHintDataPanel.class, "JavaHintDataPanel.jLabel1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -96,7 +97,7 @@ public class JavaHintPanel extends BasicWizardIterator.Panel {
         add(jLabel1, gridBagConstraints);
 
         jLabel2.setLabelFor(displayName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(JavaHintPanel.class, "JavaHintPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(JavaHintDataPanel.class, "JavaHintDataPanel.jLabel2.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -105,7 +106,7 @@ public class JavaHintPanel extends BasicWizardIterator.Panel {
         add(jLabel2, gridBagConstraints);
 
         jLabel3.setLabelFor(warningMessage);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(JavaHintPanel.class, "JavaHintPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(JavaHintDataPanel.class, "JavaHintDataPanel.jLabel3.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -114,7 +115,7 @@ public class JavaHintPanel extends BasicWizardIterator.Panel {
         add(jLabel3, gridBagConstraints);
 
         jLabel4.setLabelFor(description);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(JavaHintPanel.class, "JavaHintPanel.jLabel4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(JavaHintDataPanel.class, "JavaHintDataPanel.jLabel4.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -122,7 +123,7 @@ public class JavaHintPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel4, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(automaticFix, org.openide.util.NbBundle.getMessage(JavaHintPanel.class, "JavaHintPanel.automaticFix.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(automaticFix, org.openide.util.NbBundle.getMessage(JavaHintDataPanel.class, "JavaHintDataPanel.automaticFix.text")); // NOI18N
         automaticFix.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 automaticFixActionPerformed(evt);
@@ -155,7 +156,7 @@ public class JavaHintPanel extends BasicWizardIterator.Panel {
         add(jScrollPane1, gridBagConstraints);
 
         jLabel5.setLabelFor(fixDisplayName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(JavaHintPanel.class, "JavaHintPanel.jLabel5.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(JavaHintDataPanel.class, "JavaHintDataPanel.jLabel5.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -217,8 +218,9 @@ public class JavaHintPanel extends BasicWizardIterator.Panel {
     }
 
     @Override
+    @Messages("LBL_New_Java_Hint_Description=New Java Hint Description")
     protected String getPanelName() {
-        return "New Java Hint"; //XXX
+        return Bundle.LBL_New_Java_Hint_Description();
     }
 
     @Override
@@ -229,8 +231,6 @@ public class JavaHintPanel extends BasicWizardIterator.Panel {
         data.setDoFix(automaticFix.isSelected());
         data.setWarningMessage(warningMessage.getText());
         data.setFixText(fixDisplayName.getText());
-
-        NewJavaHintIterator.generateFileChanges(data);
 
         enableDisable();
     }

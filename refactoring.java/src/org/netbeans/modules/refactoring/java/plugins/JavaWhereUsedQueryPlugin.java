@@ -58,10 +58,7 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.api.java.source.*;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.api.Scope;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
 import org.netbeans.modules.refactoring.java.WhereUsedElement;
@@ -117,11 +114,22 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         return null;
     }
     
+    @Override
+    protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
+        ClasspathInfo cpInfo;
+        Collection<? extends TreePathHandle> handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
+        if (!handles.isEmpty()) {
+            cpInfo = RefactoringUtils.getClasspathInfoFor(handles.toArray(new TreePathHandle[handles.size()]));
+        } else {
+            cpInfo = JavaRefactoringUtils.getClasspathInfoFor((FileObject)null);
+        }
+        refactoring.getContext().add(cpInfo);
+        return cpInfo;
+    }
+    
     private Set<FileObject> getRelevantFiles(final TreePathHandle tph) {
         Set<FileObject> fileSet;
-        if(cp == null) {
-            cp = getClasspathInfo(refactoring);
-        }
+        cp = getClasspathInfo(refactoring);
         fromLibrary = tph.getFileObject() == null || tph.getFileObject().getNameExt().endsWith("class"); // NOI18N
         if(isSearchFromBaseClass()) {
             TreePathHandle sourceHandle = refactoring.getContext().lookup(TreePathHandle.class);
