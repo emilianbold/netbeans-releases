@@ -605,7 +605,7 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="cp -RPf ${packages} '${mpkg.file}'/Contents/Packages"/>
         </exec>                                            
         
-        <condition property="output.dir" value="${output.jdk7.dir}">
+        <condition property="output.dir" value="${output.jdk7.dir}" else="">
 	     <equals arg1="${build.jdk7}" arg2="1"/>
         </condition>
         

@@ -26,6 +26,7 @@ if [ -z "$1" ] || [ -z "$2" ]|| [ -z "$3" ] || [ -z "$4" ]; then
     echo "prefix is the distro filename prefix, e.g. netbeans-hudson-trunk in netbeans-hudson-trunk-2464"
     echo "buildnumber is the distro buildnumber, e.g. 2464 in netbeans-hudson-trunk-2464"
     echo "ml_build is 1 if ml builds are required and 0 if not"
+    echo "build_jdk7 is 1 if bundle jdk7 are required and 0 if not"
     echo "nb_locales is the string with the list of locales (for ml builds)"
     exit 1
 fi
@@ -34,8 +35,9 @@ work_dir=$1
 prefix=$2
 buildnumber=$3
 ml_build=$4
-if [ -n "$5" ] ; then
-  nb_locales="$5"
+build_jdk7=$5
+if [ -n "$6" ] ; then
+  nb_locales="$6"
 fi
 
 basename=`dirname "$0"`
@@ -45,19 +47,19 @@ cd "$basename"
 chmod -R a+x *.sh
 
 commonname=$work_dir/zip/moduleclusters/$prefix-$buildnumber 
-if [ -z $BUILD_NBJDK7 ] || [ 0 -eq $BUILD_NBJDK7 ] ; then
+if [ -z $build_jdk7 ] || [ 0 -eq $build_jdk7 ] ; then
     target="build-all-dmg"
-    BUILD_NBJDK7=0
+    build_jdk7=0
 else
     target="build-jdk-bundle-dmg"
 fi
 
-ant -f $basename/build.xml $target -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='false' -Dbuild.jdk7=$BUILD_NBJDK7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
+ant -f $basename/build.xml $target -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='false' -Dbuild.jdk7=$build_jdk7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
 
 rm -rf "$basename"/dist_en
 mv -f "$basename"/dist "$basename"/dist_en
 
 if [ 1 -eq $ml_build ] ; then
 commonname_ml=$work_dir/zip-ml/moduleclusters/$prefix-$buildnumber
-ant -f $basename/build.xml $target -Dnb.locales=$nb_locales -Dcommon.name=$commonname_ml -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='true' -Dbuild.jdk7=$BUILD_NBJDK7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
+ant -f $basename/build.xml $target -Dnb.locales=$nb_locales -Dcommon.name=$commonname_ml -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='true' -Dbuild.jdk7=$build_jdk7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
 fi
