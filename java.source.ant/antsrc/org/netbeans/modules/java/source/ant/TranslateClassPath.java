@@ -143,7 +143,7 @@ public class TranslateClassPath extends Task {
                 for (FileObject source : r.getRoots()) {
                     final File sourceFile = FileUtil.toFile(source);
                     if (sourceFile == null) {
-                        log("Source URL: " + source.toURL().toExternalForm() + " cannot be translated to file, skipped", Project.MSG_WARN);
+                        log("Source URL: " + source.getURL().toExternalForm() + " cannot be translated to file, skipped", Project.MSG_WARN);
                         appendEntry = true;
                         continue;
                     }
@@ -158,7 +158,7 @@ public class TranslateClassPath extends Task {
                         throw new UserCancel();
                     }
                     
-                    for (URL binary : BinaryForSourceQuery.findBinaryRoots(source.toURL()).getRoots()) {
+                    for (URL binary : BinaryForSourceQuery.findBinaryRoots(source.getURL()).getRoots()) {
                         final FileObject binaryFO = URLMapper.findFileObject(binary);
                         final File finaryFile = binaryFO != null ? FileUtil.toFile(binaryFO) : null;
                         if (finaryFile != null) {
