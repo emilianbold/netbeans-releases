@@ -559,7 +559,20 @@ public final class GeneratorUtilities {
     public CompilationUnitTree addImports(CompilationUnitTree cut, Set<? extends Element> toImport) {
         assert cut != null && toImport != null && toImport.size() > 0;
 
-        ArrayList<Element> elementsToImport = new ArrayList<Element>(toImport);
+        ArrayList<Element> elementsToImport = new ArrayList<Element>(toImport.size());
+        Set<String> staticImportNames = new HashSet<String>();
+        for (Element e : toImport) {
+            switch (e.getKind()) {
+                case METHOD:
+                case ENUM_CONSTANT:
+                case FIELD:
+                    StringBuilder name = new StringBuilder(((TypeElement)e.getEnclosingElement()).getQualifiedName()).append('.').append(e.getSimpleName());
+                    if (!staticImportNames.add(name.toString()))
+                        break;
+                default:
+                    elementsToImport.add(e);
+            }
+        }
 
         Trees trees = copy.getTrees();
         Elements elements = copy.getElements();
