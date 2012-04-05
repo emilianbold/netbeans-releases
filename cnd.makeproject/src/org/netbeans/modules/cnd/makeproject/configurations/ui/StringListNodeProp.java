@@ -115,15 +115,13 @@ public class StringListNodeProp extends PropertySupport<List> {
 
     @Override
     public Object getValue(String attributeName) {
-        if (attributeName.equals("canEditAsText")) // NOI18N
-        {
-            return Boolean.FALSE;
-        }
         return super.getValue(attributeName);
     }
 
     private class StringEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
+        private final String MACROS_KEY = "-D"; // NOI18N
+        
         private List<String> value;
         private PropertyEnv env;
 
@@ -131,14 +129,61 @@ public class StringListNodeProp extends PropertySupport<List> {
             this.value = value;
         }
 
-//        public void setAsText(String text) {
-//	    Vector newList = new Vector();
-//	    StringTokenizer st = new StringTokenizer(text, File.pathSeparator); // NOI18N
-//	    while (st.hasMoreTokens()) {
-//		newList.add(st.nextToken());
-//	    }
-//	    setValue(newList);
-//        }
+        private String removeMacrosPrefix(String str) {
+            return str.startsWith(MACROS_KEY)? str.substring(2): str;
+        }
+        
+        // This is naive implementation of tokenizer for strings like this (without ordinal quotes):
+        // ' 111   222  333=444       555'
+        // '111 "222 333" "44 4=555" "666=777 888" 999=000 "a"'
+        // '111 "222 333"   "44 4=555"   "666=777 888"   999=000 "a" b'
+        // Should work in most real-word case, but you can easily broke it if you want.
+        // If token is started with -D, then -D is removed.
+        private List<String> tokenize(String text) {
+            final char QUOTE = '\"'; // NOI18N
+            final char SEPARATOR = ' '; // NOI18N
+            List<String> result = new ArrayList<String>();
+            boolean inQuote = false;
+            boolean innerQuote = false;
+            int start = 0;
+            int i = 0;
+            char prev = 0;            
+            while (i < text.length()) {
+                String str = text.substring(start, i).trim();
+                if (text.charAt(i) == SEPARATOR && !inQuote) {
+                    if (str.length() > 0) {
+                        result.add(removeMacrosPrefix(str));
+                        start = i + 1;
+                    }
+                } else if (text.charAt(i) == QUOTE && inQuote) {
+                    if (str.length() > 0) {
+                        result.add(removeMacrosPrefix(str + (innerQuote? QUOTE: ""))); // NOI18N
+                        start = i + 1;
+                        inQuote = false;
+                        innerQuote = false;
+                    }
+                } else if (text.charAt(i) == QUOTE) {
+                    inQuote = true;
+                    if (prev == SEPARATOR) {
+                        start = i + 1;
+                    } else {
+                        innerQuote = true;
+                    }
+                }
+                prev = text.charAt(i);
+                i++;
+            }
+            if (start != i) {
+                result.add(removeMacrosPrefix(text.substring(start).trim()));
+            }
+            return result;
+        }
+
+        @Override
+        public void setAsText(String text) {
+            setValue(tokenize(text.trim()));
+        }
+
         @Override
         public String getAsText() {
             boolean addSep = false;

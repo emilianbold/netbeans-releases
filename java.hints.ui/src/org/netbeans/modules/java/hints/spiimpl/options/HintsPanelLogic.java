@@ -144,6 +144,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     private JComboBox configCombo;
     private String currentProfileId = HintsSettings.getCurrentProfileId();
     private JButton editScript;
+    private Preferences overlayPreferences;
     
     HintsPanelLogic() {
         defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AsError")); //NOI18N
@@ -201,6 +202,13 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     String getCurrentProfileId() {
         return currentProfileId;
     }
+
+    synchronized void setOverlayPreferences(Preferences prefs) {
+        applyChanges();
+        this.overlayPreferences = prefs;
+        valueChanged(null);
+        errorTree.repaint();
+    }
     
     synchronized void applyChanges() {
 	boolean containsChanges = false;
@@ -224,11 +232,13 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     }
     
     synchronized Preferences getCurrentPrefernces( String id ) {
+        if (overlayPreferences != null) return overlayPreferences.node(id);
         Preferences node = changes.get(id);
         return node == null ? HintsSettings.getPreferences(id, getCurrentProfileId() ) : node;
     }
     
     synchronized Preferences getPreferences4Modification(String hint ) {
+        if (overlayPreferences != null) return overlayPreferences.node(hint);
         Preferences node = changes.get(hint);        
         if ( node == null ) {
             node = new ModifiedPreferences(HintsSettings.getPreferences(hint, getCurrentProfileId() ) );

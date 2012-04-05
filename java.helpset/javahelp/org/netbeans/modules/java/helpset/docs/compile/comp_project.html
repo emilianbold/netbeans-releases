@@ -16,7 +16,7 @@
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 <p>When you build a project, the IDE calls the corresponding target in the project's
 	Ant build script. The IDE compiles the source files and generates the packaged
-	build output, such as a JAR file or WAR file. You can build the main project 
+	build output, such as a JAR file or WAR file. You can build a project 
         and all of its required projects, or build any 
   project individually.</p>
   
@@ -36,20 +36,26 @@ Clean and Build command to create a fresh build. When you clean
 and build a project, all previous build outputs are deleted and new versions 
 of the build outputs are created.</p>
 
-<p><b>To build the main project and its required projects:</b> 
+<p><b>To build a project and its required projects:</b></p>
 <ul>
-  <li>Choose Run  &gt; Clean and Build 
-    Main Project (F11).</li>
-	 <p>The IDE displays the Ant output and any compilation errors in the Output window.
+    <li>Select the project that you want to build in the Projects window.</li>
+    <li>Choose Run &gt; Clean and Build Project (Shift+F11).
+        <p>Alternatively, right-click the project's node in the Projects window and choose Clean and Build.</p>
+    <p>The IDE displays the Ant output and any compilation errors in the Output window.</p>
+    <ul class="note">
+        <li>You can double-click any error to go to the location in the source code where the error occurred.
+    </ul>
+    </li>
+</ul>
+
 <ul class="note">
-<li>You can double-click any error to go to the location in the source code where
-		the error occurred.
-</ul>
-</ul>
-<p><b>To build an individual project and its required projects:</b> 
-<ul>
-  <li>Right-click the project's node in the Projects window and choose Clean and Build. </li>
-  <p>The IDE displays the Ant output and any compilation errors in the Output window.
+    <li>If you are building a project often you can set a project as the main project by right-clicking a project in the 
+        Projects window and choosing Set as Main Project or by choosing Run &gt; Set Main Project 
+        from the main menu and selecting the project in the sub-menu. 
+        After you set a project as the main project the keyboard shortcuts for
+        Run (F6), Build (F11) and Clean and Build (Shift+F11) will apply to the main project
+        regardless of which project is selected in the Projects window.
+        Keyboard shortcuts for Debug and Profile will also apply to the main project.</li>
 </ul>
 
 <p><b>To stop building a project:</b> 
@@ -92,7 +98,8 @@ of the build outputs are created.</p>
       <dd><a href="comp_file.html">Compiling a Single File</a></dd>
       <dd><a href="comp_jar.html">Building a JAR File</a></dd>
       <dd><a href="comp_classpath.html">Managing the Classpath</a></dd>
-      <dd><a href="../run/run_args.html">Setting the Main Class and Runtime Arguments</a></dd>    
+      <dd><a href="../run/run_args.html">Setting the Main Class and Runtime Arguments</a></dd>
+      <dd><a href="../project/proj_main.html">Setting the Main Project</a></dd>
   </dl>
 
 <hr>

@@ -435,15 +435,17 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     }
     
     private class PIWriter implements Writer {
+        
+        PIWriter() {
+            if (index instanceof Runnable) {
+                ((Runnable)index).run();
+            }
+        }
+        
         @Override
         public void clear() throws IOException {
             resetPkgCache();
             index.clear();
-        }
-        @Override
-        public void deleteEnclosedAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
-            resetPkgCache();
-            index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(true), false);
         }
 
         @Override

@@ -118,7 +118,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
 
     /** Creates a new instance of FileContainer */
     public FileContainer(ProjectBase project) {
-	super(new FileContainerKey(project.getUniqueName()), false);
+	super(new FileContainerKey(project.getUniqueName()));
         fileSystem = project.getFileSystem();
 	put();
     }
@@ -133,7 +133,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
 
     // only for creating EMPTY stub
     private FileContainer() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
+        super((org.netbeans.modules.cnd.repository.spi.Key) null);
         fileSystem = null;
     }
 
@@ -425,7 +425,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         }
     }
     
-    private static void writeStringToFileEntryMap (
+    /*package*/ static void writeStringToFileEntryMap (
             final RepositoryDataOutput output, Map<CharSequence, FileEntry> aMap) throws IOException {
         assert output != null;
         assert aMap != null;
@@ -446,7 +446,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         }
     }
     
-    private static void  readStringToFileEntryMap(
+    /*package*/ static void  readStringToFileEntryMap(
             FileSystem fs, RepositoryDataInput input, Map<CharSequence, FileEntry> aMap) throws IOException {
         
         assert input != null; 
@@ -548,6 +548,11 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
     //for unit test only
     public Map<CharSequence, Object/*CharSequence or CharSequence[]*/> getCanonicalNames(){
         return new TreeMap<CharSequence, Object>(canonicFiles);
+    }
+
+    /*package*/ static FileEntry createFileEntry(FileImpl fileImpl) {
+        CharSequence path = getFileKey(fileImpl.getAbsolutePath(), false);
+        return new FileEntry(fileImpl.getUID(), null, path, path);
     }
 
     public static final class FileEntry {

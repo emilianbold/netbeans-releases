@@ -24,8 +24,8 @@
     <property name="servicetag.source" value="NetBeans IDE ${nb.display.version.short} Installer"/>
     
     <!-- Tomcat properties   -->    
-    <property name="tomcat.version" value="7.0.22"/>
-    <property name="tomcat.id" value="7.0.22"/>
+    <property name="tomcat.version" value="7.0.26"/>
+    <property name="tomcat.id" value="7.0.26"/>
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-${tomcat.version}"/>
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
@@ -146,7 +146,7 @@
     <property name="mpkg.version_jdk" value=" 7 Update 04"/> 
     <property name="jdk.bundle.files.prefix" value="jdk-7u4"/>
     <property name="jdk.bundle.files.suffix" value="nb-7_2"/>
-    <property name="output.dir" value="jdk/"/>
+    <property name="output.jdk7.dir" value="jdk/"/>
     <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home"/>
     <property name="jdk_bits_location" value="${gf_builds_host}/java/re/jdk/7u4/promoted/all/b18/bundles/macosx-x64/jdk-7u4-ea-bin-b18-macosx-x64-29_mar_2012.dmg"/>
     <property name="jdk.package.name" value="JDK\ 7\ Update\ 04"/>

@@ -62,13 +62,12 @@ import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-public final class DocumentIndexImpl implements DocumentIndex {
+public final class DocumentIndexImpl implements DocumentIndex, Runnable {
     
     private final Index luceneIndex;
     
@@ -185,6 +184,13 @@ public final class DocumentIndexImpl implements DocumentIndex {
     @Override
     public void store(boolean optimize) throws IOException {
         store(optimize, false);
+    }
+
+    @Override
+    public void run() {
+        if (luceneIndex instanceof Runnable) {
+            ((Runnable)luceneIndex).run();
+        }
     }
     
     private void store(boolean optimize, boolean flushOnly) throws IOException {

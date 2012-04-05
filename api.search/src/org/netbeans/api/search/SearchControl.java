@@ -127,8 +127,7 @@ public final class SearchControl {
             current.close();
         }
         if (ResultView.getInstance().isFocused()) {
-            SearchPanel.setTabToReuse(
-                    ResultView.getInstance().getCurrentResultViewPanel());
+            ResultView.getInstance().markCurrentTabAsReusable();
         }
         new SearchPanel(replaceMode, presenter).showDialog();
     }

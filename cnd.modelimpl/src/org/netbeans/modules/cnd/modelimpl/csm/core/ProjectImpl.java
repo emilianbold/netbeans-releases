@@ -423,6 +423,13 @@ public final class ProjectImpl extends ProjectBase {
     }
     private final NativeFileContainer nativeFiles = new NativeFileContainer();
 
+    @Override
+    protected void onDispose() {
+        nativeFiles.clear();
+        editedFiles.clear();
+        projectRoots.clear();
+    }
+    
     private final SourceRootContainer projectRoots = new SourceRootContainer(false);
     @Override
     protected SourceRootContainer getProjectRoots() {

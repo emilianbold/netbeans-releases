@@ -46,8 +46,8 @@ package org.netbeans.modules.php.dbgp.breakpoints;
 
 import java.util.Map;
 import java.util.WeakHashMap;
-
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.models.ViewModelSupport;
@@ -88,6 +88,8 @@ public class BreakpointModel extends ViewModelSupport
         "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpointHit";     // NOI18N
     public static final String DISABLED_LINE_CONDITIONAL_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/DisabledConditionalBreakpoint";// NOI18N
+    public static final String BROKEN_LINE_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint_broken";// NOI18N
 
     private static final String METHOD                              =
                                          "TXT_Method";                                          // NOI18N
@@ -146,6 +148,13 @@ public class BreakpointModel extends ViewModelSupport
             LineBreakpoint breakpoint = (LineBreakpoint)node;
             if(!breakpoint.isEnabled()) {
                 return DISABLED_LINE_BREAKPOINT;
+            } else {
+                VALIDITY validity = breakpoint.getValidity();
+                if (validity.equals(VALIDITY.VALID) || validity.equals(VALIDITY.UNKNOWN)) {
+                    return LINE_BREAKPOINT;
+                } else {
+                    return BROKEN_LINE_BREAKPOINT;
+                }
             }
             /*Line line = Utils.getCurrentLine();
             if(line != null &&
@@ -153,7 +162,6 @@ public class BreakpointModel extends ViewModelSupport
             {
                 return CURRENT_LINE_BREAKPOINT;
             }*/
-            return LINE_BREAKPOINT;
         }
         else if ( node instanceof AbstractBreakpoint ){
             AbstractBreakpoint breakpoint = (AbstractBreakpoint) node;
@@ -284,6 +292,6 @@ public class BreakpointModel extends ViewModelSupport
 
     }
 
-    private Map<DebugSession, AbstractBreakpoint> myCurrentBreakpoints;
+    private final Map<DebugSession, AbstractBreakpoint> myCurrentBreakpoints;
 
 }

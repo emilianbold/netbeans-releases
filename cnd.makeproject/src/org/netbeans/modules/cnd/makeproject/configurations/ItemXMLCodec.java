@@ -43,13 +43,13 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
-import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.xml.AttrValuePair;
 import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.xml.sax.Attributes;
 
 public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
@@ -113,19 +113,19 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
             new AttrValuePair(PATH_ATTR, item.getItem().getPath()),
             new AttrValuePair(EXCLUDED_ATTR, "" + item.getExcluded().getValue()),
             new AttrValuePair(TOOL_ATTR, "" + item.getTool().ordinal()),
-            new AttrValuePair(FLAVOR_ATTR, "" + item.getLanguageFlavor().ordinal()),
+            new AttrValuePair(FLAVOR_ATTR, "" + item.getLanguageFlavor().toExternal()),
         });
 //        if (item.getExcluded().getModified()) {
 //            xes.element(ITEM_EXCLUDED_ELEMENT, "" + item.getExcluded().getValue()); // NOI18N
 //        }
 //        xes.element(ITEM_TOOL_ELEMENT, "" + item.getTool()); // NOI18N
         if (item.getTool() == PredefinedToolKind.CCompiler) {
-            CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, item.getCCompilerConfiguration());
+            CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, item.getCCompilerConfiguration(), CommonConfigurationXMLCodec.ITEM_LEVEL);
             if(item.isProCFile()) {
                 CommonConfigurationXMLCodec.writeCustomToolConfiguration(xes, item.getCustomToolConfiguration());
             }
         } else if (item.getTool() == PredefinedToolKind.CCCompiler) {
-            CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, item.getCCCompilerConfiguration());
+            CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, item.getCCCompilerConfiguration(), CommonConfigurationXMLCodec.ITEM_LEVEL);
             if(item.isProCFile()) {
                 CommonConfigurationXMLCodec.writeCustomToolConfiguration(xes, item.getCustomToolConfiguration());
             }

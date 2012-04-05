@@ -73,12 +73,24 @@ PACKAGE    e                               [PUBLIC]   Test204925_08_C\d
 PACKAGE    f                               [PUBLIC]   Test204925_06_C\d\e
 PACKAGE    f                               [PUBLIC]   Test204925_07_C\d\e
 PACKAGE    f                               [PUBLIC]   Test204925_08_C\d\e
+CLASS      ArrayAccess                     [PUBLIC]   PHP Platform
 CLASS      ChildInterface                  [PUBLIC]   interfaces.php
+CLASS      Countable                       [PUBLIC]   PHP Platform
 CLASS      If1                             [PUBLIC]   tests166339.php
 CLASS      If2                             [PUBLIC]   tests166339.php
+CLASS      Iterator                        [PUBLIC]   PHP Platform
+CLASS      IteratorAggregate               [PUBLIC]   PHP Platform
 CLASS      MyIface                         [PUBLIC]   insideInterface.php
 CLASS      MySecondIface                   [PUBLIC]   insideInterface.php
+CLASS      OuterIterator                   [PUBLIC]   PHP Platform
 CLASS      ParentInterface                 [PUBLIC]   interfaces.php
+CLASS      RecursiveIterator               [PUBLIC]   PHP Platform
+CLASS      Reflector                       [PUBLIC]   PHP Platform
+CLASS      SeekableIterator                [PUBLIC]   PHP Platform
+CLASS      Serializable                    [PUBLIC]   PHP Platform
+CLASS      SplObserver                     [PUBLIC]   PHP Platform
+CLASS      SplSubject                      [PUBLIC]   PHP Platform
+CLASS      Traversable                     [PUBLIC]   PHP Platform
 CLASS      XUserInterface                  [PUBLIC]   XUser
 CLASS      a                               [PUBLIC]   issue137033.php
 CLASS      a186936                         [PUBLIC]   a.php

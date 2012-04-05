@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.analysis.spi;
 
-import java.awt.Image;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.analysis.SPIAccessor;
 import org.netbeans.modules.refactoring.api.Scope;
@@ -98,7 +98,7 @@ public interface Analyzer extends Cancellable {
 
         public abstract Iterable<? extends WarningDescription> getWarnings();
 
-        public abstract <D, C extends JComponent> CustomizerProvider<D, C> getCustomizerProvider();
+        public abstract @CheckForNull <D, C extends JComponent> CustomizerProvider<D, C> getCustomizerProvider();
 
         /**
          *

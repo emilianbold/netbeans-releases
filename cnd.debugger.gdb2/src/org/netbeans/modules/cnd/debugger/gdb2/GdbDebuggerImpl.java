@@ -3160,6 +3160,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             boolean cont = (bkptnoValue == null && !STEP_INTO_ID.equals(firstBreakpointId)) ||
                (bkptnoValue != null && (firstBreakpointId.equals(bkptnoValue.asConst().value())));
             firstBreakpointId = null;
+            
+            // see IZ 210468, init watches here
+            ((GdbDebuggerSettingsBridge)profileBridge).noteFistStop();
+            
             sendPidCommand(cont);
             if (cont) {
                 return;

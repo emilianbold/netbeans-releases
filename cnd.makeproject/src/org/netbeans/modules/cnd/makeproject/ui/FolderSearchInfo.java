@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
@@ -74,7 +77,59 @@ public final class FolderSearchInfo extends SearchInfoDefinition {
 
     @Override
     public List<SearchRoot> getSearchRoots() {
-        return Collections.<SearchRoot>emptyList();
+        Set<FileObject> set = folder.getAllItemsAsFileObjectSet(false, new FileObjectNameMatcher() {
+
+            @Override
+            public boolean pathMatches(FileObject fileObject) {
+                return true;
+            }
+
+            @Override
+            public boolean isTerminated() {
+                return false;
+            }
+        });
+        Set<FileObject> roots = new HashSet<FileObject>();
+        for (FileObject fo : set) {
+            FileObject parent = fo.getParent();
+            if (parent == null) {
+                continue;
+            }
+            FileObject curr = parent;
+            boolean found = false;
+            while(curr != null) {
+                if (roots.contains(curr)) {
+                    found = true;
+                    break;
+                }
+                curr = curr.getParent();
+            }
+            if (!found) {
+                List<FileObject> list = new ArrayList<FileObject>(roots);
+                roots.clear();
+                for (FileObject fo2 : list) {
+                     FileObject parent2 = fo2.getParent();
+                     FileObject curr2 = parent2;
+                     boolean found2 = false;
+                     while(curr2 != null) {
+                        if (parent.equals(curr2)) {
+                            found2 = true;
+                            break;
+                        }
+                        curr2 = curr2.getParent();
+                    }
+                     if (!found2) {
+                         roots.add(fo2);
+                     }
+                }
+                roots.add(parent);
+            }
+        }
+        List<SearchRoot> res = new ArrayList<SearchRoot>();
+        for (FileObject fo : roots) {
+             res.add(new SearchRoot(fo, null));
+        }
+        return res;
     }
 
     @Override
@@ -83,10 +138,10 @@ public final class FolderSearchInfo extends SearchInfoDefinition {
     }
 
     public static final class FileObjectNameMatcherImpl implements FileObjectNameMatcher {
+
         private final SearchScopeOptions options;
         private final AtomicBoolean terminated;
         private final FileNameMatcher delegate;
-        
 
         public FileObjectNameMatcherImpl(SearchScopeOptions options, AtomicBoolean terminated) {
             this.options = options;

@@ -15,10 +15,25 @@ End cursor position = 35
 @page
 End cursor position = 71
 [c|, color, color:, 114]
+cancel
 caption-side
+cell-selection
+chart-area-symbol
+chart-bar
+chart-bubble
+chart-line-symbol
+chart-pie
+chart-pie-label
+chart-pie-label-line
+chart-series-area-fill
+chart-series-area-line
+chart-series-line
+chart-symbol
 clear
 clip
+collapsed
 color
+color-stop
 column-count
 column-fill
 column-gap

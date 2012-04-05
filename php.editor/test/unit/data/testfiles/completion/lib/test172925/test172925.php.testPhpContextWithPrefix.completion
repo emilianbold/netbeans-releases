@@ -20,3 +20,4 @@ VARIABLE   $argc                                      PHP Platform
 VARIABLE   $argv                                      PHP Platform
 VARIABLE   $http_response_header                      PHP Platform
 VARIABLE   $php_errormsg                              PHP Platform
+VARIABLE   ? $error_string                 [PUBLIC]   PHP Platform
