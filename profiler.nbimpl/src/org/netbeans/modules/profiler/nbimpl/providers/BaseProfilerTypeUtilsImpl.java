@@ -104,7 +104,7 @@ abstract public class BaseProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvide
                 }
             });
         }
-        return cRef[1];
+        return cRef[0];
     }
 
     @Override
