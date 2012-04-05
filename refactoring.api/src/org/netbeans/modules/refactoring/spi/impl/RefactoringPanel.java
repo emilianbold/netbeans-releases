@@ -662,7 +662,7 @@ public class RefactoringPanel extends JPanel {
                     close();
                 }
                 return;
-            } else if (!isInstant() && tempSession.getRefactoringElements().isEmpty() && !scanning) {
+            } else if (!isInstant() && tempSession.getRefactoringElements().isEmpty() && !scanning && !isQuery) {
                 DialogDescriptor nd = new DialogDescriptor(NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"),
                                         ui.getName(),
                                         true,
