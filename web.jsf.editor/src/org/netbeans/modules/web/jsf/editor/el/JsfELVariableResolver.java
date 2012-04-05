@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
+import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
@@ -76,6 +77,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = org.netbeans.modules.web.el.spi.ELVariableResolver.class)
 public final class JsfELVariableResolver implements ELVariableResolver {
 
+    private static final String CONTENT_NAME = "JsfBeans"; //NOI18N
+
     private static final String OBJECT_NAME__CC = "cc"; //NOI18N
     private static final String ATTR_NAME__ATTRS = "attrs"; //NOI18N
     private static final String ATTR_NAME__ID = "id"; //NOI18N
@@ -86,8 +89,8 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     private static final VariableInfo VARIABLE_INFO__RENDERED = VariableInfo.createResolvedVariable(ATTR_NAME__RENDERED, Object.class.getName());
     
     @Override
-    public String getBeanClass(String beanName, FileObject context) {
-        for (FacesManagedBean bean : getJsfManagedBeans(context)) {
+    public String getBeanClass(String beanName, FileObject target, ResolverContext context) {
+        for (FacesManagedBean bean : getJsfManagedBeans(target, context)) {
             if (bean.getManagedBeanName().equals(beanName)) {
                 return bean.getManagedBeanClass();
             }
@@ -96,8 +99,8 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     }
 
     @Override
-    public String getBeanName(String clazz, FileObject context) {
-        for (FacesManagedBean bean : getJsfManagedBeans(context)) {
+    public String getBeanName(String clazz, FileObject target, ResolverContext context) {
+        for (FacesManagedBean bean : getJsfManagedBeans(target, context)) {
             if (bean.getManagedBeanClass().equals(clazz)) {
                 return bean.getManagedBeanName();
             }
@@ -112,8 +115,8 @@ public final class JsfELVariableResolver implements ELVariableResolver {
 //    }
     
     @Override
-    public List<VariableInfo> getManagedBeans(FileObject context) {
-        List<FacesManagedBean> beans = getJsfManagedBeans(context);
+    public List<VariableInfo> getManagedBeans(FileObject target, ResolverContext context) {
+        List<FacesManagedBean> beans = getJsfManagedBeans(target, context);
         List<VariableInfo> result = new ArrayList<VariableInfo>(beans.size());
         for (FacesManagedBean bean : beans) {
             result.add(VariableInfo.createResolvedVariable(bean.getManagedBeanName(), bean.getManagedBeanClass()));
@@ -122,7 +125,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     }
 
     @Override
-    public List<VariableInfo> getVariables(Snapshot snapshot, final int offset) {
+    public List<VariableInfo> getVariables(Snapshot snapshot, final int offset, ResolverContext context) {
         List<JsfVariableContext> allJsfVariables = getAllJsfVariables(snapshot, offset);
         List<VariableInfo> result = new ArrayList<VariableInfo>(allJsfVariables.size());
         for (JsfVariableContext jsfVariable : allJsfVariables) {
@@ -137,7 +140,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     }
 
     @Override
-    public List<VariableInfo> getRawObjectProperties(String objectName, Snapshot snapshot) {
+    public List<VariableInfo> getRawObjectProperties(String objectName, Snapshot snapshot, ResolverContext context) {
         List<VariableInfo> variables = new ArrayList<VariableInfo> (3);
         
         //composite component object's properties handling
@@ -187,9 +190,9 @@ public final class JsfELVariableResolver implements ELVariableResolver {
 
 
     @Override
-    public List<VariableInfo> getBeansInScope(String scope, Snapshot snapshot) {
+    public List<VariableInfo> getBeansInScope(String scope, Snapshot snapshot, ResolverContext context) {
         List<VariableInfo> result = new ArrayList<VariableInfo>();
-        for (FacesManagedBean bean : getJsfManagedBeans(snapshot.getSource().getFileObject())) {
+        for (FacesManagedBean bean : getJsfManagedBeans(snapshot.getSource().getFileObject(), context)) {
             if (scope.equals(bean.getManagedBeanScopeString())) {
                 result.add(VariableInfo.createResolvedVariable(bean.getManagedBeanName(), bean.getManagedBeanClass()));
             }
@@ -197,11 +200,16 @@ public final class JsfELVariableResolver implements ELVariableResolver {
         return result;
     }
 
-    private List<FacesManagedBean> getJsfManagedBeans(FileObject context) {
-        WebModule webModule = WebModule.getWebModule(context);
-        return webModule != null
-                ? JSFBeanCache.getBeans(webModule)
-                : Collections.<FacesManagedBean>emptyList();
+    private List<FacesManagedBean> getJsfManagedBeans(FileObject target, ResolverContext context) {
+        WebModule webModule = WebModule.getWebModule(target);
+        if (webModule == null) {
+            return Collections.<FacesManagedBean>emptyList();
+        } else {
+            if (context.getContent(CONTENT_NAME) == null) {
+                context.setContent(CONTENT_NAME, JSFBeanCache.getBeans(webModule));
+            }
+            return (List<FacesManagedBean>) context.getContent(CONTENT_NAME);
+        }
     }
 
     private List<JsfVariableContext> getAllJsfVariables(Snapshot snapshot, final int offset) {
