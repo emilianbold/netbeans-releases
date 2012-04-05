@@ -326,8 +326,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             return panel.urlTextField.getText();
         } else {
             StringBuilder sb = new StringBuilder();
-            for (QueryParameter p : parameters.values()) {
-                sb.append(p.get(encode));
+            for (QueryParameter qp : parameters.values()) {
+                sb.append(qp.get(encode));
             }
             return sb.toString();
         }
@@ -440,8 +440,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.enableFields(bl);
         // set the parameter fields
         for (Map.Entry<String, QueryParameter> e : parameters.entrySet()) {
-            QueryParameter pv = parameters.get(e.getKey());
-            pv.setEnabled(bl);
+            QueryParameter qp = parameters.get(e.getKey());
+            qp.setEnabled(bl);
         }
     }
 
@@ -460,18 +460,22 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         fireDataChanged();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         fireDataChanged();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         fireDataChanged();
     }
 
+    @Override
     public void itemStateChanged(ItemEvent e) {
         fireDataChanged();
         if(e.getSource() == panel.filterComboBox) {
@@ -479,6 +483,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
         if(e.getSource() == panel.productList) {
             onProductChanged(e);
@@ -486,6 +491,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         fireDataChanged();            // XXX do we need this ???
     }
 
+    @Override
     public void focusGained(FocusEvent e) {
         if(panel.changedFromTextField.getText().equals("")) {                   // NOI18N
             String lastChangeFrom = BugzillaConfig.getInstance().getLastChangeFrom();
@@ -495,10 +501,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    @Override
     public void focusLost(FocusEvent e) {
         // do nothing
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.searchButton) {
             onRefresh();
@@ -553,14 +561,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    @Override
     public void keyTyped(KeyEvent e) {
         // do nothing
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
         // do nothing
     }
 
+    @Override
     public void keyReleased(KeyEvent e) {
         if(e.getKeyCode() != KeyEvent.VK_ENTER) {
             return;
@@ -960,15 +971,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
         List<ParameterValue> componentPV = null;
         List<ParameterValue> versionPV = null;
         for (Map.Entry<String, List<ParameterValue>> e : normalizedParams.entrySet()) {
-            QueryParameter pv = parameters.get(e.getKey());
-            if(pv != null) {
-                if(pv == componentParameter) {
+            QueryParameter qp = parameters.get(e.getKey());
+            if(qp != null) {
+                if(qp == componentParameter) {
                     componentPV = e.getValue();
-                } else if(pv == versionParameter) {
+                } else if(qp == versionParameter) {
                     versionPV = e.getValue();
                 } else {
                     List<ParameterValue> pvs = e.getValue();
-                    pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
+                    qp.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
                 }
             }
         }
@@ -976,9 +987,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         setDependentParameter(versionParameter, versionPV);
     }
 
-    private void setDependentParameter(QueryParameter p, List<ParameterValue> values) {
+    private void setDependentParameter(QueryParameter qp, List<ParameterValue> values) {
         if(values != null) {
-            p.setValues(values.toArray(new ParameterValue[values.size()]));
+            qp.setValues(values.toArray(new ParameterValue[values.size()]));
         }
     }
 
@@ -1153,7 +1164,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        panel.showNoContentPanel(false);;
+                        panel.showNoContentPanel(false);
                     }
                 });
             }
