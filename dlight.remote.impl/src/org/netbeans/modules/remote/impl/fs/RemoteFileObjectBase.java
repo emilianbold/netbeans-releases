@@ -492,7 +492,7 @@ public abstract class RemoteFileObjectBase {
         }
     }
 
-    public void refresh(boolean expected) {
+    public final void refresh(boolean expected) {
         try {
             refreshImpl(true, null, expected);
         } catch (ConnectException ex) {
@@ -508,7 +508,7 @@ public abstract class RemoteFileObjectBase {
         }
     }
 
-    public void refresh() {
+    public final void refresh() {
         refresh(false);
     }
     
