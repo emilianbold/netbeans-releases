@@ -49,7 +49,7 @@ import org.netbeans.test.groovy.GeneralGroovy;
 
 /**
  *
- * @author vriha
+ * @author Vladimir Riha
  */
 public class testFixImport extends GeneralGroovy {
 
