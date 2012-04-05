@@ -85,7 +85,6 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
     }
 
-    @RandomlyFails
     public void testParameters() throws MalformedURLException, CoreException, InterruptedException, UnsupportedEncodingException {
         LogHandler h = new LogHandler("Finnished populate query controller");
         Bugzilla.LOG.addHandler(h);
