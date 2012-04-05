@@ -93,14 +93,14 @@ public final class CNDSearchComposition extends SearchComposition<SearchResult> 
 
     @Override
     public void start(SearchListener listener) {
-        for (SearchRoot root : params.getSearchRoots()) {
-            try {
+        try {
+            for (SearchRoot root : params.getSearchRoots()) {
                 searchInRoot(root, listener);
-            } catch (Exception e) {
-                listener.generalError(e);
-            } finally {
-                terminate();
             }
+        } catch (Exception e) {
+            listener.generalError(e);
+        } finally {
+            terminate();
         }
     }
 

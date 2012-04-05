@@ -104,6 +104,7 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -1359,6 +1360,15 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             List<SearchRoot> roots = new ArrayList<SearchRoot>();
             FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
             roots.add(new SearchRoot(baseDirFileObject, null));
+            for (String root : projectDescriptorProvider.getConfigurationDescriptor().getAbsoluteSourceRoots()) {
+                try {
+                    FileObject fo = new FSPath(baseDirFileObject.getFileSystem(), root).getFileObject();
+                    if (fo != null) {
+                        roots.add(new SearchRoot(fo, null));
+                    }
+                } catch (FileStateInvalidException ex) {
+                }
+            }
             return roots;
         }
 
