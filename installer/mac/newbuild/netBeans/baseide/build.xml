@@ -110,8 +110,10 @@ SJSAS_ID="${sjsas.id}"
         <!--copy file="${basedir}/servicetag/dist/servicetag.jar"   tofile="${scriptsdir}/servicetag.jar"/-->
 
 
-        <copy  todir="${scriptsdir}">
-            <fileset dir="${basedir}/pkg/scripts"/>
+        <copy todir="${scriptsdir}" verbose="yes">
+            <fileset dir="${basedir}/pkg/scripts">
+                <exclude name="set_jdk_home.sh"/>
+            </fileset>
         </copy>       
         <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${builddir}/Description.plist">
             <filterset>
