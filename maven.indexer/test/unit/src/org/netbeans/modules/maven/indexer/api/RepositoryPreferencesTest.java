@@ -58,13 +58,13 @@ public class RepositoryPreferencesTest extends NbTestCase {
         DO_NOT_CONSIDER_MIRRORS();
         RepositoryPreferences rp = RepositoryPreferences.getInstance();
         assertEquals("[local, central]", rp.getRepositoryInfos().toString());
-        rp.addTransientRepository(1, "foo", "Foo", "http://nowhere.net/");
+        rp.addTransientRepository(1, "foo", "Foo", "http://nowhere.net/", RepositoryInfo.MirrorStrategy.NONE);
         assertEquals("[local, foo]", rp.getRepositoryInfos().toString());
-        rp.addTransientRepository(2, "foo.bar", "Foo Bar", "http://nowhere.net/");
+        rp.addTransientRepository(2, "foo.bar", "Foo Bar", "http://nowhere.net/", RepositoryInfo.MirrorStrategy.NONE);
         assertEquals("[local, foo]", rp.getRepositoryInfos().toString());
         rp.removeTransientRepositories(1);
         assertEquals("[local, foo.bar]", rp.getRepositoryInfos().toString());
-        rp.addTransientRepository(3, "foo.bar", "Foo Bar", "http://somewhere.net/");
+        rp.addTransientRepository(3, "foo.bar", "Foo Bar", "http://somewhere.net/", RepositoryInfo.MirrorStrategy.NONE);
         assertEquals("[local, foo.bar]", rp.getRepositoryInfos().toString());
         rp.removeTransientRepositories(2);
         rp.removeTransientRepositories(3);
