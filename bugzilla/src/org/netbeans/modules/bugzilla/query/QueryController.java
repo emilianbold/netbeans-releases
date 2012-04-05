@@ -54,11 +54,9 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -102,7 +100,10 @@ import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
-import org.openide.util.*;
+import org.openide.util.Cancellable;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
 /**
@@ -320,13 +321,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     }
 
-    public String getUrlParameters() {
+    public String getUrlParameters(boolean encode) {
         if(panel.urlPanel.isVisible()) {
             return panel.urlTextField.getText();
         } else {
             StringBuilder sb = new StringBuilder();
             for (QueryParameter p : parameters.values()) {
-                sb.append(p.get());
+                sb.append(p.get(encode));
             }
             return sb.toString();
         }
@@ -406,7 +407,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
                     resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
                     priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
-                    changedFieldsParameter.setParameterValues(QueryParameter.getLastChangeParameters(getRepository().getTaskRepository().getCharacterEncoding()));
+                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
                     summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     whiteboardParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
@@ -425,7 +426,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         } finally {
             if(Bugzilla.LOG.isLoggable(Level.FINE)) {
-                Bugzilla.LOG.log(Level.FINE, "Finnished populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+        Bugzilla.LOG.log(Level.FINE, "Finnished populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
             }
         }
     }
@@ -730,7 +731,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onWeb() {
-        String params = getUrlParameters();
+        String params = getUrlParameters(true);
         String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/query.cgi?format=advanced"; // NOI18N //XXX need constants
 
         final String urlString = repoURL + (params != null && !params.equals("") ? params : ""); // NOI18N
@@ -840,7 +841,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onCloneQuery() {
-        String p = getUrlParameters();
+        String p = getUrlParameters(false);
         BugzillaQuery q = new BugzillaQuery(null, getRepository(), p, false, false, true);
         BugzillaUtil.openQuery(q);
     }
@@ -867,7 +868,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
 
     private void onRefreshConfiguration() {
-        postPopulate(getUrlParameters(), true);
+        postPopulate(getUrlParameters(false), true);
     }
 
     private void remove() {
@@ -925,17 +926,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private List<ParameterValue> toParameterValues(List<String> values) {
         List<ParameterValue> ret = new ArrayList<ParameterValue>(values.size());
-        String encoding = getRepository().getTaskRepository().getCharacterEncoding();
         for (String v : values) {
-            StringBuilder sb = new StringBuilder();
-            try {
-                // use URLEncoder as it is used also by other clients of the bugzilla connector
-                sb.append(URLEncoder.encode(v, encoding));
-            } catch (UnsupportedEncodingException ex) {
-                sb.append(URLEncoder.encode(v));
-                Bugzilla.LOG.log(Level.WARNING, null, ex);
-            }
-            ret.add(new ParameterValue(v, sb.toString()));
+            ret.add(new ParameterValue(v, v));
         }
         return ret;
     }
@@ -1098,7 +1090,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     // XXX what if there is a different host in queries repository as in the url?
                     query.refresh(panel.urlTextField.getText(), autoRefresh);
                 } else {
-                    query.refresh(getUrlParameters(), autoRefresh);
+                    query.refresh(getUrlParameters(true), autoRefresh);
                 }
             } finally {
                 setQueryRunning(false); // XXX do we need this? its called in finishQuery anyway

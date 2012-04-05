@@ -92,7 +92,17 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         String parametersUrl = getParametersUrl();
         BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), parametersUrl, true, false, true);
         QueryController c = q.getController();
+        assertParameters(h, parametersUrl, c);
         
+        // lets make sure that what was returned (not encoded) will work next time as well
+        h.done = false;
+        parametersUrl = c.getUrlParameters(false);
+        q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), parametersUrl, true, false, true);
+        c = q.getController();
+        assertParameters(h, parametersUrl, c);
+    }
+
+    private void assertParameters(LogHandler h, String parametersUrl, QueryController c) throws UnsupportedEncodingException, InterruptedException, IllegalStateException {
         // wait while populate
         int timeout = 60000;
         long ts = System.currentTimeMillis();
@@ -101,8 +111,9 @@ public class ControllerTest extends NbTestCase implements TestConstants {
             if(ts + timeout < System.currentTimeMillis()) throw new IllegalStateException("timeout");
         }
 
+        // get the paramters in an encoded form
         String[] parametersGiven = parametersUrl.split("&");
-        String params = c.getUrlParameters();
+        String params = c.getUrlParameters(true);
         assertTrue(params.startsWith("&"));
         params = params.substring(1, params.length());
         String[] parametersReturned = params.split("&");
@@ -114,8 +125,8 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         }
         for (int i = 1; i < parametersGiven.length; i++) { // skip the first elemenent - its = ""
             String p = parametersGiven[i];
-            p = handleEncoding(p);
-            if(!returnedSet.contains(p)) {
+            p = handleEncoding(p); // encode provided parameter
+            if(!returnedSet.contains(p)) { // compare originaly provided with returned
                 fail("missing given parameter [" + p + "] between returned at index " + i);
             }
         }
