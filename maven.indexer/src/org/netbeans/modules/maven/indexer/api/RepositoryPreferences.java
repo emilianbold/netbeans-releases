@@ -152,6 +152,12 @@ public final class RepositoryPreferences {
         return local;
     }
 
+    /**
+     * returns the RepositoryInfo object with the given id or a mirror repository info
+     * that mirrors the given id.
+     * @param id
+     * @return 
+     */
     public @CheckForNull RepositoryInfo getRepositoryInfoById(String id) {
         List<RepositoryInfo> infos = getRepositoryInfos();
         //repository infos are now including mirrors
@@ -166,7 +172,7 @@ public final class RepositoryPreferences {
             if (ri.isMirror()) {
                 for (RepositoryInfo rii : ri.getMirroredRepositories()) {
                     if (rii.getId().equals(id)) {
-                        return rii;
+                        return ri;
                     }
                 }
             }
