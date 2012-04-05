@@ -234,6 +234,19 @@ public final class OutlineViewTest extends NbTestCase {
         assertEquals ("[2]", view.getOutline ().getValueAt (3, 0).toString ());
         assertEquals ("[2-index from 200 to 299]", view.getOutline ().getValueAt (101, 0).toString ());
     }
+    
+    public void testColumnSortability() throws Exception {
+        ETableColumnModel etcm = (ETableColumnModel) view.getOutline().getColumnModel();
+        ETableColumn etc = (ETableColumn) etcm.getColumn(1);
+        boolean sortable = etc.isSortingAllowed();
+        assertEquals("Has to be sortable, initially.", true, sortable);
+        view.setPropertyColumnAttribute("unitTestPropName", "SortableColumn", Boolean.FALSE);
+        sortable = etc.isSortingAllowed();
+        assertEquals("Should not be sortable after attribute change.", false, sortable);
+        view.setPropertyColumnAttribute("unitTestPropName", "SortableColumn", Boolean.TRUE);
+        sortable = etc.isSortingAllowed();
+        assertEquals("Sortable, again.", true, sortable);
+    }
 
     private class OutlineViewComponent extends JPanel implements ExplorerManager.Provider {
 

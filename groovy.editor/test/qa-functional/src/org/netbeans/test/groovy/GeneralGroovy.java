@@ -149,8 +149,8 @@ public class GeneralGroovy extends JellyTestCase {
         int iLimit = code.length();
         for (int i = 0; i < iLimit; i++) {
             edit.typeKey(code.charAt(i));
-            evt.waitNoEvent(50);
         }
+        evt.waitNoEvent(100);
     }
 
     protected void checkResult(EditorOperator eo, String sCheck) {
@@ -208,6 +208,10 @@ public class GeneralGroovy extends JellyTestCase {
     }
 
     protected void createJavaFile(String sProject, String sItem, String sName) {
+        createJavaFile(sProject, sItem, sName, null);
+    }
+
+    protected void createJavaFile(String sProject, String sItem, String sName, String sPackage) {
         ProjectsTabOperator pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(sProject);
         prn.select();
@@ -226,11 +230,19 @@ public class GeneralGroovy extends JellyTestCase {
             sName = jt.getText();
         }
 
+        if (sPackage != null) {
+            JComboBoxOperator sd = new JComboBoxOperator(jdNew, 1);
+            sd.getTextField().setText(sPackage.toLowerCase());
+        }
         opNewFileWizard.finish();
         new EditorOperator(sName);
     }
 
     protected void createGroovyFile(String sProject, String sItem, String sName) {
+        createGroovyFile(sProject, sItem, sName, null);
+    }
+
+    protected void createGroovyFile(String sProject, String sItem, String sName, String sPackage) {
         ProjectsTabOperator pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(sProject);
         prn.select();
@@ -247,8 +259,13 @@ public class GeneralGroovy extends JellyTestCase {
         } else {
             sName = jt.getText();
         }
-         JTextComponentOperator jtp = new JTextComponentOperator(jdNew, 2);
+        JTextComponentOperator jtp = new JTextComponentOperator(jdNew, 2);
         jtp.setText(sProject.toLowerCase());
+
+        if (sPackage != null) {
+            JComboBoxOperator sd = new JComboBoxOperator(jdNew, 1);
+            sd.getTextField().setText(sPackage.toLowerCase());
+        }
         opNewFileWizard.finish();
         new EditorOperator(sName);
     }
@@ -277,6 +294,13 @@ public class GeneralGroovy extends JellyTestCase {
                 }
             }
         }
+    }
+    
+    protected Object[] getAnnotations(EditorOperator eOp) {
+        eOp.makeComponentVisible();
+        evt.waitNoEvent(1000);
+        Object[] anns = eOp.getAnnotations();
+        return anns;
     }
 
     protected void checkCompletionItems(CompletionJListOperator jlist, String[] asIdeal) {
