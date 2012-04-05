@@ -1,4 +1,5 @@
 [display: |, display block, display: block, 61]
+display anything
 display block
 display compact
 display inherit
@@ -23,7 +24,7 @@ display table-header-group
 display table-row
 display table-row-group
 End cursor position = 76
-[color: |, color green, color: green, 111]
+[color: |, color green, color: green, 105]
 color color chooser
 color activeborder
 color activecaption
