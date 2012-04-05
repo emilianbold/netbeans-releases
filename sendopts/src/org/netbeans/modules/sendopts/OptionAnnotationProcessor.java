@@ -52,6 +52,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -61,6 +62,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=Processor.class)
 public final class OptionAnnotationProcessor implements Processor {
     private Processor delegate;
+    private String msg;
 
     @Override
     public Set<String> getSupportedOptions() {
@@ -73,6 +75,7 @@ public final class OptionAnnotationProcessor implements Processor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
+        System.err.println("delegate: " + delegate());
         if (delegate() != null) {
             return delegate().getSupportedAnnotationTypes();
         } else {
@@ -93,6 +96,16 @@ public final class OptionAnnotationProcessor implements Processor {
     public void init(ProcessingEnvironment processingEnv) {
         if (delegate() != null) {
             delegate().init(processingEnv);
+        } else {
+            processingEnv.getMessager().printMessage(
+                Diagnostic.Kind.NOTE, 
+                "Please add org.openide.filesystems module on classpath to generate declarative registration for @Arg" // NO18N
+            );
+            if (msg != null) {
+                processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.NOTE, msg
+                );
+            }
         }
     }
 
@@ -118,7 +131,7 @@ public final class OptionAnnotationProcessor implements Processor {
             try {
                 delegate = new OptionAnnotationProcessorImpl();
             } catch (LinkageError ex) {
-                // OK, ignore
+                msg = ex.getMessage();
             }
         }
         return delegate;

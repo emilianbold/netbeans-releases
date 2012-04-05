@@ -43,7 +43,6 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.BorderLayout;
-import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -328,12 +327,9 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
     private static class BrowseSources implements LocalServerController.BrowseHandler {
         @Override
-        public File getCurrentDirectory() {
-            return LastUsedFolders.getSources();
-        }
-        @Override
-        public void locationChanged(File location) {
-            LastUsedFolders.setSources(location);
+        public String getDirKey() {
+            return LastUsedFolders.DOCUMENT_ROOT;
         }
     }
+
 }

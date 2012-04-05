@@ -43,7 +43,6 @@
 package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.File;
-import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -52,6 +51,7 @@ import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptVal
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -220,12 +220,14 @@ final class RunFilePanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(NbBundle.getMessage(RunFilePanel.class, "LBL_SelectWorkingDirectory"));
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setCurrentDirectory(new File(createRunConfig().getWorkDir()));
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File workDir = FileUtil.normalizeFile(chooser.getSelectedFile());
+        File selectedFile = new FileChooserBuilder(RunFilePanel.class)
+                .setTitle(NbBundle.getMessage(RunFilePanel.class, "LBL_SelectWorkingDirectory"))
+                .setDirectoriesOnly(true)
+                .forceUseOfDefaultWorkingDirectory(true)
+                .setDefaultWorkingDirectory(new File(createRunConfig().getWorkDir()))
+                .showOpenDialog();
+        if (selectedFile != null) {
+            File workDir = FileUtil.normalizeFile(selectedFile);
             workDirField.setText(workDir.getAbsolutePath());
         }
     }//GEN-LAST:event_browseButtonActionPerformed

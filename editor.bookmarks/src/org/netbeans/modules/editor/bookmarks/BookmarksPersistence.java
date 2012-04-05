@@ -52,29 +52,16 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.lib.editor.bookmarks.api.Bookmark;
-import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.text.NbDocument;
 import org.openide.util.Mutex.Action;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.DOMException;
@@ -88,143 +75,201 @@ import org.w3c.dom.Node;
  * @version 1.00
  */
 
-public class BookmarksPersistence {
+public class BookmarksPersistence implements PropertyChangeListener, Runnable {
     
-    private static final String     EDITOR_BOOKMARKS_NAMESPACE_URI = "http://www.netbeans.org/ns/editor-bookmarks/1"; // NOI18N
-    private static final Map<Project,URLToBookmarks> 
-                                    projectToBookmarks = new WeakHashMap<Project,URLToBookmarks> ();
-    private static ProjectsListener projectsListener;
+    private static final String EDITOR_BOOKMARKS_1_NAMESPACE_URI = "http://www.netbeans.org/ns/editor-bookmarks/1"; // NOI18N
     
-    public static void init () {
-        projectsListener = new ProjectsListener ();
+    private static final String EDITOR_BOOKMARKS_2_NAMESPACE_URI = "http://www.netbeans.org/ns/editor-bookmarks/2"; // NOI18N
+
+    private static RequestProcessor RP = new RequestProcessor("Bookmarks saver"); // NOI18N
+    
+    private static final BookmarksPersistence INSTANCE = new BookmarksPersistence();
+    
+    public static BookmarksPersistence get() {
+        return INSTANCE;
+    }
+
+    /**
+     * Once a project listener will be fired this list will be used for finding out
+     * which projects were just closed and so need their bookmarks to be written to their private.xml.
+     */
+    private final List<Project> lastOpenProjects;
+    
+    private boolean ensureProjectsBookmarksLoadedUponProjectsLoad;
+    
+    private BookmarksPersistence() {
+        lastOpenProjects = new ArrayList<Project>();
     }
     
-    public static void destroy () {
-        if (projectsListener != null) { // #160292
-            projectsListener.destroy ();
+    public void initProjectsListening() {
+        OpenProjects openProjects = OpenProjects.getDefault();
+        List<Project> projects = Arrays.asList(openProjects.getOpenProjects());
+        synchronized (lastOpenProjects) {
+            lastOpenProjects.addAll(projects);
         }
+        openProjects.addPropertyChangeListener(this);
+    }
     
-        List<Project> projects = new ArrayList (projectToBookmarks.keySet ());
-        for (Project project : projects)
-            saveBookmarks (project);
+    public void endProjectsListening() {
+        OpenProjects.getDefault ().removePropertyChangeListener (this);
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            for (ProjectBookmarks projectBookmarks : lockedBookmarkManager.allLoadedProjectBookmarks()) {
+                saveProjectBookmarks(projectBookmarks);
+            }
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
+        synchronized (lastOpenProjects) {
+            lastOpenProjects.clear();
+        }
     }
     
     /**
-     * Loads {@link BookmarkList} from cache or from project settings.
-     * 
-     * @param bookmarkList
+     * Load bookmarks for all projects currently opened.
+     * <br/>
+     * This is used by BookmarksView's initialization to display all currently known bookmarks.
      */
-    public static synchronized void loadBookmarks (BookmarkList bookmarkList) {
-        Document document = bookmarkList.getDocument();
-        FileObject fo = NbEditorUtilities.getFileObject (document);
-        if (fo == null) return;
-        Project project = FileOwnerQuery.getOwner (fo);
-        if (project == null) return;
-        URLToBookmarks urlToBookmarks = projectToBookmarks.get (project);
-        if (urlToBookmarks == null) {
-            urlToBookmarks = loadBookmarks (project);
-            if (urlToBookmarks != null)
-                projectToBookmarks.put (project, urlToBookmarks);
+    public void ensureAllOpenedProjectsBookmarksLoaded() {
+        ensureProjectsBookmarksLoadedUponProjectsLoad = true;
+        List<Project> projects;
+        synchronized (lastOpenProjects) {
+            projects = new ArrayList<Project>(lastOpenProjects);
         }
-        if (urlToBookmarks == null) return;
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
         try {
-            URL url = fo.getURL ();
-            int[] lines = urlToBookmarks.get (url);
-            if (lines != null)
-                for (int lineNumber : lines) {
-                    try {
-                        int offset = NbDocument.findLineOffset ((StyledDocument) document, lineNumber);
-                        bookmarkList.addBookmark (offset);
-                    } catch (IndexOutOfBoundsException ex) {
-                        // line does not exists now (some external changes)
-                    }
-                }
-        } catch (FileStateInvalidException e) {
-            // Ignore this file (could be deleted etc.)
+            lockedBookmarkManager.ensureProjectBookmarksLoaded(projects);
+        } finally {
+            lockedBookmarkManager.unlock();
         }
+        
     }
     
-    private static URLToBookmarks loadBookmarks (final Project project) {
+    ProjectBookmarks loadProjectBookmarks(final Project project) {
         return
-        ProjectManager.mutex().readAccess(new Action<URLToBookmarks>() {
+        ProjectManager.mutex().readAccess(new Action<ProjectBookmarks>() {
             @Override
-            public URLToBookmarks run() {
+            public ProjectBookmarks run() {
+                int version = 2;
                 AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration (project);
                 Element bookmarksElement = ac.getConfigurationFragment(
                     "editor-bookmarks",
-                    EDITOR_BOOKMARKS_NAMESPACE_URI,
+                    EDITOR_BOOKMARKS_2_NAMESPACE_URI,
                     false
                 );
-                if (bookmarksElement == null) return null;
-                try {
-                    URLToBookmarks urlToBookmarks = new URLToBookmarks ();
-                    URL projectFolderURL = project.getProjectDirectory ().getURL ();
-                    Node fileElem = skipNonElementNode (bookmarksElement.getFirstChild ());
-                    while (fileElem != null) {
-                        assert "file".equals (fileElem.getNodeName ());
-                        Node urlElem = skipNonElementNode (fileElem.getFirstChild ());
-                        assert "url".equals (urlElem.getNodeName ());
-                        Node lineElem = skipNonElementNode (urlElem.getNextSibling ());
-                        int[] lineIndexesArray = new int[1];
-                        int lineCount = 0;
-                        while (lineElem != null) {
-                            assert "line".equals (lineElem.getNodeName ());
-                            // Check whether there is enough space in the line number array
-                            if (lineCount == lineIndexesArray.length) {
-                                lineIndexesArray = reallocateIntArray (lineIndexesArray, lineCount, lineCount << 1);
-                            }
-                            // Fetch the line number from the node
-                            try {
-                                Node lineElemText = lineElem.getFirstChild();
-                                String lineNumberString = lineElemText.getNodeValue ();
-                                int lineNumber = Integer.parseInt (lineNumberString);
-                                lineIndexesArray[lineCount++] = lineNumber;
-                            } catch (DOMException e) {
-                                ErrorManager.getDefault().notify(e);
-                            } catch (NumberFormatException e) {
-                                ErrorManager.getDefault().notify(e);
-                            }
-                            lineElem = skipNonElementNode(lineElem.getNextSibling());
-                        }
+                int lastBookmarkId = 0;
+                if (bookmarksElement != null) {
+                    String lastBookmarkIdText = bookmarksElement.getAttribute("lastBookmarkId");
+                    try {
+                        lastBookmarkId = Integer.parseInt(lastBookmarkIdText);
+                    } catch (NumberFormatException ex) {
+                        // Leave lastBookmarkId == 0
+                    }
 
-                        try {
-                            URL url;
-                            try {
-                                Node urlElemText = urlElem.getFirstChild();
-                                String relOrAbsURLString = urlElemText.getNodeValue();
-                                URI uri = new URI(relOrAbsURLString);
-                                if (!uri.isAbsolute() && projectFolderURL != null) { // relative URI
-                                    url = new URL(projectFolderURL, relOrAbsURLString);
-                                } else { // absolute URL or don't have base URL
-                                    url = new URL(relOrAbsURLString);
-                                }
-                            } catch (URISyntaxException e) {
-                                ErrorManager.getDefault().notify(e);
-                                url = null;
-                            } catch (MalformedURLException e) {
-                                ErrorManager.getDefault().notify(e);
-                                url = null;
-                            }
-
-                            if (url != null) {
-                                if (lineCount != lineIndexesArray.length) {
-                                    lineIndexesArray = reallocateIntArray(lineIndexesArray, lineCount, lineCount);
-                                }
-                                urlToBookmarks.put (url, lineIndexesArray);
-                            }
-                        } catch (DOMException e) {
-                            ErrorManager.getDefault ().notify (e);
-                        }
-
-                        fileElem = skipNonElementNode (fileElem.getNextSibling ());
-                    } // while element
-                    return urlToBookmarks;
-                } catch (FileStateInvalidException e) {
-                    return null;
+                } else { // Attempt older version
+                    version = 1;
+                    bookmarksElement = ac.getConfigurationFragment(
+                        "editor-bookmarks",
+                        EDITOR_BOOKMARKS_1_NAMESPACE_URI,
+                        false
+                    );
+                    if (bookmarksElement == null) {
+                        return null;
+                    }
                 }
+
+                ProjectBookmarks projectBookmarks = new ProjectBookmarks(project, lastBookmarkId);
+                URL projectFolderURL = project.getProjectDirectory().toURL();
+                Node fileElem = skipNonElementNode (bookmarksElement.getFirstChild ());
+                while (fileElem != null) {
+                    assert "file".equals (fileElem.getNodeName ());
+                    Node urlElem = skipNonElementNode (fileElem.getFirstChild ());
+                    assert "url".equals (urlElem.getNodeName ());
+                    Node lineOrBookmarkElem = skipNonElementNode (urlElem.getNextSibling ());
+                    ArrayList<BookmarkInfo> bookmarkInfos = new ArrayList<BookmarkInfo>();
+                    while (lineOrBookmarkElem != null) {
+                        String nodeName = lineOrBookmarkElem.getNodeName();
+                        try {
+                            BookmarkInfo bookmarkInfo;
+                            if (version == 2) {
+                                assert "bookmark".equals(nodeName);
+                                assert (lineOrBookmarkElem.getNodeType() == Node.ELEMENT_NODE);
+                                Element bookmarkElem = (Element) lineOrBookmarkElem;
+                                int id = -1;
+                                if (bookmarkElem.hasAttributes()) {
+                                    String idText = bookmarkElem.getAttribute("id");
+                                    try {
+                                        id = Integer.parseInt(idText);
+                                        projectBookmarks.ensureBookmarkIdSkip(id);
+                                    } catch (NumberFormatException ex) {
+                                        // Leave id == -1
+                                    }
+                                }
+                                if (id == -1) {
+                                    id = projectBookmarks.generateBookmarkId();
+                                }
+                                Node nameElem = skipNonElementNode(lineOrBookmarkElem.getFirstChild());
+                                assert "name".equals(nameElem.getNodeName());
+                                Node nameTextNode = nameElem.getFirstChild();
+                                String name = (nameTextNode != null) ? nameTextNode.getNodeValue() : "";
+                                Node lineElem = skipNonElementNode(nameElem.getNextSibling());
+                                int lineIndex = parseLineIndex(lineElem);
+                                Node keyElem = skipNonElementNode(lineElem.getNextSibling());
+                                Node keyTextNode = keyElem.getFirstChild();
+                                String key = (keyTextNode != null) ? keyTextNode.getNodeValue() : "";
+                                bookmarkInfo = BookmarkInfo.create(id, name, lineIndex, key);
+                            } else {
+                                int lineIndex = parseLineIndex(lineOrBookmarkElem);
+                                int id = projectBookmarks.getLastBookmarkId();
+                                bookmarkInfo = BookmarkInfo.create(id, "", lineIndex, "");
+                            }
+                            bookmarkInfos.add(bookmarkInfo);
+                            
+                        } catch (DOMException e) {
+                            ErrorManager.getDefault().notify(e);
+                        } catch (NumberFormatException e) {
+                            ErrorManager.getDefault().notify(e);
+                        }
+                        lineOrBookmarkElem = skipNonElementNode(lineOrBookmarkElem.getNextSibling());
+                    }
+                    bookmarkInfos.trimToSize();
+
+                    try {
+                        try {
+                            Node urlElemText = urlElem.getFirstChild();
+                            String relOrAbsURLString = urlElemText.getNodeValue();
+                            URI uri = new URI(relOrAbsURLString);
+                            URL url;
+                            if (!uri.isAbsolute() && projectFolderURL != null) { // relative URI
+                                url = new URL(projectFolderURL, relOrAbsURLString);
+                            } else { // absolute URL or don't have base URL
+                                url = new URL(relOrAbsURLString);
+                            }
+                            projectBookmarks.add(new FileBookmarks(
+                                    projectBookmarks, url, bookmarkInfos));
+                        } catch (URISyntaxException e) {
+                            ErrorManager.getDefault().notify(e);
+                        } catch (MalformedURLException e) {
+                            ErrorManager.getDefault().notify(e);
+                        }
+                    } catch (DOMException e) {
+                        ErrorManager.getDefault ().notify (e);
+                    }
+
+                    fileElem = skipNonElementNode (fileElem.getNextSibling ());
+                } // while element
+                return projectBookmarks;
             }
 
         });
+    }
+    
+    static int parseLineIndex(Node lineElem) {
+        assert "line".equals(lineElem.getNodeName());
+        // Fetch the line number from the node
+        Node lineElemText = lineElem.getFirstChild();
+        String lineIndexString = lineElemText.getNodeValue();
+        return Integer.parseInt(lineIndexString);
     }
     
     private static Node skipNonElementNode (Node node) {
@@ -234,74 +279,37 @@ public class BookmarksPersistence {
         return node;
     }
     
-   private static int[] reallocateIntArray (int[] intArray, int count, int newLength) {
-        int[] newIntArray = new int [newLength];
-        System.arraycopy (intArray, 0, newIntArray, 0, count);
-        return newIntArray;
-    }
-   
-    public static synchronized void saveBookmarks (BookmarkList bookmarkList) {
-        Document document = bookmarkList.getDocument ();
-        FileObject fileObject = NbEditorUtilities.getFileObject (document);
-        if (fileObject == null) return;
-        List<Bookmark> bookmarks = new ArrayList<Bookmark> (bookmarkList.getBookmarks ());
-        int[] lineNumbers = new int [bookmarks.size ()];
-        for (int i = 0; i < bookmarks.size (); i++) {
-            Bookmark bookmark = bookmarks.get (i);
-            lineNumbers [i] = bookmark.getLineNumber ();
-        }
-        try {
-            URL url = fileObject.getURL ();
-            Project project = FileOwnerQuery.getOwner (fileObject);
-            URLToBookmarks urlToBookmarks = projectToBookmarks.get (project);
-            if (urlToBookmarks == null) {
-                urlToBookmarks = new URLToBookmarks ();
-                projectToBookmarks.put (project, urlToBookmarks);
-            }
-            urlToBookmarks.put (url, lineNumbers);
-        } catch (FileStateInvalidException e) {
-            // Ignore this file - could be deleted etc.
-        }
-    }
-    
-    private static void saveBookmarks (Project project) {
+    private void saveProjectBookmarks(ProjectBookmarks projectBookmarks) {
+        Project project = projectBookmarks.getProject();
         if (!ProjectManager.getDefault ().isValid (project)) {
             return; // cannot modify it now anyway
         }
-        AuxiliaryConfiguration auxiliaryConfiguration = ProjectUtils.
-            getAuxiliaryConfiguration (project);
+        AuxiliaryConfiguration auxiliaryConfiguration = ProjectUtils.getAuxiliaryConfiguration(project);
         URI baseURI;
         try {
-            baseURI = new URI (project.getProjectDirectory ().getURL ().toExternalForm ());
-        } catch (FileStateInvalidException e) {
-            // Use global urls in such case
-            baseURI = null;
+            baseURI = new URI (project.getProjectDirectory ().toURL ().toExternalForm ());
         } catch (URISyntaxException e) {
             // Use global urls in such case
             baseURI = null;
         }
-        URLToBookmarks urlToBookmarks = projectToBookmarks.get (project);
-        if (urlToBookmarks == null) return;
+        boolean legacy = false;
+        
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
             org.w3c.dom.Document document = builder.newDocument();
-            Element bookmarksElement = document.createElementNS (
-                EDITOR_BOOKMARKS_NAMESPACE_URI, 
-                "editor-bookmarks"
-            );
-            for (URL url : urlToBookmarks.keySet ()) {
-                if (urlToBookmarks.get(url).length == 0) {
+            String namespaceURI = legacy
+                    ? EDITOR_BOOKMARKS_1_NAMESPACE_URI
+                    : EDITOR_BOOKMARKS_2_NAMESPACE_URI;
+            Element bookmarksElem = document.createElementNS(namespaceURI, "editor-bookmarks");
+            bookmarksElem.setAttribute("lastBookmarkId", String.valueOf(projectBookmarks.getLastBookmarkId()));
+            for (URL url : projectBookmarks.allURLs()) {
+                List<BookmarkInfo> bookmarkInfos = projectBookmarks.get(url).getBookmarks();
+                if (bookmarkInfos.isEmpty()) {
                     continue;
                 }
-                
-                Element fileElement = document.createElementNS (
-                    EDITOR_BOOKMARKS_NAMESPACE_URI, 
-                    "file"
-                );
-                Element urlElement = document.createElementNS (
-                    EDITOR_BOOKMARKS_NAMESPACE_URI,
-                    "url");
+                Element fileElem = document.createElementNS(namespaceURI, "file");
+                Element urlElem = document.createElementNS(namespaceURI, "url");
                 String url2 = url.toExternalForm();
                 // Possibly relativize the URL
                 if (baseURI != null) {
@@ -314,67 +322,89 @@ public class BookmarksPersistence {
                         // leave the original full URL
                     }
                 }
-                urlElement.appendChild (document.createTextNode (url2));
-                fileElement.appendChild (urlElement);
-                int[] lineNumbers = urlToBookmarks.get (url);
-                for (int lineNumber : lineNumbers) {
-                    Element lineElem = document.createElementNS (
-                        EDITOR_BOOKMARKS_NAMESPACE_URI, 
-                        "line"
-                    );
-                    lineElem.appendChild (document.createTextNode (Integer.toString (lineNumber)));
-                    fileElement.appendChild(lineElem);
+                urlElem.appendChild (document.createTextNode (url2));
+                fileElem.appendChild (urlElem);
+                for (BookmarkInfo bookmarkInfo : bookmarkInfos) {
+                    if (legacy) { // Use legacy mode
+                        Element lineElem = document.createElementNS(namespaceURI, "line");
+                        lineElem.appendChild(document.createTextNode(Integer.toString(bookmarkInfo.getLineIndex())));
+                        fileElem.appendChild(lineElem);
+                    } else { // New mode
+                        Element nameElem = document.createElementNS(namespaceURI, "name");
+                        nameElem.appendChild(document.createTextNode(bookmarkInfo.getName()));
+                        Element lineElem = document.createElementNS(namespaceURI, "line");
+                        lineElem.appendChild(document.createTextNode (Integer.toString(bookmarkInfo.getLineIndex())));
+                        Element keyElem = document.createElementNS(namespaceURI, "key");
+                        keyElem.appendChild(document.createTextNode(String.valueOf(bookmarkInfo.getKey())));
+                        Element bookmarkElem = document.createElementNS(namespaceURI, "bookmark");
+                        bookmarkElem.setAttribute("id", String.valueOf(bookmarkInfo.getId()));
+                        bookmarkElem.appendChild(nameElem);
+                        bookmarkElem.appendChild(lineElem);
+                        bookmarkElem.appendChild(keyElem);
+                        fileElem.appendChild(bookmarkElem);
+                    }
                 }
-                bookmarksElement.appendChild(fileElement);
+                bookmarksElem.appendChild(fileElem);
             } // for URL
             auxiliaryConfiguration.putConfigurationFragment (
-                bookmarksElement, false
+                bookmarksElem, false
             );
         } catch (ParserConfigurationException e) {
             ErrorManager.getDefault().notify(e);
         }
     }
     
-    
-    // innerclasses ............................................................
-    
-    private static class URLToBookmarks extends HashMap<URL,int[]> {}
-    
-    private static class ProjectsListener implements PropertyChangeListener, Runnable {
-        
-        private static List<Project>    lastOpenProjects;
-        private static RequestProcessor RP = new RequestProcessor("Bookmarks saver"); // NOI18N
-
-        @SuppressWarnings("LeakingThisInConstructor")
-        public ProjectsListener () {
-            OpenProjects openProjects = OpenProjects.getDefault ();
-            lastOpenProjects = new ArrayList (Arrays.asList (openProjects.getOpenProjects ()));
-            openProjects.addPropertyChangeListener (this);
-        }
-
-        @Override
-        public void run() {
-            ProjectManager.mutex().writeAccess(new Runnable() {
-                public void run() {
-                    List<Project> openProjects = Arrays.asList (OpenProjects.getDefault ().getOpenProjects ());
-                    // lastOpenProjects will contain the just closed projects
-                    lastOpenProjects.removeAll (openProjects);
-                    for (Iterator<Project> it = lastOpenProjects.iterator (); it.hasNext ();) {
-                        saveBookmarks (it.next ());
-                    }
-                    lastOpenProjects = new ArrayList (openProjects);
+    @Override
+    public void run() {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                List<Project> openProjects = Arrays.asList (OpenProjects.getDefault ().getOpenProjects ());
+                // lastOpenProjects will contain the just closed projects
+                List<Project> projectsToSave;
+                synchronized (lastOpenProjects) {
+                    lastOpenProjects.removeAll(openProjects);
+                    projectsToSave = new ArrayList<Project>(lastOpenProjects);
+                    lastOpenProjects.clear();
+                    lastOpenProjects.addAll(openProjects);
                 }
-            });
-        }
-
-        @Override
-        public void propertyChange (PropertyChangeEvent evt) {
-            RP.post(this);
-        }
-        
-        void destroy () {
-            OpenProjects.getDefault ().removePropertyChangeListener (this);
-        }
+                BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+                try {
+                    for (Project p : projectsToSave) {
+                        ProjectBookmarks projectBookmarks = lockedBookmarkManager.getProjectBookmarks(p, false, false);
+                        if (projectBookmarks != null) {
+                            saveProjectBookmarks(projectBookmarks); // Write into private.xml under project's mutex acquired
+                            lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
+                        }
+                    }
+                    // If ensureAllOpenedProjectsBookmarksLoaded requested previously do it now
+                    if (ensureProjectsBookmarksLoadedUponProjectsLoad) {
+                        ensureProjectsBookmarksLoadedUponProjectsLoad = false;
+                        ensureAllOpenedProjectsBookmarksLoaded();
+                    }
+                } finally {
+                    lockedBookmarkManager.unlock();
+                }
+            }
+        });
     }
+
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        RP.post(this);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(200);
+        sb.append("Opened Projects:\n"); // NOI18N
+        synchronized (lastOpenProjects) {
+            for (Project p : lastOpenProjects) {
+                sb.append("Project ").append(p).append('\n'); // NOI18N
+            }
+        }
+        sb.append("------------------------"); // NOI18N
+        return sb.toString();
+    }
+
 }
 

@@ -353,16 +353,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         return srcDir;
     }
 
-    public String getTestDir() {
-        if (testDir == null) {
-            FileObject tests = ProjectPropertiesSupport.getTestDirectory(project, false);
-            if (tests != null) {
-                testDir = FileUtil.toFile(tests).getAbsolutePath();
-            }
-        }
-        return testDir;
-    }
-
+    // getter not needed
     public void setTestDir(String testDir) {
         this.testDir = testDir;
     }

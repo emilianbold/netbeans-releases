@@ -48,9 +48,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 
@@ -114,25 +113,30 @@ public class JsfVariablesModel {
         for (String namespace : declaredNamespaces) {
             if (inTest || faceletsLibsNamespaces.contains(namespace)) {
                 //ok, seems to be a facelets library
-                AstNode root = result.root(namespace);
+                Node root = result.root(namespace);
                 //find all nodes with var and value attributes
-                List<AstNode> matches = AstNodeUtils.getChildrenRecursivelly(root, new AstNode.NodeFilter() {
+                List<Element> matches = ElementUtils.getChildrenRecursivelly(root, new ElementFilter() {
 
                     @Override
-                    public boolean accepts(AstNode node) {
-                        return node.getAttribute(VALUE_NAME) != null &&
-                                node.getAttribute(VARIABLE_NAME) != null;
+                    public boolean accepts(Element node) {
+                        if(node.type() == ElementType.OPEN_TAG) {
+                            OpenTag openTag = (OpenTag)node;
+                            return openTag.getAttribute(VALUE_NAME) != null &&
+                                    openTag.getAttribute(VARIABLE_NAME) != null;
+                        }
+                        return false;
                     }
                 }, false);
 
-                for (AstNode node : matches) {
+                for (Element node : matches) {
+                    OpenTag ot = (OpenTag)node;
 
                     //I need to get the original document context for the value attribute
                     //Since the virtual html source already contains the substituted text (@@@)
                     //instead of the expression language, the code needs to be taken from
                     //the original document
-                    AstNode.Attribute valueAttr = node.getAttribute(VALUE_NAME);
-                    if(valueAttr.unquotedValue().isEmpty()) {
+                    Attribute valueAttr = ot.getAttribute(VALUE_NAME);
+                    if(valueAttr.unquotedValue().length() == 0) {
                         //empty value, skip this one
                         continue;
                     }
@@ -147,9 +151,9 @@ public class JsfVariablesModel {
                     String documentValueContent = topLevelSnapshot.getText().subSequence(doc_from, doc_to).toString();
 
                     JsfVariableContext context = new JsfVariableContext(
-                            node.logicalStartOffset(),
-                            node.logicalEndOffset(),
-                            node.getAttribute(VARIABLE_NAME).unquotedValue(),
+                            ot.from(),
+                            ot.semanticEnd(),
+                            ot.getAttribute(VARIABLE_NAME).unquotedValue().toString(),
                             unquotedValue(documentValueContent));
 
                     contextsList.add(context);

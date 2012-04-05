@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -121,5 +122,20 @@ public class UtilTest extends NbTestCase {
         } catch (NullPointerException ex) {
             //expected
         }
+    }
+
+    public void testFileToUrl() throws MalformedURLException, IOException {
+        File test = getWorkDir();
+        
+        File jar1 = new File(test, "jar1.jar");
+        assertEquals("jar:" + jar1.toURI().toURL() + "!/", Util.fileToUrl(jar1).toString());
+
+        File zip1 = new File(test, "zip1.zip");
+        assertEquals("jar:" + zip1.toURI().toURL() + "!/", Util.fileToUrl(zip1).toString());
+
+        File other1 = new File(test, "other1.xml");
+        assertEquals(other1.toURI().toURL().toString(), Util.fileToUrl(other1).toString());
+
+        assertEquals(test.toURI().toURL(), Util.fileToUrl(test));
     }
 }

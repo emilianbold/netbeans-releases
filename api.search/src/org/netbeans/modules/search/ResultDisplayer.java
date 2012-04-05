@@ -78,7 +78,10 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
     }
 
     @Override
-    public JComponent getVisualComponent() {
+    public synchronized JComponent getVisualComponent() {
+        if (resultPanel != null) {
+            return resultPanel;
+        }
         if (criteria.isSearchAndReplace()) {
             resultPanel = new BasicReplaceResultsPanel(resultModel, composition,
                     composition.getRootFiles(), infoNode);
@@ -124,6 +127,7 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
 
     @Override
     public void searchStarted() {
+        resultModel.setStartTime();
         resultPanel.searchStarted();
     }
 

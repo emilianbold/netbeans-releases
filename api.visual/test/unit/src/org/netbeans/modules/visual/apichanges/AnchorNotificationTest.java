@@ -51,12 +51,18 @@ import org.netbeans.api.visual.anchor.Anchor;
 
 import javax.swing.*;
 import java.awt.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * Test for #111987 - VMDNodeAnchor recalculates unnecessarily
  * @author David Kaspar
  */
 public class AnchorNotificationTest extends VisualTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(AnchorNotificationTest.class);
+    }
 
     public AnchorNotificationTest (String testName) {
         super (testName);

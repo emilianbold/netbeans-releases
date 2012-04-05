@@ -55,6 +55,9 @@ public interface APTPreprocHandler {
     public State getState();
     public void setState(State state);
     
+    // key which can be used in caches 
+    public interface StateKey {};
+
     /** immutable state object of preprocessor handler */
     public interface State {
         /**

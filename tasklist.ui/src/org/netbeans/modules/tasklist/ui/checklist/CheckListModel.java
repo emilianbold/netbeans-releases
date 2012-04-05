@@ -63,4 +63,12 @@ public interface CheckListModel extends ListModel {
      * @param c new state
      */
     public void setChecked(int index, boolean c);
+
+    /**
+     * Optional description for use in a tool tip.
+     * @param index index of an item
+     * @return description text, or null
+     */
+    String getDescription(int index);
+
 }

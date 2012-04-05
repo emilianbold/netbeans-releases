@@ -172,7 +172,7 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(RunAsWebAdvanced.class);
+        return new HelpCtx("org.netbeans.modules.php.project.ui.customizer.RunAsWebAdvanced"); // NOI18N
     }
 
     public boolean open() {
@@ -687,30 +687,16 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
                 JButton button = localPathCell.getButton();
                 if (e.getX() > (cellRect.x + cellRect.width - button.getWidth())) {
                     //inside changeButton
-                    File newLocation = Utils.browseLocationAction(table, getLastFolder(), NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_SelectProjectFolder"));
+                    File newLocation = Utils.browseLocationAction(LastUsedFolders.DEBUGGER_PATH_MAPPING,
+                            NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_SelectProjectFolder"), FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)));
                     if (newLocation != null) {
                         localPathCell.setPath(newLocation.getAbsolutePath());
-                        LastUsedFolders.setPathMapping(newLocation);
                     }
                     validateFields();
                 }
             }
         }
 
-        private File getLastFolder() {
-            File lastFolder = LastUsedFolders.getPathMapping();
-            if (lastFolder == null) {
-                return null;
-            }
-            FileObject fo = FileUtil.toFileObject(lastFolder);
-            if (fo == null) {
-                return null;
-            }
-            if (!CommandUtils.isUnderAnySourceGroup(project, fo, false)) {
-                return FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project));
-            }
-            return lastFolder;
-        }
     }
 
     public static final class Properties {

@@ -46,6 +46,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -140,6 +144,22 @@ public final class NamedServiceProcessor extends AbstractServiceProviderProcesso
                         );
                     }
                 }
+            }
+            Retention ret = e.getAnnotation(Retention.class);
+            if (ret == null || ret.value() != RetentionPolicy.SOURCE) {
+                processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.ERROR, 
+                    "Please specify @Retention(RetentionPolicy.SOURCE) on this annotation",
+                    e
+                );
+            }
+            Target tar = e.getAnnotation(Target.class);
+            if (tar == null || tar.value().length != 1 || tar.value()[0] != ElementType.TYPE) {
+                processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.ERROR, 
+                    "Please specify @Target(ElementType.TYPE) on this annotation",
+                    e
+                );
             }
             register(e, PATH);
         }

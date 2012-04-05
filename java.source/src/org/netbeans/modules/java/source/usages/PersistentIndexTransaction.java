@@ -61,16 +61,41 @@ public class PersistentIndexTransaction extends TransactionContext.Service {
 
     @Override
     protected void commit() throws IOException {
+        Throwable cause = null;
         for (ClassIndexImpl.Writer w : indexWriters) {
-            w.commit();
+            try {
+                w.commit();
+            } catch (Throwable t) {
+                if (t instanceof ThreadDeath) {
+                    throw (ThreadDeath) t;
+                } else if (cause == null) {
+                    cause = t;
+                }
+            }
+        }
+        if (cause != null) {
+            throw new IOException(cause);
         }
     }
 
     @Override
     protected void rollBack() throws IOException {
+        Throwable cause = null;
         for (ClassIndexImpl.Writer w : indexWriters) {
-            w.rollback();
+            try {
+                w.rollback();
+            } catch (Throwable t) {
+                if (t instanceof ThreadDeath) {
+                    throw (ThreadDeath) t;
+                } else if (cause == null) {
+                    cause = t;
+                }
+            }
         }
+        if (cause != null) {
+            throw new IOException(cause);
+        }
+        
     }
     
     public void addIndexWriter(ClassIndexImpl.Writer writer) {

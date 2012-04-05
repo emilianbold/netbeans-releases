@@ -63,6 +63,8 @@ class EmptyTestStepLocation implements WizardDescriptor.Panel<WizardDescriptor> 
     private Component visualComp;
     private JCheckBox chkSetUp;
     private JCheckBox chkTearDown;
+    private JCheckBox chkBeforeClass;
+    private JCheckBox chkAfterClass;
     private JCheckBox chkCodeHints;
 
     EmptyTestStepLocation() {
@@ -80,9 +82,13 @@ class EmptyTestStepLocation implements WizardDescriptor.Panel<WizardDescriptor> 
                         "CommonTestsCfgOfCreate.groupOptCode"),               //NOI18N
                 chkBoxes = GuiUtils.createCheckBoxes(new String[] {
                         GuiUtils.CHK_SETUP,
-                        GuiUtils.CHK_TEARDOWN}));
+                        GuiUtils.CHK_TEARDOWN,
+                        GuiUtils.CHK_BEFORE_CLASS,
+                        GuiUtils.CHK_AFTER_CLASS}));
         chkSetUp = chkBoxes[0];
         chkTearDown = chkBoxes[1];
+        chkBeforeClass = chkBoxes[2];
+        chkAfterClass = chkBoxes[3];
         
         JComponent optComments = GuiUtils.createChkBoxGroup(
                 NbBundle.getMessage(
@@ -118,7 +124,7 @@ class EmptyTestStepLocation implements WizardDescriptor.Panel<WizardDescriptor> 
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx("org.netbeans.modules.junit.wizards.EmptyTest");//NOI18N
+        return new HelpCtx("new_ngtestcase_wizard");//NOI18N
     }
 
     public boolean isValid() {
@@ -130,6 +136,10 @@ class EmptyTestStepLocation implements WizardDescriptor.Panel<WizardDescriptor> 
                 Boolean.TRUE.equals(settings.getProperty(GuiUtils.CHK_SETUP)));
         chkTearDown.setSelected(
                 Boolean.TRUE.equals(settings.getProperty(GuiUtils.CHK_TEARDOWN)));
+        chkBeforeClass.setSelected(
+                Boolean.TRUE.equals(settings.getProperty(GuiUtils.CHK_BEFORE_CLASS)));
+        chkAfterClass.setSelected(
+                Boolean.TRUE.equals(settings.getProperty(GuiUtils.CHK_AFTER_CLASS)));
         chkCodeHints.setSelected(
                 Boolean.TRUE.equals(settings.getProperty(GuiUtils.CHK_HINTS)));
     }
@@ -139,6 +149,10 @@ class EmptyTestStepLocation implements WizardDescriptor.Panel<WizardDescriptor> 
                            Boolean.valueOf(chkSetUp.isSelected()));
         settings.putProperty(GuiUtils.CHK_TEARDOWN,
                            Boolean.valueOf(chkTearDown.isSelected()));
+        settings.putProperty(GuiUtils.CHK_BEFORE_CLASS,
+                           Boolean.valueOf(chkBeforeClass.isSelected()));
+        settings.putProperty(GuiUtils.CHK_AFTER_CLASS,
+                           Boolean.valueOf(chkAfterClass.isSelected()));
         settings.putProperty(GuiUtils.CHK_HINTS,
                            Boolean.valueOf(chkCodeHints.isSelected()));
     }

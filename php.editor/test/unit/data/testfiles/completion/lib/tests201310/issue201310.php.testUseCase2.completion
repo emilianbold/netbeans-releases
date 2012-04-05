@@ -4,3 +4,6 @@ throw new E|xMyException();
 PACKAGE    ExtraThrow                      [PUBLIC]   null
 CLASS      ExMyException                   [PUBLIC]   issue201310.php
 CLASS      Exception                       [PUBLIC]   issue201310.php
+------------------------------------
+CLASS      ErrorException                  [PUBLIC]   PHP Platform
+CLASS      Exception                       [PUBLIC]   PHP Platform

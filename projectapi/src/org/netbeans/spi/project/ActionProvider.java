@@ -130,6 +130,24 @@ public interface ActionProvider {
     String COMMAND_DEBUG_STEP_INTO = "debug.stepinto"; // NOI18N
     
     /**
+     * Standard command for running the project in profiler
+     * @since 1.43
+     */
+    String COMMAND_PROFILE = "profile"; // NOI18N
+    
+    /**
+     * Standard command for running single file in profiler
+     * @since 1.43
+    */
+    String COMMAND_PROFILE_SINGLE = "profile.single"; // NOI18N
+    
+    /** 
+     * Standard command for running one test in profiler
+     * @since 1.43
+    */
+    String COMMAND_PROFILE_TEST_SINGLE = "profile.test.single"; // NOI18N
+    
+    /**
      * Standard command for deleting the project.
      *
      * @since 1.6

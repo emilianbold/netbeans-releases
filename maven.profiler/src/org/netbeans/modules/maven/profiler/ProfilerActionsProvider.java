@@ -48,6 +48,7 @@ import java.util.Set;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
 
 /**
@@ -68,7 +69,7 @@ public class ProfilerActionsProvider extends AbstractMavenActionsProvider {
 
     @Override
     public boolean isActionEnable(String action, Project project, Lookup lookup) {
-        if (!(action.equals("profile") || action.startsWith("profile-single") || action.equals("profile-tests"))) {
+        if (!(action.equals(ActionProvider.COMMAND_PROFILE) || action.startsWith(ActionProvider.COMMAND_PROFILE_SINGLE) || action.equals(ActionProvider.COMMAND_PROFILE_TEST_SINGLE))) {
             return false;
         }
         NbMavenProject mavenprj = project.getLookup().lookup(NbMavenProject.class);
@@ -81,9 +82,9 @@ public class ProfilerActionsProvider extends AbstractMavenActionsProvider {
 
     @Override
     protected InputStream getActionDefinitionStream() {
-            String path = "/org/netbeans/modules/maven/profiler/ActionMappings.xml"; //NOI18N
-            InputStream in = getClass().getResourceAsStream(path);
-            assert in != null : "no instream for " + path; //NOI18N
-            return in;
+        String path = "/org/netbeans/modules/maven/profiler/ActionMappings.xml"; //NOI18N
+        InputStream in = getClass().getResourceAsStream(path);
+        assert in != null : "no instream for " + path; //NOI18N
+        return in;
     }
 }

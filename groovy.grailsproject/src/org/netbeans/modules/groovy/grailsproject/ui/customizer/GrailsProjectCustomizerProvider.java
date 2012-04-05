@@ -39,7 +39,6 @@ import java.awt.event.WindowEvent;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -133,26 +132,6 @@ public class GrailsProjectCustomizerProvider implements CustomizerProvider {
 
             public JComponent createComponent(Category category, Lookup context) {
                 return new LibrariesCustomizerPanel(context.lookup(GrailsProjectProperties.class));
-            }
-        };
-    }
-
-    // used from XML layer
-    public static ProjectCustomizer.CompositeCategoryProvider createDebugging() {
-        return new ProjectCustomizer.CompositeCategoryProvider() {
-            public Category createCategory(Lookup context) {
-                if (WebClientToolsSessionStarterService.isAvailable()) {
-                    return ProjectCustomizer.Category.create(
-                        DEBUG_CATEGORY,
-                        NbBundle.getMessage(GrailsProjectCustomizerProvider.class, "DEBUG_CATEGORY"), // NOI18N
-                        null);
-                } else {
-                    return null;
-                }
-            }
-
-            public JComponent createComponent(Category category, Lookup context) {
-                return new DebugCustomizerPanel(context.lookup(GrailsProjectProperties.class));
             }
         };
     }

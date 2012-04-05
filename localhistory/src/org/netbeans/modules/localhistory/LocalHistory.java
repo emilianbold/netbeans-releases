@@ -75,6 +75,8 @@ import org.openide.util.Lookup.Result;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Registry;
 import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 
 /** 
  * 
@@ -139,7 +141,15 @@ public class LocalHistory {
             }            
         }
 
-        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new OpenedFilesListener());
+        WindowManager.getDefault().addWindowSystemListener(new WindowSystemListener() {
+            @Override public void beforeLoad(WindowSystemEvent event) {}
+            @Override public void afterLoad(WindowSystemEvent event) {
+                WindowManager.getDefault().removeWindowSystemListener(this);
+                WindowManager.getDefault().getRegistry().addPropertyChangeListener(new OpenedFilesListener());
+            }
+            @Override public void beforeSave(WindowSystemEvent event) {}
+            @Override public void afterSave(WindowSystemEvent event) {}
+        });
     }
 
     private synchronized LocalHistoryVCS getLocalHistoryVCS() {

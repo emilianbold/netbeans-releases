@@ -305,24 +305,35 @@ exists or setup the property manually. For example like this:
                 </fail>
                 <taskdef resource="org/netbeans/modules/java/j2seproject/copylibstask/antlib.xml" classpath="${{libs.CopyLibs.classpath}}"/>
             </target>
-
-            <target name="profile-init" depends="-profile-pre-init, init, -profile-post-init, -profile-init-check"/>
+            
+            <xsl:comment>
+                pre NB7.2 profiling section; consider it deprecated
+            </xsl:comment>
+            <target name="profile-init" depends="-profile-pre-init, init, -profile-post-init, -profile-init-check">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
+            </target>
 
             <target name="-profile-pre-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
             </target>
 
             <target name="-profile-post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
             </target>
             <target name="-profile-init-check">
                 <xsl:attribute name="depends">-profile-pre-init, init, -profile-post-init</xsl:attribute>
                 <fail unless="profiler.info.jvm">Must set JVM to use for profiling in profiler.info.jvm</fail>
                 <fail unless="profiler.info.jvmargs.agent">Must set profiler agent JVM arguments in profiler.info.jvmargs.agent</fail>
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
             </target>
-
+            <xsl:comment>
+                end of pre NB7.2 profiling section
+            </xsl:comment>
+            
             <target name="init">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,-init-taskdefs</xsl:attribute>
             </target>
@@ -848,7 +859,11 @@ exists or setup the property manually. For example like this:
     =================
     </xsl:comment>
 
-    <target name="profile">
+    <xsl:comment>
+        pre NB7.2 profiling section; consider it deprecated
+    </xsl:comment>
+    <target name="-profile-pre72">
+        <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
         <xsl:attribute name="description">Profile a J2EE project in the IDE.</xsl:attribute>
         <condition>
             <xsl:attribute name="property">profiler.startserver.target</xsl:attribute>
@@ -865,7 +880,7 @@ exists or setup the property manually. For example like this:
             <xsl:attribute name="target">run</xsl:attribute>
         </antcall>
         <antcall>
-            <xsl:attribute name="target">start-loadgen</xsl:attribute>
+            <xsl:attribute name="target">-profile-start-loadgen</xsl:attribute>
         </antcall>
     </target>
 
@@ -899,12 +914,36 @@ exists or setup the property manually. For example like this:
             </jvmarg>
         </nbstartprofiledserver>
     </target>
+    <xsl:comment>
+        end of pre NB7.2 profiling section
+    </xsl:comment>
 
-    <target name="start-loadgen" if="profiler.loadgen.path">
-            <loadgenstart>
-                <xsl:attribute name="path">${profiler.loadgen.path}</xsl:attribute>
-            </loadgenstart>
-    </target>
+            <target name="-profile-check" if="netbeans.home">
+                <condition property="profiler.configured">
+                    <or>
+                        <contains string="${{run.jvmargs.ide}}" substring="-agentpath:" casesensitive="true"/>
+                        <contains string="${{run.jvmargs.ide}}" substring="-javaagent:" casesensitive="true"/>
+                    </or>
+                </condition>
+            </target>
+
+            <target name="profile" depends="-profile-check,dist,-profile-pre72" if="profiler.configured">
+                <xsl:attribute name="description">Profile a J2EE project in the IDE.</xsl:attribute>
+                
+                <startprofiler/>
+                <nbstartserver profilemode="true"/>
+                
+                <nbdeploy profilemode="true" clientUrlPart="${{client.urlPart}}" forceRedeploy="true" />
+                <antcall>
+                    <xsl:attribute name="target">-profile-start-loadgen</xsl:attribute>
+                </antcall>
+            </target>
+
+            <target name="-profile-start-loadgen" if="profiler.loadgen.path">
+                <loadgenstart>
+                    <xsl:attribute name="path">${profiler.loadgen.path}</xsl:attribute>
+                </loadgenstart>
+            </target>
 
     <xsl:comment>
     CLEANUP SECTION

@@ -112,10 +112,9 @@ public class RemoteRepositoryPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(directoryBrowseButton))))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(connectionSettings, javax.swing.GroupLayout.PREFERRED_SIZE, 496, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(proxySettingsButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(connectionSettings, javax.swing.GroupLayout.PREFERRED_SIZE, 496, Short.MAX_VALUE)
+                    .addComponent(proxySettingsButton))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -139,8 +138,6 @@ public class RemoteRepositoryPanel extends javax.swing.JPanel {
         urlComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSN_RepositoryURL")); // NOI18N
         urlComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSD_RepositoryURL")); // NOI18N
         urlComboBox.getAccessibleContext().setAccessibleParent(this);
-        directoryBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSN_BrowseFolder")); // NOI18N
-        directoryBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSD_BrowseFolder")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSD_RepositoryPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

@@ -245,14 +245,14 @@
             <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
             <tocitem text="Entering Javadoc Comments in Source Code" target="javadoc.accuracy"/>
         </tocitem>
-        <tocitem text="Testing with JUnit">
-            <tocitem text="About JUnit" target="junit_about"></tocitem>
-            <tocitem text="Working with JUnit" target="junit_overview"></tocitem>
-            <tocitem text="JUnit Tasks: Quick Reference" target="junit_quickref"></tocitem>
-            <tocitem text="Creating a JUnit Test" target="junit_creatingtests"></tocitem>
-            <tocitem text="Running a JUnit Test" target="junit_runningtests"></tocitem>
-            <tocitem text="Debugging a JUnit Test" target="junit_debuggingtests"></tocitem>
-            <tocitem text="Configuring JUnit" target="junit_configuring"></tocitem>
+        <tocitem text="Working with Unit Tests">
+            <tocitem text="About Unit Testing" target="junit_about"></tocitem>
+            <tocitem text="Working with Unit Tests" target="junit_overview"></tocitem>
+            <tocitem text="Unit Testing Tasks: Quick Reference" target="junit_quickref"></tocitem>
+            <tocitem text="Creating a Unit Test" target="junit_creatingtests"></tocitem>
+            <tocitem text="Running a Unit Test" target="junit_runningtests"></tocitem>
+            <tocitem text="Debugging a Unit Test" target="junit_debuggingtests"></tocitem>
+            <tocitem text="Configuring Unit Test Settings" target="junit_configuring"></tocitem>
         </tocitem>
         <tocitem text="Resource Bundles">
             <tocitem text="About Resource Bundles" target="propfiles.intro"/>

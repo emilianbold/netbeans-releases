@@ -1616,6 +1616,128 @@ public final class LayoutDesigner implements LayoutConstants {
         return null;
     }
 
+    /**
+     * Data structure representing a layout gap to be customized externally. The
+     * public fields 'definedSize', 'paddingType' and 'resizing' are those to be
+     * edited. Additional information about the gap is available via public methods.
+     */
+    public static final class EditableGap {
+        public int definedSize; // editable
+        public PaddingType paddingType; // editable
+        public boolean resizing; // editable
+
+        private int dimension;
+        private int actualSize;
+        private boolean canHaveDefaultValue;
+        private PaddingType[] possiblePaddingTypes; // null if can't have default value, or if a container gap
+        private String[] paddingDisplayNames; // same array length as possibleDefaultTypes, or 1 if a container gap
+
+        private LayoutInterval gap;
+
+        private EditableGap(LayoutInterval gap) {
+            this.gap = gap;
+        }
+
+        public int getDimension() { return dimension; }
+        public int getActualSize() { return actualSize; }
+        public boolean canHaveDefaultValue() { return canHaveDefaultValue; }
+        public PaddingType[] getPossiblePaddingTypes() { return possiblePaddingTypes; }
+        public String[] getPaddingDisplayNames() { return paddingDisplayNames; }
+    }
+
+    /**
+     * Provides information about layout gaps that can be edited at the moment.
+     * It returns either a single-element array if just one gap is selected, or
+     * a four-element array if exactly one component is selected (so gaps around
+     * the component), or null if there's no suitable selection.
+     * @return array of EditableGap, or null if nothing for editing is currently selected
+     */
+    public EditableGap[] getEditableGaps() {
+        if (paintGaps && selectedGaps.size() == 1) {
+            GapInfo gapInfo = selectedGaps.get(0);
+            LayoutInterval gap = gapInfo.gap;
+            EditableGap eg = new EditableGap(gap);
+            eg.definedSize = gap.getPreferredSize();
+            if (eg.definedSize == NOT_EXPLICITLY_DEFINED) {
+                eg.paddingType = gap.getPaddingType();
+            }
+            eg.resizing = LayoutInterval.canResize(gap);
+            eg.dimension = gapInfo.dimension;
+            eg.actualSize = gapInfo.currentSize;
+            initEditableGapDefaults(eg, gapInfo.defaultGapSizes);
+            return new EditableGap[] { eg };
+        }
+
+        if (selectedComponents.size() == 1) {
+            LayoutComponent comp = selectedComponents.get(0);
+            if (comp.getParent() != null) {
+                List<EditableGap> gapList = new ArrayList<EditableGap>(4);
+                boolean anyGap = false;
+                for (int dim=0; dim < DIM_COUNT; dim++) {
+                    LayoutInterval li = comp.getLayoutInterval(dim);
+                    for (int e=LEADING; e <= TRAILING; e++) {
+                        LayoutInterval gap = LayoutInterval.getNeighbor(li, e, false, true, false);
+                        if (gap != null && gap.isEmptySpace()) {
+                            anyGap = true;
+                            EditableGap eg = new EditableGap(gap);
+                            eg.definedSize = gap.getPreferredSize();
+                            if (eg.definedSize == NOT_EXPLICITLY_DEFINED) {
+                                eg.paddingType = gap.getPaddingType();
+                            }
+                            eg.resizing = LayoutInterval.canResize(gap);
+                            eg.dimension = dim;
+                            eg.actualSize = LayoutInterval.getCurrentSize(gap, dim);
+                            initEditableGapDefaults(eg, LayoutUtils.getSizesOfDefaultGap(gap, visualMapper));
+                            gapList.add(eg);
+                        } else {
+                            gapList.add(null);
+                        }
+                    }
+                }
+                if (anyGap) {
+                    return gapList.toArray(new EditableGap[4]);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static void initEditableGapDefaults(EditableGap eg, int[] defaultSizes) {
+        if (defaultSizes != null) {
+            if (defaultSizes.length == 1) {
+                eg.canHaveDefaultValue = true;
+                eg.paddingDisplayNames = new String[] { VisualState.getDefaultGapDisplayName(null) };
+            } else if (defaultSizes.length > 1) {
+                List<PaddingType> padList = new ArrayList<PaddingType>(defaultSizes.length);
+                List<String> nameList = new ArrayList<String>(defaultSizes.length);
+                for (int i=0; i < defaultSizes.length; i++) {
+                    if (i != PaddingType.INDENT.ordinal()) { // TODO should also detect when INDENT can be used...
+                        PaddingType pt = PaddingType.values()[i];
+                        padList.add(pt);
+                        nameList.add(VisualState.getDefaultGapDisplayName(pt));
+                    }
+                }
+                eg.canHaveDefaultValue = true;
+                eg.possiblePaddingTypes = padList.toArray(new PaddingType[padList.size()]);
+                eg.paddingDisplayNames = nameList.toArray(new String[nameList.size()]);
+            }
+        }
+    }
+
+    /**
+     * Applies changes in given layout gaps, obtained earlier from getEditableGaps()
+     * and then changed externally.
+     * @param editableGaps 
+     */
+    public void applyEditedGaps(EditableGap[] editableGaps) {
+        for (EditableGap eg : editableGaps) {
+            if (eg != null) {
+                layoutModel.setUserIntervalSize(eg.gap, eg.dimension, eg.definedSize, eg.resizing);
+                layoutModel.setPaddingType(eg.gap, eg.paddingType);
+            }
+        }
+    }
+
     public String[] positionCode() {
         return dragger != null ? dragger.positionCode() : new String[2];
     }

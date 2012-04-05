@@ -95,6 +95,9 @@ public class SvnUtils {
         } finally {
             is.close();
         }
+        if (module == null || repository == null) {
+            throw new IOException("#209838: incomplete " + svnEntries);
+        }
         try {
             return new Info(new URI(module), new URI(repository));
         } catch (URISyntaxException x) {

@@ -54,9 +54,9 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.HtmlParsingResult;
 import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.html.editor.lib.api.HtmlParsingResult;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -143,31 +143,37 @@ public class LibraryUtils {
 
             //try find the html root node first
             final HtmlParsingResult result = _result[0];
-            AstNode root = null;
+            Element root = null;
             //no html root node, we need to find a root node of some other ast tree
             //belonging to some namespace
-            Collection<AstNode> roots = new ArrayList<AstNode>();
+            Collection<Node> roots = new ArrayList<Node>();
             roots.addAll(result.roots().values());
             roots.add(result.rootOfUndeclaredTagsParseTree());
 
-            for (AstNode r : roots) {
+            for (Node r : roots) {
                 //find first open tag node
 
-                List<AstNode> chs = r.children(new AstNode.NodeFilter() {
+                Collection<Element> chs = r.children(new ElementFilter() {
 
                     @Override
-                    public boolean accepts(AstNode node) {
-                        return (node.type() == AstNode.NodeType.OPEN_TAG
-                                || node.type() == AstNode.NodeType.UNKNOWN_TAG) && !node.isEmpty() && !node.isVirtual();
+                    public boolean accepts(Element node) {
+                        if(node.type() == ElementType.OPEN_TAG) {
+                            OpenTag openTag = (OpenTag)node;
+                            return !openTag.isEmpty() && !ElementUtils.isVirtualNode(node);
+                        }
+                        return false;
+                        
                     }
                 });
 
-                if (!chs.isEmpty()) {
-                    AstNode top = chs.get(0);
+                List<Element> chsList = new ArrayList<Element>(chs);
+                
+                if (!chsList.isEmpty()) {
+                    Element top = chsList.get(0);
                     if (root == null) {
                         root = top;
                     } else {
-                        if (top.startOffset() < root.startOffset()) {
+                        if (top.from() < root.to()) {
                             root = top;
                         }
                     }
@@ -175,7 +181,7 @@ public class LibraryUtils {
             }
 
 
-            final AstNode rootNode = root;
+            final Element rootNode = root;
             if (rootNode == null) {
                 //TODO we may want to add a root node in such case
                 return Collections.emptyMap();
@@ -215,14 +221,15 @@ public class LibraryUtils {
                     @Override
                     public void run() {
                         try {
-                            boolean noAttributes = rootNode.getAttributeKeys().isEmpty();
+                            OpenTag ot = (OpenTag)rootNode;
+                            boolean noAttributes = ot.attributes().isEmpty();
                             //if there are no attributes, just add the new one at the end of the tag,
                             //if there are some, add the new one on a new line and reformat the tag
 
                             int offset_shift = 0;
                             Iterator<Library> libsItr = imports.keySet().iterator();
                             Parser.Result parsingApiResult = (Parser.Result)result;
-                            int originalInsertPosition = parsingApiResult.getSnapshot().getOriginalOffset(rootNode.endOffset() - 1); //just before the closing symbol
+                            int originalInsertPosition = parsingApiResult.getSnapshot().getOriginalOffset(rootNode.to() - 1); //just before the closing symbol
                             if (originalInsertPosition == -1) {
                                 //error, cannot recover
                                 imports.clear();

@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentInstantiatio
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionInstantiation;
+import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImplFunctionSpecialization;
@@ -276,6 +277,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = DECLARATION_CONTAINER_NAMESPACE;
         } else if (object instanceof ClassifierContainer) {
             aHandler = CLASSIFIER_CONTAINER;
+        } else if (object instanceof IncludedFileContainer.Storage) {
+            aHandler = INCLUDED_FILE_STORAGE;
         } else if (object instanceof TemplateParameterImpl) {
             aHandler = TEMPLATE_PARAMETER_IMPL;
         } else if (object instanceof Instantiation) {
@@ -525,6 +528,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new ClassifierContainer(stream);
                 break;
 
+            case INCLUDED_FILE_STORAGE:
+                obj = new IncludedFileContainer.Storage(stream);
+                break;
+
             case TEMPLATE_PARAMETER_IMPL:
                 obj = new TemplateParameterImpl(stream);
                 break;
@@ -580,7 +587,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int DECLARATION_CONTAINER_PROJECT  = GRAPH_CONTAINER + 1;
     private static final int DECLARATION_CONTAINER_NAMESPACE= DECLARATION_CONTAINER_PROJECT + 1;
     private static final int CLASSIFIER_CONTAINER           = DECLARATION_CONTAINER_NAMESPACE + 1;
-    private static final int FILE_IMPL                      = CLASSIFIER_CONTAINER + 1;
+    private static final int INCLUDED_FILE_STORAGE          = CLASSIFIER_CONTAINER + 1;
+    private static final int FILE_IMPL                      = INCLUDED_FILE_STORAGE + 1;
     private static final int FILE_DECLARATIONS              = FILE_IMPL + 1;
     private static final int FILE_MACROS                    = FILE_DECLARATIONS + 1;
     private static final int FILE_INCLUDES                  = FILE_MACROS + 1;

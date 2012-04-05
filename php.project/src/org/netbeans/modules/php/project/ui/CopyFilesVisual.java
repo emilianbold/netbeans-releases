@@ -44,7 +44,6 @@ package org.netbeans.modules.php.project.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -216,12 +215,9 @@ public class CopyFilesVisual extends JPanel {
 
     private static class BrowseCopyFiles implements LocalServerController.BrowseHandler {
         @Override
-        public File getCurrentDirectory() {
-            return LastUsedFolders.getCopyFiles();
-        }
-        @Override
-        public void locationChanged(File location) {
-            LastUsedFolders.setCopyFiles(location);
+        public String getDirKey() {
+            return LastUsedFolders.COPY_TARGET;
         }
     }
+
 }

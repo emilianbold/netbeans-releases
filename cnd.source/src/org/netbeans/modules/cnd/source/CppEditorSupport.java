@@ -51,14 +51,23 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.Collection;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.Filter;
+import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
+import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -82,6 +91,7 @@ import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Task;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableOpenSupport;
 
 /**
@@ -239,11 +249,56 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
 
     private static final String EXTRA_DOCUMENT_PROPERTIES = "EXTRA_DOCUMENT_PROPERTIES"; // NOI18N
     private StyledDocument setupSlowDocumentProperties(StyledDocument doc) {
+        assert !SwingUtilities.isEventDispatchThread();
         if (doc != null && !Boolean.TRUE.equals(doc.getProperty(EXTRA_DOCUMENT_PROPERTIES))) {
+            // setup language flavor lexing attributes 
+            Language<?> language = (Language<?>) doc.getProperty(Language.class);
+            assert language != null : "no language for " + doc;
+            if (language != null) {
+                InputAttributes lexerAttrs = (InputAttributes)doc.getProperty(InputAttributes.class);
+                assert lexerAttrs != null : "no language attributes for " + doc;
+                if (lexerAttrs == null) {
+                    lexerAttrs = new InputAttributes();
+                    doc.putProperty(InputAttributes.class, lexerAttrs);
+                }
+                Filter<?> filter = getDefaultFilter(language, doc);
+                assert filter != null : "no language filter for " + doc + " with language " + language;
+                if (filter != null) {
+                    lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
+                }
+            }
             // try to setup document's extra properties during non-EDT load if needed
+            PropertiesProviders.addProperty(getDataObject(), doc);
             doc.putProperty(EXTRA_DOCUMENT_PROPERTIES, Boolean.TRUE);
         }
         return doc;
+    }
+
+    private final static class PropertiesProviders {
+
+        private final static Collection<? extends CndSourcePropertiesProvider> providers = Lookups.forPath(CndSourcePropertiesProvider.REGISTRATION_PATH).lookupAll(CndSourcePropertiesProvider.class);
+
+        static void addProperty(DataObject dobj, StyledDocument doc) {
+            assert !SwingUtilities.isEventDispatchThread();
+            for (CndSourcePropertiesProvider provider : providers) {
+                provider.addProperty(dobj, doc);
+            }
+        }
+    }
+
+    private static Filter<?> getDefaultFilter(Language<?> language, Document doc) {
+        if (language == CppTokenId.languageHeader()) {
+            return CndLexerUtilities.getHeaderFilter();
+        } else if (language == CppTokenId.languageC()) {
+            return CndLexerUtilities.getGccCFilter();
+        } else if (language == CppTokenId.languagePreproc()) {
+            return CndLexerUtilities.getPreprocFilter();
+        } else if (language == FortranTokenId.languageFortran()) {
+            return CndLexerUtilities.getFortranFilter();
+        } else if (language == CppTokenId.languageCpp()) {
+            return CndLexerUtilities.getGccCppFilter();
+        }
+        return null;
     }
 
     private static class GuardedEditorSupportImpl implements GuardedEditorSupport {

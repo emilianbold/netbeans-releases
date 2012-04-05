@@ -58,6 +58,8 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
     @Override
     public Key create(KeyDataPresentation presentation) {
         switch (presentation.getKindPresentation()) {
+            case KeyObjectFactory.KEY_INCLUDED_FILE_STORAGE_KEY:
+                return new IncludedFileStorageKey(presentation);
             case KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY:
                 return new ClassifierContainerKey(presentation);
             case KeyObjectFactory.KEY_FILE_CONTAINER_KEY:
