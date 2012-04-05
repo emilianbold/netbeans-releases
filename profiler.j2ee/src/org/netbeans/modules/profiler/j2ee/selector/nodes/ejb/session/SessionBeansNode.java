@@ -85,20 +85,22 @@ public class SessionBeansNode extends ContainerNode {
             for (MetadataModel<EjbJarMetadata> mdModel : listAllMetadata(project)) {
                 try {
                     sessionBeans.addAll(mdModel.runReadAction(new MetadataModelAction<EjbJarMetadata, List<SelectorNode>>() {
-                            public List<SelectorNode> run(EjbJarMetadata metadata)
-                                                   throws Exception {
-                                final List<SelectorNode> beanList = new ArrayList<SelectorNode>();
-                                Session[] sessions = metadata.getRoot().getEnterpriseBeans().getSession();
+                        public List<SelectorNode> run(EjbJarMetadata metadata)
+                                                throws Exception {
+                            final List<SelectorNode> beanList = new ArrayList<SelectorNode>();
+                            Session[] sessions = metadata.getRoot().getEnterpriseBeans().getSession();
 
-                                for (Session session : sessions) {
-                                    final Session sessionBean = session;
-                                    
-                                    SourceClassInfo sb = ProfilerTypeUtils.resolveClass(sessionBean.getEjbClass(), project);
+                            for (Session session : sessions) {
+                                final Session sessionBean = session;
+
+                                SourceClassInfo sb = ProfilerTypeUtils.resolveClass(sessionBean.getEjbClass(), project);
+                                if (sb != null) {
                                     beanList.add(new SessionBeanNode(sb, sessionBean.getDefaultDisplayName(), Icons.getIcon(JavaEEIcons.CLASS), parent));
                                 }
-                                return beanList;
                             }
-                        }));
+                            return beanList;
+                        }
+                    }));
                 } catch (MetadataModelException ex) {
                     ex.printStackTrace();
                 } catch (IOException ex) {
