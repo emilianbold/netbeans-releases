@@ -1356,7 +1356,10 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
         @Override
         public List<SearchRoot> getSearchRoots() {
-            return Collections.<SearchRoot>emptyList();
+            List<SearchRoot> roots = new ArrayList<SearchRoot>();
+            FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
+            roots.add(new SearchRoot(baseDirFileObject, null));
+            return roots;
         }
 
         @Override
