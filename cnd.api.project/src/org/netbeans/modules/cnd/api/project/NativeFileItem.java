@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.cnd.api.project;
 
-import org.netbeans.modules.cnd.utils.FSPath;
 import java.util.List;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileObject;
 
 public interface NativeFileItem {
