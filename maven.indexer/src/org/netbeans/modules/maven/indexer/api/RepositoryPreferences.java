@@ -107,10 +107,10 @@ public final class RepositoryPreferences {
     private RepositoryPreferences() {
         try {
             local = new RepositoryInfo(RepositorySystem.DEFAULT_LOCAL_REPO_ID, local(), EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(), null);
-            local.setCanBeMirrored(false);
+            local.setMirrorStrategy(RepositoryInfo.MirrorStrategy.NONE);
             central = new RepositoryInfo(RepositorySystem.DEFAULT_REMOTE_REPO_ID, /* XXX pull display name from superpom? */RepositorySystem.DEFAULT_REMOTE_REPO_ID, null, RepositorySystem.DEFAULT_REMOTE_REPO_URL);
             //this repository can be mirrored
-            central.setCanBeMirrored(true);
+            central.setMirrorStrategy(RepositoryInfo.MirrorStrategy.ALL);
 
         } catch (URISyntaxException x) {
             throw new AssertionError(x);
@@ -142,8 +142,8 @@ public final class RepositoryPreferences {
         String repourl = p.get(KEY_REPO_URL, null);
         String indexurl = p.get(KEY_INDEX_URL, null);
         RepositoryInfo repo = new RepositoryInfo(id, name, path, repourl, indexurl);
-        //repository infos from preferences cannot be mirrored.
-        repo.setCanBeMirrored(false);
+        //repository infos from preferences cannot be wildcard mirrored.
+        repo.setMirrorStrategy(RepositoryInfo.MirrorStrategy.NON_WILDCARD);
         return repo;
     }
 
@@ -232,15 +232,19 @@ public final class RepositoryPreferences {
         if (CONSIDER_MIRRORS) {
             MavenEmbedder embedder2 = EmbedderFactory.getOnlineEmbedder();
             DefaultMirrorSelector selectorWithGroups = new DefaultMirrorSelector();
+            DefaultMirrorSelector selectorWithoutGroups = new DefaultMirrorSelector();
             for (Mirror mirror : embedder2.getSettings().getMirrors()) {
                 String mirrorOf = mirror.getMirrorOf();
                 selectorWithGroups.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirrorOf, mirror.getMirrorOfLayouts());
+                if (!mirrorOf.contains("*")) {
+                    selectorWithoutGroups.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirrorOf, mirror.getMirrorOfLayouts());
+                }
             }
 
             List<RepositoryInfo> semiTreed = new ArrayList<RepositoryInfo>();
             for (RepositoryInfo in: toRet) {
-                if (in.isCanBeMirrored()) {
-                    RepositoryInfo processed = getMirrorInfo(in, selectorWithGroups, semiTreed);
+                if (in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.ALL || in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.NON_WILDCARD) {
+                    RepositoryInfo processed = getMirrorInfo(in, in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.ALL ? selectorWithGroups : selectorWithoutGroups, semiTreed);
                     boolean isMirror = true;
                     if (processed == null) {
                         isMirror = false;
@@ -258,9 +262,7 @@ public final class RepositoryPreferences {
                 } else {
                     semiTreed.add(in);
                 }
-
             }
-        
             return semiTreed;
         } else {
             return toRet;
@@ -276,7 +278,9 @@ public final class RepositoryPreferences {
         RemoteRepository mirror = selector.getMirror(original);
         if (mirror != null) {
             try {
-                return new RepositoryInfo(mirror.getId(), mirror.getId(), null, mirror.getUrl());
+                RepositoryInfo toret = new RepositoryInfo(mirror.getId(), mirror.getId(), null, mirror.getUrl());
+                toret.setMirrorStrategy(RepositoryInfo.MirrorStrategy.NONE);
+                return toret;
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -361,32 +365,11 @@ public final class RepositoryPreferences {
      * @param id the repository ID
      * @param displayName a display name (may just be {@code id})
      * @param url the remote URL (prefer the canonical public URL to that of a mirror)
+     * @param strategy how is the url parameter processed by local maven mirror settings
      * @throws URISyntaxException in case the URL is malformed
-     * @since 2.1
+     * @since 2.11
      */
-    public void addTransientRepository(Object key, String id, String displayName, String url) throws URISyntaxException {
-        addTransientRepositoryImpl(key, id, displayName, url, true);
-    }
-    
-    /**
-     * 
-     * Register a transient repository, do not resolve the url by local maven settings for mirrors, will always contact the url declared.
-     * Its definition will not be persisted.
-     * Repositories whose ID or URL duplicate that of a persistent repository,
-     * or previously registered transient repository, will be ignored
-     * (unless and until that repository is removed).
-     * @param key an arbitrary key for use with {@link #removeTransientRepositories}
-     * @param id the repository ID
-     * @param displayName a display name (may just be {@code id})
-     * @param url the remote URL
-     * @throws URISyntaxException in case the URL is malformed
-     * @since 2.10
-     */
-    public void addTransientNonMirroredRepository(Object key, String id, String displayName, String url) throws URISyntaxException {
-        addTransientRepositoryImpl(key, id, displayName, url, false);
-    }
-    
-    private void addTransientRepositoryImpl(Object key, String id, String displayName, String url, boolean mirrorable) throws URISyntaxException {
+    public void addTransientRepository(Object key, String id, String displayName, String url, RepositoryInfo.MirrorStrategy strategy) throws URISyntaxException {
         synchronized (infoCache) {
             List<RepositoryInfo> infos = transients.get(key);
             if (infos == null) {
@@ -394,7 +377,7 @@ public final class RepositoryPreferences {
                 transients.put(key, infos);
             }
             RepositoryInfo info = new RepositoryInfo(id, displayName, null, url);
-            info.setCanBeMirrored(mirrorable);
+            info.setMirrorStrategy(strategy);
             infos.add(info);
         }
         cs.fireChange();
