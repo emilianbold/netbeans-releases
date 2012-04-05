@@ -871,7 +871,8 @@ class OccurenceBuilder {
             }
         }
         if (clzName != null && clzName.toString().length() > 0) {
-            for (TypeElement typeElement : index.getTypes(NameKind.exact(clzName))) {
+            QualifiedName fullyQualified = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
+            for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualified))) {
                 methods.addAll(ElementFilter.forName(methodName).filter(index.getAllMethods(typeElement)));
             }
             if (elementInfo.setDeclarations(methods)) {
