@@ -106,7 +106,7 @@ class AssignComments extends TreeScanner<Void, Void> {
             boolean oldMapComments = mapComments;
             try {
                 mapComments |= tree == commentMapTarget;
-                if ((commentMapTarget != null) && info.getTreeUtilities().isSynthetic(new TreePath(new TreePath(info.getCompilationUnit()), tree)))
+                if ((commentMapTarget != null) && info.getTreeUtilities().isSynthetic(new TreePath(new TreePath(unit), tree)))
                     return null;
                 if (commentMapTarget != null) {
                     mapComments2(tree, true);
