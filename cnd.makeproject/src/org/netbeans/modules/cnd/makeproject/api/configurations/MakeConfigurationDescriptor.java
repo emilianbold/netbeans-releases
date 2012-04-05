@@ -1114,7 +1114,12 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             //    // Always check for missing or out-of-date makefiles. They may not have been generated or have been removed.
             //    new ConfigurationMakefileWriter(this).writeMissingMakefiles();
             //}
-            new ConfigurationMakefileWriter(this).write();
+            try {
+                new ConfigurationMakefileWriter(this).write();
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Error writing ConfigurationMakefile", ex);
+            }
+
             ConfigurationPrivateXMLWriter();
             saveProject();
 
@@ -1162,7 +1167,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, "Error writing configuration", ex);
             }
-            new ConfigurationMakefileWriter(this).write();
+
+            try {
+                new ConfigurationMakefileWriter(this).write();
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Error writing ConfigurationMakefile", ex);
+            }
+
             ConfigurationProjectXMLWriter();
             ConfigurationPrivateXMLWriter();
             saveProject();
