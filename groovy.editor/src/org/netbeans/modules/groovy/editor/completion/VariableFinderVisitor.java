@@ -195,10 +195,12 @@ public class VariableFinderVisitor extends ClassCodeVisitorSupport {
             return;
         }
 
-        VariableExpression variableExpression = expression.getVariableExpression();
-        if (variableExpression.getAccessedVariable() != null) {
-            String name = variableExpression.getAccessedVariable().getName();
-            variables.put(name, variableExpression.getAccessedVariable());
+        if (!expression.isMultipleAssignmentDeclaration()) {
+            VariableExpression variableExpression = expression.getVariableExpression();
+            if (variableExpression.getAccessedVariable() != null) {
+                String name = variableExpression.getAccessedVariable().getName();
+                variables.put(name, variableExpression.getAccessedVariable());
+            }
         }
         // perhaps we could visit just declaration or do nothing
         super.visitDeclarationExpression(expression);
