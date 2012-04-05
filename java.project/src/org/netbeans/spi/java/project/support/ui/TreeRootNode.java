@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -400,9 +401,10 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             if (parent != null) {
                 DataObject d = getLookup().lookup(DataObject.class);
                 if (d != null) {
-                    String rel = FileUtil.getRelativePath(parent.getPrimaryFile(), d.getPrimaryFile());
-                    if (rel != null) {
-                        return rel.replace('/', '.');
+                    final String relName = FileUtil.getRelativePath(parent.getPrimaryFile(), d.getPrimaryFile());
+                    //Null after DO move.
+                    if (relName != null) {
+                        return relName.replace('/', '.');   //NOI18N
                     }
                 }
             }

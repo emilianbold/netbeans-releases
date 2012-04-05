@@ -635,6 +635,33 @@ public class OutlineView extends JScrollPane {
         setProperties (props, true);
     }
     
+    /**
+     * Set an attribute value for the property column
+     * representing properties that have the passed programmatic (not display)
+     * name.
+     *
+     * @param columnName The programmatic name (Property.getName()) of the
+     * column
+     * @param attributeName The name of the attribute that is to be set
+     * @param value The value of the attribute
+     * @throws IllegalArgumentException if the column name is not found.
+     * @since 6.44
+     */
+    public final void setPropertyColumnAttribute(String columnName, String attributeName, Object value)
+                      throws IllegalArgumentException {
+        Property[] props = rowModel.getProperties();
+        boolean found = false;
+        for (Property p : props) {
+            if (columnName.equals(p.getName())) {
+                p.setValue(attributeName, value);
+                found = true;
+            }
+        }
+        if (!found) {
+            throw new IllegalArgumentException("Unknown column "+columnName);
+        }
+    }
+
     /** Enable/disable displaying popup menus on tree view items.
     * Default is enabled.
     * @param value <code>true</code> to enable

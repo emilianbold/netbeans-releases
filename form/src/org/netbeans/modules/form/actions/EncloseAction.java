@@ -131,7 +131,20 @@ public class EncloseAction extends NodeAction {
         return commonParent;
     }
 
-    private static PaletteItem[] getAllContainers(Node subMenuNode) {
+    private static List<CategoryInfo> getCategoryInfos() {
+        Node[] nodes = PaletteUtils.getCategoryNodes(PaletteUtils.getPaletteNode(), true);
+        List<CategoryInfo> infos = new ArrayList<CategoryInfo>(nodes.length);
+        for (Node node : nodes) {
+            List<PaletteItem> containers = getAllContainers(node);
+            CategoryInfo info = new CategoryInfo();
+            info.categoryNode = node;
+            info.containers = containers;
+            infos.add(info);
+        }
+        return infos;
+    }
+
+    private static List<PaletteItem> getAllContainers(Node subMenuNode) {
         List<PaletteItem> list = new ArrayList<PaletteItem>();
         for (Node itemNode : PaletteUtils.getItemNodes(subMenuNode, true)) {
             PaletteItem item = itemNode.getLookup().lookup(PaletteItem.class);
@@ -156,7 +169,12 @@ public class EncloseAction extends NodeAction {
                 return o1.getNode().getDisplayName().compareTo(o2.getNode().getDisplayName());
             }
         });
-        return list.toArray(new PaletteItem[list.size()]);
+        return list;
+    }
+
+    private static class CategoryInfo {
+        Node categoryNode;
+        List<PaletteItem> containers;
     }
 
     private static class ContainersMenu extends JMenu {
@@ -181,12 +199,12 @@ public class EncloseAction extends NodeAction {
                 FormUtils.getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
+                        final List<CategoryInfo> categories = getCategoryInfos();
                         EventQueue.invokeLater(new Runnable() {
                             @Override
                             public void run() {
                                 popup.removeAll();
-                                // #204458: group PaletteItems that are Containers by palette category
-                                fillPaletteCategoriesSubMenu();
+                                fillPaletteCategoriesSubMenu(categories);
                                 popup.pack();
                             }
                         });
@@ -197,24 +215,19 @@ public class EncloseAction extends NodeAction {
             return popup;
         }
 
-        private void fillPaletteCategoriesSubMenu() {
-            Node[] nodes = PaletteUtils.getCategoryNodes(PaletteUtils.getPaletteNode(), true);
-            // for each palette category find the PaletteItems that are Containers
-            if (nodes.length > 0) {
-                for (int i = 0; i < nodes.length; i++) {
-                    JMenu item;
-                    if (!nodes[i].isLeaf()) {
-                        item = new JMenu(nodes[i].getDisplayName());
-                        PaletteItem[] items = getAllContainers(nodes[i]);
-                        if (items.length > 0) {
-                            for (PaletteItem item2 : items) {
-                                JMenuItem mi = new JMenuItem(item2.getNode().getDisplayName());
-                                HelpCtx.setHelpIDString(mi, EncloseAction.class.getName());
-                                item.add(mi);
-                                mi.addActionListener(new EncloseActionListener(item2));
-                            }
-                            add(item);
+        private void fillPaletteCategoriesSubMenu(List<CategoryInfo> categories) {
+            for (CategoryInfo category : categories) {
+                Node categoryNode = category.categoryNode;
+                if (!categoryNode.isLeaf()) {
+                    JMenu menu = new JMenu(categoryNode.getDisplayName());
+                    if (!category.containers.isEmpty()) {
+                        for (PaletteItem item : category.containers) {
+                            JMenuItem mi = new JMenuItem(item.getNode().getDisplayName());
+                            HelpCtx.setHelpIDString(mi, EncloseAction.class.getName());
+                            menu.add(mi);
+                            mi.addActionListener(new EncloseActionListener(item));
                         }
+                        add(menu);
                     }
                 }
             }

@@ -21,9 +21,11 @@
   opens the debugger windows and prints debugger output to the Output window. 
 </p>
 <h3>Debugging the Main Project</h3>
-<p>All of the debugging commands in the Debug menu are run on the main project. No 
-matter what file or project is selected in the Projects window or Source Editor, 
-these commands begin the debugging session in the main class of the main project. </p>
+<p>Debugging commands in the Debug menu are generally run on the main project, and when debugging
+a project it is recommended that you set the project as the main project.</p>
+
+<p>If no project is set as the main project the Debug Project command is run on the project that
+is selected in the Projects window and the commands begin the debugging session in the main class of the selected project. </p>
 <table border="1" cellpadding="5" cellspacing="0">
   <tr> 
     <th align="left" scope="col"><b>Command</b></th>
@@ -31,7 +33,7 @@ these commands begin the debugging session in the main class of the main project
     <th align="left" scope="col" valign="top"><b>Description</b></th>
   </tr>
   <tr> 
-    <td valign="top">Debug  &gt; Debug Main Project</td>
+    <td valign="top">Debug  &gt; Debug Project</td>
     <td valign="top">Ctrl-F5 or <img src="images/Start.gif" alt="Start icon"></td>
     <td valign="top">Runs the program until it reaches a breakpoint or exception 
       or until the program terminates normally. </td>
@@ -53,7 +55,7 @@ these commands begin the debugging session in the main class of the main project
 <h3>Debugging an Individual Project</h3>
 <ul>
   <li>Right-click the project in the Projects window and choose Debug. 
-      <p> The IDE runs the project in the debugger until execution stops or a breakpoint is reached.</p> 
+      <p>The IDE runs the project in the debugger until execution stops or a breakpoint is reached.</p> 
   </li>
 </ul>
 
@@ -70,6 +72,7 @@ these commands begin the debugging session in the main class of the main project
     <dd><a href="breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
     <dd><a href="debug_remote.html">Starting a Remote Debugging Session</a> </dd>
     <dd><a href="debug_source.html">Attaching Source Code to a JAR File</a> </dd>
+    <dd><a href="../project/proj_main.html">Setting the Main Project</a></dd>
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>

@@ -146,6 +146,19 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
     }
 
     private void createEquals(TypeElement source, GeneratorUtilities genUtils, List<Tree> members) throws IllegalStateException {
+        List<Tree> newTypeParams = new LinkedList<Tree>();
+        for (TypeParameterElement typeParam : source.getTypeParameters()) {
+            newTypeParams.add(make.Type(typeParam.asType()));
+        }
+        
+        TypeMirror sourceType = source.asType();
+        final Tree newTypeTree;
+        if(sourceType.getKind() == TypeKind.DECLARED) {
+            newTypeTree = make.ParameterizedType(make.Type(refactoring.getNewName()), newTypeParams);
+        } else {
+            newTypeTree = make.Type(refactoring.getNewName());
+        }
+        
         Equality equality = refactoring.getEquality();
         switch (equality) {
             case SEPARATE: {
@@ -167,7 +180,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                         "equals" + refactoring.getNewName(), //NOI18N
                         make.PrimitiveType(TypeKind.BOOLEAN),
                         Collections.EMPTY_LIST,
-                        Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "o", make.Type(refactoring.getNewName()), null)), //NOI18N
+                        Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "o", newTypeTree, null)), //NOI18N
                         Collections.EMPTY_LIST,
                         body,
                         null,
@@ -191,9 +204,9 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                 List<StatementTree> statements = new LinkedList<StatementTree>();
                 statements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "target", make.Type("Object"), make.Identifier("o")));
                 statements.add(
-                        make.If(make.InstanceOf(make.Identifier("o"), make.Type(refactoring.getNewName())), make.Block(Collections.singletonList(make.ExpressionStatement(
+                        make.If(make.InstanceOf(make.Identifier("o"), newTypeTree), make.Block(Collections.singletonList(make.ExpressionStatement(
                         make.Assignment(make.Identifier("target"),
-                        make.MemberSelect(make.Parenthesized(make.TypeCast(make.Type(refactoring.getNewName()), make.Identifier("o"))), "delegate")
+                        make.MemberSelect(make.Parenthesized(make.TypeCast(newTypeTree, make.Identifier("o"))), "delegate")
                         ))), false), null)
                         );
                 statements.add(make.Return(make.MethodInvocation(Collections.EMPTY_LIST, make.Identifier("this.delegate.equals"), Collections.singletonList(make.Identifier("target")))));
@@ -209,12 +222,12 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                         false);
                 members.add(method);
                 
-                body = make.Block(Collections.singletonList(make.Return(make.MethodInvocation(Collections.EMPTY_LIST, make.MemberSelect(make.Identifier("this.delegate"), "hashCode"), Collections.singletonList(make.Identifier("o"))))), false); //NOI18N
+                body = make.Block(Collections.singletonList(make.Return(make.MethodInvocation(Collections.EMPTY_LIST, make.MemberSelect(make.Identifier("this.delegate"), "hashCode"), Collections.EMPTY_LIST))), false); //NOI18N
                 method = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
                         "hashCode", //NOI18N
                         make.PrimitiveType(TypeKind.INT),
                         Collections.EMPTY_LIST,
-                        Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "o", make.Type("Object"), null)), //NOI18N
+                        Collections.EMPTY_LIST,
                         Collections.EMPTY_LIST,
                         body,
                         null,
@@ -223,8 +236,8 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                 break;
             }
             case GENERATE: {
-                MethodTree equalsMethod = createEqualsMethod(workingCopy, (DeclaredType)source.asType());
-                MethodTree hashMethod = createHashCodeMethod(workingCopy, (DeclaredType)source.asType());
+                MethodTree equalsMethod = createEqualsMethod(workingCopy, (DeclaredType)sourceType, newTypeTree);
+                MethodTree hashMethod = createHashCodeMethod(workingCopy, (DeclaredType)sourceType);
                 members.add(equalsMethod);
                 members.add(hashMethod);
                 break;
@@ -612,7 +625,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.OTHER), "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
     }
     
-    private static MethodTree createEqualsMethod(WorkingCopy wc, DeclaredType type) {
+    private MethodTree createEqualsMethod(WorkingCopy wc, DeclaredType type, Tree typeTree) {
         TreeMaker make = wc.getTreeMaker();
         Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
         TypeElement objElement = wc.getElements().getTypeElement("java.lang.Object"); //NOI18N
@@ -625,7 +638,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         statements.add(make.If(make.Binary(Tree.Kind.NOT_EQUAL_TO, make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("getClass"), Collections.<ExpressionTree>emptyList()), //NOI18N
                 make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier("obj"), "getClass"), Collections.<ExpressionTree>emptyList())), make.Return(make.Identifier("false")), null)); //NOI18N
         //<this type> other = (<this type>) o;
-        statements.add(make.Variable(make.Modifiers(EnumSet.of(Modifier.FINAL)), "other", make.Type(type), make.TypeCast(make.Type(type), make.Identifier("obj")))); //NOI18N
+        statements.add(make.Variable(make.Modifiers(EnumSet.of(Modifier.FINAL)), "other", typeTree, make.TypeCast(typeTree, make.Identifier("obj")))); //NOI18N
 
         ExpressionTree condition = prepareExpression(wc, EQUALS_PATTERNS, type, "delegate"); //NOI18N
         statements.add(make.If(condition, make.Return(make.Identifier("false")), null)); //NOI18N
@@ -637,12 +650,20 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         return make.Method(modifiers, "equals", make.PrimitiveType(TypeKind.BOOLEAN), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null); //NOI18N
     }
     
-    private static MethodTree createHashCodeMethod(WorkingCopy wc, DeclaredType type) {
+    private MethodTree createHashCodeMethod(WorkingCopy wc, DeclaredType type) {
         TreeMaker make = wc.getTreeMaker();
         Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
         
-        int startNumber = generatePrimeNumber(2, 10);
-        int multiplyNumber = generatePrimeNumber(10, 100);
+        Integer number = refactoring.getContext().lookup(Integer.class); // Used in test code
+        int startNumber;
+        int multiplyNumber;
+        if(number != null) {
+            startNumber = number.intValue();
+            multiplyNumber = number.intValue();
+        } else {
+            startNumber = generatePrimeNumber(2, 10);
+            multiplyNumber = generatePrimeNumber(10, 100);
+        }
         List<StatementTree> statements = new ArrayList<StatementTree>();
         //int hash = <startNumber>;
         statements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "hash", make.PrimitiveType(TypeKind.INT), make.Literal(startNumber))); //NOI18N

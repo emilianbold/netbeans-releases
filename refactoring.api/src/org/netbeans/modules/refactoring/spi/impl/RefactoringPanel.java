@@ -462,33 +462,17 @@ public class RefactoringPanel extends JPanel {
         
         node = new CheckNode(representedObject, displayName, icon);
         final CheckNode parentNode = parent == null ? root : createNode(parent, nodes, root);
-        
-        boolean added = false;
-        int i = 0;
-        if (!(representedObject.getUserObject() instanceof RefactoringElement)) {
-            for (; i < parentNode.getChildCount(); i++) {
-                if (node.getLabel().compareTo(((CheckNode) parentNode.getChildAt(i)).getLabel()) < 0) {
-                    parentNode.insert(node, i);
-                    added = true;
-                    break;
-                }
-            }
-        } else {
-            i = parentNode.getChildCount();
-        }
-        if (!added) {
-            parentNode.add(node);
-        }
-
+ 
+        parentNode.add(node);
         
         if (isInstant()) {
-            final int last = i;
+            final int childCount = parentNode.getChildCount();
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
 
                     @Override
                     public void run() {
-                        ((DefaultTreeModel) tree.getModel()).nodesWereInserted(parentNode, new int[]{last});
+                        ((DefaultTreeModel) tree.getModel()).nodesWereInserted(parentNode, new int[]{childCount-1});
                     }
                 });
             } catch (InterruptedException ex) {
@@ -788,8 +772,8 @@ public class RefactoringPanel extends JPanel {
                                         }
                                     }
                                     final boolean last = !it.hasNext();
-                                    if (i % 10 == 0 || last) {
-                                        final int occurrences = i;
+                                    final int occurrences = i + 1;
+                                    if (occurrences % 10 == 0 || last) {
                                         SwingUtilities.invokeLater(new Runnable() {
 
                                             @Override
