@@ -53,18 +53,21 @@ public interface ELVariableResolver {
      * Gets the bean name of the given {@code clazz}.
      *
      * @param clazz the FQN of the class
+     * @param target
+     * @param context
      * @return the bean name of of the class or {@code null}.
      */
-    String getBeanName(String clazz, FileObject context);
+    String getBeanName(String clazz, FileObject target, ResolverContext context);
 
     /**
      * Gets the class of the bean identified by the given {@code beanName}.
      * 
      * @param beanName the bean name
+     * @param target
      * @param context
      * @return the FQN of the bean or {@code null}.
      */
-    String getBeanClass(String beanName, FileObject context);
+    String getBeanClass(String beanName, FileObject target, ResolverContext context);
 
 //    /**
 //     * Gets the expression referred by the variable at the given {@code offset}.
@@ -76,28 +79,32 @@ public interface ELVariableResolver {
 
     /**
      * Gets the names of managed beans and variables.
+     * @param target
+     * @param context
      * @return a list of bean infos; never {@code null}.
      */
-    List<VariableInfo> getManagedBeans(FileObject context);
+    List<VariableInfo> getManagedBeans(FileObject target, ResolverContext context);
 
     /**
      * Gets all the variables available at the given offset.
      * 
      * @param snapshot
      * @param offset
+     * @param context
      * @return a list of variable infos; never {@code null}.
      */
-    List<VariableInfo> getVariables(Snapshot snapshot, int offset);
+    List<VariableInfo> getVariables(Snapshot snapshot, int offset, ResolverContext context);
 
     /**
      * Gets the managed beans in the given {@code scope}.
      * @param scope the scope to search, e.g. {@code "session"} or {@code "application"}.
+     * @param snapshot
      * @param context
      * @return a list of bean infos; never {@code null}.
      */
-    List<VariableInfo> getBeansInScope(String scope, Snapshot snapshot);
+    List<VariableInfo> getBeansInScope(String scope, Snapshot snapshot, ResolverContext context);
 
-    List<VariableInfo> getRawObjectProperties(String name, Snapshot snapshot);
+    List<VariableInfo> getRawObjectProperties(String name, Snapshot snapshot, ResolverContext context);
 
     
     public static final class VariableInfo {

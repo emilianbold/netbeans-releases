@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.el;
+package org.netbeans.modules.web.el.spi;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.el.spi.ResolverContext;
-import org.openide.filesystems.FileObject;
 
 /**
+ * Keeps reusable ELVariableResolver context.
  *
- * @author marekfukala
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class CompilationContext {
-    
-    private final FileObject file;
-    private final CompilationInfo info;
-    private final ResolverContext context = new ResolverContext();
-    private CompilationCache cache;
+public final class ResolverContext {
 
-    private CompilationContext(FileObject file, CompilationInfo info) {
-        this.file = file;
-        this.info = info;
-    }
-    
-    public static CompilationContext create(FileObject file, CompilationInfo info) {
-        return new CompilationContext(file, info);
+    private final Map<String, Object> context = new HashMap<String, Object>();
+
+    public ResolverContext() {
     }
 
-    public FileObject file() {
-        return file;
+    public Object getContent(String contentName) {
+        return context.get(contentName);
     }
 
-    public CompilationInfo info() {
-        return info;
+    public void setContent(String contentName, Object content) {
+        context.put(contentName, content);
     }
 
-    public ResolverContext context() {
-        return context;
-    }
-    
-    public synchronized CompilationCache cache() {
-        if(cache == null) {
-            cache = new CompilationCache();
-        }
-        return cache;
-    }
-    
 }

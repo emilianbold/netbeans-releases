@@ -63,7 +63,10 @@ public final class ELVariableResolvers {
      * @param context
      * @return the FQN of the bean or {@code null}.
      */
-    public static String findBeanClass(CompilationContext compilationContext, final String beanName, final FileObject context) {
+    public static String findBeanClass(
+            final CompilationContext compilationContext,
+            final String beanName,
+            final FileObject context) {
         return (String) compilationContext.cache().getOrCache(
                 CompilationCache.createKey(beanName, context),
                 new CompilationCache.ValueProvider<String>() {
@@ -71,7 +74,7 @@ public final class ELVariableResolvers {
                     @Override
                     public String get() {
                         for (ELVariableResolver resolver : getResolvers()) {
-                            String beanClass = resolver.getBeanClass(beanName, context);
+                            String beanClass = resolver.getBeanClass(beanName, context, compilationContext.context());
                             if (beanClass != null) {
                                 return beanClass;
                             }
@@ -88,7 +91,8 @@ public final class ELVariableResolvers {
      * @param context
      * @return the bean name or {@code null}.
      */
-    public static String findBeanName(CompilationContext compilationContext,
+    public static String findBeanName(
+            final CompilationContext compilationContext,
             final String clazz,
             final FileObject context) {
 
@@ -99,7 +103,7 @@ public final class ELVariableResolvers {
                     @Override
                     public String get() {
                         for (ELVariableResolver resolver : getResolvers()) {
-                            String beanName = resolver.getBeanName(clazz, context);
+                            String beanName = resolver.getBeanName(clazz, context, compilationContext.context());
                             if (beanName != null) {
                                 return beanName;
                             }
@@ -110,7 +114,7 @@ public final class ELVariableResolvers {
     }
 
     public static List<ELVariableResolver.VariableInfo> getManagedBeans(
-            CompilationContext compilationContext,
+            final CompilationContext compilationContext,
             final FileObject context) {
 
         return (List<ELVariableResolver.VariableInfo>) compilationContext.cache().getOrCache(
@@ -121,7 +125,7 @@ public final class ELVariableResolvers {
                     public List<ELVariableResolver.VariableInfo> get() {
                         List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
                         for (ELVariableResolver resolver : getResolvers()) {
-                            result.addAll(resolver.getManagedBeans(context));
+                            result.addAll(resolver.getManagedBeans(context, compilationContext.context()));
                         }
                         return result;
                     }
@@ -130,7 +134,7 @@ public final class ELVariableResolvers {
     }
 
     public static List<ELVariableResolver.VariableInfo> getVariables(
-            CompilationContext compilationContext,
+            final CompilationContext compilationContext,
             final Snapshot snapshot,
             final int offset) {
 
@@ -142,7 +146,7 @@ public final class ELVariableResolvers {
                     public List<ELVariableResolver.VariableInfo> get() {
                         List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
                         for (ELVariableResolver resolver : getResolvers()) {
-                            result.addAll(resolver.getVariables(snapshot, offset));
+                            result.addAll(resolver.getVariables(snapshot, offset, compilationContext.context()));
                         }
                         return result;
                     }
@@ -151,7 +155,7 @@ public final class ELVariableResolvers {
     }
 
     public static List<ELVariableResolver.VariableInfo> getBeansInScope(
-            CompilationContext compilationContext,
+            final CompilationContext compilationContext,
             final String scope,
             final Snapshot context) {
 
@@ -163,7 +167,7 @@ public final class ELVariableResolvers {
                     public List<ELVariableResolver.VariableInfo> get() {
                         List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
                         for (ELVariableResolver resolver : getResolvers()) {
-                            result.addAll(resolver.getBeansInScope(scope, context));
+                            result.addAll(resolver.getBeansInScope(scope, context, compilationContext.context()));
                         }
                         return result;
                     }
@@ -172,7 +176,7 @@ public final class ELVariableResolvers {
     }
 
     public static List<ELVariableResolver.VariableInfo> getRawObjectProperties(
-            CompilationContext compilationContext,
+            final CompilationContext compilationContext,
             final String name,
             final Snapshot context) {
 
@@ -184,7 +188,7 @@ public final class ELVariableResolvers {
                     public List<ELVariableResolver.VariableInfo> get() {
                         List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
                         for (ELVariableResolver resolver : getResolvers()) {
-                            result.addAll(resolver.getRawObjectProperties(name, context));
+                            result.addAll(resolver.getRawObjectProperties(name, context, compilationContext.context()));
                         }
                         return result;
                     }
