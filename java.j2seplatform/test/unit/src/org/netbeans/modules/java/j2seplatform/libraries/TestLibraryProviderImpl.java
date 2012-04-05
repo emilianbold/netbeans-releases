@@ -58,19 +58,19 @@ import org.openide.util.Lookup;
  *
  * @author  David Konecny
  */
-public class LibraryProviderImpl implements org.netbeans.spi.project.libraries.LibraryProvider {
+public class TestLibraryProviderImpl implements org.netbeans.spi.project.libraries.LibraryProvider {
 
     private List<LibraryImplementation> libs = new ArrayList<LibraryImplementation>();
     private PropertyChangeSupport support;
     
-    private static final LibraryProviderImpl DEFAULT = new LibraryProviderImpl();
+    private static final TestLibraryProviderImpl DEFAULT = new TestLibraryProviderImpl();
     
-    public static LibraryProviderImpl getDefault() {
+    public static TestLibraryProviderImpl getDefault() {
         assert DEFAULT != null;
         return DEFAULT;
     }
     
-    private LibraryProviderImpl() {
+    private TestLibraryProviderImpl() {
         support = new PropertyChangeSupport(this);
     }
     
