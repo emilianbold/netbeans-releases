@@ -358,11 +358,6 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
 
         suiteLabel.setLabelFor(suiteTextField);
         Mnemonics.setLocalizedText(suiteLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteLabel.text")); // NOI18N
-        suiteBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                suiteBrowseButtonActionPerformed(evt);
-            }
-        });
         Mnemonics.setLocalizedText(suiteBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.text")); // NOI18N
         suiteBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
