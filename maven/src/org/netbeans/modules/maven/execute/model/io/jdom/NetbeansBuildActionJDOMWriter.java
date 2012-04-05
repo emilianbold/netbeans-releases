@@ -116,7 +116,7 @@ public class NetbeansBuildActionJDOMWriter {
                 return element;
             }
         }
-        boolean shouldExist = text != null && text.trim().length() > 0;
+        boolean shouldExist = text != null; // && text.trim().length() > 0;
         Element element = updateElement(counter, parent, name, shouldExist);
         if (shouldExist) {
             element.setText(text);

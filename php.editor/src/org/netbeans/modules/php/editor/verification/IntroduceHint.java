@@ -419,7 +419,11 @@ public class IntroduceHint extends AbstractRule {
         }
 
         @Override
-        @Messages("IntroduceHintClassDesc=Create Class \"{0}\" in {1}")
+        @Messages({
+            "# {0} - Class name",
+            "# {1} - File name",
+            "IntroduceHintClassDesc=Create Class \"{0}\" in {1}"
+        })
         public String getDescription() {
             String fileName = FileUtil.getFileDisplayName(folder);
             int length = fileName.length();
@@ -457,7 +461,12 @@ public class IntroduceHint extends AbstractRule {
         }
 
         @Override
-        @Messages("IntroduceHintMethodDesc=Create Method \"{0}\" in Class \"{1}\" ({2})")
+        @Messages({
+            "# {0} - Method name",
+            "# {1} - Class name",
+            "# {2} - File name",
+            "IntroduceHintMethodDesc=Create Method \"{0}\" in Class \"{1}\" ({2})"
+        })
         public String getDescription() {
             String clsName = type.getName();
             String fileName = type.getFileObject().getNameExt();
@@ -492,7 +501,12 @@ public class IntroduceHint extends AbstractRule {
         }
 
         @Override
-        @Messages("IntroduceHintStaticMethodDesc=Create Method \"{0}\" in Class \"{1}\" ({2})")
+        @Messages({
+            "# {0} - Method name",
+            "# {1} - Class name",
+            "# {2} - File name",
+            "IntroduceHintStaticMethodDesc=Create Method \"{0}\" in Class \"{1}\" ({2})"
+        })
         public String getDescription() {
             String clsName = type.getName();
             String fileName = type.getFileObject().getNameExt();
@@ -527,7 +541,12 @@ public class IntroduceHint extends AbstractRule {
         }
 
         @Override
-        @Messages("IntroduceHintFieldDesc=Create Field \"{0}\" in Class \"{1}\" ({2})")
+        @Messages({
+            "# {0} - Field name",
+            "# {1} - Class name",
+            "# {2} - File name",
+            "IntroduceHintFieldDesc=Create Field \"{0}\" in Class \"{1}\" ({2})"
+        })
         public String getDescription() {
             String clsName = clz.getName();
             String fileName = clz.getFileObject().getNameExt();
@@ -571,7 +590,12 @@ public class IntroduceHint extends AbstractRule {
         }
 
         @Override
-        @Messages("IntroduceHintStaticFieldDesc=Create Field \"{0}\" in Class \"{1}\" ({2})")
+        @Messages({
+            "# {0} - Field name",
+            "# {1} - Class name",
+            "# {2} - File name",
+            "IntroduceHintStaticFieldDesc=Create Field \"{0}\" in Class \"{1}\" ({2})"
+        })
         public String getDescription() {
             String clsName = clz.getName();
             String fileName = clz.getFileObject().getNameExt();
@@ -617,7 +641,12 @@ public class IntroduceHint extends AbstractRule {
         }
 
         @Override
-        @Messages("IntroduceHintClassConstDesc=Create Constant \"{0}\" in Class \"{1}\" ({2})")
+        @Messages({
+            "# {0} - Constant name",
+            "# {1} - Class name",
+            "# {2} - File name",
+            "IntroduceHintClassConstDesc=Create Constant \"{0}\" in Class \"{1}\" ({2})"
+        })
         public String getDescription() {
             String clsName = type.getName();
             String fileName = type.getFileObject().getNameExt();

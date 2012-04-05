@@ -44,11 +44,11 @@ package org.netbeans.modules.cnd.dwarfdiscovery.litemodel;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf.CompilationUnitIterator;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.litemodel.api.Declaration;
@@ -111,7 +111,7 @@ public class LiteModel extends ModelAccessor {
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);
-            Iterator<CompilationUnit> iterator = dump.iteratorCompilationUnits();
+            CompilationUnitIterator iterator = dump.iteratorCompilationUnits();
             while (iterator.hasNext()) {
                 CompilationUnit cu = iterator.next();
                 if (cu != null) {

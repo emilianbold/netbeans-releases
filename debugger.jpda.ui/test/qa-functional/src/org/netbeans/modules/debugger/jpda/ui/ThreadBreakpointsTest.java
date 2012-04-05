@@ -57,22 +57,23 @@ import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 
 
 /**
  *
- * @author ehucka, Revision Petr Cyhelsky
+ * @author ehucka, Revision Petr Cyhelsky, Jiri Kovalsky
  */
 public class ThreadBreakpointsTest extends DebuggerTestCase {
 
     private static String[] tests = new String[]{
         "testThreadBreakpointCreation",
         "testThreadBreakpointFunctionality",
-        //TODO: update, right now it does not make sense
-        //"testThreadBreakpointFunctionalityHitCount"
+        "testThreadBreakpointFunctionalityHitCount"
     };
 
     //MainWindowOperator.StatusTextTracer stt = null;
@@ -177,26 +178,16 @@ public class ThreadBreakpointsTest extends DebuggerTestCase {
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         setBreakpointType(dialog, "Thread");
+        new JCheckBoxOperator(dialog, 0).changeSelection(true);
+        new JTextFieldOperator(dialog, 0).setText("1");
         dialog.ok();
 
         Utilities.startDebugger();
-        try {
-            Utilities.waitStatusText("Thread main stopped.");
-        } catch (Throwable e) {
-            if (!Utilities.checkConsoleForText("Thread breakpoint hit by thread ", 2)) {
-                System.err.println(e.getMessage());
-                throw e;
-            }
-        }
+        Utilities.checkConsoleLastLineForText("Thread main stopped.");
+        assertTrue("Thread breakpoint does not work.", Utilities.checkConsoleForText("Thread breakpoint hit by thread", 2));
+
         new ContinueAction().perform();
-        try {
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
-        } catch (Throwable e) {
-            if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
-                System.err.println(e.getMessage());
-                throw e;
-            }
-        }
+        Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText);
         assertEquals("There were more than one hit of the breakpoint", Utilities.checkConsoleForNumberOfOccurrences(Utilities.runningStatusBarText, 0), 2);
     }
 

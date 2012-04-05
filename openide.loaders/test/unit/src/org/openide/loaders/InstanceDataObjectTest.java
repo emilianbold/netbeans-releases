@@ -47,6 +47,7 @@ package org.openide.loaders;
 
 import java.awt.Button;
 import java.awt.Color;
+import java.awt.GraphicsEnvironment;
 import java.beans.*;
 import java.beans.beancontext.BeanContextChildSupport;
 import java.io.*;
@@ -69,6 +70,7 @@ import org.openide.util.lookup.AbstractLookup;
  * @author Vita Stejskal, Jesse Glick, Jan Pokorsky
  */
 public class InstanceDataObjectTest extends NbTestCase {
+
     /** folder to create instances in */
     private DataFolder folder;
     /** filesystem containing created instances */
@@ -81,8 +83,10 @@ public class InstanceDataObjectTest extends NbTestCase {
     
     public static Test suite() {
         NbTestSuite s = new NbTestSuite();
-        s.addTestSuite(InstanceDataObjectTest.class);
-        s.addTestSuite(LkpIDO.class);
+        if (!GraphicsEnvironment.isHeadless()) {
+            s.addTestSuite(InstanceDataObjectTest.class);
+            s.addTestSuite(LkpIDO.class);
+        }
         return s;
     }
     

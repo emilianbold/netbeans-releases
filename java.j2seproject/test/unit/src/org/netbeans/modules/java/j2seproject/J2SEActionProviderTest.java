@@ -296,6 +296,18 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertEquals("There must be two target parameters", 2, p.keySet().size());
         assertEquals("There must be be target parameter", "foo.BarTest", p.getProperty("test.class"));
         assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("javac.includes"));
+        
+        // test COMMAND_PROFILE_TEST_SINGLE
+
+        p = new Properties();
+        context = Lookups.fixed(someSource1);
+        targets = actionProvider.getTargetNames(ActionProvider.COMMAND_PROFILE_TEST_SINGLE, context, p);
+        assertNotNull("Must found some targets for COMMAND_PROFILE_TEST_SINGLE", targets);
+        assertEquals("There must be one target for COMMAND_PROFILE_TEST_SINGLE", 1, targets.length);
+        assertEquals("Unexpected target name", "profile-test", targets[0]);
+        assertEquals("There must be two target parameters", 2, p.keySet().size());
+        assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("javac.includes"));
+        assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("test.includes")); 
 
         // test COMMAND_DEBUG_FIX
         actionProvider.unitTestingSupport_fixClasses = "foo/Bar";
@@ -422,6 +434,58 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertEquals("There must be two target parameters", 2, p.keySet().size());
         assertEquals("There must be be target parameter", "foo.BarTest", p.getProperty("debug.class"));
         assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("javac.includes"));
+        
+        // test COMMAND_PROFILE_SINGLE
+
+        p = new Properties();
+        context = Lookups.fixed(someSource2);
+        MainClassChooser.unitTestingSupport_hasMainMethodResult = Boolean.TRUE;
+        try {
+            targets = actionProvider.getTargetNames(ActionProvider.COMMAND_PROFILE_SINGLE, context, p);
+        } finally {
+            MainClassChooser.unitTestingSupport_hasMainMethodResult = null;
+        }
+        assertNotNull("Must found some targets for COMMAND_PROFILE_SINGLE", targets);
+        assertEquals("There must be one target for COMMAND_PROFILE_SINGLE", 1, targets.length);
+        assertEquals("Unexpected target name", "profile-single", targets[0]);
+        assertEquals("There must be one target parameter", 2, p.keySet().size());
+        assertEquals("There must be be target parameter", "foo/Main.java", p.getProperty("javac.includes"));
+        assertEquals("There must be be target parameter", "foo.Main", p.getProperty("run.class"));
+        p = new Properties();
+        context = Lookups.fixed(someSource2);
+        MainClassChooser.unitTestingSupport_hasMainMethodResult = Boolean.FALSE;
+        AppletSupport.unitTestingSupport_isApplet = Boolean.TRUE;
+        try {
+            targets = actionProvider.getTargetNames(ActionProvider.COMMAND_PROFILE_SINGLE, context, p);
+        } finally {
+            MainClassChooser.unitTestingSupport_hasMainMethodResult = null;
+            AppletSupport.unitTestingSupport_isApplet = null;
+        }
+        assertNotNull("Must found some targets for COMMAND_PROFILE_SINGLE", targets);
+        assertEquals("There must be one target for COMMAND_PROFILE_SINGLE", 1, targets.length);
+        assertEquals("Unexpected target name", "profile-applet", targets[0]);
+        assertEquals("There must be one target parameter", 3, p.keySet().size());
+        assertEquals("There must be be target parameter", "foo/Main.java", p.getProperty("javac.includes"));
+        appletHtml = build.getFileObject("Main", "html");
+        assertNotNull("Applet HTML page must be generated", appletHtml);
+        appletUrl = URLMapper.findURL(appletHtml, URLMapper.EXTERNAL);
+        assertEquals("There must be be target parameter", appletUrl.toExternalForm(), p.getProperty("applet.url"));
+        p = new Properties();
+        context = Lookups.fixed(someTest1);
+        MainClassChooser.unitTestingSupport_hasMainMethodResult = Boolean.TRUE;
+        AppletSupport.unitTestingSupport_isApplet = Boolean.TRUE;
+        try {
+            targets = actionProvider.getTargetNames(ActionProvider.COMMAND_PROFILE_SINGLE, context, p);
+        } finally {
+            MainClassChooser.unitTestingSupport_hasMainMethodResult = null;
+            AppletSupport.unitTestingSupport_isApplet = null;
+        }
+        assertNotNull("Must found some targets for COMMAND_PROFILE_SINGLE", targets);
+        assertEquals("There must be one target for COMMAND_PROFILE_SINGLE", 1, targets.length);
+        assertEquals("Unexpected target name", "profile-test-with-main", targets[0]);
+        assertEquals("There must be two target parameters", 2, p.keySet().size());
+        assertEquals("There must be be target parameter", "foo.BarTest", p.getProperty("run.class"));
+        assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("javac.includes"));
 
         // test COMMAND_RUN
 
@@ -478,6 +542,25 @@ public class J2SEActionProviderTest extends NbTestCase {
         //See issue #61244: Main class setting not saved for J2SE Project during IDE session
         assertEquals("There must be one target parameter", 1, p.keySet().size());
         assertEquals("There must be be target parameter", "foo.Main", p.getProperty("debug.class"));
+        
+        // test COMMAND_PROFILE
+
+        p = new Properties();
+        context = Lookup.EMPTY;
+        MainClassChooser.unitTestingSupport_hasMainMethodResult = Boolean.TRUE;
+        try {
+            targets = actionProvider.getTargetNames(ActionProvider.COMMAND_PROFILE, context, p);
+        } finally {
+            MainClassChooser.unitTestingSupport_hasMainMethodResult = null;
+        }
+        assertNotNull("Must found some targets for COMMAND_PROFILE", targets);
+        assertEquals("There must be one target for COMMAND_PROFILE", 1, targets.length);
+        assertEquals("Unexpected target name", "profile", targets[0]);
+        //The project is saved after the main.class property was added into the project's properties,
+        //it is no more needed to pass it in the properties.
+        //See issue #61244: Main class setting not saved for J2SE Project during IDE session
+        assertEquals("There must be one target parameter", 1, p.keySet().size());
+        assertEquals("There must be be target parameter", "foo.Main", p.getProperty("run.class"));
     }
     
     public void testGetTargetNamesFromConfig() throws Exception {

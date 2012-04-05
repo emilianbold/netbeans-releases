@@ -45,6 +45,7 @@
 package org.openide.explorer.propertysheet;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -56,6 +57,8 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.openide.explorer.propertysheet.ExtTestCase.WaitWindow;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -65,6 +68,11 @@ import org.openide.nodes.Sheet;
 
 // This test class tests the main functionality of the property sheet
 public class TagsAndEditorsTest extends ExtTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TagsAndEditorsTest.class);
+    }
+
     private PropertySheet ps = null;
     JFrame jf = null;
     

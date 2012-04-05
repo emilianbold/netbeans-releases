@@ -43,17 +43,15 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,15 +61,17 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.ConfigurationRequirementProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.IncludePathExpansionProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
-import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -231,7 +231,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             synchronized (this) {
                 if (lastDataObject != null) {
                     lastDataObject.removePropertyChangeListener(this);
-                    NativeFileItemSet set = lastDataObject.getCookie(NativeFileItemSet.class);
+                    NativeFileItemSet set = lastDataObject.getLookup().lookup(NativeFileItemSet.class);
                     if (set != null) {
                         set.remove(this);
                     }
@@ -457,14 +457,14 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 // and properly attach/detach listeners.
                 if (lastDataObject != null) {
                     lastDataObject.removePropertyChangeListener(this);
-                    NativeFileItemSet set = lastDataObject.getCookie(NativeFileItemSet.class);
+                    NativeFileItemSet set = lastDataObject.getLookup().lookup(NativeFileItemSet.class);
                     if (set != null) {
                         set.remove(this);
                     }                    
                 }
                 if (dataObject != null) {
                     dataObject.addPropertyChangeListener(this);
-                    NativeFileItemSet set = dataObject.getCookie(NativeFileItemSet.class);
+                    NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
                     if (set != null) {
                         set.add(this);
                     }                    
@@ -476,10 +476,10 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public final void onClose() {
-        DataObject dao = getDataObject();
+        DataObject dao = lastDataObject;
         if (dao != null) {
             dao.removePropertyChangeListener(this);
-            NativeFileItemSet set = dao.getCookie(NativeFileItemSet.class);
+            NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
             if (set != null) {
                 set.remove(this);
             }
@@ -492,7 +492,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         if (fo == null) {
             fo = getFileObjectImpl();
         }
-        String mimeType = "";
+        String mimeType;
         if (fo == null || ! fo.isValid()) {
             mimeType = MIMESupport.getKnownSourceFileMIMETypeByExtension(getName());
         } else {
@@ -796,6 +796,25 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                                 flavor = SPI_ACCESSOR.getLanguageFlavor(compilerConfiguration, compiler, makeConfiguration);
                             }
                         }
+                    }
+                }
+            }
+            if (flavor == LanguageFlavor.UNKNOWN) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+                    switch (itemConfiguration.getCCompilerConfiguration().getInheritedCStandard()) {
+                        case CCompilerConfiguration.STANDARD_C99:
+                            return LanguageFlavor.C99;
+                        case CCompilerConfiguration.STANDARD_C89:
+                        case CCompilerConfiguration.STANDARD_DEFAULT:
+                            return LanguageFlavor.C89;
+                    }
+                } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                    switch (itemConfiguration.getCCCompilerConfiguration().getInheritedCppStandard()) {
+                        case CCCompilerConfiguration.STANDARD_CPP11:
+                            return LanguageFlavor.CPP11;
+                        case CCCompilerConfiguration.STANDARD_CPP98:
+                        case CCCompilerConfiguration.STANDARD_DEFAULT:
+                            return LanguageFlavor.CPP;
                     }
                 }
             }

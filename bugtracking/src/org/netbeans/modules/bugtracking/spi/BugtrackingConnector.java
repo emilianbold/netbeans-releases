@@ -83,7 +83,7 @@ public abstract class BugtrackingConnector {
         return null;
     }
 
-    public TaskListIssueProvider getTasklistProvder() {
+    public TaskListIssueProvider getTasklistProvider() {
         return null;
     }
     

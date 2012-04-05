@@ -41,6 +41,7 @@
  */
 package org.openide.explorer.view;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -48,6 +49,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
@@ -64,6 +67,10 @@ import org.openide.util.Exceptions;
  * @author Matteo Di Giovinazzo <digiovinazzo@streamsim.com>
  */
 public class TreeTableViewMemoryLeak2Test extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TreeTableViewMemoryLeak2Test.class);
+    }
 
     private Node root;
     private Node child;

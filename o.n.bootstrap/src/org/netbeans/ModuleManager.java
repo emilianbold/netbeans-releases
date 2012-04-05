@@ -80,6 +80,7 @@ import org.openide.LifecycleManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
+import org.openide.modules.Places;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
@@ -1073,10 +1074,10 @@ public final class ModuleManager extends Modules {
             } catch (InvalidException ie) {
                 // Remember that there was a problem with this guy.
                 Module bad = ie.getModule();
-                if (bad == null) throw new IllegalStateException("Problem with no associated module: " + ie); // NOI18N
+                if (bad == null) throw new IllegalStateException("Problem with no associated module: " + ie, ie); // NOI18N
                 Set<Union2<Dependency,InvalidException>> probs = moduleProblemsWithNeeds.get(bad);
-                if (probs == null) throw new IllegalStateException("Were trying to install a module that had never been checked: " + bad); // NOI18N
-                if (! probs.isEmpty()) throw new IllegalStateException("Were trying to install a module that was known to be bad: " + bad); // NOI18N
+                if (probs == null) throw new IllegalStateException("Were trying to install a module that had never been checked: " + bad, ie); // NOI18N
+                if (! probs.isEmpty()) throw new IllegalStateException("Were trying to install a module that was known to be bad: " + bad + " " + probs, ie); // NOI18N
                 // Record for posterity.
                 if (probs == EMPTY_COLLECTION) {
                     probs = new HashSet<Union2<Dependency,InvalidException>>(8);
@@ -1980,7 +1981,7 @@ public final class ModuleManager extends Modules {
                 toWi = readCnbs(dis, new ArrayList<String>());
                 dis.close();
             } catch (IOException ex) {
-                Util.err.log(Level.INFO, "Cannot read all-modules.dat", ex);
+                Util.err.log(Level.FINE, "Cannot read " + Places.getCacheSubfile(CACHE), ex);
                 map = null;
                 osgi = null;
                 cnbs = null;

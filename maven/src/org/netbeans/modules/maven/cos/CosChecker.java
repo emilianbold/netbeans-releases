@@ -48,16 +48,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
@@ -80,13 +71,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
-import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
-import org.netbeans.modules.maven.api.execute.ExecutionContext;
-import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
-import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
-import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.api.execute.*;
 import org.netbeans.modules.maven.classpath.AbstractProjectClassPathImpl;
 import org.netbeans.modules.maven.classpath.RuntimeClassPathImpl;
 import org.netbeans.modules.maven.classpath.TestRuntimeClassPathImpl;
@@ -122,6 +107,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     private static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main"; //NOI18N
     private static final String DEBUG_MAIN = ActionProvider.COMMAND_DEBUG_SINGLE + ".main"; //NOI18N
 
+    @Override
     public boolean checkRunConfig(RunConfig config) {
         if (config.getProject() == null) {
             return true;
@@ -138,6 +124,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         return true;
     }
 
+    @Override
     public boolean checkRunConfig(RunConfig config, ExecutionContext con) {
         //deleting the timestamp before every action invokation means
         // we only can rely on Run via JavaRunner and via DeployOnSave
@@ -374,7 +361,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             ClassPath srcs = cpp.getProjectSourcesClassPath(ClassPath.SOURCE);
             ClassPath[] cps = cpp.getProjectClassPaths(ClassPath.SOURCE);
             ClassPath testcp = ClassPathSupport.createProxyClassPath(cps);
-            String path = null;
+            String path;
             if (selected != null) {
                 path = srcs.getResourceName(selected);
                 if (path != null) {
@@ -514,10 +501,10 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                             }
                             roots.add(url);
                         } catch (MalformedURLException ex) {
-                            Logger.getLogger(CosChecker.class.getName()).info("Cannot convert '" + add + "' to URL");
+                            Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Cannot convert ''{0}'' to URL", add);
                         }
                     } else {
-                        Logger.getLogger(CosChecker.class.getName()).info("Cannot convert '" + add + "' to URL.");
+                        Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Cannot convert ''{0}'' to URL.", add);
                     }
                 }
                 ClassPath addCp = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
@@ -834,6 +821,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     @ProjectServiceProvider(service=ExecutionResultChecker.class, projectType="org-netbeans-modules-maven")
     public static class COSExChecker implements ExecutionResultChecker {
 
+        @Override
         public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
             // after each build put the Cos stamp in the output folder to have
             // the classes really compiled on save.

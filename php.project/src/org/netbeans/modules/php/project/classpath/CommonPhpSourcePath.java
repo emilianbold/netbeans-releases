@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.classpath;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,9 +73,17 @@ public final class CommonPhpSourcePath {
         assert Thread.holdsLock(CommonPhpSourcePath.class);
 
         List<FileObject> preindexedFolders = PhpSourcePath.getPreindexedFolders();
+        // XXX disabled, unit tests failures
+        //assert !preindexedFolders.contains(null) : "Preindexed folders contains null";
         FileObject sfsFolder = FileUtil.getConfigFile("PHP/RuntimeLibraries"); // NOI18N
+        assert sfsFolder != null : "SFS folder is null";
         List<FileObject> folders = new ArrayList<FileObject>(preindexedFolders.size() + 1);
-        folders.add(sfsFolder);
+        // #210578
+        if (sfsFolder != null) {
+            folders.add(sfsFolder);
+        } else {
+            Logger.getLogger(CommonPhpSourcePath.class.getName()).info("SFS folder PHP/RuntimeLibraries not found");
+        }
         folders.addAll(preindexedFolders);
         return folders;
     }

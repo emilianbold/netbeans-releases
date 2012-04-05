@@ -71,11 +71,6 @@ public class CrossDependencyTest extends NbmAdvancedTestCase {
         super (testName);
     }
 
-    @Override
-    protected int timeOut() {
-        return 5000;
-    }
-    
     public void testCrossDependentModules () throws Exception {
         checkCrossDependentModulesDependencies();
     }

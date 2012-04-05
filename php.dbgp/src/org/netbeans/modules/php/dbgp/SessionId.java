@@ -44,10 +44,11 @@
 package org.netbeans.modules.php.dbgp;
 
 import java.io.File;
-
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
-import org.netbeans.api.project.FileOwnerQuery;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -71,6 +72,7 @@ import org.openide.filesystems.FileUtil;
 public class SessionId {
     //keep synchronized with org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants
     private static final String SOURCES_TYPE_PHP = "PHPSOURCE"; // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(SessionId.class.getName());
     private URIMapper.MultiMapper uriMapper;
     private String id;
     private final FileObject sessionFileObject;
@@ -131,13 +133,19 @@ public class SessionId {
         }
         return null;
     }
-    public FileObject toSourceFile( String uri ){
+    public FileObject toSourceFile( String possibleUri ){
+        FileObject result = null;
         if (uriMapper != null) {
-            File localFile = uriMapper.toSourceFile(URI.create(uri));
-            localFile = (localFile != null) ? FileUtil.normalizeFile(localFile) : null;
-            return (localFile != null) ? FileUtil.toFileObject(localFile) : null;
+            try {
+                URI uri = new URI(possibleUri);
+                File localFile = uriMapper.toSourceFile(uri);
+                localFile = (localFile != null) ? FileUtil.normalizeFile(localFile) : null;
+                result = (localFile != null) ? FileUtil.toFileObject(localFile) : null;
+            } catch (URISyntaxException ex) {
+                LOGGER.log(Level.FINE, "Solving invalid URI (possible Mocked object): " + possibleUri, ex);
+            }
         }
-        return null;
+        return result;
     }
     private FileObject getSourceRoot() {
         final FileObject[] sourceObjects = getSourceObjects(getProject());

@@ -48,27 +48,19 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.JTable;
 import junit.framework.Test;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.TreeTableOperator;
+import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.junit.NbModuleSuite;
 import org.openide.nodes.Node.Property;
 /**
  *
- * @author felipee
+ * @author felipee, Jiri Kovalsky
  */
 public class LineBreakpointsHitCountTest extends DebuggerTestCase{
 
@@ -152,7 +144,7 @@ public class LineBreakpointsHitCountTest extends DebuggerTestCase{
                 return arg0.equals(arg1);
             }
         };
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:64");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:64");
         Utilities.showDebuggerView(Utilities.variablesViewTitle);
         jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.variablesViewTitle));
         TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());

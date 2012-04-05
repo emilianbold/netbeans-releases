@@ -79,11 +79,13 @@
                 <friend>org.netbeans.modules.cnd.editor</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.kit</friend>
+                <friend>org.netbeans.modules.cnd.makeproject.source.bridge</friend>
                 <friend>org.netbeans.modules.cnd.model.services</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.modelui</friend>
                 <friend>org.netbeans.modules.cnd.modelutil</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
+                <friend>org.netbeans.modules.cnd.source</friend>
                 <friend>org.netbeans.modules.cnd.spellchecker.bindings</friend>
                 <package>org.netbeans.cnd.api.lexer</package>
                 <package>org.netbeans.cnd.spi.lexer</package>

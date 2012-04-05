@@ -58,6 +58,7 @@ import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.form.actions.CustomizeEmptySpaceAction;
 import org.netbeans.modules.form.actions.EditContainerAction;
 import org.netbeans.modules.form.actions.EditFormAction;
 import org.netbeans.modules.form.assistant.AssistantModel;
@@ -1175,6 +1176,7 @@ public class FormEditor {
 
     private void createDefaultComponentActionsList() {
         defaultActions = new LinkedList<Action>();
+        defaultActions.add(SystemAction.get(CustomizeEmptySpaceAction.EditSingleGapAction.class));
         defaultActions.add(SystemAction.get(EditContainerAction.class));
         defaultActions.add(SystemAction.get(EditFormAction.class));
         defaultActions.add(SystemAction.get(DefaultRADAction.class));

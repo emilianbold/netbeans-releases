@@ -41,10 +41,8 @@
  */
 package org.netbeans.modules.remote.test;
 
-import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.remote.impl.fs.RemoteFSTCKTestCase;
 import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystemTestHid;

@@ -479,6 +479,9 @@ public class BugtrackingUtil {
      */
     public static String getNBUsername() {
         String user = BugtrackingConfig.getInstance().getPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
+        if("".equals(user)) {
+            user = RepositoryRegistry.getBugzillaNBUsername();
+        }
         return user.equals("") ? null : user;                         // NOI18N
     }
 

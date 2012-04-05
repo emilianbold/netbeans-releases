@@ -77,7 +77,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
 
     public static final String PROJDIR = "projdir"; // NOI18N
     public static final String NAME = "name"; // NOI18N
-    private Project myProject;
+    private FileObject myProjectFolder;
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     public transient WizardDescriptor wiz;
@@ -101,14 +101,15 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         };
     }
     
-    public Project getProject() {
-        return myProject;
+    public FileObject getProjectDirectory() {
+        return myProjectFolder;
     }
     
     public void setProjectConfigNamespace(String namespace) {
         this.projectConfigNamespace = namespace;
     }
     
+    @Override
     public Set<FileObject> instantiate() throws IOException {
         Set resultSet = new LinkedHashSet();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR));
@@ -130,8 +131,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         if (projectConfigNamespace != null)
             RestSampleUtils.setProjectName(dir, projectConfigNamespace, name);
  
-        Project p = ProjectManager.getDefault().findProject(dir);
-        myProject = p;
+        myProjectFolder = dir;
     
         // Always open top dir as a project:
         resultSet.add(dir);

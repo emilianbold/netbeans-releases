@@ -297,7 +297,10 @@ public final class ModuleSystem {
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-	ev.log(Events.PERF_END, "ModuleSystem.restore"); // NOI18N	
+        ev.log(Events.PERF_END, "ModuleSystem.restore"); // NOI18N	
+    	ev.log(Events.PERF_START, "ModuleSystem.waitOnStart"); // NOI18N
+        installer.waitOnStart();
+    	ev.log(Events.PERF_END, "ModuleSystem.waitOnStart"); // NOI18N
     }
     
     /** Shut down the system: ask modules to shut down.

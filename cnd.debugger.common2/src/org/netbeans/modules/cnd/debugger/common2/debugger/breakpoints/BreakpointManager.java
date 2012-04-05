@@ -699,12 +699,12 @@ public final class BreakpointManager {
      */
     private String handlerError(NativeBreakpoint b, HandlerCommand hc) {
 	final String msg;
-	if (hc.toString() == null) {
+	if (hc.getData() == null) {
 	    msg = Catalog.format("FMT_UnsupportedBpt",		// NOI18N
 				 b.getBreakpointType().getTypeDisplayName(),
 				 debugger().debuggerType());
 	} else {
-	    msg = hc.toString();
+	    msg = hc.getData();
 	}
 	return msg;
     }
@@ -1183,7 +1183,7 @@ public final class BreakpointManager {
         final int rt = template.getRoutingToken();
         rememberRestoredBreakpoint(template, midLevel, rt);
 
-        if (hc.isOK()) {
+        if (!hc.isError()) {
             provider().postRestoreHandler(rt, hc);
         } else {
 	    BreakpointJob bj = getBreakpointJob(rt);
@@ -1205,7 +1205,7 @@ public final class BreakpointManager {
         rememberRestoredBreakpoint(topLevel, midLevel, rt);
 
         final HandlerCommand hc = provider().handlerExpert().commandFormNew(topLevel);
-        if (hc.isOK()) {
+        if (!hc.isError()) {
             provider().postRestoreHandler(rt, hc);
         } else {
 	    BreakpointJob bj = getBreakpointJob(rt);

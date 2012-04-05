@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.settings.convertors;
 
+import java.awt.GraphicsEnvironment;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.loaders.*;
@@ -53,6 +54,8 @@ import org.openide.modules.ModuleInfo;
 import org.openide.util.*;
 import java.io.*;
 import java.util.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 import org.netbeans.junit.*;
 
@@ -60,6 +63,11 @@ import org.netbeans.junit.*;
  * @author Jan Pokorsky
  */
 public class SerialDataConvertorTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(SerialDataConvertorTest.class);
+    }
+
     /** folder to create instances in */
     private DataFolder folder;
     /** filesystem containing created instances */

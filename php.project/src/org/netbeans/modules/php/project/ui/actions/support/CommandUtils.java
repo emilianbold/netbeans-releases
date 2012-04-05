@@ -65,8 +65,6 @@ import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -375,11 +373,8 @@ public final class CommandUtils {
      * @throws MalformedURLException if any error occurs.
      */
     public static URL urlForDebugProject(PhpProject project, XDebugUrlArguments xDebugArgument) throws MalformedURLException {
-        DebugInfo debugInfo = getDebugInfo(project);
         URL debugUrl = urlForProject(project);
-        if (debugInfo.debugServer) {
-            debugUrl = appendQuery(debugUrl, getDebugArguments(xDebugArgument));
-        }
+        debugUrl = appendQuery(debugUrl, getDebugArguments(xDebugArgument));
         return debugUrl;
     }
 
@@ -437,11 +432,8 @@ public final class CommandUtils {
      * @throws MalformedURLException if any error occurs.
      */
     public static URL urlForDebugContext(PhpProject project, Lookup context, XDebugUrlArguments xDebugArgument) throws MalformedURLException {
-        DebugInfo debugInfo = getDebugInfo(project);
         URL debugUrl = urlForContext(project, context);
-        if (debugInfo.debugServer) {
-            debugUrl = appendQuery(debugUrl, getDebugArguments(xDebugArgument));
-        }
+        debugUrl = appendQuery(debugUrl, getDebugArguments(xDebugArgument));
         return debugUrl;
     }
 
@@ -460,24 +452,6 @@ public final class CommandUtils {
             return baseDirectory.getFileObject(indexFile);
         }
         return baseDirectory;
-    }
-
-    /**
-     * Get {@link DebugInfo debug information} for a project (server side debugging,
-     * client side debugging).
-     * @param project a project to get information for.
-     * @return {@link DebugInfo debug information} for a project.
-     */
-    public static DebugInfo getDebugInfo(PhpProject project) {
-        boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
-        boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
-
-        if (!WebClientToolsSessionStarterService.isAvailable()) {
-            debugServer = true;
-            debugClient = false;
-        }
-        assert debugServer || debugClient;
-        return new DebugInfo(debugClient, debugServer);
     }
 
     public static URL getBaseURL(PhpProject project) throws MalformedURLException {
@@ -577,17 +551,4 @@ public final class CommandUtils {
         return (!retval.isEmpty()) ? retval.toArray(new FileObject[retval.size()]) : null;
     }
 
-    /**
-     * Holder class for debug information for a project (server side debugging,
-     * client side debugging).
-     */
-    public static final class DebugInfo {
-        public final boolean debugClient;
-        public final boolean debugServer;
-
-        public DebugInfo(boolean debugClient, boolean debugServer) {
-            this.debugClient = debugClient;
-            this.debugServer = debugServer;
-        }
-    }
 }

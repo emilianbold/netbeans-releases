@@ -50,6 +50,7 @@ public class IntConfiguration {
     private String[] names;
     private String[] options;
     private byte value;
+    private byte previousValue;
     private boolean modified;
     private boolean dirty = false;
 
@@ -70,6 +71,7 @@ public class IntConfiguration {
     }
 
     public void setValue(int value) {
+        this.previousValue = this.value;
         this.value = (byte) value;
         if (master != null) {
             setModified(true);
@@ -123,6 +125,7 @@ public class IntConfiguration {
     }
 
     public final void reset() {
+        previousValue = value;
         value = (byte) getDefault();
         setModified(false);
     }
@@ -156,6 +159,10 @@ public class IntConfiguration {
         clone.setValue(getValue());
         clone.setModified(getModified());
         return clone;
+    }
+
+    public byte getPreviousValue() {
+        return previousValue;
     }
 
     @Override

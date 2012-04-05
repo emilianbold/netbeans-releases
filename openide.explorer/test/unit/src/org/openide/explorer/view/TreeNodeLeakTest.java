@@ -45,10 +45,13 @@
 package org.openide.explorer.view;
 
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyVetoException;
 import java.lang.ref.WeakReference;
 import javax.swing.JFrame;
 import javax.swing.tree.TreeNode;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
@@ -59,6 +62,10 @@ import org.openide.nodes.*;
  */
 public final class TreeNodeLeakTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TreeNodeLeakTest.class);
+    }
+
     private TreeView treeView;
     private ExplorerWindow testWindow;
     private Node toSelect[] = new Node[6];

@@ -67,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.test.MockLookup;
+import org.openide.util.test.RestrictThreadCreation;
 
 /**
  * @author Jesse Glick
@@ -79,10 +80,12 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
 
     private FileObject d;
     private J2SEProject p;
-    private ProjectConfigurationProvider pcp;
+    private ProjectConfigurationProvider<?> pcp;
 
     @Override
     protected void setUp() throws Exception {
+        RestrictThreadCreation.permitStandard();
+        RestrictThreadCreation.forbidNewThreads(true);
         MockLookup.setLayersAndInstances();
         clearWorkDir();
         d = J2SEProjectGenerator.createProject(getWorkDir(), "test", null, null, null, false).getProjectDirectory();
@@ -103,12 +106,12 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
     public void testConfigurations() throws Exception {
         TestListener l = new TestListener();
         pcp.addPropertyChangeListener(l);
-        Properties p = new Properties();
-        p.setProperty("$label", "Debug");
-        write(p, d, "nbproject/configs/debug.properties");
-        p = new Properties();
-        p.setProperty("$label", "Release");
-        write(p, d, "nbproject/configs/release.properties");
+        Properties props = new Properties();
+        props.setProperty("$label", "Debug");
+        write(props, d, "nbproject/configs/debug.properties");
+        props = new Properties();
+        props.setProperty("$label", "Release");
+        write(props, d, "nbproject/configs/release.properties");
         write(new Properties(), d, "nbproject/configs/misc.properties");
         assertEquals(Collections.singleton(ProjectConfigurationProvider.PROP_CONFIGURATIONS), l.events());
         List<ProjectConfiguration> configs = new ArrayList<ProjectConfiguration>(getConfigurations(pcp));
@@ -159,7 +162,7 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
         assertEquals(Collections.emptySet(), l.events());
         try {
             setActiveConfiguration(pcp, new ProjectConfiguration() {
-                public String getDisplayName() {
+                @Override public String getDisplayName() {
                     return "bogus";
                 }
             });
@@ -181,15 +184,15 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
         PropertyEvaluator eval = p.evaluator();
         TestListener l = new TestListener();
         eval.addPropertyChangeListener(l);
-        Properties p = new Properties();
-        p.setProperty("debug", "true");
-        write(p, d, "nbproject/configs/debug.properties");
-        p = new Properties();
-        p.setProperty("debug", "false");
-        write(p, d, "nbproject/configs/release.properties");
-        p = new Properties();
-        p.setProperty("more", "stuff");
-        write(p, d, "nbproject/private/configs/release.properties");
+        Properties props = new Properties();
+        props.setProperty("debug", "true");
+        write(props, d, "nbproject/configs/debug.properties");
+        props = new Properties();
+        props.setProperty("debug", "false");
+        write(props, d, "nbproject/configs/release.properties");
+        props = new Properties();
+        props.setProperty("more", "stuff");
+        write(props, d, "nbproject/private/configs/release.properties");
         List<ProjectConfiguration> configs = new ArrayList<ProjectConfiguration>(getConfigurations(pcp));
         assertEquals(3, configs.size());
         ProjectConfiguration c = configs.get(1);
@@ -219,7 +222,7 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
     public void testInitialListening() throws Exception { // #84781
         final TestListener l = new TestListener();
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-            public Void run() throws Exception {                
+            @Override public Void run() throws Exception {
                 pcp.addPropertyChangeListener(l);
                 Properties props = new Properties();
                 props.setProperty("$label", "X");
@@ -228,17 +231,15 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
             }
         });
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-            public Void run() throws Exception {                
+            @Override public Void run() throws Exception {
                 Properties props = new Properties();
                 props.setProperty("config", "x");
                 write(props, d, "nbproject/private/config.properties");                
                 return null;
             }
         });
-        //todo: workaround, fix me!
-        Thread.sleep(1000);
         ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
-                public Void run () throws Exception {
+                @Override public Void run () throws Exception {
                     assertEquals(new HashSet<String>(Arrays.asList(ProjectConfigurationProvider.PROP_CONFIGURATIONS, ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE)),
                         l.events());
                     assertEquals(2, pcp.getConfigurations().size());
@@ -257,7 +258,7 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
 
     private static final class TestListener implements PropertyChangeListener {
         private Set<String> events = new HashSet<String>();
-        public void propertyChange(PropertyChangeEvent evt) {
+        @Override public void propertyChange(PropertyChangeEvent evt) {
             events.add(evt.getPropertyName());
         }
         public Set<String> events() {
@@ -271,7 +272,7 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
         return pcp.getConfigurations();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static void setActiveConfiguration(ProjectConfigurationProvider<?> pcp, ProjectConfiguration pc) throws IOException {
         ProjectConfigurationProvider _pcp = pcp;
         _pcp.setActiveConfiguration(pc);

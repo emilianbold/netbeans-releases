@@ -66,11 +66,14 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.actions.PasteAction;
 import org.openide.actions.RenameAction;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
@@ -224,7 +227,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
 //                        newActions.add(null);
                 } else if (oldActions[i] != null && oldActions[i] instanceof PasteAction) {
                     newActions.add(oldActions[i]);
-                    newActions.add(SystemAction.get(CompileSingleAction.class));
+                    newActions.add(FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, NbBundle.getMessage(getClass(), "CTL_CompileSingleAction"), null));
                 } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
                     newActions.add(NodeActionFactory.createRenameAction());
                     NodeActionFactory.addSyncActions(newActions);
@@ -250,7 +253,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
 //                        newActions.add(null);
                 } else if (oldActions[i] != null && oldActions[i] instanceof PasteAction) {
                     newActions.add(oldActions[i]);
-                    newActions.add(SystemAction.get(CompileSingleAction.class));
+                    newActions.add(FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, NbBundle.getMessage(getClass(), "CTL_CompileSingleAction"), null));
                     if (!getItem().getFolder().isTest()) {
                         newActions.add(NewTestActionFactory.createNewTestsSubmenu());
                     }

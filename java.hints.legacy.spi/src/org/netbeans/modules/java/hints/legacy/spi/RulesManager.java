@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import javax.swing.text.Document;
 import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
@@ -400,24 +401,37 @@ public class RulesManager implements FileChangeListener {
 
             if (result == null) return result;
 
+            Document doc = ctx.getInfo().getSnapshot().getSource().getDocument(false);
+
+            if (doc == null) return Collections.emptyList();
+
             Collection<ErrorDescription> wrapped = new LinkedList<ErrorDescription>();
             String id = tr instanceof AbstractHint ? ((AbstractHint) tr).getId() : "no-id";
             String description = tr instanceof AbstractHint ? ((AbstractHint) tr).getDescription() : null;
 
             for (ErrorDescription ed : result) {
                 if (ed == null || ed.getRange() == null) continue;
+                if (!ctx.getInfo().getFileObject().equals(ed.getFile())) {
+                    LOG.log(Level.SEVERE, "Got an ErrorDescription for different file, current file: {0}, error's file: {1}", new Object[] {ctx.getInfo().getFileObject().toURI(), ed.getFile().toURI()});
+                    continue;
+                }
                 List<Fix> fixesForED = JavaFixImpl.Accessor.INSTANCE.resolveDefaultFixes(ctx, ed.getFixes().getFixes().toArray(new Fix[0]));
 
-                ErrorDescription nue = createErrorDescription("text/x-java:" + id,
-                                                              ed.getSeverity(),
-                                                              ed.getDescription(),
-                                                              description,
-                                                              org.netbeans.spi.editor.hints.ErrorDescriptionFactory.lazyListForFixes(fixesForED),
-                                                              ed.getFile(),
-                                                              ed.getRange().getBegin().getOffset(),
-                                                              ed.getRange().getEnd().getOffset());
+                try {
+                    ErrorDescription nue = createErrorDescription("text/x-java:" + id,
+                                                                  ed.getSeverity(),
+                                                                  ed.getDescription(),
+                                                                  description,
+                                                                  org.netbeans.spi.editor.hints.ErrorDescriptionFactory.lazyListForFixes(fixesForED),
+                                                                  doc,
+                                                                  ed.getRange().getBegin().getPosition(),
+                                                                  ed.getRange().getEnd().getPosition());
+                    wrapped.add(nue);
+                } catch (IOException ex) {
+                    //XXX: can happen?
+                    LOG.log(Level.INFO, null, ex);
+                }
 
-                wrapped.add(nue);
             }
 
             return wrapped;

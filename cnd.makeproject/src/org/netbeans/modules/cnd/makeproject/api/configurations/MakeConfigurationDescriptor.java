@@ -710,6 +710,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             ccPreprocessorOption = folderConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
             ccInheritMacros = folderConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
             items = folder.getAllItemsAsArray();
+            if (folderConfiguration.getCCompilerConfiguration().isCStandardChanged()) {
+                folderConfiguration.getCCompilerConfiguration().getCStandard().setDirty(false);
+                cFiles = true;
+            }
+            if (folderConfiguration.getCCCompilerConfiguration().isCppStandardChanged()) {
+                folderConfiguration.getCCCompilerConfiguration().getCppStandard().setDirty(false);
+                cFiles = true;
+            }            
         } else if (item != null) {
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
             if (itemConfiguration == null) {
@@ -724,6 +732,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                     itemConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
                     cFiles = true;
                 }
+                if (!cFiles && itemConfiguration.getCCompilerConfiguration().isCStandardChanged()) {
+                    itemConfiguration.getCCompilerConfiguration().getCStandard().setDirty(false);
+                    itemConfiguration.updateLanguageFlavor();
+                    cFiles = true;
+                }
+                if (!cFiles && itemConfiguration.getCCompilerConfiguration().getSixtyfourBits().getDirty()) {
+                    itemConfiguration.getCCompilerConfiguration().getSixtyfourBits().setDirty(false);
+                    cFiles = true;
+                }                
             }
             if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                 ccIncludeDirectories = itemConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
@@ -734,6 +751,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                     itemConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
                     ccFiles = true;
                 }
+                if (!ccFiles && itemConfiguration.getCCCompilerConfiguration().isCppStandardChanged()) {
+                    itemConfiguration.getCCCompilerConfiguration().getCppStandard().setDirty(false);
+                    itemConfiguration.updateLanguageFlavor();
+                    ccFiles = true;
+                }
+                if (!ccFiles && itemConfiguration.getCCCompilerConfiguration().getSixtyfourBits().getDirty()) {
+                    itemConfiguration.getCCCompilerConfiguration().getSixtyfourBits().setDirty(false);
+                    ccFiles = true;
+                }                
             }
             if (itemConfiguration.getExcluded().getDirty()) {
                 itemConfiguration.getExcluded().setDirty(false);
@@ -756,6 +782,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
                 cFiles = true;
             }
+            if (!cFiles && makeConfiguration.getCCompilerConfiguration().isCStandardChanged()) {
+                makeConfiguration.getCCompilerConfiguration().getCStandard().setDirty(false);
+                cFiles = true;
+            }
+            if (!cFiles && makeConfiguration.getCCompilerConfiguration().getSixtyfourBits().getDirty()) {
+                makeConfiguration.getCCompilerConfiguration().getSixtyfourBits().setDirty(false);
+                cFiles = true;
+            }                            
             cInheritMacros = makeConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
             ccIncludeDirectories = makeConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
             ccInheritIncludes = makeConfiguration.getCCCompilerConfiguration().getInheritIncludes();
@@ -765,6 +799,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 makeConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
                 ccFiles = true;
             }
+            if (!ccFiles && makeConfiguration.getCCCompilerConfiguration().isCppStandardChanged()) {
+                makeConfiguration.getCCCompilerConfiguration().getCppStandard().setDirty(false);
+                ccFiles = true;
+            }
+            if (!ccFiles && makeConfiguration.getCCCompilerConfiguration().getSixtyfourBits().getDirty()) {
+                makeConfiguration.getCCCompilerConfiguration().getSixtyfourBits().setDirty(false);
+                ccFiles = true;
+            }                            
             items = descriptor.getProjectItems();
             projectChanged = true;
         }

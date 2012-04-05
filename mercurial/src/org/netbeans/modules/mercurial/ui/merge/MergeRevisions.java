@@ -77,6 +77,7 @@ public class MergeRevisions implements PropertyChangeListener {
                  "ACSD_MergeForm_Action_Cancel")); // NOI18N
         okButton.setEnabled(false);
         panel.addPropertyChangeListener(this);
+        panel.loadRevisions();
     } 
     
     public boolean showDialog() {

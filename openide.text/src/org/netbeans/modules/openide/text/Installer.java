@@ -47,7 +47,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.openide.modules.ModuleInstall;
+import org.openide.modules.OnStop;
 
 /**
  * Log number of editors opened during IDE session by mime type.
@@ -55,7 +55,8 @@ import org.openide.modules.ModuleInstall;
  *
  * @author Marek Slama
  */
-public class Installer extends ModuleInstall {
+@OnStop
+public class Installer implements Runnable {
     
     private static Map<String,Integer> mimeTypes = new HashMap<String,Integer>();
 
@@ -71,7 +72,7 @@ public class Installer extends ModuleInstall {
     }
     
     @Override
-    public void close() {
+    public void run() {
         for (String s : mimeTypes.keySet()) {
             Logger logger = Logger.getLogger("org.netbeans.ui.metrics.editor"); //NOI18N
             LogRecord rec = new LogRecord(Level.INFO, "USG_EDITOR_MIME_TYPE"); //NOI18N

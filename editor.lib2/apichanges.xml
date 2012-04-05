@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="EditorDocumentUtils.runExclusive">
+            <summary>EditorDocumentUtils.runExclusive method added</summary>
+            <version major="1" minor="58"/>
+            <date day="27" month="3" year="2012"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Added EditorDocumentUtils.runExclusive(Runnable) method for gaining
+                    exclusive access to document without making any document mutations.
+                </p>
+            </description>
+            <issue number="206907"/>
+        </change>
+
         <change id="EditorActionRegistration-weight">
             <summary>Add "weight" attribute to EditorActionRegistration.</summary>
             <version major="1" minor="53"/>

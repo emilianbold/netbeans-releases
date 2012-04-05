@@ -49,7 +49,10 @@ package org.netbeans.modules.debugger.jpda.ui;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.OutlineOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -61,7 +64,7 @@ import org.netbeans.jemmy.operators.JTableOperator;
 
 /**
  *
- * @author ehucka, Jiri Vagner, cyhelsky
+ * @author ehucka, Jiri Vagner, cyhelsky, Jiri Kovalsky
  */
 public class LocalVariablesTest extends DebuggerTestCase {
     
@@ -170,14 +173,7 @@ public class LocalVariablesTest extends DebuggerTestCase {
         } catch (Throwable th) {
             new DebugProjectAction().perform(projectNode);
         }
-        try {
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
-        } catch (TimeoutExpiredException e) {
-            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
-                System.err.println(e.getMessage());
-                throw e;
-            }
-        }
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.");
         expandNodes();
         OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
         checkOutlineTableLine(outlineOp, 3, "Vpublic", "String", "\"Public Variable\"");
@@ -195,14 +191,7 @@ public class LocalVariablesTest extends DebuggerTestCase {
         Utilities.toggleBreakpoint(eo, 52);
         new EventTool().waitNoEvent(500);
         Utilities.startDebugger();
-        try {
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
-        } catch (TimeoutExpiredException e) {
-            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
-                System.err.println(e.getMessage());
-                throw e;
-            }
-        }
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.");
         expandNodes();
         OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
         checkOutlineTableLine(outlineOp, 11, "Spublic", "String", "\"Public Variable\"");
@@ -220,14 +209,7 @@ public class LocalVariablesTest extends DebuggerTestCase {
         Utilities.toggleBreakpoint(eo, 52);
         new EventTool().waitNoEvent(1500);
         Utilities.startDebugger();
-        try {
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
-        } catch (TimeoutExpiredException e) {
-            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
-                System.err.println(e.getMessage());
-                throw e;
-            }
-        }
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.");
         expandNodes();
         OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
         checkOutlineTableLine(outlineOp, 15, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
@@ -245,14 +227,7 @@ public class LocalVariablesTest extends DebuggerTestCase {
         Utilities.toggleBreakpoint(eo, 52);
         new EventTool().waitNoEvent(500);
         Utilities.startDebugger();
-        try {
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
-        } catch (TimeoutExpiredException e) {
-            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
-                System.err.println(e.getMessage());
-                throw e;
-            }
-        }
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.");
         expandNodes();
         OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
         checkOutlineTableLine(outlineOp, 20, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
@@ -270,14 +245,7 @@ public class LocalVariablesTest extends DebuggerTestCase {
         Utilities.toggleBreakpoint(eo, 76);
         new EventTool().waitNoEvent(500);
         Utilities.startDebugger();
-        try {
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76.");
-        } catch (TimeoutExpiredException e) {
-            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76.")) {
-                System.err.println(e.getMessage());
-                throw e;
-            }
-        }
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76.");
         expandNodes();
         Utilities.showDebuggerView(Utilities.variablesViewTitle);
         OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
@@ -347,14 +315,7 @@ public class LocalVariablesTest extends DebuggerTestCase {
         Utilities.toggleBreakpoint(eo, 104);
         new EventTool().waitNoEvent(500);
         Utilities.startDebugger();
-        try {
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
-        } catch (TimeoutExpiredException e) {
-            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104.")) {
-                System.err.println(e.getMessage());
-                throw e;
-            }
-        }
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104.");
         expandNodes();
         Utilities.showDebuggerView(Utilities.variablesViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.variablesViewTitle));
@@ -384,14 +345,7 @@ public class LocalVariablesTest extends DebuggerTestCase {
         Utilities.toggleBreakpoint(eo, 104);
         new EventTool().waitNoEvent(500);
         Utilities.startDebugger();
-        try {
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
-        } catch (TimeoutExpiredException e) {
-            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104.")) {
-                System.err.println(e.getMessage());
-                throw e;
-            }
-        }
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104.");
         expandNodes();
         new EventTool().waitNoEvent(700);
         Utilities.getStepOverExpressionAction().perform();

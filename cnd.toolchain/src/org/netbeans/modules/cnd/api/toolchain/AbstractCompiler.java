@@ -67,7 +67,7 @@ public abstract class AbstractCompiler extends Tool {
                 includeFilePrefix = ""; // NOI18N
                 CompilerDescriptor c = getDescriptor();
                 if (c != null) {
-                    String path = getPath().replaceAll("\\\\", "/"); // NOI18N
+                    String path = getPath().replace('\\', '/'); // NOI18N
                     if (c.getRemoveIncludePathPrefix() != null) {
                         int i = path.toLowerCase().indexOf("/bin"); // NOI18N
                         if (i > 0) {

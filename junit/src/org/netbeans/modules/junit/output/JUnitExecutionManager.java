@@ -165,7 +165,8 @@ public class JUnitExecutionManager implements RerunHandler{
         SortedMap<String, String> toTest = new TreeMap<String, String>();
         FileObject someTestFO = null;
         for(Testcase test: tests){
-            String prev = toTest.get(test.getClassName());
+            String className = test.getClassName();
+            String prev = className == null ? null : toTest.get(className);
             toTest.put(test.getClassName(), prev == null ? test.getName() : prev + "," + test.getName()); //NOI18N
             if (someTestFO == null && test instanceof JUnitTestcase){
                 someTestFO = ((JUnitTestcase)test).getClassFileObject();

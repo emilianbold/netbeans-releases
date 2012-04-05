@@ -53,7 +53,7 @@ public class SearchResultsOperatorTest extends JellyTestCase {
         "testBtStopSearch",
         "testBtShowDetails",
         "testBtModifySearch",
-        "testTreeResult",
+        "testOutlineResult",
         "testSelectResult",
         "testOpenResult",
         "testModifySearch",
@@ -62,7 +62,7 @@ public class SearchResultsOperatorTest extends JellyTestCase {
         "testVerify"
     };
 
-    /** Method used for explicit testsuite definition
+    /** Method used for explicit test suite definition
      * @return  created suite
      */
     public static Test suite() {
@@ -103,8 +103,8 @@ public class SearchResultsOperatorTest extends JellyTestCase {
     }
 
     /** Test treeResult method  */
-    public void testTreeResult() {
-        searchResultsOper.treeResult();
+    public void testOutlineResult() {
+        searchResultsOper.outlineResult();
     }
 
     /** Test selectResult method */

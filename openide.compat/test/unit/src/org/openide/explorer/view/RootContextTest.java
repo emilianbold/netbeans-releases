@@ -45,8 +45,11 @@
 
 package org.openide.explorer.view;
 
+import java.awt.GraphicsEnvironment;
 import javax.swing.ListSelectionModel;
 import javax.swing.tree.TreeSelectionModel;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 import org.netbeans.junit.NbTestCase;
 
@@ -66,6 +69,10 @@ import org.openide.nodes.Children.Array;
  */
 public class RootContextTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(RootContextTest.class);
+    }
+
     public RootContextTest (java.lang.String testName) {
         super (testName);
     }

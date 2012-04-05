@@ -95,7 +95,9 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
 
     @Override
     public void scanFinished(Context context) {
-        commitErrors(context.getRootURI(), errors, lineStartOffsetsCache);
+        if (!context.checkForEditorModifications()) {
+            commitErrors(context.getRootURI(), errors, lineStartOffsetsCache);
+        }
     }
 
     private static void commitErrors(URL root, Map<Indexable, Collection<SimpleError>> errors, Map<Indexable, List<Integer>> lineStartOffsetsCache) {
@@ -215,6 +217,11 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             Result              parserResult,
             Context             context
         ) {
+            
+            if (context.checkForEditorModifications()) {
+                return;
+            }
+            
             ParserResult gsfParserResult = (ParserResult) parserResult;
 
             if (!errors.containsKey(indexable)) {

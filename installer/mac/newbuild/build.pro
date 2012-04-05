@@ -24,8 +24,8 @@
     <property name="servicetag.source" value="NetBeans IDE ${nb.display.version.short} Installer"/>
     
     <!-- Tomcat properties   -->    
-    <property name="tomcat.version" value="7.0.22"/>
-    <property name="tomcat.id" value="7.0.22"/>
+    <property name="tomcat.version" value="7.0.26"/>
+    <property name="tomcat.id" value="7.0.26"/>
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-${tomcat.version}"/>
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
@@ -75,7 +75,7 @@
     <property name="glassfish.v3.sun.id"           value="b${glassfish.v3.sun.build.number}"/>
     <property name="glassfish.v3.sun.install.dir"  value="${install.dir}/oges-3.1.2-b${glassfish.v3.sun.build.number}"/>
     <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/oges-3.1.2-${glassfish.v3.sun.version}.zip"/>
-    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/oges-3.1.2-${glassfish.v3.sun.version}-ml.zip"/>
+    <property name="glassfish_v3_sun_location_ml"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/oges-3.1.2-${glassfish.v3.sun.version}-ml.zip"/>
     <!--<property name="glassfish_v3_sun_location"    value="${binary_cache_host}/glassfish/sges-v3-${glassfish.v3.sun.version}.zip"/>-->
     <!--<property name="glassfish_v3_sun_location_ml" value="${binary_cache_host}/glassfish/sges-v3-${glassfish.v3.sun.version}-ml.zip"/>-->
     <property name="glassfish.v3.sun.subdir"       value="glassfish3"/>
@@ -140,5 +140,15 @@
     <property name="mysql_connector.location" value="${binary_cache_host}/mysql/${mysql_connector.name}.jar"/>   
     <property name="mysql_license.name" value="NB_GF_MySQL.txt"/>   
     <property name="mysql_readme.name" value="NB_GF_MySQL_Bundle_Thirdparty_license_readme.txt"/>
+
+    <!-- JDK Properties-->    
+    <property name="mpkg.prefix_nb_jdk" value=" with JDK"/> 
+    <property name="mpkg.version_jdk" value=" 7 Update 04"/> 
+    <property name="jdk.bundle.files.prefix" value="jdk-7u4"/>
+    <property name="jdk.bundle.files.suffix" value="nb-7_2"/>
+    <property name="output.jdk7.dir" value="jdk/"/>
+    <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home"/>
+    <property name="jdk_bits_location" value="${gf_builds_host}/java/re/jdk/7u4/promoted/all/b18/bundles/macosx-x64/jdk-7u4-ea-bin-b18-macosx-x64-29_mar_2012.dmg"/>
+    <property name="jdk.package.name" value="JDK\ 7\ Update\ 04"/>
 
 </project>

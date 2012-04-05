@@ -132,7 +132,10 @@ public class ActionProviderImpl implements ActionProvider {
         COMMAND_DEBUG_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
         "debug.fix", //NOI18N
-
+        COMMAND_PROFILE,
+        COMMAND_PROFILE_SINGLE,
+        COMMAND_PROFILE_TEST_SINGLE,
+        
         //operations
         COMMAND_DELETE,
         COMMAND_RENAME,
@@ -266,6 +269,7 @@ public class ActionProviderImpl implements ActionProvider {
     @Messages({
         "# {0} - artifactId", "TXT_Run=Run {0}",
         "# {0} - artifactId", "TXT_Debug=Debug {0}",
+        "# {0} - artifactId", "TXT_Profile=Profile {0}",
         "# {0} - artifactId", "TXT_Test=Test {0}",
         "# {0} - artifactId", "TXT_Build=Build {0}"
     })
@@ -282,12 +286,16 @@ public class ActionProviderImpl implements ActionProvider {
             title = TXT_Run(prj.getMavenProject().getArtifactId());
         } else if (ActionProvider.COMMAND_DEBUG.equals(action)) {
             title = TXT_Debug(prj.getMavenProject().getArtifactId());
+        } else if (ActionProvider.COMMAND_PROFILE.equals(action)) {
+            title = TXT_Profile(prj.getMavenProject().getArtifactId());
         } else if (ActionProvider.COMMAND_TEST.equals(action)) {
             title = TXT_Test(prj.getMavenProject().getArtifactId());
         } else if (action.startsWith(ActionProvider.COMMAND_RUN_SINGLE)) {
             title = TXT_Run(dobjName);
         } else if (action.startsWith(ActionProvider.COMMAND_DEBUG_SINGLE) || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action)) {
             title = TXT_Debug(dobjName);
+        } else if (action.startsWith(ActionProvider.COMMAND_PROFILE_SINGLE) || ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(action)) {
+            title = TXT_Profile(dobjName);
         } else if (ActionProvider.COMMAND_TEST_SINGLE.equals(action)) {
             title = TXT_Test(dobjName);
         } else {

@@ -44,27 +44,24 @@ package org.netbeans.modules.maven.classpath;
 
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.modules.maven.indexer.NexusRepositoryIndexerImpl;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
-import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
+import org.netbeans.modules.maven.indexer.spi.Redo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
-import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 import org.openide.util.test.MockPropertyChangeListener;
 
@@ -139,7 +136,12 @@ public class ClassPathProviderImplTest extends NbTestCase {
 
             @Override
             public Result<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos) {
-                return new Result<NBVersionInfo>();
+                return NexusRepositoryIndexerImpl.ACCESSOR.createVersionResult(new Redo<NBVersionInfo>() {
+
+                    @Override
+                    public void run(Result<NBVersionInfo> result) {
+                    }
+                });
             }
         });
         TestFileUtils.writeFile(d,
@@ -200,10 +202,13 @@ public class ClassPathProviderImplTest extends NbTestCase {
         FileObject tsrc = FileUtil.createFolder(d, "src/test/java");
         FileObject gtsrc = FileUtil.createFolder(d, "target/generated-test-sources/jaxb");
         gtsrc.createData("Whatever.class");
+        FileObject gtsrc2 = FileUtil.createFolder(d, "target/generated-sources/test-annotations"); // MCOMPILER-167
+        gtsrc2.createData("Whatever.class");
         assertRoots(ClassPath.getClassPath(src, ClassPath.SOURCE), src, gsrc);
         assertRoots(ClassPath.getClassPath(gsrc, ClassPath.SOURCE), src, gsrc);
-        assertRoots(ClassPath.getClassPath(tsrc, ClassPath.SOURCE), tsrc, gtsrc);
-        assertRoots(ClassPath.getClassPath(gtsrc, ClassPath.SOURCE), tsrc, gtsrc);
+        assertRoots(ClassPath.getClassPath(tsrc, ClassPath.SOURCE), tsrc, gtsrc, gtsrc2);
+        assertRoots(ClassPath.getClassPath(gtsrc, ClassPath.SOURCE), tsrc, gtsrc, gtsrc2);
+        assertRoots(ClassPath.getClassPath(gtsrc2, ClassPath.SOURCE), tsrc, gtsrc, gtsrc2);
     }
 
     public void testArchetypeResources() throws Exception { // #189037

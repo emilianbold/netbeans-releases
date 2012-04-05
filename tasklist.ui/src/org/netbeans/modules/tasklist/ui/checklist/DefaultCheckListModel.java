@@ -51,14 +51,9 @@ public class DefaultCheckListModel extends AbstractCheckListModel {
 
     private static final long serialVersionUID = 1;
 
-    private boolean state[] = new boolean[0];
-    private Object[] values = new Object[0];
-
-    /**
-     * Creates a new empty model
-     */
-    public DefaultCheckListModel() {
-    }
+    private final boolean state[];
+    private final Object[] values;
+    private final String[] descriptions;
 
     /**
      * Creates a new model with the given state of checkboxes and the given
@@ -69,11 +64,15 @@ public class DefaultCheckListModel extends AbstractCheckListModel {
      * @param values values. A copy of this array will NOT be
      * created.
      */
-    public DefaultCheckListModel(boolean[] state, Object[] values) {
+    public DefaultCheckListModel(boolean[] state, Object[] values, String[] descriptions) {
         if (state.length != values.length)
             throw new IllegalArgumentException("state.length != values.length"); //NOI18N
+        if (state.length != descriptions.length) {
+            throw new IllegalArgumentException();
+        }
         this.state = state;
         this.values = values;
+        this.descriptions = descriptions;
     }
     
     public boolean isChecked(int index) {
@@ -92,4 +91,9 @@ public class DefaultCheckListModel extends AbstractCheckListModel {
     public Object getElementAt(int index) {
         return values[index];
     }
+
+    @Override public String getDescription(int index) {
+        return descriptions[index];
+    }
+
 }

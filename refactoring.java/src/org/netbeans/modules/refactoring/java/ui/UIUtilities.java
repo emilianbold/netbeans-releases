@@ -919,22 +919,28 @@ public final class UIUtilities {
     
     private static final String TYPE_COLOR = "#707070";
     private static final String INHERITED_COLOR = "#7D694A";
+
     /**
      * Creates HTML display name of the Executable element
      */
-    public static String createHtmlHeader(ExecutableElement e, boolean isDeprecated, boolean isInherited) {
-
+    public static String createHeader(ExecutableElement e, boolean isDeprecated, boolean isInherited, boolean html, boolean isBold) {
         StringBuilder sb = new StringBuilder();
-        if (isDeprecated) {
-            sb.append("<s>"); // NOI18N
-        }
-        if (isInherited) {
-            sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
+        if (html) {
+            if (isDeprecated) {
+                sb.append("<s>"); // NOI18N
+            } else if (isBold) {
+                sb.append("<b>"); // NOI18N
+            }
+            if (isInherited) {
+                sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
+            }
         }
         Name name = e.getKind() == ElementKind.CONSTRUCTOR ? e.getEnclosingElement().getSimpleName() : e.getSimpleName();
         sb.append(UIUtilities.escape(name.toString()));
-        if (isDeprecated) {
-            sb.append("</s>"); // NOI18N
+        if (html) {
+            if (isDeprecated) {
+                sb.append("</s>"); // NOI18N
+            }
         }
 
         sb.append("("); // NOI18N
@@ -942,10 +948,14 @@ public final class UIUtilities {
         List<? extends VariableElement> params = e.getParameters();
         for (Iterator<? extends VariableElement> it = params.iterator(); it.hasNext();) {
             VariableElement param = it.next();
-            sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
+            if (html) {
+                sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
+            }
             final boolean vararg = !it.hasNext() && e.isVarArgs();
-            sb.append(printArg(param.asType(), vararg));
-            sb.append("</font>"); // NOI18N
+            sb.append(printArg(param.asType(), vararg, html));
+            if (html) {
+                sb.append("</font>"); // NOI18N
+            }
             sb.append(" "); // NOI18N
             sb.append(UIUtilities.escape(param.getSimpleName().toString()));
             if (it.hasNext()) {
@@ -956,60 +966,159 @@ public final class UIUtilities {
 
         sb.append(")"); // NOI18N
 
+        if (html) {
+            if (!isDeprecated && isBold) {
+                sb.append("</b>"); // NOI18N
+            }
+        }
         if (e.getKind() != ElementKind.CONSTRUCTOR) {
             TypeMirror rt = e.getReturnType();
             if (rt.getKind() != TypeKind.VOID) {
-                sb.append(" : "); // NOI18N     
-                sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
-                sb.append(print(e.getReturnType()));
-                sb.append("</font>"); // NOI18N                    
+                sb.append(" : "); // NOI18N
+                if (html) {
+                    sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
+                }
+                sb.append(print(e.getReturnType(), html));
+                if (html) {
+                    sb.append("</font>"); // NOI18N                    
+                }
             }
         }
 
         return sb.toString();
     }
 
-    public static String createHtmlHeader(VariableElement e, boolean isDeprecated, boolean isInherited) {
+    public static String createHeader(VariableElement e, boolean isDeprecated, boolean isInherited, boolean html, boolean isBold) {
 
         StringBuilder sb = new StringBuilder();
 
-        if (isDeprecated) {
-            sb.append("<s>"); // NOI18N
-        }
-        if (isInherited) {
-            sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
+        if (html) {
+            if (isDeprecated) {
+                sb.append("<s>"); // NOI18N
+            } else if (isBold) {
+                sb.append("<b>"); // NOI18N
+            }
+            if (isInherited) {
+                sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
+            }
         }
         sb.append(UIUtilities.escape(e.getSimpleName().toString()));
-        if (isDeprecated) {
-            sb.append("</s>"); // NOI18N
+        if (html) {
+            if (isDeprecated) {
+                sb.append("</s>"); // NOI18N
+            } else if (isBold) {
+                sb.append("</b>"); // NOI18N
+            }
         }
 
         if (e.getKind() != ElementKind.ENUM_CONSTANT) {
             sb.append(" : "); // NOI18N
-            sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
-            sb.append(print(e.asType()));
-            sb.append("</font>"); // NOI18N
+            if (html) {
+                sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
+            }
+            sb.append(print(e.asType(), html));
+            if (html) {
+                sb.append("</font>"); // NOI18N
+            }
         }
 
         return sb.toString();
     }
 
-    public static String createHtmlHeader(TypeElement e, boolean isDeprecated, boolean isInherited) {
+    public static String createHeader(TypeParameterElement e, boolean isDeprecated, boolean isInherited, boolean html, boolean isBold) {
 
         StringBuilder sb = new StringBuilder();
-        if (isDeprecated) {
-            sb.append("<s>"); // NOI18N
-        }
-        if (isInherited) {
-            sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
+
+        if (html) {
+            if (isDeprecated) {
+                sb.append("<s>"); // NOI18N
+            } else if (isBold) {
+                sb.append("<b>"); // NOI18N
+            }
+            if (isInherited) {
+                sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
+            }
         }
         sb.append(UIUtilities.escape(e.getSimpleName().toString()));
-        if (isDeprecated) {
-            sb.append("</s>"); // NOI18N
+        if (html) {
+            if (isDeprecated) {
+                sb.append("</s>"); // NOI18N
+            } else if (isBold) {
+                sb.append("</b>"); // NOI18N
+            }
+        }
+
+        if (e.getKind() != ElementKind.ENUM_CONSTANT) {
+            sb.append(" : "); // NOI18N
+            if (html) {
+                sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
+            }
+            sb.append(print(e.asType(), html));
+            if (html) {
+                sb.append("</font>"); // NOI18N
+            }
+        }
+
+        return sb.toString();
+    }
+
+    public static String createHeader(PackageElement e, boolean isDeprecated, boolean isInherited, boolean html, boolean isBold) {
+
+        StringBuilder sb = new StringBuilder();
+
+        if (html) {
+            if (isDeprecated) {
+                sb.append("<s>"); // NOI18N
+            } else if (isBold) {
+                sb.append("<b>"); // NOI18N
+            }
+            if (isInherited) {
+                sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
+            }
+        }
+        sb.append(UIUtilities.escape(e.getSimpleName().toString()));
+        if (html) {
+            if (isDeprecated) {
+                sb.append("</s>"); // NOI18N
+            } else if (isBold) {
+                sb.append("</b>"); // NOI18N
+            }
+        }
+
+        if (e.getKind() != ElementKind.ENUM_CONSTANT) {
+            sb.append(" : "); // NOI18N
+            if (html) {
+                sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
+            }
+            sb.append(print(e.asType(), html));
+            if (html) {
+                sb.append("</font>"); // NOI18N
+            }
+        }
+
+        return sb.toString();
+    }
+
+    public static String createHeader(TypeElement e, boolean isDeprecated, boolean isInherited, boolean html, boolean isBold) {
+
+        StringBuilder sb = new StringBuilder();
+        if (html) {
+            if (isDeprecated) {
+                sb.append("<s>"); // NOI18N
+            } else if (isBold) {
+                sb.append("<b>"); // NOI18N
+            }
+            if (isInherited) {
+                sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
+            }
+            sb.append(UIUtilities.escape(e.getSimpleName().toString()));
+            if (isDeprecated) {
+                sb.append("</s>"); // NOI18N
+            }
         }
         List<? extends TypeParameterElement> typeParams = e.getTypeParameters();
         if (typeParams != null && !typeParams.isEmpty()) {
-            sb.append("&lt;"); // NOI18N
+            sb.append(html ? "&lt;" : "<"); // NOI18N
 
             for (Iterator<? extends TypeParameterElement> it = typeParams.iterator(); it.hasNext();) {
                 TypeParameterElement tp = it.next();
@@ -1021,7 +1130,7 @@ public final class UIUtilities {
                     // Ignore
                 }
                 if (bounds != null && !bounds.isEmpty()) {
-                    sb.append(printBounds(bounds));
+                    sb.append(printBounds(bounds, html));
                 }
 
                 if (it.hasNext()) {
@@ -1029,19 +1138,23 @@ public final class UIUtilities {
                 }
             }
 
-            sb.append("&gt;"); // NOI18N
+            sb.append(html ? "&gt;" : ">"); // NOI18N
+        }
+
+        if (html && !isDeprecated && isBold) {
+            sb.append("<b>"); // NOI18N
         }
 
         // Add superclass and implemented interfaces
 
         TypeMirror sc = e.getSuperclass();
-        String scName = print(sc);
+        String scName = print(sc, html);
 
         if (sc == null
                 || e.getKind() == ElementKind.ENUM
                 || e.getKind() == ElementKind.ANNOTATION_TYPE
-                || "Object".equals(scName) || // NOI18N
-                "<none>".equals(scName)) { // NOI18N
+                || "Object".equals(sc.toString()) || // NOI18N
+                "<none>".equals(sc.toString())) { // NOI18N
             scName = null;
         }
 
@@ -1051,9 +1164,13 @@ public final class UIUtilities {
                 && e.getKind() != ElementKind.ANNOTATION_TYPE) {
             sb.append(" :: "); // NOI18N
             if (scName != null) {
-                sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N                
+                if (html) {
+                    sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N                
+                }
                 sb.append(scName);
-                sb.append("</font>"); // NOI18N
+                if (html) {
+                    sb.append("</font>"); // NOI18N
+                }
             }
             if (!ifaces.isEmpty()) {
                 if (scName != null) {
@@ -1061,9 +1178,13 @@ public final class UIUtilities {
                 }
                 for (Iterator<? extends TypeMirror> it = ifaces.iterator(); it.hasNext();) {
                     TypeMirror typeMirror = it.next();
-                    sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N                
-                    sb.append(print(typeMirror));
-                    sb.append("</font>"); // NOI18N
+                    if (html) {
+                        sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N                
+                    }
+                    sb.append(print(typeMirror, html));
+                    if (html) {
+                        sb.append("</font>"); // NOI18N
+                    }
                     if (it.hasNext()) {
                         sb.append(", "); // NOI18N
                     }
@@ -1075,7 +1196,7 @@ public final class UIUtilities {
         return sb.toString();
     }
 
-    private static String printBounds(List<? extends TypeMirror> bounds) {
+    private static String printBounds(List<? extends TypeMirror> bounds, boolean html) {
         if (bounds.size() == 1 && "java.lang.Object".equals(bounds.get(0).toString())) {
             return "";
         }
@@ -1086,7 +1207,7 @@ public final class UIUtilities {
 
         for (Iterator<? extends TypeMirror> it = bounds.iterator(); it.hasNext();) {
             TypeMirror bound = it.next();
-            sb.append(print(bound));
+            sb.append(print(bound, html));
             if (it.hasNext()) {
                 sb.append(" & "); // NOI18N
             }
@@ -1095,21 +1216,21 @@ public final class UIUtilities {
         return sb.toString();
     }
 
-    private static String printArg(final TypeMirror tm, final boolean varArg) {
+    private static String printArg(final TypeMirror tm, final boolean varArg, boolean html) {
         if (varArg) {
             if (tm.getKind() == TypeKind.ARRAY) {
                 final ArrayType at = (ArrayType) tm;
-                final StringBuilder sb = new StringBuilder(print(at.getComponentType()));
+                final StringBuilder sb = new StringBuilder(print(at.getComponentType(), html));
                 sb.append("...");   //NOI18N
                 return sb.toString();
             } else {
                 assert false : "Expected array: " + tm.toString() + " ( " + tm.getKind() + " )"; //NOI18N
             }
         }
-        return print(tm);
+        return print(tm, html);
     }
 
-    private static String print(TypeMirror tm) {
+    private static String print(TypeMirror tm, boolean html) {
         StringBuilder sb;
 
         switch (tm.getKind()) {
@@ -1118,16 +1239,16 @@ public final class UIUtilities {
                 sb = new StringBuilder(dt.asElement().getSimpleName().toString());
                 List<? extends TypeMirror> typeArgs = dt.getTypeArguments();
                 if (!typeArgs.isEmpty()) {
-                    sb.append("&lt;");
+                    sb.append(html ? "&lt;" : "<"); // NOI18N
 
                     for (Iterator<? extends TypeMirror> it = typeArgs.iterator(); it.hasNext();) {
                         TypeMirror ta = it.next();
-                        sb.append(print(ta));
+                        sb.append(print(ta, html));
                         if (it.hasNext()) {
                             sb.append(", ");
                         }
                     }
-                    sb.append("&gt;");
+                    sb.append(html ? "&gt;" : ">"); // NOI18N
                 }
 
                 return sb.toString();
@@ -1137,7 +1258,7 @@ public final class UIUtilities {
                 return sb.toString();
             case ARRAY:
                 ArrayType at = (ArrayType) tm;
-                sb = new StringBuilder(print(at.getComponentType()));
+                sb = new StringBuilder(print(at.getComponentType(), html));
                 sb.append("[]");
                 return sb.toString();
             case WILDCARD:
@@ -1145,11 +1266,11 @@ public final class UIUtilities {
                 sb = new StringBuilder("?");
                 if (wt.getExtendsBound() != null) {
                     sb.append(" extends "); // NOI18N
-                    sb.append(print(wt.getExtendsBound()));
+                    sb.append(print(wt.getExtendsBound(), html));
                 }
                 if (wt.getSuperBound() != null) {
                     sb.append(" super "); // NOI18N
-                    sb.append(print(wt.getSuperBound()));
+                    sb.append(print(wt.getSuperBound(), html));
                 }
                 return sb.toString();
             default:

@@ -183,7 +183,7 @@ public final class GeneratorUtilities {
         CodeStyle codeStyle = DiffContext.getCodeStyle(copy);
         if (codeStyle.getClassMemberInsertionPoint() == CodeStyle.InsertionPoint.CARET_LOCATION) {
             JTextComponent jtc = EditorRegistry.lastFocusedComponent();
-            if (jtc.getDocument() == doc)
+            if (jtc != null && jtc.getDocument() == doc)
                 caretPos = jtc.getCaretPosition();
         }
         ClassMemberComparator comparator = caretPos < 0 ? new ClassMemberComparator(codeStyle) : null;
@@ -571,9 +571,11 @@ public final class GeneratorUtilities {
         int treshold = cs.countForUsingStarImport();
         int staticTreshold = cs.countForUsingStaticStarImport();        
         Map<PackageElement, Integer> pkgCounts = new LinkedHashMap<PackageElement, Integer>();
-        pkgCounts.put(elements.getPackageElement("java.lang"), -2); //NOI18N
+        PackageElement pkg = elements.getPackageElement("java.lang"); //NOI18N
+        if (pkg != null)
+            pkgCounts.put(pkg, -2);
         ExpressionTree packageName = cut.getPackageName();
-        PackageElement pkg = packageName != null ? (PackageElement)trees.getElement(TreePath.getPath(cut, packageName)) : null;
+        pkg = packageName != null ? (PackageElement)trees.getElement(TreePath.getPath(cut, packageName)) : null;
         if (pkg == null && packageName != null)
             pkg = elements.getPackageElement(elements.getName(packageName.toString()));
         if (pkg == null)
@@ -688,8 +690,9 @@ public final class GeneratorUtilities {
                         }
                     }
                 }
-                importScope.importAll(((Symbol)entry.getKey()).members());
             }
+            if (entry.getValue() < 0 && entry.getKey() instanceof Symbol)
+                importScope.importAll(((Symbol)entry.getKey()).members());
         }
 
         // sort the elements to import

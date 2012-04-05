@@ -45,10 +45,13 @@
 package org.netbeans.core.windows.services;
 
 import java.awt.Dialog;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
+import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -57,6 +60,11 @@ import org.openide.DialogDisplayer;
  * @author Jiri Rechtacek
  */
 public class DialogDisplayer50960Test extends TestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(DialogDisplayer50960Test.class);
+    }
+
     private boolean performed = false;
 
     public DialogDisplayer50960Test (String testName) {

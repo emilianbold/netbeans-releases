@@ -122,10 +122,8 @@ public final class LocalServerController {
                 if (sourcesFolderProvider != null) {
                     newSubfolderName = sourcesFolderProvider.getSourcesFolderName();
                 }
-                File currentDirectory = browseHandler.getCurrentDirectory();
-                File newLocation = Utils.browseLocalServerAction(localServerBrowseButton.getParent(), localServerComboBox, localServerComboBoxModel, currentDirectory,
-                        newSubfolderName, browseDialogTitle);
-                browseHandler.locationChanged(newLocation);
+                Utils.browseLocalServerAction(localServerComboBox, localServerComboBoxModel,
+                        newSubfolderName, browseDialogTitle, browseHandler.getDirKey());
             }
         });
     }
@@ -192,9 +190,9 @@ public final class LocalServerController {
         return err;
     }
 
-    // handle browse button - provide default directory & save it if needed
-    public static interface BrowseHandler {
-        File getCurrentDirectory();
-        void locationChanged(File location);
+    // handle browse button - provide dir key (for saving & restoring)
+    public interface BrowseHandler {
+        String getDirKey();
     }
+
 }

@@ -65,6 +65,41 @@ public class InlineTest extends RefactoringTestBase {
     public InlineTest(String name) {
         super(name);
     }
+    
+    public void test210250() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    int x;\n"
+                + "    public static void statM() {\n"
+                + "        A newClass = new A();\n"
+                + "        newClass.method();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void method() {\n"
+                + "        System.out.println(x);\n"
+                + "        method2();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void method2() {\n"
+                + "    }"
+                + "}\n"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 3, r);
+        performRefactoring(r);
+        verifyContent(src, new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    int x;\n"
+                + "    public static void statM() {\n"
+                + "        A newClass = new A();\n"
+                + "        System.out.println(newClass.x);\n"
+                + "        newClass.method2();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void method2() {\n"
+                + "    }"
+                + "}\n"));
+    }
 
     public void test209579() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -974,6 +1009,47 @@ public class InlineTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
     }
+    
+    public void testInlineMethodParametersMultipleFiles() throws Exception { // #210335 - NullPointerException at com.sun.tools.javac.api.JavacTrees.getElement
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public String getGreeting(String name) {\n"
+                + "        String message = \"Hello \" + name + \"!\";"
+                + "        return name + \": \" + message;\n"
+                + "    }\n"
+                + "    public void testMethod() {\n"
+                + "        System.out.println(getGreeting(\"World\"));\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethod() {\n"
+                + "        A a = new A();\n"
+                + "        System.out.println(a.getGreeting(\"World\"));\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void testMethod() {\n"
+                + "        String message = \"Hello \" + \"World\" + \"!\";"
+                + "        System.out.println(\"World\" + \": \" + message);\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethod() {\n"
+                + "        A a = new A();\n"
+                + "        String message = \"Hello \" + \"World\" + \"!\";"
+                + "        System.out.println(\"World\" + \": \" + message);\n"
+                + "    }\n"
+                + "}")
+                );
+    }
 
     public void testInlineMethodParameters() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -983,7 +1059,7 @@ public class InlineTest extends RefactoringTestBase {
                 + "        String message = \"Hello \" + name + \"!\";"
                 + "        return name + \": \" + message;\n"
                 + "    }\n"
-                + "    public static void testMethod() {\n"
+                + "    public void testMethod() {\n"
                 + "        System.out.println(getGreeting(\"World\"));\n"
                 + "    }\n"
                 + "}"));
@@ -993,7 +1069,7 @@ public class InlineTest extends RefactoringTestBase {
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
-                + "    public static void testMethod() {\n"
+                + "    public void testMethod() {\n"
                 + "        String message = \"Hello \" + \"World\" + \"!\";"
                 + "        System.out.println(\"World\" + \": \" + message);\n"
                 + "    }\n"

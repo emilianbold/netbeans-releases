@@ -932,29 +932,33 @@ abstract public class CsmCompletionQuery {
                 CsmType oldType = resolveType;
                 CsmVariable var = (CsmVariable)resolveObj;
                 CsmExpression initialValue = var.getInitialValue();
-                
-                TokenHierarchy<String> hi = TokenHierarchy.create(initialValue.getText().toString(), CndLexerUtilities.getLanguage(getBaseDocument()));
-                List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(initialValue.getEndOffset(), true);
-                // Go from inner to outer TSes
-                TokenSequence<TokenId> cppts = null;
-                for (int i = tsList.size() - 1; i >= 0; i--) {
-                    TokenSequence<?> ts = tsList.get(i);
-                    final Language<?> lang = ts.languagePath().innerLanguage();
-                    if (CndLexerUtilities.isCppLanguage(lang, false)) {
-                        @SuppressWarnings("unchecked") // NOI18N
-                        TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
-                        cppts = uts;
-                    }
-                }
-                if(cppts != null) {
-                    CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initialValue.getEndOffset(), initialValue.getStartOffset());
-                    tp.enableTemplateSupport(true);
-                    CndTokenUtilities.processTokens(tp, getBaseDocument(), initialValue.getStartOffset(), initialValue.getEndOffset());
-                    CsmCompletionExpression exp = tp.getResultExp();
-                    
-                    resolveType = resolveType(exp);
-                    if(resolveType != null) {
-                        resolveType = CsmCompletion.createType(resolveType.getClassifier(), oldType.getPointerDepth(), oldType.getArrayDepth(), oldType.isConst());
+                if (initialValue != null) {
+                    CharSequence initText = initialValue.getText();
+                    if (initText != null) {
+                        TokenHierarchy<String> hi = TokenHierarchy.create(initText.toString(), CndLexerUtilities.getLanguage(getBaseDocument()));
+                        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(initialValue.getEndOffset(), true);
+                        // Go from inner to outer TSes
+                        TokenSequence<TokenId> cppts = null;
+                        for (int i = tsList.size() - 1; i >= 0; i--) {
+                            TokenSequence<?> ts = tsList.get(i);
+                            final Language<?> lang = ts.languagePath().innerLanguage();
+                            if (CndLexerUtilities.isCppLanguage(lang, false)) {
+                                @SuppressWarnings("unchecked") // NOI18N
+                                TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
+                                cppts = uts;
+                            }
+                        }
+                        if(cppts != null) {
+                            CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initialValue.getEndOffset(), initialValue.getStartOffset());
+                            tp.enableTemplateSupport(true);
+                            CndTokenUtilities.processTokens(tp, getBaseDocument(), initialValue.getStartOffset(), initialValue.getEndOffset());
+                            CsmCompletionExpression exp = tp.getResultExp();
+
+                            resolveType = resolveType(exp);
+                            if(resolveType != null) {
+                                resolveType = CsmCompletion.createType(resolveType.getClassifier(), oldType.getPointerDepth(), oldType.getArrayDepth(), oldType.isConst());
+                            }
+                        }
                     }
                 }
             }
@@ -1447,7 +1451,7 @@ abstract public class CsmCompletionQuery {
                                         if (first && !findType) {
                                             lastType = findExactVarType(var, varPos);
                                         }
-                                        if (lastType == null) {
+                                        if (lastType == null || lastType.getClassifierText().toString().equals("auto")) { // NOI18N
                                             // try to find with resolver
                                             CompletionResolver.Result res = null;
                                             compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
@@ -1563,7 +1567,7 @@ abstract public class CsmCompletionQuery {
                                             // IZ#143044, IZ#160677
                                             // There is no need for searching in parents for global declarations/definitions
                                             // in case of csope access
-                                            boolean inspectParentClasses = (this.contextElement != null || !scopeAccessedClassifier);
+                                            boolean inspectParentClasses = (this.contextElement != null || !scopeAccessedClassifier || staticOnly);
                                             List res = findFieldsAndMethods(finder, contextElement, classifier, var, openingSource, staticOnly && !memberPointer, false, inspectParentClasses, this.scopeAccessedClassifier, skipConstructors, sort);
                                             List nestedClassifiers = findNestedClassifiers(finder, contextElement, classifier, var, openingSource, true, sort);
                                             res.addAll(nestedClassifiers);
@@ -1680,7 +1684,10 @@ abstract public class CsmCompletionQuery {
                     break;
 
                 case CsmCompletionExpression.GENERIC_TYPE: {
-                    CsmType typ = resolveType(item.getParameter(0));
+                    CsmType typ = null;
+                    if(first) {
+                        typ = resolveType(item.getParameter(0));
+                    }
                     if(typ == null) {
                         boolean oldFindType = findType;
                         findType = true;

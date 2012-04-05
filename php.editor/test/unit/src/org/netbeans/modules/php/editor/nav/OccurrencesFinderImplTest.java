@@ -828,6 +828,82 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "use pl\\dagguh\\someproject\\rooms\\Kit^chen as Alias;", true);
     }
 
+    public void testIssue208245_01() throws Exception {
+        checkOccurrences(getTestPath(), "$glob^Var = \"\";", true);
+    }
+
+    public void testIssue208245_02() throws Exception {
+        checkOccurrences(getTestPath(), "function() use($glob^Var) {", true);
+    }
+
+    public void testIssue208245_03() throws Exception {
+        checkOccurrences(getTestPath(), "echo $glob^Var;", true);
+    }
+
+    public void testIssue208245_04() throws Exception {
+        checkOccurrences(getTestPath(), "$v^ar = \"\";", true);
+    }
+
+    public void testIssue208245_05() throws Exception {
+        checkOccurrences(getTestPath(), "function() use($v^ar) {", true);
+    }
+
+    public void testIssue208245_06() throws Exception {
+        checkOccurrences(getTestPath(), "echo $v^ar;", true);
+    }
+
+    public void testIssue203073_01() throws Exception {
+        checkOccurrences(getTestPath(), "class First^Parent {", true);
+    }
+
+    public void testIssue203073_02() throws Exception {
+        checkOccurrences(getTestPath(), "use Full\\Name\\Space\\First^Parent as SecondParent;", true);
+    }
+
+    public void testIssue203073_03() throws Exception {
+        checkOccurrences(getTestPath(), "use Full\\Name\\Space\\First^Parent;", true);
+    }
+
+    public void testIssue203073_04() throws Exception {
+        checkOccurrences(getTestPath(), "class Yours1 extends First^Parent {", true);
+    }
+
+    public void testIssue203073_05() throws Exception {
+        checkOccurrences(getTestPath(), "use Full\\Name\\Space\\FirstParent as Second^Parent;", true);
+    }
+
+    public void testIssue203073_06() throws Exception {
+        checkOccurrences(getTestPath(), "class Yours extends Second^Parent {", true);
+    }
+
+    public void testIssue203814_01() throws Exception {
+        checkOccurrences(getTestPath(), "public function fMe^thod()", true);
+    }
+
+    public void testIssue203814_02() throws Exception {
+        checkOccurrences(getTestPath(), "self::$first->fMe^thod();", true);
+    }
+
+    public void testIssue203814_03() throws Exception {
+        checkOccurrences(getTestPath(), "static::$first->fMe^thod();", true);
+    }
+
+    public void testIssue203814_04() throws Exception {
+        checkOccurrences(getTestPath(), "Second::$first->fMe^thod();", true);
+    }
+
+    public void testIssue207346_01() throws Exception {
+        checkOccurrences(getTestPath(), "public $invalid^LinkMode;", true);
+    }
+
+    public void testIssue207346_02() throws Exception {
+        checkOccurrences(getTestPath(), "$this->invalid^LinkMode = 10;", true);
+    }
+
+    public void testIssue207346_03() throws Exception {
+        checkOccurrences(getTestPath(), "$this->invalid^LinkMode;", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

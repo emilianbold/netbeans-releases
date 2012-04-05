@@ -51,6 +51,7 @@ import java.util.List;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
+import org.netbeans.modules.search.ui.BasicReplaceResultsPanel;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
@@ -76,6 +77,7 @@ public final class ReplaceTask implements Runnable {
     private final List<MatchingObject> matchingObjects;
     private final ProgressHandle progressHandle;
     private final List<String> problems;
+    private final BasicReplaceResultsPanel panel;
     
     /** */
     private ResultStatus resultStatus = null;
@@ -88,8 +90,10 @@ public final class ReplaceTask implements Runnable {
     
     /**
      */
-    public ReplaceTask(List<MatchingObject> matchingObjects) {
+    public ReplaceTask(List<MatchingObject> matchingObjects,
+            BasicReplaceResultsPanel panel) {
         this.matchingObjects = matchingObjects;
+        this.panel = panel;
         
         problems = new ArrayList<String>(4);
         progressHandle = ProgressHandleFactory.createHandle(
@@ -232,5 +236,8 @@ public final class ReplaceTask implements Runnable {
                ? null
                : problems.toArray(new String[problems.size()]);
     }
-    
+
+    BasicReplaceResultsPanel getPanel() {
+        return panel;
+    }
 }

@@ -46,23 +46,32 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import java.util.List;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.xml.VersionException;
+import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
@@ -70,21 +79,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.api.xml.VersionException;
-import org.netbeans.modules.cnd.api.xml.XMLDecoder;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
-import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -279,7 +279,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     itemConfiguration.setTool(PredefinedToolKind.getTool(tool));
                     String flavor = atts.getValue(ItemXMLCodec.FLAVOR_ATTR);
                     if (flavor != null) {
-                        itemConfiguration.setLanguageFlavor(LanguageFlavor.values()[Integer.parseInt(flavor)]);
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.fromExternal(Integer.parseInt(flavor)));
                     }
                 }
             } else {
@@ -760,9 +760,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(STANDARD_ELEMENT)) {
             int val = new Integer(currentText).intValue();
             if (currentCCCompilerConfiguration != null) {
-                currentCCCompilerConfiguration.getCppStandard().setValue(val);
+                currentCCCompilerConfiguration.setCppStandardExternal(val);
             } else if (currentCCompilerConfiguration != null) {
-                currentCCompilerConfiguration.getCStandard().setValue(val);
+                currentCCompilerConfiguration.setCStandardExternal(val);
             }            
         } else if (element.equals(INHERIT_INC_VALUES_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);

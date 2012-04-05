@@ -43,13 +43,13 @@
  */
 package org.netbeans.modules.html.editor;
 
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.editor.ext.html.dtd.spi.ReaderProvider;
+import org.netbeans.modules.html.editor.lib.api.dtd.ReaderProvider;
 import org.openide.filesystems.*;
 import org.openide.util.Exceptions;
 
