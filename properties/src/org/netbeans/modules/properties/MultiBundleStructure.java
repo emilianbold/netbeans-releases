@@ -106,6 +106,7 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
                     primaryEntry = (PropertiesFileEntry) obj.getPrimaryEntry();
                 }
             } else {
+                return;
             }
             if (primaryEntry != null) {
                 FileObject primary = primaryEntry.getFile();
