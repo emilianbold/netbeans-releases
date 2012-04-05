@@ -1391,7 +1391,7 @@ public final class JFXProjectProperties {
 
         // list of all properties related to project configurations (excluding application parameter properties that are handled separately)
         private List<String> PROJECT_PROPERTIES = Arrays.asList(new String[] {
-            MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, 
+            ProjectProperties.MAIN_CLASS, MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, 
             PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
             RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH, RUN_AS});
         // list of those properties that should be stored in private.properties instead of project.properties
