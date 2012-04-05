@@ -409,7 +409,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
 
         if (handles.length == 0 || n != null) {
             assert files.length == 1;
-            return new RenameRefactoringUI(files[0], n, null, null);
+            return n==null?new RenameRefactoringUI(files[0], null, null):new RenameRefactoringUI(files[0], n, null, null);
         }
         assert handles.length == 1;
         TreePathHandle selectedElement = handles[0];
