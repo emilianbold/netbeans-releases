@@ -104,7 +104,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                 final Object key = this;
                 if (info == null) {
                     try {
-                        RepositoryPreferences.getInstance().addTransientNonMirroredRepository(key, MavenNbModuleImpl.NETBEANS_REPO_ID, MavenNbModuleImpl.NETBEANS_REPO_ID, "http://bits.netbeans.org/maven2/");
+                        RepositoryPreferences.getInstance().addTransientRepository(key, MavenNbModuleImpl.NETBEANS_REPO_ID, MavenNbModuleImpl.NETBEANS_REPO_ID, "http://bits.netbeans.org/maven2/", RepositoryInfo.MirrorStrategy.NON_WILDCARD);
                         info = MavenNbModuleImpl.netbeansRepo();
                     } catch (URISyntaxException x) {
                         assert false : x;

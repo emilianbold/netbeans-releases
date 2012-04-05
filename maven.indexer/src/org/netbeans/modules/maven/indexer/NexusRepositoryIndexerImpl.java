@@ -473,11 +473,16 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             } else {
                 LOGGER.log(Level.FINE, "Indexing Local Repository: {0}", repo.getId());
-                RepositoryIndexerListener listener = new RepositoryIndexerListener(indexingContext);
-                try {
-                    indexer.scan(indexingContext, listener, updateLocal);
-                } finally {
-                    listener.close();
+                if (!indexingContext.getRepository().exists()) {
+                    //#210743
+                    LOGGER.log(Level.FINE, "Local repository at {0} doesn't exist, no scan.", indexingContext.getRepository());
+                } else {
+                    RepositoryIndexerListener listener = new RepositoryIndexerListener(indexingContext);
+                    try {
+                        indexer.scan(indexingContext, listener, updateLocal);
+                    } finally {
+                        listener.close();
+                    }
                 }
             }
         } catch (Cancellation x) {
@@ -581,6 +586,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         LOGGER.log(Level.WARNING, "Indexing context could not be created: {0}", repo.getId());
                         return null;
                     }
+                    
+                    if (!indexingContext.getRepository().exists()) {
+                        //#210743
+                        LOGGER.log(Level.FINE, "Local repository at {0} doesn't exist, no update.", indexingContext.getRepository());  
+                        return null;
+                    }
 
                     for (Artifact artifact : artifacts) {
                         String absolutePath;
@@ -636,7 +647,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         LOGGER.log(Level.WARNING, "Indexing context chould not be created: {0}", repo.getId());
                         return null;
                     }
-
+                    if (!indexingContext.getRepository().exists()) {
+                        //#210743
+                        LOGGER.log(Level.FINE, "Local repository at {0} doesn't exist, no update.", indexingContext.getRepository());  
+                        return null;
+                    }
+                    
                     String absolutePath;
                     if (artifact.getFile() != null) {
                         absolutePath = artifact.getFile().getAbsolutePath();

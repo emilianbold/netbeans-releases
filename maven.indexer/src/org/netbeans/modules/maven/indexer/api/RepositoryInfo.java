@@ -67,8 +67,7 @@ public final class RepositoryInfo {
     private final String indexUpdateUrl;
     private final List<RepositoryInfo> mirrorOf = new ArrayList<RepositoryInfo>();
     
-    private boolean canBeMirrored = false;
-
+    private MirrorStrategy mirrorStrategy = MirrorStrategy.NON_WILDCARD;
 
     public RepositoryInfo(String id, @NullAllowed String name, String repositoryPath, String repositoryUrl) throws URISyntaxException {
         this(id, name, repositoryPath, repositoryUrl, null);
@@ -182,26 +181,42 @@ public final class RepositoryInfo {
 
     
     /**
-     * 
-     * @return 
-     * @since 2.10
+     * @since 2.11
      */
-    boolean isCanBeMirrored() {
-        return canBeMirrored;
+    public MirrorStrategy getMirrorStrategy() {
+        return mirrorStrategy;
     }
 
     /**
-     * 
-     * @return 
-     * @since 2.10
+     * @since 2.11
      */
-    void setCanBeMirrored(boolean canBeMirrored) {
-        this.canBeMirrored = canBeMirrored;
+    public void setMirrorStrategy(MirrorStrategy mirrorStrategy) {
+        this.mirrorStrategy = mirrorStrategy;
     }
     
-    public @Override String toString() {
-        return id;
+
+    /**
+     * strategy for resolving the repositoryUrl property
+     * @since 2.11
+     */
+    public enum MirrorStrategy {
+        /**
+         * no processing happens, repositoryUrl is used as is.
+         */
+        NONE, 
+        /**
+         * id and repositoryUrl properties are processed through the mirrors settings in ~/.m2/repository
+         */
+        ALL, 
+        /**
+         * only explicit mirrors matching the id are used, wildcard mirrors are ignored.
+         */
+        NON_WILDCARD
     }
+    
+     public @Override String toString() {
+        return id;
+    }   
 
     @Override
     public boolean equals(Object obj) {

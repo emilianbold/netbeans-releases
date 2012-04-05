@@ -60,11 +60,11 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEvent;
-import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
-import org.netbeans.modules.versioning.ui.history.RevisionNode.Filter;
 import org.netbeans.modules.versioning.ui.history.RevisionNode.MessageProperty;
+import org.netbeans.modules.versioning.ui.history.HistoryComponent.Filter;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.outline.DefaultOutlineCellRenderer;
@@ -182,7 +182,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         return files;
     }
                      
-    void setFilter(RevisionNode.Filter filter) {
+    void setFilter(Filter filter) {
         this.filter = filter;
         tablePanel.treeView.getOutline().setQuickFilter(0, filter);
     }
@@ -802,9 +802,8 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     String valueString = getDisplayValue((Node.Property) value);
                     valueString = HistoryUtils.computeFitText(table, row, column, valueString);
                     
-                    Filter f = tc != null ? tc.getSelectedFilter() : null;
-                    if(f != null && f.filtersProperty((Node.Property) value)) {
-                        valueString = f.getRendererValue(valueString);
+                    if(filter != null && filter.filtersProperty((Node.Property) value)) {
+                        valueString = filter.getRendererValue(valueString);
                     } else {
                         valueString = HistoryUtils.escapeForHTMLLabel(valueString); 
                     }

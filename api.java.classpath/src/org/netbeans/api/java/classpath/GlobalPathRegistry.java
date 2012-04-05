@@ -200,6 +200,7 @@ public final class GlobalPathRegistry {
                 }
                 l.add(path);
             }
+            LOG.log(Level.FINER, "now have {0} paths of type {1}", new Object[] {l.size(), id});
             if (added != null && !added.isEmpty()) {
                 _listeners = listeners.toArray(new GlobalPathRegistryListener[listeners.size()]);
                 evt = new GlobalPathRegistryEvent(this, id, Collections.unmodifiableSet(added));
@@ -251,6 +252,7 @@ public final class GlobalPathRegistry {
                 }
             }
             this.paths.put(id, l2);
+            LOG.log(Level.FINER, "now have {0} paths of type {1}", new Object[] {l2.size(), id});
             if (removed != null && !removed.isEmpty()) {
                 _listeners = listeners.toArray(new GlobalPathRegistryListener[listeners.size()]);
                 evt = new GlobalPathRegistryEvent(this, id, Collections.unmodifiableSet(removed));

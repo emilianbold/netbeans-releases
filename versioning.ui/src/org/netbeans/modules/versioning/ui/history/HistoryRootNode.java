@@ -190,14 +190,17 @@ public class HistoryRootNode extends AbstractNode {
         }
     }
     
+    @Override
     public String getName() {
         return NODE_ROOT; 
     }
     
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(HistoryRootNode.class, "LBL_LocalHistory_Column_Version"); // NOI18N
     }            
         
+    @Override
     public Action[] getActions(boolean context) {
         return NO_ACTION;
     }

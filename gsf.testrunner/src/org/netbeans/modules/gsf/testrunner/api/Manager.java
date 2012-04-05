@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.gsf.testrunner.api;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
@@ -345,7 +347,7 @@ public final class Manager {
     /**
      */
     @NbBundle.Messages({"# {0} - project", "LBL_NotificationDisplayer_title=Tests finished successfully for project: {0}",
-        "LBL_NotificationDisplayer_detailsText=No errors or failures"})
+        "LBL_NotificationDisplayer_detailsText=Open Test Results Window"})
     private void displayInWindow(final TestSession session,
                                  final ResultDisplayHandler displayHandler,
                                  final boolean sessionEnd) {
@@ -377,7 +379,13 @@ public final class Manager {
                             Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/testResults.png"));   //NOI18N
                             String projectname = ProjectUtils.getInformation(session.getProject()).getDisplayName();
                             NotificationDisplayer.getDefault().notify(Bundle.LBL_NotificationDisplayer_title(projectname), icon,
-                                    Bundle.LBL_NotificationDisplayer_detailsText(), null);
+                                    Bundle.LBL_NotificationDisplayer_detailsText(), new ActionListener() {
+
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    window.promote();
+                                }
+                            });
                         }
                     }
                 });
