@@ -57,7 +57,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
-import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;

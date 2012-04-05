@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,35 +41,21 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.groovy.editor.api.elements.common;
 
-package org.netbeans.modules.groovy.editor.api.elements;
-
-import org.codehaus.groovy.ast.ModuleNode;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.openide.filesystems.FileObject;
+import java.util.List;
 
 /**
+ * Groovy-Elements that correspond to methods will implement
+ * this interface whether they are from an AST or from an index
  *
- * @author Martin Adamek
+ * @author Tor Norbye
  */
-public class AstRootElement extends AstElement {
+public interface IMethodElement {
 
-    private final FileObject fileObject;
-    private final ModuleNode moduleNode;
-
-    public AstRootElement(FileObject fo, GroovyParserResult info, ModuleNode moduleNode) {
-        super(info, moduleNode);
-        this.fileObject = fo;
-        this.moduleNode = moduleNode;
-    }
-
-    @Override
-    public String getName() {
-        return fileObject.getNameExt();
-    }
-
-    public ModuleNode getModuleNode() {
-        return moduleNode;
-    }
+    List<String> getParameters();
     
+    boolean isTopLevel();
+    boolean isInherited();
+    boolean isDeprecated();
 }
