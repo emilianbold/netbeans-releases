@@ -1417,9 +1417,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     statesToParse.add(newState);
                     AtomicBoolean clean = new AtomicBoolean(false);
                     thisProjectUpdateResult = updateFileEntryBasedOnIncludedStatePair(entry, newStatePair, file, csmFile, clean, statesToParse);
-                    if (startProjectUpdateResult) {
-                        assert thisProjectUpdateResult : " start project thinks that new state " + newStatePair + " is the best but current doesn't" + entry;
-                    }
+//                    if (!startProjectUpdateResult) {
+//                        assert !thisProjectUpdateResult : " start project " + startProject + " thinks that new state for " + file + " is worse but current wants to reparse with it " + this;
+//                    }
                     if (thisProjectUpdateResult) {
                         // TODO: think over, what if we aready changed entry,
                         // but now deny parsing, because base, but not this project, is disposing?!
