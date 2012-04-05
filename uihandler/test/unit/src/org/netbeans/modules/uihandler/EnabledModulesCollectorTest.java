@@ -52,7 +52,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
 
@@ -76,7 +75,6 @@ public class EnabledModulesCollectorTest extends NbTestCase {
         installer.restored();
     }
 
-    @RandomlyFails
     public void testSetOfEnabledModulesIsListed() {
         // just log something
         Logger.getLogger("org.netbeans.ui.empty").warning("say anything");
