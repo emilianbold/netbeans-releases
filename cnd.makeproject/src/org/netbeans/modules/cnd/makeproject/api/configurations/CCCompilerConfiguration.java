@@ -43,6 +43,8 @@
  */
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
@@ -91,9 +93,31 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
     public IntConfiguration getCppStandard() {
         return cppStandard;
     }    
+
+    public int getCppStandardExternal() {
+        switch(getCppStandard().getValue()) {
+            case STANDARD_DEFAULT: return LanguageFlavor.DEFAULT.toExternal();
+            case STANDARD_CPP98: return LanguageFlavor.CPP.toExternal();
+            case STANDARD_CPP11: return LanguageFlavor.CPP11.toExternal();
+            case STANDARD_INHERITED:  return LanguageFlavor.UNKNOWN.toExternal();
+            default: return LanguageFlavor.UNKNOWN.toExternal();
+        }
+    }    
     
     public void setCppStandard(IntConfiguration cppStandard) {
         this.cppStandard = cppStandard;
+    }
+
+    public void setCppStandardExternal(int cppStandard) {
+        if (cppStandard == LanguageFlavor.DEFAULT.toExternal()) {
+            this.cppStandard.setValue(STANDARD_DEFAULT);
+        } else if (cppStandard == LanguageFlavor.CPP.toExternal()) {
+            this.cppStandard.setValue(STANDARD_CPP98);
+        } else if (cppStandard == LanguageFlavor.CPP11.toExternal()) {
+            this.cppStandard.setValue(STANDARD_CPP11);
+        } else if (cppStandard == LanguageFlavor.UNKNOWN.toExternal()) {
+            this.cppStandard.setValue(STANDARD_INHERITED);
+        }
     }
     
     // Clone and assign
