@@ -198,7 +198,9 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
         @Override
         public void visit(ForStatement node) {
             parentNodes.push(node);
-            super.visit(node);
+            scan(node.getInitializers());
+            scan(node.getConditions());
+            scan(node.getBody());
             parentNodes.pop();
         }
 
