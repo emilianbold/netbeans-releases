@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,22 +46,11 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.EventObject;
-import javax.swing.AbstractCellEditor;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.db.dataview.util.FileBackedBlob;
@@ -76,7 +65,9 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
     protected JButton button;
     protected JPopupMenu popup;
     protected JTable table;
+    protected JMenuItem saveContentMenuItem;
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public BlobFieldTableCellEditor() {
         button = new JButton();
         button.setActionCommand(EDIT);
@@ -99,6 +90,7 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
                 fireEditingCanceled();
             }
         });
+        saveContentMenuItem = miLobSaveAction;
         popup.add(miLobSaveAction);
         final JMenuItem miLobLoadAction = new JMenuItem(NbBundle.getMessage(BlobFieldTableCellEditor.class, "loadLob.title"));
         miLobLoadAction.addActionListener(new ActionListener() {
@@ -126,6 +118,7 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
 
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (EDIT.equals(e.getActionCommand())) {
             popup.show(button, 0, button.getHeight());
@@ -136,6 +129,7 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         currentValue = (java.sql.Blob) value;
         if (currentValue != null) {
+            saveContentMenuItem.setEnabled(true);
             try {
                 long size = currentValue.length();
                 StringBuilder stringValue = new StringBuilder();
@@ -153,6 +147,7 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
                 button.setText("<BLOB of unknown size>");
             }
         } else {
+            saveContentMenuItem.setEnabled(false);
             button.setText("<NULL>");
         }
         this.table = table;
@@ -173,12 +168,15 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
     }
 
     private void saveLobToFile(Blob b) {
+        if(b == null) {
+            return;
+        }
         JFileChooser c = new JFileChooser();
         int fileDialogState = c.showSaveDialog(table);
         if (fileDialogState == JFileChooser.APPROVE_OPTION) {
             File f = c.getSelectedFile();
-            InputStream is = null;
-            FileOutputStream fos = null;
+            InputStream is;
+            FileOutputStream fos;
             try {
                 is = b.getBinaryStream();
                 fos = new FileOutputStream(f);
@@ -199,7 +197,7 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
         int fileDialogState = c.showOpenDialog(table);
         if (fileDialogState == JFileChooser.APPROVE_OPTION) {
             File f = c.getSelectedFile();
-            FileInputStream fis = null;
+            FileInputStream fis;
             try {
                 fis = new FileInputStream(f);
                 result = new FileBackedBlob();
@@ -220,7 +218,7 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
      */
     private boolean doTransfer(InputStream is, OutputStream os, Integer size, String title) throws IOException {
         MonitorableStreamTransfer ft = new MonitorableStreamTransfer(is, os, size);
-        Throwable t = null;
+        Throwable t;
         // Only show dialog, if the filesize is large enougth and has a use for the user
         if (size == null || size > (1024 * 1024)) {
             t = ProgressUtils.showProgressDialogAndRun(ft, title, false);
