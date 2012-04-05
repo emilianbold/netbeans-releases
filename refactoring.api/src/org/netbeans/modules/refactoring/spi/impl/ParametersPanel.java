@@ -482,7 +482,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
                     try {
                         if (!previewAll && session != null) {
-                            if (session.getRefactoringElements().isEmpty()) {
+                            if (!rui.isQuery() && session.getRefactoringElements().isEmpty()) {
                                 DialogDescriptor nd = new DialogDescriptor(NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"),
                                         rui.getName(),
                                         true,
