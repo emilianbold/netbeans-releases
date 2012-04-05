@@ -54,9 +54,11 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -100,10 +102,7 @@ import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
-import org.openide.util.Cancellable;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.*;
 import org.openide.util.RequestProcessor.Task;
 
 /**
@@ -407,7 +406,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
                     resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
                     priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
-                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
+                    changedFieldsParameter.setParameterValues(QueryParameter.getLastChangeParameters(getRepository().getTaskRepository().getCharacterEncoding()));
                     summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     whiteboardParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
@@ -926,8 +925,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private List<ParameterValue> toParameterValues(List<String> values) {
         List<ParameterValue> ret = new ArrayList<ParameterValue>(values.size());
+        String encoding = getRepository().getTaskRepository().getCharacterEncoding();
         for (String v : values) {
-            ret.add(new ParameterValue(v, v));
+            StringBuilder sb = new StringBuilder();
+            try {
+                // use URLEncoder as it is used also by other clients of the bugzilla connector
+                sb.append(URLEncoder.encode(v, encoding));
+            } catch (UnsupportedEncodingException ex) {
+                sb.append(URLEncoder.encode(v));
+                Bugzilla.LOG.log(Level.WARNING, null, ex);
+            }
+            ret.add(new ParameterValue(v, sb.toString()));
         }
         return ret;
     }

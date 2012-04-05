@@ -83,7 +83,6 @@ public abstract class QueryParameter {
     static final ParameterValue PV_CONTAINS_ALL_WORDS = new ParameterValue("contains all of the words", "allwords"); // NOI18N
     static final ParameterValue PV_CONTAINS_ANY_WORDS = new ParameterValue("contains any of the words", "anywords"); // NOI18N
 
-    static final ParameterValue PV_FIELD_BUG_CREATION = new ParameterValue("[Bug creation]", "[Bug+creation]"); // NOI18N
     static final ParameterValue PV_FIELD_ALIAS = new ParameterValue("alias", "alias"); // NOI18N
     static final ParameterValue PV_FIELD_ASSIGNED_TO = new ParameterValue("assigned_to", "assigned_to"); // NOI18N
     static final ParameterValue PV_FIELD_LIST_ACCESSIBLE = new ParameterValue("cclist_accessible", "cclist_accessible"); // NOI18N
@@ -131,35 +130,53 @@ public abstract class QueryParameter {
         PV_MATCHES_REGEX,
         PV_DOESNT_MATCH_REGEX
     };
-    static final ParameterValue[] PV_LAST_CHANGE =  new ParameterValue[] {
-        PV_FIELD_BUG_CREATION,
-        PV_FIELD_ALIAS,
-        PV_FIELD_ASSIGNED_TO,
-        PV_FIELD_LIST_ACCESSIBLE,
-        PV_FIELD_COMPONENT,
-        PV_FIELD_DEADLINE,
-        PV_FIELD_EVER_CONFIRMED,
-        PV_FIELD_REP_PLARFORM,
-        PV_FIELD_REMAINING_TIME,
-        PV_FIELD_WORK_TIME,
-        PV_FIELD_KEYWORDS,
-        PV_FIELD_ESTIMATED_TIME,
-        PV_FIELD_OP_SYS,
-        PV_FIELD_PRIORITY,
-        PV_FIELD_PRODUCT,
-        PV_FIELD_QA_CONTACT,
-        PV_FIELD_REPORTER_ACCESSIBLE,
-        PV_FIELD_RESOLUTION,
-        PV_FIELD_BUG_SEVERITY,
-        PV_FIELD_BUG_STATUS,
-        PV_FIELD_SHORT_DESC,
-        PV_FIELD_TARGET_MILESTONE,
-        PV_FIELD_BUG_FILE_LOC,
-        PV_FIELD_VERSION,
-        PV_FIELD_VOTES,
-        PV_FIELD_STATUS_WHITEBOARD
-    };
 
+    static ParameterValue[] getLastChangeParameters(String encoding) {
+        // workaround: while encoding '+' in a products name works fine,
+        // encoding it in in [Bug+creation] causes an error
+        StringBuilder sb = new StringBuilder();
+        try {
+            sb.append(URLEncoder.encode("[", encoding));                // NOI18N
+            sb.append("Bug+creation");                                  // NOI18N
+            sb.append(URLEncoder.encode("]", encoding));                // NOI18N
+        } catch (UnsupportedEncodingException ex) {
+            sb.append(URLEncoder.encode("["));
+            sb.append("Bug+creation");                                  // NOI18N
+            sb.append(URLEncoder.encode("]"));                // NOI18N
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        }
+        
+        ParameterValue PV_FIELD_BUG_CREATION = new ParameterValue("[Bug creation]", sb.toString()); // NOI18N
+        return new ParameterValue[] {
+            PV_FIELD_BUG_CREATION,
+            PV_FIELD_ALIAS,
+            PV_FIELD_ASSIGNED_TO,
+            PV_FIELD_LIST_ACCESSIBLE,
+            PV_FIELD_COMPONENT,
+            PV_FIELD_DEADLINE,
+            PV_FIELD_EVER_CONFIRMED,
+            PV_FIELD_REP_PLARFORM,
+            PV_FIELD_REMAINING_TIME,
+            PV_FIELD_WORK_TIME,
+            PV_FIELD_KEYWORDS,
+            PV_FIELD_ESTIMATED_TIME,
+            PV_FIELD_OP_SYS,
+            PV_FIELD_PRIORITY,
+            PV_FIELD_PRODUCT,
+            PV_FIELD_QA_CONTACT,
+            PV_FIELD_REPORTER_ACCESSIBLE,
+            PV_FIELD_RESOLUTION,
+            PV_FIELD_BUG_SEVERITY,
+            PV_FIELD_BUG_STATUS,
+            PV_FIELD_SHORT_DESC,
+            PV_FIELD_TARGET_MILESTONE,
+            PV_FIELD_BUG_FILE_LOC,
+            PV_FIELD_VERSION,
+            PV_FIELD_VOTES,
+            PV_FIELD_STATUS_WHITEBOARD
+        };
+    }
+    
     private final String parameter;
     private final String encoding;
     protected boolean alwaysDisabled = false;
@@ -185,22 +202,7 @@ public abstract class QueryParameter {
             sb.append("&"); // NOI18N
             sb.append(getParameter());
             sb.append("="); // NOI18N
-            try {
-                String value = pv.getValue();
-                if(value.equals("[Bug+creation]")) {                            // NOI18N
-                    // workaround: while encoding '+' in a products name works fine,
-                    // encoding it in in [Bug+creation] causes an error
-                    sb.append(URLEncoder.encode("[", encoding));                // NOI18N
-                    sb.append("Bug+creation");                                  // NOI18N
-                    sb.append(URLEncoder.encode("]", encoding));                // NOI18N
-                } else {
-                    // use URLEncoder as it is used also by other clients of the bugzilla connector
-                    sb.append(URLEncoder.encode(value, encoding));
-                }
-            } catch (UnsupportedEncodingException ex) {
-                sb.append(URLEncoder.encode(pv.getValue()));
-                Bugzilla.LOG.log(Level.WARNING, null, ex);
-            }
+            sb.append(pv.getValue());
         }
         return sb;
     }
