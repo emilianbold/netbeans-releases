@@ -229,7 +229,7 @@ public class SelectModePanel extends javax.swing.JPanel {
     }
     
     private String getString(String key) {
-        return NbBundle.getBundle(SelectModePanel.class).getString(key);
+        return NbBundle.getMessage(SelectModePanel.class, key);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

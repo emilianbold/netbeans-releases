@@ -73,6 +73,7 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new SelectProviderPanel(this);
@@ -81,20 +82,24 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT_SELECT_PROVIDER);
     }
     
+    @Override
     public boolean isValid() {
         return ((SelectProviderPanel)getComponent()).valid(wizardDescriptor);
     }
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -111,6 +116,7 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
       	fireChangeEvent();
     }
@@ -123,6 +129,7 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
+    @Override
     public void readSettings(Object settings) {
         if (!inited) {
             wizardDescriptor = DiscoveryWizardDescriptor.adaptee(settings);
@@ -132,6 +139,7 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
         component.showAlert(wizardDescriptor);
     }
     
+    @Override
     public void storeSettings(Object settings) {
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
         ((WizardDescriptor)wizardDescriptor).putProperty("ShowAlert", Boolean.FALSE); // NOI18N
