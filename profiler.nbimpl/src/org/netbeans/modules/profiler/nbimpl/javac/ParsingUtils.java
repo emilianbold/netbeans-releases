@@ -39,58 +39,38 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.nbimpl;
+package org.netbeans.modules.profiler.nbimpl.javac;
 
-import java.io.File;
-import java.util.Map;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.common.Profiler;
-import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
-import org.openide.filesystems.FileUtil;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.java.source.*;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class StartProfilerTask extends Task {
-    private String freeformStr = "";
-    private boolean isFreeForm = false;
-    
-    @Override
-    public void execute() throws BuildException {
-        ProfilerLauncher.Session s = ProfilerLauncher.getLastSession();
-        if (s == null && isFreeForm) {
-            File baseDir = getProject().getBaseDir();
-            if (baseDir != null) {
-                Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(baseDir));
-                if (p != null) {
-                    s = ProfilerLauncher.Session.createSession(p);
-                }
-            }
-            
-        }
-        if (s != null) {
-            Map<String, String> props = s.getProperties();
-            if (props != null) {
-                for(Map.Entry<String, String> e : props.entrySet()) {
-                    getProject().setProperty(e.getKey(), e.getValue());
-                }
-                if (!NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings())) {
-                    throw new BuildException("User abort");
-                }
-            }
+public class ParsingUtils {
+    private static final Logger LOG = Logger.getLogger(ParsingUtils.class.getName());
+
+    /**
+     * Invokes a scan sensitive task at safe point and waits for it to finish
+     * @param cpInfo classpath
+     * @param t task to run
+     */
+    public static void invokeScanSensitiveTask(final ClasspathInfo cpInfo, final Task<CompilationController> t) {
+        try {
+            JavaSource.create(cpInfo).runWhenScanFinished(t, true).get();
+        } catch (IllegalArgumentException e) {
+            LOG.log(Level.SEVERE, null, e);
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, null, e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException e) {
+            LOG.log(Level.SEVERE, null, e);
         }
     }
     
-    public void setFreeform(String val) {
-        freeformStr = val;
-        isFreeForm = Boolean.parseBoolean(val);
-    }
-    
-    public String getFreeform() {
-        return freeformStr;
-    }
 }

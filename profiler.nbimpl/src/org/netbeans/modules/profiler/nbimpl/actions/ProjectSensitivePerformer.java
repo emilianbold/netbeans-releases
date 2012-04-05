@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.profiler.nbimpl.actions;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
@@ -49,6 +50,7 @@ import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher.Session;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -69,12 +71,12 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
 
         ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         try {
-            if (ap != null) {
+            if (ap != null && contains(ap.getSupportedActions(), command)) {
                 ProjectProfilingSupport ppp = ProjectProfilingSupport.get(project);
                 if (ppp == null) {
                     return false;
                 }
-                return ap.isActionEnabled(command, project.getLookup()) && ppp.isProfilingSupported();
+                return  ppp.isProfilingSupported() && ap.isActionEnabled(command, project.getLookup());
             }
         } catch (IllegalArgumentException e) {
             // no provider responds to the command
@@ -86,12 +88,24 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
     public void perform(final Project project) {
         final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         if (ap != null) {
-            Lookup ctx = new ProxyLookup(project.getLookup(), Lookups.fixed(project));
+            final Lookup ctx = new ProxyLookup(project.getLookup(), Lookups.fixed(project));
             
-            Session s = ProfilerLauncher.newSession(command, ctx);
-            if (s != null) {
-                s.run();
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Session s = ProfilerLauncher.newSession(command, ctx);
+                    if (s != null) {
+                        s.run();
+                    }
+                }
+            });
         }
+    }
+    
+    private static boolean contains(String[] actions, String action) {
+        for(String a : actions) {
+            if (a.equals(action)) return true;
+        }
+        return false;
     }
 }
