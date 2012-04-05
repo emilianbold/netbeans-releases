@@ -388,15 +388,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(Bugzilla.LOG.isLoggable(Level.FINE)) {
             Bugzilla.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
-        try {
-            final BugzillaConfiguration bc = repository.getConfiguration();
-            if(bc == null || !bc.isValid()) {
-                // XXX nice errro msg?
-                return;
-            }
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
+        final BugzillaConfiguration bc = repository.getConfiguration();
+        if(bc == null || !bc.isValid()) {
+            // XXX nice errro msg?
+            return;
+        }
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
                     productParameter.setParameterValues(toParameterValues(bc.getProducts()));
                     populateProductDetails();
                     if(isNetbeans) {
@@ -421,14 +421,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         final boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
                         panel.refreshCheckBox.setSelected(autoRefresh);
                     }
+                } finally {
+                    if(Bugzilla.LOG.isLoggable(Level.FINE)) {
+                        Bugzilla.LOG.log(Level.FINE, "Finnished populate query controller {0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+                    }
                 }
-            });
-
-        } finally {
-            if(Bugzilla.LOG.isLoggable(Level.FINE)) {
-        Bugzilla.LOG.log(Level.FINE, "Finnished populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
             }
-        }
+        });
     }
 
     private String getDefaultParameters() {
@@ -986,7 +985,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         setDependentParameter(componentParameter, componentPV);
         setDependentParameter(versionParameter, versionPV);
     }
-
+                
     private void setDependentParameter(QueryParameter qp, List<ParameterValue> values) {
         if(values != null) {
             qp.setValues(values.toArray(new ParameterValue[values.size()]));
