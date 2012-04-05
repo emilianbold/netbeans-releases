@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.editor.lib2;
 
+import java.awt.Toolkit;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,7 +53,6 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -172,7 +172,8 @@ public final class DocUtils {
                 doc.remove(offset, 1);
                 doc.insertString(offset + 1, String.valueOf(ch), null);
             } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex); // Should never happen due to check above
+                LOG.log(Level.FINE, null, ex);
+                Toolkit.getDefaultToolkit().beep();
             }
             return true;
         }
