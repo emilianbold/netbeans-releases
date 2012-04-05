@@ -844,8 +844,9 @@ class OccurenceBuilder {
             if (clzName.getName().equalsIgnoreCase("self")          //NOI18N
                     || clzName.getName().equalsIgnoreCase("static")) {//NOI18N
                 clzName = ((TypeScope) scope).getFullyQualifiedName();
-            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {//NOI18N
-                clzName = ((ClassScope) scope).getSuperClassName();
+            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { //NOI18N
+                Collection<QualifiedName> possibleFQSuperClassNames = ((ClassScope) scope).getPossibleFQSuperClassNames();
+                clzName = ModelUtils.getFirst(possibleFQSuperClassNames);
             }
         }
         if (clzName != null && clzName.toString().length() > 0) {
