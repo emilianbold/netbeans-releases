@@ -55,12 +55,14 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
  * @author __USER__
  */
+@XmlRootElement
 @Entity
 @Table(name = "DISCOUNT_CODE", catalog = "", schema = "APP")
 @NamedQueries({@NamedQuery(name = "DiscountCode.findAll", query = "SELECT d FROM DiscountCode d"), @NamedQuery(name = "DiscountCode.findByDiscountCode", query = "SELECT d FROM DiscountCode d WHERE d.discountCode = :discountCode"), @NamedQuery(name = "DiscountCode.findByRate", query = "SELECT d FROM DiscountCode d WHERE d.rate = :rate")})
