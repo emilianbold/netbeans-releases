@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,22 +34,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.modules.groovy.editor.api.elements;
-
-import java.util.List;
-
-/**
- * Groovy-Elements that correspond to methods will implement this interface
- * whether they are from an AST or from an index
  *
- * @author Tor Norbye
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-public interface MethodElement extends Element {
-    boolean isDeprecated();
+package org.netbeans.modules.groovy.editor.api.elements.ast;
 
-    List<String> getParameters();
-    boolean isTopLevel();
-    String getIn();
-    boolean isInherited();
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+
+public class ASTField extends ASTElement {
+
+    private boolean property;
+
+    public ASTField(GroovyParserResult info, ASTNode node) {
+        super(info, node);
+    }
+
+    @Override
+    public String getName() {
+        if (name == null) {
+            if (node instanceof FieldNode) {
+                name = ((FieldNode) node).getName();
+            }
+
+            if (name == null) {
+                name = node.toString();
+            }
+        }
+
+        return name;
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.FIELD;
+    }
+
+    public boolean isProperty() {
+        return property;
+    }
+
+    public void setProperty(boolean isProperty) {
+        this.property = isProperty;
+    }
 }

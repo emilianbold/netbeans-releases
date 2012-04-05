@@ -42,19 +42,22 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.api.elements;
+package org.netbeans.modules.groovy.editor.api.elements.ast;
 
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.elements.common.IClassElement;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 
-public class AstClassElement extends AstElement implements ClassElement {
+public class ASTClass extends ASTElement implements IClassElement {
+
     private String fqn;
     private Set<String> includes;
 
-    public AstClassElement(GroovyParserResult info, ASTNode node) {
+
+    public ASTClass(GroovyParserResult info, ASTNode node) {
         super(info, node);
     }
 
@@ -88,6 +91,7 @@ public class AstClassElement extends AstElement implements ClassElement {
         return in;
     }
 
+    @Override
     public String getFqn() {
         if (fqn == null) {
             return getName();
@@ -100,12 +104,13 @@ public class AstClassElement extends AstElement implements ClassElement {
         this.fqn = fqn;
     }
 
-    public void setIncludes(Set<String> includes) {
-        this.includes = includes;
-    }
-
+    @Override
     public Set<String> getIncludes() {
         return includes;
+    }
+    
+    public void setIncludes(Set<String> includes) {
+        this.includes = includes;
     }
 
     @Override
