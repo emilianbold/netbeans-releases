@@ -2146,7 +2146,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         if (metacomp instanceof RADVisualContainer && formDesigner.isInDesigner(metacomp)
                 && ((RADVisualContainer)metacomp).getLayoutSupport() == null) {
             Point p = convertPointToComponent(e.getPoint(), formDesigner.getTopDesignComponentView());
-            if (formDesigner.getLayoutDesigner().acceptsMouseWheel(p)) {
+            if (!viewOnly && formDesigner.getLayoutDesigner().acceptsMouseWheel(p)) {
                 if (wheeler == null) {
                     wheeler = new MouseWheeler(metacomp);
                     if (!wheelerBlocked) {
