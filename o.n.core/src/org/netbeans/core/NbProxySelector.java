@@ -184,7 +184,10 @@ public final class NbProxySelector extends ProxySelector {
                         LOG.finest ("No instance of ProxyAutoConfig(" + getPacFile() + ") for URI " + uri);
                         res.add(Proxy.NO_PROXY);
                     }
-                    if (pac.getPacURI().getHost() == null || pac.getPacURI().getHost().equals(uri.getHost())) {
+                    if (pac.getPacURI().getHost().equals(uri.getHost())) {
+                        // don't proxy PAC files
+                        res.add(Proxy.NO_PROXY);
+                    } else if (pac.getPacURI().getHost() == null) {
                         LOG.finest("Malformed PAC URI " + pac.getPacURI() + " for URI " + uri);
                         res.add(Proxy.NO_PROXY);
                     } else {
@@ -204,7 +207,10 @@ public final class NbProxySelector extends ProxySelector {
                     LOG.finest ("No instance of ProxyAutoConfig(" + getPacFile() + ") for URI " + uri);
                     res.add(Proxy.NO_PROXY);
                 }
-                if (pac.getPacURI().getHost() == null || pac.getPacURI().getHost().equals(uri.getHost())) {
+                if (pac.getPacURI().getHost().equals(uri.getHost())) {
+                    // don't proxy PAC files
+                    res.add(Proxy.NO_PROXY);
+                } else if (pac.getPacURI().getHost() == null) {
                     LOG.finest("Malformed PAC URI " + pac.getPacURI() + " for URI " + uri);
                     res.add(Proxy.NO_PROXY);
                 } else {
