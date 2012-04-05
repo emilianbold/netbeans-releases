@@ -64,12 +64,14 @@ public abstract class AbstractServerLookup<T> extends AbstractLookup implements 
 
     private static final Logger LOGGER = Logger.getLogger(AbstractServerLookup.class.getName());
 
+    private static final Object LOCK = new Object();
+
     private final InstanceContent content;
 
-    /** <i>GuardedBy("this")</i> */
+    /** <i>GuardedBy(LOCK)</i> */
     private final Map<Server, T> serversMap = new HashMap<Server, T>();
 
-    /** <i>GuardedBy("this")</i> */
+    /** <i>GuardedBy(LOCK)</i> */
     private boolean initialized;
 
     protected AbstractServerLookup(InstanceContent content) {
@@ -120,7 +122,7 @@ public abstract class AbstractServerLookup<T> extends AbstractLookup implements 
     }
 
     private void init() {
-        synchronized (this) {
+        synchronized (LOCK) {
             if (!initialized) {
                 final ServerRegistry registry = ServerRegistry.getInstance();
                 registry.addPluginListener(WeakListeners.create(
@@ -140,7 +142,7 @@ public abstract class AbstractServerLookup<T> extends AbstractLookup implements 
     private void stateChanged() {
         LOGGER.log(Level.FINE, "Updating the lookup content"); // NOI18N
         Set servers = new HashSet(ServerRegistry.getInstance().getServers());
-        synchronized (this) {
+        synchronized (LOCK) {
             for (Iterator<Map.Entry<Server, T>> it = serversMap.entrySet().iterator(); it.hasNext();) {
                 Map.Entry<Server, T> entry = it.next();
                 Server server = entry.getKey();
