@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.editor.api.elements;
+package org.netbeans.modules.cnd.search.ui;
 
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.cnd.search.SearchResult;
+import org.openide.nodes.Node;
+import org.openide.nodes.Node.Property;
 
-public class AstFieldElement extends AstElement {
+/**
+ *
+ * @author akrasny
+ */
+public final class SearchResultPropertySet extends Node.PropertySet {
 
-    private boolean property;
+    private final Property[] properties;
+//    private final SearchResult result;
 
-    public AstFieldElement(GroovyParserResult info, ASTNode node) {
-        super(info, node);
+    public SearchResultPropertySet(SearchResult result) {
+//        this.result = result;
+        properties = new Property[]{
+//            new PathProperty(), new SizeProperty(), new LastModifiedProperty()
+        };
     }
 
     @Override
-    public String getName() {
-        if (name == null) {
-            if (node instanceof FieldNode) {
-                name = ((FieldNode) node).getName();
-            }
-
-            if (name == null) {
-                name = node.toString();
-            }
-        }
-
-        return name;
+    public Property<?>[] getProperties() {
+        return properties;
     }
-
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.FIELD;
-    }
-
-    public boolean isProperty() {
-        return property;
-    }
-
-    public void setProperty(boolean isProperty) {
-        this.property = isProperty;
-    }
+//
+//    private class LastModifiedProperty extends PropertySupport.ReadOnly<Date> {
+//
+//        public LastModifiedProperty() {
+//            super("lastModified", Date.class, "Last Modified", "Last Modified");
+//        }
+//
+//        @Override
+//        public Date getValue() throws IllegalAccessException, InvocationTargetException {
+//            return new Date(System.currentTimeMillis());
+//        }
+//    }
+//
+//    private class PathProperty extends PropertySupport.ReadOnly<String> {
+//
+//        public PathProperty() {
+//            super("path", String.class, "path Modified", "path Modified");
+//        }
+//
+//        @Override
+//        public String getValue() throws IllegalAccessException, InvocationTargetException {
+//            return result.data.getPath();
+//        }
+//    }
+//
+//    private class SizeProperty extends PropertySupport.ReadOnly<Integer> {
+//
+//        public SizeProperty() {
+//            super("size", Integer.class, "size Modified", "size Modified");
+//        }
+//
+//        @Override
+//        public Integer getValue() throws IllegalAccessException, InvocationTargetException {
+//            return result.data.getSize();
+//        }
+//    }
 }

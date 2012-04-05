@@ -428,13 +428,20 @@ public abstract class RemoteFileObjectBase {
     void connectionChanged() {
         if (getFlag(CHECK_CAN_WRITE)) {
             setFlag(CHECK_CAN_WRITE, false);
-            // react the same way org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj does
-            RemoteFileObject fo = getOwnerFileObject();
-            fo.fireFileAttributeChangedEvent(getListeners(), 
-                    new FileAttributeEvent(fo, fo, "DataEditorSupport.read-only.refresh", null, null)); //NOI18N
+            fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
         }
     }
-    
+
+    final void fireFileAttributeChangedEvent(final String attrName, final Object oldValue, final Object newValue) {
+        Enumeration<FileChangeListener> pListeners = (parent != null) ? parent.getListeners() : null;
+
+        fireFileAttributeChangedEvent(getListeners(), new FileAttributeEvent(getOwnerFileObject(), getOwnerFileObject(), attrName, oldValue, newValue));
+
+        if (parent != null && pListeners != null) {
+            parent.fireFileAttributeChangedEvent(pListeners, new FileAttributeEvent(parent.getOwnerFileObject(), getOwnerFileObject(), attrName, oldValue, newValue));
+        }
+    }
+
     public final boolean canWrite() {
         return canWriteImpl(this);
     }
@@ -492,7 +499,7 @@ public abstract class RemoteFileObjectBase {
         }
     }
 
-    public void refresh(boolean expected) {
+    public final void refresh(boolean expected) {
         try {
             refreshImpl(true, null, expected);
         } catch (ConnectException ex) {
@@ -508,7 +515,7 @@ public abstract class RemoteFileObjectBase {
         }
     }
 
-    public void refresh() {
+    public final void refresh() {
         refresh(false);
     }
     

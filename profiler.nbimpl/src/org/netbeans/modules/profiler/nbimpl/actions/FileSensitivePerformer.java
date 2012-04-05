@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.profiler.nbimpl.actions;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
@@ -50,6 +51,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -78,13 +80,13 @@ public class FileSensitivePerformer implements FileActionPerformer {
 
         ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
         try {
-            if (ap != null) {
+            if (ap != null && contains(ap.getSupportedActions(), command)) {
                 ProjectProfilingSupport ppp = ProjectProfilingSupport.get(p);
                 if (ppp == null) {
                     return false;
                 }
                 
-                return ap.isActionEnabled(command, getContext(file)) && ppp.isProfilingSupported();
+                return ppp.isProfilingSupported() && ap.isActionEnabled(command, getContext(file));
             }
         } catch (IllegalArgumentException e) {
             // command not supported
@@ -93,14 +95,20 @@ public class FileSensitivePerformer implements FileActionPerformer {
     }
 
     @Override
-    public void perform(FileObject file) {
+    public void perform(final FileObject file) {
         Project p = FileOwnerQuery.getOwner(file);
         ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
         if (ap != null) {
-            ProfilerLauncher.Session s = ProfilerLauncher.newSession(command, getContext(file));
-            if (s != null) {
-                s.run();
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    ProfilerLauncher.Session s = ProfilerLauncher.newSession(command, getContext(file));
+                    if (s != null) {
+                        s.run();
+                    }
+                }
+            });
         }
     }
 
@@ -111,5 +119,12 @@ public class FileSensitivePerformer implements FileActionPerformer {
         } catch (DataObjectNotFoundException e) {
         }
         return Lookups.fixed(file, p);
+    }
+    
+    private static boolean contains(String[] actions, String action) {
+        for(String a : actions) {
+            if (a.equals(action)) return true;
+        }
+        return false;
     }
 }

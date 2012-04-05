@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,36 +34,82 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.search;
 
-package org.netbeans.modules.groovy.editor.api.elements;
-
-import org.codehaus.groovy.ast.ModuleNode;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.openide.filesystems.FileObject;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
- * @author Martin Adamek
+ * @author akrasny
  */
-public class AstRootElement extends AstElement {
+public final class MatchingFileData {
 
-    private final FileObject fileObject;
-    private final ModuleNode moduleNode;
+    private final SearchParams params;
+    private final String path;
+    private final String fname;
+    private List<Entry> entries = null;
+    private Integer size = -1;
 
-    public AstRootElement(FileObject fo, GroovyParserResult info, ModuleNode moduleNode) {
-        super(info, moduleNode);
-        this.fileObject = fo;
-        this.moduleNode = moduleNode;
+    public MatchingFileData(SearchParams params, String path) {
+        this.params = params;
+        this.path = path;
+        fname = path.substring(1 + path.lastIndexOf('/'));
     }
 
-    @Override
-    public String getName() {
-        return fileObject.getNameExt();
+    public String getPath() {
+        return path;
     }
 
-    public ModuleNode getModuleNode() {
-        return moduleNode;
+    public String getFileName() {
+        return fname;
     }
-    
+
+    void setSize(Integer size) {
+        this.size = size;
+    }
+
+    public Integer getSize() {
+        return size;
+    }
+
+    public List<Entry> getEntries() {
+        return Collections.unmodifiableList(entries);
+    }
+
+    public SearchParams getSearchParams() {
+        return params;
+    }
+
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
+    }
+
+    public boolean hasEntries() {
+        return !(entries == null || entries.isEmpty());
+    }
+
+    public static class Entry {
+
+        private final int line;
+        private final String context;
+
+        public Entry(int line, String context) {
+            this.line = line;
+            this.context = context;
+        }
+
+        public int getLineNumber() {
+            return line;
+        }
+
+        public String getContext() {
+            return context;
+        }
+    }
 }

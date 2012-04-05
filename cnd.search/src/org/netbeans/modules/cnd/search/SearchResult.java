@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,22 +34,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.search;
 
-package org.netbeans.modules.groovy.editor.api.elements;
-
-import java.util.Set;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Tor Norbye
+ * @author akrasny
  */
-public interface Element extends ElementHandle {
-    String getName();
-    String getIn();
-    ElementKind getKind();
-    Set<Modifier> getModifiers();
+public final class SearchResult {
+
+    public final ExecutionEnvironment env;
+    public final MatchingFileData data;
+    public final Throwable exception;
+
+    public SearchResult(ExecutionEnvironment env, MatchingFileData matchingFile) {
+        this.env = env;
+        this.data = matchingFile;
+        this.exception = null;
+    }
+
+    public SearchResult(Throwable exception) {
+        this.exception = exception;
+        this.env = null;
+        this.data = null;
+    }
+
+    public FileObject getFileObject() {
+        if (data == null) {
+            return null;
+        }
+
+        return FileSystemProvider.getFileObject(env, data.getPath());
+    }
 }

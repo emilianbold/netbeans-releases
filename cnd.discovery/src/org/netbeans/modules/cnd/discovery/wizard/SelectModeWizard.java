@@ -51,6 +51,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
+import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.openide.WizardDescriptor;
@@ -77,6 +81,7 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new SelectModePanel(this);
@@ -85,10 +90,12 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT_SELECT_MODE);
     }
     
+    @Override
     public boolean isValid() {
         boolean valid = ((SelectModePanel)getComponent()).valid(wizardDescriptor);
         if (valid) {
@@ -98,11 +105,13 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
     }
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -119,6 +128,7 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
       	fireChangeEvent();
     }
@@ -128,6 +138,7 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
+    @Override
     public void readSettings(Object settings) {
         if (!inited) {
             wizardDescriptor = DiscoveryWizardDescriptor.adaptee(settings);
@@ -137,6 +148,7 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
         ((WizardDescriptor)wizardDescriptor).putProperty("ShowAlert", Boolean.FALSE);// NOI18N
     }
     
+    @Override
     public void storeSettings(Object settings) {
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
         if (wizardDescriptor instanceof WizardDescriptor) {
@@ -144,12 +156,14 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
         }
     }
 
+    @Override
     public void prepareValidation() {
         if (wizardDescriptor.isSimpleMode()) {
             component.enableControls(false);
         }
     }
 
+    @Override
     public void validate() throws WizardValidationException {
         if (wizardDescriptor.isSimpleMode()) {
             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(SelectProviderPanel.class, "AnalyzingProjectProgress")); // NOI18N
@@ -166,7 +180,76 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
                 fireChangeEvent();
                 ((WizardDescriptor)wizardDescriptor).putProperty("ShowAlert", Boolean.TRUE);// NOI18N
             }
+        } else {
+            DiscoveryProvider defProvider = (DiscoveryProvider) ((WizardDescriptor)wizardDescriptor).getProperty("PreferedProvider"); // NOI18N
+            if (defProvider == null) {
+                ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(SelectProviderPanel.class, "AnalyzingProjectProgress")); // NOI18N
+                handle.setInitialDelay(100);
+                handle.start();
+                try {
+                    ((WizardDescriptor)wizardDescriptor).putProperty("PreferedProvider", initPreferedProvider(wizardDescriptor));// NOI18N
+                } finally {
+                    handle.finish();
+                }
+            }
         }
+    }
+    
+    DiscoveryProvider initPreferedProvider(final DiscoveryDescriptor wizardDescriptor) {
+        ProjectProxy proxy = new ProjectProxy() {
+            @Override
+            public boolean createSubProjects() {
+                return false;
+            }
+            @Override
+            public Project getProject() {
+                return wizardDescriptor.getProject();
+            }
+
+            @Override
+            public String getMakefile() {
+                return null;
+            }
+
+            @Override
+            public String getSourceRoot() {
+                return wizardDescriptor.getRootFolder();
+            }
+
+            @Override
+            public String getExecutable() {
+                return wizardDescriptor.getBuildResult();
+            }
+
+            @Override
+            public String getWorkingFolder() {
+                return null;
+            }
+
+            @Override
+            public boolean mergeProjectProperties() {
+                return false;
+            }
+        };
+        DiscoveryProvider def = null;
+        int assurance = 0;
+        for(DiscoveryProvider provider : DiscoveryProviderFactory.findAllProviders()){
+            if (provider.isApplicable(proxy)) {
+                if ("dwarf-executable".equals(provider.getID())){ // NOI18N
+                    // select executable if make project has output
+                    // and output has debug information.
+                    provider.getProperty("executable").setValue(wizardDescriptor.getBuildResult()); // NOI18N
+                } else if ("dwarf-folder".equals(provider.getID())){ // NOI18N
+                    provider.getProperty("folder").setValue(wizardDescriptor.getRootFolder()); // NOI18N
+                }
+                int i = provider.canAnalyze(proxy).getPriority();
+                if (i > assurance) {
+                    def = provider;
+                    assurance = i;
+                }
+            }
+        }
+        return def;
     }
 }
 

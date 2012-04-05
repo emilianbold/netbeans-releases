@@ -681,14 +681,15 @@ class OccurenceBuilder {
         final Set<FieldElement> fields = new HashSet<FieldElement>();
         Scope scope = elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-            if (clzName.getName().equalsIgnoreCase("self")) {
+            if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                 clzName = ((TypeScope) scope).getFullyQualifiedName();
             } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
                 clzName = ((ClassScope) scope).getSuperClassName();
             }
         }
         if (clzName != null && clzName.toString().length() > 0) {
-            for (TypeElement typeElement : index.getTypes(NameKind.exact(clzName))) {
+            QualifiedName fullyQualified = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
+            for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualified))) {
                 fields.addAll(ElementFilter.forName(fieldName).filter(index.getAlllFields(typeElement)));
             }
         }
@@ -843,8 +844,9 @@ class OccurenceBuilder {
             if (clzName.getName().equalsIgnoreCase("self")          //NOI18N
                     || clzName.getName().equalsIgnoreCase("static")) {//NOI18N
                 clzName = ((TypeScope) scope).getFullyQualifiedName();
-            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {//NOI18N
-                clzName = ((ClassScope) scope).getSuperClassName();
+            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { //NOI18N
+                Collection<QualifiedName> possibleFQSuperClassNames = ((ClassScope) scope).getPossibleFQSuperClassNames();
+                clzName = ModelUtils.getFirst(possibleFQSuperClassNames);
             }
         }
         if (clzName != null && clzName.toString().length() > 0) {
@@ -871,7 +873,8 @@ class OccurenceBuilder {
             }
         }
         if (clzName != null && clzName.toString().length() > 0) {
-            for (TypeElement typeElement : index.getTypes(NameKind.exact(clzName))) {
+            QualifiedName fullyQualified = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
+            for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualified))) {
                 methods.addAll(ElementFilter.forName(methodName).filter(index.getAllMethods(typeElement)));
             }
             if (elementInfo.setDeclarations(methods)) {
@@ -1199,7 +1202,7 @@ class OccurenceBuilder {
                     final Scope scope = entry.getValue().getInScope();
                     clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                     if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-                        if (clzName.getName().equalsIgnoreCase("self")) {
+                        if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                             clzName = ((TypeScope) scope).getFullyQualifiedName();
                         } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
                             clzName = ((ClassScope) scope).getSuperClassName();
@@ -1207,7 +1210,8 @@ class OccurenceBuilder {
                     }
                     if (clzName != null && clzName.toString().length() > 0) {
                         if (fieldName.matchesName(PhpElementKind.FIELD, nodeInfo.getName())) {
-                            final Exact typeName = NameKind.exact(clzName);
+                            QualifiedName fullyQualified = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
+                            final Exact typeName = NameKind.exact(fullyQualified);
                             boolean isTheSame = false;
                             //matches with other matching names
                             for (QualifiedName matchingName : matchingTypeNames) {

@@ -190,23 +190,14 @@ final public class MarkerProcessor extends CategoryDefinitionProcessor implement
         final Set<String> restrictorSet = methodNameRestriction != null ? new HashSet<String>(Arrays.asList(methodNameRestriction)) : Collections.EMPTY_SET;
         JavaSource src = ElementUtilitiesEx.getSources(pp);
         if (src != null) {
-            try {
-                src.runWhenScanFinished(new Task<CompilationController>() {
-                    
-                    @Override
-                    public void run(CompilationController cc) throws Exception {
-                        ElementHandle<TypeElement> eh = ElementUtilitiesEx.resolveClassByName(type, cc.getClasspathInfo(), false);
-                        if (eh != null) {
-                            SourceClassInfo ci = new JavacClassInfo(eh, cc);
-                            if (ci == null) {
-                                LOGGER.log(Level.FINE, "Couldn''t resolve type: {0}", type);
-                                return;
-                            }
-                            addTypeMarker(marker, ci, restrictorSet, inclusive, mark);
-                        }
-                    }
-                }, true);
-            } catch (IOException e) {
+            ElementHandle<TypeElement> eh = ElementUtilitiesEx.resolveClassByName(type, src.getClasspathInfo(), false);
+            if (eh != null) {
+                SourceClassInfo ci = new JavacClassInfo(eh, src.getClasspathInfo());
+                if (ci == null) {
+                    LOGGER.log(Level.FINE, "Couldn''t resolve type: {0}", type);
+                    return;
+                }
+                addTypeMarker(marker, ci, restrictorSet, inclusive, mark);
             }
         }
     }
