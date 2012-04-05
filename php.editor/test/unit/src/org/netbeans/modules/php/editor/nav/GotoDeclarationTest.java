@@ -788,6 +788,10 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "$this->invalid^LinkMode;", "public $^invalidLinkMode;");
     }
 
+    public void testIssue208851() throws Exception {
+        checkDeclaration(getTestPath(), "parent::some^Func();", "function ^someFunc() {}");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
