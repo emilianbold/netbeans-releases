@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
@@ -93,8 +95,30 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
         return cStandard;
     }    
     
+    public int getCStandardExternal() {
+        switch(getCStandard().getValue()) {
+            case STANDARD_DEFAULT: return LanguageFlavor.DEFAULT.toExternal();
+            case STANDARD_C89: return LanguageFlavor.C89.toExternal();
+            case STANDARD_C99: return LanguageFlavor.C99.toExternal();
+            case STANDARD_INHERITED:  return LanguageFlavor.UNKNOWN.toExternal();
+            default: return LanguageFlavor.UNKNOWN.toExternal();
+        }
+    }    
+
     public void setCStandard(IntConfiguration cStandard) {
         this.cStandard = cStandard;
+    }
+    
+    public void setCStandardExternal(int cStandard) {
+        if (cStandard == LanguageFlavor.DEFAULT.toExternal()) {
+            this.cStandard.setValue(STANDARD_DEFAULT);
+        } else if (cStandard == LanguageFlavor.C89.toExternal()) {
+            this.cStandard.setValue(STANDARD_C89);
+        } else if (cStandard == LanguageFlavor.C99.toExternal()) {
+            this.cStandard.setValue(STANDARD_C99);
+        } else if (cStandard == LanguageFlavor.UNKNOWN.toExternal()) {
+            this.cStandard.setValue(STANDARD_INHERITED);
+        }
     }
 
     @Override

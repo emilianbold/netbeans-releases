@@ -47,7 +47,6 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
-import org.netbeans.modules.cnd.modelimpl.cache.impl.WeakContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -56,7 +55,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.support.KeyFactory;
 
 /**
  * container to keep files included from project.
@@ -66,13 +64,14 @@ public final class IncludedFileContainer {
     private final Collection<Entry> list;
     private final ProjectBase srorageListOwner;
 
-    public IncludedFileContainer(ProjectBase main) {
-        this.srorageListOwner = main;
-        // create storage for main project
-        Storage storage = Storage.create(main, main);
-        Entry mainEntry = new Entry(main.getUID(), main, storage.getKey());
+    public IncludedFileContainer(ProjectBase startProject) {
+        this.srorageListOwner = startProject;
+        // create storage for startProject project
+        Storage storage = Storage.create(startProject, startProject);
+//        Entry startProjectEntry = new Entry(startProject.getUID(), startProject, storage.getKey());
+        Entry startProjectEntry = new Entry(startProject.getUID(), startProject, storage);
         list = new ArrayList<IncludedFileContainer.Entry>(1);
-        list.add(mainEntry);
+        list.add(startProjectEntry);
     }
 
     public IncludedFileContainer(ProjectBase startProject, RepositoryDataInput aStream) throws IOException {
@@ -80,21 +79,24 @@ public final class IncludedFileContainer {
         int count = aStream.readInt();
         list = new ArrayList<IncludedFileContainer.Entry>(count);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        KeyFactory keyFactory = KeyFactory.getDefaultFactory();
+//        KeyFactory keyFactory = KeyFactory.getDefaultFactory();
         for (int i = 0; i < count; i++) {
             CsmUID<CsmProject> includedProjectUID = factory.<CsmProject>readUID(aStream);
-            Key storageKey = keyFactory.readKey(aStream);
-            list.add(new Entry(includedProjectUID, startProject, storageKey));
+//            list.add(new Entry(includedProjectUID, startProject, storageKey));
+//            Key storageKey = keyFactory.readKey(aStream);
+            Storage storage = new Storage(aStream);
+            list.add(new Entry(includedProjectUID, startProject, storage));
         }
     }
 
     public void write(RepositoryDataOutput aStream) throws IOException {
         aStream.writeInt(list.size());
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        KeyFactory keyFactory = KeyFactory.getDefaultFactory();
+//        KeyFactory keyFactory = KeyFactory.getDefaultFactory();
         for (Entry entry : list) {
             factory.writeUID(entry.prjUID, aStream);
-            keyFactory.writeKey(entry.storageKey, aStream);
+            entry.getStorage().write(aStream);
+//            keyFactory.writeKey(entry.storageKey, aStream);
         }
     }
     
@@ -105,7 +107,7 @@ public final class IncludedFileContainer {
      */
     public void addPair(ProjectBase includedFileOwner, FileImpl includedFile, PreprocessorStatePair pair) {
         assert includedFileOwner == includedFile.getProjectImpl(true);
-        if (true) return;
+//        if (true) return;
         Storage storage = getOrCreateStorageForProject(srorageListOwner, includedFileOwner);
         storage.add(includedFile, pair);
     }
@@ -120,7 +122,8 @@ public final class IncludedFileContainer {
             }
             assert !startProject.equals(includedFileOwner);
             Storage storage = Storage.create(startProject, includedFileOwner);
-            Entry includedProjectEntry = new Entry(includedFileOwner.getUID(), startProject, storage.getKey());
+//            Entry includedProjectEntry = new Entry(includedFileOwner.getUID(), startProject, storage.getKey());
+            Entry includedProjectEntry = new Entry(includedFileOwner.getUID(), startProject, storage);
             list.add(includedProjectEntry);
             return includedProjectEntry.getStorage();
         }
@@ -155,19 +158,24 @@ public final class IncludedFileContainer {
     private static final class Entry {
 
         private final CsmUID<CsmProject> prjUID;
-        private final Key storageKey;
-        private final WeakContainer<Storage> storage;
+//        private final Key storageKey;
+//        private final WeakContainer<Storage> storage;
+        private final Storage storage;
 
-        public Entry(CsmUID<CsmProject> prj, CsmValidable stateOwner, Key storageKey) {
+//        public Entry(CsmUID<CsmProject> prj, CsmValidable stateOwner, Key storageKey) {
+        public Entry(CsmUID<CsmProject> prj, CsmValidable stateOwner, Storage storage) {
             this.prjUID = prj;
-            this.storageKey = storageKey;
-            this.storage = new WeakContainer<Storage>(stateOwner, storageKey);
+//            this.storageKey = storageKey;
+//            this.storage = new WeakContainer<Storage>(stateOwner, storageKey);
+            this.storage = storage;
         }
 
         private Storage getStorage() {
-            Storage container = storage.getContainer();
-            assert container != null;
-            return container;
+//            Storage container = storage.getContainer();
+//            assert container != null;
+//            return container;
+            assert storage != null;
+            return storage;
         }
     }
 }
