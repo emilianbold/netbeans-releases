@@ -174,7 +174,10 @@ public class CustomizeEmptySpaceAction extends CookieAction {
 
     private static boolean enable(Node[] nodes, boolean onlySingleGap) {
         RADVisualComponent metacomp = getMetaComponent(nodes);
-        return getEditableGaps(metacomp, onlySingleGap) != null;
+        if (metacomp != null && !metacomp.isReadOnly()) {
+            return getEditableGaps(metacomp, onlySingleGap) != null;
+        }
+        return false;
     }
 
     private static LayoutDesigner.EditableGap[] getEditableGaps(RADVisualComponent metacomp, boolean onlySingleGap) {
