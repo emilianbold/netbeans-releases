@@ -73,11 +73,13 @@ public class FolderXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public String tag() {
 	return folder.getId();
     }
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
         String what = "folder"; // NOI18N
         int maxVersion = 1;
@@ -85,19 +87,23 @@ public class FolderXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
         folder.clearChanged();
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
     }
 
     // interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
         boolean cCompilerConfigurationModified = folder.getCCompilerConfiguration().getModified();
         boolean ccCompilerConfigurationModified = folder.getCCCompilerConfiguration().getModified();
@@ -106,10 +112,10 @@ public class FolderXMLCodec extends XMLDecoder implements XMLEncoder {
         if (cCompilerConfigurationModified || ccCompilerConfigurationModified || linkerConfigurationModified) {
             xes.elementOpen(FOLDER_ELEMENT, new AttrValuePair[] {new AttrValuePair(PATH_ATTR, folder.getFolder().getPath())});
             if (cCompilerConfigurationModified) {
-                CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, folder.getCCompilerConfiguration());
+                CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, folder.getCCompilerConfiguration(), CommonConfigurationXMLCodec.FOLDER_LEVEL);
             }
             if (ccCompilerConfigurationModified) {
-                CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, folder.getCCCompilerConfiguration());
+                CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, folder.getCCCompilerConfiguration(), CommonConfigurationXMLCodec.FOLDER_LEVEL);
             }
             if (linkerConfigurationModified) {
                 CommonConfigurationXMLCodec.writeLinkerConfiguration(xes, folder.getLinkerConfiguration());
