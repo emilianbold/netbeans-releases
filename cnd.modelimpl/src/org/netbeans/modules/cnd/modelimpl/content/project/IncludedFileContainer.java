@@ -44,17 +44,22 @@ package org.netbeans.modules.cnd.modelimpl.content.project;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer.FileEntry;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.IncludedFileStorageKey;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.filesystems.FileSystem;
 
 /**
  * container to keep files included from project.
@@ -100,19 +105,7 @@ public final class IncludedFileContainer {
         }
     }
     
-    /**
-     * register new pair 
-     * @param includedFileOwner
-     * @param pair
-     */
-    public void addPair(ProjectBase includedFileOwner, FileImpl includedFile, PreprocessorStatePair pair) {
-        assert includedFileOwner == includedFile.getProjectImpl(true);
-//        if (true) return;
-        Storage storage = getOrCreateStorageForProject(srorageListOwner, includedFileOwner);
-        storage.add(includedFile, pair);
-    }
-
-    private Storage getOrCreateStorageForProject(ProjectBase startProject, ProjectBase includedFileOwner) {
+    private Storage getStorageForProject(ProjectBase startProject, ProjectBase includedFileOwner, boolean createIfAbsent) {
         CsmUID<CsmProject> uid = includedFileOwner.getUID();
         synchronized (list) {
             for (Entry entry : list) {
@@ -129,29 +122,59 @@ public final class IncludedFileContainer {
         }
     }
 
+    public void putStorage(ProjectBase startProject, ProjectBase includedProject) {
+        Storage storage = getStorageForProject(startProject, includedProject, false);
+        assert storage != null : "no storage for " + startProject + " and included " + includedProject;
+        storage.put();
+    }
+
+    public FileEntry getEntryForIncludedFile(FileEntry entryToLockOn, ProjectBase startProject, ProjectBase includedProject, FileImpl includedFile) {
+        assert Thread.holdsLock(entryToLockOn.getLock()) : "does not hold lock for " + includedFile;
+        Storage storage = getStorageForProject(startProject, includedProject, true);
+        return storage.getOrCreateFileEntry(includedFile);
+    }
+
     public final static class Storage extends ProjectComponent  {
 
-        private Storage(Key key) {
+        private final ConcurrentMap<CharSequence, FileContainer.FileEntry> myFiles = new ConcurrentHashMap<CharSequence, FileContainer.FileEntry>();
+        private final FileSystem fileSystem;
+
+        private Storage(Key key, FileSystem fileSystem) {
             super(key);
+            this.fileSystem = fileSystem;
         }
 
         private static Storage create(ProjectBase startProject, ProjectBase includedProject) {
-            Storage storage = new Storage(new IncludedFileStorageKey(startProject, includedProject));
+            Storage storage = new Storage(new IncludedFileStorageKey(startProject, includedProject), includedProject.getFileSystem());
             storage.put();
             return storage;
         }
 
-        private void add(FileImpl includedFile, PreprocessorStatePair pair) {
-            put();
+        private FileEntry getOrCreateFileEntry(FileImpl includedFile) {
+            CharSequence fileKey = FileContainer.getFileKey(includedFile.getAbsolutePath(), false);
+            FileEntry entry = myFiles.get(fileKey);
+            if (entry == null) {
+                entry = FileContainer.createFileEntry(includedFile);
+                FileEntry prev = myFiles.putIfAbsent(fileKey, entry);
+                if (prev != null) {
+                    // must be called under FileImpl's entry lock
+                    throw new ConcurrentModificationException("someone put the same file entry for " + includedFile); // NOI18N
+                }
+            }
+            return entry;
         }
 
         public Storage(RepositoryDataInput aStream) throws IOException {
             super(aStream);
+            fileSystem = PersistentUtils.readFileSystem(aStream);
+            FileContainer.readStringToFileEntryMap(fileSystem, aStream, myFiles);
         }
 
         @Override
-        public void write(RepositoryDataOutput out) throws IOException {
-            super.write(out);
+        public void write(RepositoryDataOutput aStream) throws IOException {
+            super.write(aStream);
+            PersistentUtils.writeFileSystem(fileSystem, aStream);
+            FileContainer.writeStringToFileEntryMap(aStream, myFiles);
         }
     }
     

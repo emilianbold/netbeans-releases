@@ -59,34 +59,41 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tor Norbye
  */
-public abstract class GroovyElement implements Element {
+public abstract class GroovyElement implements ElementHandle {
 
+    @Override
     public abstract String getName();
+    @Override
     public abstract ElementKind getKind();
 
+    @Override
     public String getMimeType() {
         return GroovyTokenId.GROOVY_MIME_TYPE;
     }
 
+    @Override
     public boolean signatureEquals(ElementHandle handle) {
         // XXX TODO
         return false;
     }
 
+    @Override
     public FileObject getFileObject() {
         return null;
     }
     
+    @Override
     public Set<Modifier> getModifiers() {
         return Collections.emptySet();
     }
 
+    @Override
     public String getIn() {
         return null;
     }
 
+    @Override
     public OffsetRange getOffsetRange(ParserResult result) {
         return OffsetRange.NONE;
     }
-
 }

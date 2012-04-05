@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,75 +41,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.groovy.editor.api.elements;
+package org.netbeans.modules.groovy.editor.api.elements.common;
 
 import java.util.Set;
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassNode;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 
-public class AstClassElement extends AstElement implements ClassElement {
-    private String fqn;
-    private Set<String> includes;
+/**
+ * Groovy-Elements that correspond to class type will implement
+ * this interface whether they are from an AST or from an index
+ *
+ * @author Tor Norbye
+ */
+public interface IClassElement {
 
-    public AstClassElement(GroovyParserResult info, ASTNode node) {
-        super(info, node);
-    }
-
-    @Override
-    public String getName() {
-        if (name == null) {
-            if (node instanceof ClassNode) {
-                name = ((ClassNode) node).getNameWithoutPackage();
-            }
-
-            if (name == null) {
-                name = node.toString();
-            }
-        }
-
-        return name;
-    }
-
-    @Override
-    public String getIn() {
-        if (in == null) {
-            if (node instanceof ClassNode) {
-                in = ((ClassNode) node).getPackageName();
-            }
-
-            if (in == null) {
-                in = ""; // NOI18N
-            }
-        }
-
-        return in;
-    }
-
-    public String getFqn() {
-        if (fqn == null) {
-            return getName();
-        }
-
-        return fqn;
-    }
-
-    public void setFqn(String fqn) {
-        this.fqn = fqn;
-    }
-
-    public void setIncludes(Set<String> includes) {
-        this.includes = includes;
-    }
-
-    public Set<String> getIncludes() {
-        return includes;
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.CLASS;
-    }
+    String getFqn();
+    Set<String> getIncludes();
 }

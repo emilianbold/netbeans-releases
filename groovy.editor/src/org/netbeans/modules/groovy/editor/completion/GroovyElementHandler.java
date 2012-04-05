@@ -56,9 +56,9 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
-import org.netbeans.modules.groovy.editor.api.elements.IndexedElement;
-import org.netbeans.modules.groovy.editor.api.elements.IndexedField;
-import org.netbeans.modules.groovy.editor.api.elements.IndexedMethod;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedField;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 /**

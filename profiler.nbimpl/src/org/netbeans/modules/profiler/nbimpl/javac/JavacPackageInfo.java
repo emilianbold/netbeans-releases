@@ -93,42 +93,42 @@ public class JavacPackageInfo extends SourcePackageInfo {
     public Collection<SourceClassInfo> getClasses() {
         final List<SourceClassInfo> clzs = new ArrayList<SourceClassInfo>();
         
-        JavaSource source = JavaSource.create(cpInfo);
+        ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController> () {
+            @Override
+            public void run(CompilationController cc)
+                    throws Exception {
+                cc.toPhase(JavaSource.Phase.PARSED);
 
-        try {
-            source.runUserActionTask(new Task<CompilationController> () {
-                @Override
-                public void run(CompilationController cc)
-                        throws Exception {
-                    cc.toPhase(JavaSource.Phase.PARSED);
+                PackageElement pelem = cc.getElements().getPackageElement(getSimpleName());
 
-                    PackageElement pelem = cc.getElements().getPackageElement(getSimpleName());
-
-                    if (pelem != null) {
-                        for (TypeElement type : ElementFilter.typesIn(pelem.getEnclosedElements())) {
-                            if ((type.getKind() == ElementKind.CLASS) || (type.getKind() == ElementKind.ENUM)) {
-                                clzs.add(new JavacClassInfo(ElementHandle.create(type), indexInfo));
-                            }
+                if (pelem != null) {
+                    for (TypeElement type : ElementFilter.typesIn(pelem.getEnclosedElements())) {
+                        if ((type.getKind() == ElementKind.CLASS) || (type.getKind() == ElementKind.ENUM)) {
+                            clzs.add(new JavacClassInfo(ElementHandle.create(type), indexInfo));
                         }
-                    } else {
-                        LOGGER.log(Level.FINEST, "Package name {0} resulted into a NULL element", getBinaryName()); // NOI18N
                     }
+                } else {
+                    LOGGER.log(Level.FINEST, "Package name {0} resulted into a NULL element", getBinaryName()); // NOI18N
                 }
-            }, true);
-        } catch (IOException ex) {
-            LOGGER.severe(ex.getLocalizedMessage());
-        }
+            }
+        });
+
         return clzs;
     }
 
     @Override
     public Collection<SourcePackageInfo> getSubpackages() {
-        ClassIndex index = cpInfo.getClassIndex();
-        List<SourcePackageInfo> pkgs = new ArrayList<SourcePackageInfo>();
+        final ClassIndex index = cpInfo.getClassIndex();
+        final List<SourcePackageInfo> pkgs = new ArrayList<SourcePackageInfo>();
 
-        for (String pkgName : index.getPackageNames(getBinaryName() + ".", true, sScope)) { // NOI18N
-            pkgs.add(new JavacPackageInfo(cpInfo, indexInfo, pkgName, pkgName, getScope()));
-        }
+        ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
+            @Override
+            public void run(CompilationController cc) {
+                for (String pkgName : index.getPackageNames(getBinaryName() + ".", true, sScope)) { // NOI18N
+                    pkgs.add(new JavacPackageInfo(cpInfo, indexInfo, pkgName, pkgName, getScope()));
+                }
+            }
+        });
 
         return pkgs;
     }

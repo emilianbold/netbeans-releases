@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,22 +34,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.editor.api.elements;
+package org.netbeans.modules.cnd.search;
 
-import java.util.List;
+import java.awt.Image;
+import java.io.IOException;
+import java.util.HashMap;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
- * Groovy-Elements that correspond to methods will implement this interface
- * whether they are from an AST or from an index
+ * NOT thread safe
  *
- * @author Tor Norbye
+ * @author akrasny
  */
-public interface MethodElement extends Element {
-    boolean isDeprecated();
+public final class IconsCache {
 
-    List<String> getParameters();
-    boolean isTopLevel();
-    String getIn();
-    boolean isInherited();
+    private static final IconsCache cache = new IconsCache();
+    private final HashMap<String, Image> map = new HashMap<String, Image>();
+    private final FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+
+    private IconsCache() {
+    }
+
+    public static Image getIcon(String name, int type) {
+        Image icon = cache.map.get(name + type);
+        if (icon == null) {
+            FileObject fo = createMemoryFile(name);
+            try {
+                DataObject dob = DataObject.find(fo);
+                icon = dob.getNodeDelegate().getIcon(type);
+                cache.map.put(name + type, icon);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return icon;
+    }
+
+    private static FileObject createMemoryFile(String name) {
+        FileObject fo = null;
+        try {
+            fo = FileUtil.createData(cache.root, name);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return fo;
+    }
 }

@@ -78,9 +78,9 @@ public class StartProfilerTask extends Task {
                 for(Map.Entry<String, String> e : props.entrySet()) {
                     getProject().setProperty(e.getKey(), e.getValue());
                 }
-                NetBeansProfiler.getDefaultNB().setupDispatcher(s.getProfilingSettings());
-                Profiler.getDefault().connectToStartedApp(s.getProfilingSettings(), s.getSessionSettings());
-                getProject().setProperty("profiler.configured", "true"); // NOI18N
+                if (!NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings())) {
+                    throw new BuildException("User abort");
+                }
             }
         }
     }

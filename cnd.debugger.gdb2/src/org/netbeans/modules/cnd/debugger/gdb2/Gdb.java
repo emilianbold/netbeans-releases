@@ -90,6 +90,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
 
 public class Gdb {
+    private static final boolean GDBINIT = Boolean.getBoolean("gdb.init.enable"); // NOI18N
+    
     protected class StartProgressManager extends ProgressManager {
         private final String[] levelLabels = new String[] {
             "",
@@ -403,10 +405,15 @@ public class Gdb {
 		    avec.add(gdbname);
 		}
                 
-		if (gdbInitFile != null) {
+		if (gdbInitFile != null && !gdbInitFile.isEmpty()) {
 		    avec.add("-x"); // NOI18N
 		    avec.add(gdbInitFile);
 		}
+                
+                // see IZ 207860 - disable sourceing gdbinit files other than the one specified 
+                if (!GDBINIT) {
+                    avec.add("-nx"); // NOI18N
+                }
                     
 		// flags to get gdb going as an MI service
 		avec.add("--interpreter"); // NOI18N
