@@ -904,6 +904,18 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "$this->invalid^LinkMode;", true);
     }
 
+    public void testIssue207615_01() throws Exception {
+        checkOccurrences(getTestPath(), "protected static $_v^ar = true;", true);
+    }
+
+    public void testIssue207615_02() throws Exception {
+        checkOccurrences(getTestPath(), "self::$_v^ar;", true);
+    }
+
+    public void testIssue207615_03() throws Exception {
+        checkOccurrences(getTestPath(), "return static::$_v^ar;", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

@@ -792,6 +792,14 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "parent::some^Func();", "function ^someFunc() {}");
     }
 
+    public void testIssue207615_01() throws Exception {
+        checkDeclaration(getTestPath(), "self::$_v^ar;", "protected static $^_var = true;");
+    }
+
+    public void testIssue207615_02() throws Exception {
+        checkDeclaration(getTestPath(), "return static::$_v^ar;", "protected static $^_var = true;");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
