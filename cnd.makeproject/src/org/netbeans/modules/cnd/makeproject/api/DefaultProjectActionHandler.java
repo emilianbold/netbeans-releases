@@ -134,6 +134,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             assert false;
         }
 
+        final String origRunDir = pae.getProfile().getRunDir();
+        boolean preventRunPathConvertion = origRunDir.startsWith("///"); // NOI18N
         final String runDirectory = RemoteFileUtil.normalizeAbsolutePath(pae.getProfile().getRunDirectory(), pae.getProject());
         final MakeConfiguration conf = pae.getConfiguration();
         final PlatformInfo pi = conf.getPlatformInfo();
@@ -241,7 +243,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         // TODO: this is actual only for sun studio compiler
         env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
 
-        String workingDirectory = ProjectSupport.convertWorkingDirToRemoteIfNeeded(pae, runDirectory);
+        String workingDirectory = preventRunPathConvertion ? runDirectory : ProjectSupport.convertWorkingDirToRemoteIfNeeded(pae, runDirectory);
 
         if (workingDirectory == null) {
             // TODO: fix me

@@ -200,25 +200,19 @@ public class MakeSampleProjectGenerator {
                 changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.COMPILER_SET_ELEMENT, csVariant, "X-TOOLCHAIN-X"); // NOI18N
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
                     changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
-                    changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "dll", "X-LIBSUFFIX-X"); // NOI18N
                     changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
-                    changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, "dll", "X-LIBSUFFIX-X"); // NOI18N
                     if (variant != null) {
                         changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, variant, "X-PLATFORM-X"); // NOI18N
                     }
                 } else if (platform == PlatformTypes.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                     changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
-                    changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "dylib", "X-LIBSUFFIX-X"); // NOI18N
                     changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
-                    changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, "dylib", "X-LIBSUFFIX-X"); // NOI18N
                     if (variant != null) {
                         changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, variant, "X-PLATFORM-X"); // NOI18N
                     }
                 } else {
                     changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
-                    changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "so", "X-LIBSUFFIX-X"); // NOI18N
                     changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
-                    changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, "so", "X-LIBSUFFIX-X"); // NOI18N
                     if (variant != null) {
                         changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, "OP", variant, "X-PLATFORM-X"); // NOI18N
                     }

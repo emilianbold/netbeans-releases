@@ -463,11 +463,15 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 break;
             case MakeConfiguration.TYPE_DYNAMIC_LIB:
             case MakeConfiguration.TYPE_CUSTOM: // <=== FIXUP
-                outputName = Platforms.getPlatform(getMakeConfiguration().getDevelopmentHost().getBuildPlatform()).getLibraryName(outputName);
+                outputName = Platforms.getPlatform(getMakeConfiguration().getDevelopmentHost().getBuildPlatform()).getLibraryNameWithoutExtension(outputName);
                 break;
         }
         outputName = ConfigurationSupport.makeNameLegal(outputName);
-        return MakeConfiguration.CND_DISTDIR_MACRO + "/" + MakeConfiguration.CND_CONF_MACRO + "/"+MakeConfiguration.CND_PLATFORM_MACRO+"/" + outputName; // NOI18N
+        if (getMakeConfiguration().isDynamicLibraryConfiguration()) {
+            return MakeConfiguration.CND_DISTDIR_MACRO + "/" + MakeConfiguration.CND_CONF_MACRO + "/"+MakeConfiguration.CND_PLATFORM_MACRO+"/" + outputName + "." + MakeConfiguration.CND_DLIB_EXT_MACRO; // NOI18N
+        } else {
+            return MakeConfiguration.CND_DISTDIR_MACRO + "/" + MakeConfiguration.CND_CONF_MACRO + "/"+MakeConfiguration.CND_PLATFORM_MACRO+"/" + outputName; // NOI18N
+        }
     }
 
     public String getOutputDefault27() {

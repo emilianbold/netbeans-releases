@@ -82,6 +82,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
  */
 /**
  * Change History:
+ * V82 - NB 7.2
+ *    Hardcoded extension of dynamic library from project is replaced by macros
  * V81 - NB 7.2
  *    Standard selection support for C++ compiler
  *    Standard selection support for C compiler
@@ -231,7 +233,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 81;
+    public final static int CURRENT_VERSION = 82;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
