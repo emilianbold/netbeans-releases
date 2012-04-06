@@ -53,11 +53,9 @@ import org.netbeans.modules.html.editor.lib.api.elements.Node;
  * @author marekfukala
  */
 public class AstAttribute implements Attribute {
-    
+
     private static final char NS_PREFIX_DELIMITER = ':';
-    
     private CharSequence source;
-    
     protected CharSequence name;
     protected CharSequence value;
     protected int nameOffset;
@@ -107,7 +105,7 @@ public class AstAttribute implements Attribute {
 
     @Override
     public boolean isValueQuoted() {
-        if(value() == null) {
+        if (value() == null) {
             return false;
         }
         if (value.length() < 2) {
@@ -124,7 +122,7 @@ public class AstAttribute implements Attribute {
 
     @Override
     public CharSequence unquotedValue() {
-        if(value() == null) {
+        if (value() == null) {
             return null;
         }
         return isValueQuoted() ? value().substring(1, value().length() - 1) : value();
@@ -142,7 +140,9 @@ public class AstAttribute implements Attribute {
 
     @Override
     public int to() {
-        return valueOffset() + value().length();
+        return value() != null
+                ? valueOffset() + value().length()
+                : nameOffset() + name().length();
     }
 
     @Override
@@ -169,5 +169,4 @@ public class AstAttribute implements Attribute {
     public Node parent() {
         return null;
     }
-    
 }

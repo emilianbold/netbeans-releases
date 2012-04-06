@@ -99,4 +99,21 @@ public class ElementsFactoryTest extends NbTestCase {
         assertNull(id.unquotedValue());
         
     }
+    
+    public void testAttributeRange() {
+        ElementsFactory factory = new ElementsFactory("<div id/>");
+        //                                             0123456789
+        CommonAttribute id = factory.createAttribute(5, (byte)2);
+        
+        assertEquals(5, id.from());
+        assertEquals(7, id.to());
+        
+        factory = new ElementsFactory("<div id=val/>");
+        //                             01234567890123
+        id = factory.createAttribute(5, 8, (byte)2, (short)3);
+        
+        assertEquals(5, id.from());
+        assertEquals(11, id.to());
+        
+    }
 }

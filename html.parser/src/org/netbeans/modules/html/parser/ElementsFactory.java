@@ -905,7 +905,9 @@ public class ElementsFactory {
 
         @Override
         public int to() {
-            return valueOffset() + value().length();
+            return value() != null
+                    ? valueOffset() + valueLen
+                    : nameOffset() + nameLen;
         }
 
         @Override
