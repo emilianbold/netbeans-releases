@@ -107,12 +107,12 @@ public final class ParserThread implements Runnable {
                         trace("parsing started: " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS)); // NOI18N
                     }
                     Diagnostic.StopWatch stw = TraceFlags.TIMING ? new Diagnostic.StopWatch() : null;
+                    String parseCase = ": Parsing "; // NOI18N
                     ProjectBase project = null;
                     try {
                         Collection<APTPreprocHandler.State> states = entry.getPreprocStates();
                         Collection<APTPreprocHandler> preprocHandlers = new ArrayList<APTPreprocHandler>(states.size());
                         project = file.getProjectImpl(true);
-                        String parseCase = ": Parsing "; // NOI18N
                         for (APTPreprocHandler.State state : states) {
                             if (!project.isDisposing()) { // just in case check
                                 if (state == FileImpl.DUMMY_STATE) {
@@ -154,7 +154,7 @@ public final class ParserThread implements Runnable {
                             long parseTime;
                             if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
                                 String standalone = CsmStandaloneFileProvider.getDefault().isStandalone(file) ? "STANDALONE " : ""; // NOI18N
-                                parseTime = stw.stopAndReport("parsing " + standalone + file.getBuffer().getUrl()); // NOI18N
+                                parseTime = stw.stopAndReport(parseCase + standalone + file.getBuffer().getUrl()); // NOI18N
                             } else {
                                 parseTime = stw.stop();
                             }

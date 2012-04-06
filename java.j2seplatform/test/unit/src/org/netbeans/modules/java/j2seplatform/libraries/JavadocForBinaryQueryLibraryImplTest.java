@@ -71,7 +71,7 @@ public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase {
     public JavadocForBinaryQueryLibraryImplTest(java.lang.String testName) {
         super(testName);
         MockLookup.setInstances(
-                LibraryProviderImpl.getDefault(),
+                TestLibraryProviderImpl.getDefault(),
                 new JavaPlatformProviderImpl(),
                 new ArchiveURLMapper(),
                 new JavadocForBinaryQueryLibraryImpl(),
@@ -152,7 +152,7 @@ public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase {
         }
         l.add(u);
         lib.setContent("javadoc", l);
-        LibraryProviderImpl prov = LibraryProviderImpl.getDefault();
+        TestLibraryProviderImpl prov = TestLibraryProviderImpl.getDefault();
         prov.addLibrary(lib);
     }
     

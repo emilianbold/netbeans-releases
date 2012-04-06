@@ -332,7 +332,7 @@ public class BugzillaRepository {
         }
         QueryParameter[] additionalParams = getSimpleSearchParameters();
         for (QueryParameter qp : additionalParams) {
-            url.append(qp.get());
+            url.append(qp.get(true));
         }
         PerformQueryCommand queryCmd = new PerformQueryCommand(this, url.toString(), collector);
         getExecutor().execute(queryCmd);

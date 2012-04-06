@@ -74,7 +74,7 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase {
     public SourceForBinaryQueryLibraryImplTest(String testName) {
         super(testName);
         MockLookup.setInstances(
-                LibraryProviderImpl.getDefault(),
+                TestLibraryProviderImpl.getDefault(),
                 new JavaPlatformProviderImpl(),
                 new ArchiveURLMapper(),
                 new J2SELibrarySourceForBinaryQuery(),
@@ -170,12 +170,12 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase {
             l.add(u);
             lib.setContent("src", l);
         }
-        LibraryProviderImpl prov = LibraryProviderImpl.getDefault();
+        TestLibraryProviderImpl prov = TestLibraryProviderImpl.getDefault();
         prov.addLibrary(lib);
     }
     
     private LibraryImplementation getLibrary (String name) {
-        LibraryProviderImpl prov = LibraryProviderImpl.getDefault();
+        TestLibraryProviderImpl prov = TestLibraryProviderImpl.getDefault();
         LibraryImplementation[] impls = prov.getLibraries();
         for (int i=0; i< impls.length; i++) {
             if (impls[i].getName().equals (name)) {

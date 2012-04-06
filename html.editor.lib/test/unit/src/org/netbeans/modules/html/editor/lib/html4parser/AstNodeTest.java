@@ -47,8 +47,10 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersionTest;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.plain.AttributeElement;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 
 /**
@@ -124,4 +126,21 @@ public class AstNodeTest extends TestBase {
         node.removeChildren(Collections.<AstNode>singletonList(child));
     }
 
+       public void testAttributeRange() {
+        CharSequence source = "<div id/>";
+        //                     0123456789
+        Attribute id = new AstAttribute(source, "id", null, 5, -1);
+        
+        assertEquals(5, id.from());
+        assertEquals(7, id.to());
+        
+        source = "<div id=val/>)";
+        //        01234567890123
+        id = new AstAttribute(source, "id", "val", 5, 8);
+        
+        assertEquals(5, id.from());
+        assertEquals(11, id.to());
+        
+    }
+    
 }

@@ -282,7 +282,7 @@ public class BugzillaQuery {
     }
 
     public String getUrlParameters() {
-        return getController().getUrlParameters();
+        return getController().getUrlParameters(false);
     }
 
     public boolean isUrlDefined() {

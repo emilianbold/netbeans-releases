@@ -52,7 +52,6 @@ import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.html.parser.HtmlDocumentation;
-import org.netbeans.modules.html.parser.HtmlTagProvider;
 
 /**
  *

@@ -379,7 +379,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	// SHOULD process OPTION_EXEC32?
         String runDir = gdi.getProfile().getRunDirectory();
-        runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
+
+        final String origRunDir = gdi.getProfile().getRunDir();
+        boolean preventRunPathConvertion = origRunDir.startsWith("///"); // NOI18N
+
+        if (!preventRunPathConvertion) {
+            runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
+        }
 
 	factory = new Gdb.Factory(executor, additionalArgv,
 	    listener, false, isShortName(),
@@ -3766,6 +3772,44 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public FormatOption[] getMemoryFormats() {
         return GdbMemoryFormat.values();
     }
+    
+    static List<String> parseMem(MIRecord record) {
+        LinkedList<String> res = new LinkedList<String>();
+
+        int size[] = new int[MEMORY_READ_WIDTH];
+
+        for (MITListItem elem : record.results().valueOf("memory").asList()) { //NOI18N
+            MITList line = ((MITList)elem);
+            MIValue dataValue = line.valueOf("data"); //NOI18N
+            int count = 0;
+            for (MITListItem dataElem : dataValue.asList()) {
+                int len = ((MIConst)dataElem).value().length();
+                size[count] = Math.max(size[count], len);
+                count++;
+            }
+        }
+
+        for (MITListItem elem : record.results().valueOf("memory").asList()) { //NOI18N
+            StringBuilder sb = new StringBuilder();
+            MITList line = ((MITList)elem);
+            String addr = line.getConstValue("addr"); //NOI18N
+            sb.append(addr).append(':'); //NOI18N
+            MIValue dataValue = line.valueOf("data"); //NOI18N
+            int count = 0;
+            for (MITListItem dataElem : dataValue.asList()) {
+                for(int i = 0; i < size[count]-((MIConst)dataElem).value().length()+1; i++) {
+                    sb.append(' '); //NOI18N
+                }
+                sb.append(((MIConst)dataElem).value());
+                count++;
+            }
+            String ascii = line.getConstValue("ascii"); //NOI18N
+            sb.append(" \"").append(ascii).append("\""); //NOI18N
+            res.add(sb.toString() + "\n"); //NOI18N
+        }
+        
+        return res;
+    }
 
     private static final int MEMORY_READ_WIDTH = 16;
     
@@ -3781,21 +3825,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             @Override
             protected void onDone(MIRecord record) {
                 if (MemoryWindow.getDefault().isShowing()) {
-                    LinkedList<String> res = new LinkedList<String>();
-                    for (MITListItem elem : record.results().valueOf("memory").asList()) { //NOI18N
-                        StringBuilder sb = new StringBuilder();
-                        MITList line = ((MITList)elem);
-                        String addr = line.getConstValue("addr"); //NOI18N
-                        sb.append(addr).append(':'); //NOI18N
-                        MIValue dataValue = line.valueOf("data"); //NOI18N
-                        for (MITListItem dataElem : dataValue.asList()) {
-                            sb.append(' ').append(((MIConst)dataElem).value());
-                        }
-                        String ascii = line.getConstValue("ascii"); //NOI18N
-                        sb.append(" \"").append(ascii).append("\""); //NOI18N
-                        res.add(sb.toString() + "\n"); //NOI18N
-                    }
-                    MemoryWindow.getDefault().updateData(res);
+                    
+                    MemoryWindow.getDefault().updateData(parseMem(record));
                 }
                 finish();
             }

@@ -43,9 +43,9 @@
  */
 package org.netbeans.modules.project.libraries;
 
+import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 import org.netbeans.spi.project.libraries.LibraryProvider;
-import org.openide.modules.OnStart;
 
 /**
  * Ensures that all {@link LibraryProvider}s are actually loaded.
@@ -54,9 +54,14 @@ import org.openide.modules.OnStart;
  * This needs to happen before any Ant build is run.
  * @author Tomas Zezula
  */
-@OnStart
-public class LibrariesModule implements Runnable {
-    @Override public void run() {
+public class LibrariesModule extends ModuleInstall {
+
+    @Override public void restored() {
+        super.restored();
+        this.initProviders();
+    }
+    
+    private void initProviders () {
         for (LibraryProvider lp : Lookup.getDefault().lookupAll(LibraryProvider.class)) {            
             lp.getLibraries();
         }

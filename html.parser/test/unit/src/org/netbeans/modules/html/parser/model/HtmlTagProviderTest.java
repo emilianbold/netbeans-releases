@@ -40,8 +40,9 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.parser;
+package org.netbeans.modules.html.parser.model;
 
+import org.netbeans.modules.html.parser.model.HtmlTagProvider;
 import java.net.URL;
 import java.util.Collection;
 import nu.validator.htmlparser.impl.ElementName;
@@ -50,6 +51,7 @@ import org.netbeans.modules.html.editor.lib.api.HelpResolver;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.parser.HtmlDocumentation;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 
 /**

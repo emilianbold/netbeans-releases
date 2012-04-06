@@ -85,7 +85,7 @@ public final class CodeModelDiagnostic {
                 if (sap instanceof CsmStandaloneFileProviderImpl) {
                     ((CsmStandaloneFileProviderImpl) sap).dumpInfo(printOut);
                 } else {
-                    printOut.printf("UKNOWN FOR ME [%s] %s\n", sap.getClass().getName(), sap.toString());// NOI18N 
+                    printOut.printf("UNKNOWN FOR ME [%s] %s\n", sap.getClass().getName(), sap.toString());// NOI18N
                 }
             }
         }
@@ -109,7 +109,7 @@ public final class CodeModelDiagnostic {
                 } else if (csmFile instanceof FileSnapshot) {
                     ((FileSnapshot) csmFile).dumpInfo(printOut);
                 } else {
-                    printOut.printf("UKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N 
+                    printOut.printf("UNKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
                 }
             }
             DataObject dob = context.lookup(DataObject.class);
@@ -175,12 +175,34 @@ public final class CodeModelDiagnostic {
                 if (csmFile instanceof FileImpl) {
                     ((FileImpl) csmFile).dumpPPStates(printOut);
                 } else {
-                    printOut.printf("UKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N 
+                    printOut.printf("UNKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
                 }
             }
         }
     }
-      
+
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1250)
+    public final static class IncludePPStatesTrace implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "Included Preprocessor States";// NOI18N
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            printOut.printf("====Files info:\nGlobal ParseCount=%d\n", FileImpl.getLongParseCount());// NOI18N
+            Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
+            for (CsmFile csmFile : allFiles) {
+                if (csmFile instanceof FileImpl) {
+                    ((FileImpl) csmFile).dumpIncludePPStates(printOut);
+                } else {
+                    printOut.printf("UNKOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
+                }
+            }
+        }
+    }
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1300)
     public final static class ModelProjectsTrace implements CndDiagnosticProvider {
 
@@ -248,7 +270,7 @@ public final class CodeModelDiagnostic {
                 } else if (csmFile instanceof FileSnapshot) {
                     ((FileSnapshot) csmFile).dumpIndex(printOut);
                 } else {
-                    printOut.printf("UKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N 
+                    printOut.printf("UNKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
                 }
             }
         }

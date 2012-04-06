@@ -209,14 +209,29 @@ public class DwarfSource implements SourceFileProperties{
         }
         HashSet<String> newIncludedFiles = new HashSet<String>();
         for(String incl : includedFiles) {
-            String newInkl = Dwarf.fileFinder(path, incl);
-            if (newInkl != null) {
-                newIncludedFiles.add(PathCache.getString(newInkl));
+            String newIncl = Dwarf.fileFinder(path, incl);
+            if (newIncl != null) {
+                newIncludedFiles.add(PathCache.getString(newIncl));
             } else {
                 newIncludedFiles.add(incl);
             }
         }
         includedFiles = newIncludedFiles;
+        List<String> newUserIncludes = new ArrayList<String>();
+        for(String incl : userIncludes) {
+            String newIncl = null;
+            if (incl.startsWith("/")) { //NOI18N
+                newIncl = Dwarf.fileFinder(path, incl);
+                if (newIncl != null) {
+                    newIncl = PathCache.getString(newIncl);
+                }
+            }
+            if (newIncl == null) {
+                newIncl = incl;
+            }
+            newUserIncludes.add(newIncl);
+        }
+        userIncludes = newUserIncludes;
         fullName = PathCache.getString(path);
     }
     
