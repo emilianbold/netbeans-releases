@@ -46,6 +46,7 @@ import org.junit.Test;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import static org.junit.Assert.*;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.parser.ElementsFactory.CommonAttribute;
 import org.netbeans.modules.html.parser.ElementsFactory.ModifiableOpenTag;
 
 /**
@@ -86,6 +87,16 @@ public class ElementsFactoryTest extends NbTestCase {
         //pass the same collection instance to the addChildren()
         div.addChildren(div.children());
         assertEquals(2, div.children().size());
+        
+    }
+    
+    public void testAttributeUnquotedValue() {
+        //test that attribute.unquotedValue() wont's cause NPE on non-value attribute
+        ElementsFactory factory = new ElementsFactory("<div id/>");
+        //                                             0123456789
+        CommonAttribute id = factory.createAttribute(5, (byte)2);
+        
+        assertNull(id.unquotedValue());
         
     }
 }

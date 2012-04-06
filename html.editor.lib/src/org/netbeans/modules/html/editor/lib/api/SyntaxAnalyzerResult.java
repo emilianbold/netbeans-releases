@@ -475,7 +475,12 @@ public class SyntaxAnalyzerResult {
                 //look for the xmlns attribute only in the first tag
                 OpenTag tag = (OpenTag) se;
                 Attribute xmlns = tag.getAttribute("xmlns");
-                return xmlns != null ? dequote(xmlns.value()).toString() : null;
+                if(xmlns != null) {
+                    CharSequence value = xmlns.unquotedValue();
+                    if(value != null) {
+                        return value.toString();
+                    }
+                }
             }
         }
         return null;
@@ -505,20 +510,22 @@ public class SyntaxAnalyzerResult {
                         if (attrName.startsWith("xmlns")) { //NOI18N
                             int colonIndex = attrName.indexOf(':'); //NOI18N
                             String nsPrefix = colonIndex == -1 ? null : attrName.substring(colonIndex + 1);
-                            String value = attr.value().toString();
-                            //do not overwrite already existing entry
-                            String key = dequote(value).toString();
-                            Collection<String> prefixes = namespaces.get(key);
-                            if (prefixes == null) {
-                                prefixes = new LinkedList<String>();
-                                prefixes.add(nsPrefix);
-                                namespaces.put(key, prefixes);
-                            } else {
-                                //already existing list of prefixes for the namespace
-                                if (prefixes.contains(key)) {
-                                    //just relax
-                                } else {
+                            CharSequence value = attr.unquotedValue();
+                            if (value != null) {
+                                String key = value.toString();
+                                //do not overwrite already existing entry
+                                Collection<String> prefixes = namespaces.get(key);
+                                if (prefixes == null) {
+                                    prefixes = new LinkedList<String>();
                                     prefixes.add(nsPrefix);
+                                    namespaces.put(key, prefixes);
+                                } else {
+                                    //already existing list of prefixes for the namespace
+                                    if (prefixes.contains(key)) {
+                                        //just relax
+                                    } else {
+                                        prefixes.add(nsPrefix);
+                                    }
                                 }
                             }
                         }
@@ -528,18 +535,6 @@ public class SyntaxAnalyzerResult {
         }
 
         return namespaces;
-    }
-
-    private static CharSequence dequote(CharSequence text) {
-        if (text.length() < 2) {
-            return text;
-        } else {
-            if ((text.charAt(0) == '\'' || text.charAt(0) == '"')
-                    && (text.charAt(text.length() - 1) == '\'' || text.charAt(text.length() - 1) == '"')) {
-                return text.subSequence(1, text.length() - 1);
-            }
-        }
-        return text;
     }
 
     private static interface TagsFilter {
