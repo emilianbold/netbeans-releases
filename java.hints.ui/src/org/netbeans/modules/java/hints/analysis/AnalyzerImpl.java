@@ -79,7 +79,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class AnalyzerImpl implements Analyzer {
 
-    private static final String ID_JAVA_HINTS_PREFIX = "text/x-java:";
+    public static final String ID_JAVA_HINTS_PREFIX = "text/x-java:";
 
     private final AtomicBoolean cancel = new AtomicBoolean();
     private final Context ctx;
@@ -197,7 +197,7 @@ public class AnalyzerImpl implements Analyzer {
                     return w;
                 }
                 @Override public HintsPanel createComponent(CustomizerContext<ClassPathBasedHintWrapper, HintsPanel> context) {
-                    if (context.getSettings() != null) {
+                    if (context.getPreselectId() == null) {
                         HintsPanel prev = context.getPreviousComponent();
                         if (prev != null) {
                             prev.setOverlayPreferences(context.getSettings());
@@ -226,7 +226,7 @@ public class AnalyzerImpl implements Analyzer {
                             return prev;
                         }
 
-                        return new HintsPanel(toSelect, context.getData());
+                        return new HintsPanel(toSelect, context, context.getData());
                     }
                 }
             };

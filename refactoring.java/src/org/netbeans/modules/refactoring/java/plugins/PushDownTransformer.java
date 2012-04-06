@@ -163,7 +163,15 @@ public class PushDownTransformer extends RefactoringVisitor {
                         if (RefactoringUtils.elementExistsIn((TypeElement) el, member, workingCopy)) {
                             problem = MoveTransformer.createProblem(problem, false, org.openide.util.NbBundle.getMessage(PushDownTransformer.class, "ERR_PushDown_AlreadyExists", member.getSimpleName(), el.getSimpleName()));
                         }
-                        MethodTree methodTree = workingCopy.getTrees().getTree((ExecutableElement) member);
+                        TreePath path = workingCopy.getTrees().getPath(member);
+                        MethodTree methodTree = (MethodTree) path.getLeaf();
+                        List<Comment> comments = workingCopy.getTreeUtilities().getComments(methodTree, true);
+                        if(comments.isEmpty()) {
+                            comments = workingCopy.getTreeUtilities().getComments(methodTree, false);
+                        }
+                        if(comments.isEmpty()) { // TODO Remove when #206200 is fixed
+                            methodTree = genUtils.importComments(methodTree, path.getCompilationUnit());
+                        }
                         ModifiersTree mods = RefactoringUtils.makeAbstract(make, methodTree.getModifiers());
                         mods = make.addModifiersModifier(mods, Modifier.PUBLIC);
                         MethodTree njuMethod = make.Method(
@@ -175,6 +183,8 @@ public class PushDownTransformer extends RefactoringVisitor {
                                 methodTree.getThrows(),
                                 (BlockTree) null,
                                 null);
+                        genUtils.copyComments(methodTree, njuMethod, true);
+                        genUtils.copyComments(methodTree, njuMethod, false);
                         njuClass = genUtils.insertClassMember(njuClass, njuMethod);
                         makeClassAbstract = true;
                     } else {
@@ -202,6 +212,8 @@ public class PushDownTransformer extends RefactoringVisitor {
                                     oldOne.getThrows(),
                                     oldOne.getBody(),
                                     (ExpressionTree) oldOne.getDefaultValue());
+                            genUtils.copyComments(memberTree, m, true);
+                            genUtils.copyComments(memberTree, m, false);
                             njuClass = genUtils.insertClassMember(njuClass, m);
                         } else {
                             njuClass = genUtils.insertClassMember(njuClass, memberTree);

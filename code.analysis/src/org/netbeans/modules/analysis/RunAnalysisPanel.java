@@ -117,7 +117,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
     private final RequiredPluginsPanel requiredPlugins;
     private       Collection<? extends AnalyzerFactory> analyzers;
     private final Lookup.Result<AnalyzerFactory> analyzersResult;
-    private final Map<String, WarningDescription> warningId2Description = new HashMap<String, WarningDescription>();
+    private final Map<String, AnalyzerAndWarning> warningId2Description = new HashMap<String, AnalyzerAndWarning>();
 
     public RunAnalysisPanel(ProgressHandle handle, Lookup context) {
         this.analyzersResult = Lookup.getDefault().lookupResult(AnalyzerFactory.class);
@@ -295,14 +295,15 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
                 }
 
                 warnings.add(wd);
-                warningId2Description.put(SPIAccessor.ACCESSOR.getWarningId(wd), wd);
             }
 
             for (Entry<String, Collection<WarningDescription>> catE : cat2Warnings.entrySet()) {
                 inspectionModel.addElement("  " + catE.getKey());
 
                 for (WarningDescription wd : catE.getValue()) {
-                    inspectionModel.addElement(wd);
+                    AnalyzerAndWarning aaw = new AnalyzerAndWarning(a, wd);
+                    inspectionModel.addElement(aaw);
+                    warningId2Description.put(SPIAccessor.ACCESSOR.getWarningId(wd), aaw);
                 }
             }
         }
@@ -490,7 +491,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
     }//GEN-LAST:event_configurationComboActionPerformed
 
     private void manageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageActionPerformed
-        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, null);
+        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, null, null);
         DialogDescriptor nd = new DialogDescriptor(panel, "Configurations", true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null);
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
@@ -507,7 +508,19 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
     }//GEN-LAST:event_singleInspectionRadioActionPerformed
 
     private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
-        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, "XXX");
+        Object selectedInspection = inspectionCombo.getSelectedItem();
+        AnalyzerFactory analyzerToSelect;
+        String warningToSelect;
+        
+        if (selectedInspection instanceof AnalyzerAndWarning) {
+            analyzerToSelect = ((AnalyzerAndWarning) selectedInspection).analyzer;
+            warningToSelect = SPIAccessor.ACCESSOR.getWarningId(((AnalyzerAndWarning) selectedInspection).wd);
+        } else {
+            analyzerToSelect = null;
+            warningToSelect = "";
+        }
+
+        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, analyzerToSelect, warningToSelect);
         DialogDescriptor nd = new DialogDescriptor(panel, "Configurations", true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null);
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
@@ -589,8 +602,8 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
     private static final class InspectionRenderer extends DefaultListCellRenderer {
 
         @Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (value instanceof WarningDescription) {
-                value = "    " + SPIAccessor.ACCESSOR.getWarningDisplayName((WarningDescription) value);
+            if (value instanceof AnalyzerAndWarning) {
+                value = "    " + SPIAccessor.ACCESSOR.getWarningDisplayName(((AnalyzerAndWarning) value).wd);
             } else if (value instanceof String) {
                 setFont(getFont().deriveFont(Font.ITALIC));
                 setText((String) value);
@@ -762,6 +775,15 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
 
         public Insets getBorderInsets(Component c) {
             return new Insets(0, 0, 1, 0);
+        }
+    }
+
+    private static final class AnalyzerAndWarning {
+        private final AnalyzerFactory analyzer;
+        private final WarningDescription wd;
+        public AnalyzerAndWarning(AnalyzerFactory analyzer, WarningDescription wd) {
+            this.analyzer = analyzer;
+            this.wd = wd;
         }
     }
 }

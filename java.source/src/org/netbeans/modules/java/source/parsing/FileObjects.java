@@ -1056,6 +1056,10 @@ public class FileObjects {
             assert parentFo != null;
             DataFolder target = DataFolder.findFolder(parentFo);
             FileObject template = FileUtil.getConfigFile("Templates/Classes/Empty.java");     //NOI18N
+            if(template == null) {
+                FileUtil.createData(parentFo, f.getName());
+                return;
+            }
             DataObject templateDobj = DataObject.find(template);
             String simpleName = FileObjects.stripExtension(f.getName());
             DataObject newDobj = templateDobj.createFromTemplate(target, simpleName);

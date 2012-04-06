@@ -719,6 +719,7 @@ public class FormEditor {
         formJavaSource = null;
         prefetchedSuperclassName = null;
         resourceSupport = null;
+        bindingSupportInitialized = false;
         bindingSupport = null;
     }
     

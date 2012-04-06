@@ -44,6 +44,7 @@
 package org.netbeans.modules.form.refactoring;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -64,6 +65,7 @@ import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementati
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -573,6 +575,19 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     }
 
     private void saveFormForUndo() {
+        if (!formDataObject.isValid()) {
+            // 210787: Refresh formDataObject if it became obsolete
+            FileObject fob = formDataObject.getPrimaryFile();
+            if (!fob.isValid()) {
+                File file = FileUtil.toFile(fob);
+                fob = FileUtil.toFileObject(file);
+            }
+            try {
+                formDataObject = (FormDataObject)DataObject.find(fob);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         saveForUndo(formDataObject.getFormFile());
         // java file is backed up by java refactoring
     }

@@ -283,7 +283,7 @@ public class XMLLexerFormatter {
                                     TokenElement el = stack.get(i);
                                     if (el.getName().equals(tagName)) {
                                         newIndentLevel = el.getIndentLevel();
-                                        stack.subList(i, stack.size() - 1).clear();
+                                        stack.subList(i, stack.size()).clear();
                                     }
                                 }
                                 boolean changeIndent = !preserveNesting_outdent.isEmpty() && !preserveNesting_outdent.getLast();

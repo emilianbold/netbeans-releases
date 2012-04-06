@@ -1,8 +1,9 @@
 /*
  *
- * Copyright (c) 2010, Oracle.
+ * Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+
  *
- * All rights reserved.
+ * This file is available and licensed under the following license:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- *  * Neither the name of Oracle nor the names of its contributors
+ *  * Neither the name of Oracle Corporation nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,21 +32,17 @@
  */
 package examples.cityguide;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.NoSuchElementException;
-import java.util.Vector;
-
 import javax.microedition.lcdui.Gauge;
-import javax.microedition.lcdui.Image;
 import javax.microedition.location.AddressInfo;
 import javax.microedition.location.Landmark;
 import javax.microedition.location.LandmarkStore;
 import javax.microedition.location.QualifiedCoordinates;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
+import java.util.Vector;
 
 
 /**
@@ -57,38 +54,40 @@ public class Util {
      * Landmarks are stored in text file as values with delimiter ","
      * Method updates progress bar.
      *
-     * @param is character stream containing records of landmarks
+     * @param is            character stream containing records of landmarks
      * @param progressGauge if not null external progress indicator is updated.
      */
-    public static final void readLandmarksFromStream(LandmarkStore store, InputStream is,
+    public static void readLandmarksFromStream (
+        LandmarkStore store, InputStream is,
         Gauge progressGauge) throws IOException {
-        Landmark landmark;
         int count = 0;
-        int nchars = -1;
+        int nchars;
         char[] buffer = new char[10]; //slowdown reading
-        InputStreamReader isr = new InputStreamReader(is);
-        StringBuffer record = new StringBuffer();
+        InputStreamReader isr = new InputStreamReader (is);
+        StringBuffer record = new StringBuffer ();
 
         do {
-            nchars = isr.read(buffer);
+            nchars = isr.read (buffer);
 
             for (int i = 0; i < nchars; i++) {
                 if (buffer[i] == '\n') {
-                    addLandmarkFromString(store, record.toString());
+                    addLandmarkFromString (store, record.toString ());
 
                     if (progressGauge != null) {
-                        progressGauge.setValue(count++);
+                        progressGauge.setValue (count++);
                     }
 
-                    record = new StringBuffer();
-                } else {
-                    record.append(buffer[i]);
+                    record = new StringBuffer ();
+                }
+                else {
+                    record.append (buffer[i]);
                 }
             }
-        } while (nchars == buffer.length);
+        }
+        while (nchars == buffer.length);
 
-        addLandmarkFromString(store, record.toString());
-        progressGauge.setValue(count++);
+        addLandmarkFromString (store, record.toString ());
+        progressGauge.setValue (count++);
     }
 
     /**
@@ -97,105 +96,108 @@ public class Util {
      * Latitude, Longitude, Altitude,Name, Description, Street & house number,
      * City, Post Code, Phone Number, Category
      *
-     * @return landmark
      * @param record comma separated values
      */
-    public static final void addLandmarkFromString(LandmarkStore store, String record)
+    public static void addLandmarkFromString (LandmarkStore store, String record)
         throws IOException {
-        Landmark landmark = null;
+        Landmark landmark;
 
         try {
-            Enumeration e = parseSVRecord(record, ',');
+            Enumeration e = parseSVRecord (record, ',');
 
-            if (!e.hasMoreElements()) {
+            if (!e.hasMoreElements ()) {
                 return;
             }
 
-            double xCoord = Double.parseDouble((String)e.nextElement());
-            double yCoord = Double.parseDouble((String)e.nextElement());
-            float altitude = Float.parseFloat((String)e.nextElement());
-            String name = (String)e.nextElement();
-            String description = (String)e.nextElement();
-            String street = (String)e.nextElement();
-            String pcode = (String)e.nextElement();
-            String phone = (String)e.nextElement();
-            String city = (String)e.nextElement();
-            String category = (String)e.nextElement();
+            double xCoord = Double.parseDouble ((String) e.nextElement ());
+            double yCoord = Double.parseDouble ((String) e.nextElement ());
+            float altitude = Float.parseFloat ((String) e.nextElement ());
+            String name = (String) e.nextElement ();
+            String description = (String) e.nextElement ();
+            String street = (String) e.nextElement ();
+            String pcode = (String) e.nextElement ();
+            String phone = (String) e.nextElement ();
+            String city = (String) e.nextElement ();
+            String category = (String) e.nextElement ();
 
             //create coordinates
-            QualifiedCoordinates coords = new QualifiedCoordinates(xCoord, yCoord, altitude, 0, 0);
+            QualifiedCoordinates coords = new QualifiedCoordinates (xCoord, yCoord, altitude, 0, 0);
 
             //create address
-            AddressInfo address = new AddressInfo();
-            address.setField(AddressInfo.STREET, street);
-            address.setField(AddressInfo.CITY, city);
-            address.setField(AddressInfo.POSTAL_CODE, pcode);
-            address.setField(AddressInfo.PHONE_NUMBER, phone);
+            AddressInfo address = new AddressInfo ();
+            address.setField (AddressInfo.STREET, street);
+            address.setField (AddressInfo.CITY, city);
+            address.setField (AddressInfo.POSTAL_CODE, pcode);
+            address.setField (AddressInfo.PHONE_NUMBER, phone);
 
-            landmark = new Landmark(name, description, coords, address);
+            landmark = new Landmark (name, description, coords, address);
 
-            Enumeration c = store.getCategories();
+            Enumeration c = store.getCategories ();
             boolean exists;
 
-            for (exists = false; c.hasMoreElements();)
-                if (category.equals((String)c.nextElement())) {
+            for (exists = false; c.hasMoreElements ();)
+                if (category.equals (c.nextElement ())) {
                     exists = true;
 
                     break;
                 }
 
             if (!exists) {
-                store.addCategory(category);
+                store.addCategory (category);
             }
 
-            store.addLandmark(landmark, category);
-        } catch (NoSuchElementException e) {
-            throw new IOException("Incorrect number of fields in landmark record.");
-        } catch (Exception e) {
-            throw new IOException("Cannot add landmark.");
+            store.addLandmark (landmark, category);
+        }
+        catch (NoSuchElementException e) {
+            throw new IOException ("Incorrect number of fields in landmark record.");
+        }
+        catch (SecurityException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new IOException ("Cannot add landmark.");
         }
     }
 
     /**
      * This method parses separated values from record.
      *
-     * @return String values from record as Enumeration
-     * @param str  record containing separated values
+     * @param str       record containing separated values
      * @param delimiter values delimiter char
+     * @return String values from record as Enumeration
      */
-    public static final Enumeration parseSVRecord(String str, char delimiter) {
-        int length = str.length();
+    public static Enumeration parseSVRecord (String str, char delimiter) {
+        int length = str.length ();
         int beginindex = 0;
-        Vector v = new Vector();
+        Vector v = new Vector ();
 
         for (int i = 0; i < length; i++) {
-            if (str.charAt(i) == delimiter) {
-                v.addElement(str.substring(beginindex, i).trim());
+            if (str.charAt (i) == delimiter) {
+                v.addElement (str.substring (beginindex, i).trim ());
                 beginindex = i + 1;
             }
 
             if (i == (length - 1)) {
-                v.addElement(str.substring(beginindex, length).trim());
+                v.addElement (str.substring (beginindex, length).trim ());
             }
         }
 
-        return v.elements();
+        return v.elements ();
     }
 
-    /**
-     *
-     */
-    public static final String[] asArray(Enumeration e) {
-        Vector v = new Vector();
-        v.copyInto(new String[v.size()]);
-
-        for (; e.hasMoreElements();)
-            v.addElement(e.nextElement());
-
-        String[] array = new String[v.size()];
-        Object o;
-        v.copyInto(array);
-
+    public static String[] getArrayOfExistingCategories(LandmarkStore landmarkStore) throws IOException{        
+        Enumeration categories = landmarkStore.getCategories();
+        Vector existingCategories = new Vector();
+        
+        for(; categories.hasMoreElements();){
+            String category = (String)categories.nextElement();
+            if(landmarkStore.getLandmarks(category, null) != null){
+                existingCategories.addElement(category);
+            }
+        }
+        
+        String[] array = new String[existingCategories.size()];
+        existingCategories.copyInto(array);
         return array;
     }
 }

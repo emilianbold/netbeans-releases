@@ -45,6 +45,7 @@ import com.sun.javadoc.Doc;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
@@ -60,6 +61,7 @@ import org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactor
 import org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring.Equality;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.MapFormat;
 
 /**
@@ -124,8 +126,11 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
 //            Comment comment = Comment.create(Comment.Style.JAVADOC, javadoc.getRawCommentText());
 //            make.addComment(newClassTree, comment, true);
 
-            CompilationUnitTree newCompUnit = make.CompilationUnit(sourceRoot, fqn.replace('.', '/') + ".java", Collections.<ImportTree>emptyList(), Collections.singletonList(newClassTree)); //NOI18N
-            workingCopy.rewrite(null, newCompUnit);
+            String relativePath = fqn.replace('.', '/') + ".java"; // NOI18N
+            
+            CompilationUnitTree newCompilation = JavaPluginUtils.createCompilationUnit(sourceRoot, relativePath, newClassTree, workingCopy, make);
+
+            workingCopy.rewrite(null, newCompilation);
             initialized = true;
         }
         

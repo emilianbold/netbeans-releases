@@ -134,6 +134,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
             bugsTree.setCellRenderer(new CheckBoxRenderer());
         } else {
             bugsTree.setCellRenderer(new PlainRenderer());
+            selectById(cc.getPreselectId().substring(RunFindBugs.PREFIX_FINDBUGS.length()));
             bugsTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
                 @Override public void valueChanged(TreeSelectionEvent e) {
                     DefaultMutableTreeNode node = (DefaultMutableTreeNode) bugsTree.getSelectionPath().getLastPathComponent();

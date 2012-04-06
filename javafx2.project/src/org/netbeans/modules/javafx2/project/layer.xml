@@ -51,6 +51,15 @@ made subject to such option by the copyright holder.
             <file name="jfx-impl.xml" url="templates/jfx-impl.xml_">
                 <attr name="position" intvalue="25"/>
             </file>
+            <file name="FXSwingTemplate.html" url="templates/FXSwingTemplate.html_">
+                <attr name="position" intvalue="35"/>
+            </file>
+            <file name="FXSwingTemplateApplet.jnlp" url="templates/FXSwingTemplateApplet.jnlp_">
+                <attr name="position" intvalue="45"/>
+            </file>
+            <file name="FXSwingTemplateApplication.jnlp" url="templates/FXSwingTemplateApplication.jnlp_">
+                <attr name="position" intvalue="55"/>
+            </file>
         </folder>
         
         <folder name="Project">

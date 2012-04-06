@@ -83,7 +83,7 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
     private ModifiedPreferences currentPreferencesOverlay;
     private final String preselected;
 
-    public AdjustConfigurationPanel(Iterable<? extends AnalyzerFactory> analyzers, String preselected) {
+    public AdjustConfigurationPanel(Iterable<? extends AnalyzerFactory> analyzers, AnalyzerFactory preselectedAnalyzer, String preselected) {
         this.preselected = preselected;
         initComponents();
 
@@ -117,6 +117,9 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
         }
 
         analyzerCombo.setModel(analyzerModel);
+        if (preselectedAnalyzer != null) {
+            analyzerCombo.setSelectedItem(preselectedAnalyzer);
+        }
         analyzerCombo.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
                 updateAnalyzer();
