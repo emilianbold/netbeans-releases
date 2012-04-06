@@ -366,7 +366,10 @@ public class SyntaxAnalyzerResult {
                         OpenTag ot = (OpenTag) tag;
                         for (Attribute a : ot.attributes()) {
                             if (LexerUtils.startsWith(a.name(), "xmlns:", true, false)) { //NOI18N
-                                ignoredAreas.add(new MaskedArea(a.nameOffset(), a.valueOffset() + a.value().length()));
+                                CharSequence value = a.value();
+                                if(value != null) {
+                                    ignoredAreas.add(new MaskedArea(a.nameOffset(), a.valueOffset() + value.length()));
+                                }
                             }
                         }
                     }
