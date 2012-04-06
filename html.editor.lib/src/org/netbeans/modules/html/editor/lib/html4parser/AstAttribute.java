@@ -102,11 +102,14 @@ public class AstAttribute implements Attribute {
 
     @Override
     public String value() {
-        return value.toString();
+        return value != null ? value.toString() : null;
     }
 
     @Override
     public boolean isValueQuoted() {
+        if(value() == null) {
+            return false;
+        }
         if (value.length() < 2) {
             return false;
         } else {
@@ -121,6 +124,9 @@ public class AstAttribute implements Attribute {
 
     @Override
     public CharSequence unquotedValue() {
+        if(value() == null) {
+            return null;
+        }
         return isValueQuoted() ? value().substring(1, value().length() - 1) : value();
     }
 

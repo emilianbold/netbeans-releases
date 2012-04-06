@@ -39,64 +39,61 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.parser;
+package org.netbeans.modules.html.parser.model;
 
 import java.util.Collection;
-import org.junit.Test;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import static org.junit.Assert.*;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.html.parser.ElementsFactory.CommonAttribute;
-import org.netbeans.modules.html.parser.ElementsFactory.ModifiableOpenTag;
+import java.util.Collections;
+import org.netbeans.modules.html.editor.lib.api.DefaultHelpItem;
+import org.netbeans.modules.html.editor.lib.api.HelpItem;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttributeType;
+import org.netbeans.modules.html.parser.HtmlDocumentation;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author marekfukala
  */
-public class ElementsFactoryTest extends NbTestCase {
+public class EDHtmlTagAttribute implements HtmlTagAttribute {
 
-    public ElementsFactoryTest(String name) {
-        super(name);
+    private Attribute attr;
+
+    public EDHtmlTagAttribute(Attribute name) {
+        this.attr = name;
     }
-    
-    //http://netbeans.org/bugzilla/show_bug.cgi?id=210628
-    //Bug 210628 - java.util.ConcurrentModificationException at java.util.AbstractList$Itr.checkForComodification 
-    public void testAddRemoveChildren() {
-        //test if one passes the children itself to the add/removeChildren() methods
-        ElementsFactory factory = new ElementsFactory("<div><a>");
-        //                                             012345678
-        ModifiableOpenTag div = factory.createOpenTag(0, 5, (byte)3);
-        ModifiableOpenTag a = factory.createOpenTag(5, 8, (byte)1);
-        
-        div.addChild(a);
-        
-        Collection<Element> div_children = div.children();
-        assertNotNull(div_children);
-        assertEquals(1, div_children.size());
-        
-        assertSame(a, div_children.iterator().next());
-        
-        //pass the same collection instance to the removeChildren()
-        div.removeChildren(div_children);
-        assertEquals(0, div.children().size());
-        
-        //restore
-        div.addChild(a);
-        
-        //
-        //pass the same collection instance to the addChildren()
-        div.addChildren(div.children());
-        assertEquals(2, div.children().size());
-        
+
+    @Override
+    public String getName() {
+        return attr.getName();
     }
-    
-    public void testAttributeUnquotedValue() {
-        //test that attribute.unquotedValue() wont's cause NPE on non-value attribute
-        ElementsFactory factory = new ElementsFactory("<div id/>");
-        //                                             0123456789
-        CommonAttribute id = factory.createAttribute(5, (byte)2);
-        
-        assertNull(id.unquotedValue());
-        
+
+    @Override
+    public boolean isRequired() {
+        return false;
+    }
+
+    @Override
+    public HtmlTagAttributeType getType() {
+        return HtmlTagAttributeType.GENERIC;
+    }
+
+    @Override
+    public Collection<String> getPossibleValues() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public HelpItem getHelp() {
+        StringBuilder header = new StringBuilder();
+        header.append("<h2>");//NOI18N
+        header.append(NbBundle.getMessage(HtmlTagProvider.class, "MSG_AttributePrefix"));//NOI18N
+        header.append(" '");//NOI18N
+        header.append(attr.getName());
+        header.append("'</h2>");//NOI18N
+
+        return new DefaultHelpItem(
+                HtmlDocumentation.getDefault().resolveLink(attr.getHelpLink()),
+                HtmlDocumentation.getDefault(),
+                header.toString());
     }
 }

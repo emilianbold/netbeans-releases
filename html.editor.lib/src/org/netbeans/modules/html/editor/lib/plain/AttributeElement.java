@@ -104,6 +104,9 @@ public class AttributeElement implements Attribute {
     
     @Override
     public boolean isValueQuoted() {
+        if(value() == null) {
+            return false;
+        }
         if (valueLen < 2) {
             return false;
         } else {
@@ -115,6 +118,9 @@ public class AttributeElement implements Attribute {
 
     @Override           
     public CharSequence unquotedValue() {
+        if (value() == null) {
+            return null;
+        }
         return isValueQuoted() ? value().subSequence(1, value().length() - 1) : value();
     }
 
