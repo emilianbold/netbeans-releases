@@ -93,13 +93,16 @@ class ArtifactDependencyIndexCreator extends AbstractIndexCreator {
 
     private final List<ArtifactRepository> remoteRepos;
     private final Map<ArtifactInfo, List<Dependency>> dependenciesByArtifact = new WeakHashMap<ArtifactInfo, List<Dependency>>();
+    private final MavenEmbedder embedder;
 
     ArtifactDependencyIndexCreator() {
         super(ArtifactDependencyIndexCreator.class.getName(), Arrays.asList(MinimalArtifactInfoIndexCreator.ID));
         remoteRepos = new ArrayList<ArtifactRepository>();
+        embedder = EmbedderFactory.getProjectEmbedder();
+        
         for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
             if (!info.isLocal()) {
-                remoteRepos.add(new MavenArtifactRepository(info.getId(), info.getRepositoryUrl(), new DefaultRepositoryLayout(), new ArtifactRepositoryPolicy(), new ArtifactRepositoryPolicy()));
+                remoteRepos.add(EmbedderFactory.createRemoteRepository(embedder, info.getRepositoryUrl(), info.getId()));
             }
         }
     }
@@ -146,7 +149,6 @@ class ArtifactDependencyIndexCreator extends AbstractIndexCreator {
 
     private MavenProject load(ArtifactInfo ai) {
         try {
-            MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
             Artifact projectArtifact = embedder.createArtifact(ai.groupId, ai.artifactId, ai.version, ai.packaging != null ? ai.packaging : "jar");
             DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
             dpbr.setLocalRepository(embedder.getLocalRepository());
