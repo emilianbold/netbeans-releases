@@ -46,6 +46,7 @@ package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.GraphicsEnvironment;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -55,9 +56,12 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -73,6 +77,10 @@ import org.openide.nodes.Sheet;
  * @author  Dafe Simonek
  */
 public class TTVTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TTVTest.class);
+    }
 
     private TreeTableView ttv;
     private TreeTableViewPanel ep;
@@ -90,6 +98,7 @@ public class TTVTest extends NbTestCase {
         //new TTVTest("bleble").testNodesReleasing();
     }
 
+    @RandomlyFails // NB-Core-Build #8093
     public void testNodesReleasing () {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {

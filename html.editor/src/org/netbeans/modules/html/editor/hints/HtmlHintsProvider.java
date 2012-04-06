@@ -53,8 +53,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -85,22 +85,23 @@ import static org.netbeans.modules.html.editor.HtmlErrorFilter.*;
 public class HtmlHintsProvider implements HintsProvider {
 
     /**
-     * Compute hints applicable to the given compilation info and add to the given result list.
+     * Compute hints applicable to the given compilation info and add to the
+     * given result list.
      */
     @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
         HtmlParserResult result = (HtmlParserResult) context.parserResult;
         HtmlVersion version = result.getDetectedHtmlVersion();
         FileObject file = result.getSnapshot().getSource().getFileObject();
-        if(file == null) {
+        if (file == null) {
             //the Hint doesn't allow the fileObject argument to be null
-            return ;
+            return;
         }
         Project project = FileOwnerQuery.getOwner(file);
         boolean xhtml = result.getSyntaxAnalyzerResult().mayBeXhtml();
         if (version == null) {
             //the version can be determined
-            
+
             if (project == null) {
                 //we cannot set the default anywhere, just show a warning message
 
@@ -114,9 +115,9 @@ public class HtmlHintsProvider implements HintsProvider {
             } else {
                 //no doctype declaration found, generate the set default project html version hint
                 HtmlVersion defaulted = ProjectDefaultHtmlSourceVersionController.getDefaultHtmlVersion(project, xhtml);
-                String msg =  defaulted == null ?
-                    NbBundle.getMessage(HtmlHintsProvider.class, xhtml ? "MSG_CANNOT_DETERMINE_XHTML_VERSION" : "MSG_CANNOT_DETERMINE_HTML_VERSION") :
-                    NbBundle.getMessage(HtmlHintsProvider.class, xhtml ? "MSG_CANNOT_DETERMINE_XHTML_VERSION_DEFAULTED_ALREADY" : "MSG_CANNOT_DETERMINE_HTML_VERSION_DEFAULTED_ALREADY", defaulted.getDisplayName());
+                String msg = defaulted == null
+                        ? NbBundle.getMessage(HtmlHintsProvider.class, xhtml ? "MSG_CANNOT_DETERMINE_XHTML_VERSION" : "MSG_CANNOT_DETERMINE_HTML_VERSION")
+                        : NbBundle.getMessage(HtmlHintsProvider.class, xhtml ? "MSG_CANNOT_DETERMINE_XHTML_VERSION_DEFAULTED_ALREADY" : "MSG_CANNOT_DETERMINE_HTML_VERSION_DEFAULTED_ALREADY", defaulted.getDisplayName());
 
                 hints.add(new Hint(getRule(Severity.INFO),
                         msg,
@@ -130,14 +131,14 @@ public class HtmlHintsProvider implements HintsProvider {
 
         //add html-css related hints
 //        HtmlCssHints.computeHints(manager, context, hints);
-        
+
     }
 
     private static List<HintFix> generateSetDefaultHtmlVersionHints(Project project, Document doc, boolean xhtml) {
         List<HintFix> fixes = new LinkedList<HintFix>();
-        if(project != null) {
-            for(HtmlVersion v : HtmlVersion.values()) {
-                if(xhtml == v.isXhtml()) {
+        if (project != null) {
+            for (HtmlVersion v : HtmlVersion.values()) {
+                if (xhtml == v.isXhtml()) {
                     fixes.add(new SetDefaultHtmlVersionHintFix(v, project, doc, xhtml));
                 }
             }
@@ -161,18 +162,18 @@ public class HtmlHintsProvider implements HintsProvider {
     @Override
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
         //html extensions
-        for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
+        for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
             ext.computeSelectionHints(manager, context, suggestions, start, end);
         }
-        
+
         suggestions.add(new SurroundWithTag(context, new OffsetRange(start, end)));
         suggestions.add(new RemoveSurroundingTag(context, new OffsetRange(start, end)));
     }
 
     /**
      * Process the errors for the given compilation info, and add errors and
-     * warning descriptions into the provided hint list. Return any errors
-     * that were not added as error descriptions (e.g. had no applicable error rule)
+     * warning descriptions into the provided hint list. Return any errors that
+     * were not added as error descriptions (e.g. had no applicable error rule)
      */
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
@@ -181,26 +182,26 @@ public class HtmlHintsProvider implements HintsProvider {
         Snapshot snapshot = result.getSnapshot();
         FileObject fo = snapshot.getSource().getFileObject();
 
-        if(fo == null) {
+        if (fo == null) {
             //the Hint doesn't allow the fileObject argument to be null
-            return ;
+            return;
         }
-        
+
         //add default fixes
         List<HintFix> defaultFixes = new ArrayList<HintFix>(3);
-        if(!isErrorCheckingDisabledForFile(saresult)) {
+        if (!isErrorCheckingDisabledForFile(saresult)) {
             defaultFixes.add(new DisableErrorChecksFix(snapshot));
         }
-        if(isErrorCheckingEnabledForMimetype(saresult)) {
+        if (isErrorCheckingEnabledForMimetype(saresult)) {
             defaultFixes.add(new DisableErrorChecksForMimetypeFix(saresult));
         }
-        
+
         HtmlRuleContext htmlRuleContext = new HtmlRuleContext(result, saresult, defaultFixes);
-        
+
         //filter out fatal errors and remove them from the html validator hints processing
         Collection<Error> fatalErrors = new ArrayList<Error>();
-        for(Error e : htmlRuleContext.getLeftDiagnostics()) {
-            if(e.getSeverity() == Severity.FATAL) {
+        for (Error e : htmlRuleContext.getLeftDiagnostics()) {
+            if (e.getSeverity() == Severity.FATAL) {
                 fatalErrors.add(e);
             }
         }
@@ -214,16 +215,12 @@ public class HtmlHintsProvider implements HintsProvider {
         //out the error messages selectively and keep just those whose cannot be 
         //false errors caused by a templating language. The tags pairing in facelets
         //is nice example as described in the issue above.
-        if(isXmlBasedMimetype(saresult)) {
-            for(Error e : fatalErrors) {
+        if (isXmlBasedMimetype(saresult)) {
+            for (Error e : fatalErrors) {
                 //remove the fatal error from the list of errors for further processing
                 htmlRuleContext.getLeftDiagnostics().remove(e);
 
-                String message = new StringBuilder()
-                        .append(e.getDescription())
-                        .append('\n')
-                        .append(NbBundle.getMessage(HtmlValidatorRule.class, "MSG_FatalHtmlErrorAddendum"))
-                        .toString();
+                String message = new StringBuilder().append(e.getDescription()).append('\n').append(NbBundle.getMessage(HtmlValidatorRule.class, "MSG_FatalHtmlErrorAddendum")).toString();
                 //add a special hint for the fatal error
                 Hint fatalErrorHint = new Hint(new FatalHtmlRule(),
                         message,
@@ -235,21 +232,21 @@ public class HtmlHintsProvider implements HintsProvider {
                 hints.add(fatalErrorHint);
             }
         }
-        
+
         //now process the non-fatal errors
         if (isErrorCheckingEnabled(saresult)) {
-            
-            Map<?,List<? extends AstRule>> allHints = manager.getHints(false, context);
+
+            Map<?, List<? extends AstRule>> allHints = manager.getHints(false, context);
             List<? extends org.netbeans.modules.html.editor.hints.HtmlRule> ids =
                     (List<? extends org.netbeans.modules.html.editor.hints.HtmlRule>) allHints.get(org.netbeans.modules.html.editor.hints.HtmlRule.Kinds.DEFAULT);
-            if(ids == null) {
-                return ;
+            if (ids == null) {
+                return;
             }
             for (org.netbeans.modules.html.editor.hints.HtmlRule rule : ids) {
                 boolean enabled = manager.isEnabled(rule);
                 //html validator error categories workaround. 
                 //See the HtmlValidatorRule.isSpecialHtmlValidatorRule() documentation
-                if(rule.isSpecialHtmlValidatorRule()) {
+                if (rule.isSpecialHtmlValidatorRule()) {
                     //run the special rules even if they are disabled
                     rule.setEnabled(enabled);
                     rule.run(htmlRuleContext, hints);
@@ -257,14 +254,14 @@ public class HtmlHintsProvider implements HintsProvider {
                     rule.run(htmlRuleContext, hints);
                 }
             }
-            
+
         } else {
             //add a special hint for reenabling disabled error checks
             List<HintFix> fixes = new ArrayList<HintFix>(3);
-            if(isErrorCheckingDisabledForFile(saresult)) {
+            if (isErrorCheckingDisabledForFile(saresult)) {
                 fixes.add(new EnableErrorChecksFix(snapshot));
             }
-            if(!isErrorCheckingEnabledForMimetype(saresult)) {
+            if (!isErrorCheckingEnabledForMimetype(saresult)) {
                 fixes.add(new EnableErrorChecksForMimetypeFix(saresult));
             }
 
@@ -279,7 +276,7 @@ public class HtmlHintsProvider implements HintsProvider {
         }
 
         //html extensions
-        for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
+        for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
             ext.computeErrors(manager, context, hints, unhandled);
         }
 
@@ -350,7 +347,6 @@ public class HtmlHintsProvider implements HintsProvider {
 //
 //        return fixes;
 //    }
-
     /**
      * Cancel in-progress processing of hints.
      */
@@ -359,19 +355,21 @@ public class HtmlHintsProvider implements HintsProvider {
     }
 
     /**
-     * <p>Optional builtin Rules. Typically you don't use this; you register your rules in your filesystem
-     * layer in the gsf-hints/mimetype1/mimetype2 folder, for example gsf-hints/text/x-ruby/.
-     * Error hints should go in the "errors" folder, selection hints should go in the "selection" folder,
-     * and all other hints should go in the "hints" folder (but note that you can create localized folders
-     * and organize them under hints; these categories are shown in the hints options panel.
-     * Hints returned from this method will be placed in the "general" folder.
-     * </p>
-     * <p>
-     * This method is primarily intended for rules that should be added dynamically, for example for
-     * Rules that have a many different flavors yet a single implementation class (such as
-     * JavaScript's StrictWarning rule which wraps a number of builtin parser warnings.)
+     * <p>Optional builtin Rules. Typically you don't use this; you register
+     * your rules in your filesystem layer in the gsf-hints/mimetype1/mimetype2
+     * folder, for example gsf-hints/text/x-ruby/. Error hints should go in the
+     * "errors" folder, selection hints should go in the "selection" folder, and
+     * all other hints should go in the "hints" folder (but note that you can
+     * create localized folders and organize them under hints; these categories
+     * are shown in the hints options panel. Hints returned from this method
+     * will be placed in the "general" folder. </p> <p> This method is primarily
+     * intended for rules that should be added dynamically, for example for
+     * Rules that have a many different flavors yet a single implementation
+     * class (such as JavaScript's StrictWarning rule which wraps a number of
+     * builtin parser warnings.)
      *
-     * @return A list of rules that are builtin, or null or an empty list when there are no builtins
+     * @return A list of rules that are builtin, or null or an empty list when
+     * there are no builtins
      */
     @Override
     public List<Rule> getBuiltinRules() {
@@ -379,16 +377,16 @@ public class HtmlHintsProvider implements HintsProvider {
     }
 
     /**
-     * Create a RuleContext object specific to this HintsProvider. This lets implementations of
-     * this interface created subclasses of the RuleContext that can be passed around to all
-     * the executed rules.
+     * Create a RuleContext object specific to this HintsProvider. This lets
+     * implementations of this interface created subclasses of the RuleContext
+     * that can be passed around to all the executed rules.
+     *
      * @return A new instance of a RuleContext object
      */
     @Override
     public RuleContext createRuleContext() {
         return new RuleContext();
     }
-    
     private static final HtmlRule ERROR_RULE = new HtmlRule(HintSeverity.ERROR, true);
     private static final HtmlRule WARNING_RULE = new HtmlRule(HintSeverity.WARNING, true);
     private static final HtmlRule INFO_RULE = new HtmlRule(HintSeverity.INFO, true);
@@ -411,7 +409,7 @@ public class HtmlHintsProvider implements HintsProvider {
         //return true for something like text/xml, text/xhtml or text/facelets+xhtml
         return mimeType.indexOf("xml") != -1 || mimeType.indexOf("xhtml") != -1;
     }
-    
+
     private static final class HtmlRule implements ErrorRule {
 
         private HintSeverity severity;
@@ -447,13 +445,15 @@ public class HtmlHintsProvider implements HintsProvider {
             return severity;
         }
     }
-   
+
     private static final class DisableErrorChecksFix implements HintFix {
 
-        private Snapshot snapshot;
+        private Document doc;
+        private FileObject fo;
 
         public DisableErrorChecksFix(Snapshot snapshot) {
-            this.snapshot = snapshot;
+            doc = snapshot.getSource().getDocument(false);
+            fo = snapshot.getSource().getFileObject();
         }
 
         @Override
@@ -463,13 +463,11 @@ public class HtmlHintsProvider implements HintsProvider {
 
         @Override
         public void implement() throws Exception {
-            FileObject fo = snapshot.getSource().getFileObject();
             if (fo != null) {
                 fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, Boolean.TRUE);
             }
 
             //force reparse => hints update
-            Document doc = snapshot.getSource().getDocument(false);
             if (doc != null) {
                 forceReparse(doc);
             }
@@ -488,10 +486,13 @@ public class HtmlHintsProvider implements HintsProvider {
 
     private static final class EnableErrorChecksFix implements HintFix {
 
-        private Snapshot snapshot;
+        private Document doc;
+        private FileObject fo;
 
         public EnableErrorChecksFix(Snapshot snapshot) {
-            this.snapshot = snapshot;
+            doc = snapshot.getSource().getDocument(false);
+            fo = snapshot.getSource().getFileObject();
+
         }
 
         @Override
@@ -501,13 +502,11 @@ public class HtmlHintsProvider implements HintsProvider {
 
         @Override
         public void implement() throws Exception {
-            FileObject fo = snapshot.getSource().getFileObject();
             if (fo != null) {
                 fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, null);
             }
 
             //force reparse => hints update
-            Document doc = snapshot.getSource().getDocument(false);
             if (doc != null) {
                 forceReparse(doc);
             }
@@ -530,7 +529,7 @@ public class HtmlHintsProvider implements HintsProvider {
         protected String mimeType;
 
         public AbstractErrorChecksForMimetypeFix(SyntaxAnalyzerResult result) {
-            this.doc =  result.getSource().getSnapshot().getSource().getDocument(false);
+            this.doc = result.getSource().getSnapshot().getSource().getDocument(false);
             this.mimeType = HtmlErrorFilter.getWebPageMimeType(result);
         }
 
@@ -543,10 +542,7 @@ public class HtmlHintsProvider implements HintsProvider {
         public boolean isInteractive() {
             return false;
         }
-
     }
-
-    
 
     private static final class DisableErrorChecksForMimetypeFix extends AbstractErrorChecksForMimetypeFix {
 
@@ -568,8 +564,6 @@ public class HtmlHintsProvider implements HintsProvider {
                 forceReparse(doc);
             }
         }
-
-       
     }
 
     private static final class EnableErrorChecksForMimetypeFix extends AbstractErrorChecksForMimetypeFix {
@@ -592,9 +586,7 @@ public class HtmlHintsProvider implements HintsProvider {
                 forceReparse(doc);
             }
         }
-
     }
-
 
     private static class SetDefaultHtmlVersionHintFix implements HintFix {
 
@@ -630,18 +622,14 @@ public class HtmlHintsProvider implements HintsProvider {
         public boolean isInteractive() {
             return false;
         }
-
     }
-
 
     private static void forceReparse(final Document doc) {
         SwingUtilities.invokeLater(new Runnable() {
-
             @Override
             public void run() {
                 NbEditorDocument nbdoc = (NbEditorDocument) doc;
                 nbdoc.runAtomic(new Runnable() {
-
                     @Override
                     public void run() {
                         MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);

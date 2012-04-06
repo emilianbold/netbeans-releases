@@ -321,13 +321,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     }
 
-    public String getUrlParameters() {
+    public String getUrlParameters(boolean encode) {
         if(panel.urlPanel.isVisible()) {
             return panel.urlTextField.getText();
         } else {
             StringBuilder sb = new StringBuilder();
-            for (QueryParameter p : parameters.values()) {
-                sb.append(p.get());
+            for (QueryParameter qp : parameters.values()) {
+                sb.append(qp.get(encode));
             }
             return sb.toString();
         }
@@ -388,15 +388,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(Bugzilla.LOG.isLoggable(Level.FINE)) {
             Bugzilla.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
-        try {
-            final BugzillaConfiguration bc = repository.getConfiguration();
-            if(bc == null || !bc.isValid()) {
-                // XXX nice errro msg?
-                return;
-            }
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
+        final BugzillaConfiguration bc = repository.getConfiguration();
+        if(bc == null || !bc.isValid()) {
+            // XXX nice errro msg?
+            return;
+        }
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
                     productParameter.setParameterValues(toParameterValues(bc.getProducts()));
                     populateProductDetails();
                     if(isNetbeans) {
@@ -421,14 +421,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         final boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
                         panel.refreshCheckBox.setSelected(autoRefresh);
                     }
+                } finally {
+                    if(Bugzilla.LOG.isLoggable(Level.FINE)) {
+                        Bugzilla.LOG.log(Level.FINE, "Finnished populate query controller {0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+                    }
                 }
-            });
-
-        } finally {
-            if(Bugzilla.LOG.isLoggable(Level.FINE)) {
-                Bugzilla.LOG.log(Level.FINE, "Finnished populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
             }
-        }
+        });
     }
 
     private String getDefaultParameters() {
@@ -440,8 +439,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.enableFields(bl);
         // set the parameter fields
         for (Map.Entry<String, QueryParameter> e : parameters.entrySet()) {
-            QueryParameter pv = parameters.get(e.getKey());
-            pv.setEnabled(bl);
+            QueryParameter qp = parameters.get(e.getKey());
+            qp.setEnabled(bl);
         }
     }
 
@@ -460,18 +459,22 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         fireDataChanged();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         fireDataChanged();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         fireDataChanged();
     }
 
+    @Override
     public void itemStateChanged(ItemEvent e) {
         fireDataChanged();
         if(e.getSource() == panel.filterComboBox) {
@@ -479,6 +482,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
         if(e.getSource() == panel.productList) {
             onProductChanged(e);
@@ -486,6 +490,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         fireDataChanged();            // XXX do we need this ???
     }
 
+    @Override
     public void focusGained(FocusEvent e) {
         if(panel.changedFromTextField.getText().equals("")) {                   // NOI18N
             String lastChangeFrom = BugzillaConfig.getInstance().getLastChangeFrom();
@@ -495,10 +500,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    @Override
     public void focusLost(FocusEvent e) {
         // do nothing
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.searchButton) {
             onRefresh();
@@ -553,14 +560,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    @Override
     public void keyTyped(KeyEvent e) {
         // do nothing
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
         // do nothing
     }
 
+    @Override
     public void keyReleased(KeyEvent e) {
         if(e.getKeyCode() != KeyEvent.VK_ENTER) {
             return;
@@ -731,7 +741,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onWeb() {
-        String params = getUrlParameters();
+        String params = getUrlParameters(true);
         String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/query.cgi?format=advanced"; // NOI18N //XXX need constants
 
         final String urlString = repoURL + (params != null && !params.equals("") ? params : ""); // NOI18N
@@ -841,7 +851,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onCloneQuery() {
-        String p = getUrlParameters();
+        String p = getUrlParameters(false);
         BugzillaQuery q = new BugzillaQuery(null, getRepository(), p, false, false, true);
         BugzillaUtil.openQuery(q);
     }
@@ -868,7 +878,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
 
     private void onRefreshConfiguration() {
-        postPopulate(getUrlParameters(), true);
+        postPopulate(getUrlParameters(false), true);
     }
 
     private void remove() {
@@ -960,25 +970,25 @@ public class QueryController extends BugtrackingController implements DocumentLi
         List<ParameterValue> componentPV = null;
         List<ParameterValue> versionPV = null;
         for (Map.Entry<String, List<ParameterValue>> e : normalizedParams.entrySet()) {
-            QueryParameter pv = parameters.get(e.getKey());
-            if(pv != null) {
-                if(pv == componentParameter) {
+            QueryParameter qp = parameters.get(e.getKey());
+            if(qp != null) {
+                if(qp == componentParameter) {
                     componentPV = e.getValue();
-                } else if(pv == versionParameter) {
+                } else if(qp == versionParameter) {
                     versionPV = e.getValue();
                 } else {
                     List<ParameterValue> pvs = e.getValue();
-                    pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
+                    qp.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
                 }
             }
         }
         setDependentParameter(componentParameter, componentPV);
         setDependentParameter(versionParameter, versionPV);
     }
-
-    private void setDependentParameter(QueryParameter p, List<ParameterValue> values) {
+                
+    private void setDependentParameter(QueryParameter qp, List<ParameterValue> values) {
         if(values != null) {
-            p.setValues(values.toArray(new ParameterValue[values.size()]));
+            qp.setValues(values.toArray(new ParameterValue[values.size()]));
         }
     }
 
@@ -1090,7 +1100,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     // XXX what if there is a different host in queries repository as in the url?
                     query.refresh(panel.urlTextField.getText(), autoRefresh);
                 } else {
-                    query.refresh(getUrlParameters(), autoRefresh);
+                    query.refresh(getUrlParameters(true), autoRefresh);
                 }
             } finally {
                 setQueryRunning(false); // XXX do we need this? its called in finishQuery anyway
@@ -1153,7 +1163,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        panel.showNoContentPanel(false);;
+                        panel.showNoContentPanel(false);
                     }
                 });
             }

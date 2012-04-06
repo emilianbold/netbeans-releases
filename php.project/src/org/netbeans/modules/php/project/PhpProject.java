@@ -304,7 +304,7 @@ public final class PhpProject implements Project {
                 }
             });
         }
-        assert sourcesDirectory != null : "Sources directory cannot be null";
+        assert sourcesDirectory != null : "Sources directory cannot be null for " + helper.getProjectDirectory();
         return sourcesDirectory;
     }
 
@@ -493,10 +493,12 @@ public final class PhpProject implements Project {
         if (DialogDisplayer.getDefault().notify(notifyDescriptor) == NotifyDescriptor.YES_OPTION) {
             if (dir.mkdirs()) {
                 // original sources restored
+                LOGGER.log(Level.INFO, "Restoring source folder for project {0}", helper.getProjectDirectory());
                 informUser(projectName, NbBundle.getMessage(PhpProject.class, infoMessageKey, dir.getAbsolutePath()), NotifyDescriptor.INFORMATION_MESSAGE);
                 return FileUtil.toFileObject(dir);
             }
             // temporary set sources to project directory, do not store it anywhere
+            LOGGER.log(Level.INFO, "Cannot restore source folder for project {0}, using project directory", helper.getProjectDirectory());
             informUser(projectName, NbBundle.getMessage(PhpProject.class, errorMessageKey, dir.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE);
         }
         return helper.getProjectDirectory();

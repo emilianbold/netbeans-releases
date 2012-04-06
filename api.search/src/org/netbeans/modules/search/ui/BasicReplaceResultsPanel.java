@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -58,7 +60,10 @@ import org.netbeans.modules.search.ReplaceTask;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.ResultView;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -103,12 +108,17 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
 
         getContentPanel().add(splitPane);
         initResultModelListener();
+        replaceButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ResultView.class,
+                "ACS_TEXT_BUTTON_REPLACE"));                            //NOI18N
     }
 
     private void replace() {
         ReplaceTask taskReplace =
-                new ReplaceTask(resultModel.getMatchingObjects());
+                new ReplaceTask(resultModel.getMatchingObjects(), this);
+        resultsOutlineSupport.clean();
         replaceButton.setEnabled(false);
+
         Manager.getInstance().scheduleReplaceTask(taskReplace);
     }
 
@@ -136,5 +146,79 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
         replaceButton.setText(NbBundle.getMessage(ResultView.class,
                 "TEXT_BUTTON_REPLACE", matches));                       //NOI18N
         replaceButton.setEnabled(matches > 0);
+    }
+
+    /**
+     */
+    public void displayIssuesToUser(final ReplaceTask task, final String title,
+            final String[] problems, final boolean reqAtt) {
+
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override
+            public void run() {
+                IssuesPanel issuesPanel = new IssuesPanel(title, problems);
+                if (isMacLaf) {
+                    issuesPanel.setBackground(macBackground);
+                }
+                displayIssues(issuesPanel);
+                if (!ResultView.getInstance().isOpened()) {
+                    ResultView.getInstance().open();
+                }
+                if (reqAtt) {
+                    ResultView.getInstance().requestAttention(true);
+                }
+            }
+        });
+    }
+
+    public void displayIssues(IssuesPanel issuesPanel) {
+        if (issuesPanel != null) {
+            btnModifySearch.setEnabled(true);
+            removeButtons(btnStop, nextButton, prevButton, toggleViewButton,
+                    expandButton, showDetailsButton);
+            Container p = getContentPanel();
+            p.removeAll();
+            p.add(issuesPanel);
+            validate();
+            repaint();
+        }
+    }
+
+    private void removeButtons(AbstractButton... abstractButtons) {
+        for (AbstractButton ab : abstractButtons) {
+            if (ab != null) {
+                Container c = ab.getParent();
+                c.remove(ab);
+            }
+        }
+    }
+
+    public void rescan() {
+        BasicComposition bc = new BasicComposition(composition.getSearchInfo(),
+                composition.getMatcher(), composition.getBasicSearchCriteria(),
+                composition.getScopeDisplayName());
+        Manager.getInstance().scheduleSearchTask(bc, true);
+    }
+
+    public void showFinishedInfo() {
+        final AbstractNode an = new AbstractNode(Children.LEAF);
+        an.setIconBaseWithExtension(
+                "org/netbeans/modules/search/res/info.png");            //NOI18N
+        an.setDisplayName(NbBundle.getMessage(ResultView.class,
+                "TEXT_INFO_REPLACE_FINISHED", //NOI18N
+                resultModel.getSelectedMatchesCount()));
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override
+            public void run() {
+                getOutlineView().getOutline().setRootVisible(true);
+                getExplorerManager().setRootContext(an);
+                getOutlineView().validate();
+                getOutlineView().repaint();
+                nextButton.setEnabled(false);
+                prevButton.setEnabled(false);
+                toggleViewButton.setEnabled(false);
+                expandButton.setEnabled(false);
+            }
+        });
     }
 }

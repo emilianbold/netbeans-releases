@@ -42,20 +42,15 @@ package org.netbeans.modules.html.validation;
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 import java.io.File;
-import java.util.Collection;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import nu.validator.servlet.ParserMode;
-import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.api.ParseException;
-import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.editor.lib.api.*;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -92,7 +87,7 @@ public class ValidationTransactionTest extends TestBase {
         return suite;
     }
 
-    public void testBasic() throws SAXException, IOException, ParseException {
+    public void testBasic() throws SAXException, IOException {
 //        ValidationTransaction.enableDebug();
 
         validate("<!doctype html> <html><head><title>hello</title></head><body><div>ahoj!</div></body></html>", true);

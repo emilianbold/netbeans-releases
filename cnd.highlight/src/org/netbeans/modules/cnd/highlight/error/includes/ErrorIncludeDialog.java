@@ -93,8 +93,9 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf.CompilationUnitIterator;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -714,7 +715,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);
-            Iterator<CompilationUnit> units = dump.iteratorCompilationUnits();
+            CompilationUnitIterator units = dump.iteratorCompilationUnits();
             if (units.hasNext()){
                 CompilationUnit cu = units.next();
                 String fullName = getRightName(cu.getSourceFileAbsolutePath());

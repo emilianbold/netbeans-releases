@@ -44,23 +44,27 @@
 
 package org.netbeans.modules.projectapi;
 
-import org.openide.modules.ModuleInstall;
+import org.openide.modules.OnStart;
+import org.openide.modules.OnStop;
 
 /**
  * Manages a module's lifecycle. Remember that an installer is optional and
  * often not needed at all.
  */
-public class Installer extends ModuleInstall {
-
+@OnStart
+public class Installer implements Runnable {
     @Override
-    public void restored() {
+    public void run() {
         //#125582
         SimpleFileOwnerQueryImplementation.deserialize();
     }
 
-    @Override
-    public void close() {
-        //#125582
-        SimpleFileOwnerQueryImplementation.serialize();
+    @OnStop
+    public static final class Down implements Runnable {
+        @Override
+        public void run() {
+            //#125582
+            SimpleFileOwnerQueryImplementation.serialize();
+        }
     }
 }

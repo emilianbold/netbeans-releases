@@ -207,5 +207,14 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
             support.removePropertyChangeListener(propertyChangeListener);
         }
     }
-    
+
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    @Override public final boolean equals(Object obj) {
+        return getClass().isInstance(obj) && project.equals(((AbstractProjectClassPathImpl) obj).project);
+    }
+
+    @Override public final int hashCode() {
+        return project.hashCode() ^ getClass().hashCode();
+    }
+
 }

@@ -1,7 +1,0 @@
-<!ENTITY netbeans.firefox.extension.about.title          "About NetBeans Firefox Extension">
-<!ENTITY netbeans.firefox.extension.about.name           "NetBeans Firefox Extension">
-<!ENTITY netbeans.firefox.extension.about.description    "JavaScript Debugger for NetBeans IDE">
-<!ENTITY netbeans.firefox.extension.about.version.label  "version">
-<!ENTITY netbeans.firefox.extension.about.license        "NetBeans IDE and NetBeans Platform are based on software from netbeans.org, which has been dual licensed under the Common Development and Distribution License (CDDL) and the GNU General Public License version 2 with Classpath exception.">
-<!ENTITY netbeans.firefox.extension.about.visit.label    "For more information, please visit">
-<!ENTITY netbeans.firefox.extension.about.homepage       "http://www.netbeans.org/">

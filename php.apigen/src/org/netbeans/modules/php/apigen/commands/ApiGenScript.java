@@ -206,22 +206,25 @@ public final class ApiGenScript extends PhpProgram {
 
     private List<String> getParams(PhpModule phpModule) {
         List<String> params = new ArrayList<String>();
-        addSource(phpModule, params);
-        addDestination(phpModule, params);
-        addTitle(phpModule, params);
-        addConfig(phpModule, params);
-        addCharsets(phpModule, params);
-        addExcludes(phpModule, params);
-        addAccessLevels(phpModule, params);
-        addInternal(phpModule, params);
-        addPhp(phpModule, params);
-        addTree(phpModule, params);
-        addDeprecated(phpModule, params);
-        addTodo(phpModule, params);
-        addDownload(phpModule, params);
-        addSourceCode(phpModule, params);
-        addColors(phpModule, params);
-        addProgressBar(phpModule, params);
+        if (ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.HAS_CONFIG)) {
+            addConfig(phpModule, params);
+        } else {
+            addSource(phpModule, params);
+            addDestination(phpModule, params);
+            addTitle(phpModule, params);
+            addCharsets(phpModule, params);
+            addExcludes(phpModule, params);
+            addAccessLevels(phpModule, params);
+            addInternal(phpModule, params);
+            addPhp(phpModule, params);
+            addTree(phpModule, params);
+            addDeprecated(phpModule, params);
+            addTodo(phpModule, params);
+            addDownload(phpModule, params);
+            addSourceCode(phpModule, params);
+            addColors(phpModule, params);
+            addProgressBar(phpModule, params);
+        }
         addUpdateCheck(phpModule, params);
         return params;
     }

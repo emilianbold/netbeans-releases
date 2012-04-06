@@ -61,7 +61,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import nu.validator.htmlparser.sax.HtmlParser;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;

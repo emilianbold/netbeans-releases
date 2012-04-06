@@ -108,10 +108,28 @@ public class RepositoryNode extends AbstractNode {
         return getIcon(arg0);
     }
 
+    @Override
+    public String getHtmlDisplayName() {
+        StringBuilder base = new StringBuilder().append(getDisplayName());
+        if (info.isMirror()) {
+            base.append(" <font color='!controlShadow'>[");
+            for (RepositoryInfo nf : info.getMirroredRepositories()) {
+                base.append(nf.getName()).append(",");
+            }
+            base.setLength(base.length() - 1);
+            base.append("]</font>");
+        }
+        return base.toString();
+    }
+
     @Messages({
+        "#{0} - repository id",
         "LBL_REPO_ID=Repository ID:<b> {0} </b><p>",
+        "#{0} - repository name",
         "LBL_REPO_Name=Repository Name: <b> {0} </b><p>",
-        "LBL_REPO_Url=Repository URL:<b> {0} </b><p>"
+        "#{0} - repository url",
+        "LBL_REPO_Url=Repository URL:<b> {0} </b><p>",
+        "LBL_Mirrors=Mirrors repositories: <b> {0} </b><p>"
     })
     @Override public String getShortDescription() {
         StringBuilder buffer = new StringBuilder();
@@ -126,6 +144,15 @@ public class RepositoryNode extends AbstractNode {
         if (info.getRepositoryUrl() != null) {
             buffer.append(LBL_REPO_Url(info.getRepositoryUrl()));
         }
+        if (info.isMirror()) {
+            StringBuilder s = new StringBuilder();
+            for (RepositoryInfo nf : info.getMirroredRepositories()) {
+                s.append(nf.getName()).append(",");
+            }
+            s.setLength(s.length() - 1);
+            buffer.append(LBL_Mirrors(s.toString()));
+        }
+        
         buffer.append("</html>");//NOI18N
 
         return buffer.toString();

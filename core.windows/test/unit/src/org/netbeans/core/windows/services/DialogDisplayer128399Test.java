@@ -46,12 +46,15 @@ package org.netbeans.core.windows.services;
 
 import java.awt.Dialog;
 import java.awt.FlowLayout;
+import java.awt.GraphicsEnvironment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -66,6 +69,10 @@ import org.openide.util.RequestProcessor;
  * @author Jiri Rechtacek
  */
 public class DialogDisplayer128399Test extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(DialogDisplayer128399Test.class);
+    }
 
     public DialogDisplayer128399Test (String testName) {
         super (testName);

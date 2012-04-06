@@ -43,6 +43,7 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyVetoException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JPanel;
@@ -50,6 +51,8 @@ import javax.swing.JFrame;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -63,6 +66,10 @@ import org.openide.util.Exceptions;
  * @author Holy
  */
 public class AnotherSetKeysBeforeEventsProcessedTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(AnotherSetKeysBeforeEventsProcessedTest.class);
+    }
 
     public AnotherSetKeysBeforeEventsProcessedTest(String name) {
         super(name);

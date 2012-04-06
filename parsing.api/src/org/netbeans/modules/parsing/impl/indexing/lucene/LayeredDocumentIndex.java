@@ -182,6 +182,14 @@ public final class LayeredDocumentIndex implements DocumentIndex {
         return base.getDirtyKeys();
     }
     
+    public boolean begin() {
+        if (base instanceof Runnable) {
+            ((Runnable)base).run();
+            return true;
+        }
+        return false;
+    }
+    
     @NonNull
     private synchronized DocumentIndex getOverlay() throws IOException {
         if (overlay == null) {

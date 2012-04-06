@@ -48,7 +48,10 @@ import javax.swing.JTextField;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jemmy.operators.*;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 
 /** Class implementing all necessary methods for handling "New Web Application
@@ -70,7 +73,6 @@ public class NewWebFreeFormNameStepOperator extends WizardOperator {
     private JTextFieldOperator _txtLocation;
     private JLabelOperator _lblLocation;
     private JButtonOperator _btBrowse3;
-    private JCheckBoxOperator _cbSetAsMainProject;
     
     public NewWebFreeFormNameStepOperator() {
         super(Helper.freeFormWizardTitle());
@@ -241,20 +243,6 @@ public class NewWebFreeFormNameStepOperator extends WizardOperator {
         return _btBrowse3;
     }
     
-    /** Tries to find "Set as Main Project" JCheckBox in this dialog.
-     * @return JCheckBoxOperator
-     */
-    public JCheckBoxOperator cbSetAsMainProject() {
-        if (_cbSetAsMainProject==null) {
-            String setAsMainPrj = Bundle.getStringTrimmed(
-                    "org.netbeans.modules.ant.freeform.ui.Bundle",
-                    "LBL_BasicProjectInfoPanel_mainProject");
-            _cbSetAsMainProject = new JCheckBoxOperator(this, setAsMainPrj);
-        }
-        return _cbSetAsMainProject;
-    }
-    
-    
     //****************************************
     // Low-level functionality definition part
     //****************************************
@@ -363,16 +351,6 @@ public class NewWebFreeFormNameStepOperator extends WizardOperator {
         btBrowse3().push();
     }
     
-    /** checks or unchecks given JCheckBox
-     * @param state boolean requested state
-     */
-    public void checkSetAsMainProject(boolean state) {
-        if (cbSetAsMainProject().isSelected()!=state) {
-            cbSetAsMainProject().push();
-        }
-    }
-    
-    
     //*****************************************
     // High-level functionality definition part
     //*****************************************
@@ -393,7 +371,6 @@ public class NewWebFreeFormNameStepOperator extends WizardOperator {
         txtLocation();
         lblLocation();
         btBrowse3();
-        cbSetAsMainProject();
     }
 }
 

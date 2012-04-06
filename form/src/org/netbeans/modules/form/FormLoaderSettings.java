@@ -625,7 +625,7 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
      *         2: paint gaps, 3: paint everything (anchors, alignment, gaps)
      */
     public int getPaintAdvancedLayoutInfo() {
-        return getPreferences().getInt(PROP_PAINT_ADVANCED_LAYOUT, 0);
+        return getPreferences().getInt(PROP_PAINT_ADVANCED_LAYOUT, 3);
     }
 
     public void setPaintAdvancedLayoutInfo(int paintLevel) {

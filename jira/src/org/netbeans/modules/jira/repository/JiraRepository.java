@@ -607,6 +607,10 @@ public class JiraRepository {
         }
     }
 
+    public void ensureCredentials() {
+        setCredentials(info.getUsername(), info.getPassword(), info.getHttpUsername(), info.getHttpPassword());
+    }
+    
     public boolean authenticate(String errroMsg) {
         return BugtrackingUtil.editRepository(JiraUtils.getRepository(this), errroMsg);
     }

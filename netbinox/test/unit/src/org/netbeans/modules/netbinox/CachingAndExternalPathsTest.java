@@ -51,7 +51,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
+import org.netbeans.NetigsoFramework;
 import org.netbeans.SetupHid;
+import org.netbeans.core.netigso.Netigso;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -60,6 +62,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.launch.Framework;
 
 /**
  * Read access test
@@ -108,14 +112,21 @@ public class CachingAndExternalPathsTest extends NbTestCase {
             suite.addTest(NbModuleSuite.create(conf));
         }
         {
-            NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingAndExternalPathsTest.class, "testStartOnceMore");
+            NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(
+                CachingAndExternalPathsTest.class, 
+                "testStartOnceMore",
+                "testTeaseTheSystemWithFileLocatorBundleFile"
+            );
             suite.addTest(NbModuleSuite.create(conf));
         }
 
         suite.addTest(new CachingAndExternalPathsTest("testInMiddle"));
 
         {
-            NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingAndExternalPathsTest.class, "testReadAccess", "testVerifyActivatorExecuted");
+            NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingAndExternalPathsTest.class, 
+                "testTeaseTheSystemWithFileLocatorBundleFile", 
+                "testReadAccess", "testVerifyActivatorExecuted"
+            );
             suite.addTest(NbModuleSuite.create(conf));
         }
 
@@ -219,6 +230,21 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         LOG.info("Previous run finished, starting another one");
         System.setProperty("activated.count", "0");
     }
+    
+    public void testTeaseTheSystemWithFileLocatorBundleFile() throws Exception {
+        Framework f = findFramework();
+        Method getBundleFile;
+        try {
+            getBundleFile = Class.forName("org.eclipse.core.runtime.FileLocator").getMethod("getBundleFile", Bundle.class);
+        } catch (Exception ex) {
+            LOG.log(Level.INFO, "Skipping the " + getName() + " test", ex);
+            return;
+        }
+        for (Bundle b : f.getBundleContext().getBundles()) {
+            File file = (File) getBundleFile.invoke(null, b);
+            assertNotNull("Some file is found", file);
+        }
+    }
 
     public void testReadAccess() throws Exception {
         LOG.info("Inside testReadAccess");
@@ -270,5 +296,15 @@ public class CachingAndExternalPathsTest extends NbTestCase {
     
     protected interface SetExtDirProperty {
         public void setExtDirProperty(File value);
+    }
+    static Framework findFramework() throws Exception {
+        Object o = Lookup.getDefault().lookup(NetigsoFramework.class);
+        assertEquals("The right class", Netigso.class, o.getClass());
+        Netigso f = (Netigso)o;
+        final Method m = f.getClass().getDeclaredMethod("getFramework");
+        m.setAccessible(true);
+        Framework frame = (Framework) m.invoke(f);
+        assertNotNull("Framework found", frame);
+        return frame;
     }
 }

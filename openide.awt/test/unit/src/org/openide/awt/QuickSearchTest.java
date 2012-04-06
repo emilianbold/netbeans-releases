@@ -42,6 +42,7 @@
 package org.openide.awt;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -52,43 +53,29 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import static org.junit.Assert.*;
-import org.junit.BeforeClass;
+import org.netbeans.junit.NbTestCase;
 
 /**
  * Test of QuickSearch.
  * 
  * @author Martin Entlicher
  */
-public class QuickSearchTest {
-    
-    public QuickSearchTest() {
+public class QuickSearchTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(QuickSearchTest.class);
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
+    public QuickSearchTest(String name) {
+        super(name);
     }
     
     /**
      * Test of attach and detach methods, of class QuickSearch.
      */
-    @Test
     public void testAttachDetach() {
         TestComponent component = new TestComponent();
         Object constraints = null;
@@ -103,7 +90,6 @@ public class QuickSearchTest {
     /**
      * Test of isEnabled and setEnabled methods, of class QuickSearch.
      */
-    @Test
     public void testIsEnabled() {
         TestComponent component = new TestComponent();
         Object constraints = null;
@@ -121,7 +107,6 @@ public class QuickSearchTest {
     /**
      * Test of the addition of quick search component.
      */
-    @Test
     public void testQuickSearchAdd() {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
@@ -176,7 +161,6 @@ public class QuickSearchTest {
     /**
      * Test of the quick search listener.
      */
-    @Test
     public void testQuickSearchListener() {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
@@ -314,7 +298,6 @@ public class QuickSearchTest {
     /**
      * Test of asynchronous calls, of class QuickSearch.
      */
-    @Test
     public void testAsynchronous() {
         final TestComponent[] componentPtr = new TestComponent[] { null };
         final String[] searchTextPtr = new String[] { null };
@@ -530,7 +513,6 @@ public class QuickSearchTest {
     /**
      * Test of processKeyEvent method, of class QuickSearch.
      */
-    @Test
     public void testProcessKeyEvent() {
         TestComponent component = new TestComponent();
         Object constraints = null;
@@ -581,7 +563,6 @@ public class QuickSearchTest {
     /**
      * Test of findMaxCommonSubstring method, of class QuickSearch.
      */
-    @Test
     public void testFindMaxCommonSubstring() {
         System.out.println("findMaxCommonSubstring");
         String str1 = "annotation";

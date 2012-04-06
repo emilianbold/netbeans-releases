@@ -144,7 +144,7 @@ public class ExtractSuperclassRefactoringUI implements RefactoringUI, JavaRefact
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ExtractSuperclassRefactoringUI.class.getName());
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.ExtractSuperclassRefactoringUI"); // NOI18N
     }
     
     // --- PRIVATE HELPER METHODS ----------------------------------------------

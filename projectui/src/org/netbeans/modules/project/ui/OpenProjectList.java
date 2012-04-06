@@ -109,6 +109,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.Modules;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
@@ -1757,23 +1758,8 @@ public final class OpenProjectList {
     }
     
     
-    private static ModuleInfo findModuleForProject(Project prj) {
-        Collection<? extends ModuleInfo> instances = Lookup.getDefault().lookupAll(ModuleInfo.class);
-        ModuleInfo info = null;
-        for (ModuleInfo cur : instances) {
-            if (!cur.isEnabled()) {
-                continue;
-            }
-            if (cur.getClassLoader() == prj.getClass().getClassLoader()) {
-                info = cur;
-                break;
-            }
-        }
-        return info;
-    }
-    
     private void addModuleInfo(final Project prj) {
-        final ModuleInfo info = findModuleForProject(prj);
+        final ModuleInfo info = Modules.getDefault().ownerOf(prj.getClass());
         if (info != null) {
             // is null in tests..
             ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
@@ -1790,8 +1776,7 @@ public final class OpenProjectList {
     }
     
     private void removeModuleInfo(Project prj) {
-        ModuleInfo info = findModuleForProject(prj);
-        removeModuleInfo(prj, info);
+        removeModuleInfo(prj, Modules.getDefault().ownerOf(prj.getClass()));
     }
     
     private void removeModuleInfo(final Project prj, final ModuleInfo info) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,35 +46,12 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.sql.Clob;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EventObject;
-import java.util.List;
-import javax.swing.AbstractCellEditor;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
+import java.util.*;
+import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.db.dataview.util.FileBackedClob;
@@ -118,7 +95,9 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
     protected JTable table;
     protected int currentRow;
     protected int currentColumn;
+    protected JMenuItem saveContentMenuItem;
     
+    @SuppressWarnings("LeakingThisInConstructor")
     public ClobFieldTableCellEditor() {
         button = new JButton();
         button.setActionCommand(EDIT);
@@ -141,6 +120,7 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
                 fireEditingCanceled();
             }
         });
+        saveContentMenuItem = miLobSaveAction;
         popup.add(miLobSaveAction);
         final JMenuItem miLobEditAction = new JMenuItem(NbBundle.getMessage(ClobFieldTableCellEditor.class, "editClob.title"));
         miLobEditAction.addActionListener(new ActionListener() {
@@ -189,6 +169,7 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         currentValue = (java.sql.Clob) value;
         if (currentValue != null) {
+            saveContentMenuItem.setEnabled(true);
             try {
                 long size = currentValue.length();
                 StringBuilder stringValue = new StringBuilder();
@@ -206,6 +187,7 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
                 button.setText("<CLOB of unknown size>");
             }
         } else {
+            saveContentMenuItem.setEnabled(false);
             button.setText("<NULL>");
         }
         this.currentColumn = column;
@@ -228,14 +210,17 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
     }
     
     private void saveLobToFile(Clob b) {
+        if (b == null) {
+            return;
+        }
         CharsetSelector charset = new CharsetSelector();
         JFileChooser c = new JFileChooser();
         c.setAccessory(charset);
         int fileDialogState = c.showSaveDialog(table);
         if (fileDialogState == JFileChooser.APPROVE_OPTION) {
             File f = c.getSelectedFile();
-            Reader r = null;
-            Writer w = null;
+            Reader r;
+            Writer w;
             try {
                 r = b.getCharacterStream();
                 w = new OutputStreamWriter(new FileOutputStream(f), charset.getSelectedCharset());
@@ -258,7 +243,7 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
         int fileDialogState = c.showOpenDialog(table);
         if (fileDialogState == JFileChooser.APPROVE_OPTION) {
             File f = c.getSelectedFile();
-            Reader r = null;
+            Reader r;
             try {
                 result = new FileBackedClob();
                 r = new InputStreamReader(new FileInputStream(f), charset.getSelectedCharset());
@@ -280,7 +265,7 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
     private boolean doTransfer(Reader in, Writer out, Integer size, String title, boolean sizeEstimated) throws IOException {
         // Only pass size if it is _not_ estimated
         MonitorableCharacterStreamTransfer ft = new MonitorableCharacterStreamTransfer(in, out, sizeEstimated ? null : size);
-        Throwable t = null;
+        Throwable t;
         // Only show dialog, if the filesize is large enougth and has a use for the user
         if (size == null || size > (1024 * 1024)) {
             t = ProgressUtils.showProgressDialogAndRun(ft, title, false);

@@ -48,6 +48,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport.WebBean;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
+import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
@@ -58,9 +59,11 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=org.netbeans.modules.web.el.spi.ELVariableResolver.class)
 public final class WebBeansELVariableResolver implements ELVariableResolver {
 
+    private static final String CONTENT_NAME = "NamedBeans"; //NOI18N
+
     @Override
-    public String getBeanClass(String beanName, FileObject context) {
-        for (WebBean bean : getWebBeans(context)) {
+    public String getBeanClass(String beanName, FileObject target, ResolverContext context) {
+        for (WebBean bean : getWebBeans(target, context)) {
             if (beanName.equals(bean.getName())) {
                 return bean.getBeanClassName();
             }
@@ -69,8 +72,8 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
     }
     
     @Override
-    public String getBeanName(String clazz, FileObject context) {
-        for (WebBean bean : getWebBeans(context)) {
+    public String getBeanName(String clazz, FileObject target, ResolverContext context) {
+        for (WebBean bean : getWebBeans(target, context)) {
             if (clazz.equals(bean.getBeanClassName())) {
                 return bean.getName();
             }
@@ -84,8 +87,8 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
 //    }
 
     @Override
-    public List<VariableInfo> getManagedBeans(FileObject context) {
-        List<WebBean> beans = getWebBeans(context);
+    public List<VariableInfo> getManagedBeans(FileObject target, ResolverContext context) {
+        List<WebBean> beans = getWebBeans(target, context);
         List<VariableInfo> result = new ArrayList<VariableInfo>(beans.size());
         for (WebBean bean : beans) {
             result.add(VariableInfo.createResolvedVariable(bean.getName(), bean.getBeanClassName()));
@@ -94,25 +97,30 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
     }
 
     @Override
-    public List<VariableInfo> getVariables(Snapshot snapshot, int offset) {
+    public List<VariableInfo> getVariables(Snapshot snapshot, int offset, ResolverContext context) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<VariableInfo> getBeansInScope(String scope, Snapshot context) {
+    public List<VariableInfo> getBeansInScope(String scope, Snapshot snapshot, ResolverContext context) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<VariableInfo> getRawObjectProperties(String name, Snapshot context) {
+    public List<VariableInfo> getRawObjectProperties(String name, Snapshot snapshot, ResolverContext context) {
         return Collections.emptyList();
     }
 
-    private List<WebBean> getWebBeans(FileObject context) {
-        JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(context);
-        return jsfSupport != null 
-                ? WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel())
-                : Collections.<WebBean>emptyList();
+    private List<WebBean> getWebBeans(FileObject target, ResolverContext context) {
+        JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(target);
+        if (jsfSupport == null) {
+            return Collections.<WebBean>emptyList();
+        } else {
+            if (context.getContent(CONTENT_NAME) == null) {
+                context.setContent(CONTENT_NAME, WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel()));
+            }
+            return (List<WebBean>) context.getContent(CONTENT_NAME);
+        }
     }
 
 }

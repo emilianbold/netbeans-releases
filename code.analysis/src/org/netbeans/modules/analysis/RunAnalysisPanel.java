@@ -42,9 +42,12 @@
 package org.netbeans.modules.analysis;
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,7 +71,9 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -85,6 +90,7 @@ import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
 import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.modules.analysis.ui.AdjustConfigurationPanel;
+import org.netbeans.modules.analysis.ui.ConfigurationsComboModel;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -96,80 +102,28 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author lahvac
  */
-public class RunAnalysisPanel extends javax.swing.JPanel {
-    
+public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListener {
+
+    private static final String COMBO_PROTOTYPE = "999999999999999999999999999999999999999999999999999999999999";
     private final JPanel progress;
-    private final DefaultComboBoxModel configurationModel;
     private final RequiredPluginsPanel requiredPlugins;
-    private final Collection<? extends AnalyzerFactory> analyzers;
+    private       Collection<? extends AnalyzerFactory> analyzers;
+    private final Lookup.Result<AnalyzerFactory> analyzersResult;
     private final Map<String, WarningDescription> warningId2Description = new HashMap<String, WarningDescription>();
 
-    public RunAnalysisPanel(ProgressHandle handle, Lookup context, Collection<? extends AnalyzerFactory> analyzers) {
-        this.analyzers = analyzers;
-        
-        configurationModel = new DefaultComboBoxModel();
-        configurationModel.addElement("Predefined");
-        configurationModel.addElement(null);
-
-        for (AnalyzerFactory analyzer : analyzers) {
-            configurationModel.addElement(analyzer);
-        }
-
-        configurationModel.addElement("Custom");
-
-        if (!RunAnalysis.readConfigurations().iterator().hasNext()) {
-            RunAnalysis.getConfigurationSettingsRoot("default").put("displayName", "Default");
-        }
-
-        for (Configuration c : RunAnalysis.readConfigurations()) {
-            configurationModel.addElement(c);
-        }
+    public RunAnalysisPanel(ProgressHandle handle, Lookup context) {
+        this.analyzersResult = Lookup.getDefault().lookupResult(AnalyzerFactory.class);
+        this.analyzersResult.addLookupListener(this);
         
         initComponents();
-
-        configurationCombo.setRenderer(new ConfigurationRenderer(true));
-
-        DefaultComboBoxModel inspectionModel = new DefaultComboBoxModel();
-
-        for (AnalyzerFactory a : analyzers) {
-            inspectionModel.addElement(SPIAccessor.ACCESSOR.getAnalyzerDisplayName(a));
-
-            Map<String, Collection<WarningDescription>> cat2Warnings = new TreeMap<String, Collection<WarningDescription>>();
-
-            for (WarningDescription wd : a.getWarnings()) {
-                String cat = SPIAccessor.ACCESSOR.getWarningCategoryDisplayName(wd); //TODO: should be based on the id rather than on the display name
-                Collection<WarningDescription> warnings = cat2Warnings.get(cat);
-
-                if (warnings == null) {
-                    cat2Warnings.put(cat, warnings = new TreeSet<WarningDescription>(new Comparator<WarningDescription>() {
-                        @Override public int compare(WarningDescription o1, WarningDescription o2) {
-                            return SPIAccessor.ACCESSOR.getWarningDisplayName(o1).compareToIgnoreCase(SPIAccessor.ACCESSOR.getWarningDisplayName(o2));
-                        }
-                    }));
-                }
-
-                warnings.add(wd);
-                warningId2Description.put(SPIAccessor.ACCESSOR.getWarningId(wd), wd);
-            }
-
-            for (Entry<String, Collection<WarningDescription>> catE : cat2Warnings.entrySet()) {
-                inspectionModel.addElement("  " + catE.getKey());
-
-                for (WarningDescription wd : catE.getValue()) {
-                    inspectionModel.addElement(wd);
-                }
-            }
-        }
-
-        inspectionCombo.setModel(inspectionModel);
-        inspectionCombo.setRenderer(new InspectionRenderer());
-        inspectionCombo.setSelectedIndex(2);
 
         List<ScopeDescription> scopes = new ArrayList<ScopeDescription>();
         Icon currentProjectIcon = null;
@@ -266,10 +220,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         add(progress, gridBagConstraints);
         ((CardLayout) progress.getLayout()).show(progress, "empty");
 
-        updatePlugins();
-        configurationCombo.setSelectedIndex(1);//XXX: the value should be kept across invocations of the dialog
-
-        configurationRadio.setSelected(true);
+        updateConfigurations(1, 2);//XXX: the values should be kept across invocations of the dialog
         updateEnableDisable();
 
         setBorder(new EmptyBorder(12, 12, 12, 12));
@@ -295,6 +246,72 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
                 if (child instanceof JComponent) todo.add((JComponent) child);
             }
         }
+    }
+
+    private void updateConfigurations(int configurationComboPreselectIndex, int inspectionComboPreselectIndex) {
+        analyzers = analyzersResult.allInstances();
+        
+        DefaultComboBoxModel configurationModel = new DefaultComboBoxModel();
+        configurationModel.addElement("Predefined");
+        configurationModel.addElement(null);
+
+        for (AnalyzerFactory analyzer : analyzers) {
+            configurationModel.addElement(analyzer);
+        }
+
+        configurationModel.addElement("Custom");
+
+        if (!RunAnalysis.readConfigurations().iterator().hasNext()) {
+            RunAnalysis.getConfigurationSettingsRoot("default").put("displayName", "Default");
+        }
+
+        for (Configuration c : RunAnalysis.readConfigurations()) {
+            configurationModel.addElement(c);
+        }
+
+        configurationCombo.setModel(configurationModel);
+        configurationCombo.setSelectedIndex(configurationComboPreselectIndex < configurationModel.getSize() ? configurationComboPreselectIndex : 1);
+
+        configurationRadio.setSelected(true);
+        configurationCombo.setRenderer(new ConfigurationRenderer(true));
+
+        DefaultComboBoxModel inspectionModel = new DefaultComboBoxModel();
+
+        for (AnalyzerFactory a : analyzers) {
+            inspectionModel.addElement(SPIAccessor.ACCESSOR.getAnalyzerDisplayName(a));
+
+            Map<String, Collection<WarningDescription>> cat2Warnings = new TreeMap<String, Collection<WarningDescription>>();
+
+            for (WarningDescription wd : a.getWarnings()) {
+                String cat = SPIAccessor.ACCESSOR.getWarningCategoryDisplayName(wd); //TODO: should be based on the id rather than on the display name
+                Collection<WarningDescription> warnings = cat2Warnings.get(cat);
+
+                if (warnings == null) {
+                    cat2Warnings.put(cat, warnings = new TreeSet<WarningDescription>(new Comparator<WarningDescription>() {
+                        @Override public int compare(WarningDescription o1, WarningDescription o2) {
+                            return SPIAccessor.ACCESSOR.getWarningDisplayName(o1).compareToIgnoreCase(SPIAccessor.ACCESSOR.getWarningDisplayName(o2));
+                        }
+                    }));
+                }
+
+                warnings.add(wd);
+                warningId2Description.put(SPIAccessor.ACCESSOR.getWarningId(wd), wd);
+            }
+
+            for (Entry<String, Collection<WarningDescription>> catE : cat2Warnings.entrySet()) {
+                inspectionModel.addElement("  " + catE.getKey());
+
+                for (WarningDescription wd : catE.getValue()) {
+                    inspectionModel.addElement(wd);
+                }
+            }
+        }
+
+        inspectionCombo.setModel(inspectionModel);
+        inspectionCombo.setRenderer(new InspectionRenderer());
+        inspectionCombo.setSelectedIndex(inspectionComboPreselectIndex < inspectionModel.getSize() ? inspectionComboPreselectIndex : 0);
+
+        updatePlugins();
     }
 
     private void updatePlugins() {
@@ -336,6 +353,10 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
 
         if (selected instanceof Configuration) return ((Configuration) selected).id();
         else return null;
+    }
+
+    public Collection<? extends AnalyzerFactory> getAnalyzers() {
+        return analyzers;
     }
 
     /**
@@ -385,7 +406,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jLabel2, gridBagConstraints);
 
-        configurationCombo.setModel(configurationModel);
+        configurationCombo.setPrototypeDisplayValue(COMBO_PROTOTYPE);
         configurationCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configurationComboActionPerformed(evt);
@@ -440,6 +461,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(singleInspectionRadio, gridBagConstraints);
 
+        inspectionCombo.setPrototypeDisplayValue(COMBO_PROTOTYPE);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
@@ -519,6 +541,15 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         return inspectionCombo.isEnabled() ? SPIAccessor.ACCESSOR.getWarningId((WarningDescription) inspectionCombo.getSelectedItem()) : null;
     }
 
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override public void run() {
+                updateConfigurations(configurationCombo.getSelectedIndex(), inspectionCombo.getSelectedIndex());
+            }
+        });
+    }
+
     public static final class ConfigurationRenderer extends DefaultListCellRenderer {
 
         private final boolean indent;
@@ -544,7 +575,13 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
 
                 return this;
             }
-            
+
+            if (index == list.getModel().getSize()-5 && list.getModel() instanceof ConfigurationsComboModel && ((ConfigurationsComboModel) list.getModel()).canModify()) {
+                setBorder(new Separator(list.getForeground()));
+            } else {
+                setBorder(null);
+            }
+
             return super.getListCellRendererComponent(list, (indent ? "  " : "") + value, index, isSelected, cellHasFocus);
         }
     }
@@ -695,6 +732,36 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
             }
 
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+    }
+
+    private static class Separator implements Border {
+
+        private Color fgColor;
+
+        Separator(Color color) {
+            fgColor = color;
+        }
+
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics gr = g.create();
+            if (gr != null) {
+                try {
+                    gr.translate(x, y);
+                    gr.setColor(fgColor);
+                    gr.drawLine(0, height - 1, width - 1, height - 1);
+                } finally {
+                    gr.dispose();
+                }
+            }
+        }
+
+        public boolean isBorderOpaque() {
+            return true;
+        }
+
+        public Insets getBorderInsets(Component c) {
+            return new Insets(0, 0, 1, 0);
         }
     }
 }

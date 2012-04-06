@@ -78,6 +78,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -145,7 +146,11 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                 CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
                 if (csmFile != null) {
                     files.add(csmFile);
-                }            
+                }      
+                DataObject dob = NbEditorUtilities.getDataObject(doc);
+                if (dob != null && !lookupObjects.contains(dob)) {
+                    lookupObjects.add(dob);
+                }
             }
         }
         lookupObjects.addAll(csmProjects);

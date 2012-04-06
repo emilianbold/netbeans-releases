@@ -58,16 +58,13 @@ import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.*;
 
 
 
 /**
  *
- * @author ehucka, Revision Petr Cyhelsky
+ * @author ehucka, Revision Petr Cyhelsky, Jiri Kovalsky
  */
 public class ClassBreakpointsTest extends DebuggerTestCase {
 
@@ -143,7 +140,7 @@ public class ClassBreakpointsTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         NbDialogOperator dialog = Utilities.newBreakpoint(37);
         assertTrue("Class breakpoint is not pre-selected", new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"));
-        assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
+        assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JEditorPaneOperator(dialog, 0).getText());
         dialog.cancel();
     }
 
@@ -153,7 +150,7 @@ public class ClassBreakpointsTest extends DebuggerTestCase {
     public void testClassBreakpointPrefilledInInitializer() {
         NbDialogOperator dialog = Utilities.newBreakpoint(45);
         assertTrue("Class breakpoint is not pre-selected", new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"));
-        assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
+        assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JEditorPaneOperator(dialog, 0).getText());
         dialog.cancel();
     }
 
@@ -163,7 +160,7 @@ public class ClassBreakpointsTest extends DebuggerTestCase {
     public void testClassBreakpointPrefilledInConstructor() {        
             NbDialogOperator dialog = Utilities.newBreakpoint(51);
             setBreakpointType(dialog, "Class");
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
+            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JEditorPaneOperator(dialog, 0).getText());
             dialog.cancel();        
     }
 
@@ -173,7 +170,7 @@ public class ClassBreakpointsTest extends DebuggerTestCase {
     public void testClassBreakpointPrefilledInMethod() {        
             NbDialogOperator dialog = Utilities.newBreakpoint(80);
             setBreakpointType(dialog, "Class");
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
+            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JEditorPaneOperator(dialog, 0).getText());
             dialog.cancel();        
     }
 
@@ -183,7 +180,7 @@ public class ClassBreakpointsTest extends DebuggerTestCase {
     public void testClassBreakpointPrefilledInSecondClass() {        
         NbDialogOperator dialog = Utilities.newBreakpoint(154);
         setBreakpointType(dialog, "Class");
-        assertEquals("Class Name was not set to correct value.", "examples.advanced.Helper", new JTextFieldOperator(dialog, 0).getText());
+        assertEquals("Class Name was not set to correct value.", "examples.advanced.Helper", new JEditorPaneOperator(dialog, 0).getText());
         dialog.cancel();
     }
 
@@ -235,9 +232,9 @@ public class ClassBreakpointsTest extends DebuggerTestCase {
     public void testClassBreakpointFunctionalityWithFilter() throws Throwable {
         NbDialogOperator dialog = Utilities.newBreakpoint(73);
         setBreakpointType(dialog, "Class");
-        new JTextFieldOperator(dialog, 0).setText("examples.advanced.*");
+        new JEditorPaneOperator(dialog, 0).setText("examples.advanced.*");
         new JCheckBoxOperator(dialog, 0).changeSelection(true);
-        new JTextFieldOperator(dialog, 1).setText("*.MemoryView");
+        new JTextFieldOperator(dialog, 0).setText("*.MemoryView");
         dialog.ok();
 
         //new EventTool().waitNoEvent(500);

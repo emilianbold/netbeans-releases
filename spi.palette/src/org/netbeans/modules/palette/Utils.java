@@ -52,8 +52,7 @@ import java.text.MessageFormat;
 import java.awt.event.ActionEvent;
 import java.awt.datatransfer.*;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -205,6 +204,10 @@ public final class Utils {
                 if( null != primaryFile && primaryFile.isFolder() ) {
                     try {
                         primaryFile.revert();
+                        for( FileObject fo : primaryFile.getChildren() ) {
+                            fo.setAttribute( "categoryName", null );
+                            fo.setAttribute( "position", null );
+                        }
                     } catch (IOException ex) {
                         ERR.log(Level.INFO, null, ex);
                     }

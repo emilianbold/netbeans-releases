@@ -45,21 +45,25 @@ package org.openide;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.GraphicsEnvironment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
-import static org.junit.Assert.*;
 
 /** Tests implementation #148730: Add helper class to simplify dealing with error/warning/info messages in dialogs
  *
  * @author Jiri Rechtacek
  */
 public class NotificationLineSupportTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NotificationLineSupportTest.class);
+    }
+
     private JButton closeButton = new JButton ("Close action");
     private JButton [] options = new JButton [] {closeButton};
     private static String NOTIFICATION_LABEL_NAME = "FixedHeightLabel";
@@ -68,20 +72,11 @@ public class NotificationLineSupportTest extends NbTestCase {
         super("NotificationLineSupportTest");
     }
 
-    @BeforeClass
-    public static void setUpClass () throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass () throws Exception {
-    }
-
     @Override
     protected boolean runInEQ() {
         return true;
     }
 
-    @Test
     public void testAppendNotificationLine () {
         DialogDescriptor dd = new DialogDescriptor ("Test", "Test dialog", false, options,
                 closeButton, NotifyDescriptor.PLAIN_MESSAGE, null, null);
@@ -107,7 +102,6 @@ public class NotificationLineSupportTest extends NbTestCase {
         closeButton.doClick ();
     }
 
-    @Test
     public void testSetMessageBeforeCreateDialog () {
         DialogDescriptor dd = new DialogDescriptor ("Test", "Test dialog", false, options,
                 closeButton, NotifyDescriptor.PLAIN_MESSAGE, null, null);
@@ -128,7 +122,6 @@ public class NotificationLineSupportTest extends NbTestCase {
         closeButton.doClick ();
     }
 
-    @Test
     public void testSetMessageAfterCreateDialog () {
         DialogDescriptor dd = new DialogDescriptor ("Test", "Test dialog", false, options,
                 closeButton, NotifyDescriptor.PLAIN_MESSAGE, null, null);
@@ -165,7 +158,6 @@ public class NotificationLineSupportTest extends NbTestCase {
         supp.clearMessages ();
     }
 
-    @Test
     public void testNonAppendNotificationLine () {
         DialogDescriptor dd = new DialogDescriptor ("Test", "Test dialog", false, options,
                 closeButton, NotifyDescriptor.PLAIN_MESSAGE, null, null);

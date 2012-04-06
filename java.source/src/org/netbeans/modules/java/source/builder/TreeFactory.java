@@ -52,6 +52,7 @@ import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
@@ -587,7 +588,7 @@ public class TreeFactory {
     public ExpressionTree QualIdent(Element element) {
         Symbol s = (Symbol) element;
 
-        if (s.owner != null && s.owner.name.isEmpty()) {
+        if (s.owner != null && (s.owner.kind == Kinds.MTH || s.owner.name.isEmpty())) {
             JCIdent result = make.at(NOPOS).Ident(s);
             result.setType(s.type);
             return result;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -50,13 +50,13 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.lib.ddl.adaptors.DefaultAdaptor;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnectionAccessor;
 import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
 import org.netbeans.modules.db.explorer.metadata.MetadataModelManager;
@@ -147,7 +147,6 @@ public class ConnectionNode extends BaseNode {
         } else if (nps.getName().equals(PROP_DEFSCHEMA)) {
             connection.setSchema(val.toString());
         } else if (nps.getName().equals(DISPLAYNAME)) {
-            connection.setDisplayName(val.toString());
             setDisplayName(val.toString());
             refreshNode = false;
         }
@@ -371,7 +370,9 @@ public class ConnectionNode extends BaseNode {
 
     @Override
     public void setDisplayName(String name) {
+        String old = getDisplayName();
         connection.setDisplayName(name);
+        fireDisplayNameChange(old, name);
     }
 
     @Override

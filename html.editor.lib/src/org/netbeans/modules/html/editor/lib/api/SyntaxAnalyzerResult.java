@@ -1,0 +1,602 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.html.editor.lib.api;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.modules.html.editor.lib.EmptyResult;
+import org.netbeans.modules.html.editor.lib.HtmlSourceVersionQuery;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import org.netbeans.modules.html.editor.lib.html4parser.IteratorOfElements;
+import org.netbeans.modules.html.editor.lib.html4parser.XmlSyntaxTreeBuilder;
+import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+
+/**
+ * Html syntax analyzer result.
+ *
+ * @author mfukala@netbeans.org
+ */
+public class SyntaxAnalyzerResult {
+
+    private static final String NAMESPACE_PROPERTY = "namespace"; //NOI18N
+    /**
+     * special namespace which can be used for obtaining a parse tree of tags
+     * with undeclared namespace.
+     */
+    private AtomicReference<Declaration> declaration;
+    private HtmlVersion detectedHtmlVersion;
+    private HtmlParseResult htmlParseResult;
+    //ns URI to AstNode map
+    private Map<String, ParseResult> embeddedCodeParseResults;
+    //ns URI to PREFIX map
+    private Map<String, Collection<String>> namespaces;
+    private ParseResult undeclaredEmbeddedCodeParseResult;
+    private Set<String> allPrefixes;
+    private UndeclaredContentResolver resolver;
+    private HtmlSource source;
+
+    SyntaxAnalyzerResult(HtmlSource source) {
+        this(source, null);
+    }
+
+    SyntaxAnalyzerResult(HtmlSource source, UndeclaredContentResolver resolver) {
+        this.source = source;
+        this.resolver = resolver;
+    }
+
+    public HtmlSource getSource() {
+        return source;
+    }
+
+    public Iterator<Element> getElementsIterator() {
+        return new ElementsIterator(source);
+    }
+
+    /**
+     * @deprecated use {@link #getElementsIterator() } instead
+     */
+    @Deprecated
+    public SyntaxAnalyzerElements getElements() {
+        return SyntaxAnalyzer.create(source).elements();
+    }
+
+    public HtmlVersion getHtmlVersion() {
+        HtmlVersion detected = getDetectedHtmlVersion();
+        HtmlVersion found = HtmlSourceVersionQuery.getSourceCodeVersion(this, detected);
+        if (found != null) {
+            return found;
+        }
+        return detected != null ? detected
+                : mayBeXhtml() ? HtmlVersion.getDefaultXhtmlVersion() : HtmlVersion.getDefaultVersion(); //fallback if nothing can be determined
+    }
+
+    public HtmlModel getHtmlModel() {
+        return findParser().getModel(getHtmlVersion());
+    }
+
+    /**
+     * Returns an html version for the specified parser result input. The return
+     * value depends on: 1) doctype declaration content 2) if not present, xhtml
+     * file extension 3) if not xhtml extension, present of default XHTML
+     * namespace declaration
+     *
+     */
+    public synchronized HtmlVersion getDetectedHtmlVersion() {
+        if (detectedHtmlVersion == null) {
+            detectedHtmlVersion = detectHtmlVersion();
+        }
+        return detectedHtmlVersion;
+    }
+
+    public boolean mayBeXhtml() {
+        FileObject fo = getSource().getSourceFileObject();
+        String mimeType = fo != null ? fo.getMIMEType() : null;
+        return getHtmlTagDefaultNamespace() != null || "text/xhtml".equals(mimeType);
+    }
+
+    private HtmlVersion detectHtmlVersion() {
+        Declaration doctypeDeclaration = getDoctypeDeclaration();
+        if (doctypeDeclaration == null) {
+            //no doctype declaration at all
+            return null;
+        } else {
+            //found doctype declaration
+            String publicId = getPublicID();
+            String namespace = getHtmlTagDefaultNamespace();
+            return HtmlVersion.find(publicId, namespace);
+        }
+    }
+
+    public Collection<ParseResult> getAllParseResults() throws ParseException {
+        Collection<ParseResult> all = new ArrayList<ParseResult>();
+        all.add(parseHtml());
+        for (String ns : getAllDeclaredNamespaces().keySet()) {
+            all.add(parseEmbeddedCode(ns));
+        }
+        all.add(parseUndeclaredEmbeddedCode());
+        return all;
+    }
+
+    public synchronized HtmlParseResult parseHtml() throws ParseException {
+        if (htmlParseResult == null) {
+            htmlParseResult = doParseHtml();
+        }
+        return htmlParseResult;
+    }
+
+    private HtmlParser findParser() {
+        HtmlVersion version = getHtmlVersion();
+        HtmlParser parser = HtmlParserFactory.findParser(version);
+        if (parser == null) {
+            throw new IllegalStateException("Cannot find an HtmlParser implementation for "
+                    + getHtmlVersion().name()); //NOI18N
+        }
+        return parser;
+    }
+
+    private HtmlParseResult doParseHtml() throws ParseException {
+        HtmlVersion version = getHtmlVersion();
+        HtmlParser parser = findParser();
+
+        final Collection<String> prefixes = version.getDefaultNamespace() != null
+                ? getAllDeclaredNamespaces().get(version.getDefaultNamespace())
+                : null;
+
+        Iterator<Element> original = new ElementsIterator(source);
+        Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
+            @Override
+            public boolean accepts(Element node) {
+                switch (node.type()) {
+                    case OPEN_TAG:
+                    case CLOSE_TAG:
+                        Named named = (Named) node;
+                        CharSequence prefix = named.namespacePrefix();
+
+                        if (prefix == null) {
+                            return true; //default namespace, should be html in most cases
+                        }
+                        if (prefixes != null) {
+                            if (prefixes.contains(prefix.toString())) {
+                                //the prefix is mapped to the html namespace
+                                return true;
+                            }
+                        }
+                        break;
+                    default:
+                        return true;
+                }
+                return false;
+            }
+        });
+
+        MaskedAreas maskedAreas = findMaskedAreas(new TagsFilter() {
+            @Override
+            public boolean accepts(Named tag, CharSequence prefix) {
+                if (prefix == null) {
+                    return true; //default namespace, should be html in most cases
+                }
+                if (prefixes != null) {
+                    if (prefixes.contains(prefix.toString())) {
+                        //the prefix is mapped to the html namespace
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        });
+
+        //create a new html source with the cleared areas
+        HtmlSource newSource = new HtmlSource(
+                source.getSourceCode(), 
+                source.getSnapshot(), 
+                source.getSourceFileObject());
+
+        //add the syntax elements to the lookup since the old html4 parser needs them
+        InstanceContent content = new InstanceContent();
+        content.add(new IteratorOfElements(filteredIterator));
+        content.add(maskedAreas);
+        Lookup lookup = new AbstractLookup(content);
+
+        return parser.parse(newSource, getHtmlVersion(), lookup);
+
+    }
+
+    public synchronized ParseResult parseEmbeddedCode(String namespace) throws ParseException {
+        if (embeddedCodeParseResults == null) {
+            embeddedCodeParseResults = new HashMap<String, ParseResult>();
+        }
+        ParseResult result = embeddedCodeParseResults.get(namespace);
+        if (result == null) {
+            result = doParseEmbeddedCode(namespace);
+            embeddedCodeParseResults.put(namespace, result);
+        }
+        return result;
+    }
+
+    private ParseResult doParseEmbeddedCode(String namespace) throws ParseException {
+        final Collection<String> prefixes = getAllDeclaredNamespaces().get(namespace);
+        if (prefixes == null || prefixes.isEmpty()) {
+            return new EmptyResult(getSource());
+        }
+
+        Iterator<Element> original = new ElementsIterator(source);
+        Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
+            @Override
+            public boolean accepts(Element node) {
+                switch (node.type()) {
+                    case OPEN_TAG:
+                    case CLOSE_TAG:
+                        Named named = (Named) node;
+                        CharSequence prefix = named.namespacePrefix();
+                        if (prefix != null && prefixes.contains(prefix.toString())) {
+                            return true;
+                        }
+                        break;
+                    default:
+                        return true;
+                }
+                return false;
+            }
+        });
+
+        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(
+                source,
+                namespace,
+                filteredIterator);
+
+        return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
+
+    }
+
+    /**
+     * Parse the content as a plain xml-like tree. Any validity checks are not
+     * done, just the tag elements are transformed to the tree structure.
+     */
+    public ParseResult parsePlain() {
+        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, new ElementsIterator(source));
+        return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
+    }
+
+    public ParseResult parseUndeclaredEmbeddedCode() throws ParseException {
+        if (undeclaredEmbeddedCodeParseResult == null) {
+            undeclaredEmbeddedCodeParseResult = doParseUndeclaredEmbeddedCode();
+        }
+        return undeclaredEmbeddedCodeParseResult;
+    }
+
+    private ParseResult doParseUndeclaredEmbeddedCode() throws ParseException {
+        final Collection<String> prefixes = getAllDeclaredPrefixes();
+
+        Iterator<Element> original = new ElementsIterator(source);
+        Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
+            @Override
+            public boolean accepts(Element node) {
+                switch (node.type()) {
+                    case OPEN_TAG:
+                    case CLOSE_TAG:
+                        Named named = (Named) node;
+                        CharSequence prefix = named.namespacePrefix();
+                        if (prefix != null && !prefixes.contains(prefix.toString())) {
+                            return true;
+                        }
+                        break;
+                    default:
+                        return true;
+                }
+                return false;
+            }
+        });
+
+
+        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(
+                source,
+                null,
+                filteredIterator);
+
+        return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
+
+    }
+
+    private MaskedAreas findMaskedAreas(TagsFilter filter) {
+        //html5 parser:
+        //since the nu.validator.htmlparser parser cannot properly handle the
+        //'foreign' namespace content it needs to be filtered from the source
+        //before running the parser on the input charsequence
+        //
+        //so following content needs to be filtere out:
+        //1. xmlns non default declarations <html xmlns:f="http:/...
+        //2. the prefixed tags and attributes <f:if ...
+        List<MaskedArea> ignoredAreas = new ArrayList<MaskedArea>();
+
+        Iterator<Element> itr = new ElementsIterator(source);
+        while (itr.hasNext()) {
+            Element e = itr.next();
+            if (e.type() == ElementType.OPEN_TAG || e.type() == ElementType.CLOSE_TAG) {
+                Named tag = (Named) e;
+                CharSequence tagNamePrefix = tag.namespacePrefix();
+
+                if (filter.accepts(tag, tagNamePrefix)) {
+                    //check for the xmlns attributes
+                    if (e.type() == ElementType.OPEN_TAG) {
+                        OpenTag ot = (OpenTag) tag;
+                        for (Attribute a : ot.attributes()) {
+                            if (LexerUtils.startsWith(a.name(), "xmlns:", true, false)) { //NOI18N
+                                ignoredAreas.add(new MaskedArea(a.nameOffset(), a.valueOffset() + a.value().length()));
+                            }
+                        }
+                    }
+
+                } else {
+                    ignoredAreas.add(new MaskedArea(e.from(), e.to()));
+                }
+            }
+        }
+        
+        int[] positions = new int[ignoredAreas.size()];
+        int[] lens = new int[ignoredAreas.size()];
+        for (int i = 0; i < positions.length; i++) {
+            SyntaxAnalyzerResult.MaskedArea ia = ignoredAreas.get(i);
+            positions[i] = ia.from;
+            lens[i] = ia.to - ia.from;
+        }
+
+        return new MaskedAreas(positions, lens);
+
+    }
+
+    public String getPublicID() {
+        Declaration decl = getDoctypeDeclaration();
+        if (decl == null) {
+            return null;
+        }
+        CharSequence pid = getDoctypeDeclaration().publicId();
+        return pid == null ? null : pid.toString();
+    }
+
+    public synchronized Declaration getDoctypeDeclaration() {
+        if (declaration == null) {
+            Declaration declarationElement = null;
+            //typically the doctype is at the very first line of the document
+            //so limit the doctype search so we do not iterate over the whole file
+            //if there's no doctype
+            int limitCountdown = 20;
+            Iterator<Element> elementsIterator = new ElementsIterator(source);
+            while (elementsIterator.hasNext()) {
+                if (limitCountdown-- == 0) {
+                    break;
+                }
+                Element e = elementsIterator.next();
+                if (e.type() == ElementType.DECLARATION) {
+                    Declaration decl = (Declaration) e;
+                    if (isValidDoctype(decl)) {
+                        declarationElement = (Declaration) e;
+                    }
+                    break;
+                }
+            }
+            declaration = new AtomicReference<Declaration>(declarationElement);
+
+        }
+        return declaration.get();
+    }
+
+    private static boolean isValidDoctype(Declaration decl) {
+        return "doctype".equalsIgnoreCase(decl.declarationName().toString()) && decl.rootElementName() != null; //NOI18N
+    }
+
+    /**
+     * Returns a map of namespace URI to prefix used in the document Not only
+     * globaly registered namespace (root tag) are taken into account.
+     */
+    // URI to prefix map
+    @Deprecated
+    public Map<String, String> getDeclaredNamespaces() {
+        Map<String, Collection<String>> all = getAllDeclaredNamespaces();
+        Map<String, String> firstPrefixOnly = new HashMap<String, String>();
+        for (String namespace : all.keySet()) {
+            Collection<String> prefixes = all.get(namespace);
+            if (prefixes != null && prefixes.size() > 0) {
+                firstPrefixOnly.put(namespace, prefixes.iterator().next());
+            }
+        }
+        return firstPrefixOnly;
+    }
+
+    public synchronized Set<String> getAllDeclaredPrefixes() {
+        if (allPrefixes == null) {
+            allPrefixes = findAllDeclaredPrefixes();
+        }
+        return allPrefixes;
+    }
+
+    private Set<String> findAllDeclaredPrefixes() {
+        HashSet<String> all = new HashSet<String>();
+        for (Collection<String> prefixes : getAllDeclaredNamespaces().values()) {
+            all.addAll(prefixes);
+        }
+        return all;
+    }
+
+    public String getHtmlTagDefaultNamespace() {
+        //typically the html root element is at the beginning of the file
+        int limitCountdown = 100;
+        Iterator<Element> elementsIterator = new ElementsIterator(source);
+        while (elementsIterator.hasNext()) {
+            if (limitCountdown-- == 0) {
+                break;
+            }
+            Element se = elementsIterator.next();
+            if (se.type() == ElementType.OPEN_TAG) {
+                //look for the xmlns attribute only in the first tag
+                OpenTag tag = (OpenTag) se;
+                Attribute xmlns = tag.getAttribute("xmlns");
+                return xmlns != null ? dequote(xmlns.value()).toString() : null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @return map of namespace URI to a List of prefixes. The prefixes in the
+     * list are sorted according to their occurrences in the document.
+     */
+    public synchronized Map<String, Collection<String>> getAllDeclaredNamespaces() {
+        if (namespaces == null) {
+            this.namespaces = new HashMap<String, Collection<String>>();
+
+            //add the artificial namespaces to prefix map to the physically declared results
+            if (resolver != null) {
+                namespaces.putAll(resolver.getUndeclaredNamespaces(getSource()));
+            }
+
+            ElementsIterator iterator = new ElementsIterator(source);
+            while (iterator.hasNext()) {
+                Element se = iterator.next();
+                if (se.type() == ElementType.OPEN_TAG) {
+                    OpenTag tag = (OpenTag) se;
+                    for (Attribute attr : tag.attributes()) {
+                        String attrName = attr.name().toString();
+                        if (attrName.startsWith("xmlns")) { //NOI18N
+                            int colonIndex = attrName.indexOf(':'); //NOI18N
+                            String nsPrefix = colonIndex == -1 ? null : attrName.substring(colonIndex + 1);
+                            String value = attr.value().toString();
+                            //do not overwrite already existing entry
+                            String key = dequote(value).toString();
+                            Collection<String> prefixes = namespaces.get(key);
+                            if (prefixes == null) {
+                                prefixes = new LinkedList<String>();
+                                prefixes.add(nsPrefix);
+                                namespaces.put(key, prefixes);
+                            } else {
+                                //already existing list of prefixes for the namespace
+                                if (prefixes.contains(key)) {
+                                    //just relax
+                                } else {
+                                    prefixes.add(nsPrefix);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return namespaces;
+    }
+
+    private static CharSequence dequote(CharSequence text) {
+        if (text.length() < 2) {
+            return text;
+        } else {
+            if ((text.charAt(0) == '\'' || text.charAt(0) == '"')
+                    && (text.charAt(text.length() - 1) == '\'' || text.charAt(text.length() - 1) == '"')) {
+                return text.subSequence(1, text.length() - 1);
+            }
+        }
+        return text;
+    }
+
+    private static interface TagsFilter {
+
+        public boolean accepts(Named tag, CharSequence prefix);
+    }
+
+    private static class FilteredIterator implements Iterator<Element> {
+
+        private Iterator<Element> source;
+        private ElementFilter filter;
+        private Element next;
+
+        public FilteredIterator(Iterator<Element> source, ElementFilter filter) {
+            this.source = source;
+            this.filter = filter;
+        }
+
+        @Override
+        public boolean hasNext() {
+            boolean hasNext = source.hasNext();
+            if (!hasNext) {
+                return false;
+            } else {
+                while (source.hasNext()) {
+                    next = source.next();
+                    if (filter.accepts(next)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public Element next() {
+            return next;
+        }
+
+        @Override
+        public void remove() {
+            //no-op
+        }
+    }
+
+    private static class MaskedArea {
+
+        int from, to;
+
+        public MaskedArea(int from, int to) {
+            this.from = from;
+            this.to = to;
+        }
+    }
+    //it seems to be better (more memory/but much faster) to create a clone of the source
+    //sequence w/ the specifed areas being ws-paced than doing this dynamically.
+    private static final char REPLACE_CHAR = ' '; //ws //NOI18N
+
+
+}

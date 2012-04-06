@@ -47,9 +47,12 @@ package org.openide.explorer;
 
 
 
+import java.awt.GraphicsEnvironment;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.text.DefaultEditorKit;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -65,6 +68,10 @@ import org.openide.nodes.AbstractNode;
  */
 public class ExplorerActionsCompatTest extends ExplorerPanelTest {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ExplorerActionsCompatTest.class);
+    }
+
     public ExplorerActionsCompatTest(java.lang.String testName) {
         super(testName);
     }

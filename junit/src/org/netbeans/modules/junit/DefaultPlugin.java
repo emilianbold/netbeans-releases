@@ -252,6 +252,9 @@ public final class DefaultPlugin extends JUnitPlugin {
         }
         
         String baseResName = srcCp.getResourceName(fileObj, '/', false);
+        if(baseResName == null) {
+            return null;
+        }
         String testResName = !fileObj.isFolder()
                              ? getTestResName(baseResName, fileObj.getExt())
                              : getSuiteResName(baseResName);
@@ -931,9 +934,9 @@ public final class DefaultPlugin extends JUnitPlugin {
 
         final Set<SkippedClass> skipped = results.getSkipped();
         final Set<DataObject> created = results.getCreated();
-        if (!skipped.isEmpty()) {
+        if (!skipped.isEmpty() || created.isEmpty()) {
             // something was skipped
-            String message;
+            String message = "";
             if (skipped.size() == 1) {
                 // one class? report it
                 SkippedClass skippedClass = skipped.iterator().next();
@@ -956,20 +959,24 @@ public final class DefaultPlugin extends JUnitPlugin {
                         "MSG_skipped_classes",                          //NOI18N
                         strReason(reason, "COMMA", "OR"));              //NOI18N
             }
-            TestUtil.notifyUser(message, NotifyDescriptor.INFORMATION_MESSAGE);
 
-        }
-        
-        if (created.isEmpty()) {
-            Mutex.EVENT.writeAccess(new Runnable() {
-                public void run() {
-                    TestUtil.notifyUser(
-                            NbBundle.getMessage(
-                                    DefaultPlugin.class,
-                                    "MSG_No_test_created"),     //NOI18N
-                            NotifyDescriptor.INFORMATION_MESSAGE);
-                }
-            });
+            String noMessage = "";
+            if (created.isEmpty()) {
+                // nothing was created
+                noMessage = NbBundle.getMessage(
+                        DefaultPlugin.class,
+                        "MSG_No_test_created");     //NOI18N
+            }
+            final String finalMessage = (message.isEmpty()) ? noMessage : message.concat("\n\n").concat(noMessage);     //NOI18N
+
+            if (!finalMessage.isEmpty()) {
+                Mutex.EVENT.writeAccess(new Runnable() {
+
+                    public void run() {
+                        TestUtil.notifyUser(finalMessage, NotifyDescriptor.INFORMATION_MESSAGE);
+                    }
+                });
+            }
         }
         
         FileObject[] createdFiles;

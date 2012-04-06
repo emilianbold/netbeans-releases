@@ -48,6 +48,7 @@ import com.sun.java.swing.plaf.windows.WindowsLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -66,9 +67,10 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.openide.explorer.UIException;
-import org.openide.ErrorManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -78,6 +80,10 @@ import org.openide.nodes.Sheet;
 /* A comprehensive test of RendererPropertyDisplayer */
 public class RendererDisplayerTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(RendererDisplayerTest.class);
+    }
+
     static {
         ComboTest.registerPropertyEditors();
     }

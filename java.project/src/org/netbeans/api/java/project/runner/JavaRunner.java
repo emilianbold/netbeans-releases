@@ -107,7 +107,19 @@ public final class JavaRunner {
      * @since 1.22
      */
     public static final String QUICK_DEBUG = "debug";
-
+    
+    /**
+     * <p>"Test" run the given file in the profiling mode. Classfiles produced by the Java infrastructure will be
+     * executed.</p>
+     *
+     * <p>These properties are should be set in the properties, or inferable: {@link #PROP_EXECUTE_CLASSPATH},
+     * {@link #PROP_CLASSNAME}, {@link #PROP_PLATFORM_JAVA}, {@link #PROP_WORK_DIR}, {@link #PROP_RUN_JVMARGS}
+     * and {@link #PROP_APPLICATION_ARGS}.</p>
+     *
+     * @since 1.44
+     */
+    public static final String QUICK_PROFILE = "profile";
+    
     /**
      * <p>"Test" run the given test. Classfiles produced by the Java infrastructure will be
      * executed.</p>
@@ -134,6 +146,19 @@ public final class JavaRunner {
      */
     public static final String QUICK_TEST_DEBUG = "junit-debug";
 
+    /**
+     * <p>"Test" run the given test in the profiling mode. Classfiles produced by the Java infrastructure will be
+     * executed.</p>
+     *
+     * <p>These properties are should be set in the properties, or inferable: {@link #PROP_EXECUTE_CLASSPATH},
+     * {@link #PROP_CLASSNAME}, {@link #PROP_PLATFORM_JAVA}, {@link #PROP_WORK_DIR} and {@link #PROP_RUN_JVMARGS}.</p>
+     *
+     * <p><strong>application.args</strong> property is not supported.</p>
+     *
+     * @since 1.44
+     */
+    public static final String QUICK_TEST_PROFILE = "junit-profile";
+    
     /** <p>"Test" run the given applet. Classfiles produced by the Java infrastructure will be
      * executed.</p>
      * 
@@ -155,6 +180,17 @@ public final class JavaRunner {
      * @since 1.22
      */
     public static final String QUICK_DEBUG_APPLET = "debug-applet";
+    
+    /** <p>"Test" run the given applet in the profiling mode. Classfiles produced by the Java infrastructure will be
+     * executed.</p>
+     * 
+     * <p>These properties are should be set in the properties, or inferable: {@link #PROP_EXECUTE_CLASSPATH},
+     * {@link #PROP_EXECUTE_FILE}, {@link #PROP_PLATFORM_JAVA}, {@link #PROP_WORK_DIR} and {@link #PROP_RUN_JVMARGS},
+     * <code>applet.url</code>.</p>
+     * 
+     * @since 1.44
+     */
+    public static final String QUICK_PROFILE_APPLET = "profile-applet";
     
     /** Clean classfiles produced by the Java infrastructure.
      * 

@@ -44,6 +44,7 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
+import java.awt.Dialog;
 import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -66,20 +67,23 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.FolderRenameHandler;
+import org.openide.loaders.LoaderTransfer;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
@@ -1148,34 +1152,90 @@ public class PackageViewTest extends NbTestCase {
     @RandomlyFails // NB-Core-Build #7974
     public void testReducedTreeRename() throws Exception {
         final AtomicReference<Node> node = new AtomicReference<Node>();
+        final AtomicReference<DataFolder> folder = new AtomicReference<DataFolder>();
         final AtomicReference<String> newName = new AtomicReference<String>();
+        final AtomicReference<Object> message = new AtomicReference<Object>();
         SourceGroup g = sampleGroup();
         final FileObject rootFolder = g.getRootFolder();
         Node r = new TreeRootNode(g, true);
+        // First check basic behavior with no refactoring support:
         Node n = NodeOp.findPath(r, new String[] {"org.netbeans", "modules.stuff"});
         n.setName("modules.stuph");
         assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, modules.stuph{resources{stuff.png}, Bundle.properties, StuffUtils.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
         n = NodeOp.findPath(r, new String[] {"org.netbeans", "modules.stuph"});
         n.setName("modulez.stuph");
         assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, modulez.stuph{resources{stuff.png}, Bundle.properties, StuffUtils.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
+        // Now test #210107 monstrosity:
         MockLookup.setInstances(new PackageRenameHandler() {
             @Override public void handleRename(Node _node, String _newName) {
                 node.set(_node);
                 newName.set(_newName);
             }
-        }, new ClassPathProvider() {
-            @Override public ClassPath findClassPath(FileObject file, String type) {
-                if (type.equals(ClassPath.SOURCE) && (file == rootFolder || FileUtil.isParentOf(rootFolder, file))) {
-                    return ClassPathSupport.createClassPath(rootFolder);
-                } else {
-                    return null;
-                }
+        }, new FolderRenameHandler() {
+            @Override public void handleRename(DataFolder _folder, String _newName) throws IllegalArgumentException {
+                folder.set(_folder);
+                newName.set(_newName);
+            }
+        }, new DialogDisplayer() {
+            @Override public Object notify(NotifyDescriptor descriptor) {
+                message.set(descriptor.getMessage());
+                return NotifyDescriptor.OK_OPTION;
+            }
+            @Override public Dialog createDialog(DialogDescriptor descriptor) {
+                throw new UnsupportedOperationException();
             }
         });
+        // Case 1: only last component is renamed. Can use FolderRenameHandler.
+        n = NodeOp.findPath(r, new String[] {"org.netbeans", "modulez.stuph"});
+        n.setName("modulez.stuff");
+        assertNull(node.get());
+        assertEquals(DataFolder.findFolder(rootFolder.getFileObject("org/netbeans/modulez/stuph")), folder.get());
+        assertEquals("stuff", newName.get());
+        assertNull(message.get());
+        folder.set(null);
+        newName.set(null);
+        // Case 2: no subpackages. Can use PackageRenameHandler with a NonRecursiveFolder.
         n = NodeOp.findPath(r, new String[] {"org.netbeans", "api.stuff"});
-        n.setName("api.stuph");
-        assertEquals(n, node.get());
-        assertEquals("org.netbeans.api.stuph", newName.get());
+        n.setName("stuff.api");
+        Node phony = node.get();
+        assertNotNull(phony);
+        assertNotSame(n, phony);
+        assertEquals("org.netbeans.api.stuff", phony.getName());
+        NonRecursiveFolder nrf = phony.getLookup().lookup(NonRecursiveFolder.class);
+        assertNotNull(nrf);
+        assertEquals(rootFolder.getFileObject("org/netbeans/api/stuff"), nrf.getFolder());
+        assertNull(folder.get());
+        assertEquals("org.netbeans.stuff.api", newName.get());
+        assertNull(message.get());
+        node.set(null);
+        newName.set(null);
+        // Case 3: multicomponent rename attempted and there are subpackages.
+        n = NodeOp.findPath(r, new String[] {"org.netbeans", "modulez.stuph"});
+        n.setName("modules.stuff");
+        assertNull(node.get());
+        assertNull(folder.get());
+        assertNull(newName.get());
+        assertNotNull(message.get());
+        message.set(null);
+        // Case 1 variant: starting at root folder.
+        n = NodeOp.findPath(r, new String[] {"org.netbeans"});
+        n.setName("org.netbeanz");
+        assertNull(node.get());
+        assertEquals(DataFolder.findFolder(rootFolder.getFileObject("org/netbeans")), folder.get());
+        assertEquals("netbeanz", newName.get());
+        assertNull(message.get());
+        folder.set(null);
+        newName.set(null);
+        // Case 1 variant: single-component folder.
+        n = NodeOp.findPath(r, new String[] {"org.netbeans", "modulez.stuph", "resources"});
+        n.setName("resourcez");
+        assertNull(node.get());
+        assertEquals(DataFolder.findFolder(rootFolder.getFileObject("org/netbeans/modulez/stuph/resources")), folder.get());
+        assertEquals("resourcez", newName.get());
+        assertNull(message.get());
+        folder.set(null);
+        newName.set(null);
+        // Did not actually change anything in all this (refactoring impl bypasses others even if it does not work):
         assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, modulez.stuph{resources{stuff.png}, Bundle.properties, StuffUtils.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
     }
 
@@ -1186,6 +1246,19 @@ public class PackageViewTest extends NbTestCase {
         Node n = NodeOp.findPath(r, new String[] {"org.netbeans", "modules.stuff"});
         n.destroy();
         assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
+    }
+
+    public void testReducedTreeCut() throws Exception { // #210314
+        SourceGroup g = sampleGroup();
+        Node r = new TreeRootNode(g, true);
+        Node n = NodeOp.findPath(r, new String[] {"org.netbeans", "modules.stuff"});
+        Transferable t = n.clipboardCut();
+        DataObject moving = LoaderTransfer.getDataObject(t, LoaderTransfer.MOVE);
+        assertEquals(g.getRootFolder().getFileObject("org/netbeans/modules"), moving.getPrimaryFile());
+        n = NodeOp.findPath(r, new String[] {"org.netbeans", "spi.stuff", "support"});
+        t = n.clipboardCut();
+        moving = LoaderTransfer.getDataObject(t, LoaderTransfer.MOVE);
+        assertEquals(g.getRootFolder().getFileObject("org/netbeans/spi/stuff/support"), moving.getPrimaryFile());
     }
 
     public void testReducedTreePathFinder() throws Exception {

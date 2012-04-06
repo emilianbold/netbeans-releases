@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -85,6 +86,7 @@ import org.openide.util.NbBundle;
 public class ElementUtilitiesEx {
     private static final String VM_CONSTRUCTUR_SIG = "<init>"; // NOI18N
     private static final String VM_INITIALIZER_SIG = "<clinit>"; // NOI18N
+    private static final Logger LOG = Logger.getLogger(ElementUtilitiesEx.class.getName());
     
     public static String getBinaryName(ExecutableElement method, CompilationInfo ci) {
         try {
@@ -124,21 +126,16 @@ public class ElementUtilitiesEx {
         
         final ElementHandle<TypeElement>[] rslt = new ElementHandle[1];
         
-        JavaSource js = JavaSource.create(cpInfo);
-        
-        try {
-            js.runWhenScanFinished(new Task<CompilationController>() {
-                
-                @Override
-                public void run(CompilationController cc) throws Exception {
-                    TypeElement te = resolveClassByName(className, cc, fuzzy);
-                    if (te != null) {
-                        rslt[0] = ElementHandle.create(te);
-                    }
+        ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
+
+            @Override
+            public void run(CompilationController cc) throws Exception {
+                TypeElement te = resolveClassByName(className, cc, fuzzy);
+                if (te != null) {
+                    rslt[0] = ElementHandle.create(te);
                 }
-            }, true);
-        } catch (IOException e) {
-        }
+            }
+        });
         
         return rslt[0];
     }
@@ -204,7 +201,7 @@ public class ElementUtilitiesEx {
     private static TypeElement getAnonymousFromSource(FileObject fo, final String className) throws IllegalArgumentException, IOException {
         final TypeElement[] resolvedClassElement = new TypeElement[1];
         JavaSource js = JavaSource.forFileObject(fo);
-        js.runUserActionTask(new Task<CompilationController>() {
+        ParsingUtils.invokeScanSensitiveTask(js.getClasspathInfo(), new Task<CompilationController>() {
 
             @Override
             public void run(final CompilationController cc) throws Exception {
@@ -224,7 +221,7 @@ public class ElementUtilitiesEx {
 
                 }.scan(cc.getCompilationUnit(), null);
             }
-        }, true);
+        });
         return resolvedClassElement[0];
     }
 
@@ -241,7 +238,7 @@ public class ElementUtilitiesEx {
             final TypeElement[] resolvedClassElement = new TypeElement[1];
             JavaSource js = JavaSource.forFileObject(fo);
 
-            js.runWhenScanFinished(new Task<CompilationController>() {
+            ParsingUtils.invokeScanSensitiveTask(js.getClasspathInfo(), new Task<CompilationController>() {
 
                 @Override
                 public void run(CompilationController cc) throws Exception {
@@ -252,29 +249,34 @@ public class ElementUtilitiesEx {
                         }
                     }
                 }
-            }, true);
+            });
             return resolvedClassElement[0];
         }
         return null;
     }
     
-    public static Set<ElementHandle<TypeElement>> findImplementors(ClasspathInfo cpInfo, final ElementHandle<TypeElement> baseType) {
+    public static Set<ElementHandle<TypeElement>> findImplementors(final ClasspathInfo cpInfo, final ElementHandle<TypeElement> baseType) {
         final Set<ClassIndex.SearchKind> kind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
         final Set<ClassIndex.SearchScope> scope = EnumSet.allOf(ClassIndex.SearchScope.class);
         
-        Set<ElementHandle<TypeElement>> allImplementors = new HashSet<ElementHandle<TypeElement>>();
-        Set<ElementHandle<TypeElement>> implementors = cpInfo.getClassIndex().getElements(baseType, kind, scope);
+        final Set<ElementHandle<TypeElement>> allImplementors = new HashSet<ElementHandle<TypeElement>>();
 
-        do {
-            Set<ElementHandle<TypeElement>> tmpImplementors = new HashSet<ElementHandle<TypeElement>>();
-            allImplementors.addAll(implementors);
+        ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
+            @Override
+            public void run(CompilationController cc) {
+                Set<ElementHandle<TypeElement>> implementors = cpInfo.getClassIndex().getElements(baseType, kind, scope);
+                do {
+                    Set<ElementHandle<TypeElement>> tmpImplementors = new HashSet<ElementHandle<TypeElement>>();
+                    allImplementors.addAll(implementors);
 
-            for (ElementHandle<TypeElement> element : implementors) {
-                tmpImplementors.addAll(cpInfo.getClassIndex().getElements(element, kind, scope));
+                    for (ElementHandle<TypeElement> element : implementors) {
+                        tmpImplementors.addAll(cpInfo.getClassIndex().getElements(element, kind, scope));
+                    }
+
+                    implementors = tmpImplementors;
+                } while (!implementors.isEmpty());
             }
-
-            implementors = tmpImplementors;
-        } while (!implementors.isEmpty());
+        });
         
         return allImplementors;
     }
@@ -284,29 +286,19 @@ public class ElementUtilitiesEx {
         final Set<ElementHandle<TypeElement>> implHandles = findImplementors(cpInfo, baseType);
         
         if (!implHandles.isEmpty()) {
-            JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
-
-            try {
-                js.runWhenScanFinished(new CancellableTask<CompilationController>() {
-
-                    public void cancel() {
+            ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
+                public void run(CompilationController controller)
+                        throws Exception {
+                    if (controller.toPhase(Phase.ELEMENTS_RESOLVED).compareTo(Phase.ELEMENTS_RESOLVED) < 0) {
+                        return;
                     }
 
-                    public void run(CompilationController controller)
-                            throws Exception {
-                        if (controller.toPhase(Phase.ELEMENTS_RESOLVED).compareTo(Phase.ELEMENTS_RESOLVED) < 0) {
-                            return;
-                        }
-
-                        for(ElementHandle<TypeElement> eh : implHandles) {
-                            implementors.add(eh.resolve(controller));
-                        }
-
+                    for(ElementHandle<TypeElement> eh : implHandles) {
+                        implementors.add(eh.resolve(controller));
                     }
-                }, true);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+
+                }
+            });
         }
 
         return implementors;

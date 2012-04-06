@@ -108,7 +108,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
     
     /** Creates a new instance of ClassifierContainer */
     public ClassifierContainer(ProjectBase project) {
-        super(new ClassifierContainerKey(project.getUniqueName()), false);
+        super(new ClassifierContainerKey(project.getUniqueName()));
         classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         inheritances = new HashMap<CharSequence, Set<CsmUID<CsmInheritance>>>();
@@ -130,7 +130,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
 
     // only for EMPTY static field
     private ClassifierContainer() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
+        super((org.netbeans.modules.cnd.repository.spi.Key) null);
         classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         inheritances = new HashMap<CharSequence, Set<CsmUID<CsmInheritance>>>();

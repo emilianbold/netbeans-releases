@@ -318,7 +318,9 @@ class FileMapStorage implements Storage {
             Method getCleanerMethod = buffer.getClass().getMethod("cleaner");
             getCleanerMethod.setAccessible(true);
             /*sun.misc.Cleaner*/Object cleaner = getCleanerMethod.invoke(buffer);
-            cleaner.getClass().getMethod("clean").invoke(cleaner);
+            if (cleaner != null) {
+                cleaner.getClass().getMethod("clean").invoke(cleaner);
+            }
         } catch (Exception e) {
         }
     }

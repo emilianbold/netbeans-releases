@@ -67,6 +67,22 @@ public class SheetTest extends NbTestCase {
         assertTrue("Equal as they don't have a name", s1.equals(s2));
     }
 
+    public void testSheetSetEqualsNull() {
+        Sheet.Set s1 = new Sheet.Set();
+        Sheet.Set s2 = new Sheet.Set();
+        s2.setName("Different name");
+        
+        assertFalse("Not equal. One has name, one does not", s1.equals(s2));
+    }
+
+    public void testSheetSetNullEquals() {
+        Sheet.Set s1 = new Sheet.Set();
+        Sheet.Set s2 = new Sheet.Set();
+        s1.setName("Different name");
+        
+        assertFalse("Not equal. One has name, one does not", s1.equals(s2));
+    }
+
     public void testSheetEvents() {
 
         AbstractNode node = new AbstractNode( Children.LEAF );

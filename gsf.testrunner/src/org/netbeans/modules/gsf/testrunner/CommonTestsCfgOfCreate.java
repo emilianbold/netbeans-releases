@@ -392,6 +392,8 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         boolean chkExceptionsB = true;
         boolean chkSetUpB = true;
         boolean chkTearDownB = true;
+        boolean chkBeforeClassB = true;
+        boolean chkAfterClassB = true;
         Collection<? extends CommonSettingsProvider> providers = Lookup.getDefault().lookupAll(CommonSettingsProvider.class);
         for (CommonSettingsProvider provider : providers) {
             chkPublicB = provider.isMembersPublic();
@@ -406,6 +408,8 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             chkExceptionsB = provider.isGenerateExceptionClasses();
             chkSetUpB = provider.isGenerateSetUp();
             chkTearDownB = provider.isGenerateTearDown();
+            chkBeforeClassB = provider.isGenerateClassSetUp();
+            chkAfterClassB = provider.isGenerateClassTearDown();
             break;
         }
         
@@ -423,6 +427,8 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         }
         chkSetUp.setSelected(chkSetUpB);
         chkTearDown.setSelected(chkTearDownB);
+        chkBeforeClass.setSelected(chkBeforeClassB);
+        chkAfterClass.setSelected(chkAfterClassB);
     }
     
     /**
@@ -448,6 +454,8 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             }
             provider.setGenerateSetUp(chkSetUp.isSelected());
             provider.setGenerateTearDown(chkTearDown.isSelected());
+            provider.setGenerateClassSetUp(chkBeforeClass.isSelected());
+            provider.setGenerateClassTearDown(chkAfterClass.isSelected());
             break;
         }
     }
@@ -514,7 +522,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         }
         
     }
-    
+
 //    public String getTestingFramework() {
 //        Object selectedTestingFramework = cboxFramework.getSelectedItem();
 //        if(selectedTestingFramework == null) {
@@ -839,7 +847,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     private Component createCodeGenPanel() {
         
         /* create the components: */
-        String[] chkBoxIDs = new String[12];
+        String[] chkBoxIDs = new String[14];
         JCheckBox[] chkBoxes;
         Collection<? extends GuiUtilsProvider> providers = Lookup.getDefault().lookupAll(GuiUtilsProvider.class);
         if (multipleClasses) {            
@@ -854,6 +862,8 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
                     provider.getCheckboxText("CHK_SUITES"),
                     provider.getCheckboxText("CHK_SETUP"),
                     provider.getCheckboxText("CHK_TEARDOWN"),
+                    provider.getCheckboxText("CHK_BEFORE_CLASS"),
+                    provider.getCheckboxText("CHK_AFTER_CLASS"),
                     provider.getCheckboxText("CHK_METHOD_BODIES"),
                     provider.getCheckboxText("CHK_JAVADOC"),
                     provider.getCheckboxText("CHK_HINTS")
@@ -872,6 +882,8 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
                     null, // CHK_SUITES,
                     provider.getCheckboxText("CHK_SETUP"),
                     provider.getCheckboxText("CHK_TEARDOWN"),
+                    provider.getCheckboxText("CHK_BEFORE_CLASS"),
+                    provider.getCheckboxText("CHK_AFTER_CLASS"),
                     provider.getCheckboxText("CHK_METHOD_BODIES"),
                     provider.getCheckboxText("CHK_JAVADOC"),
                     provider.getCheckboxText("CHK_HINTS")
@@ -894,6 +906,8 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         chkGenerateSuites   = chkBoxes[i++];            //may be null
         chkSetUp            = chkBoxes[i++];
         chkTearDown         = chkBoxes[i++];        
+        chkBeforeClass      = chkBoxes[i++];
+        chkAfterClass       = chkBoxes[i++];
         chkContent          = chkBoxes[i++];
         chkJavaDoc          = chkBoxes[i++];
         chkComments         = chkBoxes[i++];
@@ -925,7 +939,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         for (GuiUtilsProvider provider : providers) {
             optionalCode = provider.createChkBoxGroup(
                     bundle.getString("CommonTestsCfgOfCreate.groupOptCode"), //NOI18N
-                    new JCheckBox[]{chkSetUp, chkTearDown, chkContent});
+                    new JCheckBox[]{chkSetUp, chkTearDown, chkBeforeClass, chkAfterClass, chkContent});
             optionalComments = provider.createChkBoxGroup(
                     bundle.getString("CommonTestsCfgOfCreate.groupOptComments"), //NOI18N
                     new JCheckBox[]{chkJavaDoc, chkComments});
@@ -1307,5 +1321,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     private JCheckBox chkPublic;
     private JCheckBox chkSetUp;
     private JCheckBox chkTearDown;
+    private JCheckBox chkBeforeClass;
+    private JCheckBox chkAfterClass;
 
 }

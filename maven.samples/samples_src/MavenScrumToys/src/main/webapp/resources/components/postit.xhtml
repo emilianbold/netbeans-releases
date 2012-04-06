@@ -46,8 +46,8 @@ Other names may be trademarks of their respective owners.
       xmlns:ui="http://java.sun.com/jsf/facelets">
 
     <composite:interface>
-        <composite:valueHolder name="postitLabel"/>
-        <composite:valueHolder name="postitText"/>
+        <composite:attribute name="postitLabel"/>
+        <composite:attribute name="postitText"/>
         <composite:attribute name="color" type="java.lang.String"/>
         <composite:attribute name="action" method-signature="java.lang.String action()" targets="postitAction"/>
     </composite:interface>
@@ -55,10 +55,10 @@ Other names may be trademarks of their respective owners.
     <composite:implementation>        
             <h:panelGrid styleClass="postitComponent#{cc.attrs.color}">
                 <h:panelGroup>
-                    <h:outputText value="#{postitLabel}" styleClass="postitLabel"/> <br/><br/>
+                    <h:outputText value="#{cc.attrs.postitLabel}" styleClass="postitLabel"/> <br/><br/>
                     <ui:insert name="main">
                         <h:commandLink id="postitAction" immediate="true">
-                            <h:outputText value="#{postitText}"/>
+                            <h:outputText value="#{cc.attrs.postitText}"/>
                         </h:commandLink>
                     </ui:insert>
                 </h:panelGroup>

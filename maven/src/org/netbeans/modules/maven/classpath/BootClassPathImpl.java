@@ -209,5 +209,12 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         support.firePropertyChange(PROP_RESOURCES, null, null);
     }
     
+    @Override public boolean equals(Object obj) {
+        return obj instanceof BootClassPathImpl && project.equals(((BootClassPathImpl) obj).project);
+    }
+
+    @Override public int hashCode() {
+        return project.hashCode() ^ 191;
+    }
     
 }
