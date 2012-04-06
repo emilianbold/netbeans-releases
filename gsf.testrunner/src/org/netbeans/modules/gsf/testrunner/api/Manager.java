@@ -62,6 +62,7 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionResult;
+import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.*;
 
@@ -98,6 +99,8 @@ public final class Manager {
     public static final String JUNIT_TF = "junit"; // NOI18N
     public static final String TESTNG_TF = "testng"; // NOI18N
     private String testingFramework = ""; // NOI18N
+    private Notification bubbleNotification = null;
+    private long bubbleTime = System.currentTimeMillis();
     
     public void setTestingFramework(String testingFramework) {
         this.testingFramework = testingFramework;
@@ -378,6 +381,11 @@ public final class Manager {
                         } else {
                             Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/testResults.png"));   //NOI18N
                             String projectname = ProjectUtils.getInformation(session.getProject()).getDisplayName();
+                            long timePassed = (System.currentTimeMillis() - bubbleTime) / 1000;
+                            if(bubbleNotification != null || timePassed > 15) {
+                                bubbleNotification.clear();
+                            }
+                            bubbleTime = System.currentTimeMillis();
                             NotificationDisplayer.getDefault().notify(Bundle.LBL_NotificationDisplayer_title(projectname), icon,
                                     Bundle.LBL_NotificationDisplayer_detailsText(), new ActionListener() {
 
