@@ -44,8 +44,10 @@ package org.netbeans.modules.maven.refactoring;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
@@ -59,6 +61,8 @@ import org.netbeans.api.actions.Openable;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
@@ -177,9 +181,15 @@ class MavenRefactoringElementImplementation implements RefactoringElementImpleme
                     try {
                         MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
                         Artifact sources = online.createArtifactWithClassifier(ref.artifact.getGroupId(), ref.artifact.getArtifactId(), ref.artifact.getVersion(), ref.artifact.getType(), "sources");
-                        // XXX how do we get the exact remote repo from this?
-                        ArtifactRepository remote = new MavenArtifactRepository(RepositorySystem.DEFAULT_REMOTE_REPO_ID, RepositorySystem.DEFAULT_REMOTE_REPO_URL, new DefaultRepositoryLayout(), new ArtifactRepositoryPolicy(), new ArtifactRepositoryPolicy());
-                        online.resolve(sources, Collections.singletonList(remote), online.getLocalRepository());
+                        List<ArtifactRepository> remotes = new ArrayList<ArtifactRepository>();
+                        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+                            if (!info.isLocal()) {
+                                ArtifactRepository remote = EmbedderFactory.createRemoteRepository(online, info.getRepositoryUrl(), info.getId());
+                                remotes.add(remote);
+                            }
+                            //XXX do we care to handle mirrors specially?
+                        }
+                        online.resolve(sources, remotes, online.getLocalRepository());
                         // XXX this does not make ClassDataObject.OpenSourceCookie work immediately; clicking repeatedly seems to fix it
                     } catch (AbstractArtifactResolutionException x) {
                         LOG.log(Level.FINE, null, x);
