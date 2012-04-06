@@ -466,6 +466,10 @@ public class StatusTest extends AbstractGitTestCase {
     }
     
     public void testIgnoreExecutable () throws Exception {
+        if (isWindows()) {
+            // no reason to test on win
+            return;
+        }
         File f = new File(workDir, "f");
         write(f, "hi, i am executable");
         f.setExecutable(true);
@@ -527,6 +531,10 @@ public class StatusTest extends AbstractGitTestCase {
     }
     
     public void testStatusMixedLineEndings () throws Exception {
+        if (isWindows()) {
+            // tested on linux
+            return;
+        }
         File f = new File(workDir, "f");
         String content = "";
         for (int i = 0; i < 10000; ++i) {

@@ -51,6 +51,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -58,8 +59,10 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheCheckout;
 import org.eclipse.jgit.dircache.DirCacheEntry;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.WindowCache;
@@ -72,7 +75,6 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.progress.FileListener;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -611,6 +613,53 @@ public class CheckoutTest extends AbstractGitTestCase {
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, nested, f2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
+    }
+    
+    public void testLineEndingsWindows () throws Exception {
+        if (!isWindows()) {
+            return;
+        }
+        // lets turn autocrlf on
+        Thread.sleep(1100);
+        StoredConfig cfg = repository.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
+        cfg.save();
+        
+        File f = new File(workDir, "f");
+        write(f, "a\r\nb\r\n");
+        File[] roots = new File[] { f };
+        
+        GitClient client = getClient(workDir);
+        runExternally(workDir, Arrays.asList("git.cmd", "add", "f"));
+        List<String> res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList("A  f"), res);
+        DirCacheEntry e1 = repository.readDirCache().getEntry("f");
+        runExternally(workDir, Arrays.asList("git.cmd", "commit", "-m", "hello"));
+        
+        write(f, "a\r\nb\r\nc\r\n");
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList(" M f"), res);
+        runExternally(workDir, Arrays.asList("git.cmd", "add", "f"));
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList("M  f"), res);
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR), workDir, f, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
+        
+        client.checkout(roots, "HEAD", true, NULL_PROGRESS_MONITOR);
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR), workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertEquals(e1.getObjectId(), repository.readDirCache().getEntry("f").getObjectId());
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(0, res.size());
+
+        write(f, "a\r\nb\r\nc\r\n");
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList(" M f"), res);
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR), workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
+        
+        client.checkout(roots, null, true, NULL_PROGRESS_MONITOR);
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR), workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertEquals(e1.getObjectId(), repository.readDirCache().getEntry("f").getObjectId());
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(0, res.size());
     }
 
     private void unpack (String filename) throws IOException {

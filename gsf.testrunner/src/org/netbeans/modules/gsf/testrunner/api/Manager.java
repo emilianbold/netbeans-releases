@@ -62,6 +62,7 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionResult;
+import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.*;
 
@@ -98,6 +99,8 @@ public final class Manager {
     public static final String JUNIT_TF = "junit"; // NOI18N
     public static final String TESTNG_TF = "testng"; // NOI18N
     private String testingFramework = ""; // NOI18N
+    private Notification bubbleNotification = null;
+    private BubbleDisplayer bubbleDisplayer = null;
     
     public void setTestingFramework(String testingFramework) {
         this.testingFramework = testingFramework;
@@ -378,7 +381,14 @@ public final class Manager {
                         } else {
                             Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/testResults.png"));   //NOI18N
                             String projectname = ProjectUtils.getInformation(session.getProject()).getDisplayName();
-                            NotificationDisplayer.getDefault().notify(Bundle.LBL_NotificationDisplayer_title(projectname), icon,
+                            
+                            if(bubbleNotification != null) {
+                                if(bubbleDisplayer != null && bubbleDisplayer.isAlive()) {
+                                    bubbleDisplayer.interrupt();
+                                }
+                                bubbleNotification.clear();
+                            }
+                            bubbleNotification = NotificationDisplayer.getDefault().notify(Bundle.LBL_NotificationDisplayer_title(projectname), icon,
                                     Bundle.LBL_NotificationDisplayer_detailsText(), new ActionListener() {
 
                                 @Override
@@ -386,10 +396,23 @@ public final class Manager {
                                     window.promote();
                                 }
                             });
+                            bubbleDisplayer = new BubbleDisplayer();
+                            bubbleDisplayer.start();
                         }
                     }
                 });
             }
+        }
+    }
+
+    private class BubbleDisplayer extends Thread {
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(15000);
+                bubbleNotification.clear();
+            } catch (InterruptedException e) {}
         }
     }
 

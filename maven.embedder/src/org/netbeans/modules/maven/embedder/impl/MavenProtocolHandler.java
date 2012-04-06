@@ -52,9 +52,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
-import org.apache.maven.artifact.repository.MavenArtifactRepository;
-import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
@@ -91,7 +88,7 @@ public class MavenProtocolHandler extends URLStreamHandler {
             throw new IOException(stuff);
         }
         try {
-            online.resolve(a, Collections.<ArtifactRepository>singletonList(new MavenArtifactRepository(RepositorySystem.DEFAULT_REMOTE_REPO_ID, RepositorySystem.DEFAULT_REMOTE_REPO_URL, new DefaultRepositoryLayout(), new ArtifactRepositoryPolicy(), new ArtifactRepositoryPolicy())), online.getLocalRepository());
+            online.resolve(a, Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID)), online.getLocalRepository());
         } catch (Exception x) {
             throw new IOException(stuff + ": " + x, x);
         }
