@@ -199,17 +199,6 @@ public final class HintsPanel extends javax.swing.JPanel   {
         logic.setOverlayPreferences(configurations);
     }
 
-    public HintsPanel(Preferences configurations, ClassPathBasedHintWrapper cpBased) {
-        this.cpBased = cpBased;
-        init(null, false, false, false, true);
-        setOverlayPreferences(configurations);
-        configurationsPanel.setVisible(false);
-    }
-
-    public void setOverlayPreferences(Preferences configurations) {
-        logic.setOverlayPreferences(configurations);
-    }
-    
     public boolean hasNewHints() {
         return hasNewHints;
     }
