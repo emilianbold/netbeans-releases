@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,6 +55,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.eclipse.jgit.JGitText;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.dircache.DirCache;
@@ -68,10 +70,7 @@ import org.eclipse.jgit.lib.ObjectInserter;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.treewalk.EmptyTreeIterator;
-import org.eclipse.jgit.treewalk.FileTreeIterator;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.WorkingTreeOptions;
+import org.eclipse.jgit.treewalk.*;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.NotTreeFilter;
 import org.eclipse.jgit.treewalk.filter.OrTreeFilter;
@@ -223,7 +222,10 @@ public class StatusCommand extends GitCommand {
                             }
                         } else if (!isExistingSymlink(mIndex, mWorking) && (differ(mIndex, mWorking, checkExecutable) 
                                 || (mWorking != 0 && mWorking != FileMode.TREE.getBits() 
-                                && (autocrlf && fti.isModified(indexEntry, false) && differ(indexEntry.getObjectId(), fti, oi) || !autocrlf && fti.isModified(indexEntry, true))))) {
+                                && (autocrlf && fti.isModified(indexEntry, false) 
+                                && (fti.compareMetadata(indexEntry) == WorkingTreeIterator.MetadataDiff.DIFFER_BY_METADATA //entry is modified, but in metadata, no content check needed
+                                    || differ(indexEntry.getObjectId(), fti, oi))
+                                || !autocrlf && fti.isModified(indexEntry, true))))) {
                             statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
                         } else {
                             statusIndexWC = GitStatus.Status.STATUS_NORMAL;

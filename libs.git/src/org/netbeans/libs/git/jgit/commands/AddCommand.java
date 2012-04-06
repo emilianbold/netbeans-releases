@@ -42,8 +42,6 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
-import java.io.ByteArrayInputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -146,7 +144,7 @@ public class AddCommand extends GitCommand {
                                 } else {
                                     entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, sz, in));
                                 }
-                                entry.setLength(or.getObjectSize(entry.getObjectId(), Constants.OBJ_BLOB));
+                                entry.setLength(sz);
                             } finally {
                                 in.close();
                             }

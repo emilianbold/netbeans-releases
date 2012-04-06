@@ -51,17 +51,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
-import org.eclipse.jgit.lib.ConfigConstants;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectInserter;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.WorkingTreeIterator;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -251,6 +250,10 @@ public class AddTest extends AbstractGitTestCase {
     }
     
     public void testAddIgnoreExecutable () throws Exception {
+        if (isWindows()) {
+            // no reason to test on windows
+            return;
+        }
         File f = new File(workDir, "f");
         write(f, "hi, i am executable");
         f.setExecutable(true);
@@ -272,6 +275,10 @@ public class AddTest extends AbstractGitTestCase {
     }
     
     public void testUpdateIndexIgnoreExecutable () throws Exception {
+        if (isWindows()) {
+            // no reason to test on windows
+            return;
+        }
         File f = new File(workDir, "f");
         write(f, "hi, i am not executable");
         File[] roots = { f };
@@ -410,6 +417,63 @@ public class AddTest extends AbstractGitTestCase {
         statuses = client.getStatus(files, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+    }
+    
+    public void testLineEndingsWindows () throws Exception {
+        if (!isWindows()) {
+            return;
+        }
+        // lets turn autocrlf on
+        StoredConfig cfg = repository.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
+        cfg.save();
+        
+        File f = new File(workDir, "f");
+        write(f, "a\r\nb\r\n");
+        File[] roots = new File[] { f };
+        
+        GitClient client = getClient(workDir);
+        runExternally(workDir, Arrays.asList("git.cmd", "add", "f"));
+        DirCacheEntry e1 = repository.readDirCache().getEntry("f");
+        client.add(roots, NULL_PROGRESS_MONITOR);
+        DirCacheEntry e2 = repository.readDirCache().getEntry("f");
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
+                workDir, f, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false);
+        List<String> res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList("A  f"), res);
+        assertEquals(e1.getFileMode(), e2.getFileMode());
+        assertEquals(e1.getPathString(), e2.getPathString());
+        assertEquals(e1.getRawMode(), e2.getRawMode());
+        assertEquals(e1.getStage(), e2.getStage());
+        assertEquals(e1.getLength(), e2.getLength());
+        assertEquals(e1.getObjectId(), e2.getObjectId());
+
+        write(f, "a\nb\n");
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList("AM f"), res);
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
+                workDir, f, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_ADDED, false);
+        
+        res = runExternally(workDir, Arrays.asList("git.cmd", "commit", "-m", "gugu"));
+        res = runExternally(workDir, Arrays.asList("git.cmd", "checkout", "--", "f"));
+        
+        RevCommit commit = Utils.findCommit(repository, "HEAD");
+        TreeWalk walk = new TreeWalk(repository);
+        walk.reset();
+        walk.addTree(commit.getTree());
+        walk.setFilter(PathFilter.create("f"));
+        walk.setRecursive(true);
+        walk.next();
+        assertEquals("f", walk.getPathString());
+        ObjectLoader loader = repository.getObjectDatabase().open(walk.getObjectId(0));
+        assertEquals(4, loader.getSize());
+        assertEquals("a\nb\n", new String(loader.getBytes()));
+        assertEquals(e1.getObjectId(), walk.getObjectId(0));
+        
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(0, res.size());
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
+                workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
     }
 
     private void assertDirCacheEntry (Collection<File> files) throws IOException {
