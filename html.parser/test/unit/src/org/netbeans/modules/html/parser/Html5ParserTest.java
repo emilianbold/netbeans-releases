@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.html.parser;
 
+import org.netbeans.modules.html.parser.model.HtmlTagProvider;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
 import junit.framework.Test;
@@ -67,6 +70,7 @@ import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.editor.lib.api.*;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -82,7 +86,7 @@ public class Html5ParserTest extends NbTestCase {
         super(name);
     }
 
-    public static Test suite() {
+    public static Test Xsuite() {
         String testName = "testParseFileLongerThan2048chars";
 
         System.err.println("Only " + testName + " test is going to be run!!!!");
@@ -233,10 +237,10 @@ public class Html5ParserTest extends NbTestCase {
         OpenTag head = ElementUtils.query(root, "html/head");
         assertNotNull(head);
         assertEquals(2, head.children().size());
-        
+
         Iterator<Element> itr = head.children().iterator();
-        
-        OpenTag styleOpenTag = (OpenTag)itr.next();
+
+        OpenTag styleOpenTag = (OpenTag) itr.next();
         assertNotNull(styleOpenTag);
         assertEquals(16, styleOpenTag.from());
         assertEquals(39, styleOpenTag.to());
@@ -278,19 +282,19 @@ public class Html5ParserTest extends NbTestCase {
         assertTrue(childernItr.hasNext());
         Element child = childernItr.next();
         assertEquals(ElementType.OPEN_TAG, child.type());
-        assertEquals("head", ((OpenTag)child).name().toString());
+        assertEquals("head", ((OpenTag) child).name().toString());
         assertTrue(childernItr.hasNext());
         child = childernItr.next();
         assertEquals(ElementType.CLOSE_TAG, child.type());
-        assertEquals("head", ((CloseTag)child).name().toString());
+        assertEquals("head", ((CloseTag) child).name().toString());
         assertTrue(childernItr.hasNext());
         child = childernItr.next();
         assertEquals(ElementType.OPEN_TAG, child.type());
-        assertEquals("body", ((OpenTag)child).name().toString());
+        assertEquals("body", ((OpenTag) child).name().toString());
         assertTrue(childernItr.hasNext());
         child = childernItr.next();
         assertEquals(ElementType.CLOSE_TAG, child.type());
-        assertEquals("table", ((CloseTag)child).name().toString());
+        assertEquals("table", ((CloseTag) child).name().toString());
 
 
 //        NodeUtils.dumpTree(root);
@@ -586,7 +590,7 @@ public class Html5ParserTest extends NbTestCase {
 
 //        NodeUtils.dumpTree(root);
     }
-    
+
     public void testParseFileTest1() throws ParseException {
         parse(getTestFile("testfiles/test1.html"));
     }
@@ -782,7 +786,6 @@ public class Html5ParserTest extends NbTestCase {
 //        assertEquals(130, scriptEnd.to());
 //
 //    }
-
     //[Bug 195103] Refactoring changes a changed filename incorrectly in the html <script> tag
     public void testIsAttributeQuoted() throws ParseException {
         String code = "<!doctype html>"
@@ -825,11 +828,11 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(attr.isValueQuoted());
 
     }
-    
+
     //Bug 196479 - Problem with finding end tag for style element
     public void testStyleTag() throws ParseException {
 //        NodeTreeBuilder.setLoggerLevel(Level.FINER);
-        
+
         String code = "<!doctype html>"
                 + "<html>"
                 + "<head>"
@@ -852,7 +855,7 @@ public class Html5ParserTest extends NbTestCase {
 
         assertEquals(42, style.from());
         assertEquals(49, style.to());
-    
+
         //space after the style tag name
         code = "<!doctype html>"
                 + "<html>"
@@ -878,11 +881,11 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals(51, style.to());
 
     }
-    
+
     //Bug 197608 - Non-html tags offered as closing tags using code completion
     public void testIssue197608() throws ParseException {
 //        NodeTreeBuilder.setLoggerLevel(Level.FINER);
-        
+
         String code = "<div></di   <p> aaa";
         //             0123456789012345
 
@@ -895,7 +898,7 @@ public class Html5ParserTest extends NbTestCase {
         Collection<ProblemDescription> problems = result.getProblems();
         assertNotNull(problems);
         assertEquals(2, problems.size());
-        
+
         Iterator<ProblemDescription> problemsItr = problems.iterator();
         ProblemDescription pd = problemsItr.next();
         assertNotNull(pd.getKey());
@@ -903,17 +906,40 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals(ProblemDescription.ERROR, pd.getType());
         assertEquals(9, pd.getFrom());
         assertEquals(9, pd.getTo());
-        
+
         pd = problemsItr.next();
         assertNotNull(pd.getKey());
         assertNotNull(pd.getText());
         assertEquals(ProblemDescription.ERROR, pd.getType());
         assertEquals(12, pd.getFrom());
         assertEquals(12, pd.getTo());
-        
+
     }
-    
-    
+
+    public void testHtmlModelEntries() {
+    }
+
+    public void testDuplicatedEntriesInHtmlModel() {
+        HtmlParser parser = new Html5Parser();
+        HtmlModel model = parser.getModel(HtmlVersion.HTML5);
+        assertNotNull(model);
+
+        Collection<HtmlTag> tags = model.getAllTags();
+
+        Collection<HtmlTag> names = new HashSet<HtmlTag>();
+        StringBuilder sb = new StringBuilder();
+        for (HtmlTag t : tags) {
+            if (!names.add(t)) {
+                sb.append(t.toString());
+                sb.append("(");
+                sb.append(t.hashCode());
+                sb.append(")");
+                sb.append(", ");
+            }
+        }
+        assertTrue("found duplicated entry/ies: " + sb.toString(), sb.length() == 0);
+    }
+
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
 //    public void testIssue194037() throws ParseException {
@@ -974,7 +1000,6 @@ public class Html5ParserTest extends NbTestCase {
 //        
 //        return null;
 //    }
-
     private HtmlParseResult parse(FileObject file) throws ParseException {
         HtmlSource source = new HtmlSource(file);
         HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
@@ -1007,6 +1032,14 @@ public class Html5ParserTest extends NbTestCase {
         }
 
         @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 61 * hash + (this.getName() != null ? this.getName().hashCode() : 0);
+            hash = 61 * hash + (this.getTagClass() != null ? this.getTagClass().hashCode() : 0);
+            return hash;
+        }
+
+        @Override
         public boolean equals(Object obj) {
             if (obj == null) {
                 return false;
@@ -1014,18 +1047,15 @@ public class Html5ParserTest extends NbTestCase {
             if (!(obj instanceof HtmlTag)) {
                 return false;
             }
-            final HtmlTag other = (HtmlTag) obj;
-            if ((this.name == null) ? (other.getName() != null) : !this.name.equals(other.getName())) {
+            HtmlTag other = (HtmlTag) obj;
+
+            if ((this.getName() == null) ? (other.getName() != null) : !this.getName().equals(other.getName())) {
+                return false;
+            }
+            if (this.getTagClass() != other.getTagClass()) {
                 return false;
             }
             return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 67 * hash + (this.name != null ? this.name.hashCode() : 0);
-            return hash;
         }
 
         @Override

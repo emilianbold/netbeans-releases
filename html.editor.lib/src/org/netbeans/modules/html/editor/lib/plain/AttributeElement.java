@@ -56,32 +56,31 @@ import org.openide.util.CharSequences;
 public class AttributeElement implements Attribute {
 
     private CharSequence source;
-    
     private int nameOffset;
     private short valueOffset2nameOffsetDiff;
     private byte nameLen;
     private short valueLen;
-    
+
     public AttributeElement(CharSequence source, int nameOffset, byte nameLen) {
         this.source = source;
-        
+
         this.nameOffset = nameOffset;
         this.valueOffset2nameOffsetDiff = -1;
-        
+
         this.nameLen = nameLen;
         this.valueLen = -1;
     }
-    
+
     public AttributeElement(CharSequence source, int nameOffset, int valueOffset, byte nameLen, short valueLen) {
         this.source = source;
-        
+
         this.nameOffset = nameOffset;
-        this.valueOffset2nameOffsetDiff = (short)(valueOffset - nameOffset);
-        
+        this.valueOffset2nameOffsetDiff = (short) (valueOffset - nameOffset);
+
         this.nameLen = nameLen;
         this.valueLen = valueLen;
     }
-    
+
     @Override
     public int nameOffset() {
         return nameOffset;
@@ -101,9 +100,12 @@ public class AttributeElement implements Attribute {
     public CharSequence value() {
         return valueLen == -1 ? null : source.subSequence(valueOffset(), valueOffset() + valueLen);
     }
-    
+
     @Override
     public boolean isValueQuoted() {
+        if (value() == null) {
+            return false;
+        }
         if (valueLen < 2) {
             return false;
         } else {
@@ -113,8 +115,11 @@ public class AttributeElement implements Attribute {
         }
     }
 
-    @Override           
+    @Override
     public CharSequence unquotedValue() {
+        if (value() == null) {
+            return null;
+        }
         return isValueQuoted() ? value().subSequence(1, value().length() - 1) : value();
     }
 
@@ -137,7 +142,9 @@ public class AttributeElement implements Attribute {
 
     @Override
     public int to() {
-        return valueOffset() + value().length();
+        return value() != null
+                ? valueOffset() + valueLen
+                : nameOffset() + nameLen;
     }
 
     @Override
@@ -164,11 +171,11 @@ public class AttributeElement implements Attribute {
     public Node parent() {
         return null;
     }
- 
+
     public static class AttributeElementWithJoinedValue extends AttributeElement {
 
         public String value;
-        
+
         public AttributeElementWithJoinedValue(CharSequence source, int nameOffset, byte nameLen, int valueOffset, String value) {
             super(source, nameOffset, valueOffset, nameLen, (short) value.length());
             this.value = value;
@@ -178,7 +185,5 @@ public class AttributeElement implements Attribute {
         public CharSequence value() {
             return value;
         }
-        
     }
-    
 }

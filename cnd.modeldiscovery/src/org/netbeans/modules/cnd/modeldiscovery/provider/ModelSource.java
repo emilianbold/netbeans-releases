@@ -57,14 +57,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
+import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
-import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Utilities;
 
@@ -268,18 +268,16 @@ public class ModelSource implements SourceFileProperties {
     private String guessPath(CsmInclude include){
         String name = include.getIncludeName().toString();
         String found = name.replace('\\','/');
-        String prefix = null;
         //String back = null;
         int i = found.lastIndexOf('/');
         if(i >= 0){
-            prefix = found.substring(0,i+1);
+            String prefix = found.substring(0,i+1);
             found = found.substring(i+1);
             i = prefix.lastIndexOf("./"); // NOI18N
             if (i >= 0) {
                 //back = prefix.substring(0,i+2);
                 prefix = prefix.substring(i+2);
                 if (prefix.length()==0) {
-                    prefix = null;
                     name = found;
                 } else {
                     name = prefix+'/'+found;
@@ -369,7 +367,18 @@ public class ModelSource implements SourceFileProperties {
 
     @Override
     public LanguageStandard getLanguageStandard() {
-        return LanguageStandard.Unknown;
+        switch(item.getLanguageFlavor()) {
+            case C: return LanguageStandard.C;
+            case C89: return LanguageStandard.C89;
+            case C99: return LanguageStandard.C99;
+            case CPP: return LanguageStandard.CPP;
+            case CPP11: return LanguageStandard.CPP11;
+            case DEFAULT: return LanguageStandard.Default;
+            case F77: return LanguageStandard.F77;
+            case F90: return LanguageStandard.F90;
+            case F95: return LanguageStandard.F95;
+            default: UNKNOWN: return LanguageStandard.Unknown;
+        }
     }
 
     @Override

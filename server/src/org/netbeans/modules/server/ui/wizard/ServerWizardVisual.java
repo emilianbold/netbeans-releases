@@ -62,13 +62,18 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.netbeans.spi.server.ServerWizardProvider;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -352,38 +357,62 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
     private javax.swing.JList serverListBox;
     // End of variables declaration//GEN-END:variables
 
-    private static class WizardListModel implements ListModel {
+    private static class WizardListModel implements ListModel, LookupListener {
 
-        private final List<WizardAdapter> serverWizards = new ArrayList<WizardAdapter>();
-        
-        private ServerRegistry registry;
+        private final List<WizardAdapter> serverWizards = Collections.synchronizedList(new ArrayList<WizardAdapter>());
+
+        private final List<ListDataListener> listeners = new CopyOnWriteArrayList<ListDataListener>();
+
+        private final Lookup.Result<ServerWizardProvider> result;
 
         public WizardListModel(ServerRegistry registry) {
-            for (ServerWizardProvider wizard
-                    : Lookups.forPath(registry.getPath()).lookupAll(ServerWizardProvider.class)) {
-
-                // safety precaution shouldn't ever happen - used because of bridging
-                if (wizard.getInstantiatingIterator() != null) {
-                    serverWizards.add(new WizardAdapter(wizard));
-                }
-            }
-            Collections.sort(serverWizards);
+            this.result = Lookups.forPath(registry.getPath()).lookupResult(ServerWizardProvider.class);
+            this.result.addLookupListener(WeakListeners.create(LookupListener.class, this, result));
+            resultChanged(null);
         }
 
+        @Override
         public Object getElementAt(int index) {
             return serverWizards.get(index);
         }
 
+        @Override
         public int getSize() {
             return serverWizards.size();
         }
 
+        @Override
         public void addListDataListener(ListDataListener l) {
-            // not changeable model
+            listeners.add(l);
         }
 
+        @Override
         public void removeListDataListener(ListDataListener l) {
-            // not changeable model
+            listeners.remove(l);
+        }
+
+        @Override
+        public final void resultChanged(LookupEvent ev) {
+            List<WizardAdapter> fresh = new ArrayList<WizardAdapter>();
+            for (ServerWizardProvider wizard : result.allInstances()) {
+
+                // safety precaution shouldn't ever happen - used because of bridging
+                if (wizard.getInstantiatingIterator() != null) {
+                    fresh.add(new WizardAdapter(wizard));
+                }
+            }
+            Collections.sort(fresh);
+
+            synchronized (serverWizards) {
+                serverWizards.clear();
+                serverWizards.addAll(fresh);
+            }
+
+            ListDataEvent event = new ListDataEvent(this,
+                        ListDataEvent.CONTENTS_CHANGED, 0, fresh.size() - 1);
+            for (ListDataListener l : listeners) {
+                l.contentsChanged(event);
+            }
         }
     }
 
