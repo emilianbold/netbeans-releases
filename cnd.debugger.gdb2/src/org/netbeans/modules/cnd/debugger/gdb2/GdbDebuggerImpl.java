@@ -3773,7 +3773,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return GdbMemoryFormat.values();
     }
     
-    static LinkedList<String> parseMem(MIRecord record) {
+    static List<String> parseMem(MIRecord record) {
         LinkedList<String> res = new LinkedList<String>();
 
         int size[] = new int[MEMORY_READ_WIDTH];
@@ -3797,8 +3797,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             MIValue dataValue = line.valueOf("data"); //NOI18N
             int count = 0;
             for (MITListItem dataElem : dataValue.asList()) {
-                for(int i = 0; i < size[count]-((MIConst)dataElem).value().length()+1; i++)
+                for(int i = 0; i < size[count]-((MIConst)dataElem).value().length()+1; i++) {
                     sb.append(' '); //NOI18N
+                }
                 sb.append(((MIConst)dataElem).value());
                 count++;
             }
