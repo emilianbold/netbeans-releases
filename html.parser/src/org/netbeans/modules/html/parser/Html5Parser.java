@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.parser;
 
+import org.netbeans.modules.html.parser.model.HtmlTagProvider;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -300,7 +301,7 @@ public class Html5Parser implements HtmlParser {
             if (ALL_TAGS == null) {
                 ALL_TAGS = new ArrayList<HtmlTag>();
                 for (ElementDescriptor element : ElementDescriptor.values()) {
-                    ALL_TAGS.add(HtmlTagProvider.getTagForElement(element.getName()));
+                    ALL_TAGS.add(HtmlTagProvider.forElementDescriptor(element));
                 }
             }
             return Collections.unmodifiableCollection(ALL_TAGS);
