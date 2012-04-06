@@ -110,6 +110,11 @@ public final class LibProjectImpl extends ProjectBase {
     }
 
     @Override
+    public Collection<ProjectBase> getDependentProjects() {
+        return LibraryManager.getInstance().getProjectsByLibrary(this);
+    }
+
+    @Override
     protected Collection<Key> getLibrariesKeys() {
         return Collections.<Key>emptySet();
     }
