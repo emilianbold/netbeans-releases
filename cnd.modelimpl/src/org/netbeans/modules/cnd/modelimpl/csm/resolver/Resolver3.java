@@ -198,9 +198,8 @@ public final class Resolver3 implements Resolver {
 
     public static Collection<CsmProject> getSearchLibraries(CsmProject prj) {
         if (prj.isArtificial() && prj instanceof ProjectBase) {
-            List<ProjectBase> dependentProjects = ((ProjectBase)prj).getDependentProjects();
             Set<CsmProject> libs = new HashSet<CsmProject>();
-            for (ProjectBase projectBase : dependentProjects) {
+            for (ProjectBase projectBase : ((ProjectBase)prj).getDependentProjects()) {
                 if (!projectBase.isArtificial()) {
                     libs.addAll(projectBase.getLibraries());
                 }
