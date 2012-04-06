@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="sizeof.jdk=${size}${line.separator}" file="${basedir}/../build/sizes.pro" append="true"/>
         <echo message="Getting size of JDK - ${size}"/>
         
-        <copy file="${basedir}/../netBeans/baseide/build/pkg/scripts/set_jdk_home.sh" tofile="${scriptsdir}/set_jdk_home.sh" verbose="yes" />
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/set_jdk_home.sh" tofile="${scriptsdir}/set_jdk_home.sh" verbose="yes" />
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
     </target>
     
