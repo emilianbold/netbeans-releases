@@ -56,6 +56,7 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
@@ -133,6 +134,7 @@ public final class Symfony2CommandSupport extends FrameworkCommandSupport {
         return processBuilder;
     }
 
+    @Messages("Symfony2CommandSupport.error.listCommand=Symfony2 list commands")
     @Override
     protected List<FrameworkCommand> getFrameworkCommandsInternal() {
         // validate
@@ -141,6 +143,10 @@ public final class Symfony2CommandSupport extends FrameworkCommandSupport {
         }
         InputStream output = redirectScriptOutput("list", "--xml"); // NOI18N
         if (output == null) {
+            // perhaps some error? run it again and print the result in the output window
+            PhpProgram.executeLater(createCommand("list", "--xml"), // NOI18N
+                    new ExecutionDescriptor().frontWindow(true),
+                    Bundle.Symfony2CommandSupport_error_listCommand());
             return null;
         }
         List<Symfony2CommandVO> commandsVO = new ArrayList<Symfony2CommandVO>();
