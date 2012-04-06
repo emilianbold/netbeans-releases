@@ -280,6 +280,8 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
         private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
         private static final String RUBY_MIMETYPE = "text/x-ruby";//NOI18N
         private static final String YAML_MIMETYPE = "text/x-yaml";//NOI18N
+        private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
+        private static final String PHP_SORT_TEXT = "0";//NOI18N
         private static final String JAVASCRIPT_SORT_TEXT = "1";//NOI18N
         private static final String HTML_MIMETYPE = "text/html";//NOI18N
         private static final String HTML_SORT_TEXT = "3";//NOI18N
@@ -339,6 +341,8 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
                 return YAML_SORT_TEXT;
             } else if (language.getMimeType().equals(RUBY_MIMETYPE)) {
                 return RUBY_SORT_TEXT;
+            } else if (language.getMimeType().equals(PHP_MIME_TYPE)) {
+                return PHP_SORT_TEXT;
             } else {
                 return OTHER_SORT_TEXT + getName();
             }
