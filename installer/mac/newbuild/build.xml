@@ -351,7 +351,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="${basedir}/build/sizes.pro"/>
     </target>     
             
-    <target name="build-jdk-bundle-dmg" depends="clean,init,build-pkg,build-jdk-pkg,init-bundles">
+    <target name="build-jdk-bundle-dmg" depends="clean,init,build-jdk-pkg,build-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
