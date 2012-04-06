@@ -1417,9 +1417,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     statesToParse.add(newState);
                     AtomicBoolean clean = new AtomicBoolean(false);
                     thisProjectUpdateResult = updateFileEntryBasedOnIncludedStatePair(entry, newStatePair, file, csmFile, clean, statesToParse);
-//                    if (!startProjectUpdateResult) {
-//                        assert !thisProjectUpdateResult : " start project " + startProject + " thinks that new state for " + file + " is worse but current wants to reparse with it " + this;
-//                    }
+                    if (thisProjectUpdateResult && startProject != this) {
+                        // we found the "best from the bests" for the current lib
+                        // have to be considered as the best in start project lib storage as well
+                        assert startProjectUpdateResult : " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject;
+                    }
                     if (thisProjectUpdateResult) {
                         // TODO: think over, what if we aready changed entry,
                         // but now deny parsing, because base, but not this project, is disposing?!
@@ -1458,6 +1460,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private void putIncludedFileStorage(ProjectBase includedProject) {
         includedFileContainer.putStorage(this, includedProject);
+    }
+
+    Map<CsmUID<CsmProject> , Collection<PreprocessorStatePair>> getIncludedPreprocStatePairs(FileImpl fileToSearch) {
+        return includedFileContainer.getPairs(fileToSearch);
     }
 
     private boolean updateFileEntryBasedOnIncludedStatePair(
