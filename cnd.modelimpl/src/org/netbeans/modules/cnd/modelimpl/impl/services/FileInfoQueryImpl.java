@@ -368,12 +368,11 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
 
     @Override
     public Collection<CsmCompilationUnit> getCompilationUnits(CsmFile file, int contextOffset) {
-        CsmCompilationUnit backup = CsmCompilationUnit.createCompilationUnit(file.getProject(), file.getAbsolutePath(), file);
         Collection<CsmCompilationUnit> out = new ArrayList<CsmCompilationUnit>(1);
         boolean addBackup = true;
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
-            Collection<State> states = ((ProjectBase) impl.getProject()).getPreprocStates(impl);
+            Collection<State> states = ((ProjectBase) impl.getProject()).getIncludedPreprocStates(impl);
             for (State state : states) {
                 StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
                 ProjectBase startProject = Utils.getStartProject(startEntry);
@@ -389,7 +388,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             }
         }
         if (addBackup) {
-            out.add(backup);
+            out.add(CsmCompilationUnit.createCompilationUnit(file.getProject(), file.getAbsolutePath(), file));
         }
         return out;
     }

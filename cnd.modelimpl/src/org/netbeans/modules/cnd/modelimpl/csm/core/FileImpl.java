@@ -2087,7 +2087,36 @@ public final class FileImpl implements CsmFile,
             printOut.printf("handler=%s\n", ppHandler);// NOI18N 
         }
     }
-    
+
+    public void dumpIncludePPStates(PrintWriter printOut) {
+        int i = 0;
+        final Collection<PreprocessorStatePair> preprocStatePairs = this.getPreprocStatePairs();
+        printOut.printf("Has %d OWNED ppStatePairs:\n", preprocStatePairs.size());// NOI18N
+        for (PreprocessorStatePair pair : preprocStatePairs) {
+            printOut.printf("----------------Own Pair[%d]------------------------\n", ++i);// NOI18N
+            printOut.printf("pc=%s\nstate=%s\n", pair.pcState, pair.state);// NOI18N
+        }
+        Collection<CsmProject> projects = CsmModelAccessor.getModel().projects();
+        i = 0;
+        for (CsmProject csmProject : projects) {
+            if (csmProject instanceof ProjectBase) {
+                ProjectBase prj = (ProjectBase) csmProject;
+                Map<CsmUID<CsmProject> , Collection<PreprocessorStatePair>> includedStates = prj.getIncludedPreprocStatePairs(this);
+                if (includedStates.size() > 1) {
+                    printOut.printf("ALARM! the same file %s is included as library of %d projects\n", this.getAbsolutePath(), includedStates.size()); // NOI18N
+                }
+                for (Map.Entry<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> entry : includedStates.entrySet()) {
+                    Collection<PreprocessorStatePair> pairs = entry.getValue();
+                    printOut.printf("in project %s included %s\n", prj, UIDUtilities.getProjectName(entry.getKey()));// NOI18N
+                    for (PreprocessorStatePair pair : pairs) {
+                        printOut.printf("----------------Included Pair[%d]------------------------\n", ++i);// NOI18N
+                        printOut.printf("with pc=%s\nstate=%s\n", pair.pcState, pair.state);// NOI18N
+                    }
+                }
+            }
+        }
+    }
+
     static String toYesNo(boolean b) {
         return b ? "yes" : "no"; // NOI18N
     }

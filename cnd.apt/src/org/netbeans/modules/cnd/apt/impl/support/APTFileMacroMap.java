@@ -221,7 +221,11 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             retValue.append("Snapshot\n"); // NOI18N
             retValue.append(super.toString());
             retValue.append("\nSystem MacroMap\n"); // NOI18N
-            retValue.append(sysMacroMap);
+            if (System.getProperty("cnd.apt.macro.trace") != null) {
+                retValue.append(sysMacroMap);
+            } else {
+                retValue.append(System.identityHashCode(sysMacroMap));
+            }
             return retValue.toString();
         }
 

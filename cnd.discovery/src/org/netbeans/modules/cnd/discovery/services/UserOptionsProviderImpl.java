@@ -43,30 +43,30 @@
 package org.netbeans.modules.cnd.discovery.services;
 
 import java.io.File;
-import java.util.Collection;
-import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
-import org.netbeans.modules.cnd.api.project.NativeFileSearch;
-import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
-import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
+import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -143,7 +143,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     @Override
     public LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
-            String options = compilerOptions.getAllOptions(compiler);            
+            String options = compilerOptions.getAllOptions(compiler);
             if (compiler.getKind() == PredefinedToolKind.CCompiler) {
                 if (options.indexOf("-xc99") >= 0) { // NOI18N
                     return LanguageFlavor.C99;
@@ -201,7 +201,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
 
     private PkgConfig getPkgConfig(MakeConfiguration conf){
         String hostKey = conf.getDevelopmentHost().getHostKey();
-        PkgConfig pkg = null;
+        PkgConfig pkg;
         synchronized(pkgConfigs){
             pkg = pkgConfigs.get(hostKey);
             if (pkg == null) {
