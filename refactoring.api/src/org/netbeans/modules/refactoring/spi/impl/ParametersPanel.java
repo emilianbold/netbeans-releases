@@ -702,7 +702,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             }
         });
 
-        if (customComponent != null && rui.hasParameters() && APIAccessor.DEFAULT.hasPluginsWithProgress(rui.getRefactoring())) {
+        if (customComponent!=null || rui.hasParameters() || APIAccessor.DEFAULT.hasPluginsWithProgress(rui.getRefactoring())) {
             dialog.pack();
             dialog.setVisible(true);
         }
