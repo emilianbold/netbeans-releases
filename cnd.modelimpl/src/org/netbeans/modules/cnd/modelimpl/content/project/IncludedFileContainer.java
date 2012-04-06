@@ -44,7 +44,10 @@ package org.netbeans.modules.cnd.modelimpl.content.project;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -52,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer.FileEntry;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.IncludedFileStorageKey;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -134,7 +138,30 @@ public final class IncludedFileContainer {
         return storage.getOrCreateFileEntry(includedFile);
     }
 
+    public Map<CsmUID<CsmProject> , Collection<PreprocessorStatePair>> getPairs(FileImpl fileToSearch) {
+        Map<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> out = new HashMap<CsmUID<CsmProject>, Collection<PreprocessorStatePair>>();
+        synchronized (list) {
+            for (Entry entry : list) {
+                Collection<PreprocessorStatePair> pairs = entry.getStorage().getPairs(fileToSearch);
+                if (!pairs.isEmpty()) {
+                    out.put(entry.prjUID, pairs);
+                }
+            }
+        }
+        return out;
+    }
+
     public final static class Storage extends ProjectComponent  {
+
+        private Collection<PreprocessorStatePair> getPairs(FileImpl fileToSearch) {
+            CharSequence fileKey = FileContainer.getFileKey(fileToSearch.getAbsolutePath(), false);
+            FileEntry entry = myFiles.get(fileKey);
+            if (entry != null) {
+                return entry.getStatePairs();
+            } else {
+                return Collections.emptyList();
+            }
+        }
 
         private final ConcurrentMap<CharSequence, FileContainer.FileEntry> myFiles = new ConcurrentHashMap<CharSequence, FileContainer.FileEntry>();
         private final FileSystem fileSystem;
