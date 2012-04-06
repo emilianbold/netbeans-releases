@@ -476,61 +476,57 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
         if (!gotMakeConfigurationDescriptor()) {
-            actions.add(CommonProjectActions.closeProjectAction()); // NOI18N
+            return new Action[] {CommonProjectActions.closeProjectAction()};
+        }
+        List<Action> actions = new ArrayList<Action>();
+        MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
+
+        // TODO: not clear if we need to call the following method at all
+        // but we need to remove remembering the output to prevent memory leak;
+        // I think it could be removed
+        if (descriptor != null) {
+            descriptor.getLogicalFolders();
+        }
+
+        // Add standard actions
+        Action[] standardActions;
+        MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
+        if (descriptor == null || active == null || active.isMakefileConfiguration()) { // FIXUP: need better check
+            standardActions = getAdditionalDiskFolderActions();
         } else {
-            MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
-
-            // TODO: not clear if we need to call the following method at all
-            // but we need to remove remembering the output to prevent memory leak;
-            // I think it could be removed
-            if (descriptor != null) {
-                descriptor.getLogicalFolders();
-            }
-
-            // Add standard actions
-            Action[] standardActions;
-            MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
-            if (descriptor == null || active == null || active.isMakefileConfiguration()) { // FIXUP: need better check
-                standardActions = getAdditionalDiskFolderActions();
-            }
-            else {
-                standardActions = getAdditionalLogicalFolderActions();
-            }
-            actions.addAll(Arrays.asList(standardActions));
-            actions.add(null);
-            //actions.add(new CodeAssistanceAction());
-            // makeproject sensitive actions
-            final MakeProjectTypeImpl projectKind = provider.getProject().getLookup().lookup(MakeProjectTypeImpl.class);
-            final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.projectActionsPath());
-            if (!actionsForMakeProject.isEmpty()) {
-                actions.addAll(actionsForMakeProject);
-                actions.add(null);
-            }
-            actions.add(SystemAction.get(org.openide.actions.FindAction.class));
-            // all project sensitive actions
-            actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
-            // Add remaining actions
-            actions.add(null);
-            //actions.add(SystemAction.get(ToolsAction.class));
-            if (brokenLinks) {
-                actions.add(new ResolveReferenceAction(provider.getProject()));
-            }
-            if (incorrectVersion) {
-                actions.add(new ResolveIncorrectVersionAction(this, new VisualUpdater()));
-            }
-            if (incorrectPlatform) {
-                actions.add(new ResolveIncorrectPlatformAction(this));
-            }
-            //actions.add(null);
-            actions.add(CommonProjectActions.customizeProjectAction());
+            standardActions = getAdditionalLogicalFolderActions();
         }
-        MakeConfiguration active = (getMakeConfigurationDescriptor() == null) ? null : getMakeConfigurationDescriptor().getActiveConfiguration();
+        actions.addAll(Arrays.asList(standardActions));
+        actions.add(null);
+        //actions.add(new CodeAssistanceAction());
+        // makeproject sensitive actions
+        final MakeProjectTypeImpl projectKind = provider.getProject().getLookup().lookup(MakeProjectTypeImpl.class);
+        final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.projectActionsPath());
+        if (!actionsForMakeProject.isEmpty()) {
+            actions.addAll(actionsForMakeProject);
+            actions.add(null);
+        }
+        actions.add(SystemAction.get(org.openide.actions.FindAction.class));
+        // all project sensitive actions
+        actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
+        // Add remaining actions
+        actions.add(null);
+        //actions.add(SystemAction.get(ToolsAction.class));
+        if (brokenLinks) {
+            actions.add(new ResolveReferenceAction(provider.getProject()));
+        }
+        if (incorrectVersion) {
+            actions.add(new ResolveIncorrectVersionAction(this, new VisualUpdater()));
+        }
+        if (incorrectPlatform) {
+            actions.add(new ResolveIncorrectPlatformAction(this));
+        }
+        //actions.add(null);
+        actions.add(CommonProjectActions.customizeProjectAction());
         if (active != null && active.isCustomConfiguration() && active.getProjectCustomizer().getActions(provider.getProject(), actions) != null) {
-                return active.getProjectCustomizer().getActions(provider.getProject(), actions);
-        }
-        else {
+            return active.getProjectCustomizer().getActions(provider.getProject(), actions);
+        } else {
             return actions.toArray(new Action[actions.size()]);
         }
     }
