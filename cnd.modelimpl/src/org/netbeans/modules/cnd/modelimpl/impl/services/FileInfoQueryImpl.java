@@ -372,7 +372,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         boolean addBackup = true;
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
-            Collection<State> states = ((ProjectBase) impl.getProject()).getPreprocStates(impl);
+            Collection<State> states = ((ProjectBase) impl.getProject()).getIncludedPreprocStates(impl);
             for (State state : states) {
                 StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
                 ProjectBase startProject = Utils.getStartProject(startEntry);
