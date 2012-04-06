@@ -709,8 +709,8 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     static void readLogs(Handler handler){
+        UIHandler.waitFlushed();
         synchronized (UIGESTURE_LOG_LOCK) {
-            UIHandler.waitFlushed();
 
             File f = logFile(0);
             if (f == null || !f.exists()) {
