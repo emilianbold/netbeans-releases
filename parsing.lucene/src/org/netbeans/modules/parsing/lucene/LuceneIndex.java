@@ -52,8 +52,10 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -113,13 +115,13 @@ public class LuceneIndex implements Index.Transactional, Runnable {
     private static final CachePolicy cachePolicy = getCachePolicy();
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
     
-    private static LockFactory lockFactory;
+    private static boolean disableLocks;
     
     private final DirCache dirCache;       
     
     /** unit tests */
     public static void setDisabledLocks(final boolean disabled) {
-        lockFactory = disabled ? NoLockFactory.getNoLockFactory() : null;
+        disableLocks = disabled;
     }
 
     public static LuceneIndex create (final File cacheRoot, final Analyzer analyzer) throws IOException {
@@ -131,7 +133,13 @@ public class LuceneIndex implements Index.Transactional, Runnable {
     private LuceneIndex (final File refCacheRoot, final Analyzer analyzer) throws IOException {
         assert refCacheRoot != null;
         assert analyzer != null;
-        this.dirCache = new DirCache(refCacheRoot,cachePolicy, analyzer);
+        this.dirCache = new DirCache(
+                refCacheRoot,
+                cachePolicy,
+                analyzer,
+                disableLocks ?
+                    NoLockFactory.getNoLockFactory():
+                    new RecordOwnerLockFactory());
     }
     
     @Override
@@ -542,6 +550,7 @@ public class LuceneIndex implements Index.Transactional, Runnable {
         private static volatile long currentCacheSize;
         
         private final File folder;
+        private final LockFactory lockFactory;
         private final CachePolicy cachePolicy;
         private final Analyzer analyzer;
         private volatile FSDirectory fsDir;
@@ -561,12 +570,15 @@ public class LuceneIndex implements Index.Transactional, Runnable {
         private DirCache(
                 final @NonNull File folder,
                 final @NonNull CachePolicy cachePolicy,
-                final @NonNull Analyzer analyzer) throws IOException {
+                final @NonNull Analyzer analyzer,
+                final @NonNull LockFactory lockFactory) throws IOException {
             assert folder != null;
             assert cachePolicy != null;
             assert analyzer != null;
+            assert lockFactory != null;
             this.folder = folder;
-            this.fsDir = createFSDirectory(folder);
+            this.lockFactory = lockFactory;
+            this.fsDir = createFSDirectory(folder, lockFactory);
             this.cachePolicy = cachePolicy;                        
             this.analyzer = analyzer;
         }
@@ -609,23 +621,17 @@ public class LuceneIndex implements Index.Transactional, Runnable {
                     final File[] children = cacheDir.listFiles();
                     if (children != null) {
                         for (final File child : children) {                                                
-                            if (!child.delete()) {
-                                final Class c = fsDir.getClass();
-                                int refCount = -1;
-                                try {
-                                    final Field field = c.getDeclaredField("refCount"); //NOI18N
-                                    field.setAccessible(true);
-                                    refCount = field.getInt(fsDir);
-                                } catch (NoSuchFieldException e) {/*Not important*/}
-                                  catch (IllegalAccessException e) {/*Not important*/}
-                                final Map<Thread,StackTraceElement[]> sts = Thread.getAllStackTraces();
+                            if (!child.delete()) {                                
+                                final Map<Thread,List<StackTraceElement>> sts = stackTraces(Thread.getAllStackTraces());
                                 throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
                                         child.exists()  +","+                                               //NOI18N
                                         child.canRead() +","+                                               //NOI18N
                                         child.canWrite() +","+                                              //NOI18N
                                         cacheDir.canRead() +","+                                            //NOI18N
                                         cacheDir.canWrite() +","+                                           //NOI18N
-                                        refCount +","+                                                      //NOI18N
+                                        (lockFactory instanceof RecordOwnerLockFactory ?
+                                            ((RecordOwnerLockFactory)lockFactory).getOwner():
+                                            "???") +","+                                                    //NOI18N
                                         sts +")");                                                          //NOI18N
                             }
                         }
@@ -634,7 +640,7 @@ public class LuceneIndex implements Index.Transactional, Runnable {
             } finally {
                 //Need to recreate directory, see issue: #148374
                 this.doClose(true);
-                this.fsDir = createFSDirectory(this.folder);
+                this.fsDir = createFSDirectory(this.folder, this.lockFactory);
                 closed = false;
             }
         }
@@ -758,7 +764,7 @@ public class LuceneIndex implements Index.Transactional, Runnable {
         }
         
         boolean rollbackTxWriter() throws IOException {
-            IndexWriter writer = txWriter.get();
+            final IndexWriter writer = txWriter.get();
             if (writer != null) {
                 try {
                     writer.rollback();
@@ -997,8 +1003,11 @@ public class LuceneIndex implements Index.Transactional, Runnable {
             return Exceptions.attachMessage(ioe, message.toString());
         }
         
-        private static FSDirectory createFSDirectory (final File indexFolder) throws IOException {
+        private static FSDirectory createFSDirectory (
+                final File indexFolder,
+                final LockFactory lockFactory) throws IOException {
             assert indexFolder != null;
+            assert lockFactory != null;
             final FSDirectory directory  = FSDirectory.open(indexFolder, lockFactory);
             directory.getLockFactory().setLockPrefix(CACHE_LOCK_PREFIX);
             return directory;
@@ -1018,6 +1027,14 @@ public class LuceneIndex implements Index.Transactional, Runnable {
                 per = DEFAULT_CACHE_SIZE;
             }
             return (long) (per * Runtime.getRuntime().maxMemory());
+        }
+        
+        private Map<Thread,List<StackTraceElement>> stackTraces(final Map<Thread,StackTraceElement[]> traces) {
+            final Map<Thread,List<StackTraceElement>> result = new HashMap<Thread, List<StackTraceElement>>();
+            for (Map.Entry<Thread,StackTraceElement[]> entry : traces.entrySet()) {
+                result.put(entry.getKey(), Arrays.asList(entry.getValue()));
+            }
+            return result;
         }
                 
         private final class OwnerReference {
