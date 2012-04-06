@@ -1481,12 +1481,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (TRACE_FILE && FileImpl.traceFile(file)) {
             traceIncludeStates(prefix+"comparison 2 " + comparisonResult, csmFile, newState, pcState, newStateFound.get(), null, statesToKeep); // NOI18N
         }
-        if (comparisonResult == ComparisonResult.WORSE) {
+        if (comparisonResult == ComparisonResult.DISCARD) {
             if (TRACE_FILE && FileImpl.traceFile(file)) {
                 traceIncludeStates(prefix+"worse 2", csmFile, newState, pcState, false, null, statesToKeep); // NOI18N
             }
             return false;
-        } else if (comparisonResult == ComparisonResult.SAME) {
+        } else if (comparisonResult == ComparisonResult.KEEP_WITH_OTHERS) {
             if (newStateFound.get()) {
                 // we are already in the list and not better than all, can stop
                 if (TRACE_FILE && FileImpl.traceFile(file)) {
@@ -1498,11 +1498,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         // from that point we are NOT interested in what is in the entry:
         // it's locked; "good" states are are in statesToKeep, "bad" states don't matter
 
-        assert comparisonResult != ComparisonResult.WORSE;
+        assert comparisonResult != ComparisonResult.DISCARD;
 
         boolean clean;
 
-        if (comparisonResult == ComparisonResult.BETTER) {
+        if (comparisonResult == ComparisonResult.REPLACE_OTHERS) {
             clean = true;
             CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty 2"); // NOI18N
             if (TRACE_FILE && FileImpl.traceFile(file)) {
@@ -1516,13 +1516,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 traceIncludeStates(prefix+"pc state comparison " + comparisonResult, csmFile, newState, pcState, clean, statesToParse, statesToKeep); // NOI18N
             }
             switch (comparisonResult) {
-                case BETTER:
+                case REPLACE_OTHERS:
                     CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty 3"); // NOI18N
                     clean = true;
                     break;
-                case SAME:
+                case KEEP_WITH_OTHERS:
                     break;
-                case WORSE:
+                case DISCARD:
                     return false;
                 default:
                     assert false : prefix+"unexpected comparison result: " + comparisonResult; //NOI18N
@@ -1670,15 +1670,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 // Phase 2: check preproc conditional states of entry comparing to current conditional state
                 ComparisonResult comparisonResult = fillStatesToKeepBasedOnPCState(pcState, copy, statesToKeep);
                 switch (comparisonResult) {
-                    case BETTER:
+                    case REPLACE_OTHERS:
                         CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty 3"); // NOI18N
                         entry.setStates(statesToKeep, new PreprocessorStatePair(ppState, pcState));
                         break;
-                    case SAME:
+                    case KEEP_WITH_OTHERS:
                         assert !statesToKeep.isEmpty();
                         entry.setStates(statesToKeep, new PreprocessorStatePair(ppState, pcState));
                         break;
-                    case WORSE:
+                    case DISCARD:
                         assert !copy.isEmpty();
                         entry.setStates(copy, null);
                         break;
@@ -1732,9 +1732,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private static enum ComparisonResult {
 
-        BETTER,
-        SAME,
-        WORSE
+        REPLACE_OTHERS,
+        KEEP_WITH_OTHERS,
+        DISCARD
     }
 
     /**
@@ -1767,12 +1767,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             AtomicBoolean newStateFound) {
 
         if (newState == null || !newState.isValid()) {
-            return ComparisonResult.WORSE;
+            return ComparisonResult.DISCARD;
         }
 
         statesToKeep.clear();
         newStateFound.set(false);
-        ComparisonResult result = ComparisonResult.SAME;
+        ComparisonResult result = ComparisonResult.KEEP_WITH_OTHERS;
 
         for (PreprocessorStatePair pair : oldStates) {
             // newState might already be contained in oldStates
@@ -1788,7 +1788,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     if (pair.state.isCompileContext()) {
                         keep = true;
                         if (!newState.isCompileContext()) {
-                            return ComparisonResult.WORSE;
+                            return ComparisonResult.DISCARD;
                         }
                     } else {
                         keep = !newState.isCompileContext();
@@ -1799,14 +1799,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         pair = new PreprocessorStatePair(APTHandlersSupport.createCleanPreprocState(pair.state), pair.pcState);
                     }
                     statesToKeep.add(pair);
-                    result = ComparisonResult.SAME;
+                    result = ComparisonResult.KEEP_WITH_OTHERS;
                 } else {
                     CndUtils.assertTrueInConsole(statesToKeep.isEmpty() || !newState.isCompileContext(), "states to keep must be empty for new compile context entry"); // NOI18N
-                    result = statesToKeep.isEmpty() ? ComparisonResult.BETTER : ComparisonResult.SAME;
+                    result = statesToKeep.isEmpty() ? ComparisonResult.REPLACE_OTHERS : ComparisonResult.KEEP_WITH_OTHERS;
                 }
             }
         }
-        if (result == ComparisonResult.BETTER) {
+        if (result == ComparisonResult.REPLACE_OTHERS) {
             CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty "); // NOI18N
         }
         return result;
@@ -1850,7 +1850,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 statesToKeep.add(old);
             } else {
                 if (old.pcState.isBetterOrEqual(pcState)) {
-                    return ComparisonResult.WORSE;
+                    return ComparisonResult.DISCARD;
                 } else if (pcState.isBetterOrEqual(old.pcState)) {
                     // still superset or current can replace old
                 } else {
@@ -1865,9 +1865,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         if (isSuperset) {
             assert statesToKeep.isEmpty() : "should be empty, but it is: " + Arrays.toString(statesToKeep.toArray());
-            return ComparisonResult.BETTER;
+            return ComparisonResult.REPLACE_OTHERS;
         } else {
-            return ComparisonResult.SAME;
+            return ComparisonResult.KEEP_WITH_OTHERS;
         }
     }
 
