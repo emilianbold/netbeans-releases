@@ -100,7 +100,7 @@ public final class Manager {
     public static final String TESTNG_TF = "testng"; // NOI18N
     private String testingFramework = ""; // NOI18N
     private Notification bubbleNotification = null;
-    private long bubbleTime = System.currentTimeMillis();
+    private BubbleDisplayer bubbleDisplayer = null;
     
     public void setTestingFramework(String testingFramework) {
         this.testingFramework = testingFramework;
@@ -381,12 +381,14 @@ public final class Manager {
                         } else {
                             Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/testResults.png"));   //NOI18N
                             String projectname = ProjectUtils.getInformation(session.getProject()).getDisplayName();
-                            long timePassed = (System.currentTimeMillis() - bubbleTime) / 1000;
-                            if(bubbleNotification != null || timePassed > 15) {
+                            
+                            if(bubbleNotification != null) {
+                                if(bubbleDisplayer != null && bubbleDisplayer.isAlive()) {
+                                    bubbleDisplayer.interrupt();
+                                }
                                 bubbleNotification.clear();
                             }
-                            bubbleTime = System.currentTimeMillis();
-                            NotificationDisplayer.getDefault().notify(Bundle.LBL_NotificationDisplayer_title(projectname), icon,
+                            bubbleNotification = NotificationDisplayer.getDefault().notify(Bundle.LBL_NotificationDisplayer_title(projectname), icon,
                                     Bundle.LBL_NotificationDisplayer_detailsText(), new ActionListener() {
 
                                 @Override
@@ -394,10 +396,23 @@ public final class Manager {
                                     window.promote();
                                 }
                             });
+                            bubbleDisplayer = new BubbleDisplayer();
+                            bubbleDisplayer.start();
                         }
                     }
                 });
             }
+        }
+    }
+
+    private class BubbleDisplayer extends Thread {
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(15000);
+                bubbleNotification.clear();
+            } catch (InterruptedException e) {}
         }
     }
 
