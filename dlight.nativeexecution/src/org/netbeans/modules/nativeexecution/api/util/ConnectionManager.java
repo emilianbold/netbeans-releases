@@ -284,20 +284,20 @@ public final class ConnectionManager {
     private void initiateConnection(final ExecutionEnvironment env, final JSch jsch) throws IOException, CancellationException {
         JSchConnectionTask connectionTask = connectionTasks.get(env);
         
-        if (connectionTask == null) {
-            JSchConnectionTask newTask = new JSchConnectionTask(jsch, env);
-            JSchConnectionTask oldTask = connectionTasks.putIfAbsent(env, newTask);
-            if (oldTask != null) {
-                connectionTask = oldTask;
-            } else {
-                connectionTask = newTask;
-                connectionTask.start();
-            }
-        }
-        
         try {
+            if (connectionTask == null) {
+                JSchConnectionTask newTask = new JSchConnectionTask(jsch, env);
+                JSchConnectionTask oldTask = connectionTasks.putIfAbsent(env, newTask);
+                if (oldTask != null) {
+                    connectionTask = oldTask;
+                } else {
+                    connectionTask = newTask;
+                    connectionTask.start();
+                }
+            }
+
             JSchChannelsSupport cs = connectionTask.getResult();
-            
+
             if (cs != null) {
                 if (!cs.isConnected()) {
                     throw new IOException("JSchChannelsSupport lost connection with " + env.getDisplayName() + "during initialization "); // NOI18N
@@ -366,7 +366,7 @@ public final class ConnectionManager {
         return action;
     }
 
-    private void reconnect(ExecutionEnvironment env) throws IOException {
+    private void reconnect(ExecutionEnvironment env) throws IOException, InterruptedException {
         synchronized (channelsSupportLock) {
             if (channelsSupport.containsKey(env)) {
                 try {
@@ -496,7 +496,11 @@ public final class ConnectionManager {
 
         @Override
         public void reconnect(final ExecutionEnvironment env) throws IOException {
-            instance.reconnect(env);
+            try {
+                instance.reconnect(env);
+            } catch (InterruptedException ex) {
+                throw new IOException(ex);
+            }
         }
 
         @Override
