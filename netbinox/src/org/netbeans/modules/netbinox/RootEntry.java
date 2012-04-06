@@ -39,61 +39,61 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.openide.windows;
+package org.netbeans.modules.netbinox;
 
-import java.util.HashSet;
-import java.util.Set;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.lookup.Lookups;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.eclipse.osgi.baseadaptor.bundlefile.BundleEntry;
 
-/**
+/** An entry representing root of a JAR file.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
-final class OnShowingHandler implements LookupListener, Runnable {
-    private final Set<String> onShowing = new HashSet<String>();
-    private final Lookup lkpShowing;
-    private final WindowManager wm;
-    private Lookup.Result<Runnable> resShow;
-    
-
-    OnShowingHandler(Lookup lkp, WindowManager wm) {
-        lkpShowing = lkp;
-        this.wm = wm;
-    }
-    
-    void initialize() {
-        for (Lookup.Item<Runnable> item : onShowing().allItems()) {
-            synchronized (onShowing) {
-                if (onShowing.add(item.getId())) {
-                    Runnable r = item.getInstance();
-                    if (r != null) {
-                        wm.invokeWhenUIReady(r);
-                    }
-                }
-            }
-        }
-        
-    }
-
-    private synchronized Lookup.Result<Runnable> onShowing() {
-        if (resShow == null) {
-            Lookup lkp = lkpShowing != null ? lkpShowing : Lookups.forPath("Modules/UIReady"); // NOI18N
-            resShow = lkp.lookupResult(Runnable.class);
-            resShow.addLookupListener(this);
-        }
-        return resShow;
+final class RootEntry extends BundleEntry {
+    private static final byte[] EMPTY = new byte[0];
+    private final JarBundleFile bundleFile;
+    RootEntry(JarBundleFile bf) {
+        this.bundleFile = bf;
     }
 
     @Override
-    public void resultChanged(LookupEvent ev) {
-        initialize();
+    public InputStream getInputStream() throws IOException {
+        return new ByteArrayInputStream(EMPTY);
     }
 
     @Override
-    public void run() {
-        initialize();
+    public long getSize() {
+        return -1;
+    }
+
+    @Override
+    public String getName() {
+        return "/"; // NOI18N
+    }
+
+    @Override
+    public long getTime() {
+        return 0L;
+    }
+
+    @Override
+    public URL getLocalURL() {
+        try {
+            return new URL("jar:" + bundleFile.getBaseFile().toURI().toURL() + "!/");
+        } catch (MalformedURLException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+    @Override
+    public URL getFileURL() {
+        try {
+            return bundleFile.getBaseFile().toURI().toURL();
+        } catch (MalformedURLException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 }

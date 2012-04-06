@@ -55,6 +55,7 @@ import org.eclipse.osgi.baseadaptor.BaseData;
 import org.eclipse.osgi.baseadaptor.bundlefile.BundleEntry;
 import org.eclipse.osgi.baseadaptor.bundlefile.BundleFile;
 import org.eclipse.osgi.baseadaptor.bundlefile.DirBundleFile;
+import org.eclipse.osgi.baseadaptor.bundlefile.DirZipBundleEntry;
 import org.eclipse.osgi.baseadaptor.bundlefile.MRUBundleFileList;
 import org.eclipse.osgi.baseadaptor.bundlefile.ZipBundleFile;
 import org.netbeans.core.netigso.spi.BundleContent;
@@ -238,6 +239,10 @@ final class JarBundleFile extends BundleFile implements BundleContent {
                     }
                 }
             }
+        }
+        
+        if ("/".equals(name)) { // NOI18N
+            return new RootEntry(this); // NOI18N
         }
         
         BundleEntry u;
