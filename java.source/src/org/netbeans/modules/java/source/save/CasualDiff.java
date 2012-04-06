@@ -3243,6 +3243,7 @@ public class CasualDiff {
         if (commentsStart < elementBounds[1]) {
             int lastIndex;
             tokenSequence.move(commentsStart);
+            elementBounds = Arrays.copyOf(elementBounds, elementBounds.length);
             elementBounds[1] = tokenSequence.movePrevious() && tokenSequence.token().id() == JavaTokenId.WHITESPACE &&
                     (lastIndex = tokenSequence.token().text().toString().lastIndexOf('\n')) > -1 ?
                     tokenSequence.offset() + lastIndex + 1 : commentsStart;
