@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.lib.plain;
 
-package org.netbeans.modules.cnd.debugger.gdb2;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIParserTestCase;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Egor Ushakov
+ * @author marekfukala
  */
-public class GdbUnitTest extends TestSuite {
+public class AttributeElementTest extends NbTestCase {
+
+    public AttributeElementTest(String name) {
+        super(name);
+    }
+
+    public void testAttributeRange() {
+        CharSequence source = "<div id/>";
+        //                     0123456789
+        Attribute id = new AttributeElement(source, 5, (byte)2);
+        
+        assertEquals(5, id.from());
+        assertEquals(7, id.to());
+        
+        source = "<div id=val/>)";
+        //        01234567890123
+        id = new AttributeElement(source, 5, 8, (byte)2, (short)3);
+        
+        assertEquals(5, id.from());
+        assertEquals(11, id.to());
+        
+    }
     
-    public GdbUnitTest() {
-        super("Gdb unit tests");
-        addTestSuite(MIParserTestCase.class);
-        addTestSuite(PidParserTestCase.class);
-        addTestSuite(MemParserTestCase.class);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new GdbUnitTest();
-        return suite;
-    }
-
 }

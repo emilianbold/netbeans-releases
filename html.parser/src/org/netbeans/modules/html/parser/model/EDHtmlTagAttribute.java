@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,63 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.parser.model;
 
-package org.netbeans.modules.cnd.debugger.gdb2;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIParserTestCase;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.html.editor.lib.api.DefaultHelpItem;
+import org.netbeans.modules.html.editor.lib.api.HelpItem;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttributeType;
+import org.netbeans.modules.html.parser.HtmlDocumentation;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Egor Ushakov
+ * @author marekfukala
  */
-public class GdbUnitTest extends TestSuite {
-    
-    public GdbUnitTest() {
-        super("Gdb unit tests");
-        addTestSuite(MIParserTestCase.class);
-        addTestSuite(PidParserTestCase.class);
-        addTestSuite(MemParserTestCase.class);
+public class EDHtmlTagAttribute implements HtmlTagAttribute {
+
+    private Attribute attr;
+
+    public EDHtmlTagAttribute(Attribute name) {
+        this.attr = name;
     }
 
-    public static Test suite() {
-        TestSuite suite = new GdbUnitTest();
-        return suite;
+    @Override
+    public String getName() {
+        return attr.getName();
     }
 
+    @Override
+    public boolean isRequired() {
+        return false;
+    }
+
+    @Override
+    public HtmlTagAttributeType getType() {
+        return HtmlTagAttributeType.GENERIC;
+    }
+
+    @Override
+    public Collection<String> getPossibleValues() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public HelpItem getHelp() {
+        StringBuilder header = new StringBuilder();
+        header.append("<h2>");//NOI18N
+        header.append(NbBundle.getMessage(HtmlTagProvider.class, "MSG_AttributePrefix"));//NOI18N
+        header.append(" '");//NOI18N
+        header.append(attr.getName());
+        header.append("'</h2>");//NOI18N
+
+        return new DefaultHelpItem(
+                HtmlDocumentation.getDefault().resolveLink(attr.getHelpLink()),
+                HtmlDocumentation.getDefault(),
+                header.toString());
+    }
 }

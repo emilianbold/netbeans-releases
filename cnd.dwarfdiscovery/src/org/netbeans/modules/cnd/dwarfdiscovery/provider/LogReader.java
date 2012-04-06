@@ -747,7 +747,7 @@ public class LogReader {
                 // Exclude assembler files from C/C++ code model.
                 continue;
             }
-            String file = null;
+            String file;
             if (what.startsWith("/")){  //NOI18N
                 what = convertWindowsRelativePath(what);
                 file = what;
@@ -823,6 +823,7 @@ public class LogReader {
         private String fullName;
         private String compiler;
         private ItemProperties.LanguageKind language;
+        private ItemProperties.LanguageStandard standard = LanguageStandard.Unknown;
         private List<String> userIncludes;
         private List<String> systemIncludes = Collections.<String>emptyList();
         private Map<String, String> userMacros;
@@ -849,6 +850,17 @@ public class LogReader {
                         language = ItemProperties.LanguageKind.C;
                     }
                 }
+            }
+            for(String lang : languageArtifacts) {
+                if ("c89".equals(lang)) { //NOI18N
+                    standard = ItemProperties.LanguageStandard.C89;
+                } else if ("c99".equals(lang)) { //NOI18N
+                    standard = ItemProperties.LanguageStandard.C89;
+                } else if ("c++98".equals(lang)) { //NOI18N
+                    standard = ItemProperties.LanguageStandard.CPP;
+                } else if ("c++11".equals(lang)) { //NOI18N
+                    standard = ItemProperties.LanguageStandard.CPP11;
+                } 
             }
             this.compiler = li.compiler;
             this.compilePath =compilePath;
@@ -930,7 +942,7 @@ public class LogReader {
 
         @Override
         public LanguageStandard getLanguageStandard() {
-            return LanguageStandard.Unknown;
+            return standard;
         }
     }
 

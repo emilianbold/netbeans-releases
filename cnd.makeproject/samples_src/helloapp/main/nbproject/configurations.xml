@@ -63,7 +63,7 @@
                             WD="../hello3lib"
                             BC="${MAKE}  -f Makefile CONF=Debug"
                             CC="${MAKE}  -f Makefile CONF=Debug clean"
-                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/X-LIBPREFIX-Xhello3lib.X-LIBSUFFIX-X">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/X-LIBPREFIX-Xhello3lib.${CND_DLIB_EXT}">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -75,7 +75,7 @@
                             WD="../hello4lib"
                             BC="${MAKE}  -f Makefile CONF=Debug"
                             CC="${MAKE}  -f Makefile CONF=Debug clean"
-                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/X-LIBPREFIX-Xhello4lib.${CND_DLIB_EXT}">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>
@@ -137,7 +137,7 @@
                             WD="../hello3lib"
                             BC="${MAKE}  -f Makefile CONF=Release"
                             CC="${MAKE}  -f Makefile CONF=Release clean"
-                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/X-LIBPREFIX-Xhello3lib.X-LIBSUFFIX-X">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/X-LIBPREFIX-Xhello3lib.${CND_DLIB_EXT}">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -149,7 +149,7 @@
                             WD="../hello4lib"
                             BC="${MAKE}  -f Makefile CONF=Release"
                             CC="${MAKE}  -f Makefile CONF=Release clean"
-                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/X-LIBPREFIX-Xhello4lib.${CND_DLIB_EXT}">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>

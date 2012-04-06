@@ -188,7 +188,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                                         Hint hint = new Hint(DEFAULT_WARNING_RULE,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_ATTRIBUTE", nodeAttr.name()),
                                                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                                                    JsfUtils.createOffsetRange(snapshot, docText, nodeAttr.nameOffset(), nodeAttr.valueOffset() + nodeAttr.value().length()),
+                                                    JsfUtils.createOffsetRange(snapshot, docText, nodeAttr.from(), nodeAttr.to()),
                                                     Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                                             hints.add(hint);
                                     }

@@ -484,7 +484,7 @@ public class ImportProject implements PropertyChangeListener {
             // Add arguments to configure script?
             if (configureArguments != null) {
                 if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
-                    ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
+                    ShellExecSupport ses = node.getLookup().lookup(ShellExecSupport.class);
                     try {
                         // Keep user arguments as is in args[0]
                         ses.setArguments(new String[]{configureArguments});
@@ -503,7 +503,7 @@ public class ImportProject implements PropertyChangeListener {
                         Exceptions.printStackTrace(ex);
                     }
                 } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
-                    CMakeExecSupport ses = node.getCookie(CMakeExecSupport.class);
+                    CMakeExecSupport ses = node.getLookup().lookup(CMakeExecSupport.class);
                     try {
                         // extract configure variables in environment
                         List<String> vars = ImportUtils.parseEnvironment(configureArguments);
@@ -527,7 +527,7 @@ public class ImportProject implements PropertyChangeListener {
                         Exceptions.printStackTrace(ex);
                     }
                 } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
-                    QMakeExecSupport ses = node.getCookie(QMakeExecSupport.class);
+                    QMakeExecSupport ses = node.getLookup().lookup(QMakeExecSupport.class);
                     try {
                         ses.setArguments(new String[]{configureArguments});
                         if (configureRunFolder != null) {
@@ -733,7 +733,7 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     dObj = DataObject.find(makeFileObject);
                     Node node = dObj.getNodeDelegate();
-                    MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+                    MakeExecSupport mes = node.getLookup().lookup(MakeExecSupport.class);
                     if (mes != null) {
                         mes.setBuildDirectory(makeFileObject.getParent().getPath());
                     }
@@ -908,7 +908,7 @@ public class ImportProject implements PropertyChangeListener {
         if (buildCommand != null){
             arguments = getArguments(buildCommand);
         }
-        ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+        ExecutionSupport ses = node.getLookup().lookup(ExecutionSupport.class);
         List<String> vars = ImportUtils.parseEnvironment(configureArguments);
         if (ses != null) {
             try {
@@ -1165,6 +1165,7 @@ public class ImportProject implements PropertyChangeListener {
                         if (TRACE) {
                             logger.log(Level.FINE, "#fix macros for file {0}", fileConf.getFilePath()); // NOI18N
                         }
+                        ProjectBridge.setSourceStandard(item, fileConf.getLanguageStandard(), false);
                         ProjectBridge.fixFileMacros(fileConf.getUserMacros(), item);
                     }
                 }

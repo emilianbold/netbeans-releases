@@ -276,11 +276,13 @@ class OccurenceBuilder {
 
     private void prepareNamespaceName(final Kind[] kinds, final NamespaceName namespaceName, final Scope scope) {
         QualifiedName qualifiedName = QualifiedName.create(CodeUtils.extractQualifiedName(namespaceName));
-        final boolean isAliased = VariousUtils.isAliased(qualifiedName, namespaceName.getStartOffset(), scope);
-        if (isAliased) {
-            prepareAliasedNamespaceName(kinds, namespaceName, scope);
-        } else {
-            prepareOccurences(kinds, namespaceName, scope);
+        if (!VariousUtils.isSpecialClassName(qualifiedName.toString())) {
+            final boolean isAliased = VariousUtils.isAliased(qualifiedName, namespaceName.getStartOffset(), scope);
+            if (isAliased) {
+                prepareAliasedNamespaceName(kinds, namespaceName, scope);
+            } else {
+                prepareOccurences(kinds, namespaceName, scope);
+            }
         }
     }
 

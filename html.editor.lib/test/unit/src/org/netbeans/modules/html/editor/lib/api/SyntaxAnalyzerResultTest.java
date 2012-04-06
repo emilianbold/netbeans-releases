@@ -80,13 +80,13 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         source = new HtmlSource(code);
         result = SyntaxAnalyzer.create(source).analyze();
         assertNotNull(result);
-        assertNull(result.getHtmlTagDefaultNamespace());
+        assertEquals("namespace", result.getHtmlTagDefaultNamespace());
 
         code = "<div><html xmlns=\"namespace\"><head><title>xxx</title></head><body>yyy</body></html>";
         source = new HtmlSource(code);
         result = SyntaxAnalyzer.create(source).analyze();
         assertNotNull(result);
-        assertNull(result.getHtmlTagDefaultNamespace());
+        assertEquals("namespace", result.getHtmlTagDefaultNamespace());
     }
 
     public void testBasic() throws ParseException {
@@ -237,7 +237,7 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         Node froot = presult.root();
         assertNotNull(froot);
 
-        ElementUtils.dumpTree(froot);
+//        ElementUtils.dumpTree(froot);
         
         assertEquals(2, froot.children().size());
         assertNotNull(ElementUtils.query(froot, "ui:composition"));
