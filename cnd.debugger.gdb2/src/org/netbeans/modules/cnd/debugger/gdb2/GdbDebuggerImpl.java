@@ -379,7 +379,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	// SHOULD process OPTION_EXEC32?
         String runDir = gdi.getProfile().getRunDirectory();
-        runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
+
+        final String origRunDir = gdi.getProfile().getRunDir();
+        boolean preventRunPathConvertion = origRunDir.startsWith("///"); // NOI18N
+
+        if (!preventRunPathConvertion) {
+            runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
+        }
 
 	factory = new Gdb.Factory(executor, additionalArgv,
 	    listener, false, isShortName(),
