@@ -820,7 +820,7 @@ public class ElementsFactory {
 
         private CharSequence source;
         private int nameOffset;
-        private byte valueOffset2nameOffsetDiff;
+        private short valueOffset2nameOffsetDiff;
         private byte nameLen;
         private short valueLen;
 
@@ -838,7 +838,7 @@ public class ElementsFactory {
             this.source = source;
 
             this.nameOffset = nameOffset;
-            this.valueOffset2nameOffsetDiff = (byte) (valueOffset - nameOffset);
+            this.valueOffset2nameOffsetDiff = (short) (valueOffset - nameOffset);
 
             this.nameLen = nameLen;
             this.valueLen = valueLen;
