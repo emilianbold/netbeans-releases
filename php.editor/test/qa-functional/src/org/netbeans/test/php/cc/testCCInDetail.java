@@ -70,6 +70,7 @@ public class testCCInDetail extends cc {
                 "CreatePHPFile",
                 "testPhp54ArrayDereferencing",
                 "DetailedCodeCompletionTesting",
+                "testPhp54Callable",
                 "testPhp54AnonymousObject").enableModules(".*").clusters(".*") //.gui( true )
                 );
     }
@@ -186,6 +187,15 @@ public class testCCInDetail extends cc {
         CCompletionCase test = new CCompletionCase("*/", "class MyClass {\n public $v;\n public $f;\n}\n\n (new MyClass())->", "(new MyClass())->", CCompletionCase.COMPLETION_LIST, 0, "v|f", -1, 12);
         boolean result = CheckCodeCompletion(test, "NewEmptyPHP2.php");
         assertTrue("Failed Array AnonymousObject test", result);
+        endTest();
+    }
+    
+    public void testPhp54Callable() {
+        CreatePHPFile(TEST_PHP_NAME, "PHP File", "Callable");
+        startTest();
+        CCompletionCase test = new CCompletionCase("*/", "function name(ca","(ca", CCompletionCase.COMPLETION_LIST, 0, "callable", -1,1);
+        boolean result = CheckCodeCompletion(test, "Callable.php");
+        assertTrue("Failed Callable test", result);
         endTest();
     }
 
