@@ -68,7 +68,8 @@ public class QuickSearchProvider implements SearchProvider {
             for (Map.Entry<String, Set<String>> kw : getKeywords(entry).entrySet()) {
                 for (String keyword : kw.getValue()) {
                     if (keyword.toLowerCase().indexOf(request.getText().toLowerCase()) > -1) {
-                        if (!response.addResult(new OpenOption(kw.getKey()), keyword)) {
+                        String path = entry.getId().substring(entry.getId().indexOf("/") + 1);  // NOI18N
+                        if (!response.addResult(new OpenOption(path), keyword)) {
                             return;
                         }
                     }
