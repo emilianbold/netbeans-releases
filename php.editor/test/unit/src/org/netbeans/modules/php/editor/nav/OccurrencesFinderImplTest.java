@@ -932,6 +932,46 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "static::C^ON;", true);
     }
 
+    public void testStaticAccessWithNsAlias_01() throws Exception {
+        checkOccurrences(getTestPath(), "const O^MG = 1;", true);
+    }
+
+    public void testStaticAccessWithNsAlias_02() throws Exception {
+        checkOccurrences(getTestPath(), "parent::O^MG;", true);
+    }
+
+    public void testStaticAccessWithNsAlias_03() throws Exception {
+        checkOccurrences(getTestPath(), "self::O^MG;", true);
+    }
+
+    public void testStaticAccessWithNsAlias_04() throws Exception {
+        checkOccurrences(getTestPath(), "static::O^MG;", true);
+    }
+
+    public void testStaticAccessWithNsAlias_05() throws Exception {
+        checkOccurrences(getTestPath(), "public static $static^Field = 2;", true);
+    }
+
+    public void testStaticAccessWithNsAlias_06() throws Exception {
+        checkOccurrences(getTestPath(), "parent::$static^Field;", true);
+    }
+
+    public void testStaticAccessWithNsAlias_07() throws Exception {
+        checkOccurrences(getTestPath(), "self::$static^Field;", true);
+    }
+
+    public void testStaticAccessWithNsAlias_08() throws Exception {
+        checkOccurrences(getTestPath(), "static::$static^Field;", true);
+    }
+
+    public void testStaticAccessWithNsAlias_09() throws Exception {
+        checkOccurrences(getTestPath(), "static function some^Func() {", true);
+    }
+
+    public void testStaticAccessWithNsAlias_10() throws Exception {
+        checkOccurrences(getTestPath(), "parent::some^Func();", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
