@@ -148,7 +148,7 @@
     <property name="jdk.bundle.files.suffix" value="nb-7_2"/>
     <property name="output.jdk7.dir" value="jdk/"/>
     <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home"/>
-    <property name="jdk_bits_location" value="${gf_builds_host}/java/re/jdk/7u4/promoted/all/b18/bundles/macosx-x64/jdk-7u4-ea-bin-b18-macosx-x64-29_mar_2012.dmg"/>
+    <property name="jdk_bits_location" value="${gf_builds_host}/java/re/jdk/7u4/promoted/all/b19/bundles/macosx-x64/jdk-7u4-ea-bin-b19-macosx-x64-05_apr_2012.dmg"/>
     <property name="jdk.package.name" value="JDK\ 7\ Update\ 04"/>
 
 </project>
