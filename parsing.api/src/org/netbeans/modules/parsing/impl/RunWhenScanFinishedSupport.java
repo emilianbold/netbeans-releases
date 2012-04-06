@@ -44,8 +44,10 @@ package org.netbeans.modules.parsing.impl;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
@@ -59,8 +61,9 @@ import org.openide.util.Mutex;
  */
 public class RunWhenScanFinishedSupport {
 
+    private static final Logger LOG = Logger.getLogger(RunWhenScanFinishedSupport.class.getName());
     //Scan lock
-    private static final Lock lock = new ReentrantLock();
+    private static final ReadWriteLock lock = new ReentrantReadWriteLock();
     //Deferred task until scan is done
     private final static List<DeferredTask> todo = Collections.synchronizedList(new LinkedList<DeferredTask>());
 
@@ -85,11 +88,19 @@ public class RunWhenScanFinishedSupport {
     }
 
     public static void performScan (@NonNull final Runnable runnable) {
-        lock.lock();
+        lock.writeLock().lock();
         try {
+            LOG.log(
+                    Level.FINE,
+                    "performScan:entry",    //NOI18N
+                    runnable);
             runnable.run();
+            LOG.log(
+                    Level.FINE,
+                    "performScan:exit",     //NOI18N
+                    runnable);
         } finally {
-            lock.unlock();
+            lock.writeLock().unlock();
         }
     }
 
@@ -110,9 +121,13 @@ public class RunWhenScanFinishedSupport {
         //1) Try to aquire javac lock, if successfull no task is running
         //   perform the given taks synchronously if it wasn't already performed
         //   by background scan.
-        final boolean locked = lock.tryLock();
+        final boolean locked = lock.readLock().tryLock();
         if (locked) {
             try {
+                LOG.log(
+                    Level.FINE,
+                    "runWhenScanFinished:entry",    //NOI18N
+                    task);
                 if (todo.remove(r)) {
                     try {
                         TaskProcessor.runUserTask(task, sources);
@@ -120,8 +135,12 @@ public class RunWhenScanFinishedSupport {
                         sync.taskFinished();
                     }
                 }
+                LOG.log(
+                    Level.FINE,
+                    "runWhenScanFinished:exit",     //NOI18N
+                    task);
             } finally {
-                lock.unlock();
+                lock.readLock().unlock();
             }
         }
         return sync;
