@@ -1293,8 +1293,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     protected final void invalidatePreprocState(CharSequence absPath) {
         FileContainer fileContainer = getFileContainer();
         Object stateLock = fileContainer.getLock(absPath);
+        Collection<ProjectBase> dependentProjects = getDependentProjects();
         synchronized (stateLock) {
             fileContainer.invalidatePreprocState(absPath);
+            for (ProjectBase projectBase : dependentProjects) {
+                projectBase.invalidateIncludedPreprocState(stateLock, this, absPath);
+            }
         }
         fileContainer.put();
     }
@@ -1447,11 +1451,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private boolean updateFileEntryForIncludedFile(FileEntry entryToLockOn, ProjectBase includedProject, CharSequence includedFileKey, FileImpl includedFile, PreprocessorStatePair newStatePair) {
-        boolean startProjectUpdateResult = false;
-        if (includedProject != this) {
-            FileContainer.FileEntry includedFileEntryFromStartProject = includedFileContainer.getEntryForIncludedFile(entryToLockOn, this, includedProject, includedFile);
-            assert includedFileEntryFromStartProject != null;
+        boolean startProjectUpdateResult;
+        FileContainer.FileEntry includedFileEntryFromStartProject = includedFileContainer.getEntryForIncludedFile(entryToLockOn, includedProject, includedFile);
+        if (includedFileEntryFromStartProject != null) {
             startProjectUpdateResult = updateFileEntryBasedOnIncludedStatePair(includedFileEntryFromStartProject, newStatePair, includedFileKey, includedFile, null, null);
+        } else {
+            startProjectUpdateResult = false;
         }
         return startProjectUpdateResult;
     }
@@ -1459,11 +1464,40 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private final IncludedFileContainer includedFileContainer;
 
     private void putIncludedFileStorage(ProjectBase includedProject) {
-        includedFileContainer.putStorage(this, includedProject);
+        includedFileContainer.putStorage(includedProject);
+    }
+
+    void prepareIncludeStorage(ProjectBase includedProject) {
+        includedFileContainer.prepareIncludeStorage(includedProject);
     }
 
     Map<CsmUID<CsmProject> , Collection<PreprocessorStatePair>> getIncludedPreprocStatePairs(FileImpl fileToSearch) {
-        return includedFileContainer.getPairs(fileToSearch);
+        return includedFileContainer.getPairsToDump(fileToSearch);
+    }
+
+    private void invalidateIncludedPreprocState(Object lock, ProjectBase includedFileOwner, CharSequence absPath) {
+        includedFileContainer.invalidate(lock, includedFileOwner, absPath);
+    }
+
+    public Collection<State> getIncludedPreprocStates(FileImpl impl) {
+        Collection<ProjectBase> dependentProjects = getDependentProjects();
+        Object stateLock = getFileContainer().getLock(impl.getAbsolutePath());
+        Collection<State> states = new ArrayList<State>(dependentProjects.size() + 1);
+        synchronized (stateLock) {
+            Collection<State> ownStates = this.getIncludedPreprocStatesImpl(stateLock, this, impl);
+            states.addAll(ownStates);
+            for (ProjectBase dep : dependentProjects) {
+                Collection<State> depPrjStates = dep.getIncludedPreprocStatesImpl(stateLock, this, impl);
+                states.addAll(depPrjStates);
+            }
+        }
+        return states;
+    }
+
+    private Collection<State> getIncludedPreprocStatesImpl(Object lock, ProjectBase includedFileOwner, FileImpl includedFile) {
+        Set<State> out = new HashSet<State>();
+        out.addAll(this.includedFileContainer.getIncludedPreprocStates(lock, includedFileOwner, includedFile));        
+        return out;
     }
 
     private boolean updateFileEntryBasedOnIncludedStatePair(
@@ -2238,7 +2272,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return res;
     }
 
-    public final List<ProjectBase> getDependentProjects() {
+    public Collection<ProjectBase> getDependentProjects() {
         List<ProjectBase> res = new ArrayList<ProjectBase>();
         for (CsmProject prj : model.projects()) {
             if (prj instanceof ProjectBase) {
@@ -2744,8 +2778,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         NativeProject nativeProject = ModelSupport.getNativeProject(getPlatformProject());
         if (nativeProject == null) {
             // try to find dependent projects and ask them
-            List<ProjectBase> deps = this.getDependentProjects();
-            for (ProjectBase dependentPrj : deps) {
+            for (ProjectBase dependentPrj : getDependentProjects()) {
                 if (!visited.contains(dependentPrj)) {
                     nativeProject = dependentPrj.findNativeProjectHolder(visited);
                     if (nativeProject != null) {
