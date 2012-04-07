@@ -979,7 +979,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 setURL(
                     u, "jar", u.getHost(), u.getPort(), 
                     u.getAuthority(), u.getUserInfo(), 
-                    u.getFile().replaceFirst("!/.+$", "!" + spec), // NOI18N
+                    u.getFile().replaceFirst("!/.*$", "!" + spec), // NOI18N
                     u.getQuery(), u.getRef()
                 ); 
             } else {
