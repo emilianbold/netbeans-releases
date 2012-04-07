@@ -6,7 +6,7 @@ cd ${DIRNAME}
 SCRIPTS_DIR=`pwd`
 source init.sh
 
-if [ -z $BUILD_NBJDK7]; then
+if [ -z $BUILD_NBJDK7 ]; then
     BUILD_NBJDK7=0
 fi
 

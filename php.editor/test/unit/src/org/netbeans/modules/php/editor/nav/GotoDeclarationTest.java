@@ -812,6 +812,34 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "static::C^ON;", "const ^CON = 1;");
     }
 
+    public void testStaticAccessWithNsAlias_01() throws Exception {
+        checkDeclaration(getTestPath(), "parent::O^MG;", "const ^OMG = 1;");
+    }
+
+    public void testStaticAccessWithNsAlias_02() throws Exception {
+        checkDeclaration(getTestPath(), "self::O^MG;", "const ^OMG = 1;");
+    }
+
+    public void testStaticAccessWithNsAlias_03() throws Exception {
+        checkDeclaration(getTestPath(), "static::O^MG;", "const ^OMG = 1;");
+    }
+
+    public void testStaticAccessWithNsAlias_04() throws Exception {
+        checkDeclaration(getTestPath(), "parent::$static^Field;", "public static $^staticField = 2;");
+    }
+
+    public void testStaticAccessWithNsAlias_05() throws Exception {
+        checkDeclaration(getTestPath(), "self::$static^Field;", "public static $^staticField = 2;");
+    }
+
+    public void testStaticAccessWithNsAlias_06() throws Exception {
+        checkDeclaration(getTestPath(), "static::$static^Field;", "public static $^staticField = 2;");
+    }
+
+    public void testStaticAccessWithNsAlias_07() throws Exception {
+        checkDeclaration(getTestPath(), "parent::some^Func();", "static function ^someFunc() {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

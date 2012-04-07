@@ -322,6 +322,13 @@ public final class EmbedderFactory {
 //            }
     }
 
+    /**
+     * using this method one creates an ArtifactRepository instance with injected mirrors and proxies
+     * @param embedder
+     * @param url
+     * @param id
+     * @return 
+     */
     public static ArtifactRepository createRemoteRepository(MavenEmbedder embedder, String url, String id) {
         embedder.setUpLegacySupport();
         ArtifactRepositoryFactory fact = embedder.lookupComponent(ArtifactRepositoryFactory.class);

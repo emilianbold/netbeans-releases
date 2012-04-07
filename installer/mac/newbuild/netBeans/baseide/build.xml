@@ -111,10 +111,8 @@ SJSAS_ID="${sjsas.id}"
 
 
         <copy todir="${scriptsdir}" verbose="yes">
-            <fileset dir="${basedir}/pkg/scripts">
-                <exclude name="set_jdk_home.sh"/>
-            </fileset>
-        </copy>       
+            <fileset dir="${basedir}/pkg/scripts"/>
+        </copy>             
         <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${builddir}/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${netbeans-Title}"/>

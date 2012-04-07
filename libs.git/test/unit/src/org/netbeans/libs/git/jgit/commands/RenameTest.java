@@ -97,10 +97,9 @@ public class RenameTest extends AbstractGitTestCase {
         File folder = new File(workDir, "folder");
         folder.mkdirs();
         File target = new File(workDir, "target");
-        target.mkdirs();
 
         Monitor m = new Monitor();
-        folder.renameTo(target);
+        assertTrue(folder.renameTo(target));
         GitClient client = getClient(workDir);
         try {
             client.rename(folder, target, false, m);
@@ -315,7 +314,9 @@ public class RenameTest extends AbstractGitTestCase {
         File target2 = target;
         assertTrue(target2.exists());
         m = new Monitor();
-        file.renameTo(target2);
+        if (!file.renameTo(target2)) {
+            assertTrue(target2.delete() && file.renameTo(target2));
+        }
         client.addNotificationListener(m);
         client.rename(file, target2, true, m);
         assertTrue(m.notifiedWarnings.contains("Index already contains an entry for folder/file"));
