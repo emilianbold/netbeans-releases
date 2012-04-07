@@ -131,6 +131,8 @@ public class PushDownTransformer extends RefactoringVisitor {
                                         method.getThrows(),
                                         (BlockTree) null,
                                         (ExpressionTree)method.getDefaultValue());
+                                genUtils.copyComments(method, nju, true);
+                                genUtils.copyComments(method, nju, false);
                                 rewrite(method, nju);
                             }
                         } else {
