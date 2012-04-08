@@ -61,12 +61,12 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
 
     private static final Logger LOG = Logger.getLogger(ProxyURLStreamHandlerFactory.class.getName());
     private static boolean proxyFactoryInitialized;
+    private static URLStreamHandler originalJarHandler;
 
     public static synchronized void register() {
         LOG.log(Level.FINE, "register: {0}", proxyFactoryInitialized); // NOI18N
         LOG.log(Level.FINER, null, new Exception("Initialized by")); // NOI18N
         if (!proxyFactoryInitialized) {
-            URLStreamHandler originalJarHandler = null;
             if (!ProxyURLStreamHandlerFactory.class.getClassLoader().getClass().getName().equals("com.sun.jnlp.JNLPClassLoader")) { // #196970
             try {
                 List<Field> candidates = new ArrayList<Field>();
@@ -89,7 +89,7 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
             }
             }
             try {
-                URL.setURLStreamHandlerFactory(new ProxyURLStreamHandlerFactory(null, originalJarHandler));
+                URL.setURLStreamHandlerFactory(new ProxyURLStreamHandlerFactory(null));
             } catch (Error e) {
                 LOG.log(Level.CONFIG, "Problems registering URLStreamHandlerFactory, trying reflection", e); // NOI18N
                 try {
@@ -109,7 +109,7 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
                     if (prev != null && prev.getClass().getName().equals(ProxyURLStreamHandlerFactory.class.getName())) {
                         prev = null;
                     }
-                    URL.setURLStreamHandlerFactory(new ProxyURLStreamHandlerFactory(prev, originalJarHandler));
+                    URL.setURLStreamHandlerFactory(new ProxyURLStreamHandlerFactory(prev));
                 } catch (Throwable t) {
                     LOG.log(Level.SEVERE, "No way to register URLStreamHandlerFactory; NetBeans is unlikely to work", t); // NOI18N
                 }
@@ -118,14 +118,16 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
         }
     }
 
+    static URLStreamHandler originalJarHandler() {
+        return originalJarHandler;
+    }
+
     private final URLStreamHandlerFactory delegate;
-    private final URLStreamHandler originalJarHandler;
     private Lookup.Result<URLStreamHandlerFactory> r;
     private URLStreamHandlerFactory[] handlers;
 
-    private ProxyURLStreamHandlerFactory(URLStreamHandlerFactory delegate, URLStreamHandler originalJarHandler) {
+    private ProxyURLStreamHandlerFactory(URLStreamHandlerFactory delegate) {
         this.delegate = delegate;
-        this.originalJarHandler = originalJarHandler;
         LOG.log(Level.FINE, "new ProxyURLStreamHandlerFactory. delegate={0} originalJarHandler={1}", new Object[]{delegate, originalJarHandler});
     }
 
