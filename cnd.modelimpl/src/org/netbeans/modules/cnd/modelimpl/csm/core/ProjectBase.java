@@ -1452,7 +1452,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private boolean updateFileEntryForIncludedFile(FileEntry entryToLockOn, ProjectBase includedProject, CharSequence includedFileKey, FileImpl includedFile, PreprocessorStatePair newStatePair) {
         boolean startProjectUpdateResult;
-        FileContainer.FileEntry includedFileEntryFromStartProject = includedFileContainer.getEntryForIncludedFile(entryToLockOn, includedProject, includedFile);
+        FileContainer.FileEntry includedFileEntryFromStartProject = includedFileContainer.getOrCreateEntryForIncludedFile(entryToLockOn, includedProject, includedFile);
         if (includedFileEntryFromStartProject != null) {
             startProjectUpdateResult = updateFileEntryBasedOnIncludedStatePair(includedFileEntryFromStartProject, newStatePair, includedFileKey, includedFile, null, null);
         } else {
@@ -1481,22 +1481,32 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public Collection<State> getIncludedPreprocStates(FileImpl impl) {
         Collection<ProjectBase> dependentProjects = getDependentProjects();
-        Object stateLock = getFileContainer().getLock(impl.getAbsolutePath());
+        CharSequence fileKey = FileContainer.getFileKey(impl.getAbsolutePath(), false);
+        Object stateLock = getFileContainer().getLock(fileKey);
         Collection<State> states = new ArrayList<State>(dependentProjects.size() + 1);
         synchronized (stateLock) {
-            Collection<State> ownStates = this.getIncludedPreprocStatesImpl(stateLock, this, impl);
-            states.addAll(ownStates);
-            for (ProjectBase dep : dependentProjects) {
-                Collection<State> depPrjStates = dep.getIncludedPreprocStatesImpl(stateLock, this, impl);
-                states.addAll(depPrjStates);
+            Collection<FileEntry> entries = this.getIncludedFileEntries(stateLock, fileKey);
+            for (FileEntry fileEntry : entries) {
+                states.addAll(fileEntry.getPrerocStates());
             }
         }
         return states;
     }
 
-    private Collection<State> getIncludedPreprocStatesImpl(Object lock, ProjectBase includedFileOwner, FileImpl includedFile) {
-        Set<State> out = new HashSet<State>();
-        out.addAll(this.includedFileContainer.getIncludedPreprocStates(lock, includedFileOwner, includedFile));        
+    private Collection<FileEntry> getIncludedFileEntries(Object stateLock, CharSequence fileKey) {
+        assert Thread.holdsLock(stateLock) : " must hold state lock for " + fileKey;
+        Collection<ProjectBase> dependentProjects = getDependentProjects();
+        Collection<FileEntry> out = new ArrayList<FileEntry>(dependentProjects.size() + 1);
+        FileEntry ownEntry = this.includedFileContainer.getIncludedFileEntry(stateLock, this, fileKey);
+        if (ownEntry != null) {
+            out.add(ownEntry);
+        }
+        for (ProjectBase dep : dependentProjects) {
+            FileEntry depPrjEntry = dep.includedFileContainer.getIncludedFileEntry(stateLock, this, fileKey);
+            if (depPrjEntry != null) {
+                out.add(depPrjEntry);
+            }
+        }
         return out;
     }
 
