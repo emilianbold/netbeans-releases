@@ -142,6 +142,12 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
             if (myProjects == null) {
                 return;
             }
+            for(java.util.Map.Entry<CsmProject,SortedName> entry : myProjects.entrySet()) {
+                if (entry.getKey() instanceof DummyProject) {
+                    myProjects.clear();
+                    break;
+                }
+            }
             if (myProjects.containsKey(project)) {
                 return;
             }
@@ -203,7 +209,9 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
                     }
                     myProjects = createProjectsMap();
                     for (CsmProject p : newProjects) {
-                        myProjects.put(p, getSortedName(p, false));
+                        if (p.isValid()) {
+                            myProjects.put(p, getSortedName(p, false));
+                        }
                     }
                 }
                 resetKeys();
@@ -372,7 +380,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
 
         @Override
         public boolean isArtificial() {
-            throw new UnsupportedOperationException();
+            return false;
         }
 
         @Override
