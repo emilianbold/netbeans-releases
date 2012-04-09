@@ -452,7 +452,13 @@ public final class MavenModelUtils {
                ModelUtils.checkModelDependency(model, "com.sun.xml.ws", "webservices-rt", true); //NOI18N
         if (dep != null) {
             dep.setVersion("1.4"); //NOI18N
-            dep.setScope(Artifact.SCOPE_PROVIDED);
+            WSStack<JaxWs> wsStack = new WSStackUtils(project).getWsStack(JaxWs.class);
+            if (wsStack != null && wsStack.isFeatureSupported(JaxWs.Feature.WSIT)) {
+                dep.setScope(Artifact.SCOPE_PROVIDED);
+            }
+            else {
+                dep.setScope(Artifact.SCOPE_COMPILE);
+            }
         }
     }
 

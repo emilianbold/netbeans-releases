@@ -169,16 +169,17 @@ public final class CsmProjectContentResolver {
                     // for typedef check whether it defines unnamed enum
                     assert CsmKindUtilities.isTypedef(ob);
                     CsmTypedef td = (CsmTypedef) ob;
-                    if (td.isTypeUnnamed() && td.getType() != null) {
-                        CsmType type = td.getType();
-                        if (CsmKindUtilities.isEnum(type.getClassifier())) {
-                            elemEnum = (CsmEnum) type.getClassifier();
+                    CsmType type = td.getType();
+                    if (td.isTypeUnnamed() && type != null) {
+                        CsmClassifier classifier = type.getClassifier();
+                        if (CsmKindUtilities.isEnum(classifier)) {
+                            elemEnum = (CsmEnum) classifier;
                         }
                     }
                 }
                 if (elemEnum != null) {
-                    for (Iterator enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
-                        CsmEnumerator elem = (CsmEnumerator) enmtrIter.next();
+                    for (Iterator<CsmEnumerator> enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
+                        CsmEnumerator elem = enmtrIter.next();
                         if (matchName(elem.getName(), strPrefix, match)) {
                             res.add(elem);
                         }
