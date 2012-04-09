@@ -597,9 +597,9 @@ public final class FileImpl implements CsmFile,
                 }
                 RepositoryUtils.put(this);
             } else {
-                if (tryPartialReparse) {
+                // if was request for partial reparse and file state was not modified during parse
+                if (tryPartialReparse && newSignature != null) {
                     assert oldSignature != null;
-                    assert newSignature != null;
                     DeepReparsingUtils.finishPartialReparse(this, oldSignature, newSignature);
                 }
             }
