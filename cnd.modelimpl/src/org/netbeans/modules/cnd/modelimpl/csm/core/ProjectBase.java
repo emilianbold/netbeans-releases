@@ -1219,30 +1219,129 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /* package */ final APTPreprocHandler createPreprocHandlerFromState(CharSequence absPath, APTPreprocHandler.State state) {
-        APTPreprocHandler preprocHandler = createEmptyPreprocHandler(absPath);
-        if (state != null) {
-            if (state.isCleaned()) {
-                return restorePreprocHandler(absPath, preprocHandler, state);
-            } else {
-                if (TRACE_PP_STATE_OUT) {
-                    System.err.println("copying state for " + absPath);
+        Collection<APTPreprocHandler> out = createPreprocHandlerFromStates(Collections.singleton(state), absPath);
+        return out.iterator().next();
+    }
+
+    public final APTPreprocHandler.State getFirstValidPreprocState(CharSequence fileKey) {
+        FileContainer.FileEntry entry = getFileContainer().getEntry(fileKey);
+        if (entry == null) {
+            return null;
+        }
+        Object lock = entry.getLock();
+        synchronized (lock) {
+            for (PreprocessorStatePair pair : entry.getStatePairs()) {
+                StartEntry startEntry = APTHandlersSupport.extractStartEntry(pair.state);
+                if (!ModelImpl.isClosedProject(startEntry.getStartFileProject())) {
+                    return pair.state;
                 }
-                preprocHandler.setState(state);
-                return preprocHandler;
+            }
+            Collection<FileEntry> includedFileEntries = getIncludedFileEntries(lock, fileKey);
+            for (FileEntry fileEntry : includedFileEntries) {
+                // return the first with non empty states collection
+                for (State state : fileEntry.getPrerocStates()) {
+                    return state;
+                }
             }
         }
-        if (TRACE_PP_STATE_OUT) {
-            System.err.printf("null state for %s, returning default one", absPath);
+        return null;
+    }
+
+    /*package-local*/ final Collection<PreprocessorStatePair> getPreprocessorStatePairs(FileImpl fileImpl) {
+        CharSequence fileKey = FileContainer.getFileKey(fileImpl.getAbsolutePath(), false);
+        FileContainer.FileEntry entry = getFileContainer().getEntry(fileKey);
+        if (entry == null) {
+            return Collections.emptyList();
         }
-        return preprocHandler;
+        Object lock = entry.getLock();
+        Collection<PreprocessorStatePair> out;
+        synchronized (lock) {
+            Collection<PreprocessorStatePair> containerStatePairs = entry.getStatePairs();
+            if (hasClosedStartEntry(lock, containerStatePairs)) {
+                // need to merge from dependent projects' storages
+                Collection<FileEntry> includedFileEntries = getIncludedFileEntries(lock, fileKey);
+                FileEntry mergeEntry = FileContainer.createFileEntryForMerge(fileKey);
+                for (FileEntry fileEntry : includedFileEntries) {
+                    for (PreprocessorStatePair pair : fileEntry.getStatePairs()) {
+                        if (pair.pcState != FilePreprocessorConditionState.PARSING) {
+                            updateFileEntryBasedOnIncludedStatePair(mergeEntry, pair, fileKey, fileImpl, null, null);
+                        }
+                    }
+                }
+                out = mergeEntry.getStatePairs();
+            } else {
+                out = containerStatePairs;
+            }
+        }
+        return out;
     }
 
-    /*package-local*/ final Collection<PreprocessorStatePair> getPreprocessorStatePairs(CharSequence absPath) {
-        return getFileContainer().getStatePairs(absPath);
+    public final Collection<APTPreprocHandler> getPreprocHandlers(FileImpl fileImpl) {
+        CharSequence fileKey = FileContainer.getFileKey(fileImpl.getAbsolutePath(), false);
+        FileContainer.FileEntry entry = getFileContainer().getEntry(fileKey);
+        if (entry == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<APTPreprocHandler.State> states;
+        Object lock = entry.getLock();
+        synchronized (lock) {
+            Collection<PreprocessorStatePair> containerStatePairs = entry.getStatePairs();
+            if (hasClosedStartEntry(lock, containerStatePairs)) {
+                // need to merge from dependent projects' storages
+                Collection<FileEntry> includedFileEntries = getIncludedFileEntries(lock, fileKey);
+                FileEntry mergeEntry = FileContainer.createFileEntryForMerge(fileKey);
+                for (FileEntry fileEntry : includedFileEntries) {
+                    for (PreprocessorStatePair pair : fileEntry.getStatePairs()) {
+                        if (pair.pcState != FilePreprocessorConditionState.PARSING) {
+                            updateFileEntryBasedOnIncludedStatePair(mergeEntry, pair, fileKey, fileImpl, null, null);
+                        }
+                    }
+                }
+                states = mergeEntry.getPrerocStates();
+            } else {
+                states = entry.getPrerocStates();
+            }
+        }
+        Collection<APTPreprocHandler> result = createPreprocHandlerFromStates(states, fileKey);
+        return result;
     }
 
-    public final Collection<APTPreprocHandler> getPreprocHandlers(CharSequence absPath) {
-        Collection<APTPreprocHandler.State> states = getFileContainer().getPreprocStates(absPath);
+    private boolean hasClosedStartEntry(Object lock, Collection<PreprocessorStatePair> containerStatePairs) {
+        assert Thread.holdsLock(lock) : " must hold lock ";
+        for (PreprocessorStatePair pair : containerStatePairs) {
+            StartEntry startEntry = APTHandlersSupport.extractStartEntry(pair.state);
+            if (ModelImpl.isClosedProject(startEntry.getStartFileProject())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /*package-local*/ final Collection<PreprocessorStatePair> getFileContainerStatePairsToDump(CharSequence absPath) {
+        FileContainer.FileEntry entry = getFileContainer().getEntry(absPath);
+        if (entry == null) {
+            return Collections.emptyList();
+        }
+        synchronized (entry.getLock()) {
+            return entry.getStatePairs();
+        }
+    }
+
+    public final Collection<APTPreprocHandler> getFileContainerPreprocHandlersToDump(CharSequence absPath) {
+        FileContainer.FileEntry entry = getFileContainer().getEntry(absPath);
+        if (entry == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<APTPreprocHandler.State> states;
+        synchronized (entry.getLock()) {
+            states = entry.getPrerocStates();
+        }
+        return createPreprocHandlerFromStates(states, absPath);
+    }
+
+    private Collection<APTPreprocHandler> createPreprocHandlerFromStates(Collection<State> states, CharSequence absPath) {
         Collection<APTPreprocHandler> result = new ArrayList<APTPreprocHandler>(states.size());
         for (APTPreprocHandler.State state : states) {
             APTPreprocHandler preprocHandler = createEmptyPreprocHandler(absPath);
@@ -1264,11 +1363,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return result;
     }
 
-    public final Collection<APTPreprocHandler.State> getPreprocStates(FileImpl fileImpl) {
-        FileContainer fc = getFileContainer();
-        return fc.getPreprocStates(fileImpl.getAbsolutePath());
-    }
-
     /**
      * This method for testing purpose only. Used from TraceModel
      */
@@ -1278,6 +1372,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected final APTPreprocHandler.State setChangedFileState(NativeFileItem nativeFile) {
+        // TODO: do we need to change states in dependent projects' storages???
         APTPreprocHandler.State state;
         state = createPreprocHandler(nativeFile).getState();
         FileContainer fileContainer = getFileContainer();
@@ -1304,6 +1399,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected final void markAsParsingPreprocStates(CharSequence absPath) {
+        // TODO: do we need to change states in dependent projects' storages???
         FileContainer fileContainer = getFileContainer();
         Object stateLock = fileContainer.getLock(absPath);
         synchronized (stateLock) {
@@ -1315,6 +1411,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * The method is for tracing/testing/debugging purposes only
      */
     public final void debugInvalidateFiles() {
+        // TODO: do we need to change states in dependent projects' storages???
         getFileContainer().debugClearState();
         for (Iterator<CsmProject> it = getLibraries().iterator(); it.hasNext();) {
             ProjectBase lib = (ProjectBase) it.next();
@@ -2114,8 +2211,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             CndUtils.assertTrueInConsole(preprocHandler != null, "null preprocHandler");
             //FIXME:
             if (preprocHandler == null) {
-                final Collection<State> preprocStates = getFileContainer().getPreprocStates(absPath);
-                APTPreprocHandler.State state = preprocStates.isEmpty() ? null : preprocStates.iterator().next();
+                APTPreprocHandler.State state = getFirstValidPreprocState(absPath);
                 preprocHandler = createPreprocHandlerFromState(absPath, state);
             }
             impl = findFileImpl(absPath, treatSymlinkAsSeparateFile, fileType, preprocHandler, scheduleParseIfNeed, initial, nativeFileItem);

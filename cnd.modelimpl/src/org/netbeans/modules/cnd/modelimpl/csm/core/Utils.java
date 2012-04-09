@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.openide.util.lookup.Lookups;
 import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.*;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 
 
 /**
@@ -387,12 +388,12 @@ public class Utils {
         NativeFileItem out = null;
         ProjectBase filePrj = fileImpl.getProjectImpl(true);
         if (filePrj != null) {
-            Collection<APTPreprocHandler.State> preprocStates = filePrj.getPreprocStates(fileImpl);
-            if (preprocStates.isEmpty()) {
+            // use start file from one of states (i.e. first)
+            CharSequence fileKey = FileContainer.getFileKey(fileImpl.getAbsolutePath(), false);
+            APTPreprocHandler.State state = filePrj.getFirstValidPreprocState(fileKey);
+            if (state == null) {
                 return null;
             }
-            // use start file from one of states (i.e. first)
-            APTPreprocHandler.State state = preprocStates.iterator().next();
             FileImpl startFile = getStartFile(state);
             out = startFile != null ? startFile.getNativeFileItem() : null;
         }

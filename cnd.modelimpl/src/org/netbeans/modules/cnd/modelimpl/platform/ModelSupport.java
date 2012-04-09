@@ -103,7 +103,7 @@ import org.openide.windows.WindowManager;
 public class ModelSupport implements PropertyChangeListener {
 
     private static final ModelSupport instance = new ModelSupport();
-    private ModelImpl theModel;
+    private volatile ModelImpl theModel;
     private final Set<Lookup.Provider> openedProjects = new HashSet<Lookup.Provider>();
     private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
     private FileChangeListener fileChangeListener;
@@ -127,6 +127,10 @@ public class ModelSupport implements PropertyChangeListener {
 
     public static int getTabSize() {
         return 8;
+    }
+
+    public ModelImpl getModel() {
+        return this.theModel;
     }
 
     public void setModel(ModelImpl model) {
