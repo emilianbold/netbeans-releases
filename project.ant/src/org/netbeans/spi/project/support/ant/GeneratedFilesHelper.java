@@ -255,6 +255,8 @@ public final class GeneratedFilesHelper {
         dir = d;
     }
     
+    /** Workaround for JAXP bug 7150637 / XALANJ-1497. */
+    private static final String ORACLE_IS_STANDALONE = "http://www.oracle.com/xml/is-standalone";
     /**
      * Create <code>build.xml</code> or <code>nbproject/build-impl.xml</code>
      * from <code>project.xml</code> plus a supplied XSLT stylesheet.
@@ -317,6 +319,11 @@ public final class GeneratedFilesHelper {
                                 StreamSource stylesheetSource = new StreamSource(
                                     new ByteArrayInputStream(stylesheetData), stylesheet.toExternalForm());
                                 Transformer t = tf.newTransformer(stylesheetSource);
+                                try {
+                                    t.setOutputProperty(ORACLE_IS_STANDALONE, "yes");
+                                } catch (IllegalArgumentException x) {
+                                    // fine, introduced in JDK 7u4
+                                }
                                 File projectXmlF = FileUtil.toFile(projectXml);
                                 assert projectXmlF != null;
                                 StreamSource projectXmlSource = new StreamSource(
