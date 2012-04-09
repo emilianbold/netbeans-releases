@@ -178,8 +178,8 @@ public final class CsmProjectContentResolver {
                     }
                 }
                 if (elemEnum != null) {
-                    for (Iterator enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
-                        CsmEnumerator elem = (CsmEnumerator) enmtrIter.next();
+                    for (Iterator<CsmEnumerator> enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
+                        CsmEnumerator elem = enmtrIter.next();
                         if (matchName(elem.getName(), strPrefix, match)) {
                             res.add(elem);
                         }
