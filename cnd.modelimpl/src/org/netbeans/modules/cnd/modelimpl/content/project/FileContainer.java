@@ -235,22 +235,6 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             System.err.println("\nmarkAsParsingPreprocStates for file" + path + "\n");
         }
     }
-    
-    public Collection<APTPreprocHandler.State> getPreprocStates(CharSequence absPath) {
-        FileEntry f = getFileEntry(absPath, false, false);
-        if (f == null){
-            return Collections.<APTPreprocHandler.State>emptyList();
-        }
-        return f.getPrerocStates();
-    }
-
-    public Collection<PreprocessorStatePair> getStatePairs(CharSequence absPath) {
-        FileEntry f = getFileEntry(absPath, false, false);
-        if (f == null) {
-            return Collections.<PreprocessorStatePair>emptyList();
-        }
-        return f.getStatePairs();
-    }
 
     public FileEntry getEntry(CharSequence absPath) {
         CndUtils.assertTrue(CndPathUtilitities.isPathAbsolute(absPath), "Path should be absolute: ", absPath); //NOI18N
@@ -548,6 +532,10 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
     //for unit test only
     public Map<CharSequence, Object/*CharSequence or CharSequence[]*/> getCanonicalNames(){
         return new TreeMap<CharSequence, Object>(canonicFiles);
+    }
+
+    public static FileEntry createFileEntryForMerge(CharSequence fileKey) {
+        return new FileEntry(null, null, fileKey, fileKey);
     }
 
     /*package*/ static FileEntry createFileEntry(FileImpl fileImpl) {

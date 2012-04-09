@@ -225,7 +225,7 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest(base + ".cc");
         FileImpl fileImpl = findFile(base + ".h");
         assertNotNull(fileImpl);
-        Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
+        Collection<APTPreprocHandler> handlers = fileImpl.getFileContainerOwnPreprocHandlersToDump();
         assertEquals(handlers.size(), 1);
         String macro = "MAC";
         assertFalse(macro + " should be undefined!", handlers.iterator().next().getMacroMap().isDefined(macro));
