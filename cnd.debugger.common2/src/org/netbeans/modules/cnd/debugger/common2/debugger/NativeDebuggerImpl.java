@@ -149,7 +149,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     // local stuff
     protected final ModelChangeDelegator localUpdater = new ModelChangeDelegator();
     private boolean showAutos = false;
-    protected final ArrayList<Variable> autos = new ArrayList<Variable>();
+    protected final List<Variable> autos = Collections.synchronizedList(new ArrayList<Variable>());
 
     // stack stuff
     protected Frame[] guiStackFrames = null;
@@ -1651,7 +1651,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    localUpdater.batchOffForce();	// cause a pull to clear view
 	    return Collections.emptySet();
 	}
-
+    
 	return Autos.get(EditorBridge.documentFor(location.src(), this), location.line()-1);
     }
     
@@ -1660,7 +1660,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
     
     public Variable[] getAutos() {
-	Variable array[] = autos.toArray(new Variable[autos.size()]);
+        Variable array[] = autos.toArray(new Variable[autos.size()]);
 	return array;
     }
 

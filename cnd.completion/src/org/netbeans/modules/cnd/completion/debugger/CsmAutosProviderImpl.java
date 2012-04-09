@@ -95,7 +95,7 @@ public class CsmAutosProviderImpl implements AutosProvider {
 
         CsmFile csmFile = CsmUtilities.getCsmFile(document, false, false);
         if (csmFile == null || !csmFile.isParsed()) {
-            return Collections.emptySet();
+            return null;
         }
 
         final Element lineRootElement = NbDocument.findLineRootElement(document);
