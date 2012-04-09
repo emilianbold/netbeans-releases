@@ -39,7 +39,6 @@
 package org.netbeans.modules.maven.indexer;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -58,9 +57,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
-import org.apache.maven.artifact.repository.MavenArtifactRepository;
-import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.index.ArtifactContext;
 import org.apache.maven.index.ArtifactInfo;
 import org.apache.maven.index.Field;
@@ -76,7 +72,6 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 
 class ArtifactDependencyIndexCreator extends AbstractIndexCreator {
@@ -97,14 +92,8 @@ class ArtifactDependencyIndexCreator extends AbstractIndexCreator {
 
     ArtifactDependencyIndexCreator() {
         super(ArtifactDependencyIndexCreator.class.getName(), Arrays.asList(MinimalArtifactInfoIndexCreator.ID));
-        remoteRepos = new ArrayList<ArtifactRepository>();
         embedder = EmbedderFactory.getProjectEmbedder();
-        
-        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
-            if (!info.isLocal()) {
-                remoteRepos.add(EmbedderFactory.createRemoteRepository(embedder, info.getRepositoryUrl(), info.getId()));
-            }
-        }
+        remoteRepos = RepositoryPreferences.getInstance().remoteRepositories(embedder);
     }
 
     @Override public void populateArtifactInfo(ArtifactContext context) throws IOException {
