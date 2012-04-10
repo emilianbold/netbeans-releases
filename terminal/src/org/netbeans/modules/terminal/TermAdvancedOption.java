@@ -140,7 +140,7 @@ public final class TermAdvancedOption extends OptionsPanelController {
     // implement OptionsPanelController
     @Override
     public HelpCtx getHelpCtx() {
-	return null;
+	return new HelpCtx ("netbeans.optionsDialog.advanced.terminal"); // NOI18N
     }
 
     // implement OptionsPanelController
