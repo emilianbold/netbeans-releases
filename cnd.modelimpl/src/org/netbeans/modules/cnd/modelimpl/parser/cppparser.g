@@ -764,6 +764,7 @@ template_explicit_specialization
 		{ #template_explicit_specialization = #(#[CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
         |
             (   (LITERAL___extension__!)?
+                (LITERAL_template LESSTHAN GREATERTHAN)?
                 (   storage_class_specifier
                 |   cv_qualifier
                 |   LITERAL_typedef
@@ -771,6 +772,7 @@ template_explicit_specialization
                 LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? (SEMICOLON | LCURLY)
             ) =>
             (LITERAL___extension__!)?
+            (LITERAL_template LESSTHAN GREATERTHAN)?
                 (   sc = storage_class_specifier
                 |   tq = cv_qualifier
                 |   LITERAL_typedef
@@ -784,6 +786,7 @@ template_explicit_specialization
 			printf("template_explicit_specialization_0e[%d]: template " +
 				"explicit-specialisation\n", LT(1).getLine());
 		}
+                (LITERAL_template LESSTHAN GREATERTHAN)?
 		declaration[declOther]
 		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
 	)
