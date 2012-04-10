@@ -39,65 +39,73 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.source.usages;
+package org.netbeans.modules.parsing.lucene;
 
 import java.io.IOException;
+import org.apache.lucene.store.Lock;
+import org.apache.lucene.store.NativeFSLockFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.java.source.indexing.TransactionContext;
 
 /**
- * Commits Class Indexes during scanFinished.
  *
- * @author sdedic
+ * @author Tomas Zezula
  */
-//@NotThreadSafe
-public final class PersistentIndexTransaction extends TransactionContext.Service {
-    private ClassIndexImpl.Writer indexWriter;
+class RecordOwnerLockFactory extends NativeFSLockFactory {
     
+    private volatile Thread owner;
     
-    public static PersistentIndexTransaction create() {
-        return new PersistentIndexTransaction();
-    }
-
-    @Override
-    protected void commit() throws IOException {
-        if (indexWriter != null) {
-            try {
-                indexWriter.commit();
-            } catch (Throwable t) {
-                if (t instanceof ThreadDeath) {
-                    throw (ThreadDeath) t;
-                } else {
-                    throw new IOException(t);
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void rollBack() throws IOException {
-        if (indexWriter != null) {
-            try {
-                indexWriter.rollback();
-            } catch (Throwable t) {
-                if (t instanceof ThreadDeath) {
-                    throw (ThreadDeath) t;
-                } else {
-                    throw new IOException(t);
-                }
-            }
-        }
-    }
-    
-    public void setIndexWriter(@NonNull ClassIndexImpl.Writer writer) {
-        assert this.indexWriter == null;
-        assert writer != null;
-        this.indexWriter = writer;
+    RecordOwnerLockFactory() throws IOException {
+        super();
     }
     
     @CheckForNull
-    public ClassIndexImpl.Writer getIndexWriter() {
-        return this.indexWriter;
+    Thread getOwner() {
+        return owner;
     }
+    
+    
+    @Override
+    public Lock makeLock(String lockName) {
+        return new RecordOwnerLock(super.makeLock(lockName));
+    }
+    
+    @Override
+    public void clearLock(String lockName) throws IOException {
+        super.clearLock(lockName);
+        owner = null;
+    }
+    
+    
+    private class RecordOwnerLock extends Lock {
+        
+        private final Lock delegate;
+        
+        private RecordOwnerLock(@NonNull final Lock delegate) {
+            assert delegate != null;
+            this.delegate = delegate;
+        }
+
+        @Override
+        public boolean obtain() throws IOException {
+            final boolean result = delegate.obtain();
+            if (result) {
+                owner = Thread.currentThread();
+            }
+            return result;
+        }
+
+        @Override
+        public void release() throws IOException {
+            delegate.release();
+            owner = null;
+        }
+
+        @Override
+        public boolean isLocked() throws IOException {
+            return delegate.isLocked();
+        }
+    
+    }
+    
 }
