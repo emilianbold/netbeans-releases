@@ -143,7 +143,7 @@ public class Flow {
 
         v.deadBranches.remove(null);
 
-        return new FlowResult(result, v.deadBranches);
+        return new FlowResult(Collections.unmodifiableMap(result), Collections.unmodifiableSet(v.deadBranches));
     }
 
     public static final class FlowResult {
