@@ -1943,7 +1943,9 @@ public class AstRenderer {
                             child.getType() == CPPTokenTypes.LITERAL_struct)) {
                         return true;
                     }
-                    return false;
+                    if (child == null || child.getType() != CPPTokenTypes.LITERAL_template) {
+                        return false;
+                    }
                 }
             }
         }
