@@ -746,7 +746,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                 DiagnosticExceptoins.register(e);
                             }
                         } else {
-                            if (renderVariable(token, null, null, false)) {
+                            if (renderVariable(token, null, null, ClassImpl.this, false)) {
                                 break;
                             }
                             typedefs = renderTypedef(token, (FileImpl) getContainingFile(), fileContent, ClassImpl.this, null);
