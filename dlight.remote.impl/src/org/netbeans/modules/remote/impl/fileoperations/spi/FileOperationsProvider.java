@@ -54,6 +54,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
@@ -395,7 +396,9 @@ abstract public class FileOperationsProvider {
         public Process createProcess(String executable, String workingDirectory, List<String> arguments, List<String> paths, Map<String, String> environment, boolean redirectErrorStream) throws IOException {
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
             pb.setExecutable(executable).setWorkingDirectory(workingDirectory).setArguments(arguments.toArray(new String[arguments.size()]));
-            pb.getEnvironment().putAll(environment);
+            MacroMap mm = MacroMap.forExecEnv(env);
+            mm.putAll(environment);
+            pb.getEnvironment().putAll(mm);
             for(String path : paths) {
                 pb.getEnvironment().appendPathVariable("PATH", path); // NOI18N
             }

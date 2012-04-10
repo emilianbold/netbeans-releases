@@ -277,10 +277,15 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     int tool = new Integer(atts.getValue(ItemXMLCodec.TOOL_ATTR)).intValue();
                     itemConfiguration.getExcluded().setValue(excluded.equals(TRUE_VALUE));
                     itemConfiguration.setTool(PredefinedToolKind.getTool(tool));
-                    String flavor = atts.getValue(ItemXMLCodec.FLAVOR_ATTR);
+                    String flavor = atts.getValue(ItemXMLCodec.FLAVOR2_ATTR);
                     if (flavor != null) {
                         itemConfiguration.setLanguageFlavor(LanguageFlavor.fromExternal(Integer.parseInt(flavor)));
                     }
+                    // Versions before 82 do not have flavour2 attribute.
+                    flavor = atts.getValue(ItemXMLCodec.FLAVOR_ATTR);
+                    if (flavor != null) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.fromExternal(Integer.parseInt(flavor)));
+                    }                    
                 }
             } else {
                 System.err.println("Not found item: " + path);

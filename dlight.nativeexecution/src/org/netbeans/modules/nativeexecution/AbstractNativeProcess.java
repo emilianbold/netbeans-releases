@@ -41,38 +41,23 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Callable;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
-import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
-import org.netbeans.modules.nativeexecution.api.ProcessInfo;
-import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
+import org.netbeans.modules.nativeexecution.api.*;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.util.Exceptions;
@@ -99,7 +84,8 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private final AtomicBoolean cancelledFlag = new AtomicBoolean(false);
     private Future<ProcessInfoProvider> infoProviderSearchTask;
     private Future<Integer> waitTask = null;
-    private AtomicInteger result = null;
+    private final Object resultLock = new Object();
+    private Integer result = null;
     private InputStream inputStream;
     private InputStream errorStream;
     private OutputStream outputStream;
@@ -161,17 +147,15 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
                     try {
                         exitCode = waitResult();
-                        result = new AtomicInteger(exitCode);
                         state = State.FINISHED;
                     } catch (InterruptedException ex) {
-                        result = new AtomicInteger(exitCode);
                         state = State.CANCELLED;
                         throw ex;
                     } catch (Throwable th) {
-                        result = new AtomicInteger(exitCode);
                         state = State.ERROR;
                         Exceptions.printStackTrace(th);
                     } finally {
+                        setResult(exitCode);
                         if (cancelledFlag.get()) {
                             setState(State.CANCELLED);
                         } else if (state != null) {
@@ -183,6 +167,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 }
             }, "Waiting for " + id); // NOI18N
         } catch (Throwable ex) {
+            setResult(-2);
             setState(State.ERROR);
             destroy();
             LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text", ex.getMessage()), ex); // NOI18N
@@ -191,6 +176,12 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
 
         return this;
+    }
+
+    private void setResult(int exitCode) {
+        synchronized (resultLock) {
+            result = exitCode;
+        }
     }
 
     abstract protected void create() throws Throwable;
@@ -381,7 +372,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     }
 
     /**
-     * Returns the exit code for the underlaying system process.
+     * Returns the exit code for the underlying system process.
      *
      * @return  the exit code of the system process represented by this
      *          <code>AbstractNativeProcess</code> object. By convention, the value
@@ -393,9 +384,12 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     @Override
     public final int exitValue() {
         if (waitTask == null || !waitTask.isDone()) {
-            if (result != null) {
-                return result.get();
+            synchronized (resultLock) {
+                if (result != null) {
+                    return result.intValue();
+                }
             }
+
             // Process not started/finished yet...
             throw new IllegalThreadStateException();
         }

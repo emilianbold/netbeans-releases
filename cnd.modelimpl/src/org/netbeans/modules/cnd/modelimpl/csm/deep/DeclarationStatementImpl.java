@@ -151,7 +151,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                 switch (token.getType()) {
                     case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
                     case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
-                        if (!renderVariable(token, currentNamespace, container, false)) {
+                        if (!renderVariable(token, currentNamespace, container, currentNamespace, false)) {
                             render(token.getFirstChild(), currentNamespace, container);
                         }
                         break;

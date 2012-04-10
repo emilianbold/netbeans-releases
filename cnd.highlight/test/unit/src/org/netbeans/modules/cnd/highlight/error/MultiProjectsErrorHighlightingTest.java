@@ -126,7 +126,7 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
     }
     
     // DISABLED, see IZ 202433
-    public void DISABLEDtestRedFilesWhenProjectClose202433() throws Exception {
+    public void testRedFilesWhenProjectClose202433() throws Exception {
         // #202433 - parser errors in studio system includes
         CsmModel model = super.getModel();
         assertNotNull("null model", model);

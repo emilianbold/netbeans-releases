@@ -343,7 +343,8 @@ class AssignComments extends TreeScanner<Void, Void> {
 
     private void attachComments(Iterable<? extends Token<JavaTokenId>> foundComments, Tree tree, CommentHandler ch, CommentSet.RelativePosition positioning) {
         if (foundComments == null || !foundComments.iterator().hasNext() || !mapComments) return;
-        CommentSet set = createCommentSet(ch, tree);
+        CommentSetImpl set = (CommentSetImpl) createCommentSet(ch, tree);
+        if (set.areCommentsMapped()) return ;
         for (Token<JavaTokenId> comment : foundComments) {
             attachComment(positioning, set, comment);
         }

@@ -733,6 +733,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
     
     private boolean targetAttach = false;
+    private static final String ATTACH_ID = "ATTACH"; //NOI18N
     
     private void doMIAttach(GdbDebuggerInfo gdi) {
         String cmdString;
@@ -748,31 +749,27 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             cmdString = "attach " + Long.toString(pid); //NOI18N
         }
         
-        final long newPid = pid;
-        MICommand cmd =
-            new MiCommandImpl(cmdString) {
+        firstBreakpointId = ATTACH_ID;
+        send(cmdString);
+    }
+    
+    private void attachDone() {
+        state().isProcess = true;
+        stateChanged();
+        session().setSessionState(state());
+        long pid = getNDI().getPid();
+        if (pid != -1) {
+            session().setPid(pid);
+        }
+        //see IZ 197786, we set breakpoints here not on prog load
+        ((GdbDebuggerSettingsBridge)profileBridge).noteAttached();
 
-                    @Override
-                    protected void onDone(MIRecord record) {
-                        state().isProcess = true;
-                        stateChanged();
-			session().setSessionState(state());
-                        if (newPid != -1) {
-                            session().setPid(newPid);
-                        }
-                        //see IZ 197786, we set breakpoints here not on prog load
-                        ((GdbDebuggerSettingsBridge)profileBridge).noteAttached();
-                        
-                        // continue, see IZ 198495
-                        if (DebuggerOption.RUN_AUTOSTART.isEnabled(optionLayers())) {
-                            go();
-                        } else {
-                            requestStack(null);
-                        }
-                        finish();
-                    }
-            };
-        gdb.sendCommand(cmd);
+        // continue, see IZ 198495
+        if (DebuggerOption.RUN_AUTOSTART.isEnabled(optionLayers())) {
+            go();
+        } else {
+            requestStack(null);
+        }
     }
 
     private void doMICorefile(GdbDebuggerInfo gdi) {
@@ -1098,7 +1095,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
     }
     
-    private String firstBreakpointId = null;
+    private volatile String firstBreakpointId = null;
     
     private void setFirstBreakpointId(MIRecord record) {
         MIValue bkptValue = record.results().valueOf(MI_BKPT);
@@ -2771,18 +2768,25 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public Set<String> requestAutos() {
         Set<String> autoNames = super.requestAutos();
-        LinkedList<Variable> res = new LinkedList<Variable>();
-        for (String auto : autoNames) {
-            GdbVariable var = variableBag.get(auto, false, VariableBag.FROM_BOTH);
-            if (var == null) {
-                var = new GdbWatch(this, watchUpdater(), auto);
-                createMIVar(var, true);
+        if(autoNames != null){
+            LinkedList<Variable> res = new LinkedList<Variable>();
+            for (String auto : autoNames) {
+                GdbVariable var = variableBag.get(auto, false, VariableBag.FROM_BOTH);
+                if (var == null) {
+                    var = new GdbWatch(this, watchUpdater(), auto);
+                    createMIVar(var, true);
+                }
+                res.add(var);
             }
-            res.add(var);
-        }
-        synchronized (autos) {
-            autos.clear();
-            autos.addAll(res);
+            synchronized (autos) {
+                autos.clear();
+                autos.addAll(res);
+            }
+        } else{
+            synchronized (autos) {
+                autos.clear();
+                autos.add(null);
+            }
         }
         return autoNames;
     }
@@ -3162,6 +3166,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         
         // detect first stop (in _start or main)
         if (firstBreakpointId != null) {
+            if (ATTACH_ID.equals(firstBreakpointId)) {
+                firstBreakpointId = null;
+                attachDone();
+                return;
+            }
             MIValue bkptnoValue = results.valueOf("bkptno"); // NOI18N
             boolean cont = (bkptnoValue == null && !STEP_INTO_ID.equals(firstBreakpointId)) ||
                (bkptnoValue != null && (firstBreakpointId.equals(bkptnoValue.asConst().value())));

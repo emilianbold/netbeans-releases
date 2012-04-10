@@ -83,7 +83,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
 /**
  * Change History:
  * V82 - NB 7.2
- *    Hardcoded extension of dynamic library from project is replaced by macros
+ *    Hardcoded extension of dynamic library from project is replaced by macros.
+ *    New flavor2 field introduced in item configuration for unmanaged projects.
  * V81 - NB 7.2
  *    Standard selection support for C++ compiler
  *    Standard selection support for C compiler

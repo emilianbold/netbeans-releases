@@ -53,7 +53,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class testCCTraits extends cc {
 
-    static final String TEST_PHP_NAME = "PhpProject_cc_0002";
+    static final String TEST_PHP_NAME = "PhpProject_cc_0003";
 
     public testCCTraits(String arg0) {
         super(arg0);

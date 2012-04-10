@@ -186,7 +186,7 @@ public final class DeepReparsingUtils {
             }
         } else {
             if (scheduleParsing) {
-                ParserQueue.instance().add(changedFile, changedFileProject.getPreprocHandlers(changedFile.getAbsolutePath()), ParserQueue.Position.HEAD);
+                ParserQueue.instance().add(changedFile, changedFileProject.getPreprocHandlers(changedFile), ParserQueue.Position.HEAD);
             }
         }
     }
@@ -207,7 +207,7 @@ public final class DeepReparsingUtils {
                 coherence.addAll(project.getGraph().getCoherenceFiles(fileImpl).getCoherenceFilesUids());
             } else {
                 if (scheduleParsing) {
-                    ParserQueue.instance().add(fileImpl, project.getPreprocHandlers(fileImpl.getAbsolutePath()), ParserQueue.Position.HEAD);
+                    ParserQueue.instance().add(fileImpl, project.getPreprocHandlers(fileImpl), ParserQueue.Position.HEAD);
                 }
             }
         }

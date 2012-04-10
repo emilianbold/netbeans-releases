@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -119,6 +120,24 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 ////	    }
 ////	}
 //    }
+    static boolean isClosedProject(Key startFileProject) {
+        ModelImpl instance = ModelSupport.instance().getModel();
+        if (instance != null) {
+            return instance.isClosedImpl(startFileProject);
+        }
+        return true;
+    }
+
+    private boolean isClosedImpl(Key proj) {
+        Collection<CsmUID<CsmProject>> vals = new ArrayList<CsmUID<CsmProject>>(platf2csm.values());
+        for (CsmUID<CsmProject> csmUID : vals) {
+            if (proj.equals(RepositoryUtils.UIDtoKey(csmUID))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public CsmProject findProject(Object id) {
         ProjectBase prj = null;
         if (id != null) {

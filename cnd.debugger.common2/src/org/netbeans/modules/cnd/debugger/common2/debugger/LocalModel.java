@@ -61,6 +61,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
+import org.netbeans.spi.viewmodel.*;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
@@ -75,7 +76,8 @@ import org.openide.util.NbPreferences;
 
 public final class LocalModel extends VariableModel
     implements NodeActionsProvider {
-
+    
+    private static final WarningMessage NO_CODEMODEL_WARNING = new WarningMessage("CTL_WatchesModel_Warning_Watch_Hint");   // NOI18N
     private Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(VariablesViewButtons.PREFERENCES_NAME);
     private VariablesPreferenceChangeListener prefListener = new VariablesPreferenceChangeListener();
 
@@ -106,6 +108,10 @@ public final class LocalModel extends VariableModel
 	if (parent == ROOT) {
             if (VariablesViewButtons.isShowAutos()) {
                 children = debugger.getAutos();
+                if(children != null && children.length > 0 && children[0] == null){
+                    Object[] newChildren = {NO_CODEMODEL_WARNING};
+                    children = newChildren;
+                }
             } else {
                 children = debugger.getLocals();
             }
@@ -137,6 +143,35 @@ public final class LocalModel extends VariableModel
 	}
 	return count;
     }
+
+    @Override
+    public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
+        if (node instanceof WarningMessage) {
+            return  NO_CODEMODEL_WARNING.getMessage();
+        } else{
+            return super.getDisplayName(original, node);
+        }
+    }
+
+    @Override
+    public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        if (node instanceof WarningMessage) {
+            return null;
+        } else{
+            return super.getIconBaseWithExtension(original, node);
+        }
+    }
+
+    @Override
+    public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
+        if (node instanceof WarningMessage){
+            return "";
+        } else {
+            return super.getValueAt(node, columnID);
+        }
+    }
+    
+    
 
     // interface TreeModel etc
     public void addModelListener(ModelListener l) {
@@ -215,5 +250,22 @@ public final class LocalModel extends VariableModel
             }
         }
 
+    }
+    
+        
+    /**
+     * An item displayed when Autos list can not be evaluated
+     * because Code Assistance is switched off or unavailable.
+     */
+    private static class WarningMessage {
+        private String key;
+
+        WarningMessage(String keyStr) {
+            key = keyStr;
+        }
+        
+        public String getMessage() {
+            return Catalog.get(key);
+        }
     }
 }

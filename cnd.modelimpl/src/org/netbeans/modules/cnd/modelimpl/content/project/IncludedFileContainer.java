@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.content.project;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +53,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer.FileEntry;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
@@ -143,7 +141,7 @@ public final class IncludedFileContainer {
         storage.put();
     }
 
-    public FileEntry getEntryForIncludedFile(FileEntry entryToLockOn, ProjectBase includedProject, FileImpl includedFile) {
+    public FileEntry getOrCreateEntryForIncludedFile(FileEntry entryToLockOn, ProjectBase includedProject, FileImpl includedFile) {
         assert Thread.holdsLock(entryToLockOn.getLock()) : "does not hold lock for " + includedFile;
         Storage storage = getStorageForProject(includedProject);
         if (storage != null) {
@@ -158,10 +156,14 @@ public final class IncludedFileContainer {
      */
     public Map<CsmUID<CsmProject> , Collection<PreprocessorStatePair>> getPairsToDump(FileImpl fileToSearch) {
         Map<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> out = new HashMap<CsmUID<CsmProject>, Collection<PreprocessorStatePair>>();
+        CharSequence fileKey = FileContainer.getFileKey(fileToSearch.getAbsolutePath(), false);
         for (Entry entry : list) {
-            Collection<PreprocessorStatePair> pairs = entry.getStorage().getPairs(fileToSearch);
-            if (!pairs.isEmpty()) {
-                out.put(entry.prjUID, pairs);
+            FileEntry fileEntry = entry.getStorage().getFileEntry(fileKey);
+            if (fileEntry != null) {
+                Collection<PreprocessorStatePair> pairs = fileEntry.getStatePairs();
+                if (!pairs.isEmpty()) {
+                    out.put(entry.prjUID, pairs);
+                }
             }
         }
         return out;
@@ -176,36 +178,20 @@ public final class IncludedFileContainer {
         }
     }
 
-    public Collection<State> getIncludedPreprocStates(Object lock, ProjectBase includedFileOwner, FileImpl includedFile) {
-        assert Thread.holdsLock(lock) : "does not hold lock for " + includedFile;
+    public FileContainer.FileEntry getIncludedFileEntry(Object lock, ProjectBase includedFileOwner, CharSequence fileKey) {
+        assert Thread.holdsLock(lock) : "does not hold lock for " + fileKey;
         Storage storage = getStorageForProject(includedFileOwner);
+        FileEntry fileEntry = null;
         if (storage != null) {
-            CharSequence fileKey = FileContainer.getFileKey(includedFile.getAbsolutePath(), false);
-            return storage.getPreprocStates(fileKey);
-        } else {
-            return Collections.emptyList();
+            fileEntry = storage.getFileEntry(fileKey);
         }
+        return fileEntry;
     }
 
     public final static class Storage extends ProjectComponent  {
 
-        private Collection<State> getPreprocStates(CharSequence fileKey) {
-            FileEntry entry = myFiles.get(fileKey);
-            if (entry != null) {
-                return entry.getPrerocStates();
-            } else {
-                return Collections.emptyList();
-            }
-        }
-
-        private Collection<PreprocessorStatePair> getPairs(FileImpl fileToSearch) {
-            CharSequence fileKey = FileContainer.getFileKey(fileToSearch.getAbsolutePath(), false);
-            FileEntry entry = myFiles.get(fileKey);
-            if (entry != null) {
-                return entry.getStatePairs();
-            } else {
-                return Collections.emptyList();
-            }
+        private FileEntry getFileEntry(CharSequence fileKey) {
+            return myFiles.get(fileKey);
         }
 
         private final ConcurrentMap<CharSequence, FileContainer.FileEntry> myFiles = new ConcurrentHashMap<CharSequence, FileContainer.FileEntry>();
