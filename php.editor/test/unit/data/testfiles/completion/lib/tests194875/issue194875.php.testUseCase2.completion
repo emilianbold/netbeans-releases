@@ -4,6 +4,3 @@ Code completion result for source line:
 PACKAGE    Extra                           [PUBLIC]   null
 CLASS      ExMyException                   [PUBLIC]   issue194875.php
 CLASS      Exception                       [PUBLIC]   issue194875.php
-------------------------------------
-CLASS      ErrorException                  [PUBLIC]   PHP Platform
-CLASS      Exception                       [PUBLIC]   PHP Platform
