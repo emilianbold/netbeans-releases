@@ -157,7 +157,7 @@ abstract class MoveTreeCommand extends GitCommand {
             throw new GitException(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Exception_CannotCreateFolder"), parentFile.getAbsolutePath())); //NOI18N
         }
         if (!source.renameTo(target)) {
-            throw new GitException(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Exception_CannotRenameTo"), target.getAbsolutePath())); //NOI18N
+            throw new GitException(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Exception_CannotRenameTo"), source.getAbsolutePath(), target.getAbsolutePath())); //NOI18N
         }
     }
 
