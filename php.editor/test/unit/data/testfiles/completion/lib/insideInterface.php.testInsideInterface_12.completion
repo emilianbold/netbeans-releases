@@ -2,9 +2,5 @@ Code completion result for source line:
 public func|tion doAnything();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     func_get_arg($arg_num)          [PUBLIC]   PHP Platform
-METHOD     func_get_args()                 [PUBLIC]   PHP Platform
-METHOD     func_num_args()                 [PUBLIC]   PHP Platform
 METHOD     functionName($param)            [PUBLIC]   issue202281.php
-METHOD     function_exists($function_name  [PUBLIC]   PHP Platform
 KEYWORD    function                                   null
