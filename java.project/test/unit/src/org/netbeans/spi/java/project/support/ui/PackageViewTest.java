@@ -1241,6 +1241,7 @@ public class PackageViewTest extends NbTestCase {
         assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, modulez.stuph{resources{stuff.png}, Bundle.properties, StuffUtils.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
     }
 
+    @RandomlyFails // NB-Core-Build #8123
     public void testReducedTreeDelete() throws Exception {
         SourceGroup g = sampleGroup();
         Node r = new TreeRootNode(g, true);
