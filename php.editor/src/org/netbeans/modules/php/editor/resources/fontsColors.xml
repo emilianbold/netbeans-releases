@@ -94,10 +94,10 @@
 <!--currently not used:-->
 <!--    <fontcolor name="mod-package-private" /> -->
     <!--<fontcolor name="mod-protected" />
-    <fontcolor name="mod-public" />
+    <fontcolor name="mod-public" />-->
     <fontcolor name="mod-custom1" >
         <font style="bold" />
-    </fontcolor>-->
+    </fontcolor>
 
     <!--currently not used:-->
 <!--    <fontcolor name="mod-type-parameter-declaration" bgColor="lightGray"/>
