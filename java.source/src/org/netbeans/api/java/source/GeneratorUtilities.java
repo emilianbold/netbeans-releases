@@ -828,6 +828,14 @@ public final class GeneratorUtilities {
 
     static <T extends Tree> T importComments(CompilationInfo info, T original, CompilationUnitTree cut) {
         try {
+            CommentSetImpl comments = CommentHandlerService.instance(info.impl.getJavacTask().getContext()).getComments(original);
+
+            if (comments.areCommentsMapped()) {
+                //optimalization, if comments are already mapped, do not even try to
+                //map them again, would not be attached anyway:
+                return original;
+            }
+            
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
             TreePath tp = TreePath.getPath(cut, original);
