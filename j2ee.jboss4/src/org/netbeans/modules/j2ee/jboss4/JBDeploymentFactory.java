@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.j2ee.jboss4;
 
-import java.util.HashMap;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import java.io.File;
@@ -60,7 +59,9 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
@@ -85,6 +86,13 @@ public class JBDeploymentFactory implements DeploymentFactory {
 
     private static final Logger LOGGER = Logger.getLogger(JBDeploymentFactory.class.getName());
 
+    private static final Map<InstanceProperties, JBDeploymentFactory.JBClassLoader> JB_CLASSLOADER_CACHE = new WeakHashMap<InstanceProperties, JBDeploymentFactory.JBClassLoader>();
+
+    /**
+     * Mapping of a server installation directory to a deployment factory
+     */
+    private static Map<InstanceProperties, DeploymentFactory> FACTORIES_CACHE = new WeakHashMap<InstanceProperties, DeploymentFactory>();
+
     private static JBDeploymentFactory instance;
 
     public static synchronized DeploymentFactory create() {
@@ -97,12 +105,6 @@ public class JBDeploymentFactory implements DeploymentFactory {
 
         return instance;
     }
-
-//    private DeploymentFactory jbossFactory = null;
-    /**
-     * Mapping of a server installation directory to a deployment factory
-     */
-    private HashMap/*<String, DeploymentFactory*/ jbossFactories = new HashMap();
 
     public static class JBClassLoader extends URLClassLoader {
 
@@ -126,7 +128,23 @@ public class JBDeploymentFactory implements DeploymentFactory {
        }
     }
 
-    public static URLClassLoader getJBClassLoader(String serverRoot, String domainRoot) {
+    public static synchronized JBClassLoader getJBClassLoader(InstanceProperties ip) {
+        JBClassLoader cl = JB_CLASSLOADER_CACHE.get(ip);
+        if (cl == null) {
+            DeploymentFactory factory = FACTORIES_CACHE.get(ip);
+            if (factory != null) {
+                cl = (JBClassLoader) factory.getClass().getClassLoader();
+            }
+            if (cl == null) {
+                cl = createJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR),
+                            ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
+            }
+            JB_CLASSLOADER_CACHE.put(ip, cl);
+        }
+        return cl;
+    }
+
+    public static JBClassLoader createJBClassLoader(String serverRoot, String domainRoot) {
         try {
 
             Version JBVer = JBPluginUtils.getServerVersion(new File (serverRoot));
@@ -221,7 +239,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
 //                urlList.add(logging50.toURI().toURL());
 //            }
 
-            URLClassLoader loader = new JBClassLoader(urlList.toArray(new URL[] {}), JBDeploymentFactory.class.getClassLoader());
+            JBClassLoader loader = new JBClassLoader(urlList.toArray(new URL[] {}), JBDeploymentFactory.class.getClassLoader());
             return loader;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, null, e);
@@ -250,12 +268,20 @@ public class JBDeploymentFactory implements DeploymentFactory {
             if (domainRoot == null)
                 domainRoot = JBPluginProperties.getInstance().getDomainLocation();
 
-            jbossFactory = (DeploymentFactory) jbossFactories.get(jbossRoot);
-            if ( jbossFactory == null ) {
-                URLClassLoader loader = getJBClassLoader(jbossRoot, domainRoot);
-                jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
+            InstanceProperties ip = InstanceProperties.getInstanceProperties(instanceURL);
+            synchronized(JBDeploymentFactory.class) {
+                if (ip != null) {
+                    jbossFactory = (DeploymentFactory) FACTORIES_CACHE.get(ip);
+                }
+                if (jbossFactory == null) {
+                    URLClassLoader loader = (ip != null) ? getJBClassLoader(ip) : createJBClassLoader(jbossRoot, domainRoot);
+                    jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
 
-                jbossFactories.put(jbossRoot, jbossFactory);
+                    
+                    if (ip != null) {
+                        FACTORIES_CACHE.put(ip, jbossFactory);
+                    }
+                }
             }
         } catch (Exception e) {
             LOGGER.log(Level.INFO, null, e);

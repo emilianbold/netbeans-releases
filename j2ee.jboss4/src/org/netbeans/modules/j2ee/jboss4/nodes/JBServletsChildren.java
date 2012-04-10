@@ -44,17 +44,20 @@
 
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.management.MalformedObjectNameException;
+import javax.management.MBeanServerConnection;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
+import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.JBRemoteAction;
+import org.netbeans.modules.j2ee.jboss4.JBoss5ProfileServiceProxy;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -68,7 +71,9 @@ import org.openide.util.RequestProcessor;
  * @author Michal Mocnak
  */
 public class JBServletsChildren extends Children.Keys {
-    
+
+    private static Logger LOGGER = Logger.getLogger(JBServletsChildren.class.getName());
+
     private static final String WAIT_NODE = "wait_node"; //NOI18N
     
     private String name;
@@ -88,34 +93,30 @@ public class JBServletsChildren extends Children.Keys {
             public void run() {
                 try {
                     // Query to the jboss4 server
-                    Object server = Util.getRMIServer(lookup);
-                    ObjectName searchPattern = new ObjectName("jboss.management.local:WebModule="+name+",j2eeType=Servlet,*");
-                    Method method = server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
-                    method = Util.fixJava4071957(method);
-                    Set managedObj = (Set) method.invoke(server, new Object[] {searchPattern, null});
-                    
-                    Iterator it = managedObj.iterator();
-                    
-                    // Query results processing
-                    while(it.hasNext()) {
-                        ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
-                        String s = elem.getKeyProperty("name");
-                        keys.add(new JBServletNode(s));
-                    }                    
-                } catch (MalformedObjectNameException ex) {
-                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
-                } catch (NullPointerException ex) {
-                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
-                } catch (IllegalArgumentException ex) {
-                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
-                } catch (SecurityException ex) {
-                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
-                } catch (InvocationTargetException ex) {
-                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
-                } catch (IllegalAccessException ex) {
-                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
-                } catch (NoSuchMethodException ex) {
-                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
+                    lookup.lookup(JBDeploymentManager.class).invokeRemoteAction(new JBRemoteAction<Void>() {
+
+                        @Override
+                        public Void action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                            ObjectName searchPattern = new ObjectName("jboss.management.local:WebModule="+name+",j2eeType=Servlet,*");
+                            Method method = connection.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
+                            method = Util.fixJava4071957(method);
+                            Set managedObj = (Set) method.invoke(connection, new Object[] {searchPattern, null});
+
+                            Iterator it = managedObj.iterator();
+
+                            // Query results processing
+                            while(it.hasNext()) {
+                                ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
+                                String s = elem.getKeyProperty("name");
+                                keys.add(new JBServletNode(s));
+                            }
+                            return null;
+                        }
+
+                    });
+                 
+                } catch (ExecutionException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
                 }
                 
                 setKeys(keys);
