@@ -526,13 +526,9 @@ public final class OptionsExportModel {
             if (items == null) {
                 items = new ArrayList<Item>();
                 FileObject[] itemsFOs = categoryFO.getChildren();
-                FileObject conf = FileUtil.getConfigFile(OPTIONS_EXPORT_FOLDER.concat("/").concat(categoryFO.getName()));  //NOI18N
-                if (conf != null) {
-                    FileObject[] categoryFOs = conf.getChildren();
-                    // respect ordering defined in layers
-                    List<FileObject> sortedItems = FileUtil.getOrder(Arrays.asList(categoryFOs), false);
-                    itemsFOs = sortedItems.toArray(new FileObject[sortedItems.size()]);
-                }
+                // respect ordering defined in layers
+                List<FileObject> sortedItems = FileUtil.getOrder(Arrays.asList(itemsFOs), false);
+                itemsFOs = sortedItems.toArray(new FileObject[sortedItems.size()]);
                 for (FileObject itemFO : itemsFOs) {
                     String dispName = (String) itemFO.getAttribute(DISPLAY_NAME);
                     assert dispName != null : "Display name of export option item not defined in layer.";  //NOI18N
