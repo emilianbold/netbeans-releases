@@ -79,7 +79,7 @@ public class DebugScript  extends RunScript {
                             provider.getStartFile(),
                             true,
                             // #209682 - "run as script" always from project files
-                            Collections.EMPTY_LIST,
+                            Collections.<Pair<String, String>>emptyList(),
                             provider.getDebugProxy(),
                             encoding);
                     dbgStarter.start(provider.getProject(), callable, props);

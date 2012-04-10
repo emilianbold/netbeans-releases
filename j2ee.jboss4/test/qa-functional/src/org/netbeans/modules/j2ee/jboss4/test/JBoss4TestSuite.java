@@ -363,7 +363,7 @@ public class JBoss4TestSuite extends NbTestCase {
 
     private boolean isProjectDeployed(ModuleType mt, String name, InstanceProperties ip) {
         try {
-            ClassLoader loader = JBDeploymentFactory.getJBClassLoader(
+            ClassLoader loader = JBDeploymentFactory.createJBClassLoader(
                     ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR),
                     ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
 

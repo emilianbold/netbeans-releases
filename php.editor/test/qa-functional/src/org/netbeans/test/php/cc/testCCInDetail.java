@@ -173,19 +173,19 @@ public class testCCInDetail extends cc {
     }
 
     public void testPhp54ArrayDereferencing() {
-        CreatePHPFile(TEST_PHP_NAME, "PHP File", null);
+        CreatePHPFile(TEST_PHP_NAME, "PHP File", "ArrayDeref");
         startTest();
         CCompletionCase test = new CCompletionCase("*/", "class MyClass {\n public $v;\n/**  @return MyClass[]     */\n public function getArray() {\n return array(new MyClass());\n }\n}\n\n $aa = new MyClass();\n $aa->getArray()[0]->", "$aa->getArray()[0]->", CCompletionCase.COMPLETION_LIST, 0, "v|getArray", -1, 12);
-        boolean result = CheckCodeCompletion(test, "NewEmptyPHP.php");
+        boolean result = CheckCodeCompletion(test, "ArrayDeref.php");
         assertTrue("Failed Array Dereferencing test", result);
         endTest();
     }
 
     public void testPhp54AnonymousObject() {
-        CreatePHPFile(TEST_PHP_NAME, "PHP File", null);
+        CreatePHPFile(TEST_PHP_NAME, "PHP File", "Anonymous.php");
         startTest();
         CCompletionCase test = new CCompletionCase("*/", "class MyClass {\n public $v;\n public $f;\n}\n\n (new MyClass())->", "(new MyClass())->", CCompletionCase.COMPLETION_LIST, 0, "v|f", -1, 12);
-        boolean result = CheckCodeCompletion(test, "NewEmptyPHP2.php");
+        boolean result = CheckCodeCompletion(test, "Anonymous.php");
         assertTrue("Failed Array AnonymousObject test", result);
         endTest();
     }

@@ -71,36 +71,36 @@ public final class RemoteFileObject extends FileObject implements Serializable {
 
     static final long serialVersionUID = 1931650016889811086L;
     private final RemoteFileSystem fileSystem;
-    private RemoteFileObjectBase delegate;
+    private RemoteFileObjectBase implementor;
     
     /*package*/ RemoteFileObject(RemoteFileSystem fileSystem) {
         this.fileSystem = fileSystem;
     }
     
-    /*package*/ void setImplementor(RemoteFileObjectBase delegate) {    
+    /*package*/ void setImplementor(RemoteFileObjectBase implementor) {
         boolean assertions = false;
         assert (assertions = true);
         if (assertions) {
             // important consistency checks
-            RemoteFileObject newWrapper = delegate.getOwnerFileObject();
+            RemoteFileObject newWrapper = implementor.getOwnerFileObject();
             // new impl should have its wrapper set to this
             if (newWrapper != null && newWrapper != this) {
                 RemoteLogger.assertTrue(false, "RFS inconsistency in {0}: delegate wrapper differs", this); // can't print neither this nor delegate since both are in ctors
             }
             // if replacing delegates, check that old one is invalid
-            if (this.delegate != null && this.delegate.isValid()) {
+            if (this.implementor != null && this.implementor.isValid()) {
                 RemoteLogger.assertTrue(false, "RFS inconsistency in {0}: replacing valid delegate", this); // can't print neither this nor delegate since both are in ctors
             }
         }
-        this.delegate = delegate;
+        this.implementor = implementor;
     }
 
     public RemoteFileObjectBase getImplementor() {
-        if (delegate == null) {
+        if (implementor == null) {
             String errMsg = "Null delegate"; // path is not avaliable! // NOI18N
             RemoteLogger.getInstance().log(Level.WARNING, errMsg, new NullPointerException(errMsg));
         }
-        return delegate;
+        return implementor;
     }
     
     @Override

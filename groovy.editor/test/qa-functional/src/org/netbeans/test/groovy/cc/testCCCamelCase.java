@@ -54,7 +54,7 @@ import org.netbeans.test.groovy.GeneralGroovy;
  */
 public class testCCCamelCase extends GeneralGroovy {
 
-    static final String TEST_BASE_NAME = "groovy_";
+    static final String TEST_BASE_NAME = "groovycc_";
     static int name_iterator = 0;
 
     public testCCCamelCase(String args) {
