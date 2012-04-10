@@ -94,7 +94,7 @@ public final class ResourceBundleKeys extends ELRule {
                 // broken AST, skip (perhaps could try just plain string search)
                 continue;
             }
-            for (Pair<AstIdentifier, AstString> pair : resourceBundles.collectKeys(each.getNode())) {
+            for (Pair<AstIdentifier, AstString> pair : resourceBundles.collectKeys(each.getNode(), info.context())) {
                 if (!resourceBundles.isValidKey(pair.first.getImage(), pair.second.getString())) {
                     Hint hint = new Hint(this,
                             NbBundle.getMessage(ResourceBundleKeys.class, "ResourceBundleKeys_Unknown", pair.second.getString()),

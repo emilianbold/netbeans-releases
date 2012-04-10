@@ -48,12 +48,16 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.MBeanServerConnection;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.JBRemoteAction;
+import org.netbeans.modules.j2ee.jboss4.JBoss5ProfileServiceProxy;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -65,7 +69,9 @@ import org.openide.util.RequestProcessor;
  * @author Michal Mocnak
  */
 public class JBEarModulesChildren extends Children.Keys {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(JBEarApplicationsChildren.class.getName());
+
     private Lookup lookup;
     private String j2eeAppName;
     
@@ -83,35 +89,42 @@ public class JBEarModulesChildren extends Children.Keys {
             
             public void run() {
                 try {
-                    // Query to the jboss4 server
-                    Object server = Util.getRMIServer(lookup);
-                    ObjectName searchPattern = new ObjectName("jboss.management.local:J2EEApplication="+j2eeAppName+",*");
-                    Method method = server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
-                    method = Util.fixJava4071957(method);
-                    Set managedObj = (Set) method.invoke(server, new Object[] {searchPattern, null});
-                    
-                    Iterator it = managedObj.iterator();
-                    
-                    // Query results processing
-                    while(it.hasNext()) {
-                        try {
-                            ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
-                            String name = elem.getKeyProperty("name");                            
-                            
-                            if(elem.getKeyProperty("j2eeType").equals("EJBModule"))
-                                keys.add(new JBEjbModuleNode(name, lookup));
-                            else if(elem.getKeyProperty("j2eeType").equals("WebModule")) {
-                                String url = "http://"+dm.getHost()+":"+dm.getPort();
-                                String descr = (String)Util.getMBeanParameter(dm, "jbossWebDeploymentDescriptor", elem.getCanonicalName());
-                                String context = Util.getWebContextRoot(descr, name);
-                                keys.add(new JBWebModuleNode(name, lookup, (context == null) ? null : url+context));
+                    dm.invokeRemoteAction(new JBRemoteAction<Void>() {
+
+                        @Override
+                        public Void action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                            // Query to the jboss4 server
+                            ObjectName searchPattern = new ObjectName("jboss.management.local:J2EEApplication="+j2eeAppName+",*");
+                            Method method = connection.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
+                            method = Util.fixJava4071957(method);
+                            Set managedObj = (Set) method.invoke(connection, new Object[] {searchPattern, null});
+
+                            Iterator it = managedObj.iterator();
+
+                            // Query results processing
+                            while(it.hasNext()) {
+                                try {
+                                    ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
+                                    String name = elem.getKeyProperty("name");
+
+                                    if(elem.getKeyProperty("j2eeType").equals("EJBModule"))
+                                        keys.add(new JBEjbModuleNode(name, lookup));
+                                    else if(elem.getKeyProperty("j2eeType").equals("WebModule")) {
+                                        String url = "http://"+dm.getHost()+":"+dm.getPort();
+                                        String descr = (String)Util.getMBeanParameter(connection, "jbossWebDeploymentDescriptor", elem.getCanonicalName());
+                                        String context = Util.getWebContextRoot(descr, name);
+                                        keys.add(new JBWebModuleNode(name, lookup, (context == null) ? null : url+context));
+                                    }
+                                } catch (Exception ex) {
+                                    LOGGER.log(Level.INFO, null, ex);
+                                }
                             }
-                        } catch (Exception ex) {
-                            Logger.getLogger("global").log(Level.INFO, null, ex);
+                            return null;
                         }
-                    }
-                } catch (Exception ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
+
+                    });
+                } catch (ExecutionException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
                 }
                 
                 setKeys(keys);

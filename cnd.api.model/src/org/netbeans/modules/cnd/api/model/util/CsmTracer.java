@@ -49,7 +49,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Writer;
 import java.util.*;
-
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 import org.openide.util.CharSequences;
@@ -234,8 +233,8 @@ public final class CsmTracer {
         //sb.append(isDummyUnresolved(cls) ? "<unresolved>" : cls.getQualifiedName());
         sb.append(cls == null ? NULL_TEXT : cls.getQualifiedName()); // NOI18N
 
-        sb.append(" VISIBILITY==" + inh.getVisibility()); // NOI18N
-        sb.append(" virtual==" + inh.isVirtual()); // NOI18N
+        sb.append(" VISIBILITY==").append(inh.getVisibility()); // NOI18N
+        sb.append(" virtual==").append(inh.isVirtual()); // NOI18N
 
         sb.append(" text='"); // NOI18N
         sb.append(inh.getText());
@@ -318,7 +317,7 @@ public final class CsmTracer {
             for (int i = 0; i < type.getArrayDepth(); i++) {
                 sb.append("[]"); // NOI18N
             }
-            sb.append(" TEXT=" + type.getText()); // NOI18N
+            sb.append(" TEXT=").append(type.getText()); // NOI18N
         }
         sb.append(' ');
         sb.append(getOffsetString(type, traceFile));
@@ -343,9 +342,9 @@ public final class CsmTracer {
         }
         StringBuilder sb = new StringBuilder(var.getName());
         sb.append(getOffsetString(var, traceFile));
-        sb.append("  TYPE: " + toString(var.getType(), false)); // NOI18N
-        sb.append("  INIT: " + toString(var.getInitialValue(), false)); // NOI18N
-        sb.append("  " + getScopeString(var)); // NOI18N
+        sb.append("  TYPE: ").append(toString(var.getType(), false)); // NOI18N
+        sb.append("  INIT: ").append(toString(var.getInitialValue(), false)); // NOI18N
+        sb.append("  ").append(getScopeString(var)); // NOI18N
         return sb.toString();
     }
 
@@ -807,6 +806,8 @@ public final class CsmTracer {
             return false;
         } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
             return false;
+        } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION_LAMBDA) {
+            return false;
         } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
             return false;
         } else if (decl.getKind() == CsmDeclaration.Kind.NAMESPACE_ALIAS) {
@@ -841,6 +842,8 @@ public final class CsmTracer {
         } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION) {
             dumpModel((CsmFunction) decl);
         } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
+            dumpModel((CsmFunctionDefinition) decl);
+        } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION_LAMBDA) {
             dumpModel((CsmFunctionDefinition) decl);
         } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND) {
             dumpModel((CsmFunction) decl);
@@ -947,6 +950,8 @@ public final class CsmTracer {
                 dumpModel((CsmFunction) member);
             } else if (member.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION) { // inline function
                 dumpModel((CsmFunctionDefinition) member);
+            } else if (member.getKind() == CsmDeclaration.Kind.FUNCTION_LAMBDA) { // lambda
+                dumpModel((CsmFunctionDefinition) member);
             } else if (member.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) { // inline function
                 dumpModel((CsmFunctionDefinition) member);
             } else if (member.getKind() == CsmDeclaration.Kind.TYPEDEF) {
@@ -1004,6 +1009,8 @@ public final class CsmTracer {
                     dumpModel((CsmFunction) friend);
                 } else if (friend.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION) { // inline function
                     dumpModel((CsmFunctionDefinition) friend);
+                } else if (friend.getKind() == CsmDeclaration.Kind.FUNCTION_LAMBDA) { // lambda
+                    dumpModel((CsmFunctionDefinition) friend);
                 } else if (friend.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND) {
                     dumpModel((CsmFunction) friend);
                 } else if (friend.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) { // inline function
@@ -1047,7 +1054,7 @@ public final class CsmTracer {
             StringBuilder sb = new StringBuilder(enumerator.getName());
             if (enumerator.getExplicitValue() != null) {
                 sb.append(' ');
-                sb.append(enumerator.getExplicitValue().getText() + getOffsetString(enumerator, false));
+                sb.append(enumerator.getExplicitValue().getText()).append(getOffsetString(enumerator, false));
             }
             print(sb.toString());
         }

@@ -3,5 +3,4 @@ function|Name($myInt);
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     functionName($param)            [PUBLIC]   issue202281.php
 ------------------------------------
-METHOD     function_exists($function_name  [PUBLIC]   PHP Platform
 KEYWORD    function                                   null

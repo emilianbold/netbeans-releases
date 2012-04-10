@@ -49,6 +49,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
@@ -313,7 +314,12 @@ public abstract class BrandingModel {
                     if( !iconLocation.exists() )
                         iconLocation.createNewFile();
                     FileObject fo = FileUtil.toFileObject(iconLocation);
-                    ImageIO.write(bi,"png", null == fo ? new FileOutputStream(iconLocation) : fo.getOutputStream());//NOI18N
+                    OutputStream os = fo == null ? new FileOutputStream(iconLocation) : fo.getOutputStream();
+                    try {
+                        ImageIO.write(bi, "png", os);
+                    } finally {
+                        os.close();
+                    }
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }

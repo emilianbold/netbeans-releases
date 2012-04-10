@@ -39,61 +39,38 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.test.groovy.hints;
+package org.netbeans.modules.cnd.modelimpl.csm;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.groovy.GeneralGroovy;
+import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
- * @author Vladimir Riha
+ * @author Alexander Simon
  */
-public class testFixImport extends GeneralGroovy {
+public final class LambdaFunction<T> extends FunctionDDImpl<T> {
+    
+    protected LambdaFunction(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
+    }
+    
+    @Override
+    public Kind getKind() {
+        return Kind.FUNCTION_LAMBDA;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
 
-    static final String TEST_BASE_NAME = "groovyfi_";
-    static int name_iterator = 0;
-
-    public testFixImport(String args) {
-        super(args);
+    @Override
+    public void write(RepositoryDataOutput output) throws IOException {
+        super.write(output);
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(testFixImport.class).addTest(
-                "CreateApplication",
-                "FixImportHint").enableModules(".*").clusters(".*"));
-    }
-
-    public void CreateApplication() {
-        startTest();
-        createJavaApplication(TEST_BASE_NAME + name_iterator);
-        testFixImport.name_iterator++;
-        endTest();
-    }
-
-    public void FixImportHint() {
-        startTest();
-        createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "AA");
-        EditorOperator file = new EditorOperator("AA.groovy");
-        file.setCaretPosition("AA ", false);
-        type(file, "extends AEADBadTagException");
-        new EventTool().waitNoEvent(1000);
-        Object[] anns = getAnnotations(file);
-
-        assertEquals("More annotations than expected", 1, anns.length);
-        String ideal = "Add import for javax.crypto.AEADBadTagException\n"
-                + "----\n"
-                + "(Alt-Enter shows hints)";
-        
-        for (Object object : anns) {
-            String desc = EditorOperator.getAnnotationShortDescription(object);
-            desc = desc.replaceAll("<.*>", "");
-            assertTrue(TEST_BASE_NAME, ideal.equals(desc.trim()));
-        }
-
-        endTest();
+    public LambdaFunction(RepositoryDataInput input) throws IOException {
+        super(input);
     }
 }

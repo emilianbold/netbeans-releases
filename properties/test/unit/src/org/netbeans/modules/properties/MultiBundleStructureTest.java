@@ -44,11 +44,14 @@ package org.netbeans.modules.properties;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import static org.junit.Assert.*;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -230,4 +233,37 @@ public class MultiBundleStructureTest extends NbTestCase {
         assertEquals(expResult, result);
     }
 
+    @Test
+    public void test_200108_fix() throws Exception {
+        System.out.println("deleting prop file with more then 2 locale");
+        List<FileObject> fileObjects = new ArrayList<FileObject>();
+        clearWorkDir();
+
+        File folder = new File(getWorkDir(), "properties");
+        folder.mkdir();
+        FileObject folderObject = FileUtil.toFileObject(folder);
+
+        File propFile = new File(folder, "boo.properties");
+        propFile.createNewFile();
+
+        FileObject toFileObject = FileUtil.toFileObject(propFile);
+        fileObjects.add(toFileObject);
+        PropertiesDataObject dataObject = (PropertiesDataObject) (DataObject.find(toFileObject));
+
+        MultiBundleStructure instance = new MultiBundleStructure(dataObject);
+        dataObject.setBundleStructure(instance);
+        instance.updateEntries();
+        Util.createLocaleFile(dataObject, "ar_EG", true);
+        Util.createLocaleFile(dataObject, "ar_JO", true);
+        int expResult = 3;
+        int result = instance.getEntryCount();
+        assertEquals(expResult, result);
+
+        folderObject.delete();
+
+        instance.updateEntries();
+        expResult = 0;
+        result = instance.getEntryCount();
+        assertEquals(expResult, result);
+    }
 }

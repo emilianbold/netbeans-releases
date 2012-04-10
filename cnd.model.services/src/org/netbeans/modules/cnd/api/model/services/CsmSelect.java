@@ -72,8 +72,9 @@ import org.openide.util.Lookup;
 public class CsmSelect {
 
     private static CsmSelectProvider DEFAULT = new Default();
-    public static final CsmFilter FUNCTION_KIND_FILTER = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
-                                                    CsmDeclaration.Kind.FUNCTION_FRIEND,CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
+    public static final CsmFilter FUNCTION_KIND_FILTER = CsmSelect.getFilterBuilder().createKindFilter(
+            CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION, CsmDeclaration.Kind.FUNCTION_LAMBDA,
+            CsmDeclaration.Kind.FUNCTION_FRIEND,CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
     public static final CsmFilter CLASSIFIER_KIND_FILTER = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.CLASS, CsmDeclaration.Kind.STRUCT,
                                                     CsmDeclaration.Kind.UNION, CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.TYPEDEF);
     

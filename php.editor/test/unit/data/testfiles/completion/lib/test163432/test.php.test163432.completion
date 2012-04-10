@@ -2,10 +2,3 @@ Code completion result for source line:
 @fn|c163432();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     fnc163432()                     [PUBLIC]   test.php
-------------------------------------
-METHOD     fnmatch($pattern, $string)      [PUBLIC]   PHP Platform
-METHOD     fnmatch($pattern, $string, $fl  [PUBLIC]   PHP Platform
-CONSTANT   FNM_CASEFOLD 16                 [PUBLIC]   PHP Platform
-CONSTANT   FNM_NOESCAPE 2                  [PUBLIC]   PHP Platform
-CONSTANT   FNM_PATHNAME 1                  [PUBLIC]   PHP Platform
-CONSTANT   FNM_PERIOD 4                    [PUBLIC]   PHP Platform

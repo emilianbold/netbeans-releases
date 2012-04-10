@@ -106,8 +106,7 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
                         if (Util.isRemoteManagementSupported(lookup) && !isEJB3) {
                             searchPattern = new ObjectName("jboss.management.local:"+(!type.equals(ModuleType.EAR) ?
                                 "J2EEApplication=null," : "")+"j2eeType="+Util.getModuleTypeString(type)+",name=" + fileName + ",*");
-                        }
-                        else {
+                        } else {
                             if (type.equals(ModuleType.EAR)) {
                                 searchPattern = new ObjectName("jboss.j2ee:service=EARDeployment,url='" + fileName + "'"); // NOI18N
                             }
@@ -122,7 +121,7 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
                         }
                         
                         int time = 0;
-                        while(dm.refreshRMIServer() != null && Util.isObjectDeployed(dm.getRMIServer(), searchPattern) && time < 30000) {
+                        while(Util.isObjectDeployed(dm, searchPattern) && time < 30000) {
                             try {
                                 Thread.sleep(2000);
                                 time += 2000;
