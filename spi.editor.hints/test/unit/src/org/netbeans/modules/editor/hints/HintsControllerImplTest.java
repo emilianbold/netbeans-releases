@@ -99,6 +99,33 @@ public class HintsControllerImplTest extends NbTestCase {
         assertGC("sub", subRef);
     }
 
+    public void testSubFixesEquals() throws Exception {
+        class TestFix implements Fix {
+            @Override public String getText() { return null; }
+            @Override public ChangeInfo implement() throws Exception { return null; }
+            @Override public int hashCode() { return 0; }
+            @Override public boolean equals(Object obj) {
+                return obj != null && this.getClass() == obj.getClass();
+            }
+        }
+
+        class SubFix implements Fix {
+            @Override public String getText() { return null; }
+            @Override public ChangeInfo implement() throws Exception { return null; }
+        }
+
+        Fix first = new TestFix();
+        Fix firstSub = new SubFix();
+        Fix second  = new TestFix();
+        Fix secondSub  = new SubFix();
+
+        HintsControllerImpl.attachSubfixes(first, Collections.singletonList(firstSub));
+        HintsControllerImpl.attachSubfixes(second, Collections.singletonList(secondSub));
+
+        assertSame(firstSub, HintsControllerImpl.getSubfixes(first).iterator().next());
+        assertSame(secondSub, HintsControllerImpl.getSubfixes(second).iterator().next());
+    }
+
     private void doTestComputeLineSpan(DocumentCreator creator) throws Exception {
         Document bdoc = creator.createDocument();
         
