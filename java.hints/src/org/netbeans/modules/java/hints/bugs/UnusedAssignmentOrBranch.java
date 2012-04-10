@@ -90,7 +90,7 @@ public class UnusedAssignmentOrBranch {
 
     private static final Set<ElementKind> LOCAL_VARIABLES = EnumSet.of(ElementKind.EXCEPTION_PARAMETER, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment", description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment", category="bugs", id=UNUSED_ASSIGNMENT_ID, options={Options.QUERY})
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment", description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment", category="bugs", id=UNUSED_ASSIGNMENT_ID, options={Options.QUERY}, suppressWarnings="UnusedAssignment")
     @TriggerTreeKind(Tree.Kind.COMPILATION_UNIT)
     public static List<ErrorDescription> unusedAssignment(final HintContext ctx) {
         final String unusedAssignmentLabel = NbBundle.getMessage(UnusedAssignmentOrBranch.class, "LBL_UNUSED_ASSIGNMENT_LABEL");
@@ -178,7 +178,7 @@ public class UnusedAssignmentOrBranch {
         return result;
     }
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", category="bugs", id=DEAD_BRANCH_ID, options={Options.NO_BATCH, Options.QUERY})
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", category="bugs", id=DEAD_BRANCH_ID, options={Options.NO_BATCH, Options.QUERY}, suppressWarnings="DeadBranch")
     @TriggerTreeKind(Tree.Kind.COMPILATION_UNIT)
     public static List<ErrorDescription> deadBranch(HintContext ctx) {
         String deadBranchLabel = NbBundle.getMessage(UnusedAssignmentOrBranch.class, "LBL_DEAD_BRANCH");
