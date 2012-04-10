@@ -44,19 +44,28 @@
 
 package org.netbeans.modules.cnd.completion.csm;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmFunctionInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -64,28 +73,19 @@ import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
-import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
-import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
-import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmEnumerator;
-import org.netbeans.modules.cnd.api.model.CsmFunctionInstantiation;
-import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
-import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
+import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.openide.util.CharSequences;
 
 /**
@@ -564,6 +564,9 @@ public class CsmContextUtilities {
             if (CsmKindUtilities.isFunction(scope)
                     && (!inScope || CsmOffsetUtilities.isInFunctionScope((CsmFunction)scope, offset))) {
                 result = (CsmFunction)scope;
+                if (!CsmKindUtilities.isLambda(scope)) {
+                    return result;
+                }
             }
         }
         return result;
@@ -595,7 +598,7 @@ public class CsmContextUtilities {
     
     public static CsmNamespace getNamespace(CsmContext context) {
         CsmFunction fun = getFunction(context, false);
-        CsmNamespace ns = null;
+        CsmNamespace ns;
         if (fun != null) {
             ns = getFunctionNamespace(fun);
         } else {

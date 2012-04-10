@@ -44,37 +44,37 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.api.model.CsmFile.FileType;
-import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
-import org.netbeans.modules.cnd.api.model.services.CsmFileLanguageProvider;
-import org.netbeans.modules.cnd.api.model.CsmInheritance;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
-import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import java.util.ListIterator;
-import java.util.LinkedList;
-import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
-import org.netbeans.modules.cnd.api.model.CsmScope;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFile.FileType;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
-import org.openide.util.lookup.Lookups;
-import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.*;
+import org.netbeans.modules.cnd.api.model.services.CsmFileLanguageProvider;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.repository.spi.Key;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -110,7 +110,7 @@ public class Utils {
     }
     
     public static String getLanguage(CsmFile.FileType fileType, String path) {
-        String lang = null;
+        String lang;
         if (!LangProviders.langProviders.isEmpty()) {
             for (org.netbeans.modules.cnd.api.model.services.CsmFileLanguageProvider provider : LangProviders.langProviders) {
                 lang = provider.getLanguage(fileType, path);
@@ -277,6 +277,8 @@ public class Utils {
                 return "e"; // NOI18N
             case FUNCTION_DEFINITION:
                 return "f"; // NOI18N
+            case FUNCTION_LAMBDA:
+                return "l"; // NOI18N
             case FUNCTION_INSTANTIATION:
                 return "j"; // NOI18N
             case USING_DIRECTIVE:
@@ -334,6 +336,8 @@ public class Utils {
                 return ENUMERATOR;
             case 'f': // NOI18N
                 return FUNCTION_DEFINITION;
+            case 'l': // NOI18N
+                return FUNCTION_LAMBDA;
             case 'j': // NOI18N
                 return FUNCTION_INSTANTIATION;
             case 'g': // NOI18N

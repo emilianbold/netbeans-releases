@@ -138,6 +138,10 @@ public class CndTokenUtilities {
         }
     }
 
+    public static <T extends TokenId> TokenItem<T> createTokenItem(T id, int offset, CharSequence text) {
+        return TokenItemImpl.create(id, offset, text);
+    }
+    
     public static <T extends TokenId> TokenItem<T> createTokenItem(TokenSequence<T> ts) {
         return TokenItemImpl.create(ts);
     }
@@ -425,6 +429,10 @@ public class CndTokenUtilities {
 
         public TokenItemImpl(T tokenID, PartType pt, int offset, CharSequence text) {
             super(tokenID, pt, offset, text);
+        }
+
+        private static <T extends TokenId> TokenItem<T> create(T id, int offset, CharSequence text) {
+            return new TokenItemImpl<T>(id, PartType.COMPLETE, offset, text);
         }
 
         private static <T extends TokenId> TokenItem<T> create(TokenSequence<T> ts) {

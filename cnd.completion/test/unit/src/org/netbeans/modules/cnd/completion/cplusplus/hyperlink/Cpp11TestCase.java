@@ -77,6 +77,9 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
     public void testBug210191() throws Exception {
         // Bug 210191 - Unresolved class members in lambdas
         performTest("bug210191.cpp", 7, 28, "bug210191.cpp", 3, 5);
+        // Bug 210887 -  regression in inaccuracy tests (dbx projectl)
+        performTest("bug210191.cpp", 31, 12, "bug210191.cpp", 26, 9);
+        performTest("bug210191.cpp", 27, 20, "bug210191.cpp", 26, 50);
     }
     
     public void testBug210192() throws Exception {

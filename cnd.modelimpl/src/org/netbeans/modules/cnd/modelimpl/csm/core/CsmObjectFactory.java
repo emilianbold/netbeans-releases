@@ -44,20 +44,20 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
-import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
-import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
-import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerNamespace;
-import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
-import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentMacros;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentIncludes;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentReferences;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentDeclarations;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentInstantiations;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionInstantiation;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentDeclarations;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentIncludes;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentInstantiations;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentMacros;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentReferences;
+import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
+import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerNamespace;
+import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionInstantiationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
+import org.netbeans.modules.cnd.modelimpl.csm.LambdaFunction;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl;
@@ -238,6 +239,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             } else if (object instanceof FunctionDDImpl<?>) {
                 if (object instanceof CsmFriendFunction) {
                     aHandler = FRIEND_FUNCTION_DEF_DECL_IMPL;
+                } else if (object instanceof LambdaFunction) {
+                    aHandler = FUNCTION_LAMBDA_IMPL;
                 } else {
                     aHandler = FUNCTION_DEF_DECL_IMPL;
                 }
@@ -468,6 +471,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new FunctionDDImpl(stream);
                 break;
 
+            case FUNCTION_LAMBDA_IMPL:
+                obj = new LambdaFunction(stream);
+                break;
+
             case VARIABLE_DEF_IMPL:
                 obj = new VariableDefinitionImpl(stream);
                 break;
@@ -639,10 +646,11 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int METHOD_IMPL_SPECIALIZATION     = METHOD_IMPL + 1;
     
     private static final int FUNCTION_DEF_DECL_IMPL         = METHOD_IMPL_SPECIALIZATION + 1;
+    private static final int FUNCTION_LAMBDA_IMPL           = FUNCTION_DEF_DECL_IMPL + 1;
     // end of functions
     
     // variables
-    private static final int VARIABLE_IMPL                  = FUNCTION_DEF_DECL_IMPL + 1;
+    private static final int VARIABLE_IMPL                  = FUNCTION_LAMBDA_IMPL + 1;
     private static final int VARIABLE_DEF_IMPL              = VARIABLE_IMPL + 1;
     private static final int FIELD_IMPL                     = VARIABLE_DEF_IMPL + 1;
     

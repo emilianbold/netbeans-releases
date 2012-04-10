@@ -43,7 +43,9 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 
@@ -51,36 +53,35 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
  * Implementation of <code>CsmReferenceContext</code>.
  *
  * @author Alexey Vladykin
+ * @author Vladimir Voskresensky
  */
 public class ReferenceContextImpl implements CsmReferenceContext {
 
-    private final CsmReferenceContext parent;
+    private final ReferenceContextImpl parent;
     private final int parentSize; // cached value of parent.size()
-    private final List stack;
+    // 0 - tokenItem, 1 - reference
+    private final List<Object> stack;
     private int popCount;
 
     public ReferenceContextImpl() {
         this(null, false);
     }
-
-    public ReferenceContextImpl(CsmReferenceContext parent) {
-        this(parent, false);
-    }
-
+    
     @SuppressWarnings("unchecked")
-    public ReferenceContextImpl(CsmReferenceContext parent, boolean fullcopy) {
+    public ReferenceContextImpl(ReferenceContextImpl parent, boolean fullcopy) {
         if (fullcopy && parent != null) {
             this.parent = null;
             this.parentSize = 0;
-            this.stack = new ArrayList();
-            for (int i = 0; i < parent.size(); ++i) {
-                stack.add(parent.getToken(i));
+            int size = parent.size();
+            this.stack = new ArrayList<Object>(size*2);
+            for (int i = 0; i < size; ++i) {
+                stack.add(parent.getTokenItem(i));
                 stack.add(parent.getReference(i));
             }
         } else {
             this.parent = parent;
             this.parentSize = parent == null ? 0 : parent.size();
-            this.stack = new ArrayList();
+            this.stack = new ArrayList<Object>(0);
         }
     }
 
@@ -92,7 +93,7 @@ public class ReferenceContextImpl implements CsmReferenceContext {
         } else {
             parent =  null;
         }
-        this.stack = new ArrayList(c.stack);
+        this.stack = new ArrayList<Object>(c.stack);
         this.popCount = c.popCount;
     }
 
@@ -122,16 +123,33 @@ public class ReferenceContextImpl implements CsmReferenceContext {
 
     @Override
     public CppTokenId getToken(int i) {
+        TokenItem<CppTokenId> token = getTokenItem(i);
+        return token == null ? null : token.id();
+    }
+
+    @Override
+    public int getTokenOffset() {
+        return getTokenOffset(size() - 1);
+    }
+
+    @Override
+    public int getTokenOffset(int i) {
+        TokenItem<CppTokenId> token = getTokenItem(i);
+        return token == null ? -1 : token.offset();
+    }
+
+    @SuppressWarnings("unchecked")
+    private TokenItem<CppTokenId> getTokenItem(int i) {
         if (0 <= i && i < parentSize - popCount) {
-            return parent.getToken(i);
+            return parent.getTokenItem(i);
         } else {
-            return (CppTokenId) stack.get(2 * (i - parentSize + popCount));
+            return (TokenItem<CppTokenId>) stack.get(2 * (i - parentSize + popCount));
         }
     }
 
     /*package*/
     @SuppressWarnings("unchecked")
-    void push(CppTokenId token, CsmReference ref) {
+    void push(TokenItem<? extends TokenId> token, CsmReference ref) {
         stack.add(token);
         stack.add(ref);
     }
@@ -157,7 +175,7 @@ public class ReferenceContextImpl implements CsmReferenceContext {
                 buf.append(' '); // NOI18N
             }
             buf.append('('); // NOI18N
-            buf.append(getToken(i));
+            buf.append(getTokenItem(i));
             buf.append(','); // NOI18N
             CsmReference ref = getReference(i);
             buf.append(ref == null ? null : ref.getText());
