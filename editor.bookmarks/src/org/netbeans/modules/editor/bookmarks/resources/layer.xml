@@ -88,7 +88,7 @@ made subject to such option by the copyright holder.
             </file>
             
             <file name="bookmark-history-popup-previous.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-history-popup-oprevious.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-history-popup-previous.instance"/>
                 <attr name="position" intvalue="2100"/>
             </file>
             
