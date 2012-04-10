@@ -850,8 +850,8 @@ class OccurenceBuilder {
                 clzName = ((ClassScope) scope).getSuperClassName();
             }
         }
-        clzName = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
         if (clzName != null && clzName.toString().length() > 0) {
+            clzName = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
             for (TypeElement typeElement : index.getTypes(NameKind.exact(clzName))) {
                 constants.addAll(ElementFilter.forName(methodName).filter(index.getAllTypeConstants(typeElement)));
             }
@@ -1209,8 +1209,8 @@ class OccurenceBuilder {
                             clzName = ((ClassScope) scope).getSuperClassName();
                         }
                     }
-                    clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                     if (clzName != null && clzName.toString().length() > 0) {
+                        clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                         if (fieldName.matchesName(PhpElementKind.FIELD, nodeInfo.getName())) {
                             QualifiedName fullyQualified = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
                             final Exact typeName = NameKind.exact(fullyQualified);
@@ -1276,8 +1276,8 @@ class OccurenceBuilder {
                                 clzName = ((ClassScope) scope).getSuperClassName();
                             }
                         }
-                        clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                         if (clzName != null && clzName.toString().length() > 0 && methodName.matchesName(PhpElementKind.METHOD, nodeInfo.getName())) {
+                            clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                             final Exact typeName = NameKind.exact(clzName);
                             boolean isTheSame = false;
                             //matches with other matching names
@@ -1341,8 +1341,8 @@ class OccurenceBuilder {
                             clzName = ((ClassScope) scope).getSuperClassName();
                         }
                     }
-                    clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                     if (clzName != null && clzName.toString().length() > 0) {
+                        clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                         if (constantName.matchesName(PhpElementKind.TYPE_CONSTANT, nodeInfo.getName())) {
                             final Exact typeName = NameKind.exact(clzName);
                             boolean isTheSame = false;
