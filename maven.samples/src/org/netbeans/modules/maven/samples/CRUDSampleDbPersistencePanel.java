@@ -79,7 +79,7 @@ public class CRUDSampleDbPersistencePanel implements WizardDescriptor.Panel,
     
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(CRUDSampleDbPersistencePanel.class);
+        return null;
     }
     
     @Override
