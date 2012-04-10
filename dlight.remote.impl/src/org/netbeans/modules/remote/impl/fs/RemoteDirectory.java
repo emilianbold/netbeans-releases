@@ -1302,14 +1302,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 antiLoop.add(getPath());
             }
         }
-        DirectoryStorage refreshedStorage = refreshDirectoryStorage(null, expected);
-        if (recursive) {
-            for (RemoteFileObjectBase child : getExistentChildren(refreshedStorage)) {
-                child.refreshImpl(true, antiLoop, expected);
+        if (canRead()) {
+            DirectoryStorage refreshedStorage = refreshDirectoryStorage(null, expected);
+            if (recursive) {
+                for (RemoteFileObjectBase child : getExistentChildren(refreshedStorage)) {
+                    child.refreshImpl(true, antiLoop, expected);
+                }
             }
         }
     }
-    
+
     private void trace(String message, Object... args) {
         if (trace) {
             message = "SYNC [" + getPath() + "][" + System.identityHashCode(this) + "][" + Thread.currentThread().getId() + "]: " + message; // NOI18N
