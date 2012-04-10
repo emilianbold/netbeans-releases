@@ -157,7 +157,7 @@ public class WhereUsedPanelVariable extends WhereUsedPanel.WhereUsedInnerPanel {
 
             @Override
             public void run() {
-                label.setText("<html>" + labelText + "</html>"); // NOI18N
+                label.setText(labelText);
                 label.setIcon(labelIcon);
             }
         });
