@@ -789,7 +789,7 @@ final class NbInstaller extends ModuleInstaller {
             arr.add("org.openide.modules.ModuleFormat1"); // NOI18N
             arr.add("org.openide.modules.ModuleFormat2"); // NOI18N
             
-            return arr.toArray (new String[0]);
+            return arr.toArray (new String[arr.size()]);
         }
         return null;
     }
