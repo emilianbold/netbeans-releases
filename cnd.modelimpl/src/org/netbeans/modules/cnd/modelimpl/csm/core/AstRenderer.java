@@ -1578,7 +1578,7 @@ public class AstRenderer {
             }
             if (keyword.getType() != CPPTokenTypes.LITERAL_enum && tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && !isRenderingLocalContext()) {
                 if(namespaceContainer == null && container2 == null && !functionParameter) {
-                    cfdi = createForwardClassDeclaration(ast, container2, file, scope);
+                    cfdi = createForwardClassDeclaration(ast, container2, file, null);
                 }
             }
             isThisReference = true;
