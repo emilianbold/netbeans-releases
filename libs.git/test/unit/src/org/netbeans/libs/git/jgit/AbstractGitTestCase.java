@@ -73,6 +73,7 @@ public class AbstractGitTestCase extends NbTestCase {
     private Repository repository;
     private final File repositoryLocation;
     private JGitRepository localRepository;
+    protected static final ProgressMonitor NULL_PROGRESS_MONITOR = ProgressMonitor.NULL_PROGRESS_MONITOR;
     
     public AbstractGitTestCase (String testName) throws IOException {
         super(testName);
