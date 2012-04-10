@@ -53,7 +53,7 @@ import org.netbeans.test.php.GeneralPHP;
  */
 public class testHints extends GeneralPHP {
 
-    static final String TEST_PHP_NAME = "PhpProject_cc_0002";
+    static final String TEST_PHP_NAME = "PhpProject_cc_0004";
 
     public testHints(String arg0) {
         super(arg0);

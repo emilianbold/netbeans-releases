@@ -275,6 +275,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("bug186638.cpp");
     }
 
+    public void testIZ201258() throws Exception {
+        // Bug 201258 - Forward declarations not resolved
+        performStaticTest("bug201258.cpp");
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
