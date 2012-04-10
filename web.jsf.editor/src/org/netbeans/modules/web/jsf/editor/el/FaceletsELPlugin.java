@@ -66,6 +66,7 @@ import org.netbeans.modules.web.jsf.api.editor.JSFResourceBundlesProvider;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.DefaultFaceletLibraries;
 import static org.netbeans.modules.web.el.spi.ImplicitObjectType.*;
+import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -124,12 +125,18 @@ public class FaceletsELPlugin implements ELPlugin {
     }
 
     @Override
-    public List<ResourceBundle> getResourceBundles(FileObject file) {
+    public List<ResourceBundle> getResourceBundles(FileObject file, ResolverContext context) {
         WebModule wm = WebModule.getWebModule(file);
-        if(wm == null) {
+        if (wm == null) {
             return Collections.emptyList();
         }
-        return JSFResourceBundlesProvider.getResourceBundles(wm);
+
+        // caches bundles if not loaded yet
+        if (context.getContent(FaceletsELPlugin.class.getName()) == null) {
+            context.setContent(FaceletsELPlugin.class.getName(), JSFResourceBundlesProvider.getResourceBundles(wm));
+        }
+
+        return (List<ResourceBundle>) context.getContent(FaceletsELPlugin.class.getName());
     }
 
     /**
