@@ -97,10 +97,10 @@ class EditLayoutSpacePanel extends javax.swing.JPanel {
             if (eg.canHaveDefaultValue() && defaultNames != null) {
                 sizeCombo.setModel(new DefaultComboBoxModel(defaultNames));
                 if (eg.definedSize == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
-                    if (eg.paddingType == null) {
+                    LayoutConstants.PaddingType[] defaultTypes = eg.getPossiblePaddingTypes();
+                    if (eg.paddingType == null || defaultTypes == null || defaultTypes.length == 0) {
                         selected = defaultNames[0];
                     } else {
-                        LayoutConstants.PaddingType[] defaultTypes = eg.getPossiblePaddingTypes();
                         for (int i=0; i < defaultTypes.length; i++) {
                             if (eg.paddingType == defaultTypes[i]) {
                                 selected = defaultNames[i];
