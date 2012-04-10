@@ -351,7 +351,7 @@ ${keyStringBody}
                 ${entityClassName} o = (${entityClassName}) object;
                 return getStringKey(o.${keyGetter}());
             } else {
-                throw new IllegalArgumentException("object " + object + " is of type " + object.getClass().getName() + "; expected type: "+${controllerClassName}.class.getName());
+                throw new IllegalArgumentException("object " + object + " is of type " + object.getClass().getName() + "; expected type: "+${entityClassName}.class.getName());
             }
         }
 
