@@ -172,7 +172,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             index.query(names, DocumentUtil.sourceNameConvertor(), DocumentUtil.sourceNameFieldSelector(), cancel.get(), q);
             return names.isEmpty() ? null : names.iterator().next();
         } catch (IOException e) {
-            return this.<String,IOException>handleException(null,e);
+            return this.<String,IOException>handleException(null ,e, root);
         }
     }
     
@@ -252,7 +252,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 throw new IllegalArgumentException(element.toString());
             }
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null, ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
     
@@ -286,7 +286,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 }
             });
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null,ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
     
@@ -333,7 +333,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 }
             });
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null, ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
     
@@ -373,7 +373,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 }
             });
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null, ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
     
@@ -399,7 +399,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 }
             });
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null, ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
         
