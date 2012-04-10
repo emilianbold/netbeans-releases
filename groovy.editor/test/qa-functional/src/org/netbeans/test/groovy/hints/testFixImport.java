@@ -53,7 +53,7 @@ import org.netbeans.test.groovy.GeneralGroovy;
  */
 public class testFixImport extends GeneralGroovy {
 
-    static final String TEST_BASE_NAME = "groovy_";
+    static final String TEST_BASE_NAME = "groovyfi_";
     static int name_iterator = 0;
 
     public testFixImport(String args) {
