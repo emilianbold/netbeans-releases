@@ -139,6 +139,7 @@ import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import static java.util.logging.Level.FINER;
+import javax.swing.*;
 
 /** 
  * Support for viewing .properties files (EditCookie) by opening them in a text editor.
@@ -1282,7 +1283,9 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         
         /** Creates new editor */
         public PropertiesEditor(Lookup lookup) {
-            super(lookup.lookup(PropertiesEditorSupport.class), true);
+            super(lookup.lookup(PropertiesEditorSupport.class));
+            PropertiesEditorSupport support = lookup.lookup(PropertiesEditorSupport.class);
+            setActivatedNodes(new Node[] {support.getDataObject().getNodeDelegate()});
         }
 
         /** Initializes object, used in construction and deserialization. */

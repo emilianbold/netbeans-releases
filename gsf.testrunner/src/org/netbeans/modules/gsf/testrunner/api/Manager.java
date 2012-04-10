@@ -100,7 +100,8 @@ public final class Manager {
     public static final String TESTNG_TF = "testng"; // NOI18N
     private String testingFramework = ""; // NOI18N
     private Notification bubbleNotification = null;
-    private BubbleDisplayer bubbleDisplayer = null;
+    private final RequestProcessor.Task bubbleTask;
+    private final RequestProcessor RP = new RequestProcessor(Manager.class.getName(), 1, true);
     
     public void setTestingFramework(String testingFramework) {
         this.testingFramework = testingFramework;
@@ -158,6 +159,13 @@ public final class Manager {
 
     private Manager() {
         lateWindowPromotion = true;
+        bubbleTask = RP.create(new Runnable() {
+
+            @Override
+            public void run() {
+                bubbleNotification.clear();
+            }
+        });
     }
 
     public synchronized void emptyTestRun(TestSession session) {
@@ -382,11 +390,8 @@ public final class Manager {
                             Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/testResults.png"));   //NOI18N
                             String projectname = ProjectUtils.getInformation(session.getProject()).getDisplayName();
                             
-                            if(bubbleNotification != null) {
-                                if(bubbleDisplayer != null && bubbleDisplayer.isAlive()) {
-                                    bubbleDisplayer.interrupt();
-                                }
-                                bubbleNotification.clear();
+                            if(bubbleTask.cancel()) {
+                                bubbleTask.schedule(0);
                             }
                             bubbleNotification = NotificationDisplayer.getDefault().notify(Bundle.LBL_NotificationDisplayer_title(projectname), icon,
                                     Bundle.LBL_NotificationDisplayer_detailsText(), new ActionListener() {
@@ -394,25 +399,14 @@ public final class Manager {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
                                     window.promote();
+                                    bubbleTask.cancel();
                                 }
                             });
-                            bubbleDisplayer = new BubbleDisplayer();
-                            bubbleDisplayer.start();
+                            bubbleTask.schedule(15000);
                         }
                     }
                 });
             }
-        }
-    }
-
-    private class BubbleDisplayer extends Thread {
-
-        @Override
-        public void run() {
-            try {
-                Thread.sleep(15000);
-                bubbleNotification.clear();
-            } catch (InterruptedException e) {}
         }
     }
 

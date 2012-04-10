@@ -60,7 +60,8 @@ import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
-import org.openide.util.Exceptions;
+import static org.netbeans.modules.hudson.subversion.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputListener;
 import org.openide.xml.XMLUtil;
@@ -76,6 +77,10 @@ public class HudsonSubversionSCM implements HudsonSCM {
 
     private static final Logger LOG = Logger.getLogger(HudsonSubversionSCM.class.getName());
 
+    @Messages({
+        "# {0} - error message", "ERR_reading_folder=Could not inspect Subversion checkout: {0}",
+        "ERR_unsupported=This Subversion working copy version is not supported."
+    })
     public @Override Configuration forFolder(File folder) {
         try {
             SvnUtils.Info info = SvnUtils.parseCheckout(folder.toURI().toURL());
@@ -100,10 +105,20 @@ public class HudsonSubversionSCM implements HudsonSCM {
                     return null;
                 }
             };
-        } catch (IOException ex) {
-            LOG.log(Level.WARNING, "inspecting configuration for " + folder, ex);
-            Exceptions.printStackTrace(ex);
-            return null;
+        } catch (final IOException x) {
+            return new Configuration() {
+                @Override public void configure(Document configXml) {}
+                @Override public ConfigurationStatus problems() {
+                    return ConfigurationStatus.withError(ERR_reading_folder(x.toString()));
+                }
+            };
+        } catch (final SvnUtils.UnsupportedSubversionVersionException x) {
+            return new Configuration() {
+                @Override public void configure(Document configXml) {}
+                @Override public ConfigurationStatus problems() {
+                    return ConfigurationStatus.withError(ERR_unsupported());
+                }
+            };
         }
     }
 

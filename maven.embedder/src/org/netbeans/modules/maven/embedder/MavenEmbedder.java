@@ -330,8 +330,10 @@ public final class MavenEmbedder {
         SettingsDecryptionResult decryptionResult = settingsDecrypter.decrypt(new DefaultSettingsDecryptionRequest(_settings));
         DefaultProxySelector proxySelector = new DefaultProxySelector();
         for (Proxy p : decryptionResult.getProxies()) {
-            //#null -> getProtocol() #209499
-            proxySelector.add(new org.sonatype.aether.repository.Proxy(p.getProtocol(), p.getHost(), p.getPort(), new Authentication(p.getUsername(), p.getPassword())), p.getNonProxyHosts());
+            if (p.isActive()) {
+               //#null -> getProtocol() #209499
+               proxySelector.add(new org.sonatype.aether.repository.Proxy(p.getProtocol(), p.getHost(), p.getPort(), new Authentication(p.getUsername(), p.getPassword())), p.getNonProxyHosts());
+            }
         }
         session.setProxySelector(proxySelector);
         DefaultAuthenticationSelector authenticationSelector = new DefaultAuthenticationSelector();
