@@ -381,7 +381,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         if (!resourceBundles.canHaveBundles()) {
             return;
         }
-        for (ResourceBundle bundle : resourceBundles.getBundles()) {
+        for (ResourceBundle bundle : resourceBundles.getBundles(ccontext.context())) {
             if (!prefix.matches(bundle.getVar())) {
                 continue;
             }
