@@ -415,6 +415,9 @@ public class FormUtils
             "model", "text" },
         { "javax.swing.JRadioButton",
             "model", "buttonGroup" },
+        { "java.awt.Frame",
+            "undecorated", "opacity",
+            "undecorated", "shape" },
         { "javax.swing.JFileChooser",
             "dialogType", "approveButtonText"}
     };
