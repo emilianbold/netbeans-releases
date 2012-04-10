@@ -94,6 +94,8 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
 
     private static final RequestProcessor RP = new RequestProcessor(BasicArtifactPanel.class);
     
+    private boolean renderType = false;
+    
     private JToolBar toolbar;
 
     /** Creates new form BasicArtifactPanel */
@@ -129,7 +131,12 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                 Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof NBVersionInfo) {
                     NBVersionInfo info = (NBVersionInfo)value;
-                    ((JLabel)c).setText(info.getVersion());
+                    if (renderType) {
+                    //often there are 2 or more types associated with a given version, list it, instead of just rendering 2 or more same versions
+                        ((JLabel)c).setText(info.getVersion() + "  [" + info.getType() + "]");
+                    } else {
+                        ((JLabel)c).setText(info.getVersion());
+                    }
                 }
                 return c;
             }
@@ -550,6 +557,9 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                         for (NBVersionInfo ver : infos) {
                             if (!av.equals(new DefaultArtifactVersion(ver.getVersion()))) {
                                 dlm.addElement(ver);
+                            }
+                            if (!artifact.getType().equals(ver.getType())) {
+                                renderType = true;
                             }
                         }
                         if (result.isPartial()) {
