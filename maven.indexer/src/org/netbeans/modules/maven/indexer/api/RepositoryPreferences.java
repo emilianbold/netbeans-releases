@@ -56,6 +56,8 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.settings.Mirror;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -415,6 +417,24 @@ public final class RepositoryPreferences {
      */
     public void removeChangeListener(ChangeListener l) {
         cs.removeChangeListener(l);
+    }
+
+    /**
+     * Produces a list of remote repositories.
+     * @see MavenEmbedder#resolve
+     * @see ProjectBuildingRequest#setRemoteRepositories
+     * @since 2.12
+     */
+    public List<ArtifactRepository> remoteRepositories(MavenEmbedder embedder) {
+        List<ArtifactRepository> remotes = new ArrayList<ArtifactRepository>();
+        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+            // XXX should there be a String preferredId parameter to limit the remote repositories used in case we have a "reference" ID somehow?
+            if (!info.isLocal()) {
+                remotes.add(EmbedderFactory.createRemoteRepository(embedder, info.getRepositoryUrl(), info.getId()));
+            }
+            // XXX do we care to handle mirrors specially?
+        }
+        return remotes;
     }
 
 }
