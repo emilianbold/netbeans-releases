@@ -2437,6 +2437,7 @@ public class ChildrenKeysTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #8126 from ChildrenLazyKeysTest: addNotify() should not be called now
     public void testSetChildrenDoNotCallAddNotify() {
         final AtomicBoolean addNotifyForbidden = new AtomicBoolean(false);
         class K extends Keys {
