@@ -43,36 +43,24 @@
  */
 package org.netbeans.modules.subversion.client;
 
-import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URL;
-import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import org.netbeans.api.autoupdate.InstallSupport;
-import org.netbeans.api.autoupdate.InstallSupport.Installer;
-import org.netbeans.api.autoupdate.InstallSupport.Validator;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.OperationException;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.options.SvnOptionsController;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -88,17 +76,6 @@ public class MissingClient implements ActionListener, HyperlinkListener {
         panel.browseButton.addActionListener(this);        
         panel.executablePathTextField.setText(SvnModuleConfig.getDefault().getExecutableBinaryPath());
         panel.textPane.addHyperlinkListener(this);
-        panel.downloadRadioButton.addActionListener(this);
-        panel.cliRadioButton.addActionListener(this);        
-        if(Utilities.isWindows() && !SvnUtils.isJava64()) {
-            panel.downloadRadioButton.setSelected(true);
-        } else {
-            panel.cliRadioButton.setSelected(true);
-            panel.downloadRadioButton.setEnabled(false);
-            panel.forceGlobalCheckBox.setEnabled(false);
-            panel.lblBinariesAvailableTip.setEnabled(false);
-        }
-        radioSwitch();
     }
 
     public JPanel getPanel() {
@@ -116,12 +93,8 @@ public class MissingClient implements ActionListener, HyperlinkListener {
                 new Object [] { ok, cancel },
                 ok);
         if(DialogDisplayer.getDefault().notify(descriptor) == ok) {
-            if(panel.downloadRadioButton.isSelected()) {
-                onDownload();
-            } else {
-                SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());
-                SvnClientFactory.resetCLI();
-            }
+            SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());
+            SvnClientFactory.resetCLI();
         }
     }
     
@@ -147,8 +120,6 @@ public class MissingClient implements ActionListener, HyperlinkListener {
     public void actionPerformed(ActionEvent evt) {
         if(evt.getSource() == panel.browseButton) {
             onBrowseClick();
-        } else if(evt.getSource() == panel.downloadRadioButton || evt.getSource() == panel.cliRadioButton) {
-            radioSwitch();
         }
     }
 
@@ -163,100 +134,6 @@ public class MissingClient implements ActionListener, HyperlinkListener {
             displayer.showURL (url);
         } else {
             Subversion.LOG.info("No URLDisplayer found.");
-        }
-    }
-
-    private void onDownload() {
-        DownloadPlugin dp = new DownloadPlugin();
-        dp.show();
-        UpdateElement updateElement = dp.getUpdateElement();
-        if(updateElement != null) {
-            install(updateElement);
-        }
-    }
-
-    private void install(final UpdateElement updateElement) {
-        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    InstallCancellable ic = new InstallCancellable();
-                    OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
-                    if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
-                        oc.add(updateElement);
-                    } else if (updateElement.getUpdateUnit().isPending()) {
-                        notifyInDialog(NbBundle.getMessage(MissingClient.class, "MSG_MissingClient_RestartNeeded"), //NOI18N
-                            NbBundle.getMessage(MissingClient.class, "LBL_MissingClient_RestartNeeded"), //NOI18N
-                            NotifyDescriptor.INFORMATION_MESSAGE, false);
-                        return;
-                    } else {
-                        oc = OperationContainer.createForUpdate();
-                        if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
-                            oc.add(updateElement);
-                        } else {
-                            Subversion.LOG.log(Level.WARNING, "MissingClient: cannot install {0}", updateElement.toString());
-                            if (updateElement.getUpdateUnit().getInstalled() != null) {
-                                Subversion.LOG.log(Level.WARNING, "MissingClient: already installed {0}", updateElement.getUpdateUnit().getInstalled().toString());
-                            }
-                            notifyInDialog(NbBundle.getMessage(MissingClient.class, "MSG_MissingClient_InvalidOperation"), //NOI18N
-                                    NbBundle.getMessage(MissingClient.class, "LBL_MissingClient_InvalidOperation"), //NOI18N
-                                    NotifyDescriptor.ERROR_MESSAGE, false);
-                            return;
-                        }
-                    }
-                    Validator v = oc.getSupport().doDownload(ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Downloading") + updateElement.getDisplayName(), ic), panel.forceGlobalCheckBox.isSelected());
-                    if(ic.cancelled) return;
-                    Installer i = oc.getSupport().doValidate(v, ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Validating") + updateElement.getDisplayName(), ic));
-                    if(ic.cancelled) return;
-                    Restarter rest = oc.getSupport().doInstall(i, ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Installing") + updateElement.getDisplayName(), ic));
-                    if(rest != null) {
-                        JButton restart = new JButton(NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Restart"));
-                        JButton cancel = new JButton(NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel"));
-                        NotifyDescriptor descriptor = new NotifyDescriptor(
-                                NbBundle.getMessage(MissingClient.class, "MSG_NeedsRestart"),
-                                NbBundle.getMessage(MissingClient.class, "LBL_DownloadJavahl"),
-                                    NotifyDescriptor.OK_CANCEL_OPTION,
-                                    NotifyDescriptor.QUESTION_MESSAGE,
-                                    new Object [] { restart, cancel },
-                                    restart);
-                        if(DialogDisplayer.getDefault().notify(descriptor) == restart) {
-                            oc.getSupport().doRestart(
-                                rest,
-                                ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Restarting")));
-                        }
-                    }
-                } catch (OperationException e) {
-                    Subversion.LOG.log(Level.INFO, null, e);
-                    notifyError(NbBundle.getMessage(MissingClient.class, "MSG_MissingClient_UC_Unavailable"),   // NOI18N
-                            NbBundle.getMessage(MissingClient.class, "LBL_MissingClient_UC_Unavailable"));      // NOI18N
-                }
-            }
-        });
-    }
-
-    private static void notifyError (final String message, final String title) {
-        notifyInDialog(message, title, NotifyDescriptor.ERROR_MESSAGE, true);
-    }
-
-    private static void notifyInDialog (final String message, final String title, int messageType, boolean cancelVisible) {
-        NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, messageType, 
-                cancelVisible ? new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION} : new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notifyLater(nd);
-    }
-
-    private void radioSwitch() {
-        boolean cliEnabled = panel.cliRadioButton.isSelected();
-        panel.browseButton.setEnabled(cliEnabled);
-        panel.executablePathTextField.setEnabled(cliEnabled);
-    }
-
-    private class InstallCancellable implements Cancellable {
-        private boolean cancelled;
-        @Override
-        public boolean cancel() {
-            cancelled = true;
-            return true;
         }
     }
 }
