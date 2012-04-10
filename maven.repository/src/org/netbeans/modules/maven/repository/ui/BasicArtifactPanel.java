@@ -94,6 +94,8 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
 
     private static final RequestProcessor RP = new RequestProcessor(BasicArtifactPanel.class);
     
+    private boolean renderType = false;
+    
     private JToolBar toolbar;
 
     /** Creates new form BasicArtifactPanel */
@@ -129,7 +131,12 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                 Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof NBVersionInfo) {
                     NBVersionInfo info = (NBVersionInfo)value;
-                    ((JLabel)c).setText(info.getVersion());
+                    if (renderType) {
+                    //often there are 2 or more types associated with a given version, list it, instead of just rendering 2 or more same versions
+                        ((JLabel)c).setText(info.getVersion() + "  [" + info.getType() + "]");
+                    } else {
+                        ((JLabel)c).setText(info.getVersion());
+                    }
                 }
                 return c;
             }
@@ -238,22 +245,18 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblGroupId)
-                            .addComponent(lblArtifactId)
-                            .addComponent(lblVersion)
-                            .addComponent(lblPackaging))
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                            .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                            .addComponent(txtVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                            .addComponent(txtPackaging, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(lblClassifier)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(txtClassifier, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)))
+                    .addComponent(lblGroupId)
+                    .addComponent(lblArtifactId)
+                    .addComponent(lblVersion)
+                    .addComponent(lblPackaging)
+                    .addComponent(lblClassifier))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtClassifier)
+                    .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                    .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                    .addComponent(txtVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                    .addComponent(txtPackaging, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -551,6 +554,9 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                             if (!av.equals(new DefaultArtifactVersion(ver.getVersion()))) {
                                 dlm.addElement(ver);
                             }
+                            if (!artifact.getType().equals(ver.getType())) {
+                                renderType = true;
+                            }
                         }
                         if (result.isPartial()) {
                             dlm.addElement(TXT_INCOMPLETE());
@@ -595,7 +601,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                             mdl.addElement(ver);
                         }
                         if (result.isPartial()) {
-                            dlm.addElement(TXT_INCOMPLETE());
+                            mdl.addElement(TXT_INCOMPLETE());
                         }
                     }
                 });

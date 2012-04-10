@@ -46,10 +46,10 @@ package org.netbeans.modules.j2ee.jboss4.nodes;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -64,6 +64,8 @@ import javax.management.ReflectionException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.JBRemoteAction;
+import org.netbeans.modules.j2ee.jboss4.JBoss5ProfileServiceProxy;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -82,20 +84,6 @@ public class Util {
     public static final String INFO_NODE = "info_node"; //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
-
-    /**
-     * Lookup a JBoss4 RMI Adaptor
-     */
-    public static MBeanServerConnection getRMIServer(Lookup lookup) {
-        return getRMIServer((JBDeploymentManager)lookup.lookup(JBDeploymentManager.class));
-    }
-
-    /**
-     * Lookup a JBoss4 RMI Adaptor
-     */
-    public static MBeanServerConnection getRMIServer(JBDeploymentManager manager) {
-        return manager.getRMIServer();
-    }
 
     /* Creates and returns the instance of the node
      * representing the status 'WAIT' of the node.
@@ -144,36 +132,26 @@ public class Util {
      * @return is remote management supported
      */
     public static boolean isRemoteManagementSupported(Lookup lookup) {
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        JBDeploymentManager dm = lookup.lookup(JBDeploymentManager.class);
+        if (dm == null) {
+            return false;
+        }
         try {
-            Object server = Util.getRMIServer(lookup);
-            Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
-            
-            ObjectName searchPattern;
-            searchPattern = new ObjectName("jboss.management.local:*");
-            Method method = server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
-            method = fixJava4071957(method);
-            Set managedObj = (Set) method.invoke(server, new Object[] {searchPattern, null});
+            dm.invokeRemoteAction(new JBRemoteAction<Boolean>() {
 
-            if (managedObj.isEmpty()) {
-                return false;
-            }
-        } catch (SecurityException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } catch (InvocationTargetException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } catch (NoSuchMethodException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } catch (MalformedObjectNameException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } catch (NullPointerException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } finally {
-            Thread.currentThread().setContextClassLoader(orig);
+                @Override
+                public Boolean action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                    // FIXME is this refletion needed
+                    ObjectName searchPattern = new ObjectName("jboss.management.local:*");
+                    Method method = connection.getClass().getMethod("queryMBeans", new Class[]{ObjectName.class, QueryExp.class});
+                    method = fixJava4071957(method);
+                    Set managedObj = (Set) method.invoke(connection, new Object[]{searchPattern, null});
+
+                    return !managedObj.isEmpty();
+                }
+            });
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
 
         return true;
@@ -184,28 +162,23 @@ public class Util {
      *
      * @return if specified object is deployed
      */
-    public static boolean isObjectDeployed(Object server, ObjectName searchPattern) {
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+    public static boolean isObjectDeployed(JBDeploymentManager dm, final ObjectName searchPattern) {
         try {
-            Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
-            Method method = server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
-            method = fixJava4071957(method);
-            Set managedObj = (Set) method.invoke(server, new Object[] {searchPattern, null});
+            dm.invokeRemoteAction(new JBRemoteAction<Boolean>() {
 
-            if(managedObj.size() > 0)
-                return true;
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } catch (SecurityException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } catch (InvocationTargetException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } catch (NoSuchMethodException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } finally {
-            Thread.currentThread().setContextClassLoader(orig);
+                @Override
+                public Boolean action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                    // FIXME is this reflection really needed
+                    Method method = connection.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
+                    method = fixJava4071957(method);
+                    Set managedObj = (Set) method.invoke(connection, new Object[] {searchPattern, null});
+
+                    return managedObj.size() > 0;
+                }
+
+            });
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
 
         return false;
@@ -232,16 +205,9 @@ public class Util {
      *
      * @return MBean attribute
      */
-    public static Object getMBeanParameter(JBDeploymentManager dm, String name, String targetObject) {
-        Object retval = null;
-        MBeanServerConnection server = dm.refreshRMIServer();
-        if ( server == null)
-            return retval;
-
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+    public static Object getMBeanParameter(MBeanServerConnection server, String name, String targetObject) {
         try {
-            Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
-            retval = server.getAttribute(new ObjectName(targetObject), name);
+            return server.getAttribute(new ObjectName(targetObject), name);
         } catch (InstanceNotFoundException ex) {
             LOGGER.log(Level.INFO, null, ex);
         } catch (AttributeNotFoundException ex) {
@@ -260,10 +226,8 @@ public class Util {
             LOGGER.log(Level.INFO, null, ex);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
-        } finally {
-            Thread.currentThread().setContextClassLoader(orig);
         }
-        return retval;
+        return null;
     }
 
     /**

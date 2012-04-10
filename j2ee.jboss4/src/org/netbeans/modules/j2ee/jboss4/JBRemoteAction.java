@@ -39,61 +39,18 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.test.groovy.hints;
+package org.netbeans.modules.j2ee.jboss4;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.groovy.GeneralGroovy;
+import javax.management.MBeanServerConnection;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
  *
- * @author Vladimir Riha
+ * @author Petr Hejl
  */
-public class testFixImport extends GeneralGroovy {
+public interface JBRemoteAction<T> {
 
-    static final String TEST_BASE_NAME = "groovyfi_";
-    static int name_iterator = 0;
-
-    public testFixImport(String args) {
-        super(args);
-    }
-
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(testFixImport.class).addTest(
-                "CreateApplication",
-                "FixImportHint").enableModules(".*").clusters(".*"));
-    }
-
-    public void CreateApplication() {
-        startTest();
-        createJavaApplication(TEST_BASE_NAME + name_iterator);
-        testFixImport.name_iterator++;
-        endTest();
-    }
-
-    public void FixImportHint() {
-        startTest();
-        createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "AA");
-        EditorOperator file = new EditorOperator("AA.groovy");
-        file.setCaretPosition("AA ", false);
-        type(file, "extends AEADBadTagException");
-        new EventTool().waitNoEvent(1000);
-        Object[] anns = getAnnotations(file);
-
-        assertEquals("More annotations than expected", 1, anns.length);
-        String ideal = "Add import for javax.crypto.AEADBadTagException\n"
-                + "----\n"
-                + "(Alt-Enter shows hints)";
-        
-        for (Object object : anns) {
-            String desc = EditorOperator.getAnnotationShortDescription(object);
-            desc = desc.replaceAll("<.*>", "");
-            assertTrue(TEST_BASE_NAME, ideal.equals(desc.trim()));
-        }
-
-        endTest();
-    }
+    T action(@NonNull MBeanServerConnection connection,
+            @NullAllowed JBoss5ProfileServiceProxy profileService) throws Exception;
 }

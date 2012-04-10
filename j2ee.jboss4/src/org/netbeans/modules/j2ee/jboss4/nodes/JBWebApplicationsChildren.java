@@ -45,18 +45,21 @@
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.MBeanServerConnection;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.JBRemoteAction;
+import org.netbeans.modules.j2ee.jboss4.JBoss5ProfileServiceProxy;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -96,70 +99,72 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
             Vector keys = new Vector();
 
             public void run() {
-                ClassLoader orig = Thread.currentThread().getContextClassLoader();
                 try {
-                    // Query to the jboss server
-                    ObjectName searchPattern;
-                    if (abilitiesSupport.isRemoteManagementSupported()
-                            && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
-                        searchPattern = new ObjectName("jboss.management.local:j2eeType=WebModule,J2EEApplication=null,*"); // NOI18N
-                    }
-                    else {
-                        searchPattern = new ObjectName("jboss.web:j2eeType=WebModule,J2EEApplication=none,*"); // NOI18N
-                    }
+                    lookup.lookup(JBDeploymentManager.class).invokeRemoteAction(new JBRemoteAction<Void>() {
 
-                    Object server = Util.getRMIServer(lookup);
-                    Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
-                    
-                    Method method = server.getClass().getMethod("queryMBeans", new Class[]  {ObjectName.class, QueryExp.class});
-                    method = Util.fixJava4071957(method);
-                    Set managedObj = (Set) method.invoke(server, new Object[]  {searchPattern, null});
-
-                    JBDeploymentManager dm = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
-
-                    // Query results processing
-                    for (Iterator it = managedObj.iterator(); it.hasNext();) {
-                        try {
-                            ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
-                            String name = elem.getKeyProperty("name");
-                            String url = "http://" + dm.getHost() + ":" + dm.getPort();
-                            String context = null;
-
-                            if (name.endsWith(".war")) {
-                                name = name.substring(0, name.lastIndexOf(".war"));
-                            }
-
+                        @Override
+                        public Void action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                            // Query to the jboss server
+                            ObjectName searchPattern;
                             if (abilitiesSupport.isRemoteManagementSupported()
                                     && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
-                                if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
-                                    continue;
-                                }
-                                String descr = (String) Util.getMBeanParameter(dm, "jbossWebDeploymentDescriptor", elem.getCanonicalName()); // NOI18N
-                                context = Util.getWebContextRoot(descr, name);
-                            } else {
-                                if (name.startsWith("//localhost/")) { // NOI18N
-                                    name = name.substring("//localhost/".length()); // NOI18N
-                                }
-                                if ("".equals(name)) {
-                                    name = "ROOT"; // NOI18N // consistent with JBoss4
-                                }
-                                if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
-                                    continue;
-                                }
-
-                                context = (String) Util.getMBeanParameter(dm, "path", elem.getCanonicalName()); // NOI18N
+                                searchPattern = new ObjectName("jboss.management.local:j2eeType=WebModule,J2EEApplication=null,*"); // NOI18N
+                            }
+                            else {
+                                searchPattern = new ObjectName("jboss.web:j2eeType=WebModule,J2EEApplication=none,*"); // NOI18N
                             }
 
-                            name += ".war"; // NOI18N
-                            keys.add(new JBWebModuleNode(name, lookup, (context == null ? null : url + context)));
-                        } catch (Exception ex) {
-                            LOGGER.log(Level.INFO, null, ex);
+                            Method method = connection.getClass().getMethod("queryMBeans", new Class[]  {ObjectName.class, QueryExp.class});
+                            method = Util.fixJava4071957(method);
+                            Set managedObj = (Set) method.invoke(connection, new Object[]  {searchPattern, null});
+
+                            JBDeploymentManager dm = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
+
+                            // Query results processing
+                            for (Iterator it = managedObj.iterator(); it.hasNext();) {
+                                try {
+                                    ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
+                                    String name = elem.getKeyProperty("name");
+                                    String url = "http://" + dm.getHost() + ":" + dm.getPort();
+                                    String context = null;
+
+                                    if (name.endsWith(".war")) {
+                                        name = name.substring(0, name.lastIndexOf(".war"));
+                                    }
+
+                                    if (abilitiesSupport.isRemoteManagementSupported()
+                                            && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
+                                        if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
+                                            continue;
+                                        }
+                                        String descr = (String) Util.getMBeanParameter(connection, "jbossWebDeploymentDescriptor", elem.getCanonicalName()); // NOI18N
+                                        context = Util.getWebContextRoot(descr, name);
+                                    } else {
+                                        if (name.startsWith("//localhost/")) { // NOI18N
+                                            name = name.substring("//localhost/".length()); // NOI18N
+                                        }
+                                        if ("".equals(name)) {
+                                            name = "ROOT"; // NOI18N // consistent with JBoss4
+                                        }
+                                        if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
+                                            continue;
+                                        }
+
+                                        context = (String) Util.getMBeanParameter(connection, "path", elem.getCanonicalName()); // NOI18N
+                                    }
+
+                                    name += ".war"; // NOI18N
+                                    keys.add(new JBWebModuleNode(name, lookup, (context == null ? null : url + context)));
+                                } catch (Exception ex) {
+                                    LOGGER.log(Level.INFO, null, ex);
+                                }
+                            }
+                            return null;
                         }
-                    }
-                } catch (Exception ex) {
+                    });
+                    
+                } catch (ExecutionException ex) {
                     LOGGER.log(Level.INFO, null, ex);
-                } finally {
-                    Thread.currentThread().setContextClassLoader(orig);
                 }
 
                 setKeys(keys);
