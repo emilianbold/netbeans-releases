@@ -242,6 +242,10 @@ abstract class BackupFacility2 {
                 BackupEntry backup = map.get(l);
                 File f = new File(backup.path);
                 FileObject fo = FileUtil.toFileObject(f);
+                if (fo==null) {
+                    //file does not exist. No conflict
+                    return null;
+                }
                 DataObject dob = DataObject.find(fo);
                 if (dob != null) {
                     CloneableEditorSupport ces = dob.getLookup().lookup(CloneableEditorSupport.class);
