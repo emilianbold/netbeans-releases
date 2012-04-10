@@ -246,7 +246,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                                 url = new URL(relOrAbsURLString);
                             }
                             projectBookmarks.add(new FileBookmarks(
-                                    projectBookmarks, url, bookmarkInfos));
+                                    projectBookmarks, url, null, bookmarkInfos));
                         } catch (URISyntaxException e) {
                             ErrorManager.getDefault().notify(e);
                         } catch (MalformedURLException e) {

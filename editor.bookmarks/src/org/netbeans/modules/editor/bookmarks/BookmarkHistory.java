@@ -41,67 +41,48 @@
  */
 package org.netbeans.modules.editor.bookmarks;
 
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
+import org.netbeans.lib.editor.util.GapList;
 
 /**
- * Bookmarks for a file represented by URL.
+ * History of visited bookmarks.
  *
  * @author Miloslav Metelka
  */
-public class FileBookmarks {
+public class BookmarkHistory {
     
-    private final ProjectBookmarks projectBookmarks; // Useful when a source file was moved between projects
+    private static BookmarkHistory INSTANCE = new BookmarkHistory();
+    
+    public static BookmarkHistory get() {
+        return INSTANCE;
+    }
+    
+    private final List<BookmarkInfo> history = new GapList<BookmarkInfo>();
 
-    private final URL url;
+    private BookmarkHistory() {
+    }
     
-    private FileObject fileObject;
+    public synchronized List<BookmarkInfo> historyBookmarks() {
+        return Collections.unmodifiableList(history);
+    }
     
-    private List<BookmarkInfo> bookmarks; // Sorted by line number
+    public synchronized void add(BookmarkInfo info) {
+        history.remove(info); // Remove if inside the list already
+        history.add(info);
+    }
     
-    FileBookmarks(ProjectBookmarks projectBookmarks, URL url, FileObject fileObject, List<BookmarkInfo> bookmarks) {
-        this.projectBookmarks = projectBookmarks;
-        this.url = url;
-        this.fileObject = fileObject;
-        this.bookmarks = new ArrayList<BookmarkInfo>(bookmarks);
-        for (BookmarkInfo bookmark : bookmarks) {
-            bookmark.setFileBookmarks(this);
+    public synchronized void remove(BookmarkInfo info) {
+        history.remove(info);
+    }
+    
+    public synchronized void remove(ProjectBookmarks projectBookmarks) {
+        for (int i = history.size() - 1; i >= 0; i--) {
+            if (history.get(i).getFileBookmarks().getProjectBookmarks() == projectBookmarks) {
+                history.remove(i);
+            }
         }
     }
 
-    public ProjectBookmarks getProjectBookmarks() {
-        return projectBookmarks;
-    }
-
-    public URL getUrl() {
-        return url;
-    }
-
-    public FileObject getFileObject() {
-        if (fileObject == null) {
-            fileObject = URLMapper.findFileObject(url);
-        }
-        return fileObject;
-    }
     
-    public List<BookmarkInfo> getBookmarks() {
-        return bookmarks;
-    }
-    
-    public void add(BookmarkInfo bookmark) {
-        bookmarks.add(bookmark);
-        Collections.sort(bookmarks, BookmarkInfo.CURRENT_LINE_COMPARATOR);
-    }
-
-    public boolean remove(BookmarkInfo bookmark) {
-        if (!projectBookmarks.isRemoved()) {
-            return bookmarks.remove(bookmark);
-        }
-        return false;
-    }
-
 }
