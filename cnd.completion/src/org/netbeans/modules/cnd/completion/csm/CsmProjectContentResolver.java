@@ -494,6 +494,7 @@ public final class CsmProjectContentResolver {
             kinds = new CsmDeclaration.Kind[]{
                         CsmDeclaration.Kind.FUNCTION,
                         CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                        CsmDeclaration.Kind.FUNCTION_LAMBDA,
                         CsmDeclaration.Kind.FUNCTION_FRIEND,
                         CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION,
                         CsmDeclaration.Kind.NAMESPACE_DEFINITION};
@@ -501,6 +502,7 @@ public final class CsmProjectContentResolver {
             kinds = new CsmDeclaration.Kind[]{
                         CsmDeclaration.Kind.FUNCTION,
                         CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                        CsmDeclaration.Kind.FUNCTION_LAMBDA,
                         CsmDeclaration.Kind.FUNCTION_FRIEND,
                         CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION};
         }
@@ -533,6 +535,7 @@ public final class CsmProjectContentResolver {
             kinds = new CsmDeclaration.Kind[]{
                         CsmDeclaration.Kind.FUNCTION,
                         CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                        CsmDeclaration.Kind.FUNCTION_LAMBDA,
                         CsmDeclaration.Kind.FUNCTION_FRIEND,
                         CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION,
 
@@ -541,6 +544,7 @@ public final class CsmProjectContentResolver {
             kinds = new CsmDeclaration.Kind[]{
                         CsmDeclaration.Kind.FUNCTION,
                         CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                        CsmDeclaration.Kind.FUNCTION_LAMBDA,
                         CsmDeclaration.Kind.FUNCTION_FRIEND,
                         CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION};
         }
@@ -723,6 +727,7 @@ public final class CsmProjectContentResolver {
         CsmDeclaration.Kind kinds[] = {
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION,
+            CsmDeclaration.Kind.FUNCTION_LAMBDA,
             CsmDeclaration.Kind.FUNCTION_FRIEND,
             CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
@@ -849,6 +854,7 @@ public final class CsmProjectContentResolver {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION,
+            CsmDeclaration.Kind.FUNCTION_LAMBDA,
             CsmDeclaration.Kind.FUNCTION_FRIEND,
             CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
@@ -972,6 +978,7 @@ public final class CsmProjectContentResolver {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION,
+            CsmDeclaration.Kind.FUNCTION_LAMBDA,
             CsmDeclaration.Kind.FUNCTION_FRIEND,
             CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
@@ -1038,6 +1045,7 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.VARIABLE,
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION,
+            CsmDeclaration.Kind.FUNCTION_LAMBDA,
             CsmDeclaration.Kind.FUNCTION_FRIEND,
             CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };

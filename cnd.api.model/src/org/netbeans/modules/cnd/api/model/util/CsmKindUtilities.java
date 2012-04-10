@@ -378,6 +378,7 @@ public class CsmKindUtilities {
             CsmDeclaration.Kind kind = ((CsmDeclaration)obj).getKind();
             return kind == CsmDeclaration.Kind.FUNCTION ||
                     kind == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                    kind == CsmDeclaration.Kind.FUNCTION_LAMBDA ||
                     kind == CsmDeclaration.Kind.FUNCTION_FRIEND ||
                     kind == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION;
         } else {
@@ -385,6 +386,15 @@ public class CsmKindUtilities {
         }
     }   
 
+    public static boolean isLambda(CsmObject obj) {
+        if (isDeclaration(obj)) {
+            CsmDeclaration.Kind kind = ((CsmDeclaration)obj).getKind();
+            return kind == CsmDeclaration.Kind.FUNCTION_LAMBDA;
+        } else {
+            return false;
+        }
+    }
+    
     public static boolean isParameter(CsmObject obj) {
         return (obj instanceof CsmParameter);
     }
@@ -421,6 +431,7 @@ public class CsmKindUtilities {
         if (isDeclaration(obj)) {
             CsmDeclaration.Kind kind = ((CsmDeclaration)obj).getKind();
             return kind == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                    kind == CsmDeclaration.Kind.FUNCTION_LAMBDA ||
                     kind == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION;
         } else {
             return false;
