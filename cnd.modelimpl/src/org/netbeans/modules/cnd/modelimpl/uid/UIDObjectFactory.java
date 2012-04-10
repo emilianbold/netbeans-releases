@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentMacros.NameS
 import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentReferences.ReferenceImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ForwardClassUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ClassifierUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.DeclarationUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.FileUID;
@@ -372,6 +373,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             aHandler = UID_TYPEDEF_UID;
         } else if (object instanceof ClassifierUID<?>) {
             aHandler = UID_CLASSIFIER_UID;
+        } else if (object instanceof ForwardClassUID<?>) {
+            aHandler = UID_FORWARD_CLASS_UID;
         } else if (object instanceof UnnamedClassifierUID<?>) {
             aHandler = UID_UNNAMED_CLASSIFIER_UID;
         } else if (object instanceof MacroUID) {
@@ -430,6 +433,10 @@ public class UIDObjectFactory extends AbstractObjectFactory {
 
             case UID_CLASSIFIER_UID:
                 anUID = new ClassifierUID<CsmOffsetableDeclaration>(aStream);
+                break;
+
+            case UID_FORWARD_CLASS_UID:
+                anUID = new ForwardClassUID<CsmOffsetableDeclaration>(aStream);
                 break;
 
             case UID_UNNAMED_CLASSIFIER_UID:
@@ -508,7 +515,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     private static final int UID_FILE_UID = UID_NAMESPACE_UID + 1;
     private static final int UID_TYPEDEF_UID = UID_FILE_UID + 1;
     private static final int UID_CLASSIFIER_UID = UID_TYPEDEF_UID + 1;
-    private static final int UID_UNNAMED_CLASSIFIER_UID = UID_CLASSIFIER_UID + 1;
+    private static final int UID_FORWARD_CLASS_UID = UID_CLASSIFIER_UID + 1;
+    private static final int UID_UNNAMED_CLASSIFIER_UID = UID_FORWARD_CLASS_UID + 1;
     private static final int UID_MACRO_UID = UID_UNNAMED_CLASSIFIER_UID + 1;
     private static final int UID_INCLUDE_UID = UID_MACRO_UID + 1;
     private static final int UID_INHERITANCE_UID = UID_INCLUDE_UID + 1;
