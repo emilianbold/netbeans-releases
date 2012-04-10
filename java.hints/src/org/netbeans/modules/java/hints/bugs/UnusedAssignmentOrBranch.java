@@ -168,7 +168,7 @@ public class UnusedAssignmentOrBranch {
     @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment", description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment", category="bugs", id=UNUSED_ASSIGNMENT_ID, options={Options.QUERY}, suppressWarnings="UnusedAssignment")
     @TriggerPatterns({
         @TriggerPattern("$var = $value"),
-        @TriggerPattern("$mods$ $type $var = $value;"),
+        @TriggerPattern("$mods$ $type $var = $value;")
     })
     public static ErrorDescription unusedAssignment(final HintContext ctx) {
         final String unusedAssignmentLabel = NbBundle.getMessage(UnusedAssignmentOrBranch.class, "LBL_UNUSED_ASSIGNMENT_LABEL");
