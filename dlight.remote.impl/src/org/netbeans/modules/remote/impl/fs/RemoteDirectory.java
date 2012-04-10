@@ -389,7 +389,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         try {
                             storage = DirectoryStorage.load(storageFile);
                         } catch (FormatException e) {
-                            Level level = e.isExpexted() ? Level.FINE : Level.WARNING;
+                            Level level = e.isExpected() ? Level.FINE : Level.WARNING;
                             RemoteLogger.getInstance().log(level, "Error reading directory cache", e); // NOI18N
                             storageFile.delete();
                         } catch (InterruptedIOException e) {
@@ -885,7 +885,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                             }
                         }
                     } catch (FormatException e) {
-                        Level level = e.isExpexted() ? Level.FINE : Level.WARNING;
+                        Level level = e.isExpected() ? Level.FINE : Level.WARNING;
                         RemoteLogger.getInstance().log(level, "Error reading directory cache", e); // NOI18N
                         storageFile.delete();
                     } catch (InterruptedIOException e) {
@@ -1302,14 +1302,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 antiLoop.add(getPath());
             }
         }
-        DirectoryStorage refreshedStorage = refreshDirectoryStorage(null, expected);
-        if (recursive) {
-            for (RemoteFileObjectBase child : getExistentChildren(refreshedStorage)) {
-                child.refreshImpl(true, antiLoop, expected);
+        if (canRead()) {
+            DirectoryStorage refreshedStorage = refreshDirectoryStorage(null, expected);
+            if (recursive) {
+                for (RemoteFileObjectBase child : getExistentChildren(refreshedStorage)) {
+                    child.refreshImpl(true, antiLoop, expected);
+                }
             }
         }
     }
-    
+
     private void trace(String message, Object... args) {
         if (trace) {
             message = "SYNC [" + getPath() + "][" + System.identityHashCode(this) + "][" + Thread.currentThread().getId() + "]: " + message; // NOI18N

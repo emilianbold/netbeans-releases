@@ -7,3 +7,26 @@ class bug210191_C {
       [this] () -> void { m_i = 0; } ();
     }
 };
+
+class Lookup {
+public:
+
+    Lookup() {
+    };
+
+    ~Lookup();
+
+};
+
+Lookup::~Lookup() {
+
+    class MySink {
+    public:
+
+        virtual void unresolved(const void *key, Lookup *as) {
+            delete as;
+        }
+    };
+    MySink mysink;
+    mysink.unresolved(0,0);
+}

@@ -118,6 +118,7 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
                         case NAMESPACE_ALIAS:
                         case ENUMERATOR:
                         case FUNCTION_DEFINITION:
+                        case FUNCTION_LAMBDA:
                         case FUNCTION_INSTANTIATION:
                         case USING_DIRECTIVE:
                         case TEMPLATE_PARAMETER:

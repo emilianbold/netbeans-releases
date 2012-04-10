@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,68 +34,23 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.j2ee.jboss4;
 
-package org.netbeans.modules.cnd.api.model;
+import javax.management.MBeanServerConnection;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
- * Common ancestor for all declarations
- * @author Vladimir Kvashin
+ *
+ * @author Petr Hejl
  */
+public interface JBRemoteAction<T> {
 
-public interface CsmDeclaration extends CsmQualifiedNamedElement, 
-        CsmScopeElement, CsmValidable {
-
-    //TODO: fill in accordance to C++ standard
-
-    public enum Kind {
-
-        BUILT_IN,
-
-        CLASS,
-        UNION,
-        STRUCT,
-        
-        ENUM,
-        ENUMERATOR,
-        MACRO,
-        
-        VARIABLE,
-        VARIABLE_DEFINITION,
-        
-        FUNCTION,
-        FUNCTION_DEFINITION,
-        FUNCTION_INSTANTIATION,
-        FUNCTION_LAMBDA,
-        
-        TEMPLATE_SPECIALIZATION,
-        TYPEDEF,
-        ASM,
-        TEMPLATE_DECLARATION,
-        NAMESPACE_DEFINITION,
-        TEMPLATE_PARAMETER,
-        
-        NAMESPACE_ALIAS,
-        USING_DIRECTIVE,
-        USING_DECLARATION,
-        
-        CLASS_FORWARD_DECLARATION,
-
-        CLASS_FRIEND_DECLARATION,
-
-        FUNCTION_FRIEND,
-        FUNCTION_FRIEND_DEFINITION
-    }
-    
-    Kind getKind();
-    
-    /**
-     * Gets the name, which unequely identifies the given declaration
-     * within a project.
-     * For classes, enums and variables such names equals to their qualified name;
-     * for functions the signature should be added
-     * @see CsmProject#findDeclaration
-     * @see CsmProject#findDeclarations
-     */
-    CharSequence getUniqueName();
+    T action(@NonNull MBeanServerConnection connection,
+            @NullAllowed JBoss5ProfileServiceProxy profileService) throws Exception;
 }

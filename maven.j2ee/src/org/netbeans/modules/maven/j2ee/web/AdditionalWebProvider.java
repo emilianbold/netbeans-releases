@@ -72,6 +72,11 @@ public class AdditionalWebProvider implements EjbJarProvider, EjbJarsInProject {
     private EjbJar apiEjbJar() {
         WebModuleProviderImpl moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
         String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
+
+        if (moduleProvider == null || moduleProvider.getModuleImpl() == null) {
+            return null;
+        }
+
         Profile profile = moduleProvider.getModuleImpl().getJ2eeProfile();
         
         boolean javaEE6profile = (Profile.JAVA_EE_6_WEB.equals(profile) || Profile.JAVA_EE_6_FULL.equals(profile));

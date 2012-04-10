@@ -347,7 +347,7 @@ public final class ELTypeUtilities {
             return false;
         }
         String bundleVar = target.getImage();
-        return resourceBundles.isResourceBundleIdentifier(bundleVar);
+        return resourceBundles.isResourceBundleIdentifier(bundleVar, info.context());
     }
 
     private static TypeMirror getTypeMirrorFor(CompilationContext info, Element element) {
