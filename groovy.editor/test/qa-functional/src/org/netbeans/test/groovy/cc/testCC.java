@@ -108,7 +108,7 @@ public class testCC extends GeneralGroovy {
     /**
      * issue #209500
      */
-    public void UndefiendField() {
+    public void UndefinedField() {
         startTest();
         createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "UndefinedField");
         EditorOperator file = new EditorOperator("UndefinedField.groovy");
