@@ -142,7 +142,7 @@ made subject to such option by the copyright holder.
         <mapID target="LoadGeneratorCustomizer.HelpCtx" url="helppages/csh/csh_profilingpoint_load.html"/>
 
         <!--CSH ID for active profiling points dialog -->
-        <mapID target="ProfilingPointsDisplayer.HelpCtx" url="helppages/profile_profilepoints.html"/>
+        <mapID target="ProfilingPointsDisplayer.HelpCtx" url="helppages/csh/csh_profilingpoint_view.html"/>
 
         <!--CSH ID for HeapWalker -->
         <mapID target="HeapWalker.HelpCtx" url="helppages/csh/view_heap.html"/>
