@@ -595,7 +595,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                             mdl.addElement(ver);
                         }
                         if (result.isPartial()) {
-                            dlm.addElement(TXT_INCOMPLETE());
+                            mdl.addElement(TXT_INCOMPLETE());
                         }
                     }
                 });
