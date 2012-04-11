@@ -65,7 +65,6 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -252,11 +251,7 @@ public final class PathUiSupport {
                     if (item.isBroken()) {
                         return NbBundle.getMessage(PathUiSupport.class, "LBL_MissingFile", getFileRefName(item));
                     }
-                    File f = new File(item.getFilePath());
-                    if (f.isAbsolute()) {
-                        return f.getAbsolutePath();
-                    }
-                    return PropertyUtils.resolveFile(FileUtil.toFile(projectFolder), item.getFilePath()).getAbsolutePath();
+                    return item.getAbsoluteFilePath(projectFolder);
                     //break;
             }
         }
@@ -288,13 +283,7 @@ public final class PathUiSupport {
                         }
                         return item.getReference();
                     }
-                    String path = item.getFilePath();
-                    File f = new File(path);
-                    if (!f.isAbsolute()) {
-                        assert projectFolder != null : "project folder cannot be null because not absolute path given [" + f + "]";
-                        f = PropertyUtils.resolveFile(FileUtil.toFile(projectFolder), path);
-                        return f.getAbsolutePath();
-                    }
+                    return item.getAbsoluteFilePath(projectFolder);
                     //break;
             }
             return null;
