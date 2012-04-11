@@ -132,9 +132,13 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
             if (item.getType() == BasePathSupport.Item.Type.FOLDER
                     && !item.isBroken()) {
                 String filePath = item.getFilePath();
-                FileObject fileObject = FileUtil.toFileObject(new File(filePath));
+                File file = new File(filePath);
+                if (!file.isAbsolute()) {
+                    file = uiProps.getProject().getHelper().resolveFile(filePath);
+                }
+                FileObject fileObject = FileUtil.toFileObject(file);
                 if (CommandUtils.isUnderAnySourceGroup(uiProps.getProject(), fileObject, false)) {
-                    category.setErrorMessage(Bundle.CustomizerPhpIncludePath_error_projectFile(filePath));
+                    category.setErrorMessage(Bundle.CustomizerPhpIncludePath_error_projectFile(file.getAbsolutePath()));
                     category.setValid(false);
                     return;
                 }
