@@ -303,9 +303,9 @@ public abstract class NativeDebuggerInfo {
         String debuggee = null;
         Executor executor = Executor.getDefault(Catalog.get("File"), host, 0); // NOI18N
 
-        if ((act & DebuggerManager.CORE) != 0) {
+        if ((act & NativeDebuggerManager.CORE) != 0) {
             debuggee = getCorefile();
-        } else if ((act & DebuggerManager.ATTACH) != 0) {
+        } else if ((act & NativeDebuggerManager.ATTACH) != 0) {
 	    debuggee = executor.readlink(getPid());
 	    if (debuggee == null)
 		return false;

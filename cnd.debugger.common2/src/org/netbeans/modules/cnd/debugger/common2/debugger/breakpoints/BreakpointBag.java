@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.UserdirFile;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.ModelChangeDelegator;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 
@@ -111,8 +111,8 @@ public final class BreakpointBag {
 	}
     }
 
-    private DebuggerManager manager() {
-	return DebuggerManager.get();
+    private NativeDebuggerManager manager() {
+	return NativeDebuggerManager.get();
     }
 
     public BreakpointBag() {
@@ -138,7 +138,7 @@ public final class BreakpointBag {
      */
     public void cleanupBpts() {
 
-	OptionSet globalOptions = DebuggerManager.get().globalOptions();
+	OptionSet globalOptions = NativeDebuggerManager.get().globalOptions();
 	boolean saveBreakpoints =
 	    DebuggerOption.SAVE_BREAKPOINTS.isEnabled(globalOptions);
 
@@ -305,7 +305,7 @@ public final class BreakpointBag {
      * with 'debugger'.
      */
     private List<NativeBreakpoint> sessionBreakpoints(NativeDebugger debugger) {
-	assert DebuggerManager.isPerTargetBpts();
+	assert NativeDebuggerManager.isPerTargetBpts();
 
 	List<NativeBreakpoint> bpts = new ArrayList<NativeBreakpoint>();
 
@@ -358,7 +358,7 @@ public final class BreakpointBag {
 	    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
 	}
 
-	if (DebuggerManager.isPerTargetBpts()) {
+	if (NativeDebuggerManager.isPerTargetBpts()) {
 	    // In case we had an old Breakpoints.xml with global bpts.
 	    bb.cleanupBpts();
 	}
