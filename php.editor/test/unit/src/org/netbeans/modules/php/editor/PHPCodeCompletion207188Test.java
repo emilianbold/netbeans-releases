@@ -54,20 +54,20 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPCodeCompletion207188Test extends PHPTestBase {
+public class PHPCodeCompletion207188Test extends PHPCodeCompletionTestBase {
 
     public PHPCodeCompletion207188Test(String testName) {
         super(testName);
     }
-    
+
     public void testUseCase1() throws Exception {
         checkCompletion("testfiles/completion/lib/test207188/test207188.php", "}$x^ar;", false);
     }
-    
+
     public void testUseCase2() throws Exception {
         checkCompletion("testfiles/completion/lib/test207188/test207188.php", "/*id*/}^", false);
     }
-    
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
@@ -77,5 +77,5 @@ public class PHPCodeCompletion207188Test extends PHPTestBase {
             })
         );
     }
-    
+
 }
