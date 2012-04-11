@@ -45,22 +45,14 @@
 package org.netbeans.modules.mercurial.ui.log;
 
 import java.awt.Color;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import org.openide.util.NbBundle;
-import org.openide.explorer.ExplorerManager;
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
-import org.openide.awt.Mnemonics;
-import org.netbeans.modules.versioning.util.NoContentPanel;
-import java.io.File;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.ActionEvent;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -79,6 +71,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -90,7 +84,13 @@ import org.netbeans.modules.mercurial.ui.log.SummaryView.HgLogEntry;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight.Kind;
+import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
+import org.openide.awt.Mnemonics;
+import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  * Contains all components of the Search History panel.
@@ -351,7 +351,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         searchCriteriaPanel.setVisible(criteriaVisible);
         expandCriteriaButton.setIcon(criteriaVisible ? ICON_EXPANDED : ICON_COLLAPSED);
         if (criteria.getLimit() <= 0) {
-            criteria.setLimit(SearchExecutor.DEFAULT_LIMIT);
+            criteria.setLimit(SearchExecutor.UNLIMITTED);
         }
         enableFilters(results != null);
         revalidate();
