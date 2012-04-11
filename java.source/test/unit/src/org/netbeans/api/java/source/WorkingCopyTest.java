@@ -116,4 +116,44 @@ public class WorkingCopyTest extends NbTestCase {
             }
         }, true);
     }
+
+    public void testResolveRewriteTarget() throws Exception {
+        File f = new File(getWorkDir(), "TestClass.java");
+        String code = "package foo;" +
+                      "public class TestClass{" +
+                      "   public void foo() {" +
+                      "   }" +
+                      "}";
+
+        TestUtilities.copyStringToFile(f, code);
+        FileObject fo = FileUtil.toFileObject(f);
+        JavaSource javaSource = JavaSource.forFileObject(fo);
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(Phase.RESOLVED);
+
+                TreeMaker maker = copy.getTreeMaker();
+                ClassTree classTree = (ClassTree)copy.getCompilationUnit().getTypeDecls().get(0);
+                TypeElement serializableElement = copy.getElements().getTypeElement("java.io.Serializable");
+                ExpressionTree serializableTree = maker.QualIdent(serializableElement);
+                ClassTree newClassTree = maker.addClassImplementsClause(classTree, serializableTree);
+
+                copy.rewrite(classTree, newClassTree);
+
+                assertSame(newClassTree, copy.resolveRewriteTarget(classTree));
+
+                ClassTree finalClassTree = maker.removeClassImplementsClause(newClassTree, 0);
+
+                copy.rewrite(newClassTree, finalClassTree);
+
+                assertSame(finalClassTree, copy.resolveRewriteTarget(classTree));
+
+                // remove the following to make the test pass
+                copy.toPhase(Phase.RESOLVED);
+            }
+        }).commit();
+
+        assertEquals(code, fo.asText());
+    }
 }
