@@ -60,7 +60,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.ProjectUtils;
 
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import java.awt.event.ItemEvent;
@@ -118,7 +118,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         if (selectedProject != null) {
             final MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(selectedProject);
             if (conf != null) {
-                EngineType projectDebuggerType = DebuggerManager.debuggerType(conf);
+                EngineType projectDebuggerType = NativeDebuggerManager.debuggerType(conf);
                 if (debuggerType.getType() != projectDebuggerType) {
                     setError("ERROR_WRONG_FAMILY", false); // NOI18N
                     return;
@@ -248,7 +248,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        if (!DebuggerManager.isStandalone()) {
+        if (!NativeDebuggerManager.isStandalone()) {
             add(projectLabel, gridBagConstraints);
         }
 
@@ -259,7 +259,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 6, 0);
-        if (!DebuggerManager.isStandalone()) {
+        if (!NativeDebuggerManager.isStandalone()) {
             add(projectComboBox, gridBagConstraints);
         }
 

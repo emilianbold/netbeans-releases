@@ -63,7 +63,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.utils.masterdetail.Record;
 import org.netbeans.modules.cnd.debugger.common2.capture.CaptureInfo;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.EngineProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ProjectSupport;
@@ -494,7 +494,7 @@ public final class DebugTarget implements Record {
 	// This is probably the most central point where this information
 	// gets chanelled through hence these checks:
 
-	if (DebuggerManager.isStandalone()) {
+	if (NativeDebuggerManager.isStandalone()) {
 	    assert IpeUtils.isEmpty(h) ||
 		   h.indexOf('@') == -1;	// no embedded @
 	} else {

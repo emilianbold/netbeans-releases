@@ -50,7 +50,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 
@@ -64,7 +64,7 @@ public class StepOutInstAction extends CallableSystemAction implements StateList
     private NativeDebugger debugger;
 
     public StepOutInstAction() {
-	debugger = DebuggerManager.get().currentDebugger();
+	debugger = NativeDebuggerManager.get().currentDebugger();
         if (debugger != null)
 	    debugger.addStateListener(this);
     }
@@ -76,7 +76,7 @@ public class StepOutInstAction extends CallableSystemAction implements StateList
 
     // interface CallableSystemAction
     public void performAction() {
-	debugger = DebuggerManager.get().currentDebugger();
+	debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger != null) {
 	    debugger.stepOutInst();
 	}

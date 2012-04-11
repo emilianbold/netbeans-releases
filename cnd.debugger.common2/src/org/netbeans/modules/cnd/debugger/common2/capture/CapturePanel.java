@@ -63,7 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.ProjectUtils;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 
@@ -98,7 +98,7 @@ class CapturePanel extends JPanel {
     CapturePanel(CaptureInfo captureInfo) {
 	this.captureInfo = captureInfo;
 	initComponents();
-	if (! DebuggerManager.isStandalone())
+	if (! NativeDebuggerManager.isStandalone())
 	    populateProjectMenu();
     }
 
@@ -107,7 +107,7 @@ class CapturePanel extends JPanel {
      * Return the project selected by this dialog. (may be null)
      */
     public Project getSelectedProject() {
-	if (DebuggerManager.isStandalone())
+	if (NativeDebuggerManager.isStandalone())
 	    return null;
 
 	int index = projectComboBox.getSelectedIndex();
@@ -128,7 +128,7 @@ class CapturePanel extends JPanel {
      * Return true if "<noproject>" was chosen.
      */
     public boolean getNoProject() {
-	if (DebuggerManager.isStandalone())
+	if (NativeDebuggerManager.isStandalone())
 	    return true;
 
 	int index = projectComboBox.getSelectedIndex();
@@ -324,7 +324,7 @@ class CapturePanel extends JPanel {
 	    gbc.insets = new Insets(0, dialogMargin, 17, dialogMargin);
 	    add(textArea, gbc);
 
-	    if ( ! DebuggerManager.isStandalone()) {
+	    if ( ! NativeDebuggerManager.isStandalone()) {
 		projectComboBox = new JComboBox();
 		Catalog.setAccessibleDescription(projectComboBox,
 						 "ACSD_Project");	// NOI18N

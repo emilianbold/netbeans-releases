@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.debugger.common2.DbgGuiModule;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.RoutingToken;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeSession;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
@@ -237,8 +237,8 @@ public abstract class NativeBreakpoint
     }
 
 
-    private static DebuggerManager manager() {
-	return DebuggerManager.get();
+    private static NativeDebuggerManager manager() {
+	return NativeDebuggerManager.get();
     } 
 
     protected static NativeDebugger currentDebugger() {
@@ -294,7 +294,7 @@ public abstract class NativeBreakpoint
 
     // interface org.netbeans.api.debugger.Breakpoint
     public void enable() {
-	if (DebuggerManager.isPerTargetBpts()) {
+	if (NativeDebuggerManager.isPerTargetBpts()) {
 	    NativeBreakpoint current = findCurrent();
 	    if (current != null)
 		current.setPropEnabled(true);
@@ -305,7 +305,7 @@ public abstract class NativeBreakpoint
 
     // interface org.netbeans.api.debugger.Breakpoint
     public void disable() {
-	if (DebuggerManager.isPerTargetBpts()) {
+	if (NativeDebuggerManager.isPerTargetBpts()) {
 	    NativeBreakpoint current = findCurrent();
 	    if (current != null)
 		current.setPropEnabled(false);
@@ -1275,12 +1275,12 @@ public abstract class NativeBreakpoint
 	if (this.isToplevel()) {
 	    this.copyFrom(edited);
 	    update();
-	    DebuggerManager.get().bringDownDialog();
+	    NativeDebuggerManager.get().bringDownDialog();
 
 	} else if (this.isMidlevel()) {
 	    this.copyFrom(edited);
 	    updateAndParent();
-	    DebuggerManager.get().bringDownDialog();
+	    NativeDebuggerManager.get().bringDownDialog();
 
 	} else {
 	    if (this.isBound()) {
@@ -1293,7 +1293,7 @@ public abstract class NativeBreakpoint
 	    } else {
 		this.copyFrom(edited);
 		updateAndParent();
-		DebuggerManager.get().bringDownDialog();
+		NativeDebuggerManager.get().bringDownDialog();
 	    }
 	}
     }
@@ -1753,7 +1753,7 @@ public abstract class NativeBreakpoint
 		return;
 	    }
 
-	    if (! isOnlyChild && DebuggerManager.isPerTargetBpts()) {
+	    if (! isOnlyChild && NativeDebuggerManager.isPerTargetBpts()) {
 		// Don't spread bpt deletion
 		return;
 	    }
@@ -1857,14 +1857,14 @@ public abstract class NativeBreakpoint
 
 	if (currentDebugger() == null) {
 	    if (isToplevel()) {
-		if (!DebuggerManager.isPerTargetBpts())
+		if (!NativeDebuggerManager.isPerTargetBpts())
 		    showAnnotation(a, true);
 	    } else {
 		showAnnotation(a, false);
 	    }
 	} else {
 	    if (isToplevel()) {
-		if (!DebuggerManager.isPerTargetBpts())
+		if (!NativeDebuggerManager.isPerTargetBpts())
 		    showAnnotation(a, false);
 	    } else {
 		showAnnotation(a, currentDebugger() == debugger);
@@ -1942,7 +1942,7 @@ public abstract class NativeBreakpoint
     public void showAnnotationsFor(boolean show, NativeDebugger debugger) {
 	assert isToplevel();
 
-	if (! DebuggerManager.isPerTargetBpts()) {
+	if (! NativeDebuggerManager.isPerTargetBpts()) {
 	    if (show) {
 		// That we're turning on annotations for _some_ session implies
 		// that we have at least one session so ...
