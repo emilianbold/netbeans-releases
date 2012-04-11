@@ -58,6 +58,7 @@ import org.netbeans.modules.javascript2.editor.CompletionContextFinder.Completio
 import org.netbeans.modules.javascript2.editor.JsCompletionItem.CompletionRequest;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
+import org.netbeans.modules.javascript2.editor.jquery.JQueryCodeCompletion;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
@@ -83,7 +84,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     
     @Override
     public CodeCompletionResult complete(CodeCompletionContext ccContext) {
-         long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         
         
         BaseDocument doc = (BaseDocument) ccContext.getParserResult().getSnapshot().getSource().getDocument(false);
@@ -212,6 +213,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
         
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting JS CC took {0}ms ",  (end - start));
+        JQueryCodeCompletion jqueryCC = new JQueryCodeCompletion();
+        resultList.addAll(jqueryCC.complete(ccContext, context, pref));
         if (!resultList.isEmpty()) {
             return new DefaultCompletionResult(resultList, false);
         }
