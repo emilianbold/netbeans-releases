@@ -859,7 +859,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     }
                 }
                 if (withContainers) {
-                    ((ProjectBase) prj).traceFileContainer(printOut);
+                    ProjectBase.dumpFileContainer(prj, printOut);
                 }
             } else {
                 printOut.printf("Project has unexpected class type %s\n", prj.getClass().getName());// NOI18N

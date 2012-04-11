@@ -577,7 +577,7 @@ public final class LibraryManager {
                     printOut.printf("Library was NOT restored from repository\n");// NOI18N
                 } else if (library instanceof ProjectBase) {
                     printOut.printf("[%d] disposing=%s\n", ind, ((ProjectBase)library).isDisposing());// NOI18N
-                    ((ProjectBase)library).traceFileContainer(printOut);
+                    ProjectBase.dumpFileContainer(library, printOut);
                 } else {
                     printOut.printf("Library's project has unexpected class type %s\n", library.getClass().getName());// NOI18N
                 }

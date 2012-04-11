@@ -94,7 +94,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
                 ok);
         if(DialogDisplayer.getDefault().notify(descriptor) == ok) {
             SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());
-            SvnClientFactory.resetCLI();
+            SvnClientFactory.resetClient();
         }
     }
     

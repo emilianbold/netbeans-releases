@@ -283,15 +283,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
             fd.setPriorityFilter(new PriorityFilter(priorities.toArray(new Priority[priorities.size()])));
         }
 
-        UserFilter userFilter = reporterUserSearch.getFilter();
-        if(userFilter != null) {
-            fd.setReportedByFilter(userFilter);
+        if(reporterUserSearch != null) {
+            UserFilter userFilter = reporterUserSearch.getFilter();
+            if(userFilter != null) {
+                fd.setReportedByFilter(userFilter);
+            }
         }
-        userFilter = assigneeUserSearch.getFilter();
-        if(userFilter != null) {
-            fd.setAssignedToFilter(userFilter);
+        if(assigneeUserSearch != null) { 
+            UserFilter userFilter = assigneeUserSearch.getFilter();
+            if(userFilter != null) {
+                fd.setAssignedToFilter(userFilter);
+            }
         }
-
         Long min = getLongValue(panel.ratioMinTextField);
         Long max = getLongValue(panel.ratioMaxTextField);
         if(min != null || max != null) {

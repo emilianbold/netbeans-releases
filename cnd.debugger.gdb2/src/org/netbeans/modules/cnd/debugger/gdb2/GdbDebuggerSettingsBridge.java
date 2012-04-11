@@ -177,16 +177,17 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
     @Override
     protected void applyRunargs() {
 	String runargs = getArgsFlatEx();
-	if (runargs == null)
+	if (runargs == null) {
 	    runargs = "";
+        }
 	gdbDebugger.runArgs(runargs + ioRedirect());
     }
 
     @Override
     protected void applyRunDirectory() {
-        RunProfile mainRunProfile = getMainSettings().runProfile();
-        if (mainRunProfile.getRunDirectory() != null) {
-            gdbDebugger.runDir(mainRunProfile.getRunDirectory());
+        String runDirectory = getRunDirectory();
+	if (runDirectory != null) {
+            gdbDebugger.runDir(runDirectory);
         }
     }
 

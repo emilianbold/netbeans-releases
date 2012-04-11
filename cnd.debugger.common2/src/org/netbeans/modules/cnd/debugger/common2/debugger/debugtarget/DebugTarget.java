@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettingsBridge;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -420,7 +421,7 @@ public final class DebugTarget implements Record {
      * @return The directory, or null if no run directory has been set
      */
     public String getRunDir() {
-	return getRunProfile().getRunDir();
+        return DebuggerSettingsBridge.getRunDir(getDbgProfile(), getRunProfile());
     }
     
     /**
@@ -450,13 +451,12 @@ public final class DebugTarget implements Record {
 	    return;
 	}
 	*/
-	if (IpeUtils.sameString(rundir, newdir))
+	if (IpeUtils.sameString(rundir, newdir)) {
 	    return;
-	rundir = newdir;
-	getRunProfile().setRunDir(newdir);
+        }
+	getDbgProfile().setDebugDir(newdir);
 	pcs.firePropertyChange(PROP_RUNDIR_CHANGED, null, this);
 	needSave = true;
-
     }
 
     /**

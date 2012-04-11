@@ -52,14 +52,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -67,7 +65,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
 import org.netbeans.modules.subversion.AbstractSvnTestCase;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient;
@@ -282,20 +279,6 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
         return buf.toString();
     }
 
-    private void resetFactory (boolean resetSvnClientAdapterFactory) throws Exception {
-        Field f = SvnClientFactory.class.getDeclaredField("instance");
-        f.setAccessible(true);
-        f.set(SvnClientFactory.class, null);
-        if (resetSvnClientAdapterFactory) {
-            f = SvnClientAdapterFactory.class.getDeclaredField("instance");
-            f.setAccessible(true);
-            f.set(SvnClientAdapterFactory.class, null);
-            f = SvnClientAdapterFactory.class.getDeclaredField("client");
-            f.setAccessible(true);
-            f.set(SvnClientAdapterFactory.class, null);
-        }
-    }
-
     protected class FileNotifyListener implements ISVNNotifyListener {
         private Set<File> files = new HashSet<File>();
         public void setCommand(int arg0) { }
@@ -434,15 +417,10 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
     protected SvnClient getFullWorkingClient() throws SVNClientException {
         String fac = System.getProperty("svnClientAdapterFactory", "javahl");
         boolean resetNeeded = !"javahl".equals(fac); // for javahl setup, there's no need to change anything
-        boolean fullResetNeeded = resetNeeded && "svnkit".equals(fac);
         try {
             if (resetNeeded) {
                 System.setProperty("svnClientAdapterFactory", "javahl");
-                try {
-                    resetFactory(fullResetNeeded);
-                } catch (Exception ex) {
-                    throw new SVNClientException(ex);
-                }
+                SvnClientFactory.resetClient();
             }
             SvnClient c = SvnClientFactory.getInstance().createSvnClient();
             assertTrue(c.toString().contains("JhlClientAdapter"));
@@ -450,10 +428,7 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
         } finally {
             if (resetNeeded) {
                 System.setProperty("svnClientAdapterFactory", fac);
-                try {
-                    resetFactory(fullResetNeeded);
-                } catch (Exception ex) {
-                }
+                SvnClientFactory.resetClient();
             }
         }
     }

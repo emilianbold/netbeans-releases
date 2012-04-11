@@ -250,8 +250,14 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         });
     }
 
+    /**
+     * DO NOT call if query not saved yet.
+     * 
+     * @return 
+     */
     private Query getQuery() {
-        if(query == null) {
+        if(query == null)  {
+            assert jiraQuery.isSaved();
             Repository repository = JiraUtils.getRepository(jiraQuery.getRepository());
             Collection<Query> queries = repository.getQueries();
             Query aQuery = null;
