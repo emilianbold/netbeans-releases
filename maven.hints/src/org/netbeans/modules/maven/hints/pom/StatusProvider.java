@@ -57,11 +57,15 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.MavenArtifactRepository;
 import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
+import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelProblem;
 import org.apache.maven.model.resolution.UnresolvableModelException;
-import org.apache.maven.project.*;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuildingResult;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -284,10 +288,11 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         if (pom == null) {
             return;
         }
-        ProjectBuildingRequest req = new DefaultProjectBuildingRequest();
-        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1); // currently enables just <reporting> warning
+        
         MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
-        req.setLocalRepository(embedder.getLocalRepository());
+        MavenExecutionRequest meReq = embedder.createMavenExecutionRequest();
+        ProjectBuildingRequest req = meReq.getProjectBuildingRequest();
+        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1); // currently enables just <reporting> warning
         // XXX make API to convert repositoryInfos to List<ArtifactRepository>; cf. NexusRepositoryIndexerImpl & MavenRefactoringElementImplementation
         List<ArtifactRepository> remoteRepos = new ArrayList<ArtifactRepository>();
         for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
@@ -296,7 +301,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             }
         }
         req.setRemoteRepositories(remoteRepos);
-        req.setRepositorySession(((DefaultMaven) embedder.lookupComponent(Maven.class)).newRepositorySession(embedder.createMavenExecutionRequest()));
+        req.setRepositorySession(((DefaultMaven) embedder.lookupComponent(Maven.class)).newRepositorySession(meReq));
         List<ModelProblem> problems;
         try {
             problems = embedder.lookupComponent(ProjectBuilder.class).build(pom, req).getProblems();
