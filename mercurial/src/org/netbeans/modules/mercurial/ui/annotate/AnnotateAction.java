@@ -44,37 +44,39 @@
 package org.netbeans.modules.mercurial.ui.annotate;
 
 import java.awt.EventQueue;
-import org.netbeans.modules.versioning.spi.VCSContext;
-
-import javax.swing.*;
 import java.io.File;
-import java.util.*;
-import org.openide.nodes.Node;
-import org.openide.cookies.EditorCookie;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.windows.WindowManager;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.mercurial.FileInformation;
+import org.netbeans.modules.mercurial.FileStatus;
+import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.FileStatusCache;
-import org.netbeans.modules.mercurial.FileInformation;
-import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
-import org.openide.windows.TopComponent;
-import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.modules.mercurial.FileStatus;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Annotate action for mercurial: 
@@ -209,10 +211,8 @@ public class AnnotateAction extends ContextAction {
         }
         if (list == null) return;
         AnnotateLine [] lines = toAnnotateLines(list);
-        HgLogMessage [] logs;
-        Set<File> setFile = new HashSet<File>();
-        setFile.add(file);
-        logs = HgCommand.getLogMessagesNoFileInfo(repository, setFile, -1, progress.getLogger());
+        List<String> revisions = getRevisionNumbers(lines);
+        HgLogMessage [] logs = HgCommand.getRevisionInfo(repository, revisions, progress.getLogger());
         if (progress.isCanceled()) {
             return;
         }
@@ -221,6 +221,22 @@ public class AnnotateAction extends ContextAction {
         ab.setAnnotatedRevision(revision);
         ab.setLogs(logs);
         ab.annotationLines(file, Arrays.asList(lines));
+    }
+
+    private static List<String> getRevisionNumbers (AnnotateLine[] lines) {
+        Set<String> revisions = new HashSet<String>(lines.length);
+        for (AnnotateLine line : lines) {
+            if (!(line instanceof FakeAnnotationLine)) {
+                String revision = line.getRevision();
+                try {
+                    Long.parseLong(revision);
+                    revisions.add(revision);
+                } catch (NumberFormatException ex) {
+                    // probably a fake item or a non-existent revision
+                }
+            }
+        }
+        return new ArrayList<String>(revisions);
     }
 
     private static void fillCommitMessages(AnnotateLine [] annotations, HgLogMessage [] logs) {
