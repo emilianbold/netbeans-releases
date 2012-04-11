@@ -44,13 +44,16 @@
 
 package org.netbeans.modules.java.jarloader;
 
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
+import javax.swing.Icon;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFilter;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
@@ -81,9 +84,17 @@ final class JarDataNode extends DataNode {
             // Maybe corrupt, etc.
             return Children.LEAF;
         }
-        FileObject root = FileUtil.getArchiveRoot(jar);
+        final FileObject root = FileUtil.getArchiveRoot(jar);
         if (root != null) {
-            return DataFolder.findFolder(root).createNodeChildren(DataFilter.ALL);
+            return new FilterNode.Children(PackageView.createPackageView(new SourceGroup() {
+                @Override public FileObject getRootFolder() {return root;}
+                @Override public String getName() {return null;}
+                @Override public String getDisplayName() {return null;}
+                @Override public Icon getIcon(boolean opened) {return null;}
+                @Override public boolean contains(FileObject file) {return true;}
+                @Override public void addPropertyChangeListener(PropertyChangeListener listener) {}
+                @Override public void removePropertyChangeListener(PropertyChangeListener listener) {}
+            }));
         } else {
             return Children.LEAF;
         }

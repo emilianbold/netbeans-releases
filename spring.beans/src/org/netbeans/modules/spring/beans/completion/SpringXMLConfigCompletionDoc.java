@@ -48,6 +48,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import javax.lang.model.element.Element;
 import javax.swing.Action;
 import org.netbeans.api.java.source.CompilationController;
@@ -87,7 +88,7 @@ public abstract class SpringXMLConfigCompletionDoc implements CompletionDocument
         return null;
     }
     
-    private static class JavaElementDoc extends SpringXMLConfigCompletionDoc {
+    protected static class JavaElementDoc extends SpringXMLConfigCompletionDoc {
 
         private ElementJavadoc elementJavadoc;
 
@@ -106,8 +107,13 @@ public abstract class SpringXMLConfigCompletionDoc implements CompletionDocument
             return elementJavadoc.getURL();
         }
 
+        @Override
         public String getText() {
             return elementJavadoc.getText();
+        }
+
+        public Future<String> getFutureText() {
+            return elementJavadoc.getTextAsync();
         }
 
         @Override

@@ -46,14 +46,10 @@ package org.netbeans.modules.php.dbgp.breakpoints;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.php.dbgp.breakpoints.FunctionBreakpoint.Type;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -68,12 +64,12 @@ public class BreakpointsReader implements Properties.Reader {
     private static final String LINE_NUMBER    = "lineNumber";         // NOI18N
 
     private static final String URL             = "url";               // NOI18N
-    
+
     private static final String ENABED          = "enabled";           // NOI18N
 
     private static final String FUNC_NAME       = "functionName";      // NOI18N
 
-    private static final String TYPE            = "type";              // NOI18N 
+    private static final String TYPE            = "type";              // NOI18N
     private static final String GROUP_NAME = "groupName"; // NOI18N
 
 
@@ -126,16 +122,11 @@ public class BreakpointsReader implements Properties.Reader {
             FileObject fileObject = breakpoint.getLine().getLookup().lookup(
                     FileObject.class);
 
-            try {
-                properties.setString(URL, fileObject.getURL().toString());
-                properties.setInt(LINE_NUMBER, breakpoint.getLine()
-                        .getLineNumber());
-                properties.setBoolean(ENABED, breakpoint.isEnabled());
-                properties.setString(GROUP_NAME, breakpoint.getGroupName());
-            }
-            catch (FileStateInvalidException ex) {
-                log(ex);
-            }
+            properties.setString(URL, fileObject.toURL().toString());
+            properties.setInt(LINE_NUMBER, breakpoint.getLine()
+                    .getLineNumber());
+            properties.setBoolean(ENABED, breakpoint.isEnabled());
+            properties.setString(GROUP_NAME, breakpoint.getGroupName());
         }
         else if ( object instanceof FunctionBreakpoint ) {
             FunctionBreakpoint breakpoint = (FunctionBreakpoint)object;
@@ -145,12 +136,6 @@ public class BreakpointsReader implements Properties.Reader {
             properties.setBoolean(ENABED, breakpoint.isEnabled());
             properties.setString(GROUP_NAME, breakpoint.getGroupName());
         }
-    }
-
-
-    private void log( FileStateInvalidException ex ) {
-        Logger.getLogger( BreakpointsReader.class.getName() ).log( Level.SEVERE, 
-                null, ex );
     }
 
     private Line getLine(String url, int lineNumber) {
@@ -170,7 +155,7 @@ public class BreakpointsReader implements Properties.Reader {
             return null;
         }
 
-        LineCookie lineCookie = dataObject.getCookie(LineCookie.class);
+        LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
         if (lineCookie == null) {
             return null;
         }
@@ -184,7 +169,7 @@ public class BreakpointsReader implements Properties.Reader {
             return ls.getCurrent(lineNumber);
         } catch (IndexOutOfBoundsException e) {
             return null;
-        } 
+        }
     }
 
     private FileObject getFileObject( String url ) {

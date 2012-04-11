@@ -52,11 +52,11 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -261,29 +261,55 @@ public final class HintsControllerImpl {
         listeners.remove(l);
     }
 
-    private static final Map<Fix, Iterable<? extends Fix>> fix2Subfixes = new WeakHashMap<Fix, Iterable<? extends Fix>>();
-    private static final Set<Reference<Fix>> cleaningFixes = Collections.newSetFromMap(new IdentityHashMap<Reference<Fix>, Boolean>());
+    private static final Map<Reference<Fix>, Iterable<? extends Fix>> fix2Subfixes = new HashMap<Reference<Fix>, Iterable<? extends Fix>>();
 
     public static void attachSubfixes(Fix fix, Iterable<? extends Fix> subfixes) {
-        fix2Subfixes.put(fix, subfixes);
-        cleaningFixes.add(new CleaningReference(fix));
+        fix2Subfixes.put(new CleaningReference(fix), subfixes);
     }
 
     public static Iterable<? extends Fix> getSubfixes(Fix fix) {
-        Iterable<? extends Fix> ret = fix2Subfixes.get(fix);
+        Iterable<? extends Fix> ret = fix2Subfixes.get(new CleaningReference(fix));
 
         return ret != null ? ret : Collections.<Fix>emptyList();
     }
 
     private static final class CleaningReference extends WeakReference<Fix> implements Runnable {
 
+        private final int hashCode;
+
         public CleaningReference(Fix referent) {
             super(referent, org.openide.util.Utilities.activeReferenceQueue());
+            hashCode = System.identityHashCode(referent);
         }
 
         @Override
         public void run() {
-            fix2Subfixes.size();
+            for (Iterator<Entry<Reference<Fix>, Iterable<? extends Fix>>> it = fix2Subfixes.entrySet().iterator(); it.hasNext();) {
+                Entry<Reference<Fix>, Iterable<? extends Fix>> e = it.next();
+
+                if (e.getKey() == this) {
+                    it.remove();
+                    return;
+                }
+            }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Reference)) {
+                return false;
+            }
+            
+            Reference<Fix> that = (Reference<Fix>) obj;
+            Fix thisFix = get();
+            Fix thatFix = that.get();
+
+            return thisFix == thatFix;
+        }
+
+        @Override
+        public int hashCode() {
+            return hashCode;
         }
 
     }

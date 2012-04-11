@@ -50,5 +50,11 @@ import javax.swing.text.StyledDocument;
  * @author Egor Ushakov
  */
 public interface AutosProvider {
+    /**
+     * 
+     * @param document
+     * @param line
+     * @return null means Auto view can not be displayed
+     */
     Set<String> getAutos(final StyledDocument document, int line);
 }

@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.html.editor.gsf;
 
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import java.util.Collections;

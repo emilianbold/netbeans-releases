@@ -160,18 +160,21 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), NO_ACTION);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), NO_ACTION); 
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), NO_ACTION); 
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), NO_ACTION); 
  
         
         ((AbstractDocument) editorPane.getDocument()).setDocumentFilter(new DocumentFilter() {
 
                     @Override
                     public void insertString(DocumentFilter.FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-                        fb.insertString(offset, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr);
+                        if (string != null)
+                            fb.insertString(offset, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr);
                     }
 
                     @Override
                     public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String string, AttributeSet attr) throws BadLocationException {
-                        fb.replace(offset, length, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr);
+                        if (string != null)
+                            fb.replace(offset, length, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr);
                     }
                 }); 
         editorPane.setBorder (

@@ -412,7 +412,7 @@ public class SvnClientExceptionHandler {
         TrustManager[] trust = new TrustManager[] {
             new X509TrustManager() {
             @Override
-                public X509Certificate[] getAcceptedIssuers() { return null; }
+                public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
             @Override
                 public void checkClientTrusted(X509Certificate[] certs, String authType) { }
             @Override
@@ -691,6 +691,7 @@ public class SvnClientExceptionHandler {
                msg.contains("user canceled dialog") ||                                      // NOI18N
                msg.contains("mkactivity request failed on") ||                              // NOI18N
                msg.contains("could not authenticate to server") ||                          // NOI18N
+               msg.contains("unable to connect to a repository") && msg.contains("undefined tunnel scheme") || //NOI18N
                msg.indexOf("can't get username or password") > - 1;                         // NOI18N
     }
 

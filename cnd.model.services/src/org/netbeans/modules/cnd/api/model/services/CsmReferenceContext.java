@@ -82,9 +82,20 @@ public interface CsmReferenceContext {
     CppTokenId getToken();
 
     /**
+     * @return current token offset
+     */
+    int getTokenOffset();
+
+    /**
      * @param i
      * @return token by index
      */
     CppTokenId getToken(int i);
+
+    /**
+     * @param i
+     * @return token offset by index
+     */
+    int getTokenOffset(int i);
 
 }

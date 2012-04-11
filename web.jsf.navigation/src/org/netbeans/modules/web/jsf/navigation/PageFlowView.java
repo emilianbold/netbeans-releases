@@ -188,19 +188,17 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
     /*
      * Initializes the Panel and the graph
      **/
-    private PageFlowScene initializeScene() {
-        setLayout(new BorderLayout());
+    private synchronized PageFlowScene initializeScene() {
+        if (getScene() == null) {
+            setLayout(new BorderLayout());
+            setScene(new PageFlowScene(this));
+            getScene().setAccessibleContext(this.getAccessibleContext());
 
-        setScene(new PageFlowScene(this));
-
-        getScene().setAccessibleContext(this.getAccessibleContext());
-
-        JScrollPane pane = new JScrollPane(getScene().createView());
-        pane.setVisible(true);
-
-        add(pane, BorderLayout.CENTER);
-
-        setDefaultActivatedNode();
+            JScrollPane pane = new JScrollPane(getScene().createView());
+            pane.setVisible(true);
+            add(pane, BorderLayout.CENTER);
+            setDefaultActivatedNode();
+        }
 
         return getScene();
     }
@@ -583,6 +581,10 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
     @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
+        // see issue #207304 - scene or view called before completed initialization
+        if (getScene() == null || getScene().getView() == null) {
+            initializeScene();
+        }
         return getScene().getView().requestFocusInWindow();
     }
 

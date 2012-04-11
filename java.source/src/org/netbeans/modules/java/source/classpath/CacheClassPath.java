@@ -215,7 +215,7 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                         }
                     }
                 }
-                _cache.add(new CachingPathResourceImpl(url));
+                _cache.add(new CachingPathResourceImpl(url,scan));
                 _cache.add (ClassPathSupport.createResource(url));
             }
         }
@@ -254,10 +254,14 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
         private static final URL[] EMPTY = new URL[0];
         
         private final URL   originalRoot;
+        private final boolean scan;
         private       URL[] cacheRoot;
 
-        public CachingPathResourceImpl(URL originalRoot) {
+        public CachingPathResourceImpl(
+                @NonNull final URL originalRoot,
+                final boolean scan) {
             this.originalRoot = originalRoot;
+            this.scan = scan;
         }
 
         @Override public synchronized URL[] getRoots() {
@@ -266,7 +270,7 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
             if (result == null) {
                 result = EMPTY;
                 try {
-                    File sigs = JavaIndex.getClassFolder(originalRoot);
+                    File sigs = JavaIndex.getClassFolder(originalRoot,false,scan);
                     URL orl = FileUtil.urlForArchiveOrDir(sigs);
                     if (orl != null) {
                         result = new URL[] {orl};

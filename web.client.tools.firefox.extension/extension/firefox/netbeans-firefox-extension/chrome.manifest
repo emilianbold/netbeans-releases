@@ -1,6 +1,0 @@
-content netbeans-firefox-extension           content/
-overlay chrome://browser/content/browser.xul chrome://netbeans-firefox-extension/content/netbeans-firefox-extension-overlay.xul
-
-locale	netbeans-firefox-extension           en-US       locale/en-US/
-skin	netbeans-firefox-extension           classic/1.0 skin/
-

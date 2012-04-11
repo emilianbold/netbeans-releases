@@ -1,8 +1,9 @@
 /*
  *
- * Copyright (c) 2010, Oracle.
+ * Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+
  *
- * All rights reserved.
+ * This file is available and licensed under the following license:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- *  * Neither the name of Oracle nor the names of its contributors
+ *  * Neither the name of Oracle Corporation nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,12 +32,10 @@
  */
 package examples.cityguide;
 
+import javax.microedition.lcdui.Image;
 import java.io.IOException;
-
 import java.util.Enumeration;
 import java.util.Hashtable;
-
-import javax.microedition.lcdui.Image;
 
 
 /**
@@ -47,13 +46,13 @@ public class ImageManager {
     private static ImageManager im = null;
     private static Hashtable imageCache = null;
 
-    private ImageManager() {
-        imageCache = new Hashtable();
+    private ImageManager () {
+        imageCache = new Hashtable ();
     }
 
-    public static ImageManager getInstance() {
+    public static ImageManager getInstance () {
         if (im == null) {
-            im = new ImageManager();
+            im = new ImageManager ();
         }
 
         return im;
@@ -63,16 +62,17 @@ public class ImageManager {
      * Load image from resource and store it
      * in cache.
      */
-    public Image getImage(String name) {
+    public Image getImage (String name) {
         Image image = null;
 
         try {
-            if (null == (image = (Image)imageCache.get(name))) {
-                image = Image.createImage("/" + name + ".png");
-                imageCache.put(name, image);
+            if (null == (image = (Image) imageCache.get (name))) {
+                image = Image.createImage ("/" + name + ".png");
+                imageCache.put (name, image);
             }
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace ();
         }
 
         return image;
@@ -81,14 +81,15 @@ public class ImageManager {
     /**
      * Batch load images into cache
      */
-    public void loadImagesCache(String[] names) {
+    public void loadImagesCache (String[] names) {
         for (int i = 0; i < names.length; i++) {
             try {
                 if (names[i] != null) {
-                    imageCache.put(names[i], Image.createImage("/" + names[i] + ".png"));
+                    imageCache.put (names[i], Image.createImage ("/" + names[i] + ".png"));
                 }
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
+            }
+            catch (IOException ioe) {
+                ioe.printStackTrace ();
             }
         }
     }
@@ -96,13 +97,14 @@ public class ImageManager {
     /**
      * Batch load images into cache
      */
-    public void loadImagesCache(Enumeration e) {
-        for (; e.hasMoreElements();) {
+    public void loadImagesCache (Enumeration e) {
+        for (; e.hasMoreElements ();) {
             try {
-                String name = (String)e.nextElement();
-                imageCache.put(name, Image.createImage("/" + name + ".png"));
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
+                String name = (String) e.nextElement ();
+                imageCache.put (name, Image.createImage ("/" + name + ".png"));
+            }
+            catch (IOException ioe) {
+                ioe.printStackTrace ();
             }
         }
     }

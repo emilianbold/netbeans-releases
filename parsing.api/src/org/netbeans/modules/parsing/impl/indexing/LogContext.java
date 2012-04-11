@@ -45,6 +45,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -59,7 +60,7 @@ import org.openide.util.RequestProcessor;
     private static final RequestProcessor RP = new RequestProcessor("Thread dump shooter", 1); // NOI18N
     
     private static final int SECOND_DUMP_DELAY = 5 * 1000; 
-
+    
     public enum EventType {
         PATH(1, 10),
         FILE(2, 20),
@@ -205,9 +206,56 @@ import org.openide.util.RequestProcessor;
     private Set<FileObject> fileObjsChanged = Collections.emptySet();
     
     /**
+     * Source roots, which have been scanned so far in this LogContext
+     */
+    private List<URL>   scannedSourceRoots = new LinkedList<URL>();
+    
+    /**
+     * Time spent in scanning source roots listed in {@link #scannedSourceRoots}
+     */
+    private long        totalScanningTime;
+    
+    /**
+     * The current source root being scanned
+     */
+    private URL         currentSourceRoot;
+    
+    /**
+     * System.currentTimeMillis of the current root's scanning start
+     */
+    private long        currentRootStartTime;
+    
+    /**
      * The scanned root, possibly null.
      */
     private URL root;
+    
+    private Map<String, Long>   totalIndexerTime = new HashMap<String, Long>();
+    
+    public synchronized void noteRootScanning(URL currentRoot) {
+        assert currentSourceRoot == null;
+        currentRootStartTime = System.currentTimeMillis();
+        currentSourceRoot = currentRoot;
+    }
+    
+    public synchronized void finishScannedRoot(URL scannedRoot) {
+        if (!scannedRoot.equals(currentSourceRoot)) {
+            return;
+        }
+        long time = System.currentTimeMillis();
+        totalScanningTime += time - currentRootStartTime;
+        scannedSourceRoots.add(scannedRoot);
+        
+        currentSourceRoot = null;
+    }
+    
+    public synchronized void addIndexerTime(String fName, long addTime) {
+        Long t = totalIndexerTime.get(fName);
+        if (t == null) {
+            t = Long.valueOf(0);
+        }
+        totalIndexerTime.put(fName, t + addTime);
+    }
     
     public synchronized LogContext withRoot(URL root) {
         this.root = root;
@@ -300,6 +348,21 @@ import org.openide.util.RequestProcessor;
         } else {
             sb.append("\nNOT executed");
         }
+        sb.append("\nScanned roots: ").append(scannedSourceRoots).
+                append(", time: ").append(totalScanningTime);
+        
+        long t = System.currentTimeMillis();
+        sb.append("\nCurrent root: ").append(currentSourceRoot).
+                append(", time spent so far: ").append(t - currentRootStartTime);
+        
+        sb.append("\nTime spent in indexers:");
+        List<String> iNames = new ArrayList<String>(totalIndexerTime.keySet());
+        Collections.sort(iNames);
+        for (Map.Entry<String, Long> indexTime : totalIndexerTime.entrySet()) {
+            sb.append("\n\t").append(indexTime.getKey()).
+                    append(": ").append(indexTime.getValue());
+        }
+        
         sb.append("\nStacktrace:\n");    //NOI18N
         for (StackTraceElement se : stackTrace) {
             sb.append('\t').append(se).append('\n'); //NOI18N
@@ -607,5 +670,5 @@ import org.openide.util.RequestProcessor;
     }
         
     private static final Stats STATS = new Stats();
-    
+
 }

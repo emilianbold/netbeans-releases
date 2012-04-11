@@ -61,6 +61,7 @@ import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
+import org.netbeans.modules.profiler.nbimpl.javac.ParsingUtils;
 import org.netbeans.modules.profiler.spi.java.GoToSourceProvider;
 import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.openide.cookies.LineCookie;
@@ -91,37 +92,33 @@ public final class GoToJavaSourceProvider extends GoToSourceProvider {
 
         JavaSource js = JavaSource.forFileObject(sourceFile);
         if (js != null) {
+            ParsingUtils.invokeScanSensitiveTask(js.getClasspathInfo(), new Task<CompilationController>() {
 
-            try {
-
-                js.runWhenScanFinished(new Task<CompilationController>() {
-
-                    public void run(CompilationController controller) throws Exception {
-                        if (!controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).equals(JavaSource.Phase.ELEMENTS_RESOLVED)) {
-                            return;
-                        }
-                        TypeElement parentClass = ElementUtilitiesEx.resolveClassByName(className, controller, true);
-                        if (ElementOpen.open(controller.getClasspathInfo(), parentClass)) {
-                            Document doc = controller.getDocument();
-                            if (doc != null && doc instanceof StyledDocument) {
-                                if (openAtLine(controller, doc, methodName, line)) {
+                public void run(CompilationController controller) throws Exception {
+                    if (!controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).equals(JavaSource.Phase.ELEMENTS_RESOLVED)) {
+                        return;
+                    }
+                    TypeElement parentClass = ElementUtilitiesEx.resolveClassByName(className, controller, true);
+                    if (ElementOpen.open(controller.getClasspathInfo(), parentClass)) {
+                        Document doc = controller.getDocument();
+                        if (doc != null && doc instanceof StyledDocument) {
+                            if (openAtLine(controller, doc, methodName, line)) {
+                                result.set(true);
+                                return;
+                            }
+                            if (methodName != null) {
+                                ExecutableElement methodElement = ElementUtilitiesEx.resolveMethodByName(controller, parentClass, methodName, signature);
+                                if (methodElement != null && ElementOpen.open(controller.getClasspathInfo(), methodElement)) {
                                     result.set(true);
                                     return;
                                 }
-                                if (methodName != null) {
-                                    ExecutableElement methodElement = ElementUtilitiesEx.resolveMethodByName(controller, parentClass, methodName, signature);
-                                    if (methodElement != null && ElementOpen.open(controller.getClasspathInfo(), methodElement)) {
-                                        result.set(true);
-                                        return;
-                                    }
-                                }
                             }
-                            result.set(true);
                         }
+                        result.set(true);
                     }
-                }, true);
-            } catch (IOException e) {
-            }
+                }
+            });
+
             return result.get();
         }
         return false;

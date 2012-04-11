@@ -44,9 +44,12 @@
 
 package org.netbeans.spi.settings;
 
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 
@@ -66,6 +69,10 @@ import org.w3c.dom.NodeList;
  */
 public class DOMConvertorTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(DOMConvertorTest.class);
+    }
+
     /** Creates a new instance of EnvTest */
     public DOMConvertorTest(String name) {
         super(name);

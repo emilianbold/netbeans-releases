@@ -44,12 +44,15 @@
 
 package org.openide.explorer.windows;
 
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.Iterator;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 
 import org.netbeans.junit.NbTestCase;
@@ -73,6 +76,11 @@ import org.openide.windows.TopComponent;
  * @author Jiri Rechtacek
  */
 public class TopComponentActivatedNodesTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TopComponentActivatedNodesTest.class);
+    }
+
     /** top component we work on */
     private TopComponent top;
     

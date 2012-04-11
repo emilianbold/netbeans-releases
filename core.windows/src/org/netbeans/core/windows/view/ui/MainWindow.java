@@ -676,7 +676,12 @@ public final class MainWindow {
            device = conf.getDevice();
            if( isFullScreenMode && device.isFullScreenSupported() && !(Utilities.isMac() || Utilities.isWindows()) ) {
                //#195927 - attempting to prevent NPE on sunray solaris
-               device.setFullScreenWindow( null );
+               try {
+                    device.setFullScreenWindow( null );
+               }catch( IllegalArgumentException iaE ) {
+                   //#206310 - sometimes this make problems on Linux
+                   Logger.getLogger( MainWindow.class.getName() ).log( Level.FINE, null, iaE );
+               }
            }
        }
 

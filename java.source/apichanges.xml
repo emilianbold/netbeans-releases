@@ -108,6 +108,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="GeneratorUtilities-createFromTemplate">
+             <api name="general"/>
+             <summary>Added <code>GeneratorUtilities.createFromTemplate</code>.</summary>
+             <version major="0" minor="100"/>
+             <date day="5" month="4" year="2012"/>
+             <author login="ralphbenjamin"/>
+             <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deletion="no" deprecation="no" modification="no"/>
+             <description>
+                 Added the method <code>createFromTemplate</code> to class <code>GeneratorUtilities</code>,
+                 which will create a new CompilationUnitTree from a template.
+             </description>
+             <class package="org.netbeans.api.java.source" name="GeneratorUtilities"/>
+             <issue number="209798"/>
+        </change>
         <change id="GeneratorUtilities-appendToAnnotationValue">
              <api name="general"/>
              <summary>Added <code>GeneratorUtilities.appendToAnnotationValue</code>.</summary>

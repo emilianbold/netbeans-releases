@@ -58,18 +58,13 @@ import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.*;
 
 
 
 /**
  *
- * @author ehucka, Revision Petr Cyhelsky
+ * @author ehucka, Revision Petr Cyhelsky, Jiri Kovalsky
  */
 public class LineBreakpointsTest extends DebuggerTestCase {
 
@@ -178,11 +173,11 @@ public class LineBreakpointsTest extends DebuggerTestCase {
         //toggle breakpoints
         Utilities.toggleBreakpoint(eo, 52);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:52");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52");
         eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 74);
         new ContinueAction().perform();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:74");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:74");
         
     }
 
@@ -194,7 +189,7 @@ public class LineBreakpointsTest extends DebuggerTestCase {
         //toggle breakpoints
         Utilities.toggleBreakpoint(eo, 114);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:114");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:114");
     }
 
     /**
@@ -206,7 +201,7 @@ public class LineBreakpointsTest extends DebuggerTestCase {
         //toggle breakpoints
         Utilities.toggleBreakpoint(eo, 45);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:45");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:45");
     }
 
     /**
@@ -217,7 +212,7 @@ public class LineBreakpointsTest extends DebuggerTestCase {
         //toggle breakpoints
         Utilities.toggleBreakpoint(eo, 54);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:54");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:54");
     }
 
     /**
@@ -229,7 +224,7 @@ public class LineBreakpointsTest extends DebuggerTestCase {
         //toggle breakpoints
         Utilities.toggleBreakpoint(eo, 123);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread Thread-0 stopped at MemoryView.java:123");
+        Utilities.checkConsoleLastLineForText("Thread Thread-0 stopped at MemoryView.java:123");
     }
 
     /**
@@ -240,7 +235,7 @@ public class LineBreakpointsTest extends DebuggerTestCase {
         //toggle breakpoints
         Utilities.toggleBreakpoint(eo, 154);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:154");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:154");
     }
 
     /**
@@ -262,11 +257,11 @@ public class LineBreakpointsTest extends DebuggerTestCase {
         new JEditorPaneOperator(dialog, 0).setText("i > 0");
         dialog.ok();
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:63");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:63");
         new ContinueAction().perform();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:63");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:63");
         new ContinueAction().perform();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:64");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:64");
     }
 
     /**
@@ -285,12 +280,13 @@ public class LineBreakpointsTest extends DebuggerTestCase {
 
         String nothread = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_CB_Actions_Panel_Suspend_None");
         new JComboBoxOperator(dialog, 2).selectItem(nothread);
-        String breakpointHitText = "Line breakpoint hit on {className}:{lineNumber}"; //noi18n
+        String breakpointHitText = "{lineNumber} line breakpoint hit in class {className}"; //noi18n
         new JTextFieldOperator(dialog, 4).setText(breakpointHitText);
         dialog.ok();
         Utilities.toggleBreakpoint(eo, 104);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
+        Utilities.checkConsoleForText("102 line breakpoint hit in class examples.advanced.MemoryView", 4);
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104");
     }
 
     public void testLineBreakpointsValidation() throws Throwable {        
@@ -323,9 +319,9 @@ public class LineBreakpointsTest extends DebuggerTestCase {
         
         Utilities.startDebugger();
         //check that both breakpoints were moved to nearest breakable locations
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
         Utilities.checkConsoleForText("LineBreakpoint MemoryView.java : 104 successfully submitted.", 2);
         Utilities.checkConsoleForText("LineBreakpoint MemoryView.java : 80 successfully submitted.", 3);
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:80");
     }
 
     protected void setBreakpointType(NbDialogOperator dialog, String type) {

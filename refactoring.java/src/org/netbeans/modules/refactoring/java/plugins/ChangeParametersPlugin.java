@@ -219,17 +219,26 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     public Problem prepare(RefactoringElementsBag elements) {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size() + 1);
-        initDelegates();
-        fireProgressListenerStep();
         Problem problem = null;
-        ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(refactoring.getParameterInfo(),
-                                                                                      refactoring.getModifiers(),
-                                                                                      refactoring.getReturnType(),
-                                                                                      refactoring.isOverloadMethod(),
-                                                                                      refactoring.getContext().lookup(Javadoc.class),
-                                                                                      allMethods,
-                                                                                      treePathHandle);
         if (!a.isEmpty()) {
+            initDelegates();
+            fireProgressListenerStep();
+
+            ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(refactoring.getParameterInfo(),
+                    refactoring.getModifiers(),
+                    refactoring.getReturnType(),
+                    refactoring.isOverloadMethod(),
+                    refactoring.getContext().lookup(Javadoc.class),
+                    allMethods,
+                    treePathHandle);
+            
+            ChangeParamsJavaDocTransformer changeJavaDocParamsTransformer = new ChangeParamsJavaDocTransformer(refactoring.getParameterInfo(),
+                    refactoring.getReturnType(),
+                    refactoring.isOverloadMethod(),
+                    refactoring.getContext().lookup(Javadoc.class),
+                    allMethods,
+                    treePathHandle);
+
             for (RenameRefactoring renameRefactoring : renameDelegates) {
                 problem = JavaPluginUtils.chainProblems(problem, renameRefactoring.prepare(elements.getSession()));
                 if (problem != null && problem.isFatal()) {
@@ -237,11 +246,14 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                     return problem;
                 }
             }
+            TransformTask transformJavadoc = new TransformTask(changeJavaDocParamsTransformer, treePathHandle);
+            problem = JavaPluginUtils.chainProblems(problem, createAndAddElements(a, transformJavadoc, elements, refactoring));
             TransformTask transform = new TransformTask(changeParamsTransformer, treePathHandle);
-            problem = createAndAddElements(a, transform, elements, refactoring);
+            problem = JavaPluginUtils.chainProblems(problem, createAndAddElements(a, transform, elements, refactoring));
+            problem = JavaPluginUtils.chainProblems(problem, changeParamsTransformer.getProblem());
         }
         fireProgressListenerStop();
-        return problem != null ? problem : changeParamsTransformer.getProblem();
+        return problem;
     }
     
     @Override

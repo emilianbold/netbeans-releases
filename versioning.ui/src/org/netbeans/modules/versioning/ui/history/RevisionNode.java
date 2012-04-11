@@ -309,7 +309,7 @@ public class RevisionNode extends AbstractNode implements Comparable {
         }
     } 
 
-    private static class FileNode extends AbstractNode implements Comparable {        
+    static class FileNode extends AbstractNode implements Comparable {        
 
         private final HistoryEntry entry;
         private final VCSFileProxy file;
@@ -339,39 +339,5 @@ public class RevisionNode extends AbstractNode implements Comparable {
             return getName().compareTo(node.getName());            
         }        
     }    
-    
-    public static abstract class Filter implements QuickFilter {
-        public boolean filtersProperty(Property property) {
-            return false;
-        }
-        public abstract String getDisplayName();
-        protected HistoryEntry getEntry(Object value) {
-            if(value instanceof Node) {
-                return getHistoryEntry((Node)value);
-        }
-            return null;
-        }
- 
-        private HistoryEntry getHistoryEntry(Node node) {
-            if(node instanceof RevisionNode) {
-                return ((RevisionNode)node).entry;
-            } else if (node instanceof FileNode) {
-                return ((FileNode)node).entry;
-            } else {
-                Node[] nodes = node.getChildren().getNodes();
-                return nodes != null && nodes.length > 0 ? getHistoryEntry(nodes[0]) : null;
-            }
-        }
-        
-        public String getRendererValue(String value) {
-            return HistoryUtils.escapeForHTMLLabel(value);
-        }
-
-        @Override
-        public String toString() {
-            return getDisplayName();
-        }
-    }
-
 }
 

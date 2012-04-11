@@ -43,15 +43,19 @@
 package org.netbeans.modules.ide.ergonomics;
 
 import java.awt.Dialog;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -70,30 +74,44 @@ public class Utilities {
         return featureDialog(featureInfo, notFound, featureName);
     }
     public static final boolean featureDialog(final FeatureInfo featureInfo, final String notFoundMessage, final String featureName) {
+        final CountDownLatch called = new CountDownLatch(1);
         final boolean[] result = new boolean[] { false };
         final DialogDescriptor[] descriptor = new DialogDescriptor[1];
         final Callable<JComponent> call = new Callable<JComponent>() {
+            @Override
             public JComponent call() throws Exception {
                 result[0] = true;
+                called.countDown();
                 descriptor[0].setValue(DialogDescriptor.CLOSED_OPTION);
                 return new JPanel();
             }
         };
+        final ConfigurationPanel[] arr = new ConfigurationPanel[1];
         descriptor[0] = Mutex.EVENT.readAccess(new Mutex.Action<DialogDescriptor>() {
+            @Override
             public DialogDescriptor run() {
-                return new DialogDescriptor(new ConfigurationPanel(featureName, call, featureInfo, true), notFoundMessage);
+                arr[0] = new ConfigurationPanel(featureName, call, featureInfo, true);
+                return new DialogDescriptor(arr[0], notFoundMessage);
             }
         });
         descriptor[0].setOptions(new Object[] { DialogDescriptor.CANCEL_OPTION });
-        final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor[0]);
-        descriptor[0].addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent arg0) {
-                d.setVisible(false);
-                d.dispose();
+        if (!GraphicsEnvironment.isHeadless()) {
+            final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor[0]);
+            descriptor[0].addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent arg0) {
+                    d.setVisible(false);
+                    d.dispose();
+                }
+            });
+            d.setVisible(true);
+        } else {
+            try {
+                called.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        });
-        d.setVisible(true);
+        }
         return result[0];
     }
 }

@@ -332,7 +332,7 @@ public class BugzillaRepository {
         }
         QueryParameter[] additionalParams = getSimpleSearchParameters();
         for (QueryParameter qp : additionalParams) {
-            url.append(qp.get());
+            url.append(qp.get(true));
         }
         PerformQueryCommand queryCmd = new PerformQueryCommand(this, url.toString(), collector);
         getExecutor().execute(queryCmd);
@@ -437,6 +437,10 @@ public class BugzillaRepository {
         return executor;
     }
 
+    public void ensureCredentials() {
+        setCredentials(info.getUsername(), info.getPassword(), info.getHttpUsername(), info.getHttpPassword());
+    }
+    
     public boolean authenticate(String errroMsg) {
         return BugtrackingUtil.editRepository(BugzillaUtil.getRepository(this), errroMsg);
     }

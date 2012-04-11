@@ -197,6 +197,9 @@ public final class DefaultPlugin extends TestNGPlugin {
         }
         
         String baseResName = srcCp.getResourceName(fileObj, '/', false);
+        if(baseResName == null) {
+            return null;
+        }
         String testResName = !fileObj.isFolder()
                              ? getTestResName(baseResName, fileObj.getExt())
                              : getSuiteResName(baseResName);

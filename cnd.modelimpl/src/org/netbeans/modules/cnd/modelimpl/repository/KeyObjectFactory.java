@@ -163,6 +163,8 @@ public class KeyObjectFactory extends KeyFactory {
             aHandle = KEY_GRAPH_CONTAINER_KEY;
         } else if (object instanceof ClassifierContainerKey) {
             aHandle = KEY_CLASSIFIER_CONTAINER_KEY;
+        } else if (object instanceof IncludedFileStorageKey) {
+            aHandle = KEY_INCLUDED_FILE_STORAGE_KEY;
         } else if (object instanceof ReferencesIndexKey) {
             aHandle = KEY_MODEL_INDEX_KEY;
         } else {
@@ -239,6 +241,9 @@ public class KeyObjectFactory extends KeyFactory {
             case KEY_CLASSIFIER_CONTAINER_KEY:
                 aKey = new ClassifierContainerKey(aStream);
                 break;
+            case KEY_INCLUDED_FILE_STORAGE_KEY:
+                aKey = new IncludedFileStorageKey(aStream);
+                break;
             case KEY_MODEL_INDEX_KEY:
                 aKey = new ReferencesIndexKey(aStream);
                 break;
@@ -281,8 +286,9 @@ public class KeyObjectFactory extends KeyFactory {
     public static final int KEY_GRAPH_CONTAINER_KEY = KEY_FILE_CONTAINER_KEY    + 1;
     public static final int KEY_NS_DECLARATION_CONTAINER_KEY = KEY_GRAPH_CONTAINER_KEY + 1;
     public static final int KEY_CLASSIFIER_CONTAINER_KEY = KEY_NS_DECLARATION_CONTAINER_KEY + 1;
+    public static final int KEY_INCLUDED_FILE_STORAGE_KEY = KEY_CLASSIFIER_CONTAINER_KEY + 1;
     
-    public static final int KEY_MODEL_INDEX_KEY = KEY_CLASSIFIER_CONTAINER_KEY + 1;
+    public static final int KEY_MODEL_INDEX_KEY = KEY_INCLUDED_FILE_STORAGE_KEY + 1;
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX    
     public static final int LAST_INDEX          = KEY_MODEL_INDEX_KEY;

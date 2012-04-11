@@ -51,6 +51,7 @@ import java.io.OutputStream;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
 import java.util.Collections;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -432,13 +433,9 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 
     // Fixing #206726 - If a remote file is saved frequently, "File modified externally" message appears, user changes are lost
     @Override
-    public void refresh(boolean expected) {
-        try {
-            if (RemoteFileObjectBase.DEFER_WRITES) {
-                WritingQueue.getInstance(getExecutionEnvironment()).waitFinished(Collections.<FileObject>singleton(this.getOwnerFileObject()), null);
-            }
-        } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex, this);
+    protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        if (RemoteFileObjectBase.DEFER_WRITES) {
+            WritingQueue.getInstance(getExecutionEnvironment()).waitFinished(Collections.<FileObject>singleton(this.getOwnerFileObject()), null);
         }
     }
 

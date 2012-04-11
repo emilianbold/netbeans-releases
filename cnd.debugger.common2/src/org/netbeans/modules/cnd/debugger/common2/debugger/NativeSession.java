@@ -85,7 +85,7 @@ public final class NativeSession {
 	// the following relies crucially on
 	// DebuggerManager.registerSessionModel() having been called
 	// already.
-	setUpdater(DebuggerManager.get().sessionUpdater());
+	setUpdater(NativeDebuggerManager.get().sessionUpdater());
     } 
 
     // point back to debugger
@@ -126,7 +126,7 @@ public final class NativeSession {
      */
 
     public void makeCurrent() {
-	DebuggerManager.get().setCurrentSession(coreSession);
+	NativeDebuggerManager.get().setCurrentSession(coreSession);
     }
 
     public void kill() {
@@ -139,7 +139,7 @@ public final class NativeSession {
      */
 
     private boolean isUnique() {
-	NativeSession sessions[] = DebuggerManager.get().getSessions();
+	NativeSession sessions[] = NativeDebuggerManager.get().getSessions();
 	String thisName = getShortName();
 	boolean programUnique = true;
 	for (int sx = 0; sx < sessions.length; sx++) {

@@ -74,6 +74,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.swing.text.BadLocationException;
 import javax.tools.JavaFileObject;
 
@@ -139,9 +140,9 @@ public class WorkingCopy extends CompilationController {
         textualChanges = new HashSet<Diff>();
         userInfo = new HashMap<Integer, String>();
 
-        if (getContext().get(ElementOverlay.class) == null) {
-            getContext().put(ElementOverlay.class, overlay);
-        }
+        //#208490: force the current ElementOverlay:
+        getContext().put(ElementOverlay.class, (ElementOverlay) null);
+        getContext().put(ElementOverlay.class, overlay);
     }
     
     private Context getContext() {
@@ -197,17 +198,29 @@ public class WorkingCopy extends CompilationController {
     
     /**
      * Replaces the original tree <code>oldTree</code> with the new one -
-     * <code>newTree</code>. <code>null</code> values are not allowed.
-     * Use methods in {@link TreeMaker} for tree element removal.
+     * <code>newTree</code>.
+     * <p>
+     * To create a new file, use
+     * <code>rewrite(null, compilationUnitTree)</code>. Use
+     * {@link GeneratorUtilities#createFromTemplate GeneratorUtilities.createFromTemplate()}
+     * to create a new compilation unit tree from a template.
+     * <p>
+     * <code>newTree</code> cannot be <code>null</code>, use methods in
+     * {@link TreeMaker} for tree element removal. If <code>oldTree</code> is
+     * null, <code>newTree</code> must be of kind
+     * {@link Kind#COMPILATION_UNIT COMPILATION_UNIT}.
+     * 
      * 
      * @param oldTree  tree to be replaced, use tree already represented in
-     *                 source code.
+     *                 source code. <code>null</code> to create a new file.
      * @param newTree  new tree, either created by <code>TreeMaker</code>
-     *                 or obtained from different place.
+     *                 or obtained from different place. <code>null</code>
+     *                 values are not allowed.
      * @throws IllegalStateException if <code>toPhase()</code> method was not
      *         called before.
      * @throws IllegalArgumentException when <code>null</code> was passed to the 
      *         method.
+     * @see GeneratorUtilities#createFromTemplate
      * @see TreeMaker
      */
     public synchronized void rewrite(@NullAllowed Tree oldTree, @NonNull Tree newTree) {
@@ -550,8 +563,9 @@ public class WorkingCopy extends CompilationController {
             try {
                 FileObject targetFile = doCreateFromTemplate(t);
                 CompilationUnitTree templateCUT = impl.getJavacTask().parse(FileObjects.nbFileObject(targetFile, targetFile.getParent())).iterator().next();
+                CompilationUnitTree importComments = GeneratorUtilities.get(this).importComments(templateCUT, templateCUT);
 
-                changes.put(templateCUT, t);
+                changes.put(importComments, t);
 
                 StringWriter target = new StringWriter();
 
@@ -568,25 +582,53 @@ public class WorkingCopy extends CompilationController {
         return result;
     }
 
-    private static String template(CompilationUnitTree cut) {
-        if ("package-info.java".equals(cut.getSourceFile().getName())) return "Templates/Classes/package-info.java";
-        if (cut.getTypeDecls().isEmpty()) return "Templates/Classes/Empty.java";
-
-        switch (cut.getTypeDecls().get(0).getKind()) {
+    String template(ElementKind kind) {
+        if(kind == null) {
+            return "Templates/Classes/Empty.java"; // NOI18N
+        }
+        switch (kind) {
             case CLASS: return "Templates/Classes/Class.java"; // NOI18N
             case INTERFACE: return "Templates/Classes/Interface.java"; // NOI18N
             case ANNOTATION_TYPE: return "Templates/Classes/AnnotationType.java"; // NOI18N
             case ENUM: return "Templates/Classes/Enum.java"; // NOI18N
+            case PACKAGE: return "Templates/Classes/package-info.java"; // NOI18N
             default:
-                Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, "Cannot resolve template for {0}", cut.getTypeDecls().get(0).getKind());
-                return "Templates/Classes/Empty.java";
+                Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, "Cannot resolve template for {0}", kind);
+                return "Templates/Classes/Empty.java"; // NOI18N
         }
     }
 
-    private static FileObject doCreateFromTemplate(CompilationUnitTree t) throws IOException {
-        FileObject scratchFolder = FileUtil.createMemoryFileSystem().getRoot();
+    FileObject doCreateFromTemplate(CompilationUnitTree cut) throws IOException {
+        ElementKind kind;
+        if ("package-info.java".equals(cut.getSourceFile().getName())) {
+            kind = ElementKind.PACKAGE;
+        } else if (cut.getTypeDecls().isEmpty()) {
+            kind = null;
+        } else {
+            switch (cut.getTypeDecls().get(0).getKind()) {
+                case CLASS:
+                    kind = ElementKind.CLASS;
+                    break;
+                case INTERFACE:
+                    kind = ElementKind.INTERFACE;
+                    break;
+                case ANNOTATION_TYPE:
+                    kind = ElementKind.ANNOTATION_TYPE;
+                    break;
+                case ENUM:
+                    kind = ElementKind.ENUM;
+                    break;
+                default:
+                    Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, "Cannot resolve template for {0}", cut.getTypeDecls().get(0).getKind());
+                    kind = null;
+            }
+        }
+        FileObject template = FileUtil.getConfigFile(template(kind));
+        return doCreateFromTemplate(template, cut.getSourceFile());
+    }
 
-        FileObject template = FileUtil.getConfigFile(template(t));
+    FileObject doCreateFromTemplate(FileObject template, JavaFileObject sourceFile) throws IOException {
+        FileObject scratchFolder = FileUtil.createMemoryFileSystem().getRoot();
 
         if (template == null) {
             return scratchFolder.createData("out", "java");
@@ -598,7 +640,7 @@ public class WorkingCopy extends CompilationController {
             return scratchFolder.createData("out", "java");
         }
 
-        File pack = new File(t.getSourceFile().toUri()).getParentFile();
+        File pack = new File(sourceFile.toUri()).getParentFile();
 
         while (FileUtil.toFileObject(pack) == null) {
             pack = pack.getParentFile();

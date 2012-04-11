@@ -73,6 +73,10 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         //        first.cc
         //  --second\
         //        second.cc
+        //  --third\
+        //        third.cc
+        //  --forth\
+        //        forth.cc
         //  --includedLibrary\ 
         //        lib_header.h
         //  --otherLibrary\
@@ -82,15 +86,19 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
 
         File srcDir1 = new File(projectDir, "first");
         File srcDir2 = new File(projectDir, "second");
+        File srcDir3 = new File(projectDir, "third");
+        File srcDir4 = new File(projectDir, "forth");
         File incl1 = new File(projectDir, "includedLibrary");
         File incl2 = new File(projectDir, "otherLibrary");
         checkDir(srcDir1);
         checkDir(srcDir2);
+        checkDir(srcDir3);
+        checkDir(srcDir4);
         checkDir(incl1);
         checkDir(incl2);
         List<String> sysIncludes = Arrays.asList(incl1.getAbsolutePath(), incl2.getAbsolutePath());
         super.setSysIncludes(sysIncludes);
-        return new File[] {srcDir1, srcDir2};
+        return new File[] {srcDir1, srcDir2, srcDir3, srcDir4};
     }
     
     private void checkDir(File srcDir) {
@@ -98,12 +106,27 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         assertTrue("Not directory" + srcDir, srcDir.isDirectory());
     }
     
-    public void testDISABLED() {
-        // there can not be no tests at all, so remove this dummy test when IZ 202433 is fixed
+    public void test210384() throws Exception {
+        // #210384 - unresolved "using namespace std"
+        CsmModel model = super.getModel();
+        assertNotNull("null model", model);
+        performStaticTest("first/first.cpp");
+        CsmProject firstPrj = super.getProject("project_first");
+        assertNotNull("null project for first", firstPrj);
+        CsmProject secondPrj = super.getProject("project_second");
+        assertNotNull("null project for second", secondPrj);
+        CsmProject thirdPrj = super.getProject("project_first");
+        assertNotNull("null project for first", thirdPrj);
+        CsmProject forthPrj = super.getProject("project_second");
+        assertNotNull("null project for second", forthPrj);
+        performStaticTest("first/first.cpp");
+        performStaticTest("second/second.cpp");
+        performStaticTest("third/third.cpp");
+        performStaticTest("forth/forth.cpp");
     }
     
     // DISABLED, see IZ 202433
-    public void DISABLEDtestRedFilesWhenProjectClose202433() throws Exception {
+    public void testRedFilesWhenProjectClose202433() throws Exception {
         // #202433 - parser errors in studio system includes
         CsmModel model = super.getModel();
         assertNotNull("null model", model);

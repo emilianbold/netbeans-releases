@@ -44,7 +44,6 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -81,7 +80,6 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.DebugUrl;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -172,7 +170,7 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(RunAsWebAdvanced.class);
+        return new HelpCtx("org.netbeans.modules.php.project.ui.customizer.RunAsWebAdvanced"); // NOI18N
     }
 
     public boolean open() {
@@ -410,8 +408,6 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
         proxyPortLabel = new JLabel();
         proxyPortTextField = new JTextField();
 
-        setFocusTraversalPolicy(null);
-
         debugUrlLabel.setLabelFor(defaultUrlRadioButton);
         Mnemonics.setLocalizedText(debugUrlLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.debugUrlLabel.text")); // NOI18N
 
@@ -430,7 +426,7 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
 
         pathMappingLabel.setLabelFor(pathMappingTable);
 
-        Mnemonics.setLocalizedText(pathMappingLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingLabel.text"));
+        Mnemonics.setLocalizedText(pathMappingLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingLabel.text")); // NOI18N
 
         pathMappingTable.setModel(new DefaultTableModel(
             new Object [][] {
@@ -441,8 +437,7 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
             }
         ));
         pathMappingScrollPane.setViewportView(pathMappingTable);
-        pathMappingTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingTable.AccessibleContext.accessibleDescription")); // NOI18N
-
+        pathMappingTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingTable.AccessibleContext.accessibleDescription")); 
         Mnemonics.setLocalizedText(newPathMappingButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.newPathMappingButton.text")); // NOI18N
         newPathMappingButton.setEnabled(false);
         newPathMappingButton.addActionListener(new ActionListener() {
@@ -460,120 +455,50 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
         });
 
         Mnemonics.setLocalizedText(pathMappingInfoLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingInfoLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(proxyLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyLabel.text"));
+        Mnemonics.setLocalizedText(proxyLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyLabel.text")); // NOI18N
 
         proxyHostLabel.setLabelFor(proxyHostTextField);
         Mnemonics.setLocalizedText(proxyHostLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostLabel.text")); // NOI18N
 
         proxyPortLabel.setLabelFor(proxyPortTextField);
-        Mnemonics.setLocalizedText(proxyPortLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortLabel.text"));
-
-        proxyPortTextField.setPreferredSize(new Dimension(46, 19));
+        Mnemonics.setLocalizedText(proxyPortLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(removePathMappingButton)
-                            .addComponent(newPathMappingButton)))
-                    .addComponent(debugUrlLabel)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(defaultUrlRadioButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(defaultUrlPreviewLabel))
-                    .addComponent(askUrlRadioButton)
-                    .addComponent(doNotOpenBrowserRadioButton)
-                    .addComponent(pathMappingLabel)
-                    .addComponent(pathMappingInfoLabel)
-                    .addComponent(proxyLabel)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(proxyHostLabel)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(proxyHostTextField, GroupLayout.PREFERRED_SIZE, 207, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(proxyPortLabel)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(proxyPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(pathMappingScrollPane)
+
+                        .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(removePathMappingButton).addComponent(newPathMappingButton))).addGroup(layout.createSequentialGroup()
+
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(debugUrlLabel).addGroup(layout.createSequentialGroup()
+                                .addComponent(defaultUrlRadioButton)
+
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(defaultUrlPreviewLabel)).addComponent(askUrlRadioButton).addComponent(doNotOpenBrowserRadioButton).addComponent(pathMappingLabel).addComponent(pathMappingInfoLabel).addComponent(proxyLabel).addGroup(layout.createSequentialGroup()
+                                .addComponent(proxyHostLabel)
+
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(proxyHostTextField, GroupLayout.PREFERRED_SIZE, 207, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(proxyPortLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(proxyPortTextField, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE))).addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {newPathMappingButton, removePathMappingButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(debugUrlLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(defaultUrlRadioButton)
-                    .addComponent(defaultUrlPreviewLabel))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(askUrlRadioButton)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(doNotOpenBrowserRadioButton)
-                .addPreferredGap(ComponentPlacement.UNRELATED)
-                .addComponent(pathMappingLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+
+                .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(defaultUrlRadioButton).addComponent(defaultUrlPreviewLabel)).addPreferredGap(ComponentPlacement.RELATED).addComponent(askUrlRadioButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(doNotOpenBrowserRadioButton).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(pathMappingLabel).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                         .addComponent(newPathMappingButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(removePathMappingButton))
-                    .addComponent(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(pathMappingInfoLabel)
-                .addPreferredGap(ComponentPlacement.UNRELATED)
-                .addComponent(proxyLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(proxyHostTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(proxyHostLabel)
-                    .addComponent(proxyPortLabel)
-                    .addComponent(proxyPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+
+                        .addPreferredGap(ComponentPlacement.RELATED).addComponent(removePathMappingButton)).addComponent(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)).addPreferredGap(ComponentPlacement.RELATED).addComponent(pathMappingInfoLabel).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(proxyLabel).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(proxyHostTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(proxyHostLabel).addComponent(proxyPortLabel).addComponent(proxyPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addContainerGap())
         );
 
-        debugUrlLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.debugUrlLabel.AccessibleContext.accessibleName")); // NOI18N
-        debugUrlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.debugUrlLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        defaultUrlRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.defaultUrlRadioButton.AccessibleContext.accessibleName")); // NOI18N
-        defaultUrlRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.defaultUrlRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
-        defaultUrlPreviewLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.defaultUrlPreviewLabel.AccessibleContext.accessibleName")); // NOI18N
-        defaultUrlPreviewLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.defaultUrlPreviewLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        askUrlRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.askUrlRadioButton.AccessibleContext.accessibleName")); // NOI18N
-        askUrlRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.askUrlRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
-        doNotOpenBrowserRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.doNotOpenBrowserRadioButton.AccessibleContext.accessibleName")); // NOI18N
-        doNotOpenBrowserRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.doNotOpenBrowserRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
-        pathMappingLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingLabel.AccessibleContext.accessibleName")); // NOI18N
-        pathMappingLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        pathMappingScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingScrollPane.AccessibleContext.accessibleName")); // NOI18N
-        pathMappingScrollPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingScrollPane.AccessibleContext.accessibleDescription")); // NOI18N
-        newPathMappingButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.newPathMappingButton.AccessibleContext.accessibleName")); // NOI18N
-        newPathMappingButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.newPathMappingButton.AccessibleContext.accessibleDescription")); // NOI18N
-        removePathMappingButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.removePathMappingButton.AccessibleContext.accessibleName")); // NOI18N
-        removePathMappingButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.removePathMappingButton.AccessibleContext.accessibleDescription")); // NOI18N
-        pathMappingInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingInfoLabel.AccessibleContext.accessibleName")); // NOI18N
-        pathMappingInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        proxyLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyLabel.AccessibleContext.accessibleName")); // NOI18N
-        proxyLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        proxyHostLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostLabel.AccessibleContext.accessibleName")); // NOI18N
-        proxyHostLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        proxyHostTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostTextField.AccessibleContext.accessibleName")); // NOI18N
-        proxyHostTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        proxyPortLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortLabel.AccessibleContext.accessibleName")); // NOI18N
-        proxyPortLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        proxyPortTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortTextField.AccessibleContext.accessibleDescription")); // NOI18N
-
-        getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.AccessibleContext.accessibleName")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.AccessibleContext.accessibleDescription")); // NOI18N
-    }// </editor-fold>//GEN-END:initComponents
+        debugUrlLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.debugUrlLabel.AccessibleContext.accessibleName"));         debugUrlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.debugUrlLabel.AccessibleContext.accessibleDescription"));         defaultUrlRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.defaultUrlRadioButton.AccessibleContext.accessibleName"));         defaultUrlRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.defaultUrlRadioButton.AccessibleContext.accessibleDescription"));         defaultUrlPreviewLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.defaultUrlPreviewLabel.AccessibleContext.accessibleName"));         defaultUrlPreviewLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.defaultUrlPreviewLabel.AccessibleContext.accessibleDescription"));         askUrlRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.askUrlRadioButton.AccessibleContext.accessibleName"));         askUrlRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.askUrlRadioButton.AccessibleContext.accessibleDescription"));         doNotOpenBrowserRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.doNotOpenBrowserRadioButton.AccessibleContext.accessibleName"));         doNotOpenBrowserRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.doNotOpenBrowserRadioButton.AccessibleContext.accessibleDescription"));         pathMappingLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingLabel.AccessibleContext.accessibleName"));         pathMappingLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingLabel.AccessibleContext.accessibleDescription"));         pathMappingScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingScrollPane.AccessibleContext.accessibleName"));         pathMappingScrollPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingScrollPane.AccessibleContext.accessibleDescription"));         newPathMappingButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.newPathMappingButton.AccessibleContext.accessibleName"));         newPathMappingButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.newPathMappingButton.AccessibleContext.accessibleDescription"));         removePathMappingButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.removePathMappingButton.AccessibleContext.accessibleName"));         removePathMappingButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.removePathMappingButton.AccessibleContext.accessibleDescription"));         pathMappingInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingInfoLabel.AccessibleContext.accessibleName"));         pathMappingInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingInfoLabel.AccessibleContext.accessibleDescription"));         proxyLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyLabel.AccessibleContext.accessibleName"));         proxyLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyLabel.AccessibleContext.accessibleDescription"));         proxyHostLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostLabel.AccessibleContext.accessibleName"));         proxyHostLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostLabel.AccessibleContext.accessibleDescription"));         proxyHostTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostTextField.AccessibleContext.accessibleName"));         proxyHostTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostTextField.AccessibleContext.accessibleDescription"));         proxyPortLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortLabel.AccessibleContext.accessibleName"));         proxyPortLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortLabel.AccessibleContext.accessibleDescription"));         proxyPortTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortTextField.AccessibleContext.accessibleDescription")); 
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.AccessibleContext.accessibleName"));         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.AccessibleContext.accessibleDescription")); // NOI18N
+    }// </editor-fold> //GEN-END:initComponents
 
     private void newPathMappingButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_newPathMappingButtonActionPerformed
         pathMappingTableModel.addRow(new Object[] {null, new LocalPathCell(DEFAULT_LOCAL_PATH)});
@@ -687,30 +612,16 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
                 JButton button = localPathCell.getButton();
                 if (e.getX() > (cellRect.x + cellRect.width - button.getWidth())) {
                     //inside changeButton
-                    File newLocation = Utils.browseLocationAction(table, getLastFolder(), NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_SelectProjectFolder"));
+                    File newLocation = Utils.browseLocationAction(LastUsedFolders.DEBUGGER_PATH_MAPPING,
+                            NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_SelectProjectFolder"), FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)));
                     if (newLocation != null) {
                         localPathCell.setPath(newLocation.getAbsolutePath());
-                        LastUsedFolders.setPathMapping(newLocation);
                     }
                     validateFields();
                 }
             }
         }
 
-        private File getLastFolder() {
-            File lastFolder = LastUsedFolders.getPathMapping();
-            if (lastFolder == null) {
-                return null;
-            }
-            FileObject fo = FileUtil.toFileObject(lastFolder);
-            if (fo == null) {
-                return null;
-            }
-            if (!CommandUtils.isUnderAnySourceGroup(project, fo, false)) {
-                return FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project));
-            }
-            return lastFolder;
-        }
     }
 
     public static final class Properties {

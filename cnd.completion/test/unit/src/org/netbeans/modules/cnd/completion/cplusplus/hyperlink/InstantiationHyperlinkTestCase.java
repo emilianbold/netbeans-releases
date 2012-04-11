@@ -212,4 +212,9 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug209929.cpp", 2, 11, "bug209929.cpp", 2, 5);
     }
     
+    public void testBug209950() throws Exception {
+        // Bug 209950 - error: Empty function name
+        performTest("bug209950.cpp", 9, 37, "bug209950.cpp", 3, 3);
+    }
+    
 }

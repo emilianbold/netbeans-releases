@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 public class MutexTest extends NbTestCase {
     Mutex.Privileged p;
@@ -961,6 +962,7 @@ public class MutexTest extends NbTestCase {
     // [pnejedly:] There was an attempt to fix Starvation68106 by allowing read
     // enter while Mutex is currently in CHAIN mode, but that's wrong, as it can
     // be CHAIN/W (write granted, readers waiting). Let's cover this with a test.
+    @RandomlyFails // NB-Core-Build #8070: B finished after unblocking M
     public void testReaderCannotEnterWriteChainedMutex() throws Exception {
         final Mutex.Privileged PR = new Mutex.Privileged();
         final Mutex M = new Mutex(PR);

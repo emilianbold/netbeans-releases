@@ -43,7 +43,6 @@
 package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.Callable;
@@ -55,20 +54,12 @@ import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalVali
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.DebugUrl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
-import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
-import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Action implementation for LOCAL configuration.
@@ -142,20 +133,8 @@ class ConfigActionLocal extends ConfigAction {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                try {
-                    if (urlToShow[0] != null) {
-                        if (CommandUtils.getDebugInfo(project).debugClient) {
-                            try {
-                                launchJavaScriptDebugger(urlToShow[0]);
-                            } catch (URISyntaxException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        } else {
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(urlToShow[0]);
-                        }
-                    }
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (urlToShow[0] != null) {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(urlToShow[0]);
                 }
             }
         };
@@ -171,29 +150,17 @@ class ConfigActionLocal extends ConfigAction {
         };
 
 
-        boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
-        if (jsDebuggingAvailable) {
-            boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(project);
-            if (!keepDebugging) {
-                return;
-            }
-        }
-
-        if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(project)) {
-            //temporary; after narrowing deps. will be changed
-            XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
-            if (dbgStarter != null) {
-                if (dbgStarter.isAlreadyRunning()) {
-                    if (CommandUtils.warnNoMoreDebugSession()) {
-                        dbgStarter.stop();
-                        debugProject();
-                    }
-                } else {
-                    startDebugger(dbgStarter, runnable, cancellable, FileUtil.toFileObject(RunConfigLocal.forProject(project).getIndexFile()));
+        //temporary; after narrowing deps. will be changed
+        XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
+        if (dbgStarter != null) {
+            if (dbgStarter.isAlreadyRunning()) {
+                if (CommandUtils.warnNoMoreDebugSession()) {
+                    dbgStarter.stop();
+                    debugProject();
                 }
+            } else {
+                startDebugger(dbgStarter, runnable, cancellable, FileUtil.toFileObject(RunConfigLocal.forProject(project).getIndexFile()));
             }
-        } else {
-            runnable.run();
         }
     }
 
@@ -268,20 +235,7 @@ class ConfigActionLocal extends ConfigAction {
             @Override
             public void run() {
                 if (urlForStartDebugging != null) {
-                    try {
-                        if (CommandUtils.getDebugInfo(project).debugClient) {
-                            try {
-                                launchJavaScriptDebugger(urlForStartDebugging);
-                            } catch (URISyntaxException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        } else {
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(urlForStartDebugging);
-                        }
-                    } catch (MalformedURLException ex) {
-                        //TODO improve error handling
-                        Exceptions.printStackTrace(ex);
-                    }
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(urlForStartDebugging);
                 }
             }
         };
@@ -296,28 +250,16 @@ class ConfigActionLocal extends ConfigAction {
             }
         };
 
-        boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
-        if (jsDebuggingAvailable) {
-            boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(project);
-            if (!keepDebugging) {
-                return;
-            }
-        }
-
-        if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(project)) {
-            XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
-            if (dbgStarter != null) {
-                if (dbgStarter.isAlreadyRunning()) {
-                    if (CommandUtils.warnNoMoreDebugSession()) {
-                        dbgStarter.stop();
-                        debugFile(selectedFile, urlForStartDebugging, urlForStopDebugging);
-                    }
-                } else {
-                    startDebugger(dbgStarter, runnable, cancellable, selectedFile);
+        XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
+        if (dbgStarter != null) {
+            if (dbgStarter.isAlreadyRunning()) {
+                if (CommandUtils.warnNoMoreDebugSession()) {
+                    dbgStarter.stop();
+                    debugFile(selectedFile, urlForStartDebugging, urlForStopDebugging);
                 }
+            } else {
+                startDebugger(dbgStarter, runnable, cancellable, selectedFile);
             }
-        } else {
-            runnable.run();
         }
     }
 
@@ -336,42 +278,6 @@ class ConfigActionLocal extends ConfigAction {
                 ProjectPropertiesSupport.getDebugProxy(project),
                 ProjectPropertiesSupport.getEncoding(project));
         dbgStarter.start(project, initDebuggingCallable, props);
-    }
-
-    private void launchJavaScriptDebugger(URL url) throws MalformedURLException, URISyntaxException {
-        LocationMappersFactory mapperFactory = Lookup.getDefault().lookup(LocationMappersFactory.class);
-        Lookup debuggerLookup = null;
-        if (mapperFactory != null) {
-            URI appContext = CommandUtils.getBaseURL(project).toURI();
-            FileObject[] srcRoots = PhpProjectUtils.getSourceObjects(project);
-
-            JSToNbJSLocationMapper forwardMapper =
-                    mapperFactory.getJSToNbJSLocationMapper(srcRoots, appContext, null);
-            NbJSToJSLocationMapper reverseMapper =
-                    mapperFactory.getNbJSToJSLocationMapper(srcRoots, appContext, null);
-            debuggerLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
-        } else {
-            debuggerLookup = Lookups.fixed(project);
-        }
-
-        URI clientUrl = url.toURI();
-
-        HtmlBrowser.Factory browser = null;
-        if (WebClientToolsProjectUtils.isInternetExplorer(project)) {
-            browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
-        } else {
-            browser = WebClientToolsProjectUtils.getFirefoxBrowser();
-        }
-
-        if (browser == null) {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-        } else {
-            try {
-                WebClientToolsSessionStarterService.startSession(clientUrl, browser, debuggerLookup);
-            } catch (WebClientToolsSessionException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
     }
 
     private static final class StopDebuggingException extends Exception {

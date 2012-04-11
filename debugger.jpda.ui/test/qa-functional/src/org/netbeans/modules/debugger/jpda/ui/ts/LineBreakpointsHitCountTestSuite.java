@@ -43,9 +43,9 @@
 package org.netbeans.modules.debugger.jpda.ui.ts;
 
 import junit.framework.Test;
-import org.netbeans.modules.debugger.jpda.ui.LineBreakpointsHitCountTest;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.debugger.jpda.ui.LineBreakpointsHitCountTest;
 
 /**
  *

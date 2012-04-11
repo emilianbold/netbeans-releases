@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.modules.findbugs.RunFindBugs.SigFilesValidator;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
@@ -91,16 +92,20 @@ public class RunInEditor implements CancellableTask<CompilationInfo> {
             doRun(parameter);
         } finally {
             if (cancel.get()) {
-                LOG.log(Level.INFO, "Cancelling RunInEditor took: {0}ms", System.currentTimeMillis() - cancelledAt);
+                LOG.log(Level.FINE, "Cancelling RunInEditor took: {0}ms", System.currentTimeMillis() - cancelledAt);
             }
         }
     }
 
     private void doRun(final CompilationInfo parameter) throws Exception {
-
-        LOG.log(Level.INFO, "RunInEditor");
+        LOG.log(Level.FINE, "RunInEditor");
 
         if (!NbPreferences.forModule(RunInEditor.class).getBoolean(RUN_IN_EDITOR, RUN_IN_EDITOR_DEFAULT)) return;
+
+        if (ErrorsCache.isInError(parameter.getFileObject(), true)) {
+            LOG.log(Level.FINE, "Not running FindBugs in editor, as the current file has been compiled with errors.");
+            return ;
+        }
 
         ClassPath sourceCP = parameter.getClasspathInfo().getClassPath(PathKind.SOURCE);
         FileObject sourceRoot = sourceCP.findOwnerRoot(parameter.getFileObject());

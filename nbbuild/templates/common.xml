@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -139,7 +139,7 @@ made subject to such option by the copyright holder.
             <attribute name="javacval"/>
             <sequential>
                 <presetdef name="custom-javac">
-                    <custom-javac fork="yes" executable="@{javacval}"/>
+                    <custom-javac executable="@{javacval}"/>
                 </presetdef>
             </sequential>
         </macrodef>
@@ -681,7 +681,7 @@ made subject to such option by the copyright holder.
                 <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
             </sequential>
         </macrodef>
-        <junit-impl test.type="${run.test.type}" />
+        <junit-impl test.type="${run.test.type}" disable.apple.ui="${disable.apple.ui}"/>
     </target>
 
     <target name="-do-testng" depends="test-init">
@@ -707,7 +707,7 @@ made subject to such option by the copyright holder.
                 <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
             </sequential>
         </macrodef>
-        <testng-impl test.type="${run.test.type}"/>
+        <testng-impl test.type="${run.test.type}" disable.apple.ui="${disable.apple.ui}"/>
     </target>
 
     <target name="test-generate-html" depends="-build-dir-init">
@@ -740,9 +740,10 @@ made subject to such option by the copyright holder.
             <attribute name="test.type"/>
             <sequential>
                 <fail unless="test.includes">Must set test.includes</fail>
+                <property name="run.jvmargs.ide" value=""/> 
                 <mkdir dir="${build.test.@{test.type}.results.dir}"/>
                 <condition property="test.runner" value ="testng" else="junit">
-                    <available classname="org.testng.annotations.Test" classpathref="test.@{test.type}.run.cp"/>
+                    <available classname="org.testng.annotations.Test" classpath="${test.@{test.type}.runtime.cp}"/>
                 </condition>
                 <antcall target="-do-${test.runner}-single">
                     <param name="test.type" value="@{test.type}"/>
@@ -750,6 +751,8 @@ made subject to such option by the copyright holder.
             </sequential>
         </macrodef>
         <property name="test.type" value="unit"/>
+        <property name="run.args.ide" value=""/>
+        
         <test-single test.type="${test.type}"/>
     </target>
 
@@ -765,6 +768,8 @@ made subject to such option by the copyright holder.
                     <syspropertyset refid="test.@{test.type}.properties"/>
                     <jvmarg line="${test.run.args}"/>
                     <jvmarg line="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg line="${run.args.ide}"/>
+                    <jvmarg line="${run.jvmargs.ide}"/>
                     <formatter type="brief" usefile="false"/>
                     <formatter type="xml"/>
                 </junit>
@@ -807,7 +812,7 @@ made subject to such option by the copyright holder.
                 <fail unless="test.class">Must set test.class</fail>
                 <mkdir dir="${build.test.@{test.type}.results.dir}"/>
                 <condition property="test.runner" value ="testng" else="junit">
-                    <available classname="org.testng.annotations.Test" classpathref="test.@{test.type}.run.cp"/>
+                    <available classname="org.testng.annotations.Test" classpath="${test.@{test.type}.runtime.cp}"/>
                 </condition>
                 <antcall target="-do-${test.runner}-debug-single">
                     <param name="test.type" value="@{test.type}"/>
@@ -923,9 +928,10 @@ made subject to such option by the copyright holder.
             <sequential>
                 <fail unless="test.class">Must set test.class</fail>
                 <fail unless="test.methods">Must set test.methods</fail>
+                <property name="run.jvmargs.ide" value=""/>
                 <mkdir dir="${build.test.@{test.type}.results.dir}"/>
                 <condition property="test.runner" value ="testng" else="junit">
-                    <available classname="org.testng.annotations.Test" classpathref="test.@{test.type}.run.cp"/>
+                    <available classname="org.testng.annotations.Test" classpath="${test.@{test.type}.runtime.cp}"/>
                 </condition>
                 <antcall target="-do-${test.runner}-testmethod">
                     <param name="test.type" value="@{test.type}"/>
@@ -946,6 +952,7 @@ made subject to such option by the copyright holder.
                     <syspropertyset refid="test.@{test.type}.properties"/>
                     <jvmarg line="${test.run.args}"/>
                     <jvmarg line="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg line="${run.jvmargs.ide}"/>
                     <formatter type="brief" usefile="false"/>
                     <formatter type="xml"/>
                 </junit>
@@ -986,16 +993,20 @@ made subject to such option by the copyright holder.
             <element name="customize" optional="true"/>
             <sequential>
                 <fail unless="main.class">Must set main.class.</fail>
+                <property name="run.jvmargs.ide" value=""/>
                 <mkdir dir="${build.test.@{test.type}.results.dir}"/>
                 <java classname="${main.class}" dir="${build.test.@{test.type}.results.dir}" fork="true">
                     <classpath refid="test.@{test.type}.run.cp"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>
                     <jvmarg line="${test.run.args}"/>
+                    <jvmarg line="${run.args.ide}"/>
+                    <jvmarg line="${run.jvmargs.ide}"/>
                     <customize/>
                 </java>
             </sequential>
         </macrodef>
         <property name="test.type" value="unit"/> <!-- compatibility -->
+        <property name="run.args.ide" value=""/> <!-- default -->
         <tjava test.type="${test.type}"/>
     </target>
 
@@ -1062,7 +1073,16 @@ made subject to such option by the copyright holder.
         <debug-fix-test-nb test.type="${test.type}"/>
     </target>
 
-    <target name="profile-test-single-nb" depends="init,test-init,test-build,-jdk-presetdef-nbprofiledirect">
+    <target name="-profile-check" if="netbeans.home">
+        <condition property="profiler.configured">
+            <or>
+                <contains string="${run.args.ide}" substring="-agentpath:" casesensitive="true"/>
+                <contains string="${run.args.ide}" substring="-javaagent:" casesensitive="true"/>
+            </or>
+        </condition>
+    </target>
+
+    <target name="-profile-test-single-nb-pre72" depends="init,test-init,test-build,-jdk-presetdef-nbprofiledirect" if="profiler.info.jvmargs.agent">
         <macrodef name="profile-test-single-nb">
             <attribute name="test.type"/>
             <sequential>
@@ -1090,6 +1110,16 @@ made subject to such option by the copyright holder.
         </macrodef>
         <property name="test.type" value="unit"/>
         <profile-test-single-nb test.type="${test.type}"/>
+    </target>
+
+    <target name="profile-test-single-nb" depends="-profile-check,init,test-init,test-build,-profile-test-single-nb-pre72" if="profiler.configured" unless="profiler.info.jvmargs.agent">        
+        <startprofiler/>
+        <antcall target="test-single"/>
+    </target>
+    
+    <target name="profile-test-main-nb" depends="-profile-check,init,test-init,test-build" if="profiler.configured" unless="profiler.info.jvmargs.agent">
+        <startprofiler/>
+        <antcall target="run-test-main"/>
     </target>
 
     <target name="-javadoc-init" depends="init">

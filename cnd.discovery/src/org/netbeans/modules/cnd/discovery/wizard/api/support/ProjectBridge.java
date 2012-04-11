@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.discovery.wizard.api.support;
 
-//import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,9 +57,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.*;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
@@ -72,6 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -572,7 +571,7 @@ public class ProjectBridge {
         return itemConfiguration;
     }
     
-    public void setSourceTool(Item item, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard languageStandard){
+    public static void setSourceTool(Item item, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard languageStandard, boolean isIncrementalMode){
         ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null) {
             return;
@@ -582,38 +581,82 @@ public class ProjectBridge {
                 if (itemConfiguration.getTool() != PredefinedToolKind.CCompiler) {
                     itemConfiguration.setTool(PredefinedToolKind.CCompiler);
                 }
-                if (languageStandard == ItemProperties.LanguageStandard.C) {
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.C);
-                } else if(languageStandard == ItemProperties.LanguageStandard.C89) {
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.C89);
-                } else if(languageStandard == ItemProperties.LanguageStandard.C99) {
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.C99);
-                }
                 break;
             case CPP:
                 if (itemConfiguration.getTool() != PredefinedToolKind.CCCompiler) {
                     itemConfiguration.setTool(PredefinedToolKind.CCCompiler);
-                }
-                if (languageStandard == ItemProperties.LanguageStandard.CPP) {
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP);
-                } if (languageStandard == ItemProperties.LanguageStandard.CPP11) {
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP11);
                 }
                 break;
             case Fortran:
                 if (itemConfiguration.getTool() != PredefinedToolKind.FortranCompiler) {
                     itemConfiguration.setTool(PredefinedToolKind.FortranCompiler);
                 }
-                if (languageStandard == ItemProperties.LanguageStandard.F77) {
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.F77);
-                } else if(languageStandard == ItemProperties.LanguageStandard.F90) {
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.F90);
-                } else if(languageStandard == ItemProperties.LanguageStandard.F95) {
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.F95);
-                }
                 break;
         }
+        setSourceStandard(item, languageStandard, isIncrementalMode);
     }
+
+    
+    public static void setSourceStandard(Item item, ItemProperties.LanguageStandard languageStandard, boolean isIncrementalMode) {
+        if (languageStandard == null) {
+            return;
+        }
+        ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
+        if (itemConfiguration == null) {
+            return;
+        }
+        if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+            switch (languageStandard) {
+                case C:
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.C);
+                    break;
+                case C89:
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.C89);
+                    break;
+                case C99:
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.C99);
+                    break;
+                case Unknown:
+                    if (!isIncrementalMode) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.UNKNOWN);
+                    }
+                    break;
+                case Default:
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.DEFAULT);
+                    break;
+            }
+        } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+            switch (languageStandard) {
+                case CPP:
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP);
+                    break;
+                case CPP11:
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP11);
+                    break;
+                case Unknown:
+                    if (!isIncrementalMode) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.UNKNOWN);
+                    }
+                    break;
+                case Default:
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.DEFAULT);
+                    break;
+            }
+        } else if (itemConfiguration.getTool() == PredefinedToolKind.FortranCompiler) {
+            switch (languageStandard) {
+                case F77:
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.F77);
+                    break;
+                case F90:
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.F90);
+                    break;
+                case F95:
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.F95);
+                    break;
+            }
+        }
+    }
+
     
     public CCCCompilerConfiguration getItemConfiguration(Item item) {
         ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);

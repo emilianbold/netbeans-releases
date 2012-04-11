@@ -164,8 +164,10 @@ import org.netbeans.modules.java.source.javac.NBParserFactory.NBEndPosParser;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
+import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
 import org.openide.util.lookup.ServiceProvider;
@@ -177,6 +179,20 @@ import org.openide.util.lookup.ServiceProvider;
 public class Utilities {
 
     private Utilities() {}
+    
+    public static Set<Severity> disableErrors(FileObject file) {
+        if (file.getAttribute(DISABLE_ERRORS) != null) {
+            return EnumSet.allOf(Severity.class);
+        }
+        if (!file.canWrite() && FileUtil.getArchiveFile(file) != null) {
+            return EnumSet.allOf(Severity.class);
+        }
+
+        return EnumSet.noneOf(Severity.class);
+    }
+
+    private static final String DISABLE_ERRORS = "disable-java-errors";
+    
 
     public static <E> Iterable<E> checkedIterableByFilter(final Iterable raw, final Class<E> type, final boolean strict) {
         return new Iterable<E>() {

@@ -764,6 +764,7 @@ template_explicit_specialization
 		{ #template_explicit_specialization = #(#[CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
         |
             (   (LITERAL___extension__!)?
+                (LITERAL_template LESSTHAN GREATERTHAN)?
                 (   storage_class_specifier
                 |   cv_qualifier
                 |   LITERAL_typedef
@@ -771,6 +772,7 @@ template_explicit_specialization
                 LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? (SEMICOLON | LCURLY)
             ) =>
             (LITERAL___extension__!)?
+            (LITERAL_template LESSTHAN GREATERTHAN)?
                 (   sc = storage_class_specifier
                 |   tq = cv_qualifier
                 |   LITERAL_typedef
@@ -784,6 +786,7 @@ template_explicit_specialization
 			printf("template_explicit_specialization_0e[%d]: template " +
 				"explicit-specialisation\n", LT(1).getLine());
 		}
+                (LITERAL_template LESSTHAN GREATERTHAN)?
 		declaration[declOther]
 		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
 	)
@@ -3744,7 +3747,12 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL___imag
 
             |   LITERAL_alignof
+            |   LITERAL___alignof
             |   LITERAL___alignof__
+            |   LITERAL___is_class
+            |   LITERAL___is_pod
+            |   LITERAL___is_base_of
+            |   LITERAL___has_trivial_constructor
 
             |   LITERAL_auto
             |   LITERAL_final
@@ -3979,7 +3987,12 @@ lazy_expression_predicate
     |   LITERAL___imag
 
     |   LITERAL_alignof
+    |   LITERAL___alignof
     |   LITERAL___alignof__
+    |   LITERAL___is_class
+    |   LITERAL___is_pod
+    |   LITERAL___is_base_of
+    |   LITERAL___has_trivial_constructor
 
     |   LITERAL_auto
     |   LITERAL_final
@@ -4099,6 +4112,7 @@ constant
     |   LITERAL_true
     |   LITERAL_false
     |   LITERAL_nullptr
+    |   LITERAL___null
     ;
 
 optor 

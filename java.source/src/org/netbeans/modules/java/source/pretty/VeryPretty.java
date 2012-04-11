@@ -2339,7 +2339,9 @@ public final class VeryPretty extends JCTree.Visitor {
         }
         if ((onlyWhitespaces && !preventClosingWhitespace) || comment.style() == Style.LINE) {
             newline();
-            toLeftMargin();
+            if (!preventClosingWhitespace) {
+                toLeftMargin();
+            }
         } else {
             if (!preventClosingWhitespace) {
                 needSpace();

@@ -451,15 +451,6 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             }
             return null;
         }
-
-        // copied from appserv plugin
-        private URL fileToUrl(File file) throws MalformedURLException {
-            URL url = file.toURI().toURL();
-            if (FileUtil.isArchiveFile(url)) {
-                url = FileUtil.getArchiveRoot(url);
-            }
-            return url;
-        }
         
         public String getToolProperty(String toolName, String propertyName) {
             if (J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) {

@@ -98,7 +98,7 @@ public final class GotoBookmarkAction extends BaseAction {
      */
     public GotoBookmarkAction(boolean gotoNext, boolean select) {
         super(gotoNext ? GOTO_NEXT_NAME : GOTO_PREVIOUS_NAME,
-            ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET
+            MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET
         );
         
         this.gotoNext = gotoNext;

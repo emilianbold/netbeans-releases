@@ -119,7 +119,7 @@ public class Unbalanced {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), warning);
     }
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Unbalanced.Array", description = "#DESC_org.netbeans.modules.java.hints.bugs.Unbalanced.Array", category="bugs", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Unbalanced.Array", description = "#DESC_org.netbeans.modules.java.hints.bugs.Unbalanced.Array", category="bugs", options=Options.QUERY, suppressWarnings="MismatchedReadAndWriteOfArray")
     public static final class Array {
         private static final Set<Kind> ARRAY_WRITE = EnumSet.of(
             Kind.AND_ASSIGNMENT, Kind.ASSIGNMENT, Kind.CONDITIONAL_AND, Kind.CONDITIONAL_OR,
@@ -180,7 +180,7 @@ public class Unbalanced {
         }
     }
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Unbalanced.Collection", description = "#DESC_org.netbeans.modules.java.hints.bugs.Unbalanced.Collection", category="bugs", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Unbalanced.Collection", description = "#DESC_org.netbeans.modules.java.hints.bugs.Unbalanced.Collection", category="bugs", options=Options.QUERY, suppressWarnings="MismatchedQueryAndUpdateOfCollection")
     public static final class Collection {
         private static final Set<String> READ_METHODS = new HashSet<String>(Arrays.asList("get", "contains", "remove", "containsAll", "removeAll", "retain", "retainAll", "containsKey", "containsValue", "iterator", "isEmpty", "size", "toArray", "listIterator", "indexOf", "lastIndexOf"));
         private static final Set<String> WRITE_METHODS = new HashSet<String>(Arrays.asList("add", "addAll", "set"));

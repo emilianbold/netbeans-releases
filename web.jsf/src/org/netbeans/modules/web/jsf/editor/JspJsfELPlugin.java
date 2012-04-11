@@ -55,6 +55,7 @@ import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.spi.ImplicitObjectType;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import static org.netbeans.modules.web.el.spi.ImplicitObjectType.*;
+import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -87,7 +88,7 @@ public class JspJsfELPlugin implements ELPlugin {
     }
 
     @Override
-    public List<ResourceBundle> getResourceBundles(FileObject file) {
+    public List<ResourceBundle> getResourceBundles(FileObject file, ResolverContext context) {
         return Collections.emptyList();
     }
 

@@ -121,7 +121,8 @@ public class SearchNbEditorKit extends NbEditorKit {
                                     jp.add(searchBarInstance);
                                     if (replaceBarInstance.isVisible()) {
                                         jp.add(replaceBarInstance);
-                                        replaceBarInstance.gainFocus();
+                                        if (searchBarInstance.hadFocusOnTextField())
+                                            replaceBarInstance.gainFocus();
                                     }
                                     jp.revalidate();
 

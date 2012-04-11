@@ -49,6 +49,8 @@ import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import org.openide.DialogDescriptor;
@@ -108,6 +110,9 @@ public class DialogDisplayerImpl extends DialogDisplayer {
 
     /** Creates new dialog. */
     public Dialog createDialog (final DialogDescriptor d) {
+        if (GraphicsEnvironment.isHeadless()) {
+            throw new HeadlessException();
+        }
         return Mutex.EVENT.readAccess (new Mutex.Action<Dialog> () {
             public Dialog run () {
                 // if a modal dialog active use it as parent

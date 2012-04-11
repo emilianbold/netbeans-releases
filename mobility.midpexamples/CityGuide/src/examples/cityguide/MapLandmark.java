@@ -1,8 +1,9 @@
 /*
  *
- * Copyright (c) 2010, Oracle.
+ * Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+
  *
- * All rights reserved.
+ * This file is available and licensed under the following license:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- *  * Neither the name of Oracle nor the names of its contributors
+ *  * Neither the name of Oracle Corporation nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -48,8 +49,10 @@ public class MapLandmark {
     private Image image;
     protected boolean active;
 
-    /** Creates a new instance of MapLandmark */
-    protected MapLandmark(Landmark landmark, int x, int y, Image image) {
+    /**
+     * Creates a new instance of MapLandmark
+     */
+    protected MapLandmark (Landmark landmark, int x, int y, Image image) {
         this.landmark = landmark;
         this.x = x;
         this.y = y;
@@ -60,27 +63,35 @@ public class MapLandmark {
      * Returns the instance of the Landmark class which this map landmark
      * extends.
      */
-    public Landmark getLandmark() {
+    public Landmark getLandmark () {
         return landmark;
     }
 
-    /** Returns the x position of the landmark on the map. */
-    public int getX() {
+    /**
+     * Returns the x position of the landmark on the map.
+     */
+    public int getX () {
         return x;
     }
 
-    /** Returns the y position of the landmark on the map. */
-    public int getY() {
+    /**
+     * Returns the y position of the landmark on the map.
+     */
+    public int getY () {
         return y;
     }
 
-    /** Returns the image of the landmark. */
-    public Image getImage() {
+    /**
+     * Returns the image of the landmark.
+     */
+    public Image getImage () {
         return image;
     }
 
-    /** Returns the activation status of the landmark. */
-    public boolean isActive() {
+    /**
+     * Returns the activation status of the landmark.
+     */
+    public boolean isActive () {
         return active;
     }
 }

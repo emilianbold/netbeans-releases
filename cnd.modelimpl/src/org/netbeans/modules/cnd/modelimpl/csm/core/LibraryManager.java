@@ -112,15 +112,15 @@ public final class LibraryManager {
         return res;
     }
 
-    public Collection<CsmProject> getProjectsByLibrary(LibProjectImpl library) {
+    public Collection<ProjectBase> getProjectsByLibrary(LibProjectImpl library) {
         //getDependentProjects();
         LibraryKey libraryKey = new LibraryKey(library.getFileSystem(), library.getPath().toString());
         LibraryEntry entry = librariesEntries.get(libraryKey);
         if (entry == null) {
-            return Collections.<CsmProject>emptyList();
+            return Collections.<ProjectBase>emptyList();
         } else {
             Collection<CsmUID<CsmProject>> uids = entry.getDependentProjects();
-            Collection<CsmProject> projects = new ArrayList<CsmProject>(uids.size());
+            List<ProjectBase> projects = new ArrayList<ProjectBase>(uids.size());
             for (CsmUID<CsmProject> uid : uids) {
                 ProjectBase project = (ProjectBase) uid.getObject();
                 if (project != null && ! project.isDisposing() && project.isValid()) {                    
@@ -165,6 +165,7 @@ public final class LibraryManager {
         Set<ProjectBase> antiLoop = new HashSet<ProjectBase>();
         ProjectBase res = searchInProjectFiles(baseProject, resolvedPath, antiLoop);
         if (res != null) {
+            baseProject.prepareIncludeStorage(res);
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Projects", curFile, resolvedPath, res, baseProject);//NOI18N
             }
@@ -174,6 +175,7 @@ public final class LibraryManager {
         antiLoop.clear();
         res = searchInProjectRoots(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath), antiLoop);
         if (res != null) {
+            baseProject.prepareIncludeStorage(res);
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Projects roots", curFile, resolvedPath, res, baseProject);//NOI18N
             }
@@ -182,6 +184,7 @@ public final class LibraryManager {
         List<CsmProject> libraries = baseProject.getLibraries();        
         res = searchInProjectFilesArtificial(libraries, resolvedPath, antiLoop);
         if (res != null) {
+            baseProject.prepareIncludeStorage(res);
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Libraries", curFile, resolvedPath, res, baseProject);//NOI18N
             }
@@ -219,6 +222,7 @@ public final class LibraryManager {
                 }
             }
         }
+        baseProject.prepareIncludeStorage(res);
         return res;
     }
 

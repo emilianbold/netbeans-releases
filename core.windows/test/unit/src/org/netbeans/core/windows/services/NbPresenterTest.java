@@ -44,10 +44,13 @@
 
 package org.netbeans.core.windows.services;
 
+import java.awt.GraphicsEnvironment;
 import java.util.Arrays;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.openide.DialogDescriptor;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.HelpCtx;
@@ -57,6 +60,10 @@ import org.openide.util.HelpCtx;
  * @author Jiri Rechtacek
  */
 public class NbPresenterTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NbPresenterTest.class);
+    }
 
     public NbPresenterTest (String testName) {
         super (testName);

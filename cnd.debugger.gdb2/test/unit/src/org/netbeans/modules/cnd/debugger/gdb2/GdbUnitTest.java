@@ -56,6 +56,7 @@ public class GdbUnitTest extends TestSuite {
         super("Gdb unit tests");
         addTestSuite(MIParserTestCase.class);
         addTestSuite(PidParserTestCase.class);
+        addTestSuite(MemParserTestCase.class);
     }
 
     public static Test suite() {

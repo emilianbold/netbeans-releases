@@ -55,25 +55,26 @@ import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
@@ -95,7 +96,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
 
     @Override
     protected boolean accept(DataObject object) {
-        return object != null && object.getCookie(ShellExecSupport.class) != null;
+        return object != null && object.getLookup().lookup(ShellExecSupport.class) != null;
     }
 
     @Override
@@ -142,14 +143,14 @@ public class ShellRunAction extends AbstractExecutorRunAction {
     }
 
     private static NativeExecutionService prepare(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
-        ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
+        ShellExecSupport bes = node.getLookup().lookup(ShellExecSupport.class);
         if (bes == null) {
             trace("Node "+node+" does not have ShellExecSupport"); //NOI18N
             return null;
         }
         //Save file
         saveNode(node);
-        DataObject dataObject = node.getCookie(DataObject.class);
+        DataObject dataObject = node.getLookup().lookup(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         
         // Build directory
@@ -222,7 +223,11 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        traceExecutable(shellCommand, buildDir, argsFlat, execEnv.toString(), envMap);
+        
+        MacroMap mm = MacroMap.forExecEnv(execEnv);
+        mm.putAll(envMap);
+        
+        traceExecutable(shellCommand, buildDir, argsFlat, execEnv.toString(), mm.toMap());
 
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, syncWorker);
 
@@ -231,7 +236,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                 unbufferOutput(false).
                 addNativeProcessListener(processChangeListener);
 
-        npb.getEnvironment().putAll(envMap);
+        npb.getEnvironment().putAll(mm);
         npb.redirectError();
 
         List<String> list = ImportUtils.parseArgs(argsFlat.toString());

@@ -60,11 +60,7 @@ import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.*;
 import org.openide.util.Exceptions;
 
 
@@ -134,7 +130,7 @@ public class ExceptionBreakpointsTest extends DebuggerTestCase {
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         setBreakpointType(dialog, "Exception");
 
-        new JTextFieldOperator(dialog, 0).setText("java.lang.NullPointerException");
+        new JEditorPaneOperator(dialog, 0).setText("java.lang.NullPointerException");
         new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
         dialog.ok();
         Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
@@ -149,7 +145,7 @@ public class ExceptionBreakpointsTest extends DebuggerTestCase {
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         setBreakpointType(dialog, "Exception");
-        new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
+        new JEditorPaneOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
         new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
         dialog.ok();
         new EventTool().waitNoEvent(1500);
@@ -180,10 +176,10 @@ public class ExceptionBreakpointsTest extends DebuggerTestCase {
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         setBreakpointType(dialog, "Exception");
-        new JTextFieldOperator(dialog, 0).setText("java.lang.ClassCastException");
+        new JEditorPaneOperator(dialog, 0).setText("java.lang.ClassCastException");
         new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Uncatched"));
         new JCheckBoxOperator(dialog, 0).changeSelection(true);
-        new JTextFieldOperator(dialog, 1).setText("tests.ThrowException");
+        new JTextFieldOperator(dialog, 0).setText("tests.ThrowException");
         dialog.ok();
         new EventTool().waitNoEvent(1500);
 
@@ -207,10 +203,10 @@ public class ExceptionBreakpointsTest extends DebuggerTestCase {
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         setBreakpointType(dialog, "Exception");
-        new JTextFieldOperator(dialog, 0).setText("java.lang.ArrayIndexOutOfBoundsException");
+        new JEditorPaneOperator(dialog, 0).setText("java.lang.ArrayIndexOutOfBoundsException");
         new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
         new JCheckBoxOperator(dialog, 0).changeSelection(true);
-        new JTextFieldOperator(dialog, 2).setText("java.util.Vector");
+        new JTextFieldOperator(dialog, 1).setText("java.util.Vector");
         dialog.ok();
         new EventTool().waitNoEvent(1500);
         
@@ -234,11 +230,11 @@ public class ExceptionBreakpointsTest extends DebuggerTestCase {
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         setBreakpointType(dialog, "Exception");
-        new JTextFieldOperator(dialog, 0).setText("java.lang.ClassCastException");
+        new JEditorPaneOperator(dialog, 0).setText("java.lang.ClassCastException");
         new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
         new JCheckBoxOperator(dialog, 2).changeSelection(true);
         new JComboBoxOperator(dialog, 3).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "ConditionsPanel.cbWhenHitCount.equals"));
-        new JTextFieldOperator(dialog, 3).setText("3");
+        new JTextFieldOperator(dialog, 2).setText("3");
         dialog.ok();
         new EventTool().waitNoEvent(1500);
 
@@ -260,7 +256,7 @@ public class ExceptionBreakpointsTest extends DebuggerTestCase {
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         setBreakpointType(dialog, "Exception");
-        new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
+        new JEditorPaneOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
         new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
         new JCheckBoxOperator(dialog, 1).changeSelection(true);
         new JEditorPaneOperator(dialog, 0).setText("false");

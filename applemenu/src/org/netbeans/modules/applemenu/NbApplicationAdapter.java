@@ -97,7 +97,9 @@ class NbApplicationAdapter implements ApplicationListener {
             public void run() {
                 try {
                     FullScreenUtilities.setWindowCanFullScreen(WindowManager.getDefault().getMainWindow(), true);
-                } catch( Exception e ) {
+                } catch( ThreadDeath td ) {
+                    throw td;
+                } catch( Throwable e ) {
                     Logger.getLogger(NbApplicationAdapter.class.getName()).log(Level.FINE, 
                             "Error while setting up full screen support.", e );//NOI18N
                 }

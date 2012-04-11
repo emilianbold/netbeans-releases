@@ -2831,6 +2831,9 @@ final class Central implements ControllerHandler {
         } else {
             unSlide( tc, mode );
         }
+        //#207438 - make sure global minimize/dock actions get updated
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
     }
 
     boolean isTopComponentMinimized( TopComponent tc ) {

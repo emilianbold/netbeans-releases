@@ -42,17 +42,20 @@
  */
 package org.netbeans.modules.profiler.freeform;
 
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
-import java.util.Properties;
+import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
+import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
 import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 
 /**
  * A class providing basic support for profiling free-form projects.
@@ -62,6 +65,8 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 @ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider.class, 
                         projectTypes={@ProjectType(id="org-netbeans-modules-ant-freeform", position=1210)}) // NOI18N
 public final class FreeFormProjectProfilingSupportProvider extends JavaProjectProfilingSupportProvider {
+    private static final String NBJDK_PROPERTIES = "nbproject/nbjdk.properties"; // NOI18N
+    private static final String NBJDK_ACTIVE = "nbjdk.active"; // NOI18N
 
     @Override
     public boolean checkProjectIsModifiedForProfiler() {
@@ -85,7 +90,7 @@ public final class FreeFormProjectProfilingSupportProvider extends JavaProjectPr
     }
 
     @Override
-    public void configurePropertiesForProfiling(final Properties props, final FileObject profiledClassFile) {
+    public void configurePropertiesForProfiling(final Map<String, String> props, final FileObject profiledClassFile) {
         if (profiledClassFile != null) { // In case the class to profile is explicitely selected (profile-single)
             // 1. specify profiled class name
 
@@ -93,19 +98,41 @@ public final class FreeFormProjectProfilingSupportProvider extends JavaProjectPr
             JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
             if (src != null) {
                 final String profiledClass = src.getTopLevelClass().getQualifiedName();
-                props.setProperty("profile.class", profiledClass); //NOI18N
+                props.put("profile.class", profiledClass); //NOI18N
 
                 // 2. include it in javac.includes so that the compile-single picks it up
                 final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(ProjectUtilities.getSourceRoots(getProject()),
                         profiledClassFile), profiledClassFile);
-                props.setProperty("javac.includes", clazz); //NOI18N
+                props.put("javac.includes", clazz); //NOI18N
             }
         }
     }
-    
+
+    @Override
+    public JavaPlatform resolveProjectJavaPlatform() {
+        ProjectAccessor acc = getProject().getLookup().lookup(ProjectAccessor.class);
+        EditableProperties ep = acc.getHelper().getProperties(NBJDK_PROPERTIES);
+        String platformName = ep.getProperty(NBJDK_ACTIVE);
+
+        return getPlatformByName(platformName);
+    }
+
+    @Override
+    public boolean isProfilingSupported() {
+        boolean supported = super.isProfilingSupported();
+        if (!supported) return false;
+        
+        final String WEB_MODULE_PROVIDER_TYPE = "org.netbeans.modules.web.freeform.WebModules";
+        
+        for(Object x : getProject().getLookup().lookupAll(Object.class)) {
+            if (WEB_MODULE_PROVIDER_TYPE.equals(x.getClass().getName())) {
+                return false; // web freeforms are not supported
+            }
+        }
+        return true;
+    }
     
     public FreeFormProjectProfilingSupportProvider(Project project) {
         super(project);
     }
-
 }

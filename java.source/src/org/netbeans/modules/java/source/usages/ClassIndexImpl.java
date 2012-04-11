@@ -59,11 +59,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.document.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /** Should probably final class with private constructor.
@@ -226,18 +229,21 @@ public abstract class ClassIndexImpl {
      * @return ret
      * @throws Exception 
      */
-    protected final <R, E extends Exception> R handleException (final R ret, final E e) throws E {
+    @CheckForNull
+    protected final <R, E extends Exception> R handleException (
+            @NullAllowed final R ret,
+            @NonNull final E e,
+            @NullAllowed final URL root) throws E {
         if (State.NEW == getState()) {
             LOG.log(Level.FINE, "Exception from non initialized index", e); //NOI18N
             return ret;
         } else {
-            throw e;
+            throw Exceptions.attachMessage(e, "Index state: " + state + ", Root: " + root); //NOI18N
         }
     }
     
     public static interface Writer {
         void clear() throws IOException;
-        void deleteEnclosedAndStore (final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> topLevels) throws IOException;
         void deleteAndStore(final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> toDelete) throws IOException;
         /**
          * Different from deleteAndStore in that the data is NOT committed, but just flushed. Make sure, deleteAndStore is called from the

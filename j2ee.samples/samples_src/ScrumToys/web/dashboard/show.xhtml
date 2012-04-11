@@ -72,40 +72,37 @@ Other names may be trademarks of their respective owners.
                     <h:dataTable value="#{dashboardManager.stories}" var="story" rendered="#{dashboardManager.stories.rowCount > 0}" border="0" id="dtStories" >
                         <h:column>
                             <f:facet name="header"><h:outputText value="STORIES" /></f:facet>
-                            <scrum:bigPostit>
-                                <ui:param name="postitLabel" value=""></ui:param>
-                                <ui:param name="postitText" value="#{story.name}"></ui:param>
-                            </scrum:bigPostit>
+                            <scrum:bigPostit postitLabel="" postitText="#{story.name}" />
                         </h:column>
                     </h:dataTable>
 
                     <h:dataTable  value="#{dashboardManager.toDoTasks}" var="task" title="Todo Tasks">
                         <f:facet name="header"><h:outputText value="TO DO" /></f:facet>
                         <h:column>
-                            <scrum:postit action="#{dashboardManager.editToDoTask}">
-                                <ui:param name="postitLabel" value=""></ui:param>
-                                <ui:param name="postitText" value="#{task.name}"></ui:param>
-                            </scrum:postit>
+                            <scrum:postit
+                                action="#{dashboardManager.editToDoTask}"
+                                postitLabel=""
+                                postitText="#{task.name}" />
                         </h:column>
                     </h:dataTable>
 
                     <h:dataTable  value="#{dashboardManager.workingTasks}" var="task" title="Working Tasks">
                         <f:facet name="header"><h:outputText value="DOING" /></f:facet>
                         <h:column>
-                            <scrum:postit action="#{dashboardManager.editWorkingTask}">
-                                <ui:param name="postitLabel" value=""></ui:param>
-                                <ui:param name="postitText" value="#{task.name}"></ui:param>
-                            </scrum:postit>
+                            <scrum:postit
+                                action="#{dashboardManager.editWorkingTask}"
+                                postitLabel=""
+                                postitText="#{task.name}" />
                         </h:column>
                     </h:dataTable>
 
                     <h:dataTable  value="#{dashboardManager.doneTasks}" var="task" title="Done Tasks">
                         <f:facet name="header"><h:outputText value="DONE" /></f:facet>
                         <h:column>
-                            <scrum:postit action="#{dashboardManager.editDoneTask}">
-                                <ui:param name="postitLabel" value=""></ui:param>
-                                <ui:param name="postitText" value="#{task.name}"></ui:param>
-                            </scrum:postit>
+                            <scrum:postit
+                                action="#{dashboardManager.editDoneTask}"
+                                postitLabel=""
+                                postitText="#{task.name}" />
                         </h:column>
                     </h:dataTable>
 

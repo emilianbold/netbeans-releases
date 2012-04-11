@@ -980,7 +980,7 @@ public class JavaKit extends NbEditorKit {
         public static final class GlobalAction extends MainMenuAction {
             public GlobalAction() {
                 super();
-                setMenu();
+                postSetMenu();
             }
 
             protected String getMenuItemText() {

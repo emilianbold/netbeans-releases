@@ -124,6 +124,12 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         mani.getMainAttributes().putValue("OpenIDE-Module-Module-Dependencies", "foo/1 > 1.0");
         mani.getMainAttributes().putValue("OpenIDE-Module-Requires", "org.openide.modules.ModuleFormat1, org.openide.modules.os.Windows");
         TestBase.createJar(new File(new File(new File(install, "anothercluster"), "modules"), "baz.jar"), Collections.<String,String>emptyMap(), mani);
+        // MODULE bunnel
+        mani = new Manifest();
+        mani.getMainAttributes().putValue(ManifestManager.BUNDLE_SYMBOLIC_NAME, "bunnel");
+        mani.getMainAttributes().putValue(ManifestManager.BUNDLE_EXPORT_PACKAGE, "bunnel.api,bunnel.spi");
+        mani.getMainAttributes().putValue(ManifestManager.BUNDLE_IMPORT_PACKAGE, "javax.crypto,javax.crypto.spec,javax.crypto.interfaces,org.ietf.jgss,org.osgi.service.event;version=\"1.0.0\";resolution:=optional");
+        TestBase.createJar(new File(new File(new File(install, "somecluster"), "modules"), "bunnel.jar"), Collections.<String,String>emptyMap(), mani);
         platform = NbPlatform.addPlatform("custom", install, "custom");
         // SUITE setup
         suite = TestBase.generateSuite(getWorkDir(), "suite", "custom");
@@ -204,6 +210,10 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         m = modulesByName.get("org.example.module3");
         assertNotNull(m);
         assertEquals(Dependency.create(Dependency.TYPE_MODULE, "org.example.module2, bar"), m.getModuleDependencies());
+        m = modulesByName.get("bunnel");
+        assertNotNull(m);
+        assertEquals("[bunnel, bunnel.api, bunnel.spi]", m.getProvidedTokens().toString());
+        assertEquals("[]", m.getRequiredTokens().toString());
     }
 
     @RandomlyFails // NB-Core-Build #4183: expected:<[ERR_excluded_dep, Module Three, suite, bar, somecluster]> but was:<null>

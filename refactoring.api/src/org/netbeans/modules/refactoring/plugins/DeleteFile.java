@@ -41,8 +41,12 @@
  */
 package org.netbeans.modules.refactoring.plugins;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
+import org.netbeans.modules.refactoring.api.impl.CannotUndoRefactoring;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
@@ -110,6 +114,14 @@ public class DeleteFile extends SimpleRefactoringElementImplementation {
     @Override
     public void undoChange() {
         try {
+            try {
+                File f = new File(res.toURI());
+                if (f.exists()) {
+                    throw new CannotUndoRefactoring(Collections.singleton(f.getPath()));
+                }
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             id.restore();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

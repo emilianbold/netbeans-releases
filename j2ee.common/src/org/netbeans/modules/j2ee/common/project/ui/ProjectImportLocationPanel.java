@@ -200,19 +200,18 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
 
         File destFolder = FileUtil.normalizeFile(new File(projectLocationPath));
 	
-	// #47611: if there is a live project still residing here, forbid project creation.
+        // #47611: if there is a live project still residing here, forbid project creation.
         if (destFolder.isDirectory()) {
             FileObject destFO = FileUtil.toFileObject(destFolder);
             assert destFO != null : "No FileObject for " + destFolder;
-            boolean clear = false;
             try {
-                clear = ProjectManager.getDefault().findProject(destFO) == null;
+                if (ProjectManager.getDefault().findProject(destFO) != null) {
+                    setErrorMessage("MSG_ProjectFolderHasNbProject"); //NOI18N
+                    return false;
+                }
             } catch (IOException e) {
-                // need not report here; clear remains false -> error
-            }
-            if (!clear) {
-		setErrorMessage("MSG_ProjectFolderHasDeletedProject"); //NOI18N
-		return false;
+                setErrorMessage("MSG_ProjectFolderHasDeletedProject"); //NOI18N
+                return false;
             }
         }
 

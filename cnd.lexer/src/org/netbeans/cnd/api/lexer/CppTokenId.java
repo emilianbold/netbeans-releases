@@ -80,6 +80,7 @@ public enum CppTokenId implements TokenId {
 
     // C/C++ keywords
     ALIGNOF("alignof", "keyword"), // g++ // NOI18N
+    __ALIGNOF("__alignof", "keyword"), // g++ // NOI18N
     __ALIGNOF__("__alignof__", "keyword"), // gcc // NOI18N
     ASM("asm", "keyword-directive"), // gcc and C++ // NOI18N
     _ASM("_asm", "keyword"), // g++ // NOI18N
@@ -183,13 +184,18 @@ public enum CppTokenId implements TokenId {
     __FAR("__far", "keyword"), // g++ // NOI18N
     __FINALLY("__finally", "keyword"), // g++ // NOI18N    
     __FORCEINLINE("__forceinline", "keyword"), // g++ // NOI18N    
+    __HAS_TRIVIAL_CONSTRUCTOR("__has_trivial_constructor", "keyword"), // g++ // NOI18N 
     _IMAGINARY("_Imaginary", "keyword"), // C // NOI18N
     __IMAG__("__imag__", "keyword"), // gcc // NOI18N
     _INT64("_int64", "keyword"), // g++ // NOI18N
     __INT64("__int64", "keyword"), // g++ // NOI18N
     __INTERRUPT("__interrupt", "keyword"), // g++ // NOI18N
+    __IS_CLASS("__is_class", "keyword"), // g++ // NOI18N
+    __IS_POD("__is_pod", "keyword"), // g++ // NOI18N
+    __IS_BASE_OF("__is_base_of", "keyword"), // g++ // NOI18N
     _NEAR("_near", "keyword"), // g++ // NOI18N
     __NEAR("__near", "keyword"), // g++ // NOI18N
+    __NULL("__null", "keyword"), // g++ // NOI18N
     __REAL__("__real__", "keyword"), // gcc // NOI18N
     __RESTRICT("__restrict", "keyword"), // g++ // NOI18N
     _STDCALL("_stdcall", "keyword"), // g++ // NOI18N
@@ -201,7 +207,7 @@ public enum CppTokenId implements TokenId {
     __UNUSED__("__unused__", "keyword"), // gcc // NOI18N
     __W64("__w64", "keyword"), // g++ // NOI18N
 
-
+    
     // C++11    
     FINAL("final", "keyword"), // c++11 // NOI18N
     OVERRIDE("override", "keyword"), // c++11 // NOI18N

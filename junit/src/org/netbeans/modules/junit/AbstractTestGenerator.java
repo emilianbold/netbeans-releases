@@ -209,16 +209,18 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     private String initialMainMethodBody;
     
     private volatile boolean cancelled = false;
+    private JUnitVersion junitVersion;
 
 
     /**
      * Used when creating a new empty test class.
      */
-    protected AbstractTestGenerator(TestGeneratorSetup setup) {
+    protected AbstractTestGenerator(TestGeneratorSetup setup, JUnitVersion version) {
         this.setup = setup;
         this.srcTopClassElemHandles = null;
         this.suiteMembers = null;
         this.isNewTestClass = true;   //value not used
+        this.junitVersion = version;
     }
 
     /**
@@ -229,11 +231,13 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                     TestGeneratorSetup setup,
                     List<ElementHandle<TypeElement>> srcTopClassHandles,
                     List<String>suiteMembers,
-                    boolean isNewTestClass) {
+                    boolean isNewTestClass,
+                    JUnitVersion version) {
         this.setup = setup;
         this.srcTopClassElemHandles = srcTopClassHandles;
         this.suiteMembers = suiteMembers;
         this.isNewTestClass = isNewTestClass;
+        this.junitVersion = version;
     }
 
     /**
@@ -351,7 +355,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                        srcMethods,
                                        tstTopClass,
                                        tstTopClassTreePath,
-                                       isNewTestClass,
+                                       true,
                                        workingCopy);
             } else if (isNewTestClass) {
                 tstTopClass = generateMissingInitMembers(
@@ -370,7 +374,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                     tstTopClass);
             }
         } else {                        //it does not exist - it must be created
-            if (srcHasTestableMethods) {
+            if (srcHasTestableMethods && testClassSimpleName != null) {
                 tstTopClass = generateNewTestClass(workingCopy,
                                                    testClassSimpleName,
                                                    srcTopClass,
@@ -1206,11 +1210,9 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                               tstClassTreePath,
                                               workingCopy.getTrees());
 
-        if (isNewTestClass) {
-            membersChanged |= generateMissingInitMembers(tstMembers,
+        membersChanged |= generateMissingInitMembers(tstMembers,
                                                          classMap,
                                                          workingCopy);
-        }
 
         return finishSuiteClass(tstClass,
                                 tstClassTreePath,
@@ -1415,7 +1417,9 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                     srcMethodExType,
                                     getTestSkeletonVarNames(srcMethod.getParameters()));
             statements.add(sout);
-            statements.addAll(paramVariables);
+            if(paramVariables != null) {
+                statements.addAll(paramVariables);
+            }
 
             if (!isStatic) {
 
@@ -1483,7 +1487,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
                     MethodInvocationTree comparison = maker.MethodInvocation(
                             Collections.<ExpressionTree>emptyList(),    //type args.
-                            maker.Identifier("assertEquals"),               //NOI18N
+                            (retTypeKind == TypeKind.ARRAY && junitVersion == JUnitVersion.JUNIT4) ? maker.Identifier("assertArrayEquals") : maker.Identifier("assertEquals"),               //NOI18N
                             comparisonArgs);
                     StatementTree comparisonStmt = maker.ExpressionStatement(
                             comparison);
@@ -1570,6 +1574,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             if (param.getKind() == TypeKind.TYPEVAR){
                 param = getSuperType(workingCopy, param);
             }
+            if (param.getKind() == TypeKind.DECLARED) {
+                boolean typeVar = containsTypeVar((DeclaredType) param, false);
+                if (typeVar) {
+                    return null;
+                }
+            }
             paramVariables.add(
                     maker.Variable(maker.Modifiers(noModifiers),
                                    varNames[index++],
@@ -1577,6 +1587,19 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                    getDefaultValue(maker, param)));
         }
         return paramVariables;
+    }
+
+    private boolean containsTypeVar(DeclaredType dt, boolean typeVar) {
+        List<? extends TypeMirror> args = dt.getTypeArguments();
+        for (TypeMirror arg : args) {
+            if (arg.getKind() == TypeKind.TYPEVAR) {
+                typeVar = true;
+            }
+            if (arg.getKind() == TypeKind.DECLARED) {
+                typeVar = typeVar || containsTypeVar((DeclaredType) arg, typeVar);
+            }
+        }
+        return typeVar;
     }
 
     /**
@@ -1596,7 +1619,10 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                             TreeMaker maker,
                                             List<VariableTree> variables) {
         List<IdentifierTree> identifiers;
-        if (variables.isEmpty()) {
+        if (variables == null) {
+            identifiers = new ArrayList<IdentifierTree>(1);
+            identifiers.add(maker.Identifier("null".toString()));
+        } else if (variables.isEmpty()) {
             identifiers = Collections.<IdentifierTree>emptyList();
         } else {
             identifiers = new ArrayList<IdentifierTree>(variables.size());
