@@ -77,6 +77,7 @@ public abstract class NativeDebuggerInfo {
     }
 
     private final EngineType debuggerType;
+    private DbgProfile dbgProfile = null;
 
     protected NativeDebuggerInfo(EngineType debuggerType) {
 	this.debuggerType = debuggerType;
@@ -87,14 +88,16 @@ public abstract class NativeDebuggerInfo {
     private String target;
 
     public final String getTarget() {
-	if (debugtarget != null)
+	if (debugtarget != null) {
 	    return debugtarget.getExecutable();
+        }
 	return target;
     } 
 
     public final void setTarget(String target) {
-	if (debugtarget != null)
+	if (debugtarget != null) {
 	    debugtarget.setExecutable(target);
+        }
 	this.target = target;
     } 
 
@@ -122,6 +125,10 @@ public abstract class NativeDebuggerInfo {
     public final void setPid(long pid) {
 	this.pid = pid;
     } 
+    
+    public String getRunDir() {
+        return DebuggerSettingsBridge.getRunDir(getDbgProfile(), profile);
+    }
 
     public final String[] getArguments() {
 	if (profile != null)
@@ -219,9 +226,19 @@ public abstract class NativeDebuggerInfo {
         assert debuggerType != null;
         return new EngineDescriptor(debuggerType);
     }
-
-    public abstract DbgProfile getDbgProfile(); 
-    public abstract void setDbgProfile(DbgProfile Profile) ;
+    
+    protected abstract String getDbgProfileId();
+    
+    public final DbgProfile getDbgProfile() {
+	if (dbgProfile == null) {
+	    dbgProfile = (DbgProfile) getConfiguration().getAuxObject(getDbgProfileId());
+        }
+	return dbgProfile;
+    }
+    
+    public final void setDbgProfile(DbgProfile profile) {
+	dbgProfile = profile;
+    }
 
     private MakefileConfiguration makefileConfiguration = null;
 

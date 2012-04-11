@@ -106,8 +106,8 @@ public class AstNodeUtils {
     }
 
     private static boolean matchesNodeRange(AstNode node, int offset, boolean forward, boolean physicalAstNodeRangeOnly) {
-        int from = physicalAstNodeRangeOnly || node.logicalStartOffset()== -1 ? node.from() : node.logicalStartOffset();
-        int to = physicalAstNodeRangeOnly || node.logicalEndOffset() == -1 ? node.endOffset() : node.logicalEndOffset();
+        int from = node.from();
+        int to = physicalAstNodeRangeOnly || node.semanticEnd() == -1 ? node.to() : node.semanticEnd();
 
         if(forward) {
             if(offset >= from&& offset < to) {
@@ -173,7 +173,7 @@ public class AstNodeUtils {
 
 
     public static Collection<DTD.Element> getPossibleOpenTagElements(AstNode node) {
-        return getPossibleOpenTagElements(node.getRootNode(), node.endOffset());
+        return getPossibleOpenTagElements(node.getRootNode(), node.to());
 
     }
 
@@ -191,7 +191,7 @@ public class AstNodeUtils {
         }
 
 
-        if(leafAstNodeForPosition.logicalEndOffset == astPosition) {
+        if(leafAstNodeForPosition.semanticEnd() == astPosition) {
             if(leafAstNodeForPosition.parent() != null) {
                 leafAstNodeForPosition = (AstNode)leafAstNodeForPosition.parent();
             }
@@ -211,7 +211,7 @@ public class AstNodeUtils {
         }
 
         //check if the ast offset falls into the node range (not logical range!!!)
-        if (leafAstNodeForPosition.from() <= astPosition && leafAstNodeForPosition.endOffset() > astPosition) {
+        if (leafAstNodeForPosition.from() <= astPosition && leafAstNodeForPosition.to() > astPosition) {
             //if so return empty list - nothing is allowed inside tag content
             return Collections.EMPTY_LIST;
         }

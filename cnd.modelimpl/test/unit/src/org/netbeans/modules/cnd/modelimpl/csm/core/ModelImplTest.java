@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -72,7 +73,12 @@ public class ModelImplTest extends ModelImplBaseTestCase {
         assertTrue("Unknown model provider " + csmModel.getClass().getName(), csmModel instanceof ModelImpl);
     }
     
-    public static void dumpProjectContainers(ProjectBase project) {
-        project.traceProjectContainers(System.err);
+    public static void dumpProjectContainers(PrintStream printStream, ProjectBase project, boolean dumpFiles) {
+        ProjectBase.dumpProjectClassifierContainer(project, printStream);
+        ProjectBase.dumpProjectDeclarationContainer(project, printStream);
+        if (dumpFiles) {
+            ProjectBase.dumpFileContainer(project, new PrintWriter(printStream));
+            ProjectBase.dumpProjectGrapthContainer(project, printStream);
+        }
     }
 }

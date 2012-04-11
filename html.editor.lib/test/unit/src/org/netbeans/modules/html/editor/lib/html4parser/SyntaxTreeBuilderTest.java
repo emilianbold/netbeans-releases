@@ -485,8 +485,8 @@ public class SyntaxTreeBuilderTest extends TestBase {
         AstNode commentNode = (AstNode)root.children().iterator().next();
 
         assertEquals(ElementType.COMMENT, commentNode.type());
-        assertEquals(commentNode.logicalStartOffset(), 0);
-        assertEquals(commentNode.logicalEndOffset(), code.length());
+        assertEquals(0, commentNode.from());
+        assertEquals(code.length(), commentNode.semanticEnd());
     }
 
     public void testIssue185837() throws Exception {
@@ -554,10 +554,8 @@ public class SyntaxTreeBuilderTest extends TestBase {
         //probably not correct assumption, but ok for testing
         assertEquals(ElementType.OPEN_TAG, node.type()); 
 
-        int[] logicalRange = node.getLogicalRange();
-        assertNotNull(logicalRange);        
-        assertEquals(logicalStart, logicalRange[0]); //assert the start offset
-        assertEquals(logicalEnd, logicalRange[1]); //assert the end offset
+        assertEquals(logicalStart, node.from()); //assert the start offset
+        assertEquals(logicalEnd, node.semanticEnd()); //assert the end offset
     }
 
     private Node assertAST(final String code) throws Exception {

@@ -120,7 +120,7 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
                     // more trace
                     if (dumpProjectContainer && project instanceof ProjectBase) {
                         dumpProjectContainer = false;
-                        ModelImplTest.dumpProjectContainers((ProjectBase) project);
+                        ModelImplTest.dumpProjectContainers(System.err, (ProjectBase) project, false);
                     }
                     if (containingFile instanceof FileImpl) {
                         ((FileImpl)containingFile).dumpPPStates(new PrintWriter(System.err));

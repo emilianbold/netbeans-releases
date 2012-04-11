@@ -46,8 +46,8 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImplTest;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Tracer;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -134,7 +134,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     }
 
     private void dumpProjectContainers(CsmProject project){
-        Tracer.dumpProjectContainers((ProjectBase) project);
+        ModelImplTest.dumpProjectContainers(System.out, (ProjectBase) project, true);
     }
 
     protected static String getGoldenDirectory() {
