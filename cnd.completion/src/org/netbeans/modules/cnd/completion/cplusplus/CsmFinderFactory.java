@@ -43,12 +43,15 @@
  */
 package org.netbeans.modules.cnd.completion.cplusplus;
 
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 
@@ -240,7 +243,7 @@ public final class CsmFinderFactory {
     }
 
     private String getMimeType() {
-        return MIMENames.CPLUSPLUS_MIME_TYPE;
+        return MIMENames.SOURCES_MIME_TYPE;
     }
 
     private CsmFinder retrieveFromCache(FileObject fo) {
