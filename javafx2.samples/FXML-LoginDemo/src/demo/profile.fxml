@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- * Copyright (c) 2008, 2011 Oracle and/or its affiliates.
+ * Copyright (c) 2008, 2012 Oracle and/or its affiliates.
  * All rights reserved. Use is subject to license terms.
  *
  * This file is available and licensed under the following license:
@@ -31,35 +31,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <?import java.lang.*?>
+<?import java.net.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:controller="demo.ProfileController" id="Profile" xmlns:fx="http://javafx.com/fxml">
-  <children>
-    <Button maxHeight="2.0" text="Update" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="168.0" fx:id="update" onAction="#processUpdate"/>
-    <Label layoutX="56.0" layoutY="77.0" text="Please review your profile data." fx:id="message" />
+<AnchorPane id="Profile" styleClass="profile" xmlns:fx="http://javafx.com/fxml" fx:controller="demo.ProfileController">
+    <Button fx:id="update" maxHeight="2.0" onAction="#processUpdate" text="Update" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="168.0" />
+    <Label fx:id="message" layoutX="56.0" layoutY="77.0" text="Please review your profile data." />
     <Label layoutX="56.0" layoutY="123.0" text="User:" />
     <Label layoutX="56.0" layoutY="224.0" text="Phone:" />
     <Label layoutX="56.0" layoutY="173.0" text="Email:" />
-    <TextField editable="false" layoutX="149.0" layoutY="120.0" maxWidth="2.0" minHeight="30.0" minWidth="215.0" prefHeight="30.0" prefWidth="215.0" fx:id="user" />
-    <TextField editable="true" layoutX="149.0" layoutY="171" maxWidth="2.0" minHeight="30.0" minWidth="215.0" prefHeight="30.0" prefWidth="215.0" fx:id="email" />
-    <TextField layoutX="149.0" layoutY="224" maxWidth="2.0" minHeight="30.0" minWidth="215.0" prefHeight="30.0" prefWidth="215.0" fx:id="phone" />
-    <CheckBox layoutX="402" layoutY="120.0" text="Subscribed to NewsLetter" fx:id="subscribed" />
-    <Separator layoutX="380" layoutY="110" prefHeight="155" orientation="vertical"/>
-    <Hyperlink layoutY="24.0" text="logout" AnchorPane.rightAnchor="52.0" fx:id="logout" onAction="#processLogout"/>
-    <Button disable="true" maxHeight="2" maxWidth="2.0" text="Continue" defaultButton="true" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="52.0" fx:id="Button" onAction="#processLogout"/>
-    <Label layoutX="150.0" layoutY="401.0" opacity="0.0" text="Profile  successfully updated!" fx:id="success" />
+    <TextField fx:id="user" editable="false" layoutX="149.0" layoutY="120.0" maxWidth="2.0" minHeight="30.0" minWidth="215.0" prefHeight="30.0" prefWidth="215.0" />
+    <TextField fx:id="email" layoutX="149.0" layoutY="171.0" maxWidth="2.0" minHeight="30.0" minWidth="215.0" prefHeight="30.0" prefWidth="215.0" />
+    <TextField fx:id="phone" layoutX="149.0" layoutY="224.0" maxWidth="2.0" minHeight="30.0" minWidth="215.0" prefHeight="30.0" prefWidth="215.0" />
+    <CheckBox fx:id="subscribed" layoutX="402.0" layoutY="120.0" text="Subscribed to NewsLetter" />
+    <Separator layoutX="380.0" layoutY="110.0" orientation="VERTICAL" prefHeight="155.0" />
+    <Hyperlink fx:id="logout" layoutY="24.0" onAction="#processLogout" text="logout" AnchorPane.rightAnchor="52.0" />
+    <Button fx:id="Button" defaultButton="true" disable="true" maxHeight="2.0" maxWidth="100.0" minWidth="100.0" onAction="#processLogout" prefWidth="100.0" text="Continue" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="52.0" />
+    <Label fx:id="success" layoutX="150.0" layoutY="450.0" opacity="0.0" text="Profile successfully updated!" />
     <Label layoutX="56.0" layoutY="284.0" text="Address:" />
-    <TextArea maxHeight="2.0" maxWidth="2.0" minHeight="85.0" minWidth="448.0" prefHeight="85.0" prefWidth="448.0" AnchorPane.bottomAnchor="69.0" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="52.0" AnchorPane.topAnchor="289.0" fx:id="address" />
-  </children>
-  <styleClass>
-    <String fx:value="profile" />
-  </styleClass>
-  <properties>
-    <elementLockSel>
-      <Boolean fx:value="true" />
-    </elementLockSel>
-  </properties>
+    <TextArea fx:id="address" maxHeight="50.0" maxWidth="448.0" minHeight="50.0" minWidth="100.0" prefHeight="50.0" prefWidth="448.0" AnchorPane.bottomAnchor="109.0" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="52.0" AnchorPane.topAnchor="289.0" />
+    <stylesheets>
+        <URL value="@demo.css" />
+    </stylesheets>
 </AnchorPane>
+
