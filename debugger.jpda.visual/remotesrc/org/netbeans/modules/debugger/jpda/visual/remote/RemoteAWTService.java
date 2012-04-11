@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.remote;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
@@ -48,6 +49,7 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
@@ -70,6 +72,7 @@ public class RemoteAWTService {
     private static final String AWTAccessThreadName = "org.netbeans.modules.debugger.jpda.visual AWT Access Loop";   // NOI18N
     private static volatile boolean awtAccess = false;
     private static volatile boolean awtAccessLoop = false;
+    private static volatile RemoteAWTHierarchyListener hierarchyListener;
     
     private static final Map eventData = new HashMap();
     
@@ -88,6 +91,28 @@ public class RemoteAWTService {
     
     static void stopAccessLoop() {
         awtAccessLoop = false;
+    }
+    
+    static void startHierarchyListener() {
+        if (hierarchyListener == null) {
+            hierarchyListener = new RemoteAWTHierarchyListener();
+            Toolkit.getDefaultToolkit().addAWTEventListener(hierarchyListener, AWTEvent.HIERARCHY_EVENT_MASK);
+        }
+    }
+    
+    static void stopHierarchyListener() {
+        if (hierarchyListener != null) {
+            Toolkit.getDefaultToolkit().removeAWTEventListener(hierarchyListener);
+            hierarchyListener = null;
+        }
+    }
+    
+    static String getHierarchyChangeStackFor(Component c) {
+        if (hierarchyListener == null) {
+            return null;
+        } else {
+            return hierarchyListener.getStackFromComponent(c);
+        }
     }
     
     static void calledInAWT() {
@@ -209,6 +234,8 @@ public class RemoteAWTService {
                     }
                 }
             }
+            // Stopped
+            stopHierarchyListener();
         }
     }
     
@@ -222,6 +249,7 @@ public class RemoteAWTService {
         private String allIntDataString;
         private String allNamesString;
         private Component[] allComponentsArray;
+        private String componentsAddAt;
         private ComponentInfo component;
         private final Rectangle rectangle = new Rectangle();
         private static final char STRING_DELIMITER = (char) 3;   // ETX (end of text)
@@ -238,6 +266,7 @@ public class RemoteAWTService {
             allIntDataString = intArraytoString(allIntDataArray);
             allNamesString = createAllNamesString();
             allComponentsArray = createAllComponentsArray(componentCount);
+            componentsAddAt = createComponentsAddAt(allComponentsArray);
         }
         
         private ComponentInfo retrieveComponentInfo(Component c, int shiftx, int shifty) {
@@ -316,6 +345,16 @@ public class RemoteAWTService {
             Component[] components = new Component[componentCount];
             component.putComponentsTo(components, 0);
             return components;
+        }
+        
+        private String createComponentsAddAt(Component[] components) {
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < components.length; i++) {
+                String stack = getHierarchyChangeStackFor(components[i]);
+                sb.append(stack);  // The stack or "null"
+                sb.append(STRING_DELIMITER);
+            }
+            return sb.toString();
         }
         
         private static class ComponentInfo {
