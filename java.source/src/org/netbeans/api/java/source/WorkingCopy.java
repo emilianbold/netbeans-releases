@@ -651,7 +651,8 @@ public class WorkingCopy extends CompilationController {
 
         scratchFolder.setAttribute(OverlayTemplateAttributesProvider.ATTR_ORIG_FILE, targetDataFolder);
 
-        DataObject newFile = templateDO.createFromTemplate(DataFolder.findFolder(scratchFolder));
+        String name = FileObjects.getName(sourceFile, true);
+        DataObject newFile = templateDO.createFromTemplate(DataFolder.findFolder(scratchFolder), name);
 
         return newFile.getPrimaryFile();
     }
