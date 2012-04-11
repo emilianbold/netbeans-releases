@@ -524,7 +524,6 @@ public final class PhpProject implements Project {
         }
         assert ignoredFolders != null : "Ignored folders cannot be null";
 
-        File projectDir = FileUtil.toFile(getProjectDirectory());
         for (BasePathSupport.Item item : ignoredFolders) {
             if (item.isBroken()) {
                 continue;
