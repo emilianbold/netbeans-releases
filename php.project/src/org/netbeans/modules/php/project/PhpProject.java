@@ -528,11 +528,7 @@ public final class PhpProject implements Project {
             if (item.isBroken()) {
                 continue;
             }
-            File file = new File(item.getFilePath());
-            if (!file.isAbsolute()) {
-                file = helper.resolveFile(item.getFilePath());
-            }
-            ignored.add(file);
+            ignored.add(new File(item.getAbsoluteFilePath(helper.getProjectDirectory())));
         }
     }
 
