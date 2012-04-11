@@ -308,6 +308,33 @@ public class WorkingCopy extends CompilationController {
     public synchronized void tag(@NonNull Tree t, @NonNull Object tag) {
         tree2Tag.put(t, tag);
     }
+
+    /**Returns the tree into which the given tree was rewritten using the
+     * {@link #rewrite(com.sun.source.tree.Tree, com.sun.source.tree.Tree) } method,
+     * transitively.
+     * Will return the input tree if the input tree was never passed as the first
+     * parameter of the {@link #rewrite(com.sun.source.tree.Tree, com.sun.source.tree.Tree) }
+     * method.
+     *
+     * <p>Note that the returned tree will be exactly equivalent to a tree passed as
+     * the second parameter to {@link #rewrite(com.sun.source.tree.Tree, com.sun.source.tree.Tree) }.
+     * No attribution or other information will be added (or removed) to (or from) the tree.
+     *
+     * @param in the tree to inspect
+     * @return tree into which the given tree was rewritten using the
+     * {@link #rewrite(com.sun.source.tree.Tree, com.sun.source.tree.Tree) } method,
+     * transitively
+     * @since 0.102
+     */
+    public synchronized @NonNull Tree resolveRewriteTarget(@NonNull Tree in) {
+        Map<Tree, Tree> localChanges = new IdentityHashMap<Tree, Tree>(changes);
+
+        while (localChanges.containsKey(in)) {
+            in = localChanges.remove(in);
+        }
+
+        return in;
+    }
     
     // Package private methods -------------------------------------------------        
     

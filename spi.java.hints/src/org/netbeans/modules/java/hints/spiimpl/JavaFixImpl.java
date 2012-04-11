@@ -46,6 +46,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,10 +55,12 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchUtilities;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -95,7 +98,11 @@ public final class JavaFixImpl implements Fix {
                     return;
                 }
 
-                Accessor.INSTANCE.process(jf, wc, true, null, /*Ignored in editor:*/new ArrayList<RefactoringElementImplementation>());
+                Map<FileObject, byte[]> resourceContentChanges = new HashMap<FileObject, byte[]>();
+                Accessor.INSTANCE.process(jf, wc, true, resourceContentChanges, /*Ignored in editor:*/new ArrayList<RefactoringElementImplementation>());
+                Map<FileObject, List<Difference>> resourceContentDiffs = new HashMap<FileObject, List<Difference>>();
+                BatchUtilities.addResourceContentChanges(resourceContentChanges, resourceContentDiffs);
+                JavaSourceAccessor.getINSTANCE().createModificationResult(resourceContentDiffs, Collections.<Object, int[]>emptyMap()).commit();
             }
         }).commit();
 
