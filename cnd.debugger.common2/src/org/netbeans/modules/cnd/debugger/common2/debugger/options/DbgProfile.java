@@ -82,9 +82,11 @@ public abstract class DbgProfile extends ProfileSupport implements OptionSetOwne
     /**
      * Initializes the object to default values
      */
+    @Override
     public void initialize() {
     }
 
+    @Override
     public OptionSet getOptions() {
 	return options;
     }
@@ -129,7 +131,7 @@ public abstract class DbgProfile extends ProfileSupport implements OptionSetOwne
      */
     public void setRedirection(String infile, String outfile,
 			       boolean append) {
-	StringBuffer sb = new StringBuffer();
+	StringBuilder sb = new StringBuilder();
 	boolean in = (infile != null && infile.length() != 0);
 	if (in) {
 	    sb.append("< ");		// NOI18N
@@ -189,5 +191,41 @@ public abstract class DbgProfile extends ProfileSupport implements OptionSetOwne
     public void setSavedBuildFirst(boolean savedBuildFirst) {
 	this.savedBuildFirst = savedBuildFirst;
 	needSave = true;
+    }
+    
+    private String getDebugCommand() {
+        return DebuggerOption.DEBUG_COMMAND.getCurrValue(options);
+    }
+
+    // START: Copied from RunProfile
+    private int getArgIndex() {
+        return getDebugCommand().indexOf(" "); // NOI18N // FIXUP <=== need a better check
+    }
+
+    public String getExecutable() {
+        int argIndex = getArgIndex();
+        if (argIndex > 0) {
+            return getDebugCommand().substring(0, argIndex);
+        } else {
+            return getDebugCommand();
+        }
+    }
+
+    public String getArgsFlat() {
+        int argIndex = getArgIndex();
+        if (argIndex > 0) {
+            return getDebugCommand().substring(argIndex+1);
+        } else {
+            return "";
+        }
+    }
+    // END: Copied from RunProfile
+    
+    public String getDebugDir() {
+        return DebuggerOption.DEBUG_DIR.getCurrValue(options);
+    }
+    
+    public void setDebugDir(String value) {
+        DebuggerOption.DEBUG_DIR.setCurrValue(options, value);
     }
 }

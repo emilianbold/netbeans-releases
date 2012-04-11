@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.ui.wizard;
+package org.netbeans.modules.cnd.remote.ui.networkneighbour;
 
 import java.awt.event.KeyEvent;
 import java.text.NumberFormat;

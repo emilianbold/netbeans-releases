@@ -48,16 +48,26 @@ package org.netbeans.modules.subversion;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.net.MalformedURLException;
-import java.util.regex.Pattern;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.versioning.util.KeyringSupport;
-import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.NbPreferences;
 
 /**
  * Stores Subversion module configuration.
@@ -93,6 +103,7 @@ public class SvnModuleConfig {
     private static final String SEPARATOR = "###"; //NOI18N
     private static final String KEY_SORTING = "sortingStatus."; //NOI18N
     private static final String PROP_FORCE_COMMANDLINE = "forcedCommandline"; //NOI18N
+    private static final String PROP_PREFERRED_FACTORY = "preferredFactory"; //NOI18N
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
         
@@ -550,5 +561,20 @@ public class SvnModuleConfig {
 
     public boolean isForcedCommandlineClient () {
         return getPreferences().getBoolean(PROP_FORCE_COMMANDLINE, false);
+    }
+
+    public String getPreferredFactoryType (String defaultFactory) {
+        return getPreferences().get(PROP_PREFERRED_FACTORY, defaultFactory);
+    }
+
+    public void setPreferredFactoryType (String preferredFactory) {
+        if (preferredFactory == null) {
+            getPreferences().remove(PROP_PREFERRED_FACTORY);
+        } else {
+            assert SvnClientFactory.FACTORY_TYPE_COMMANDLINE.equals(preferredFactory)
+                || SvnClientFactory.FACTORY_TYPE_SVNKIT.equals(preferredFactory)
+                || SvnClientFactory.FACTORY_TYPE_JAVAHL.equals(preferredFactory);
+            getPreferences().put(PROP_PREFERRED_FACTORY, preferredFactory);
+        }
     }
 }

@@ -336,7 +336,7 @@ public final class CodeModelDiagnostic {
             PrintStream ps = CsmTracer.toPrintStream(printOut);
             for (CsmProject prj : projects) {
                 if (prj instanceof ProjectBase) {
-                    ((ProjectBase)prj).traceProjectContainers(ps);
+                    ProjectBase.dumpProjectContainers(ps, prj, false);
                 }
             }
         }

@@ -214,7 +214,7 @@ public final class ScopeController extends ComponentController<JComboBox> {
          * mnemonics in previous versions, but now are ignored.
          */
         private String clr(String s) {
-            return s.replaceAll("\\&", "");                             //NOI18N
+            return s == null ? "" : s.replaceAll("\\&", "");            //NOI18N
         }
     }
 
