@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,71 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.svnclientadapter;
+package org.netbeans.modules.subversion.client;
 
-import java.util.Collection;
-import java.util.logging.Logger;
-import org.openide.util.Lookup;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.netbeans.modules.subversion.AbstractSvnTestCase;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 
 /**
  *
- * @author Tomas Stupka
+ * @author tomas
  */
-public abstract class SvnClientAdapterFactory {
+public class ClientSwitchTest extends AbstractSvnTestCase {
     
-    public static final String JAVAHL_WIN32_MODULE_CODE_NAME = "org.netbeans.libs.svnjavahlwin32";
-    
-    protected static final Logger LOG = Logger.getLogger("org.netbeans.libs.svnclientadapter");// NOI18N
-    private static SvnClientAdapterFactory instance;
-    private static Client client;
-
-    public SvnClientAdapterFactory() { }
-
-    public enum Client {
-        JAVAHL,
-        SVNKIT
+    public ClientSwitchTest(String testName) throws Exception {
+        super(testName);
     }
 
-    public static synchronized SvnClientAdapterFactory getInstance(Client client) {
-        if (instance == null || SvnClientAdapterFactory.client != client) {
-            Collection<SvnClientAdapterFactory> cl = (Collection<SvnClientAdapterFactory>) Lookup.getDefault().lookupAll(SvnClientAdapterFactory.class);
-            for (SvnClientAdapterFactory f : cl) {
-                if(f.provides() == client) {
-                    if(f.isAvailable()) {
-                        instance = f;
-                        SvnClientAdapterFactory.client = client;
-                        break;
-                    }
-                }
-            }
-        }
-        return instance;
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
     }
 
-    /**
-     * Creates a new {@link ISVNClientAdapter} instance
-     * @return
-     */
-    public abstract ISVNClientAdapter createClient();
-
-    /**
-     * Returns the client type provided by this factory
-     * @return
-     */
-    protected abstract Client provides();
-
-    /**
-     * Setups the {@link SvnClientAdapterFactory}
-     * @return true if the client is available, otherwise false
-     */
-    protected abstract boolean isAvailable();
-
-    
+    public void testSwitchClient () throws Exception {
+        SvnClientFactory.resetClient();
+        SvnModuleConfig.getDefault().setPreferredFactoryType(null);
+        assertEquals(SvnClientFactory.FACTORY_TYPE_JAVAHL, SvnModuleConfig.getDefault().getPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_JAVAHL));
+        assertTrue(SvnClientFactory.isJavaHl());
+        
+        // switch to svnkit
+        SvnModuleConfig.getDefault().setPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_SVNKIT);
+        SvnClientFactory.resetClient();
+        assertEquals(SvnClientFactory.FACTORY_TYPE_SVNKIT, SvnModuleConfig.getDefault().getPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_JAVAHL));
+        assertTrue(SvnClientFactory.isSvnKit());
+        
+        // switch to commandline
+        SvnClientFactory.resetClient();
+        SvnModuleConfig.getDefault().setPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_COMMANDLINE);
+        assertEquals(SvnClientFactory.FACTORY_TYPE_COMMANDLINE, SvnModuleConfig.getDefault().getPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_JAVAHL));
+        assertTrue(SvnClientFactory.isCLI());
+        
+        // switch to javahl
+        SvnClientFactory.resetClient();
+        SvnModuleConfig.getDefault().setPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_JAVAHL);
+        assertEquals(SvnClientFactory.FACTORY_TYPE_JAVAHL, SvnModuleConfig.getDefault().getPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_JAVAHL));
+        assertTrue(SvnClientFactory.isJavaHl());
+        
+    }
 }

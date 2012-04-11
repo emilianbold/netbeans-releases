@@ -43,6 +43,11 @@
  */
 package org.netbeans.modules.subversion.options;
 
+import java.awt.Color;
+import java.awt.Font;
+import javax.swing.UIManager;
+import javax.swing.text.Document;
+import javax.swing.text.html.HTMLDocument;
 import org.openide.util.Utilities;
 
 /**
@@ -56,9 +61,21 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         initComponents();
         if(Utilities.isWindows()) {
             jLabel5.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel5.windows.text"));
+            jLabel11.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel11.windows.text"));
         } else {
             jLabel5.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel5.unix.text"));
+            jLabel11.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel11.unix.text"));
         }
+        Document doc = textPaneClient.getDocument();
+        if (doc instanceof HTMLDocument) { // Issue 185505
+            HTMLDocument htmlDoc = (HTMLDocument)doc;
+            Font font = UIManager.getFont("Label.font"); // NOI18N
+            String bodyRule = "body { font-family: " + font.getFamily() + "; " // NOI18N
+                + "font-size: " + font.getSize() + "pt; }"; // NOI18N
+            htmlDoc.getStyleSheet().addRule(bodyRule);
+        }
+        textPaneClient.setOpaque(false);
+        textPaneClient.setBackground(new Color(0,0,0,0)); // windows and nimbus workaround see issue 145826
     }
 
     /** This method is called from within the constructor to
@@ -69,8 +86,6 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -83,13 +98,11 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jSeparator4 = new javax.swing.JSeparator();
-
-        jLabel1.setLabelFor(executablePathTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel1.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel5.windows.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.browseButton.text")); // NOI18N
+        jLabel5 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(manageConnSettingsButton, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.manageConnSettingsButton.text")); // NOI18N
 
@@ -137,97 +150,201 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(cbAutoLockFiles, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.cbAutoLockFiles.text")); // NOI18N
         cbAutoLockFiles.setToolTipText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.cbAutoLockFiles.toolTipText")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.browseButton.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel5.windows.text")); // NOI18N
+
+        jLabel1.setLabelFor(executablePathTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel1.text")); // NOI18N
+
+        javax.swing.GroupLayout panelCLILayout = new javax.swing.GroupLayout(panelCLI);
+        panelCLI.setLayout(panelCLILayout);
+        panelCLILayout.setHorizontalGroup(
+            panelCLILayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelCLILayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelCLILayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelCLILayout.createSequentialGroup()
+                        .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(201, 201, 201))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelCLILayout.createSequentialGroup()
+                        .addComponent(executablePathTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseButton))
+                    .addGroup(panelCLILayout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 95, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        panelCLILayout.setVerticalGroup(
+            panelCLILayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelCLILayout.createSequentialGroup()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panelCLILayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(browseButton)
+                    .addComponent(executablePathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel5))
+        );
+
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSN_SvnOptionsPanel.browseButton.text")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSD_SvnOptionsPanel.browseButton.text")); // NOI18N
+        executablePathTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSN_SvnOptionsPanel.executablePathTextField.text")); // NOI18N
+        executablePathTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSD_SvnOptionsPanel.executablePathTextField.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(browseJavahlButton, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.browseJavahlButton.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel11, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel11.text")); // NOI18N
+
+        jLabel12.setLabelFor(executablePathTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel12, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel12.text")); // NOI18N
+
+        javax.swing.GroupLayout panelJavahlLayout = new javax.swing.GroupLayout(panelJavahl);
+        panelJavahl.setLayout(panelJavahlLayout);
+        panelJavahlLayout.setHorizontalGroup(
+            panelJavahlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelJavahlLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelJavahlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelJavahlLayout.createSequentialGroup()
+                        .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(201, 201, 201))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelJavahlLayout.createSequentialGroup()
+                        .addComponent(javahlPathTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseJavahlButton))
+                    .addGroup(panelJavahlLayout.createSequentialGroup()
+                        .addComponent(jLabel12)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 95, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        panelJavahlLayout.setVerticalGroup(
+            panelJavahlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelJavahlLayout.createSequentialGroup()
+                .addComponent(jLabel12)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panelJavahlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(browseJavahlButton)
+                    .addComponent(javahlPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel11))
+        );
+
+        jLabel10.setLabelFor(cmbPreferredClient);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel10, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel10.text")); // NOI18N
+
+        javax.swing.GroupLayout panelSvnkitLayout = new javax.swing.GroupLayout(panelSvnkit);
+        panelSvnkit.setLayout(panelSvnkitLayout);
+        panelSvnkitLayout.setHorizontalGroup(
+            panelSvnkitLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        panelSvnkitLayout.setVerticalGroup(
+            panelSvnkitLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblRestartWarning, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.lblRestartWarning.text")); // NOI18N
+
+        textPaneClient.setBackground(jLabel1.getBackground());
+        textPaneClient.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        textPaneClient.setContentType(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.textPaneClient.contentType")); // NOI18N
+        textPaneClient.setEditable(false);
+        textPaneClient.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "OptionsPanel.textPaneClient.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
-                .addGap(213, 213, 213))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(73, 73, 73)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(158, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1)
-                .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(executablePathTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseButton))
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jSeparator1))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(24, 24, 24)
                                 .addComponent(jLabel2)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(annotationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE))
+                                .addComponent(annotationTextField))
                             .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
-                                .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                                .addComponent(jLabel7)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(addButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(manageLabelsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(manageConnSettingsButton))
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)))
+                        .addComponent(jSeparator2))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel9)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator4))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jLabel8)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator3))
+                    .addComponent(panelCLI, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(panelJavahl, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel6)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(manageConnSettingsButton))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(852, 852, 852)
+                                .addComponent(panelSvnkit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(73, 73, 73)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(cbGetRemoteLocks))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(cbAutoLockFiles))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(excludeNewFiles)
+                            .addComponent(prefixRepositoryPath)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(cbOpenOutputWindow))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel10)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cmbPreferredClient, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblRestartWarning))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(textPaneClient)))
                 .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel9)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator4, javax.swing.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(cbGetRemoteLocks)
-                .addContainerGap(253, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(cbAutoLockFiles)
-                .addContainerGap(161, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addComponent(jLabel8)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(excludeNewFiles)
-                    .addComponent(prefixRepositoryPath))
-                .addContainerGap(98, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(cbOpenOutputWindow)
-                .addContainerGap(214, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1)
-                .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(browseButton)
-                    .addComponent(executablePathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel10)
+                    .addComponent(cmbPreferredClient, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblRestartWarning))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel5)
+                .addComponent(panelCLI, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(panelJavahl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(textPaneClient, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(panelSvnkit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel3)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -284,10 +401,6 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        executablePathTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSN_SvnOptionsPanel.executablePathTextField.text")); // NOI18N
-        executablePathTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSD_SvnOptionsPanel.executablePathTextField.text")); // NOI18N
-        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSN_SvnOptionsPanel.browseButton.text")); // NOI18N
-        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSD_SvnOptionsPanel.browseButton.text")); // NOI18N
         manageConnSettingsButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSN_SvnOptionsPanel.manageConnSettingsButton.text")); // NOI18N
         manageConnSettingsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSD_SvnOptionsPanel.manageConnSettingsButton.text")); // NOI18N
         annotationTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSN_SvnOptionsPanel.annotationTextField.text")); // NOI18N
@@ -308,12 +421,17 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
     final javax.swing.JButton addButton = new javax.swing.JButton();
     final javax.swing.JTextField annotationTextField = new javax.swing.JTextField();
     final javax.swing.JButton browseButton = new javax.swing.JButton();
+    final javax.swing.JButton browseJavahlButton = new javax.swing.JButton();
     final javax.swing.JCheckBox cbAutoLockFiles = new javax.swing.JCheckBox();
     final javax.swing.JCheckBox cbGetRemoteLocks = new javax.swing.JCheckBox();
     final javax.swing.JCheckBox cbOpenOutputWindow = new javax.swing.JCheckBox();
+    final javax.swing.JComboBox cmbPreferredClient = new javax.swing.JComboBox();
     final javax.swing.JCheckBox excludeNewFiles = new javax.swing.JCheckBox();
     final javax.swing.JTextField executablePathTextField = new javax.swing.JTextField();
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -327,9 +445,15 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
+    final javax.swing.JTextField javahlPathTextField = new javax.swing.JTextField();
+    final javax.swing.JLabel lblRestartWarning = new javax.swing.JLabel();
     final javax.swing.JButton manageConnSettingsButton = new javax.swing.JButton();
     final javax.swing.JButton manageLabelsButton = new javax.swing.JButton();
+    final javax.swing.JPanel panelCLI = new javax.swing.JPanel();
+    final javax.swing.JPanel panelJavahl = new javax.swing.JPanel();
+    final javax.swing.JPanel panelSvnkit = new javax.swing.JPanel();
     final javax.swing.JCheckBox prefixRepositoryPath = new javax.swing.JCheckBox();
+    final javax.swing.JTextPane textPaneClient = new javax.swing.JTextPane();
     // End of variables declaration//GEN-END:variables
 
 }
