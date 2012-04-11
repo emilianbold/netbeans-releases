@@ -566,7 +566,7 @@ final class UndoRedoManager extends UndoRedo.Manager {
 
     UndoableEdit editToBeUndoneRedone(boolean redone) { // Access for NbDocument
         WrapUndoEdit wrapEdit = (WrapUndoEdit) (redone ? editToBeRedone() : editToBeUndone());
-        return wrapEdit.delegate();
+        return (wrapEdit != null) ? wrapEdit.delegate() : null;
     }
 
     static String editToString(UndoableEdit edit) {
@@ -586,10 +586,15 @@ final class UndoRedoManager extends UndoRedo.Manager {
         }
     }
     
-    static void checkLogOp(String op, UndoableEdit edit) {
+    void checkLogOp(String op, UndoableEdit edit) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine(op + ": " + editToString(edit) + '\n'); // NOI18N
+            LOG.fine(thisToString() + "->" + op + ": " + editToString(edit) + '\n'); // NOI18N
         }
+    }
+    
+    String thisToString() {
+        String name = support.messageName();
+        return String.valueOf(name) + ":URM@" + System.identityHashCode(this); // NOI18N
     }
 
     private final class DocLockedRun implements Runnable {
