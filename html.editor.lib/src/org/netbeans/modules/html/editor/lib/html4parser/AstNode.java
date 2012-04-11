@@ -58,32 +58,23 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
 
     public static final String NAMESPACE_PROPERTY = "namespace";
 
-    @Override
-    public int semanticEnd() {
-        return logicalEndOffset();
-    }
-
-    @Override
-    public OpenTag matchingOpenTag() {
-        return (OpenTag) getMatchingTag();
-    }
-    //base properties held by the AstNode itself
-    protected final int startOffset;
-    protected int endOffset;
-    protected int logicalEndOffset;
+    private final int startOffset, endOffset;
     private final CharSequence name;
-    private boolean empty = false;
+    private final boolean empty;
     private final ElementType nodeType;
-    private Node parent = null;
-    private Node matchingNode = null;
-    private List<Element> children = null;
-    private Map<String, Attribute> attributes = null;
-    private Content content = null;
-    private ContentModel contentModel = null;
     private final org.netbeans.modules.html.editor.lib.dtd.DTD.Element dtdElement;
+    
+    private int semanticEndOffset;
+    private Node parent;
+    private Node matchingNode;
+    private List<Element> children;
+    private Map<String, Attribute> attributes;
+    private final ContentModel contentModel;
+    
     private Collection<ProblemDescription> descriptions = null;
     private List<CharSequence> stack = null; //for debugging
     private Map<String, Object> properties;
+    private Content content;
 
     public AstNode(CharSequence name,
             ElementType nodeType,
@@ -97,7 +88,7 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         this.nodeType = nodeType;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
-        this.logicalEndOffset = endOffset;
+        this.semanticEndOffset = endOffset;
         this.empty = isEmpty;
 
         this.dtdElement = dtdElement;
@@ -116,18 +107,28 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
     }
 
     @Override
+    public int semanticEnd() {
+        return semanticEndOffset;
+    }
+
+    @Override
+    public OpenTag matchingOpenTag() {
+        return (OpenTag) getMatchingTag();
+    }
+    
+    @Override
     public CharSequence id() {
         return name;
     }
 
     @Override
     public int from() {
-        return startOffset();
+        return startOffset;
     }
 
     @Override
     public int to() {
-        return endOffset();
+        return endOffset;
     }
 
     @Override
@@ -152,51 +153,23 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         this.content = content;
     }
 
-    private List<CharSequence> getStack() {
-        return stack;
-    }
-
-    boolean isRootNode() {
-        return false;
-    }
-
     boolean isVirtual() {
-        return startOffset() == -1 && endOffset() == -1;
+        return from() == -1 && to() == -1;
     }
 
     void detachFromParent() {
         setParent(null);
     }
 
-    String getNamespace() {
-        return (String) getRootNode().getProperty(NAMESPACE_PROPERTY);
-    }
-
     Node getMatchingTag() {
-//        return (AstNode) getProp(matchingNode);
         return matchingNode;
     }
 
-    /**
-     * Returns an offsets range of the area which this node spans. The behaviour
-     * differs based on the node type. For matched open tags nodes the range is
-     * following: openTag.startOffset, matchingTag.endOffset
-     *
-     * For the rest of node types the area is node.startOffset, node.endOffset
-     *
-     * @return non-null int array - new int[]{from, to};
-     *
-     */
-    int[] getLogicalRange() {
-        return new int[]{startOffset, logicalEndOffset};
-    }
-
     void setLogicalEndOffset(int offset) {
-        this.logicalEndOffset = offset;
+        this.semanticEndOffset = offset;
     }
 
     void setMatchingNode(Node match) {
-//        putProp(matchingNode, match);]
         this.matchingNode = match;
     }
 
@@ -310,11 +283,13 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
     }
 
     List<org.netbeans.modules.html.editor.lib.dtd.DTD.Element> getAllPossibleElements() {
-        Content content = getContent();
-        assert content != null;
+        Content c = getContent();
+        if(c == null) {
+            return Collections.emptyList();
+        }
 
         List<org.netbeans.modules.html.editor.lib.dtd.DTD.Element> col = new ArrayList<org.netbeans.modules.html.editor.lib.dtd.DTD.Element>();
-        col.addAll((Collection<org.netbeans.modules.html.editor.lib.dtd.DTD.Element>) content.getPossibleElements());
+        col.addAll((Collection<org.netbeans.modules.html.editor.lib.dtd.DTD.Element>) c.getPossibleElements());
         col.addAll(getContentModel().getIncludes());
         col.removeAll(getContentModel().getExcludes());
         return col;
@@ -323,14 +298,14 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
     synchronized void addDescriptionToNode(String key, String message, int type) {
         //adjust the description position and length for open tag
         //only the tag name is annotated, not the whole tag
-        int from = startOffset();
-        int to = endOffset();
+        int from = from();
+        int to = to();
 
         if (type() == ElementType.OPEN_TAG) {
             to = from + 1 /*
                      * "<".length()
                      */ + name().length(); //end of the tag name
-            if (to == endOffset() - 1) {
+            if (to == to() - 1) {
                 //if the closing greater than '>' symbol immediately follows
                 //the tag name extend the description area to it as well
                 to++;
@@ -369,26 +344,6 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
     @Override
     public ElementType type() {
         return nodeType;
-    }
-
-    int startOffset() {
-        return startOffset;
-    }
-
-    int endOffset() {
-        return endOffset;
-    }
-
-    void setEndOffset(int offset) {
-        this.endOffset = offset;
-    }
-
-    int logicalStartOffset() {
-        return getLogicalRange()[0];
-    }
-
-    int logicalEndOffset() {
-        return getLogicalRange()[1];
     }
 
     @Override
@@ -519,12 +474,12 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         if (isVirtual()) {
             b.append("virtual");
         } else {
-            b.append(startOffset());
+            b.append(from());
             b.append('-');
-            b.append(endOffset());
-            if (logicalEndOffset != endOffset) {
+            b.append(to());
+            if (semanticEndOffset != endOffset) {
                 b.append('/');
-                b.append(logicalEndOffset);
+                b.append(semanticEndOffset);
             }
         }
         b.append(')');
@@ -557,9 +512,9 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
         }
 
         //dump stack if possible
-        if (getStack() != null) {
+        if (stack!= null) {
             b.append(";S:");
-            for (CharSequence item : getStack()) {
+            for (CharSequence item : stack) {
                 b.append(item);
                 b.append(',');
             }
@@ -584,13 +539,6 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
     @Override
     public Node parent() {
         return parent;
-    }
-
-    /**
-     * returns the AST path from the root element
-     */
-    TreePath path() {
-        return new TreePath(null, this);
     }
 
     private void setParent(Node p) {
