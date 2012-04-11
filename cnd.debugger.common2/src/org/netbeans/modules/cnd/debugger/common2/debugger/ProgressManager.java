@@ -74,7 +74,7 @@ public abstract class ProgressManager {
 
 	assert SwingUtilities.isEventDispatchThread();
 	if (old) {
-	    DebuggerManager.get().updateProgress("Progress", "START", 0); // NOI18N
+	    NativeDebuggerManager.get().updateProgress("Progress", "START", 0); // NOI18N
 	    return false;
 	}
 	if (phasedProgress != null) {
@@ -92,7 +92,7 @@ public abstract class ProgressManager {
     public void finishProgress() {
 	assert SwingUtilities.isEventDispatchThread();
 	if (old) {
-	    DebuggerManager.get().cancelProgress();
+	    NativeDebuggerManager.get().cancelProgress();
 	}
 	if (phasedProgress != null) {
 	    phasedProgress.setVisible(false);
@@ -106,7 +106,7 @@ public abstract class ProgressManager {
 	assert SwingUtilities.isEventDispatchThread();
 	if (old) {
 	    if (beginEnd == '>') {
-		DebuggerManager.get().updateProgress(null,
+		NativeDebuggerManager.get().updateProgress(null,
 		    "UPDATE " + message, 10); // NOI18N
 	    }
 	    return;

@@ -628,6 +628,108 @@ public class FlowTest extends NbTestCase {
                     "ii++");
     }
 
+    public void test210520a() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    public void f(int i) {\n" +
+                    "        int rr = 0;\n" +
+                    "        try {\n" +
+                    "            if (i == 0) throw new Exception();\n" +
+                    "            rr = 1;\n" +
+                    "            if (i == 1) throw new Exception();\n" +
+                    "            rr = 2;\n" +
+                    "            if (i == 1) throw new java.io.IOException();\n" +
+                    "        } catch (Exception e) {\n" +
+                    "            System.out.println(r`r);\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "0",
+                    "1",
+                    "2");
+    }
+
+    public void test210520b() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    public void f(int i) {\n" +
+                    "        int rr = 0;\n" +
+                    "        try {\n" +
+                    "            t1();\n" +
+                    "            rr = 1;\n" +
+                    "            t1();\n" +
+                    "        } catch (java.io.IOException e) {\n" +
+                    "            System.out.println(r`r);\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "    public void t1() throws java.io.FileNotFoundException {\n" +
+                    "         throw new java.io.FileNotFoundException();\n" +
+                    "    }\n" +
+                    "}\n",
+                    "0",
+                    "1");
+    }
+
+    public void test210520c() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    public void f(int i) {\n" +
+                    "        int rr = 0;\n" +
+                    "        try {\n" +
+                    "            t1();\n" +
+                    "            rr = 1;\n" +
+                    "            t1();\n" +
+                    "        } catch (Exception e) {\n" +
+                    "            System.out.println(r`r);\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "    public void t1() {\n" +
+                    "    }\n" +
+                    "}\n",
+                    "0",
+                    "1");
+    }
+
+    public void test210520d() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    public void f(int i) {\n" +
+                    "        int rr = 0;\n" +
+                    "        try {\n" +
+                    "            new java.io.FileInputStream(\"\");\n" +
+                    "            rr = 1;\n" +
+                    "            new java.io.FileInputStream(\"\");\n" +
+                    "        } catch (Exception e) {\n" +
+                    "            System.out.println(r`r);\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "    public void t1() {\n" +
+                    "    }\n" +
+                    "}\n",
+                    "0",
+                    "1");
+    }
+
+    public void test210520e() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    public void f(int i) {\n" +
+                    "        int rr = 0;\n" +
+                    "        try {\n" +
+                    "            assert i == 2;\n" +
+                    "            rr = 1;\n" +
+                    "            assert i == 3;\n" +
+                    "        } catch (Throwable e) {\n" +
+                    "            System.out.println(r`r);\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "    public void t1() {\n" +
+                    "    }\n" +
+                    "}\n",
+                    "0",
+                    "1");
+    }
+
     public void testDeadBranch207514() throws Exception {
         performDeadBranchTest("package test;\n" +
                               "public class Test {\n" +

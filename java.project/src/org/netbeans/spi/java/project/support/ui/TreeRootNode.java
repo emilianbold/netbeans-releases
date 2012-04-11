@@ -591,13 +591,16 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             }
         }
 
-        @Override public String getShortDescription() {
-            DataObject doj = getLookup().lookup(DataObject.class);
-            if (doj != null) {
-                FileObject f = doj.getPrimaryFile();
-                String rel = FileUtil.getRelativePath(g.getRootFolder(), f);
-                if (rel != null) {
-                    return PackageDisplayUtils.getToolTip(f, rel.replace('/', '.'));
+        @Override
+        public String getShortDescription() {
+            if (g != null) {
+                final DataObject doj = getLookup().lookup(DataObject.class);
+                if (doj != null) {
+                    final FileObject f = doj.getPrimaryFile();
+                    String rel = FileUtil.getRelativePath(g.getRootFolder(), f);
+                    if (rel != null) {
+                        return PackageDisplayUtils.getToolTip(f, rel.replace('/', '.'));    //NOI18N
+                    }
                 }
             }
             return super.getShortDescription();

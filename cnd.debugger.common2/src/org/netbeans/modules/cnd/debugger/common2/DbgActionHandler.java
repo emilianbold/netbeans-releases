@@ -51,7 +51,7 @@ import org.openide.windows.InputOutput;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -96,7 +96,7 @@ public class DbgActionHandler implements ProjectActionHandler {
      */
     public void cancel() {
         // find dbugger using ndi and kill it
-        for (NativeDebugger debugger: DebuggerManager.get().nativeDebuggers()) {
+        for (NativeDebugger debugger: NativeDebuggerManager.get().nativeDebuggers()) {
             if (ndi == debugger.getNDI()) {
                 debugger.postKill();
                 break;
@@ -111,7 +111,7 @@ public class DbgActionHandler implements ProjectActionHandler {
 	// Project system, ProjectActionSupport$HandleEvents.checkExecutable(),
 	// before being passed to us.
         final String executable = pae.getExecutable();
-	final DebuggerManager dm = DebuggerManager.get();
+	final NativeDebuggerManager dm = NativeDebuggerManager.get();
 	dm.setIO(io);
 	String hostName = CndRemote.userhostFromConfiguration(pae.getConfiguration());
 	CndRemote.validate(hostName, new Runnable() {
@@ -121,7 +121,7 @@ public class DbgActionHandler implements ProjectActionHandler {
 	});
     }
 
-    private void doExecute(final String executable, final DebuggerManager dm, final InputOutput io) {
+    private void doExecute(final String executable, final NativeDebuggerManager dm, final InputOutput io) {
 	final Configuration configuration = pae.getConfiguration();
         final RunProfile profile;
         // The following is a hack to work around issues with dbxgui interaction with run profile.
@@ -146,9 +146,9 @@ public class DbgActionHandler implements ProjectActionHandler {
                     IOSelect.select(io, EnumSet.noneOf(IOSelect.AdditionalOperation.class));
                 }
                 if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_TEST) {
-		    dm.setAction(DebuggerManager.RUN);
-		    dm.removeAction(DebuggerManager.STEP);
-		    ndi = DebuggerManager.get().debug(executable,
+		    dm.setAction(NativeDebuggerManager.RUN);
+		    dm.removeAction(NativeDebuggerManager.STEP);
+		    ndi = NativeDebuggerManager.get().debug(executable,
 						configuration,
 						CndRemote.userhostFromConfiguration(configuration),
                                                 io,
@@ -156,9 +156,9 @@ public class DbgActionHandler implements ProjectActionHandler {
                                                 profile);
 
                 } else if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO_TEST) {
-		    dm.setAction(DebuggerManager.STEP);
-		    dm.removeAction(DebuggerManager.RUN);
-		    ndi = DebuggerManager.get().debug(executable,
+		    dm.setAction(NativeDebuggerManager.STEP);
+		    dm.removeAction(NativeDebuggerManager.RUN);
+		    ndi = NativeDebuggerManager.get().debug(executable,
 						configuration,
 						CndRemote.userhostFromConfiguration(configuration),
                                                 io,
