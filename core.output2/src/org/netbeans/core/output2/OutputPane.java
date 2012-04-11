@@ -103,8 +103,10 @@ class OutputPane extends AbstractOutputPane {
     public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
         //Refine possibly to focus just what is important..
-        findOutputTab().setToFocus((Component)e.getSource());
-        findOutputTab().requestActive();
+        if (!e.isPopupTrigger()) {
+            findOutputTab().setToFocus((Component) e.getSource());
+            findOutputTab().requestActive();
+        }
     }
 
     private OutputTab findOutputTab() {
