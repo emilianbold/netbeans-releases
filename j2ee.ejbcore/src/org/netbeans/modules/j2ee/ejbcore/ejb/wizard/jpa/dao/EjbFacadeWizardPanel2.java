@@ -87,6 +87,12 @@ public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeList
                 }
             }
         }
+        if (!statelessIfaceOnProjectCP()) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(EjbFacadeWizardPanel2.class, "ERR_SessionIfaceNotOnProjectClasspath", //NOI18N
+                    EjbFacadeWizardIterator.EJB_STATELESS));
+            return false;
+        }
         wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, ""); // NOI18N
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         return true;
@@ -186,6 +192,17 @@ public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeList
     public Project getEntityProject() {
         return entityProject;
     }
-    
+
+    private boolean statelessIfaceOnProjectCP() {
+        ClassPath cp = ClassPath.getClassPath(project.getProjectDirectory(), ClassPath.COMPILE);
+        ClassLoader cl = cp.getClassLoader(true);
+        try {
+            Class.forName(EjbFacadeWizardIterator.EJB_STATELESS, false, cl);
+        } catch (ClassNotFoundException cnfe) {
+            return false;
+        }
+        return true;
+    }
+
 }
 
