@@ -302,6 +302,15 @@ public class HtmlLexerTest extends NbTestCase {
         
                 
     }
+    
+    public void testXMLPI() {
+        checkTokens("<?xml version=\"1.0\" ?>", "<?xml version=\"1.0\" ?>|XML_PI");
+        checkTokens("<div><? ?></div>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", ">|TAG_CLOSE_SYMBOL", "<? ?>|XML_PI", "</|TAG_OPEN_SYMBOL", "div|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
+    }
+    
+    public void testUnfinishedXMLPI() {
+        checkTokens("<?xml", "<?xml|XML_PI");
+    }
 
     private void checkTokens(String text, String... descriptions) {
         TokenHierarchy<String> th = TokenHierarchy.create(text, HTMLTokenId.language());

@@ -179,6 +179,128 @@ public class PullUpTest extends RefactoringTestBase {
                 + "\n"
                 + "}"));
     }
+    
+    public void testPullUpAllComments() throws Exception { // #210915 - Refactoring Pull Up Leaves Single Comment in Sub Class
+        writeFilesAndWaitForScan(src, new File("t/SuperClass.java",
+                  "/*\n"
+                + " * To change this template, choose Tools | Templates\n"
+                + " * and open the template in the editor.\n"
+                + " */\n"
+                + "package t;\n"
+                + "\n"
+                + "import java.util.EventListener;\n"
+                + "import u.SuperDuperClass;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author Mark\n"
+                + " */\n"
+                + "public class SuperClass extends SuperDuperClass {\n"
+                + "    \n"
+                + "    // fields\n"
+                + "    Integer a;\n"
+                + "    /* Comment */\n"
+                + "    Integer b;\n"
+                + "    /**\n"
+                + "     * Comment 3\n"
+                + "     */\n"
+                + "    String s;\n"
+                + "    // Comment 2\n"
+                + "    Boolean t;\n"
+                + "\n"
+                + "    // Comment doSomething(int x)\n"
+                + "    public void doSomething(int x) {\n"
+                + "        // Do Something\n"
+                + "    }\n"
+                + "\n"
+                + "    // Comment doSomethingElse()\n"
+                + "    public String doSomethingElse() {\n"
+                + "        return \"hello world\";\n"
+                + "    }\n"
+                + "\n"
+                + "    /**\n"
+                + "     *\n"
+                + "     * Comment doStuff(String s)\n"
+                + "     */\n"
+                + "    public void doStuff(String s) {\n"
+                + "        System.out.println(\"do stuff\");\n"
+                + "        System.out.println(new EventListener() {\n"
+                + "        });\n"
+                + "    }\n"
+                + "}\n"
+                + ""),
+                new File("u/SuperDuperClass.java",
+                "package u;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author Mark\n"
+                + " */\n"
+                + "public class SuperDuperClass {\n"
+                + "    \n"
+                + "}"));
+        performPullUp(src.getFileObject("t/SuperClass.java"), -1, Boolean.FALSE);
+        verifyContent(src, new File("t/SuperClass.java",
+                  "/*\n"
+                + " * To change this template, choose Tools | Templates\n"
+                + " * and open the template in the editor.\n"
+                + " */\n"
+                + "package t;\n"
+                + "\n"
+                + "import java.util.EventListener;\n"
+                + "import u.SuperDuperClass;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author Mark\n"
+                + " */\n"
+                + "public class SuperClass extends SuperDuperClass {\n"
+                + "    \n"
+                + "}\n"
+                + ""),
+                new File("u/SuperDuperClass.java",
+                "package u;\n"
+                + "\n"
+                + "import java.util.EventListener;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author Mark\n"
+                + " */\n"
+                + "public class SuperDuperClass {\n"
+                + "    \n"
+                + "    // fields\n"
+                + "    Integer a;\n"
+                + "    /* Comment */\n"
+                + "    Integer b;\n"
+                + "    /**\n"
+                + "     * Comment 3\n"
+                + "     */\n"
+                + "    String s;\n"
+                + "    // Comment 2\n"
+                + "    Boolean t;\n"
+                + "\n"
+                + "    // Comment doSomething(int x)\n"
+                + "    public void doSomething(int x) {\n"
+                + "        // Do Something\n"
+                + "    }\n"
+                + "\n"
+                + "    // Comment doSomethingElse()\n"
+                + "    public String doSomethingElse() {\n"
+                + "        return \"hello world\";\n"
+                + "    }\n"
+                + "\n"
+                + "    /**\n"
+                + "     *\n"
+                + "     * Comment doStuff(String s)\n"
+                + "     */\n"
+                + "    public void doStuff(String s) {\n"
+                + "        System.out.println(\"do stuff\");\n"
+                + "        System.out.println(new EventListener() {\n"
+                + "        });\n"
+                + "    }\n"
+                + "}"));
+    }
 
     public void testPullUpClass() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -756,12 +878,23 @@ public class PullUpTest extends RefactoringTestBase {
                 TypeMirror superclass = classEl.getSuperclass();
                 TypeElement superEl = (TypeElement) info.getTypes().asElement(superclass);
                 
-                MemberInfo[] members = new MemberInfo[1];
-                Tree member = classTree.getMembers().get(position);
-                Element el = info.getTrees().getElement(new TreePath(classPath, member));
-                members[0] = MemberInfo.create(el, info);
-                members[0].setMakeAbstract(makeAbstract);
-
+                MemberInfo[] members;
+                if(position < 0) {
+                    List<? extends Tree> classMembers = classTree.getMembers();
+                    members = new MemberInfo[classMembers.size()];
+                    for (int i = 0; i < classMembers.size(); i++) {
+                        Tree tree = classMembers.get(i);
+                        Element el = info.getTrees().getElement(new TreePath(classPath, tree));
+                        members[i] = MemberInfo.create(el, info);
+                        members[i].setMakeAbstract(makeAbstract);
+                    }
+                } else {
+                    members = new MemberInfo[1];
+                    Tree member = classTree.getMembers().get(position);
+                    Element el = info.getTrees().getElement(new TreePath(classPath, member));
+                    members[0] = MemberInfo.create(el, info);
+                    members[0].setMakeAbstract(makeAbstract);
+                }
                 r[0] = new PullUpRefactoring(TreePathHandle.create(classEl, info));
                 r[0].setTargetType(ElementHandle.create(superEl));
                 r[0].setMembers(members);

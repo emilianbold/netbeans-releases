@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints;
 import org.netbeans.modules.cnd.debugger.common2.utils.ListMapItem;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 
 /**
@@ -96,8 +96,8 @@ public final class Handler implements ListMapItem {
 	// OLD update();
     }
 
-    private static DebuggerManager manager() {
-	return DebuggerManager.get();
+    private static NativeDebuggerManager manager() {
+	return NativeDebuggerManager.get();
     } 
 
     public NativeBreakpoint breakpoint() {

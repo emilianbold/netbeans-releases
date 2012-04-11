@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.php.editor.PHPTestBase;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PhpParserErrorTest extends CslTestBase {
+public class PhpParserErrorTest extends PHPTestBase {
 
     public PhpParserErrorTest(String testName) {
         super(testName);
@@ -130,6 +130,10 @@ public class PhpParserErrorTest extends CslTestBase {
 
     public void testTraits_06() throws Exception {
         checkErrors("testfiles/traits_06.php");
+    }
+
+    public void testTraits_07() throws Exception {
+        checkErrors("testfiles/traits_07.php");
     }
 
     public void testShortArray_01() throws Exception {

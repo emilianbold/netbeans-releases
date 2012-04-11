@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.remote;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -108,8 +108,8 @@ public abstract class Host {
     
     public static Host byName(String hostName) {
         Host res = null;
-        if (DebuggerManager.isStandalone()) {
-            CustomizableHostList hostList = DebuggerManager.get().getHostList();
+        if (NativeDebuggerManager.isStandalone()) {
+            CustomizableHostList hostList = NativeDebuggerManager.get().getHostList();
             if (hostList != null) {
                 res = hostList.getHostByName(hostName);
                 if (res == null) {
@@ -123,7 +123,7 @@ public abstract class Host {
     }
     
     public static Host getLocal() {
-        if (!DebuggerManager.isStandalone()) {
+        if (!NativeDebuggerManager.isStandalone()) {
             return new ExecHost(ExecutionEnvironmentFactory.getLocal());
         } else {
             return byName(localhost);

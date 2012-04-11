@@ -307,7 +307,7 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
      *
      */
     public final void noteInitializationDone() {
-	OptionSet globalOptions = DebuggerManager.get().globalOptions();
+	OptionSet globalOptions = NativeDebuggerManager.get().globalOptions();
 	globalOptions.deltaWithRespectTo(defaultGlobalOptionSet);
 	globalOptions.applyTo(debugger.getOptionClient());
 	globalOptions.doneApplying();
@@ -368,7 +368,7 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
      * Return true if some other session is using this profile.
      */
     private boolean isInUse(RunProfile profile, NativeDebugger myself) {
-	DebuggerManager manager = DebuggerManager.get();
+	NativeDebuggerManager manager = NativeDebuggerManager.get();
 	for (NativeDebugger aDebugger : manager.nativeDebuggers()) {
 	    if (aDebugger == myself)
 		continue;
@@ -625,13 +625,13 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
             // Restore breakpoints from the mainRunProfile
 	    OptionLayers optionLayers = debugger.optionLayers();
             if (DebuggerOption.SAVE_BREAKPOINTS.isEnabled(optionLayers)) {
-		BreakpointBag bb = DebuggerManager.get().breakpointBag();
+		BreakpointBag bb = NativeDebuggerManager.get().breakpointBag();
 		debugger.bm().postRestoreBreakpoints(bb);
             }
         }
 
         if ((dirty & DIRTY_WATCHES) != 0) {
-	    WatchBag wb = DebuggerManager.get().watchBag();
+	    WatchBag wb = NativeDebuggerManager.get().watchBag();
 	    debugger.restoreWatches(wb);
         }
     }

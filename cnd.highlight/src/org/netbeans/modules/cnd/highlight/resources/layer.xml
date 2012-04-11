@@ -37,7 +37,6 @@ Contributor(s):
  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Editors">
@@ -47,7 +46,7 @@ Contributor(s):
         </folder>
         <folder name="text">
             <folder name="x-h">
-                <file name="org-netbeans-modules-cnd-highlight-CppHighlightsLayerFactory.instance" />
+                <file name="org-netbeans-modules-cnd-highlight-CppHighlightsLayerFactory.instance"/>
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-cnd-highlight-semantic-OccurrencesMarkProviderCreator.instance">
                     </file>
@@ -75,7 +74,7 @@ Contributor(s):
                 </folder>
             </folder>
             <folder name="x-c++">
-                <file name="org-netbeans-modules-cnd-highlight-CppHighlightsLayerFactory.instance" />
+                <file name="org-netbeans-modules-cnd-highlight-CppHighlightsLayerFactory.instance"/>
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-cnd-highlight-semantic-OccurrencesMarkProviderCreator.instance">
                     </file>
@@ -103,7 +102,7 @@ Contributor(s):
                 </folder>
             </folder>
             <folder name="x-c">
-                <file name="org-netbeans-modules-cnd-highlight-CppHighlightsLayerFactory.instance" />
+                <file name="org-netbeans-modules-cnd-highlight-CppHighlightsLayerFactory.instance"/>
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-cnd-highlight-semantic-OccurrencesMarkProviderCreator.instance">
                     </file>
@@ -148,5 +147,21 @@ Contributor(s):
                 <attr name="position" intvalue="300"/>
             </file>
         </folder>
-   </folder>     
+   </folder>
+   
+    <folder name="OptionsDialog">
+        <folder name="Editor">
+            <folder name="MarkOccurrences">
+                <folder name="text">
+                    <folder name="x-cnd+sourcefile">
+                        <file name="CCppMarkOccurences.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" newvalue="org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptionsPanelController"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+   
 </filesystem>

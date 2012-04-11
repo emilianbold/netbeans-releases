@@ -218,8 +218,9 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
         initDelegate();
         Javadoc javadoc = refactoring.getContext().lookup(Javadoc.class);
         final ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(paramTable, null, null, refactoring.isOverloadMethod(), javadoc == null? Javadoc.NONE : javadoc, allMethods, methodHandle);
+        final ChangeParamsJavaDocTransformer changeParamsJavaDocTransformer = new ChangeParamsJavaDocTransformer(paramTable, null, refactoring.isOverloadMethod(), javadoc == null? Javadoc.NONE : javadoc, allMethods, methodHandle);
         
-        fireProgressListenerStart(ProgressEvent.START, a.size());
+        fireProgressListenerStart(ProgressEvent.START, a.size() * 2);
         Problem p = null;
         if (!a.isEmpty()) {
         
@@ -307,7 +308,8 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                     }
                 }
             };
-            JavaPluginUtils.chainProblems(p, createAndAddElements(a, t, elements, refactoring));
+            p = JavaPluginUtils.chainProblems(p, createAndAddElements(a, new TransformTask(changeParamsJavaDocTransformer, methodHandle), elements, refactoring));
+            p = JavaPluginUtils.chainProblems(p, createAndAddElements(a, t, elements, refactoring));
         }
 
         fireProgressListenerStop();

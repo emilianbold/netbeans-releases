@@ -42,8 +42,8 @@
 package org.netbeans.modules.java.source.usages;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 
 /**
@@ -51,8 +51,9 @@ import org.netbeans.modules.java.source.indexing.TransactionContext;
  *
  * @author sdedic
  */
-public class PersistentIndexTransaction extends TransactionContext.Service {
-    private List<ClassIndexImpl.Writer>   indexWriters = new LinkedList<ClassIndexImpl.Writer>();
+//@NotThreadSafe
+public final class PersistentIndexTransaction extends TransactionContext.Service {
+    private ClassIndexImpl.Writer indexWriter;
     
     
     public static PersistentIndexTransaction create() {
@@ -61,44 +62,42 @@ public class PersistentIndexTransaction extends TransactionContext.Service {
 
     @Override
     protected void commit() throws IOException {
-        Throwable cause = null;
-        for (ClassIndexImpl.Writer w : indexWriters) {
+        if (indexWriter != null) {
             try {
-                w.commit();
+                indexWriter.commit();
             } catch (Throwable t) {
                 if (t instanceof ThreadDeath) {
                     throw (ThreadDeath) t;
-                } else if (cause == null) {
-                    cause = t;
+                } else {
+                    throw new IOException(t);
                 }
             }
-        }
-        if (cause != null) {
-            throw new IOException(cause);
         }
     }
 
     @Override
     protected void rollBack() throws IOException {
-        Throwable cause = null;
-        for (ClassIndexImpl.Writer w : indexWriters) {
+        if (indexWriter != null) {
             try {
-                w.rollback();
+                indexWriter.rollback();
             } catch (Throwable t) {
                 if (t instanceof ThreadDeath) {
                     throw (ThreadDeath) t;
-                } else if (cause == null) {
-                    cause = t;
+                } else {
+                    throw new IOException(t);
                 }
             }
         }
-        if (cause != null) {
-            throw new IOException(cause);
-        }
-        
     }
     
-    public void addIndexWriter(ClassIndexImpl.Writer writer) {
-        indexWriters.add(writer);
+    public void setIndexWriter(@NonNull ClassIndexImpl.Writer writer) {
+        assert this.indexWriter == null;
+        assert writer != null;
+        this.indexWriter = writer;
+    }
+    
+    @CheckForNull
+    public ClassIndexImpl.Writer getIndexWriter() {
+        return this.indexWriter;
     }
 }

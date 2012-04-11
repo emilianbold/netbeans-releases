@@ -57,7 +57,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class PHPCodeCompletion194294Test extends PHPTestBase {
+public class PHPCodeCompletion194294Test extends PHPCodeCompletionTestBase {
 
     public PHPCodeCompletion194294Test(String testName) {
         super(testName);
@@ -66,15 +66,15 @@ public class PHPCodeCompletion194294Test extends PHPTestBase {
     public void testReturnType01() throws Exception {
         checkCompletion("testfiles/completion/lib/test194294/Usage.php", "Cls1::getInstance()->^", false);
     }
-    
+
     public void testReturnType02() throws Exception {
         checkCompletion("testfiles/completion/lib/test194294/Usage.php", "Cls1::getInstance()->getName()->^", false);
     }
-    
+
     public void testReturnType03() throws Exception {
         checkCompletion("testfiles/completion/lib/test194294/Usage.php", "$cls1->getName()->^", false);
     }
-    
+
     public void testReturnType04() throws Exception {
         checkCompletion("testfiles/completion/lib/test194294/Usage.php", "$cls2->doSomething()->^", false);
     }

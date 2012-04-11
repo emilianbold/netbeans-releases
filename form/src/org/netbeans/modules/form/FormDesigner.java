@@ -548,7 +548,6 @@ public class FormDesigner {
     
     public void setTopDesignComponent(RADVisualComponent component,
                                       boolean update) {
-        
         highlightTopDesignComponentName(false);
         // TODO need to remove bindings of the current cloned view (or clone bound components as well)
         Object old = topDesignComponent;
@@ -561,6 +560,15 @@ public class FormDesigner {
         }
         firePropertyChange(PROP_TOP_DESIGN_COMPONENT, old, component);
         updateTestAction();
+        // topDesignComponent could be out of the design view so far,
+        // so not selected as a layout component
+        if (!selectedLayoutComponents.contains(topDesignComponent)) {
+            selectedLayoutComponents.add(topDesignComponent);
+            if (layoutDesigner != null && topDesignComponent instanceof RADVisualContainer
+                    && ((RADVisualContainer)topDesignComponent).getLayoutSupport() == null) {
+                layoutDesigner.setSelectedComponents(new String[] { topDesignComponent.getId() });
+            }
+        }
     }
 
     // Issue 200631. It would be much better if TestAction was observing
@@ -1098,10 +1106,13 @@ public class FormDesigner {
             }
         }
     }
-    
+
     void removeComponentFromSelectionImpl(RADComponent metacomp) {
         selectedComponents.remove(metacomp);
-        selectedLayoutComponents.remove(metacomp);
+        RADVisualComponent layoutComponent = componentToLayoutComponent(metacomp);
+        if (layoutComponent != null) {
+            selectedLayoutComponents.remove(layoutComponent);
+        }
         selectionChanged();
     }
 
@@ -1204,9 +1215,9 @@ public class FormDesigner {
     }
 
     private void updateLayoutDesigner() {
-        Collection<String> selectedIds = selectedLayoutComponentIds();
         boolean enabled;
         if (layoutDesigner != null) {
+            Collection<String> selectedIds = selectedLayoutComponentIds();
             layoutDesigner.setSelectedComponents(selectedIds.toArray(new String[selectedIds.size()]));
             enabled = layoutDesigner.canAlign(selectedIds);
         } else {
@@ -1946,6 +1957,10 @@ public class FormDesigner {
 //            return getTopDesignComponent().getId();
 //        }
 
+        /**
+         * @return actual bounds of given component, null if the component is not
+         *         currently visualized in the design area
+         */
         @Override
         public Rectangle getComponentBounds(String componentId) {
             Component visual = getVisualComponent(componentId, true, false);

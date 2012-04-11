@@ -127,11 +127,10 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
             if (item.isBroken()) {
                 continue;
             }
-            String filePath = item.getFilePath();
-            FileObject fo = project.getHelper().resolveFileObject(filePath);
+            FileObject fo = item.getFileObject(project.getProjectDirectory());
             if (fo == null) {
                 // not broken but not found?!
-                category.setErrorMessage(NbBundle.getMessage(CustomizerIgnorePath.class, "MSG_NotFound", filePath));
+                category.setErrorMessage(NbBundle.getMessage(CustomizerIgnorePath.class, "MSG_NotFound", item.getFilePath()));
                 category.setValid(false);
                 return;
             }

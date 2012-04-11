@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,16 +34,16 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser;
 
 import java.io.File;
 import java.util.List;
-import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.openide.filesystems.FileObject;
@@ -53,7 +53,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author PetrPisl
  */
-public class PHPDocCommentParserTest extends CslTestBase {
+public class PHPDocCommentParserTest extends PHPTestBase {
 
     public PHPDocCommentParserTest(String testName) {
         super(testName);
@@ -77,7 +77,7 @@ public class PHPDocCommentParserTest extends CslTestBase {
         assertNotNull(block);
         assertEquals("", block.getDescription());
     }
-    
+
     public void testEmpty2() throws Exception {
         String comment = " *     ";
 
@@ -86,7 +86,7 @@ public class PHPDocCommentParserTest extends CslTestBase {
         assertNotNull(block);
         assertEquals("", block.getDescription());
     }
-    
+
     public void testDescriptionSimple() throws Exception {
         String comment = " simple";
 
@@ -95,7 +95,7 @@ public class PHPDocCommentParserTest extends CslTestBase {
         assertNotNull(block);
         assertEquals("simple", block.getDescription());
     }
-    
+
     public void testDescriptionOnly() throws Exception {
         String comment = " * hello this is a * very simple comment \n * and seccond line";
 
@@ -104,7 +104,7 @@ public class PHPDocCommentParserTest extends CslTestBase {
         assertNotNull(block);
         assertEquals("hello this is a * very simple comment\nand seccond line", block.getDescription());
     }
-    
+
     public void testNoDescriptionOneTag() throws Exception {
         String comment = " * @author Petr";
 
@@ -119,7 +119,7 @@ public class PHPDocCommentParserTest extends CslTestBase {
         assertEquals(comment.indexOf("@author"), tags.get(0).getStartOffset());
         assertEquals(comment.indexOf("@author Petr") + "@author Petr".length(), tags.get(0).getEndOffset() - 3);
     }
-    
+
     public void testNoDescriptionTwoTags() throws Exception {
         String comment = " * @author Petr  \n * @since 1.5";
 
@@ -138,7 +138,7 @@ public class PHPDocCommentParserTest extends CslTestBase {
         assertEquals(comment.indexOf("@since 1.5") + 3 , tags.get(1).getStartOffset());
         assertEquals(comment.indexOf("@since 1.5") + "@since 1.5".length(), tags.get(1).getEndOffset() - 3);
     }
-    
+
     public void testNoDescriptionThreeTags() throws Exception {
         String comment = " * @author Petr  \n *    @since 1.5  \n *      @License mine";
 
@@ -161,7 +161,7 @@ public class PHPDocCommentParserTest extends CslTestBase {
         assertEquals(comment.indexOf("@License mine") + 3 , tags.get(2).getStartOffset());
         assertEquals(comment.indexOf("@License mine") + "@License mine".length(), tags.get(2).getEndOffset() - 3);
     }
-    
+
     public void testDescriptionTags() throws Exception {
         String comment = " * hello this is a * very simple comment \n * and seccond line \n  * \n * last line of description\n * @link   http://www.seznam.cz   \n * @author";
 
@@ -181,7 +181,7 @@ public class PHPDocCommentParserTest extends CslTestBase {
         assertEquals(comment.indexOf("@author") + 3 , tags.get(1).getStartOffset());
         assertEquals(comment.indexOf("@author") + "@author".length(), tags.get(1).getEndOffset() - 3);
     }
-    
+
     public void testDescriptionWithHtml() throws Exception {
         String comment = "*   <dd> \"*word\"  => ENDS_WITH(word)\n *   <dd> \"/^word.* /\" => REGEX(^word.*)\n *   <dd> \"word*word\" => REGEX(word.*word)";
         PHPDocCommentParser parser = new PHPDocCommentParser();
@@ -263,13 +263,13 @@ public class PHPDocCommentParserTest extends CslTestBase {
          "   * @see sfAction";
         perform(comment, "Example01");
     }
-    
+
     public void testArrayParam01() throws Exception {
         String comment = " * Function XYZ.\n" +
                 " * @param Car[] $test\n";
         perform(comment, "ArrayParam01");
     }
-    
+
     public void testArrayParam02() throws Exception {
         String comment = " * Function XYZ.\n" +
                 " * @param Car[] $test\n";
@@ -282,9 +282,9 @@ public class PHPDocCommentParserTest extends CslTestBase {
                 "* @throws <b>sfInitializationException</b> If an error occurs while initializing this sfCache instance.";
         perform(comment, "HTMLWrapper");
     }
-    
+
     public void testIssue197946() throws Exception {
-        String comment = 
+        String comment =
                 "/**\n" +
                 " * This is the model class for table \"cliente\".\n" +
                 " *\n" +
@@ -301,7 +301,7 @@ public class PHPDocCommentParserTest extends CslTestBase {
                 " */\n";
         perform(comment, "Issue197946");
     }
-    
+
     public void perform(String comment, String filename) throws Exception {
         PHPDocCommentParser parser = new PHPDocCommentParser();
         PHPDocBlock block = parser.parse(0, comment.length(), comment);

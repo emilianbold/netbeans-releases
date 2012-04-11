@@ -313,7 +313,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             boolean painted = false;
             try {
                 boolean inLayout = selectedComponentsInSameVisibleContainer();
-                if (selectedComponentsInSameVisibleContainer() || isNewLayoutRootSelection()) {
+                if (inLayout || isNewLayoutRootSelection()) {
                     paintLayoutInnerSelection(g2);
                 }
                 for (RADComponent metacomp : formDesigner.getSelectedComponents()) {
@@ -412,8 +412,6 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     private void paintLayoutInnerSelection(Graphics2D g) {
         LayoutDesigner layoutDesigner = formDesigner.getLayoutDesigner();
         if (layoutDesigner != null) {
-            // TODO need to paint outer gaps of selected components with the parent clip,
-            // then for each selected component that is a container its inner gaps with the component clip
             Component topComp = formDesigner.getTopDesignComponentView();
             Point convertPoint = convertPointFromComponent(0, 0, topComp);
             g.translate(convertPoint.x, convertPoint.y);
@@ -1575,7 +1573,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     }
 
     private boolean isNewLayoutRootSelection() {
-        List<RADComponent> selected = formDesigner.getSelectedComponents();
+        List<RADComponent> selected = formDesigner.getSelectedLayoutComponents();
         if (selected.size() == 1) {
             RADComponent metacomp = selected.get(0);
             if (metacomp == formDesigner.getTopDesignComponent()

@@ -44,6 +44,8 @@ package org.netbeans.modules.editor.bookmarks.ui;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
+import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
+import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,25 +69,25 @@ public class BookmarksTableModel extends AbstractTableModel {
         false,
     };
     
-    private List<BookmarkNode> entries;
+    private List<BookmarkInfo> entries;
 
     public BookmarksTableModel() {
-        entries = new ArrayList<BookmarkNode>();
+        entries = new ArrayList<BookmarkInfo>();
     }
     
-    public void setEntries(List<BookmarkNode> entries) {
+    public void setEntries(List<BookmarkInfo> entries) {
         this.entries.clear();
         this.entries.addAll(entries);
         fireTableDataChanged();
     }
     
-    public void addEntry(BookmarkNode entry) {
+    public void addEntry(BookmarkInfo entry) {
         entries.add(entry);
         int index = getRowCount() - 1;
         fireTableRowsInserted(index, index);
     }
 
-    public BookmarkNode getEntry(int rowIndex) {
+    public BookmarkInfo getEntry(int rowIndex) {
         return entries.get(rowIndex);
     }
 
@@ -106,14 +108,14 @@ public class BookmarksTableModel extends AbstractTableModel {
     
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        BookmarkNode entry = entries.get(rowIndex);
+        BookmarkInfo bookmark = entries.get(rowIndex);
         switch (columnIndex) {
             case NAME_COLUMN:
-                return entry.getBookmarkName();
+                return bookmark.getName();
             case KEY_COLUMN:
-                return entry.getBookmarkKey();
+                return bookmark.getKey();
             case LOCATION_COLUMN:
-                return entry.getBookmarkLocation();
+                return bookmark.getLocationDescriptionShort();
             default:
                 throw new IllegalStateException("Invalid columnIndex=" + columnIndex); // NOI18N
         }
@@ -134,7 +136,7 @@ public class BookmarksTableModel extends AbstractTableModel {
                 }
                 return keyToolTip;
             case LOCATION_COLUMN:
-                return entries.get(rowIndex).getBookmarkFullLocation();
+                return entries.get(rowIndex).getLocationDescription();
             default:
                 throw new IllegalStateException("Invalid columnIndex=" + columnIndex); // NOI18N
         }
@@ -145,13 +147,13 @@ public class BookmarksTableModel extends AbstractTableModel {
         if (!COLUMN_EDITABLE[columnIndex]) {
             return;
         }
-        BookmarkNode entry = entries.get(rowIndex);
+        BookmarkInfo bookmark = entries.get(rowIndex);
         switch (columnIndex) {
             case NAME_COLUMN:
-                entry.setBookmarkName((String)value);
+                BookmarkUtils.setBookmarkNameUnderLock(bookmark, (String)value);
                 break;
             case KEY_COLUMN:
-                entry.setBookmarkKey((String)value);
+                BookmarkUtils.setBookmarkKeyUnderLock(bookmark, (String)value);
                 break;
             case LOCATION_COLUMN:
                 throw new IllegalStateException("Should never get here"); // NOI18N
