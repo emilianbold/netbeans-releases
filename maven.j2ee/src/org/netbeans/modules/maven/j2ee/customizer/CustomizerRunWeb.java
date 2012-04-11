@@ -195,7 +195,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
             if (ActionProvider.COMMAND_DEBUG.equals(actionName)) {
                 debug = actionMapping;
             }
-            if ("profile".equals(actionName)) { // NOI18N
+            if (ActionProvider.COMMAND_PROFILE.equals(actionName)) { // NOI18N
                 profile = actionMapping;
             }
         }
@@ -203,7 +203,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         if (actionMappings == null || actionMappings.isEmpty()) {
             run = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
             debug = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
-            profile = ModelHandle2.getDefaultMapping("profile", project); // NOI18N
+            profile = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_PROFILE, project);
         }
 
         isRunCompatible = checkMapping(run);

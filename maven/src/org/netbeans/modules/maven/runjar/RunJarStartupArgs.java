@@ -63,6 +63,7 @@ public class RunJarStartupArgs implements LateBoundPrerequisitesChecker {
     // XXX introduce constant w/ CosChecker, ActionMappings, DefaultReplaceTokenProvider
     private static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main";
     private static final String DEBUG_MAIN = ActionProvider.COMMAND_DEBUG_SINGLE + ".main";
+    private static final String PROFILE_MAIN = ActionProvider.COMMAND_PROFILE_SINGLE + ".main";
 
     @Override public boolean checkRunConfig(RunConfig config, ExecutionContext con) {
         String actionName = config.getActionName();
@@ -71,7 +72,7 @@ public class RunJarStartupArgs implements LateBoundPrerequisitesChecker {
             mode = StartupExtender.StartMode.NORMAL;
         } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || DEBUG_MAIN.equals(actionName)) {
             mode = StartupExtender.StartMode.DEBUG;
-        } else if (ActionProvider.COMMAND_PROFILE.equals(actionName) || ActionProvider.COMMAND_PROFILE_SINGLE.equals(actionName)) {
+        } else if (ActionProvider.COMMAND_PROFILE.equals(actionName) || ActionProvider.COMMAND_PROFILE_SINGLE.equals(actionName) || PROFILE_MAIN.equals(actionName)) {
             mode = StartupExtender.StartMode.PROFILE;
         } else if (ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName)) {
             mode = StartupExtender.StartMode.TEST_PROFILE;
