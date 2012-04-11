@@ -442,7 +442,16 @@ public class WorkingCopy extends CompilationController {
                 private final FQNComputer fqn = new FQNComputer();
 
                 private TreePath getParentPath(TreePath tp, Tree t) {
-                    Tree parent = tp != null ? tp.getLeaf() : t;
+                    Tree parent;
+                    
+                    if (tp != null) {
+                        while (tp.getLeaf().getKind() != Kind.COMPILATION_UNIT && getTreeUtilities().isSynthetic(tp)) {
+                            tp = tp.getParentPath();
+                        }
+                        parent = tp.getLeaf();
+                    } else {
+                        parent = t;
+                    }
                     TreePath c = tree2Path.get(parent);
 
                     if (c == null) {
@@ -455,10 +464,8 @@ public class WorkingCopy extends CompilationController {
 
                 @Override
                 public Void scan(Tree tree, Void p) {
-                    boolean clearCurrentParent = false;
                     if (changes.containsKey(tree)) {
                         if (currentParent == null) {
-                            clearCurrentParent = true;
                             currentParent = getParentPath(getCurrentPath(), tree);
                             pathsToRewrite.add(currentParent);
                             if (!parent2Rewrites.containsKey(currentParent)) {
@@ -474,7 +481,7 @@ public class WorkingCopy extends CompilationController {
                         
                         scan(rev, p);
                         
-                        if (clearCurrentParent) {
+                        if (currentParent != null && currentParent.getLeaf() == tree) {
                             currentParent = null;
                         }
                     } else {

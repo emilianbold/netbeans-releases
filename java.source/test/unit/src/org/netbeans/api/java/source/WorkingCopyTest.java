@@ -185,4 +185,39 @@ public class WorkingCopyTest extends NbTestCase {
 
         assertEquals(code.replace("aaaa", ""), fo.asText("UTF-8"));
     }
+    
+    public void testSynthetic2NonSynthetic185739() throws Exception {
+        File f = new File(getWorkDir(), "TestClass.java");
+        String code = "package foo;\n" +
+                      "public class TestClass {\n" +
+                      "    public void foo() {\n" +
+                      "    }\n" +
+                      "}";
+        TestUtilities.copyStringToFile(f, code);
+        FileObject fo = FileUtil.toFileObject(f);
+        JavaSource javaSource = JavaSource.forFileObject(fo);
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(Phase.RESOLVED);
+
+                CompilationUnitTree cut = copy.getCompilationUnit();
+                TreeMaker make = copy.getTreeMaker();
+                final ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+                final MethodTree mt = (MethodTree) ct.getMembers().get(0);
+                ModifiersTree modT = mt.getModifiers();
+                ModifiersTree newModT = make.removeModifiersModifier(modT, Modifier.PUBLIC);
+                copy.rewrite(modT, newModT);
+            }
+        }).commit();
+
+        String golden = "package foo;\n" +
+                        "public class TestClass {\n\n" +
+                        "    TestClass() {\n" +
+                        "    }\n" +
+                        "    public void foo() {\n" +
+                        "    }\n" +
+                        "}";
+        assertEquals(golden, fo.asText("UTF-8"));
+    }
 }
