@@ -171,18 +171,19 @@ void loadLocalizationStrings(LauncherProperties *props) {
 }
 
 void readDefaultRoots(LauncherProperties *props) {
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Reading Default Userdir and Cachedir roots...", 1);
-    
     WCHAR * appDataValue = getStringValue(HKEY_CURRENT_USER,
                         toWCHAR("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders"),
-                        toWCHAR("AppData"), 0);
+                        toWCHAR("AppData"), 0);    
+    WCHAR * localAppDataValue = getStringValue(HKEY_CURRENT_USER,
+                        toWCHAR("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders"),
+                        toWCHAR("Local AppData"), 0);
+                        
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Reading Default Userdir and Cachedir roots...", 1);
+    
     props->defaultUserDirRoot = appendStringW(appDataValue, toWCHAR("\\NetBeans"));
     writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "defaultUserDirRoot: ", 0);
     writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, props->defaultUserDirRoot, 1);
     
-    WCHAR * localAppDataValue = getStringValue(HKEY_CURRENT_USER,
-                        toWCHAR("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders"),
-                        toWCHAR("Local AppData"), 0);
     props->defaultCacheDirRoot = appendStringW(localAppDataValue, toWCHAR("\\NetBeans\\Cache"));
     writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "defaultCacheDirRoot: ", 0);
     writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, props->defaultCacheDirRoot, 1);
@@ -727,7 +728,8 @@ void executeMainClass(LauncherProperties * props) {
                 DWORD showMessage = 0;
                 char * ptr = error;
                 while(ptr!=NULL) {
-                    if(searchA(ptr, "Picked up ") == NULL && getLengthA(ptr) > 1) {
+                    //Bug #105165 and #194242
+                    if((searchA(ptr, "Picked up ") == NULL && searchA(ptr, "fatal: Not a git repository") == NULL) && getLengthA(ptr) > 1) {
                         showMessage = 1;
                         break;
                     }
@@ -735,10 +737,12 @@ void executeMainClass(LauncherProperties * props) {
                     if(ptr!=NULL) ptr++;
                 }
                 
-                if(showMessage) {
+                if(showMessage && props->exitCode != 0) {
                     WCHAR * errorW = toWCHAR(error);
                     showMessageW(props, getI18nProperty(props, JAVA_PROCESS_ERROR_PROP), 1, errorW);
                     FREE(errorW);
+                } else {
+                    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 1, error, 1);
                 }
             }
             CloseHandle(hErrorWrite);
