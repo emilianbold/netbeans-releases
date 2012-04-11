@@ -54,8 +54,6 @@ import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.swing.etable.QuickFilter;
-import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
@@ -204,7 +202,11 @@ public class RevisionNode extends AbstractNode implements Comparable {
                 }
                 @Override
                 public String getTooltip() {
-                    return entry.getMessage();
+                    String tooltip = entry.getMessage();
+                    if(tooltip == null || "".equals(tooltip.trim())) {                       // NOI18N
+                        tooltip = NbBundle.getMessage(RevisionNode.class, "LBL_SetTooltip"); // NOI18N
+                    }
+                    return tooltip;
                 }
             };   
         }
