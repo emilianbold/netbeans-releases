@@ -42,6 +42,11 @@
 
 package org.netbeans.modules.php.project.classpath;
 
+import java.io.File;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
 /**
  * @author Tomas Mysik
  */
@@ -92,8 +97,29 @@ public abstract class BasePathSupport {
             return type;
         }
 
+        /**
+         * @return file path as is (can be relative)
+         */
         public String getFilePath() {
             return filePath;
+        }
+
+        /**
+         * @return absolute file path (possibly resolved to the given base folder)
+         */
+        public String getAbsoluteFilePath(FileObject baseFolder) {
+            File file = new File(filePath);
+            if (file.isAbsolute()) {
+                return file.getAbsolutePath();
+            }
+            return PropertyUtils.resolveFile(FileUtil.toFile(baseFolder), filePath).getAbsolutePath();
+        }
+
+        /**
+         * @return file object (possibly resolved to the given base folder) or {@code null} if not exists
+         */
+        public FileObject getFileObject(FileObject baseFolder) {
+            return FileUtil.toFileObject(new File(getAbsoluteFilePath(baseFolder)));
         }
 
         public String getReference() {
