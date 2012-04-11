@@ -160,12 +160,12 @@ public final class PhpProject implements Project {
     private final SearchFilterDefinition searchFilterDef = new PhpSearchFilterDef();
 
     // #165136
-    // @GuardedBy(PhpProject.this)
-    volatile FileObject sourcesDirectory;
-    // @GuardedBy(PhpProject.this)
-    volatile FileObject testsDirectory;
-    // @GuardedBy(PhpProject.this)
-    volatile FileObject seleniumDirectory;
+    // @GuardedBy("this")
+    private FileObject sourcesDirectory;
+    // @GuardedBy("this")
+    private FileObject testsDirectory;
+    // @GuardedBy("this")
+    private FileObject seleniumDirectory;
     // ok to read it more times
     volatile FileObject webRootDirectory;
 
@@ -661,8 +661,6 @@ public final class PhpProject implements Project {
         buffer.append(getClass().getName());
         buffer.append(" [ project directory: ");
         buffer.append(getProjectDirectory());
-        buffer.append(", source directory: ");
-        buffer.append(sourcesDirectory);
         buffer.append(" ]");
         return buffer.toString();
     }
@@ -794,7 +792,7 @@ public final class PhpProject implements Project {
             reinitFolders();
 
             resetFrameworks();
-            LOGGER.log(Level.FINE, "Adding frameworks listener for {0}", sourcesDirectory);
+            LOGGER.log(Level.FINE, "Adding frameworks listener for {0}", getSourcesDirectory());
             PhpFrameworks.addFrameworksListener(frameworksListener);
             List<PhpFrameworkProvider> frameworkProviders = getFrameworks();
             getName();
@@ -832,9 +830,10 @@ public final class PhpProject implements Project {
         @Override
         protected void projectClosed() {
             try {
-                assert sourcesDirectory != null;
-                sourcesDirectory.removeFileChangeListener(sourceDirectoryFileChangeListener);
-                LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", sourcesDirectory);
+                FileObject sources = getSourcesDirectory();
+                assert sources != null;
+                sources.removeFileChangeListener(sourceDirectoryFileChangeListener);
+                LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", sources);
                 PhpFrameworks.removeFrameworksListener(frameworksListener);
 
 
