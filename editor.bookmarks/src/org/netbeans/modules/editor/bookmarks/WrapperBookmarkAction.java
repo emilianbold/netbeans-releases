@@ -47,22 +47,15 @@ package org.netbeans.modules.editor.bookmarks;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
 
 import org.netbeans.editor.BaseAction;
+import org.netbeans.modules.editor.bookmarks.ui.BookmarkHistoryPopupAction;
 import org.netbeans.lib.editor.bookmarks.actions.ClearDocumentBookmarksAction;
 import org.netbeans.lib.editor.bookmarks.actions.GotoBookmarkAction;
-import org.netbeans.lib.editor.bookmarks.actions.ToggleBookmarkAction;
 import org.openide.awt.Actions;
-import org.openide.cookies.EditorCookie;
-import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 
 
 /**
@@ -119,6 +112,22 @@ public class WrapperBookmarkAction extends AbstractAction implements PropertyCha
         
         public Previous() {
             super(GotoBookmarkAction.createPrevious());
+        }
+
+    }
+
+    public static final class PopupNext extends WrapperBookmarkAction {
+        
+        public PopupNext() {
+            super(BookmarkHistoryPopupAction.createNext());
+        }
+
+    }
+
+    public static final class PopupPrevious extends WrapperBookmarkAction {
+        
+        public PopupPrevious() {
+            super(BookmarkHistoryPopupAction.createPrevious());
         }
 
     }

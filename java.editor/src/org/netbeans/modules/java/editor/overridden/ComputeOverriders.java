@@ -149,12 +149,9 @@ public class ComputeOverriders {
     }
 
     private static FileObject findSourceRoot(FileObject file) {
-        final ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
-        if (cp != null) {
-            return cp.findOwnerRoot(file);
-        }
+        final ClassPath cp = file != null ? ClassPath.getClassPath(file, ClassPath.SOURCE) : null;
         //Null is a valid value for files which have no source path (default filesystem).
-        return null;
+        return cp != null ? cp.findOwnerRoot(file) : null;
     }
 
     private Set<URL> findBinaryRootsForSourceRoot(FileObject sourceRoot, Map<URL, List<URL>> binaryDeps) {

@@ -66,6 +66,7 @@ public class ${name} extends JApplet {
         add(fxContainer, BorderLayout.CENTER);
         // create JavaFX scene
         Platform.runLater(new Runnable() {
+
             @Override
             public void run() {
                 createScene();
@@ -77,6 +78,7 @@ public class ${name} extends JApplet {
         Button btn = new Button();
         btn.setText("Say 'Hello World'");
         btn.setOnAction(new EventHandler<ActionEvent>() {
+
             @Override
             public void handle(ActionEvent event) {
                 System.out.println("Hello World!");

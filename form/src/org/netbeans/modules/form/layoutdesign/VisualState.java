@@ -58,8 +58,12 @@ public class VisualState implements LayoutConstants {
     private LayoutModel layoutModel;
     private VisualMapper visualMapper;
 
-    private Map<String, List<GapInfo>> gapMap = new HashMap();
-    private Map<String, List<GapInfo>> gapsToUpdate;
+    // component -> gaps around the component
+    private Map<LayoutComponent, List<GapInfo>> componentGaps = new HashMap<LayoutComponent, List<GapInfo>>();
+    private Map<LayoutComponent, List<GapInfo>> compGapsToUpdate;
+    // component -> gaps inside the component (that is a container)
+    private Map<LayoutComponent, List<GapInfo>> containerGaps = new HashMap<LayoutComponent, List<GapInfo>>();
+    private Map<LayoutComponent, List<GapInfo>> contGapsToUpdate;
 
     private static final int PROXIMITY = 32;
 
@@ -89,16 +93,25 @@ public class VisualState implements LayoutConstants {
                 int type = ev.getType();
                 if (type != LayoutEvent.INTERVAL_SIZE_CHANGED
                         && type != LayoutEvent.INTERVAL_PADDING_TYPE_CHANGED) {
-                    gapMap.clear();
-                    if (gapsToUpdate != null) {
-                        gapsToUpdate.clear();
+                    componentGaps.clear();
+                    if (compGapsToUpdate != null) {
+                        compGapsToUpdate.clear();
+                    }
+                    containerGaps.clear();
+                    if (contGapsToUpdate != null) {
+                        contGapsToUpdate.clear();
                     }
                 } // otherwise we can keep the current GapInfo set and just do update
             }
         });
     }
 
-    void updateCurrentSpaceOfComponents(LayoutComponent container) {
+    void updateCurrentSpaceOfComponents(LayoutComponent container, boolean top) {
+        if (top) {
+            Rectangle bounds = container.getParent() != null ?
+                    visualMapper.getComponentBounds(container.getId()) : null;
+            container.setCurrentBounds(bounds, -1);
+        }
         container.setCurrentInterior(visualMapper.getContainerInterior(container.getId()));
         for (LayoutComponent subComp : container.getSubcomponents()) {
             Rectangle bounds = visualMapper.getComponentBounds(subComp.getId());
@@ -111,13 +124,50 @@ public class VisualState implements LayoutConstants {
         container.setDiffToMinimumSize(HORIZONTAL, bounds.width - minimum.width);
         container.setDiffToMinimumSize(VERTICAL, bounds.height - minimum.height);
 
-        if (!gapMap.isEmpty()) {
-            if (gapsToUpdate == null) {
-                gapsToUpdate = new HashMap<String, List<GapInfo>>();
-            }
-            gapsToUpdate.putAll(gapMap);
-            gapMap.clear();
+        prepareGapsForUpdate();
+    }
+
+    /**
+     * We want to preserve the same GapInfo instances between layout rebuilds
+     * where no changes in structure happened. This method gets called when the
+     * layout has been rebuilt and the GapInfo objects that survived need to be
+     * updated. That can also happen when the root designed component is changed
+     * in the design view, in which case some gaps may become out of the view,
+     * so need to be removed.
+     */
+    private void prepareGapsForUpdate() {
+        if (componentGaps.isEmpty() && containerGaps.isEmpty()) {
+            return; // we do this only once per entire update
         }
+
+        for (Map.Entry<LayoutComponent, List<GapInfo>> e : componentGaps.entrySet()) {
+            LayoutComponent comp = e.getKey();
+            if (comp.getParent() != null && isComponentInDesignView(comp.getParent())) {
+                List<GapInfo> gaps = e.getValue();
+                if (!gaps.isEmpty()) {
+                    if (compGapsToUpdate == null) {
+                        compGapsToUpdate = new HashMap<LayoutComponent, List<GapInfo>>();
+                    }
+                    compGapsToUpdate.put(comp, e.getValue());
+                } // Empty list could be a placeholder for no visible gaps of former design root.
+            }
+        }
+        componentGaps.clear();
+
+        for (Map.Entry<LayoutComponent, List<GapInfo>> e : containerGaps.entrySet()) {
+            LayoutComponent comp = e.getKey();
+            if (isComponentInDesignView(comp)) {
+                if (contGapsToUpdate == null) {
+                    contGapsToUpdate = new HashMap<LayoutComponent, List<GapInfo>>();
+                }
+                contGapsToUpdate.put(comp, e.getValue());
+            }
+        }
+        containerGaps.clear();
+    }
+
+    private boolean isComponentInDesignView(LayoutComponent component) {
+        return visualMapper.getComponentBounds(component.getId()) != null;
     }
 
     // Assuming updateCurrentSpaceOfComponents has already been done.
@@ -588,27 +638,67 @@ public class VisualState implements LayoutConstants {
     }
 
     Collection<GapInfo> getComponentGaps(LayoutComponent component) {
-        String compId = component.getId();
-        List<GapInfo> gaps = gapMap.get(compId);
+        List<GapInfo> gaps = componentGaps.get(component);
         if (gaps == null) {
-            if (gapsToUpdate == null || (gaps=gapsToUpdate.remove(compId)) == null) {
-                gaps = new LinkedList<GapInfo>();
-                if (component.getParent() != null) {
-                    computeComponentGapInfo(component, gaps);
-                }
-                if (component.isLayoutContainer()) {
-                    computeContainerGapInfo(component, gaps);
+            if (compGapsToUpdate == null || (gaps=compGapsToUpdate.remove(component)) == null) {
+                if (component.getParent() != null && isComponentInDesignView(component.getParent())) {
+                    gaps = computeComponentGapInfo(component);
+                } else if (component.isLayoutContainer()) {
+                    gaps = Collections.emptyList(); // cache empty for container that is a (design) root
+                } else {
+                    return null; // nobody should ask for this
                 }
             } else {
-                updateGapInfo(component, gaps);
+                updateComponentGapInfo(component, gaps);
             }
-            gapMap.put(compId, gaps);
+            componentGaps.put(component, gaps);
         }
         return gaps;
     }
 
+    Collection<GapInfo> getContainerGaps(LayoutComponent container) {
+        List<GapInfo> gaps = containerGaps.get(container);
+        if (gaps == null) {
+            if (contGapsToUpdate == null || (gaps=contGapsToUpdate.remove(container)) == null) {
+                if (isComponentInDesignView(container)) {
+                    gaps = computeContainerGapInfo(container);
+                } else {
+                    return null; // nobody should ask for this
+                }
+            } else {
+                updateContainerGapInfo(container, gaps);
+            }
+            containerGaps.put(container, gaps);
+        }
+        return gaps;
+    }
+
+    // Compute neighbor gaps for given component (in both dimensions).
+    private List<GapInfo> computeComponentGapInfo(LayoutComponent component) {
+        List<GapInfo> gapList = new ArrayList<GapInfo>(4);
+        for (int dim=VERTICAL; dim >= HORIZONTAL; dim--) {
+            LayoutInterval li = component.getLayoutInterval(dim);
+            LayoutInterval gap = LayoutInterval.getNeighbor(li, LEADING, false, true, false);
+            if (gap != null && gap.isEmptySpace()) {
+                GapInfo gapInfo = createOrUpdateGapInfo(null, gap, dim, component, component.getParent());
+                if (gapInfo != null) {
+                    gapList.add(gapInfo);
+                }
+            }
+            gap = LayoutInterval.getNeighbor(li, TRAILING, false, true, false);
+            if (gap != null && gap.isEmptySpace()) {
+                GapInfo gapInfo = createOrUpdateGapInfo(null, gap, dim, component, component.getParent());
+                if (gapInfo != null) {
+                    gapList.add(gapInfo);
+                }
+            }
+        }
+        return gapList;
+    }
+
     // Compute all gaps inside given container.
-    private void computeContainerGapInfo(LayoutComponent container, List<GapInfo> gapList) {
+    private List<GapInfo> computeContainerGapInfo(LayoutComponent container) {
+        List<GapInfo> gapList = new LinkedList<GapInfo>();
         List<LayoutInterval> l = new LinkedList<LayoutInterval>();
         for (int dim=VERTICAL; dim >= HORIZONTAL; dim--) {
             l.add(container.getLayoutRoot(0, dim));
@@ -627,42 +717,23 @@ public class VisualState implements LayoutConstants {
                 }
             }
         }
+        return gapList;
     }
 
-    // Compute neighbor gaps for given component (in both dimensions).
-    private void computeComponentGapInfo(LayoutComponent component, List<GapInfo> gapList) {
-        for (int dim=VERTICAL; dim >= HORIZONTAL; dim--) {
-            LayoutInterval li = component.getLayoutInterval(dim);
-            LayoutInterval gap = LayoutInterval.getNeighbor(li, LEADING, false, true, false);
-            if (gap != null && gap.isEmptySpace()) {
-                GapInfo gapInfo = createOrUpdateGapInfo(null, gap, dim, component, component.getParent());
-                if (gapInfo != null) {
-                    gapList.add(gapInfo);
-                }
-            }
-            gap = LayoutInterval.getNeighbor(li, TRAILING, false, true, false);
-            if (gap != null && gap.isEmptySpace()) {
-                GapInfo gapInfo = createOrUpdateGapInfo(null, gap, dim, component, component.getParent());
-                if (gapInfo != null) {
-                    gapList.add(gapInfo);
-                }
-            }
-        }
-    }
-
-    private void updateGapInfo(LayoutComponent component, List<GapInfo> gapList) {
-        LayoutInterval[] roots;
-        if (component.isLayoutContainer()) {
-            roots = new LayoutInterval[] { component.getDefaultLayoutRoot(HORIZONTAL),
-                                           component.getDefaultLayoutRoot(VERTICAL) };
-        } else {
-            roots = null;
-        }
+    private void updateComponentGapInfo(LayoutComponent component, List<GapInfo> gapList) {
         for (GapInfo gapInfo : gapList) {
-            if (roots != null && roots[gapInfo.dimension].isParentOf(gapInfo.gap)) {
-                createOrUpdateGapInfo(gapInfo, null, gapInfo.dimension, null, component);
-            } else {
-                createOrUpdateGapInfo(gapInfo, null, gapInfo.dimension, component, component.getParent());
+            createOrUpdateGapInfo(gapInfo, null, gapInfo.dimension, component, component.getParent());
+        }        
+    }
+
+    private void updateContainerGapInfo(LayoutComponent container, List<GapInfo> gapList) {
+        if (container.isLayoutContainer()) {
+            LayoutInterval[] roots = new LayoutInterval[] { container.getDefaultLayoutRoot(HORIZONTAL),
+                                                            container.getDefaultLayoutRoot(VERTICAL) };
+            for (GapInfo gapInfo : gapList) {
+                if (roots[gapInfo.dimension].isParentOf(gapInfo.gap)) {
+                    createOrUpdateGapInfo(gapInfo, null, gapInfo.dimension, null, container);
+                }
             }
         }
     }
@@ -806,36 +877,34 @@ public class VisualState implements LayoutConstants {
     // -----
 
     /**
-     * Returns a shape object suitable as a clip region for painting
-     * of the given gaps. The shape is a rectangle (large enough to accomodate
-     * all given gaps) with holes that correspond to components we don't
-     * want to paint over.
+     * Returns a shape object suitable as a clip region for painting given gaps.
+     * If there are some components that would be painted over, the provided
+     * clip shape contains holes for these components. Otherwise the same
+     * 'baseClipeRect' instance is returned, meaning no additional restriction
+     * is needed for painting the gaps.
      */
-    Shape clipForGapPainting(Collection<GapInfo> gaps) {
+    Shape clipForGapPainting(Collection<GapInfo> gaps, Shape baseClipRect) {
         if (gaps == null || gaps.isEmpty()) {
             throw new IllegalArgumentException();
         }
         Area clip = null;
-        // Add area of all gaps
-        for (GapInfo gap : gaps) {
-            Area gapArea = new Area(gap.paintRect);;
-            if (clip == null) {
-                clip = gapArea;
-            } else {
-                clip.add(gapArea);
-            }
-        }
         // Remove area of all overlapping components
         for (GapInfo gap : gaps) {
             if (gap.overlappingComponents != null) {
                 for (String componentId : gap.overlappingComponents) {
+                    if (clip == null) {
+                        clip = new Area(baseClipRect);
+                    }
                     Rectangle componentBounds = visualMapper.getComponentBounds(componentId);
                     Area componentArea = new Area(componentBounds);
                     clip.subtract(componentArea);
                 }
             }
         }
-        return clip;
+        if (clip != null) {
+            return clip;
+        }
+        return baseClipRect;
     }
 
     static String getDefaultGapDisplayName(PaddingType pt) {

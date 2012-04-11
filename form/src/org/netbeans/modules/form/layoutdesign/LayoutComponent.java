@@ -424,7 +424,11 @@ public final class LayoutComponent implements LayoutConstants {
 
     void setCurrentBounds(Rectangle bounds, int baseline) {
         LayoutRegion space = layoutIntervals[0].getCurrentSpace();
-        space.set(bounds, baseline > 0 ? bounds.y + baseline : LayoutRegion.UNKNOWN);
+        if (bounds != null) {
+            space.set(bounds, baseline > 0 ? bounds.y + baseline : LayoutRegion.UNKNOWN);
+        } else {
+            space.reset();
+        }
         for (int i=1; i < layoutIntervals.length; i++) {
             layoutIntervals[i].setCurrentSpace(space);
         }

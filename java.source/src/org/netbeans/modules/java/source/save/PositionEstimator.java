@@ -1092,9 +1092,10 @@ public abstract class PositionEstimator {
             Token<JavaTokenId> token;
             while (seq.movePrevious() && nonRelevant.contains((token = seq.token()).id())) {
                 if (JavaTokenId.LINE_COMMENT == token.id()) {
-                    seq.moveNext();
-                    sectionStart = seq.offset();
-                    break;
+//                    seq.moveNext();
+//                    sectionStart = seq.offset();
+//                    break;
+                    continue;
                 } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
                     continue;
                 } else if (JavaTokenId.WHITESPACE == token.id()) {

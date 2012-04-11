@@ -54,6 +54,12 @@ made subject to such option by the copyright holder.
             <file name="bookmark-previous.instance">
                 <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$Previous"/>
             </file>
+            <file name="bookmark-history-popup-next.instance">
+                <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$PopupNext"/>
+            </file>
+            <file name="bookmark-history-popup-previous.instance">
+                <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$PopupPrevious"/>
+            </file>
             <file name="bookmark-toggle.instance">
                 <attr name="instanceCreate" newvalue="org.netbeans.lib.editor.bookmarks.actions.ToggleBookmarkAction"/>
             </file>
@@ -76,13 +82,13 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1900"/>
             </file>
             
-            <file name="org-netbeans-editor-bookmarks-BookmarkNext.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance"/>
+            <file name="bookmark-history-popup-next.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-history-popup-next.instance"/>
                 <attr name="position" intvalue="2000"/>
             </file>
             
-            <file name="org-netbeans-editor-bookmarks-BookmarkPrevious.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
+            <file name="bookmark-history-popup-previous.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-history-popup-previous.instance"/>
                 <attr name="position" intvalue="2100"/>
             </file>
             

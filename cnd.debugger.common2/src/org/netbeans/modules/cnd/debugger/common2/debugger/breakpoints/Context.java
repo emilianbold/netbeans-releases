@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 /**
  * Context for breakpoints.
@@ -68,7 +68,7 @@ public class Context {
     private final String hostname;
 
     public Context(String executable, String hostname) {
-	if (! DebuggerManager.isPerTargetBpts())
+	if (! NativeDebuggerManager.isPerTargetBpts())
 	    hostname = null;
 	this.executable = executable == null? "": executable;
 	this.hostname = (hostname == null)? "": 
@@ -95,7 +95,7 @@ public class Context {
             executable = s.substring(0, slashX);	// excludes s[slashX]
             hostname = s.substring(slashX+1);
         }
-	if (! DebuggerManager.isPerTargetBpts())
+	if (! NativeDebuggerManager.isPerTargetBpts())
 	    hostname = null;
         Context c = new Context(executable, hostname);
 	return c;

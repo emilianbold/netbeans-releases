@@ -95,6 +95,79 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ClassMemberTest("test196053b"));
         return suite;
     }
+    
+    public void testRemoveAll() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "    \n"
+                + "    // fields\n"
+                + "    Integer a;\n"
+                + "    /* Comment */\n"
+                + "    Integer b;\n"
+                + "    /**\n"
+                + "     * Comment 3\n"
+                + "     */\n"
+                + "    String s;\n"
+                + "    // Comment 2\n"
+                + "    Boolean t;\n"
+                + "\n"
+                + "    // Comment doSomething(int x)\n"
+                + "    public void doSomething(int x) {\n"
+                + "        // Do Something\n"
+                + "    }\n"
+                + "\n"
+                + "    // Comment doSomethingElse()\n"
+                + "    public String doSomethingElse() {\n"
+                + "        return \"hello world\";\n"
+                + "    }\n"
+                + "\n"
+                + "    /**\n"
+                + "     *\n"
+                + "     * Comment doStuff(String s)\n"
+                + "     */\n"
+                + "    public void doStuff(String s) {\n"
+                + "        System.out.println(\"do stuff\");\n"
+                + "        System.out.println(new EventListener() {\n"
+                + "        });\n"
+                + "    }\n"
+                + "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
+                        ClassTree classTree = (ClassTree) typeDecl;
+                        ClassTree nju = classTree;
+                        for (Tree tree : classTree.getMembers()) {
+                            nju = make.removeClassMember(nju, tree);
+                        }
+                        workingCopy.rewrite(classTree, nju);
+                    }
+                }
+            }
+            
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     public void testAddAtIndex0() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");

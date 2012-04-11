@@ -48,7 +48,7 @@ import java.util.logging.Logger;
 
 import org.openide.modules.ModuleInstall;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 
@@ -64,7 +64,7 @@ public final class DbgGuiModule extends ModuleInstall {
 
     @Override
     public void close() {
-	DebuggerManager.close();
+	NativeDebuggerManager.close();
 
 	ExternalStartManager.stopAll();
     }

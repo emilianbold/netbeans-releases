@@ -214,8 +214,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
 
     // interface NativeDebugger
-    public final DebuggerManager manager() {
-        return DebuggerManager.get();
+    public final NativeDebuggerManager manager() {
+        return NativeDebuggerManager.get();
     }
 
     // interface NativeDebugger
@@ -290,7 +290,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	String mapped;
 	if (path == null) {
 	    mapped = path;
-	} else if (DebuggerManager.isStandalone()) {
+	} else if (NativeDebuggerManager.isStandalone()) {
 	    mapped = path;
 	} else {
 	    PathMap pm = getPathMap();
@@ -316,7 +316,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	String mapped;
 	if (path == null) {
 	    mapped = path;
-	} else if (DebuggerManager.isStandalone()) {
+	} else if (NativeDebuggerManager.isStandalone()) {
 	    mapped = path;
 	} else {
 	    PathMap pm = getPathMap();
@@ -396,7 +396,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     					// set by Dbx
 
     private ActionEnabler actionEnabler() {
-        return DebuggerManager.actionEnabler();
+        return NativeDebuggerManager.actionEnabler();
     }
 
     public State state() {
@@ -913,7 +913,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     public void showCurrentSource() {
 	if (!haveSource()) {
-	    DebuggerManager.warning(Catalog.get("Dis_MSG_NoSource"));
+	    NativeDebuggerManager.warning(Catalog.get("Dis_MSG_NoSource"));
 	    return;
 	}
         disRequested = false;
@@ -1111,7 +1111,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                     0, warnArray.length);
         }
         // Close if no more sessions
-        NativeSession[] sessions = DebuggerManager.get().getSessions();
+        NativeSession[] sessions = NativeDebuggerManager.get().getSessions();
         if (sessions.length <= 1) {
             Disassembly.close();
         }
@@ -1128,7 +1128,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         }
 
 
-        if (DebuggerManager.isPerTargetBpts()) {
+        if (NativeDebuggerManager.isPerTargetBpts()) {
             bm().breakpointBag().cleanupBpts();
         }
         DbgActionHandler dah = getNDI().getDah();
@@ -1191,13 +1191,13 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             captureState = CaptureState.NONE;
             startUpdates();
             if (captureState == CaptureState.FINAL) {
-                DebuggerManager.warning(String.format("ss_attach failed to exec %s",
+                NativeDebuggerManager.warning(String.format("ss_attach failed to exec %s",
                         captureInfo.executable));
             } else {
                 if (xstart != null) {
 		    xstart.fail();
                 }
-                DebuggerManager.warning(String.format("%s failed during capture", debuggerType()));
+                NativeDebuggerManager.warning(String.format("%s failed during capture", debuggerType()));
             }
         } else {
             // If we cancel the startup of an engine captureState

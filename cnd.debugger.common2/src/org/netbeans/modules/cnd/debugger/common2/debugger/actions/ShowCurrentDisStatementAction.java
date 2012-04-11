@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
@@ -89,7 +89,7 @@ public class ShowCurrentDisStatementAction extends CallableSystemAction implemen
     
     // interface CallableSystemAction
     public void performAction() {
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+        NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger instanceof NativeDebuggerImpl) {
             ((NativeDebuggerImpl)debugger).showCurrentDis();
         }

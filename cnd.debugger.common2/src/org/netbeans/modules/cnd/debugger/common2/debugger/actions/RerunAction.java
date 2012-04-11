@@ -48,7 +48,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
@@ -71,7 +71,7 @@ public class RerunAction extends CallableSystemAction implements StateListener {
     // interface CallableSystemAction
     public void performAction() {
 	NativeDebugger debugger =
-	    DebuggerManager.get().currentNativeDebugger();
+	    NativeDebuggerManager.get().currentNativeDebugger();
 
 	if (debugger != null) {
 	    debugger.rerun();

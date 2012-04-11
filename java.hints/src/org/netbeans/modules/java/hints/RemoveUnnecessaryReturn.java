@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", description = "#DESC_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", category="general")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", description = "#DESC_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", category="general", suppressWarnings="UnnecessaryReturnStatement")
 public class RemoveUnnecessaryReturn {
 
     @TriggerPattern("return $val$;")
