@@ -45,7 +45,6 @@ package org.netbeans.modules.glassfish.common;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -75,18 +74,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     private static final String AUTOINSTANCECOPIED = "autoinstance-copied"; // NOI18N
 
     private volatile static GlassfishInstanceProvider ee6Provider;
-    // For use in getEe6() only!
-    /** Internal thread access synchronization when <code>ee6Provider</code> is being initialized. */
-    private static CountDownLatch ee6ProviderLatch = new CountDownLatch(1);
-    /** Indicator to allow only first thread to initialize object. */
-    private static volatile boolean ee6ProviderInitFirst = true;
-
     private volatile static GlassfishInstanceProvider preludeProvider;
-    // For use in getPrelude() only!
-    /** Internal thread access synchronization when <code>preludeProvider</code> is being initialized. */
-    private static CountDownLatch preludeProviderLatch = new CountDownLatch(1);
-    /** Indicator to allow only first thread to initialize object. */
-    private static volatile boolean preludeProviderInitFirst = true;
 
     public static final String EE6_DEPLOYER_FRAGMENT = "deployer:gfv3ee6"; // NOI18N
     public static final String EE6WC_DEPLOYER_FRAGMENT = "deployer:gfv3ee6wc"; // NOI18N
@@ -118,38 +106,30 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             return ee6Provider;
         }
         else {
-            boolean doInit;
+            boolean runInit = false;
             synchronized(GlassfishInstanceProvider.class) {
-                doInit = ee6Provider == null && ee6ProviderInitFirst;
-                ee6ProviderInitFirst = false;
-            }
-            if (doInit) {
-                ee6Provider = new GlassfishInstanceProvider(
-                        new String[]{EE6_DEPLOYER_FRAGMENT, EE6WC_DEPLOYER_FRAGMENT},
-                        new String[]{EE6_INSTANCES_PATH, EE6WC_INSTANCES_PATH},
-                        null,
-                        true,
-                        new String[]{"docs/javaee6-doc-api.zip"},
-                        new String[]{"--nopassword"},
-                        new CommandFactory()  {
+                if (ee6Provider == null) {
+                    runInit = true;
+                    ee6Provider = new GlassfishInstanceProvider(
+                            new String[]{EE6_DEPLOYER_FRAGMENT, EE6WC_DEPLOYER_FRAGMENT},
+                            new String[]{EE6_INSTANCES_PATH, EE6WC_INSTANCES_PATH},
+                            null,
+                            true, 
+                            new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
+                            new String[]{"--nopassword"}, // NOI18N
+                            new CommandFactory()  {
 
-                    @Override
-                    public SetPropertyCommand getSetPropertyCommand(String name, String value) {
-                        return new ServerCommand.SetPropertyCommand(name, value,
-                                "DEFAULT={0}={1}");
-                    }
+                        @Override
+                        public SetPropertyCommand getSetPropertyCommand(String name, String value) {
+                            return new ServerCommand.SetPropertyCommand(name, value,
+                                    "DEFAULT={0}={1}"); // NOI18N
+                        }
 
-                });
-                ee6Provider.init(); 
-                ee6ProviderLatch.countDown();
+                    });
+                }
             }
-            try {
-                ee6ProviderLatch.await();
-            // This method does not throw any exception so let's cry loudly and return null.
-            } catch (InterruptedException ie) {
-                Logger.getLogger("glassfish").log(Level.SEVERE, "Exception in EE6 provider initialization:", ie);
-                Thread.currentThread().interrupt();
-                return null;
+            if (runInit) {
+                ee6Provider.init();                
             }
             return ee6Provider;
         }
@@ -160,39 +140,31 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             return preludeProvider;
         }
         else {
-            boolean doInit;
+            boolean runInit = false;
             synchronized(GlassfishInstanceProvider.class) {
-                doInit = preludeProvider == null && preludeProviderInitFirst;
-                preludeProviderInitFirst = false;
-            }
-            if (doInit) {
-                preludeProvider = new GlassfishInstanceProvider(
-                        new String[]{PRELUDE_DEPLOYER_FRAGMENT},
-                        new String[]{PRELUDE_INSTANCES_PATH},
-                        org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
-                            "STR_PRELUDE_SERVER_NAME", new Object[]{}),
-                        false,
-                        new String[]{"docs/javaee6-doc-api.zip"},
-                        null,
-                        new CommandFactory()  {
+                if (preludeProvider == null) {
+                    runInit = true;
+                    preludeProvider = new GlassfishInstanceProvider(
+                            new String[]{PRELUDE_DEPLOYER_FRAGMENT},
+                            new String[]{PRELUDE_INSTANCES_PATH},
+                            org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
+                                "STR_PRELUDE_SERVER_NAME", new Object[]{}), // NOI18N
+                            false,
+                            new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
+                            null,
+                            new CommandFactory()  {
 
-                            @Override
-                            public SetPropertyCommand getSetPropertyCommand(String name, String value) {
-                                return new ServerCommand.SetPropertyCommand(name, value,
-                                        "target={0}&value={1}");
-                            }
+                                @Override
+                                public SetPropertyCommand getSetPropertyCommand(String name, String value) {
+                                    return new ServerCommand.SetPropertyCommand(name, value,
+                                            "target={0}&value={1}"); // NOI18N
+                                }
 
-                        });
-                preludeProvider.init();
-                preludeProviderLatch.countDown();
+                            });
+                }
             }
-            try {
-                preludeProviderLatch.await();
-            // This method does not throw any exception so let's cry loudly and return null.
-            } catch (InterruptedException ie) {
-                Logger.getLogger("glassfish").log(Level.SEVERE, "Exception in Prelude provider initialization:", ie);
-                Thread.currentThread().interrupt();
-                return null;
+            if (runInit) {
+                preludeProvider.init();                
             }
             return preludeProvider;
         }
@@ -259,6 +231,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
      * @return <code>true</code> when at least one of the providers
      *         is initialized or <code>false</code> otherwise.
      */
+    @SuppressWarnings("NestedSynchronizedStatement")
     public static synchronized boolean initialized() {
         return preludeProvider != null || ee6Provider != null;
     }
