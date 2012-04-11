@@ -86,17 +86,12 @@ CLASS      Admin                           [PUBLIC]   Admin
 CLASS      AdminPresenter                  [PUBLIC,   AdminModule
 CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
-CLASS      AppendIterator                  [PUBLIC]   PHP Platform
-CLASS      ArrayIterator                   [PUBLIC]   PHP Platform
-CLASS      ArrayObject                     [PUBLIC]   PHP Platform
 CLASS      ArraysCc                        [PUBLIC]   arrays.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
 CLASS      B                               [PUBLIC]   Test197084.php
 CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
-CLASS      BadFunctionCallException        [PUBLIC]   PHP Platform
-CLASS      BadMethodCallException          [PUBLIC]   PHP Platform
 CLASS      BadRequestException             [PUBLIC]   Nette\Application
 CLASS      Bar                             [PUBLIC]   issue191666.php
 CLASS      BaseClass                       [PUBLIC]   FrontSpace
@@ -111,12 +106,10 @@ CLASS      Book                            [PUBLIC]   mixedtypes.php
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   test.php
-CLASS      CachingIterator                 [PUBLIC]   PHP Platform
 CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
 CLASS      ChildClass                      [PUBLIC]   class_member_visibility.php
 CLASS      ClassName                       [PUBLIC]   issue194300.php
 CLASS      ClassName123                    [PUBLIC]   issue209608.php
-CLASS      Closure                         [PUBLIC]   PHP Platform
 CLASS      Cls1                            [PUBLIC]   TestCase.php
 CLASS      Cls136188                       [PUBLIC]   issue136188.php
 CLASS      Cls149519                       [PUBLIC]   issue149519.php
@@ -126,57 +119,16 @@ CLASS      ClsBaseDeclarationTest          [PUBLIC]   clsDeclaration.php
 CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144830.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144840_01.php
-CLASS      Collator                        [PUBLIC]   PHP Platform
 CLASS      ComplexObject                   [PUBLIC]   issue159970.php
 CLASS      Control                         [PUBLIC]   Nette\Application\UI
 CLASS      Controller                      [PUBLIC]   Brite\Controller
-CLASS      DOMAttr                         [PUBLIC]   PHP Platform
-CLASS      DOMCdataSection                 [PUBLIC]   PHP Platform
-CLASS      DOMCharacterData                [PUBLIC]   PHP Platform
-CLASS      DOMComment                      [PUBLIC]   PHP Platform
-CLASS      DOMConfiguration                [PUBLIC]   PHP Platform
-CLASS      DOMDocument                     [PUBLIC]   PHP Platform
-CLASS      DOMDocumentFragment             [PUBLIC]   PHP Platform
-CLASS      DOMDocumentType                 [PUBLIC]   PHP Platform
-CLASS      DOMDomError                     [PUBLIC]   PHP Platform
-CLASS      DOMElement                      [PUBLIC]   PHP Platform
-CLASS      DOMEntity                       [PUBLIC]   PHP Platform
-CLASS      DOMEntityReference              [PUBLIC]   PHP Platform
-CLASS      DOMErrorHandler                 [PUBLIC]   PHP Platform
-CLASS      DOMException                    [PUBLIC]   PHP Platform
-CLASS      DOMImplementation               [PUBLIC]   PHP Platform
-CLASS      DOMImplementationList           [PUBLIC]   PHP Platform
-CLASS      DOMImplementationSource         [PUBLIC]   PHP Platform
-CLASS      DOMLocator                      [PUBLIC]   PHP Platform
-CLASS      DOMNameList                     [PUBLIC]   PHP Platform
-CLASS      DOMNameSpaceNode                [PUBLIC]   PHP Platform
-CLASS      DOMNamedNodeMap                 [PUBLIC]   PHP Platform
-CLASS      DOMNode                         [PUBLIC]   PHP Platform
-CLASS      DOMNodeList                     [PUBLIC]   PHP Platform
-CLASS      DOMNotation                     [PUBLIC]   PHP Platform
-CLASS      DOMProcessingInstruction        [PUBLIC]   PHP Platform
-CLASS      DOMStringExtend                 [PUBLIC]   PHP Platform
-CLASS      DOMStringList                   [PUBLIC]   PHP Platform
-CLASS      DOMText                         [PUBLIC]   PHP Platform
-CLASS      DOMTypeinfo                     [PUBLIC]   PHP Platform
-CLASS      DOMUserDataHandler              [PUBLIC]   PHP Platform
-CLASS      DOMXPath                        [PUBLIC]   PHP Platform
 CLASS      DatabaseRecord                  [PUBLIC]   DatabaseRecord.php
-CLASS      DateInterval                    [PUBLIC]   PHP Platform
-CLASS      DatePeriod                      [PUBLIC]   PHP Platform
-CLASS      DateTime                        [PUBLIC]   PHP Platform
-CLASS      DateTimeZone                    [PUBLIC]   PHP Platform
 CLASS      Delme1                          [PUBLIC]   delme
 CLASS      Delme2                          [PUBLIC]   Delme2.php
-CLASS      Directory                       [PUBLIC]   PHP Platform
-CLASS      DirectoryIterator               [PUBLIC]   PHP Platform
-CLASS      DomainException                 [PUBLIC]   PHP Platform
 CLASS      EmptyClass                      [PUBLIC]   issue194875.php
 CLASS      EmptyClass                      [PUBLIC]   issue201310.php
 CLASS      EmptyClassFromNs                [PUBLIC]   Extra
 CLASS      EmptyClassFromNs                [PUBLIC]   ExtraThrow
-CLASS      EmptyIterator                   [PUBLIC]   PHP Platform
-CLASS      ErrorException                  [PUBLIC]   PHP Platform
 CLASS      ExMyException                   [PUBLIC]   issue194875.php
 CLASS      ExMyException                   [PUBLIC]   issue201310.php
 CLASS      ExMyException1                  [PUBLIC]   issue204958.php
@@ -185,91 +137,40 @@ CLASS      ExMyExceptionFromNs             [PUBLIC]   ExtraThrow
 CLASS      Exception                       [PUBLIC]   MySpace
 CLASS      Exception                       [PUBLIC]   MySpaceThrow
 CLASS      Exception                       [PUBLIC]   Nette\Application
-CLASS      Exception                       [PUBLIC]   PHP Platform
 CLASS      Exception                       [PUBLIC]   exceptions.php
 CLASS      Exception                       [PUBLIC]   issue194875.php
 CLASS      Exception                       [PUBLIC]   issue201310.php
 CLASS      Exception1                      [PUBLIC]   issue204958.php
 CLASS      ExceptionClassName              [PUBLIC]   issue207594.php
-CLASS      FilesystemIterator              [PUBLIC]   PHP Platform
-CLASS      FilterIterator                  [PUBLIC]   PHP Platform
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
 CLASS      Foo                             [PUBLIC]   test203294.php
 CLASS      ForClsCtxCodeCompletion         [PUBLIC]   insideClass3.php
 CLASS      ForbiddenRequestException       [PUBLIC]   Nette\Application
-CLASS      GlobIterator                    [PUBLIC]   PHP Platform
 CLASS      HTML                            [PUBLIC]   html.php
 CLASS      HTMLbase                        [PUBLIC]   htmlbase.php
 CLASS      Hello146648                     [PUBLIC]   issue146648.php
-CLASS      HttpDeflateStream               [PUBLIC]   PHP Platform
-CLASS      HttpEncodingException           [PUBLIC]   PHP Platform
-CLASS      HttpException                   [PUBLIC]   PHP Platform
-CLASS      HttpHeaderException             [PUBLIC]   PHP Platform
-CLASS      HttpInflateStream               [PUBLIC]   PHP Platform
-CLASS      HttpInvalidParamException       [PUBLIC]   PHP Platform
-CLASS      HttpMalformedHeadersException   [PUBLIC]   PHP Platform
-CLASS      HttpMessage                     [PUBLIC]   PHP Platform
-CLASS      HttpMessageTypeException        [PUBLIC]   PHP Platform
-CLASS      HttpQueryString                 [PUBLIC]   PHP Platform
-CLASS      HttpQueryStringException        [PUBLIC]   PHP Platform
-CLASS      HttpRequest                     [PUBLIC]   PHP Platform
-CLASS      HttpRequestDataShare            [PUBLIC]   PHP Platform
-CLASS      HttpRequestException            [PUBLIC]   PHP Platform
-CLASS      HttpRequestMethodException      [PUBLIC]   PHP Platform
-CLASS      HttpRequestPool                 [PUBLIC]   PHP Platform
-CLASS      HttpRequestPoolException        [PUBLIC]   PHP Platform
-CLASS      HttpResponse                    [PUBLIC]   PHP Platform
-CLASS      HttpResponseException           [PUBLIC]   PHP Platform
-CLASS      HttpRuntimeException            [PUBLIC]   PHP Platform
-CLASS      HttpSocketException             [PUBLIC]   PHP Platform
-CLASS      HttpUrlException                [PUBLIC]   PHP Platform
-CLASS      HttpUtil                        [PUBLIC]   PHP Platform
 CLASS      I146187ChildClass               [PUBLIC]   issue146187.php
 CLASS      I146187ChildClass               [PUBLIC]   issue146187.php
 CLASS      I146187Parent1                  [PUBLIC]   issue146187.php
 CLASS      I146187Parent2                  [PUBLIC]   issue146187.php
 CLASS      Image                           [PUBLIC]   Bar
 CLASS      Image                           [PUBLIC]   Foo
-CLASS      Imagick                         [PUBLIC]   PHP Platform
-CLASS      ImagickDraw                     [PUBLIC]   PHP Platform
-CLASS      ImagickDrawException            [PUBLIC]   PHP Platform
-CLASS      ImagickException                [PUBLIC]   PHP Platform
-CLASS      ImagickPixel                    [PUBLIC]   PHP Platform
-CLASS      ImagickPixelException           [PUBLIC]   PHP Platform
-CLASS      ImagickPixelIterator            [PUBLIC]   PHP Platform
-CLASS      ImagickPixelIteratorException   [PUBLIC]   PHP Platform
 CLASS      IndexController                 [PUBLIC]   App\Test
-CLASS      InfiniteIterator                [PUBLIC]   PHP Platform
 CLASS      InsideClass                     [PUBLIC]   insideClass.php
 CLASS      InstanceOfBar                   [PUBLIC]   issue204958.php
 CLASS      InstanceOfFoo                   [PUBLIC]   issue204958.php
-CLASS      IntlDateFormatter               [PUBLIC]   PHP Platform
-CLASS      InvalidArgumentException        [PUBLIC]   PHP Platform
 CLASS      InvisibleClass                  [PUBLIC]   issue194875.php
 CLASS      InvisibleClass                  [PUBLIC]   issue201310.php
 CLASS      InvisibleClassFromNs            [PUBLIC]   Extra
 CLASS      InvisibleClassFromNs            [PUBLIC]   ExtraThrow
 CLASS      InvocationComment               [PUBLIC]   issue160444.php
-CLASS      IteratorIterator                [PUBLIC]   PHP Platform
-CLASS      JavaException                   [PUBLIC]   PHP Platform
-CLASS      LengthException                 [PUBLIC]   PHP Platform
-CLASS      LibXMLError                     [PUBLIC]   PHP Platform
-CLASS      LimitIterator                   [PUBLIC]   PHP Platform
-CLASS      Locale                          [PUBLIC]   PHP Platform
-CLASS      LogicException                  [PUBLIC]   PHP Platform
 CLASS      Magazine                        [PUBLIC]   mixedtypes.php
 CLASS      Magazine_1                      [PUBLIC]   mixedtypes_1.php
 CLASS      MagicMethods                    [PUBLIC]   issue196714.php
-CLASS      Memcache                        [PUBLIC]   PHP Platform
-CLASS      MemcachePool                    [PUBLIC]   PHP Platform
-CLASS      Memcached                       [PUBLIC]   PHP Platform
-CLASS      MemcachedException              [PUBLIC]   PHP Platform
-CLASS      MessageFormatter                [PUBLIC]   PHP Platform
 CLASS      MethodExample                   [PUBLIC]   test201870.php
 CLASS      Mine                            [PUBLIC]   tests144653.php
 CLASS      MockClass                       [PUBLIC]   MC
-CLASS      MultipleIterator                [PUBLIC]   PHP Platform
 CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
 CLASS      MyCls                           [PUBLIC]   anonymousObjectVariablesNs.php
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
@@ -277,108 +178,22 @@ CLASS      MyTable                         [PUBLIC]   MyTable.php
 CLASS      MyTextException                 [PUBLIC]   catchinstanceof.php
 CLASS      NewClass                        [PUBLIC]   issue171232_01.php
 CLASS      NewClass                        [PUBLIC]   issue171232_02.php
-CLASS      NoRewindIterator                [PUBLIC]   PHP Platform
-CLASS      Normalizer                      [PUBLIC]   PHP Platform
-CLASS      NumberFormatter                 [PUBLIC]   PHP Platform
-CLASS      OCI_Collection                  [PUBLIC]   PHP Platform
-CLASS      OCI_Lob                         [PUBLIC]   PHP Platform
 CLASS      ObjectTracker                   [PUBLIC]   test204908.php
-CLASS      OutOfBoundsException            [PUBLIC]   PHP Platform
-CLASS      OutOfRangeException             [PUBLIC]   PHP Platform
-CLASS      OverflowException               [PUBLIC]   PHP Platform
-CLASS      PDO                             [PUBLIC]   PHP Platform
-CLASS      PDOException                    [PUBLIC]   PHP Platform
-CLASS      PDORow                          [PUBLIC]   PHP Platform
-CLASS      PDOStatement                    [PUBLIC]   PHP Platform
 CLASS      PagePresenter                   [PUBLIC]   AdminModule
 CLASS      ParentClass                     [PUBLIC]   class_member_visibility.php
-CLASS      ParentIterator                  [PUBLIC]   PHP Platform
 CLASS      Person148213                    [PUBLIC]   issue148213.php
-CLASS      Phar                            [PUBLIC]   PHP Platform
-CLASS      PharData                        [PUBLIC]   PHP Platform
-CLASS      PharException                   [PUBLIC]   PHP Platform
-CLASS      PharFileInfo                    [PUBLIC]   PHP Platform
 CLASS      PhpDoc01Magazine                [PUBLIC]   typeInPHPDoc01.php
 CLASS      PhpDoc01News                    [PUBLIC]   typeInPHPDoc01.php
 CLASS      Presenter                       [PUBLIC]   Nette\Application\UI
 CLASS      PresenterComponent              [PUBLIC]   Nette\Application\UI
-CLASS      RangeException                  [PUBLIC]   PHP Platform
-CLASS      RecursiveArrayIterator          [PUBLIC]   PHP Platform
-CLASS      RecursiveCachingIterator        [PUBLIC]   PHP Platform
-CLASS      RecursiveDirectoryIterator      [PUBLIC]   PHP Platform
-CLASS      RecursiveFilterIterator         [PUBLIC]   PHP Platform
-CLASS      RecursiveIteratorIterator       [PUBLIC]   PHP Platform
-CLASS      RecursiveRegexIterator          [PUBLIC]   PHP Platform
-CLASS      RecursiveTreeIterator           [PUBLIC]   PHP Platform
-CLASS      Reflection                      [PUBLIC]   PHP Platform
-CLASS      ReflectionClass                 [PUBLIC]   PHP Platform
-CLASS      ReflectionException             [PUBLIC]   PHP Platform
-CLASS      ReflectionExtension             [PUBLIC]   PHP Platform
-CLASS      ReflectionFunction              [PUBLIC]   PHP Platform
-CLASS      ReflectionFunctionAbstract      [PUBLIC]   PHP Platform
-CLASS      ReflectionMethod                [PUBLIC]   PHP Platform
-CLASS      ReflectionObject                [PUBLIC]   PHP Platform
-CLASS      ReflectionParameter             [PUBLIC]   PHP Platform
-CLASS      ReflectionProperty              [PUBLIC]   PHP Platform
-CLASS      RegexIterator                   [PUBLIC]   PHP Platform
 CLASS      Request                         [PUBLIC]   Brite\Base
-CLASS      ResourceBundle                  [PUBLIC]   PHP Platform
-CLASS      RuntimeException                [PUBLIC]   PHP Platform
-CLASS      SQLite3                         [PUBLIC]   PHP Platform
-CLASS      SQLite3Result                   [PUBLIC]   PHP Platform
-CLASS      SQLite3Stmt                     [PUBLIC]   PHP Platform
-CLASS      SQLiteDatabase                  [PUBLIC]   PHP Platform
-CLASS      SQLiteException                 [PUBLIC]   PHP Platform
-CLASS      SQLiteResult                    [PUBLIC]   PHP Platform
-CLASS      SQLiteUnbuffered                [PUBLIC]   PHP Platform
-CLASS      SWFAction                       [PUBLIC]   PHP Platform
-CLASS      SWFBitmap                       [PUBLIC]   PHP Platform
-CLASS      SWFButton                       [PUBLIC]   PHP Platform
-CLASS      SWFDisplayItem                  [PUBLIC]   PHP Platform
-CLASS      SWFFill                         [PUBLIC]   PHP Platform
-CLASS      SWFFont                         [PUBLIC]   PHP Platform
-CLASS      SWFFontChar                     [PUBLIC]   PHP Platform
-CLASS      SWFGradient                     [PUBLIC]   PHP Platform
-CLASS      SWFMorph                        [PUBLIC]   PHP Platform
-CLASS      SWFMovie                        [PUBLIC]   PHP Platform
-CLASS      SWFShape                        [PUBLIC]   PHP Platform
-CLASS      SWFSound                        [PUBLIC]   PHP Platform
-CLASS      SWFSoundInstance                [PUBLIC]   PHP Platform
-CLASS      SWFSprite                       [PUBLIC]   PHP Platform
-CLASS      SWFText                         [PUBLIC]   PHP Platform
-CLASS      SWFTextField                    [PUBLIC]   PHP Platform
-CLASS      SWFVideoStream                  [PUBLIC]   PHP Platform
 CLASS      SecuredPresenter                [PUBLIC]   AdminModule
 CLASS      SimpleObject                    [PUBLIC,   issue159970.php
-CLASS      SimpleXMLElement                [PUBLIC]   PHP Platform
-CLASS      SimpleXMLIterator               [PUBLIC]   PHP Platform
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
-CLASS      SoapClient                      [PUBLIC]   PHP Platform
-CLASS      SoapFault                       [PUBLIC]   PHP Platform
-CLASS      SoapHeader                      [PUBLIC]   PHP Platform
-CLASS      SoapParam                       [PUBLIC]   PHP Platform
-CLASS      SoapServer                      [PUBLIC]   PHP Platform
-CLASS      SoapVar                         [PUBLIC]   PHP Platform
-CLASS      SplDoublyLinkedList             [PUBLIC]   PHP Platform
-CLASS      SplFileInfo                     [PUBLIC]   PHP Platform
-CLASS      SplFileObject                   [PUBLIC]   PHP Platform
-CLASS      SplFixedArray                   [PUBLIC]   PHP Platform
-CLASS      SplHeap                         [PUBLIC]   PHP Platform
-CLASS      SplMaxHeap                      [PUBLIC]   PHP Platform
-CLASS      SplMinHeap                      [PUBLIC]   PHP Platform
-CLASS      SplObjectStorage                [PUBLIC]   PHP Platform
-CLASS      SplPriorityQueue                [PUBLIC]   PHP Platform
-CLASS      SplQueue                        [PUBLIC]   PHP Platform
-CLASS      SplStack                        [PUBLIC]   PHP Platform
-CLASS      SplTempFileObject               [PUBLIC]   PHP Platform
 CLASS      Strings                         [PUBLIC]   Nette\Utils
 CLASS      SubClass157534                  [PUBLIC]   issue157534.php
 CLASS      SuperClass157534                [PUBLIC]   issue157534.php
 CLASS      SuperUser                       [PUBLIC]   XUser
-CLASS      Svn                             [PUBLIC]   PHP Platform
-CLASS      SvnNode                         [PUBLIC]   PHP Platform
-CLASS      SvnWc                           [PUBLIC]   PHP Platform
-CLASS      SvnWcSchedule                   [PUBLIC]   PHP Platform
 CLASS      System147427                    [PUBLIC]   issue147427.php
 CLASS      TaskList                        [PUBLIC]   TaskList.php
 CLASS      Test                            [PUBLIC]   issue142024.php
@@ -433,8 +248,6 @@ CLASS      TestOptionalArgsClass           [PUBLIC]   optional_args.php
 CLASS      TraitedClass                    [PUBLIC]   traits.php
 CLASS      Types                           [PUBLIC]   Package1
 CLASS      TypesinPHPDoc                   [PUBLIC]   types_in_phpdoc.php
-CLASS      UnderflowException              [PUBLIC]   PHP Platform
-CLASS      UnexpectedValueException        [PUBLIC]   PHP Platform
 CLASS      UsageReturnTypeInOtherFile      [PUBLIC]   Usage.php
 CLASS      User                            [PUBLIC]   Core
 CLASS      User                            [PUBLIC]   Core
@@ -449,15 +262,8 @@ CLASS      VarAdvancedTest                 [PUBLIC]   varAssignment2.php
 CLASS      VarTypeCommentTest              [PUBLIC]   varTypeComment.php
 CLASS      ViewController                  [PUBLIC]   Brite\Controller
 CLASS      WithMultiUses                   [PUBLIC]   traitsMultiUse.php
-CLASS      XMLReader                       [PUBLIC]   PHP Platform
-CLASS      XMLWriter                       [PUBLIC]   PHP Platform
-CLASS      XSLTProcessor                   [PUBLIC]   PHP Platform
 CLASS      XUser                           [PUBLIC]   XUser
 CLASS      XUserAbstract                   [PUBLIC,   XUser
-CLASS      ZendAPI_Job                     [PUBLIC]   PHP Platform
-CLASS      ZendAPI_Queue                   [PUBLIC]   PHP Platform
-CLASS      ZipArchive                      [PUBLIC]   PHP Platform
-CLASS      __PHP_Incomplete_Class          [PUBLIC]   PHP Platform
 CLASS      a                               [PUBLIC]   issue137033.php
 CLASS      a147730                         [PUBLIC]   a147730.php
 CLASS      a147730                         [PUBLIC]   b147730.php
@@ -473,26 +279,14 @@ CLASS      clsBVarAssignment               [PUBLIC]   varAssignment.php
 CLASS      clsCVarAssignment               [PUBLIC]   varAssignment.php
 CLASS      cls_A                           [PUBLIC]   insideClass2.php
 CLASS      cls_B                           [PUBLIC]   insideClass2.php
-CLASS      finfo                           [PUBLIC]   PHP Platform
 CLASS      foo                             [PUBLIC]   tests178955.php
 CLASS      foo2                            [PUBLIC]   tests178955.php
 CLASS      issue1480109                    [PUBLIC]   issue148109.php
-CLASS      java                            [PUBLIC]   PHP Platform
-CLASS      mysqli                          [PUBLIC]   PHP Platform
-CLASS      mysqli_driver                   [PUBLIC]   PHP Platform
-CLASS      mysqli_result                   [PUBLIC]   PHP Platform
-CLASS      mysqli_sql_exception            [PUBLIC]   PHP Platform
-CLASS      mysqli_stmt                     [PUBLIC]   PHP Platform
-CLASS      mysqli_warning                  [PUBLIC]   PHP Platform
-CLASS      php_user_filter                 [PUBLIC]   PHP Platform
 CLASS      pupil140784                     [PUBLIC]   issue140784.php
 CLASS      sfWidgetFormSchema              [PUBLIC]   issue197571.php
 CLASS      some_class                      [PUBLIC]   test.php
 CLASS      some_class                      [PUBLIC]   test.php
-CLASS      stdClass                        [PUBLIC]   PHP Platform
 CLASS      teacher140784                   [PUBLIC]   issue140784.php
 CLASS      test                            [PUBLIC]   declaration.php
 CLASS      test                            [PUBLIC]   issue194300.php
 CLASS      test                            [PUBLIC]   test.php
-CLASS      tidy                            [PUBLIC]   PHP Platform
-CLASS      tidyNode                        [PUBLIC]   PHP Platform

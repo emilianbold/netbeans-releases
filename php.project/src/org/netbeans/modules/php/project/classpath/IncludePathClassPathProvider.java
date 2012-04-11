@@ -64,6 +64,8 @@ import org.openide.util.WeakSet;
 @org.openide.util.lookup.ServiceProvider(service = ClassPathProvider.class, position = 200)
 public class IncludePathClassPathProvider implements ClassPathProvider {
 
+    private static final boolean RUNNING_IN_TEST = Boolean.getBoolean("nb.php.test.run"); // NOI18N
+
     // @GuardedBy(PROJECT_INCLUDES_LOCK)
     private static final Set<ClassPath> PROJECT_INCLUDES = new WeakSet<ClassPath>();
     private static final ReadWriteLock PROJECT_INCLUDES_LOCK = new ReentrantReadWriteLock();
@@ -133,6 +135,9 @@ public class IncludePathClassPathProvider implements ClassPathProvider {
         ClassPath cp = findProjectIncludePath(file);
         if (cp != null) {
             return cp;
+        }
+        if (RUNNING_IN_TEST) {
+            return null;
         }
         // not found, then return CP for global include path
         return getGlobalIncludePathClassPath();
