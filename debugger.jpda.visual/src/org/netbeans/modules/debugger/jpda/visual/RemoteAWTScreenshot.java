@@ -119,11 +119,11 @@ public class RemoteAWTScreenshot {
     
     private static final Logger logger = Logger.getLogger(RemoteAWTScreenshot.class.getName());
     
-    private static final String AWTThreadName = "AWT-EventQueue-";  // NOI18N
+    static final String AWTThreadName = "AWT-EventQueue-";  // NOI18N
     
     private static final RemoteScreenshot[] NO_SCREENSHOTS = new RemoteScreenshot[] {};
     
-    private static final boolean FAST_SNAPSHOT_RETRIEVAL = getBooleanProperty("visualDebugger.fastSnapshot", true);   // NOI18N
+    static final boolean FAST_SNAPSHOT_RETRIEVAL = getBooleanProperty("visualDebugger.fastSnapshot", true);   // NOI18N
     static final boolean FAST_FIELDS_SEARCH = getBooleanProperty("visualDebugger.fastFieldsSearch", true);   // NOI18N
     private static final char STRING_DELIMITER = (char) 3;   // ETX (end of text)
     
@@ -264,7 +264,9 @@ public class RemoteAWTScreenshot {
                                 int[] allIntData = createIntArrayFromString(StringReferenceWrapper.value(allIntDataString));
                                 StringReference allNamesString = (StringReference) ObjectReferenceWrapper.getValue(snapshotObj, ReferenceTypeWrapper.fieldByName(rt, "allNamesString"));
                                 ArrayReference allComponentsArray = (ArrayReference) ObjectReferenceWrapper.getValue(snapshotObj, ReferenceTypeWrapper.fieldByName(rt, "allComponentsArray"));
+                                StringReference componentsAddAtString = (StringReference) ObjectReferenceWrapper.getValue(snapshotObj, ReferenceTypeWrapper.fieldByName(rt, "componentsAddAt"));
                                 String allNames = StringReferenceWrapper.value(allNamesString);
+                                String componentsAddAt = StringReferenceWrapper.value(componentsAddAtString);
                                 int ititle = allNames.indexOf(STRING_DELIMITER);
                                 String title = allNames.substring(0, ititle);
                                 if (title.length() == 1 && title.charAt(0) == 0) {
@@ -276,7 +278,8 @@ public class RemoteAWTScreenshot {
                                 AWTComponentInfo componentInfo = new AWTComponentInfo((JPDAThreadImpl) t,
                                                                                       allIntData, new int[] { ndata + 3 },
                                                                                       allNames, new int[] { ititle + 1 },
-                                                                                      allComponentsArray.getValues(), new int[] { 0 });
+                                                                                      allComponentsArray.getValues(), new int[] { 0 },
+                                                                                      componentsAddAt, new int[] { 0 });
                                 screenshots.add(createRemoteAWTScreenshot(engine,
                                                                           title,
                                                                           allIntData[0], allIntData[1],
@@ -637,6 +640,8 @@ public class RemoteAWTScreenshot {
         private VirtualMachine vm;
         private ClassType containerClass, componentClass;
         private Method getBounds, getComponents;
+        private String addAtStr;
+        private Stack addAt;
         
         public AWTComponentInfo(JPDAThreadImpl t, ObjectReference component) throws RetrievalException {
             this(t, component, Integer.MIN_VALUE, Integer.MIN_VALUE);
@@ -675,7 +680,8 @@ public class RemoteAWTScreenshot {
         
         public AWTComponentInfo(JPDAThreadImpl t, int[] allDataArray, int[] dposPtr,
                                 String allNames, int[] inamePtr,
-                                List<Value> allComponentsArray, int[] cposPtr) throws RetrievalException {
+                                List<Value> allComponentsArray, int[] cposPtr,
+                                String componentsAddAt, int[] iaddPtr) throws RetrievalException {
 //            this(t, allDataArray, dpos, allNames, allComponentsArray, 0, Integer.MIN_VALUE, Integer.MIN_VALUE);
 //        }
 //        
@@ -710,6 +716,14 @@ public class RemoteAWTScreenshot {
             setName(name);
             inamePtr[0] = iname + 1;
             
+            int iaddAt = componentsAddAt.indexOf(STRING_DELIMITER, iaddPtr[0]);
+            String addAt = componentsAddAt.substring(iaddPtr[0], iaddAt);
+            if ("null".equals(addAt)) {
+                addAt = null;
+            }
+            setAddAt(addAt);
+            iaddPtr[0] = iaddAt + 1;
+            
             int nsc = allDataArray[dpos++];
             dposPtr[0] = dpos;
             if (nsc > 0) {
@@ -717,11 +731,32 @@ public class RemoteAWTScreenshot {
                 for (int i = 0; i < nsc; i++) {
                     cis[i] = new AWTComponentInfo(getThread(), allDataArray, dposPtr,
                                                   allNames, inamePtr,
-                                                  allComponentsArray, cposPtr);
+                                                  allComponentsArray, cposPtr,
+                                                  componentsAddAt, iaddPtr);
                 }
                 setSubComponents(cis);
             }
             init();
+        }
+        
+        private void setAddAt(String addAtStr) {
+            this.addAtStr = addAtStr;
+        }
+
+        @Override
+        public Stack getAddCallStack() {
+            if (!FAST_SNAPSHOT_RETRIEVAL) {
+                return super.getAddCallStack();
+            }
+            if (addAtStr == null) {
+                return null;
+            }
+            if (addAt == null) {
+                Stack.Frame f = Stack.Frame.parseLine(addAtStr);
+                Stack.Frame[] frames = new Stack.Frame[] { f };
+                addAt = new Stack(frames);
+            }
+            return addAt;
         }
         
         public boolean isVisible() {

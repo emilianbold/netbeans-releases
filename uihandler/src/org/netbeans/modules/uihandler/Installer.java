@@ -439,14 +439,25 @@ public class Installer extends ModuleInstall implements Runnable {
 
     static void writeOut(LogRecord r) {
         try {
+            boolean logOverflow;
+            boolean logSizeControl;
             synchronized (UIGESTURE_LOG_LOCK) {
                 LogRecords.write(logStream(), r);
-            }
-            if (logsSize >= UIHandler.MAX_LOGS) {
-                if(preferencesWritable) {
-                    prefs.putInt("count", UIHandler.MAX_LOGS);
+                logsSize++;
+                logOverflow = logsSize > UIHandler.MAX_LOGS;
+                if (preferencesWritable) {
+                    if (logOverflow) {
+                        prefs.putInt("count", UIHandler.MAX_LOGS);
+                    } else if (prefs.getInt("count", 0) < logsSize) {
+                        prefs.putInt("count", logsSize);
+                    }
                 }
-                closeLogStream();
+                if (logOverflow) {
+                    closeLogStream();
+                }
+                logSizeControl = (logsSize % 100) == 0 && !logOverflow;
+            }
+            if (logOverflow) {
                 if (isHintsMode()) {
                     class Auto implements Runnable {
                         @Override
@@ -463,15 +474,10 @@ public class Installer extends ModuleInstall implements Runnable {
                         f1.delete();
                     }
                     f.renameTo(f1);
-                }
-                logsSize = 0;
-            } else {
-                logsSize++;
-                if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
-                    prefs.putInt("count", logsSize);
+                    logsSize = 0;
                 }
             }
-            if ((logsSize % 100) == 0) {
+            if (logSizeControl) {
                 synchronized (UIGESTURE_LOG_LOCK) {
                     //This is fallback to avoid growing log file over any limit.
                     File f = logFile(0);
@@ -481,7 +487,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         LOG.log(Level.INFO, "Log file:{0} Size:{1} Bytes", new Object[]{f, f.length()}); // NOI18N
                         closeLogStream();
                         logsSize = 0;
-                        if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
+                        if (preferencesWritable) {
                             prefs.putInt("count", logsSize);
                         }
                         f.delete();
@@ -705,7 +711,9 @@ public class Installer extends ModuleInstall implements Runnable {
 
     public static int getLogsSize() {
         UIHandler.waitFlushed();
-        return prefs.getInt("count", 0); // NOI18N
+        synchronized (UIGESTURE_LOG_LOCK) {
+            return prefs.getInt("count", 0); // NOI18N
+        }
     }
 
     static void readLogs(Handler handler){
@@ -979,19 +987,21 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     static void clearLogs() {
-        closeLogStream();
+        synchronized (UIGESTURE_LOG_LOCK) {
+            closeLogStream();
 
-        for (int i = 0; ; i++) {
-            File f = logFile(i);
-            if (f == null || !f.exists()) {
-                break;
+            for (int i = 0; ; i++) {
+                File f = logFile(i);
+                if (f == null || !f.exists()) {
+                    break;
+                }
+                f.delete();
             }
-            f.delete();
-        }
 
-        logsSize = 0;
-        if(preferencesWritable) {
-            prefs.putInt("count", 0);
+            logsSize = 0;
+            if (preferencesWritable) {
+                prefs.putInt("count", 0);
+            }
         }
         UIHandler.SUPPORT.firePropertyChange(null, null, null);
     }
