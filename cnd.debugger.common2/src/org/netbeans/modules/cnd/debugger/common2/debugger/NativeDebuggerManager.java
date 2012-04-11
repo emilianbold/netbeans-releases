@@ -1181,6 +1181,12 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         } else {
             ndi.setAction(this.getAction());
         }
+        
+        // override executable if needed
+        String debugExecutable = ndi.getDbgProfile().getExecutable();
+        if (debugExecutable != null && !debugExecutable.isEmpty()) {
+            ndi.setTarget(debugExecutable);
+        }
 
         startDebugger(Start.NEW, ndi);
         return ndi;
