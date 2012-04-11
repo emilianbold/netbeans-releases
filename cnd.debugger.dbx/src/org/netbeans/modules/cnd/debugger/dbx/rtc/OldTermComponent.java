@@ -73,7 +73,7 @@ import org.netbeans.lib.terminalemulator.*;
 
 import org.netbeans.lib.terminalemulator.support.TermOptions;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponentFactory;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 import org.netbeans.modules.cnd.debugger.common2.utils.NotifyingInputSteam;
@@ -185,7 +185,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.NotifyingInputSteam;
 	notifier.setListener(new NotifyingInputSteam.Listener () {
 	    public void activity () {
 		if (DebuggerOption.FRONT_PIO.isEnabled(
-			    DebuggerManager.get().globalOptions()))
+			    NativeDebuggerManager.get().globalOptions()))
 		    OldTermComponent.this.requestVisible();
 	    }
 	});

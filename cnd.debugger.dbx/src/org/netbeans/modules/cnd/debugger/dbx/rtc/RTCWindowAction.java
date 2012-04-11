@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.debugger.dbx.rtc;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import javax.swing.SwingUtilities;
 
@@ -71,7 +71,7 @@ public final class RTCWindowAction extends CallableSystemAction {
     // interface SystemAction
     @Override
     public boolean isEnabled() {
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+        NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
         return debugger != null;
     }
 
@@ -106,7 +106,7 @@ public final class RTCWindowAction extends CallableSystemAction {
 
         // SHOULD use openComponent() up above
         // Perhaps SHOULD disable the action to begin with?
-        if (DebuggerManager.get().currentDebugger() == null) {
+        if (NativeDebuggerManager.get().currentDebugger() == null) {
             return;
         }
 

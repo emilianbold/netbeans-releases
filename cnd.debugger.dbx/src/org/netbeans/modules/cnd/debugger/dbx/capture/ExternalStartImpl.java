@@ -52,7 +52,7 @@ import com.sun.tools.swdev.glue.xstart.*;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ProjectSupport.Model;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.AbstractExternalStart;
@@ -281,7 +281,7 @@ public final class ExternalStartImpl extends AbstractExternalStart implements Ex
 
             if (hostName != null &&
 		!hostName.equals(Host.localhost) &&
-		!DebuggerManager.isStandalone()) {
+		!NativeDebuggerManager.isStandalone()) {
 
 		hostName = System.getProperty("user.name") + "@" +
 						hostName;

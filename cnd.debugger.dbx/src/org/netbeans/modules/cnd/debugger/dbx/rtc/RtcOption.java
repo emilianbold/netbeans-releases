@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.options.Validity;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionValue;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.Option;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 public class RtcOption extends Option {
 
@@ -197,7 +197,7 @@ public class RtcOption extends Option {
 	new RtcOption( // NOI18N
 		    "rtc_access_enable",   // NOI18N //name
 		    new String[] {"on", "off"}, // NOI18N //values
-		    DebuggerManager.isStandalone() ? "off" : "on",  // NOI18N //default value
+		    NativeDebuggerManager.isStandalone() ? "off" : "on",  // NOI18N //default value
 		    false, // isClientOption
 		    CHECK_BOX, false); //type
 
@@ -232,7 +232,7 @@ public class RtcOption extends Option {
 	new RtcOption( // NOI18N
 		    "rtc_leaks_memuse_enable",   // NOI18N //name
 		    new String[] {"on", "off"}, // NOI18N //values
-		    DebuggerManager.isStandalone() ? "off" : "on",  // NOI18N //default value
+		    NativeDebuggerManager.isStandalone() ? "off" : "on",  // NOI18N //default value
 		    false, // isClientOption
 		    CHECK_BOX, false); //type
 

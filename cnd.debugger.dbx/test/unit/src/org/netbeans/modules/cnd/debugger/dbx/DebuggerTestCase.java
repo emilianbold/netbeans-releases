@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 
 import org.netbeans.api.project.Project;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
  
@@ -95,7 +95,7 @@ public abstract class DebuggerTestCase extends CndBaseTestCase implements Contex
     private final NotifyingListener stateListener = new NotifyingListener(STATE_WAIT_LOCK);
     private final NotifyingListener stackListener = new NotifyingListener(BP_WAIT_LOCK);
 
-    protected static final DebuggerManager dm = DebuggerManager.get();
+    protected static final NativeDebuggerManager dm = NativeDebuggerManager.get();
 
     public DebuggerTestCase(String name) {
         super(name);
@@ -134,7 +134,7 @@ public abstract class DebuggerTestCase extends CndBaseTestCase implements Contex
         conf = new TestConfiguration(args);
 	DbxDebuggerInfo ddi = DbxDebuggerInfo.create();
 	ddi.setConfiguration(conf);
-        ddi.setAction(DebuggerManager.STEP);
+        ddi.setAction(NativeDebuggerManager.STEP);
         dm.debugNoAsk(ddi);
         /* LATER
         debugger = dm.currentDebugger();

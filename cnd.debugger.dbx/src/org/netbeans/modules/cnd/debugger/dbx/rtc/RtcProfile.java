@@ -53,7 +53,7 @@ import org.openide.nodes.Sheet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.api.xml.*;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 
 
@@ -301,7 +301,7 @@ public final class RtcProfile implements ConfigurationAuxObject, OptionSetOwner 
 	Sheet sheet = new Sheet();
 	Sheet.Set set;
 
-	if (!DebuggerManager.isStandalone()) {
+	if (!NativeDebuggerManager.isStandalone()) {
 	    set = new Sheet.Set();
 	    set.setName(Catalog.get("Experiment"));
 	    set.setDisplayName(Catalog.get("Experiment"));

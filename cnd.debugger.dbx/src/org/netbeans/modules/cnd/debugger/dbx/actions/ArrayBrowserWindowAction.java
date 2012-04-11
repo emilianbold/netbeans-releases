@@ -52,7 +52,7 @@ import org.openide.util.HelpCtx;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.dbx.arraybrowser.ArrayBrowserWindow;
 
 public class ArrayBrowserWindowAction extends CallableSystemAction implements StateListener {
@@ -72,7 +72,7 @@ public class ArrayBrowserWindowAction extends CallableSystemAction implements St
 
     // interface SystemAction
     public boolean isEnabled() {
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+        NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
         return debugger != null;
     }
 
@@ -100,7 +100,7 @@ public class ArrayBrowserWindowAction extends CallableSystemAction implements St
 
     // interface CallableSystemAction
     public void performAction() {
-	NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+	NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger != null) {
 	    if (SwingUtilities.isEventDispatchThread()) {
 		ArrayBrowserWindow.getDefault().open();

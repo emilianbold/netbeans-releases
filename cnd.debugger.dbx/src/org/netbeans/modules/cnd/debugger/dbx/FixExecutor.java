@@ -54,7 +54,7 @@ import org.openide.windows.InputOutput;
 
 import org.netbeans.modules.cnd.builds.*;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 
 /**
@@ -91,7 +91,7 @@ class FixExecutor implements Runnable {
 
         synchronized (this) {
 	    // Jean io = IOProvider.getDefault().getIO(tabName, false);
-	    io = DebuggerManager.get().getIO();
+	    io = NativeDebuggerManager.get().getIO();
 	    // TODO
 	    if (io != null) {
 // CR 7082759	io.setFocusTaken(true);

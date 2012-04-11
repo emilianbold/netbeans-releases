@@ -75,7 +75,7 @@ import java.util.LinkedList;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 
@@ -428,22 +428,22 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             int act = ddi.getAction();
             System.out.printf("START ==========\n\t"); // NOI18N
-            if ((act & DebuggerManager.RUN) != 0) {
+            if ((act & NativeDebuggerManager.RUN) != 0) {
                 System.out.printf("RUN "); // NOI18N
             }
-            if ((act & DebuggerManager.STEP) != 0) {
+            if ((act & NativeDebuggerManager.STEP) != 0) {
                 System.out.printf("STEP "); // NOI18N
             }
-            if ((act & DebuggerManager.ATTACH) != 0) {
+            if ((act & NativeDebuggerManager.ATTACH) != 0) {
                 System.out.printf("ATTACH "); // NOI18N
             }
-            if ((act & DebuggerManager.CORE) != 0) {
+            if ((act & NativeDebuggerManager.CORE) != 0) {
                 System.out.printf("CORE "); // NOI18N
             }
-            if ((act & DebuggerManager.LOAD) != 0) {
+            if ((act & NativeDebuggerManager.LOAD) != 0) {
                 System.out.printf("LOAD "); // NOI18N
             }
-            if ((act & DebuggerManager.CONNECT) != 0) {
+            if ((act & NativeDebuggerManager.CONNECT) != 0) {
                 System.out.printf("CONNECT "); // NOI18N
             }
             System.out.printf("\n"); // NOI18N
@@ -453,7 +453,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         session().setSessionHost(ddi.getHostName());
 
         final boolean connectExisting;
-        if ((ddi.getAction() & DebuggerManager.CONNECT) != 0) {
+        if ((ddi.getAction() & NativeDebuggerManager.CONNECT) != 0) {
             connectExisting = true;
         } else {
             connectExisting = false;
@@ -476,7 +476,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
 
         // See "README.startup"
-        if (DebuggerManager.isAsyncStart()) {
+        if (NativeDebuggerManager.isAsyncStart()) {
 
             // May not be neccessary in the future.
             SwingUtilities.invokeLater(new Runnable() {
@@ -545,7 +545,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         // Figure out dbx command for IDE
         String dbxPath = null;
-        if (!DebuggerManager.isStandalone()) {
+        if (!NativeDebuggerManager.isStandalone()) {
             dbxPath = getDebuggerString((MakeConfiguration)ddi.getConfiguration());
         }
         factory = new Dbx.DbxFactory(executor, additionalArgv,
@@ -565,7 +565,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         dbx = (Dbx) tentativeDbx;
         dbx.setDebugger(this);
         DbxStartActionProvider.succeeded();
-        DebuggerManager.get().setCurrentDebugger(this);
+        NativeDebuggerManager.get().setCurrentDebugger(this);
 	stackEnabler.setConnected(true);
 	localEnabler.setConnected(true);
 	watchEnabler.setConnected(true);
@@ -605,33 +605,33 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             return;
         }
 
-        if (DebuggerManager.isStartModel() && (getJavaMode() == 0)) {
+        if (NativeDebuggerManager.isStartModel() && (getJavaMode() == 0)) {
             // For load and run
-            if ((ddi.getAction() & DebuggerManager.RUN) != 0) {
+            if ((ddi.getAction() & NativeDebuggerManager.RUN) != 0) {
                 rerun();
-                ddi.removeAction(DebuggerManager.RUN);
-                manager().removeAction(DebuggerManager.RUN);
+                ddi.removeAction(NativeDebuggerManager.RUN);
+                manager().removeAction(NativeDebuggerManager.RUN);
             } else // For load and step
-            if ((ddi.getAction() & DebuggerManager.STEP) != 0) {
+            if ((ddi.getAction() & NativeDebuggerManager.STEP) != 0) {
                 dbx.sendCommand(0, 0, "next"); // NOI18N
-                ddi.removeAction(DebuggerManager.STEP);
-                manager().removeAction(DebuggerManager.STEP);
+                ddi.removeAction(NativeDebuggerManager.STEP);
+                manager().removeAction(NativeDebuggerManager.STEP);
             }
         // do nothing for load
         }
 
-        if (DebuggerManager.isStandalone()) {
+        if (NativeDebuggerManager.isStandalone()) {
             if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
                 System.out.printf("DbxDebuggerImpl.initialAction(): dbxtool\n"); // NOI18N
             }
             // dbxtool -r
-            if ((ddi.getAction() & DebuggerManager.RUN) != 0) {
+            if ((ddi.getAction() & NativeDebuggerManager.RUN) != 0) {
                 if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
                     System.out.printf("DbxDebuggerImpl.initialAction(): -r\n"); // NOI18N
                 }
                 rerun();
-                ddi.removeAction(DebuggerManager.RUN);
-                manager().removeAction(DebuggerManager.RUN);
+                ddi.removeAction(NativeDebuggerManager.RUN);
+                manager().removeAction(NativeDebuggerManager.RUN);
             }
         }
     }
@@ -689,7 +689,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         // Show console only in tool (see convergence discussions) and CR 7032948
         // in the IDE we show program output
-        if (DebuggerManager.isStandalone()) {
+        if (NativeDebuggerManager.isStandalone()) {
             manager().enableConsoleWindow();
         }
 	// CR 6998041
@@ -775,7 +775,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         } else if (reason.equals("exit")) { // NOI18N
             // DbxDebuggerInfo ddi = this.getDDI();
             if (!DebuggerOption.FINISH_SESSION.isEnabled(optionLayers()) ||
-                    ((ddi.getAction() & DebuggerManager.LOAD) != 0)) {
+                    ((ddi.getAction() & NativeDebuggerManager.LOAD) != 0)) {
                 skipkill = true;
             }
             msg = Catalog.format("ProgCompletedExit", info);
@@ -790,7 +790,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             captureFailed();
         }
 
-        if (!skipkill && DebuggerManager.isStartModel()) {
+        if (!skipkill && NativeDebuggerManager.isStartModel()) {
             postKill();
         }
 
@@ -864,7 +864,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
 
             public void showErrorInEditor(String fileName, int lineNumber) {
-                Line line = EditorBridge.getLine(fileName, lineNumber, DebuggerManager.get().currentDebugger());
+                Line line = EditorBridge.getLine(fileName, lineNumber, NativeDebuggerManager.get().currentDebugger());
 
                 if (line != null) {
                     EditorBridge.showInEditor(line);
@@ -876,7 +876,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
 
             public void showFrameInEditor(String fileName, int lineNumber) {
-                Line line = EditorBridge.getLine(fileName, lineNumber, DebuggerManager.get().currentDebugger());
+                Line line = EditorBridge.getLine(fileName, lineNumber, NativeDebuggerManager.get().currentDebugger());
 
                 if (line != null) {
                     EditorBridge.showInEditor(line);
@@ -1139,7 +1139,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         // although not sure from whence it was used.
 	Host host = getHost();
 	if (host != null && !host.isSolaris())
-	    DebuggerManager.warning(Catalog.get("FIX_AD"));
+	    NativeDebuggerManager.warning(Catalog.get("FIX_AD"));
 	else
 	    dbx.sendCommand(0, 0, "fix -a");	// NOI18N
     }
@@ -3708,7 +3708,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         manager().aboutToFork(this, session.getShortName());
     }
 
-    public void forkThisWay(DebuggerManager.FollowForkInfo ffi) {
+    public void forkThisWay(NativeDebuggerManager.FollowForkInfo ffi) {
         if (ffi.parent && ffi.child) {
             // Follow both
             dbx.prop_set("DBX_follow_fork_mode_inner", "both"); // NOI18N
@@ -3824,7 +3824,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 			start = "-a " + function; // NOI18N
 			cmd = "dis "; // NOI18N
 		    } else {
-			DebuggerManager.warning(Catalog.get("Dis_MSG_NoSource"));
+			NativeDebuggerManager.warning(Catalog.get("Dis_MSG_NoSource"));
 			return;
 		    }
 		}
@@ -3980,7 +3980,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
             sb.append('\n');
             sb.append(Catalog.get("FixPendingBuildWarn"));	// NOI18N
-            DebuggerManager.warning(sb.toString());
+            NativeDebuggerManager.warning(sb.toString());
 
         } else {
             boolean oldBuildFirst = runProfile.getBuildFirst();

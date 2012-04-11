@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionSet;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionValue;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettingsBridge;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettings;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 
@@ -468,7 +468,7 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 
 	boolean rtcEnabled = rtc_enable_at_debug.isEnabled();
 
-	if (rtcController != null && (rtcEnabled || DebuggerManager.isStandalone())) {
+	if (rtcController != null && (rtcEnabled || NativeDebuggerManager.isStandalone())) {
 
 	    // Checking for dirty only makes sense if deltaWithRespectTo
 	    // considers these settings.

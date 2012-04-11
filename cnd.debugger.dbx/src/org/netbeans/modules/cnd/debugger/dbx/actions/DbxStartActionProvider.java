@@ -53,7 +53,7 @@ import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 import org.netbeans.modules.cnd.debugger.dbx.DbxDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.dbx.DbxDebuggerInfo;
@@ -109,13 +109,13 @@ public class DbxStartActionProvider extends ActionsProvider {
 	// Gets called on whatever thread DebuggerManager.startDebugging()
 	// was called on. 
 
-	DebuggerManager manager = debugger.manager();
+	NativeDebuggerManager manager = debugger.manager();
 
 	DbxStartActionProvider.actionPerformedNotifier = actionPerformedNotifier;
 
 	// See ../README.startup for an exp of how all this works
 
-	if (DebuggerManager.isAsyncStart()) {
+	if (NativeDebuggerManager.isAsyncStart()) {
 
 	    // SHOULD disable action so we don't overwrite existing 
 	    // this.actionPerformedNotifier with two Start's back-to-back.

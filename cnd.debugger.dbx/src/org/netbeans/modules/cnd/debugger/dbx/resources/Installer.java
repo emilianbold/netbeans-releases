@@ -53,7 +53,7 @@ import org.openide.ErrorManager;
 import org.netbeans.modules.cnd.debugger.dbx.CommonDbx;
 import com.sun.tools.swdev.glue.Glue;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 /**
  * Manages a module's lifecycle. Remember that an installer is optional and
@@ -77,7 +77,7 @@ public class Installer extends ModuleInstall {
 
             @Override
             protected void warn(String msg) {
-                DebuggerManager.warning(msg);
+                NativeDebuggerManager.warning(msg);
             }
 
             @Override

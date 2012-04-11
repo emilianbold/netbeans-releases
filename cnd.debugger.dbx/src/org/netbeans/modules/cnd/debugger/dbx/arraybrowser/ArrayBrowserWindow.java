@@ -57,7 +57,7 @@ import org.openide.windows.WindowManager;
 import org.openide.awt.TabbedPaneFactory;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 import com.sun.tools.swdev.glue.dbx.GPDbxVItemDynamic;
 import com.sun.tools.swdev.glue.dbx.GPDbxVItemStatic;
@@ -190,7 +190,7 @@ public final class ArrayBrowserWindow extends TopComponent implements ChangeList
     @Override
     public void componentShowing () {
 
-	debugger = DebuggerManager.get().currentDebugger();
+	debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger == null)
             return;
 //        debugger.registerArrayBrowserWindow(this);

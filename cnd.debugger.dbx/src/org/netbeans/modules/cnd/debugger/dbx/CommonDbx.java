@@ -87,7 +87,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.PhasedProgress;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ProgressManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
@@ -771,7 +771,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	    // pass on control to start2 ...
 	    //
 
-	    if (DebuggerManager.isAsyncStart()) {
+	    if (NativeDebuggerManager.isAsyncStart()) {
 		RequestProcessor.getDefault().post(new Runnable() {
 		    public void run() {
 			start2(hostInfo);

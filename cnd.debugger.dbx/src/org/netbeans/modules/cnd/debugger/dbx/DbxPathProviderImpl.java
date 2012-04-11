@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import com.sun.tools.swdev.toolscommon.base.InstallDir;
 import java.io.File;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -82,7 +82,7 @@ public final class DbxPathProviderImpl implements DbxPathProvider {
 	}
 
         // use spro.home for Tool only, see CR 7014085
-        if (dbx == null && DebuggerManager.isStandalone()) {
+        if (dbx == null && NativeDebuggerManager.isStandalone()) {
 	    String overrideInstallDir = null;
 	    if (host.isRemote())
 		overrideInstallDir = host.getRemoteStudioLocation();

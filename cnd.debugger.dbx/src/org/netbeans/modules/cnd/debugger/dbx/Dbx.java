@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.ItemSelectorResult;
 
 import org.netbeans.modules.cnd.debugger.common2.values.EditUndo;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeSession;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
@@ -148,8 +148,8 @@ public final class Dbx extends CommonDbx {
 	debugger.stateChanged();
     }
 
-    private static DebuggerManager manager() {
-	return DebuggerManager.get();
+    private static NativeDebuggerManager manager() {
+	return NativeDebuggerManager.get();
     }
 
     private DbxDebuggerSettingsBridge dbxProfileBridge() {
@@ -323,7 +323,7 @@ public final class Dbx extends CommonDbx {
 	    // - too many bunched up actions and the glue socket might fill up
 	    //   increasing the potential for deadlocks.
 
-	    DebuggerManager.warning(Catalog.get("ActionIgnored")); // NOI18N
+	    NativeDebuggerManager.warning(Catalog.get("ActionIgnored")); // NOI18N
 	    return;
 	}
 
@@ -415,7 +415,7 @@ public final class Dbx extends CommonDbx {
 
 	if (!isReceptive()) {
 	    // See comment in sendCommand()
-	    DebuggerManager.warning(Catalog.get("ActionIgnored")); // NOI18N
+	    NativeDebuggerManager.warning(Catalog.get("ActionIgnored")); // NOI18N
 	    return null;
 	}
 
@@ -515,7 +515,7 @@ public final class Dbx extends CommonDbx {
 
 	if (!success) {
 	    // progress indicator will be cancelled by error?
-	    if (DebuggerManager.isStartModel())
+	    if (NativeDebuggerManager.isStartModel())
 	        debugger.postKill();
 	    debugger.noteProgLoadFailed();
 	    return;
@@ -536,7 +536,7 @@ public final class Dbx extends CommonDbx {
 
 	    // Threads tab on if MT program loaded
 	    if (debugger.isMultiThreading()) {
-		DebuggerManager.openComponent("threadsView", false); // NOI18N
+		NativeDebuggerManager.openComponent("threadsView", false); // NOI18N
 	    }
 	    // Already done in noteProgLoaded
 	    // OLD manager().enableConsoleWindow();
@@ -731,8 +731,8 @@ public final class Dbx extends CommonDbx {
 	debugger.stateChanged();
 
 	if (debugger.isMultiThreading() &&
-		!DebuggerManager.isComponentOpened("threadsView")) //NOI18N
-	    DebuggerManager.openComponent("threadsView", false); // NOI18N
+		!NativeDebuggerManager.isComponentOpened("threadsView")) //NOI18N
+	    NativeDebuggerManager.openComponent("threadsView", false); // NOI18N
 
     }
 
@@ -820,7 +820,7 @@ public final class Dbx extends CommonDbx {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Bpt.pathway)
 	    System.out.printf("handler_new(, rt %d)\n", rt); // NOI18N
 	debugger.newHandler(rt, h);
-	DebuggerManager.get().bringDownDialog();
+	NativeDebuggerManager.get().bringDownDialog();
     }
 
     @Override
@@ -830,7 +830,7 @@ public final class Dbx extends CommonDbx {
 	Handler handler = debugger.bm().findHandler(h.id);
 	if (handler != null) {
 	    debugger.replaceHandler(rt, handler, h);
-	    DebuggerManager.get().bringDownDialog();
+	    NativeDebuggerManager.get().bringDownDialog();
 	}
     }
 
@@ -908,7 +908,7 @@ public final class Dbx extends CommonDbx {
 		spec.qualified_lhs, rt);
 	}
 	debugger.newWatch(rt, spec);
-	DebuggerManager.get().bringDownDialog();
+	NativeDebuggerManager.get().bringDownDialog();
     }
 
     @Override
@@ -916,7 +916,7 @@ public final class Dbx extends CommonDbx {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Watch.pathway)
 	    System.out.printf("display_item_dup(rt %d, id %d)\n", rt, id); // NOI18N
 	debugger.dupWatch(rt, id);
-	DebuggerManager.get().bringDownDialog();
+	NativeDebuggerManager.get().bringDownDialog();
     }
 
     @Override
