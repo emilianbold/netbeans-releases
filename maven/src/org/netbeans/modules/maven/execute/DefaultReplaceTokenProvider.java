@@ -252,7 +252,8 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             return ActionProvider.COMMAND_TEST_SINGLE;
         }
         if (ActionProvider.COMMAND_RUN_SINGLE.equals(action) ||
-            ActionProvider.COMMAND_DEBUG_SINGLE.equals(action)) {
+            ActionProvider.COMMAND_DEBUG_SINGLE.equals(action) ||
+            ActionProvider.COMMAND_PROFILE_SINGLE.equals(action)) {
             FileObject[] fos = extractFileObjectsfromLookup(lookup);
             if (fos.length > 0) {
                 FileObject fo = fos[0];
