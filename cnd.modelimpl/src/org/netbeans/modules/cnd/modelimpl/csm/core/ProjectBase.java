@@ -3259,15 +3259,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             map.put(f.getAbsolutePath(), f);
         }
         for (CsmFile file : map.values()) {
-            printStream.println("\n========== Dumping links for file " + file.getAbsolutePath());
+            printStream.println("\n========== Dumping links for file " + file.getAbsolutePath()); // NOI18N
             Map<CharSequence, CsmFile> set = new TreeMap<CharSequence, CsmFile>();
             for (CsmFile f : container.getInLinks(file)) {
                 set.put(f.getAbsolutePath(), (FileImpl) f);
             }
             if (set.size() > 0) {
-                printStream.println("\tInput");
+                printStream.println("\tInput"); // NOI18N
                 for (CsmFile f : set.values()) {
-                    printStream.println("\t\t" + f.getAbsolutePath());
+                    printStream.println("\t\t" + f.getAbsolutePath()); // NOI18N
                 }
                 set.clear();
             }
@@ -3275,9 +3275,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 set.put(f.getAbsolutePath(), (FileImpl) f);
             }
             if (set.size() > 0) {
-                printStream.println("\tOutput");
+                printStream.println("\tOutput"); // NOI18N
                 for (CsmFile f : set.values()) {
-                    printStream.println("\t\t" + f.getAbsolutePath());
+                    printStream.println("\t\t" + f.getAbsolutePath()); // NOI18N
                 }
             }
         }
@@ -3355,34 +3355,34 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public static void dumpFileContainer(CsmProject project, PrintWriter printStream) {
         FileContainer fileContainer = ((ProjectBase) project).getFileContainer();
-        printStream.println("\n========== Dumping File container");
+        printStream.println("\n========== Dumping File container"); // NOI18N
         Map<CharSequence, Object/*CharSequence or CharSequence[]*/> names = fileContainer.getCanonicalNames();
         //for unit test only
         Map<CharSequence, FileEntry> files = fileContainer.getFileStorage();
         for(Map.Entry<CharSequence, FileEntry> entry : files.entrySet()){
             CharSequence key = entry.getKey();
-            printStream.println("\tFile "+key.toString());
+            printStream.println("\tFile "+key.toString()); // NOI18N
             Object name = names.get(key);
             if (name instanceof CharSequence[]) {
                 for(CharSequence alt : (CharSequence[])name) {
-                    printStream.println("\t\tAlias "+alt.toString());
+                    printStream.println("\t\tAlias "+alt.toString()); // NOI18N
                 }
             } else if (name instanceof CharSequence) {
-                printStream.println("\t\tAlias "+name.toString());
+                printStream.println("\t\tAlias "+name.toString()); // NOI18N
             }
             FileEntry file = entry.getValue();
             CsmFile csmFile = file.getTestFileUID().getObject();
-            printStream.println("\t\tModel File "+csmFile.getAbsolutePath());
-            printStream.println("\t\tNumber of states "+file.getPrerocStates().size());
+            printStream.println("\t\tModel File "+csmFile.getAbsolutePath()); // NOI18N
+            printStream.println("\t\tNumber of states "+file.getPrerocStates().size()); // NOI18N
             for (PreprocessorStatePair statePair : file.getStatePairs()) {
-                StringTokenizer st = new StringTokenizer(FilePreprocessorConditionState.toStringBrief(statePair.pcState),"\n");
+                StringTokenizer st = new StringTokenizer(FilePreprocessorConditionState.toStringBrief(statePair.pcState),"\n"); // NOI18N
                 boolean first = true;
                 while (st.hasMoreTokens()) {
                     if (first) {
-                        printStream.println("\t\tState "+st.nextToken());
+                        printStream.println("\t\tState "+st.nextToken()); // NOI18N
                         first = false;
                     } else {
-                        printStream.println("\t\t\t"+st.nextToken());
+                        printStream.println("\t\t\t"+st.nextToken()); // NOI18N
                     }
                 }
             }
