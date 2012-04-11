@@ -3221,52 +3221,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private final WeakContainer<DeclarationContainerProject> weakDeclarationContainer;
-    DeclarationContainerProject getDeclarationsSorage() {
+    private DeclarationContainerProject getDeclarationsSorage() {
         DeclarationContainerProject dc = weakDeclarationContainer.getContainer();
         return dc != null ? dc : DeclarationContainerProject.empty();
     }
 
     private final WeakContainer<FileContainer> weakFileContainer;
-    FileContainer getFileContainer() {
+    private FileContainer getFileContainer() {
         FileContainer fc = weakFileContainer.getContainer();
         return fc != null ? fc : FileContainer.empty();
-    }
-
-    public void traceFileContainer(PrintWriter err){
-        FileContainer container = getFileContainer();
-        Set<Entry<CharSequence, FileEntry>> entrySet = container.getFileStorage().entrySet();
-        err.printf("FileContainer (%d) for project %s\n", entrySet.size(), toString()); //NOI18N
-        Map<CharSequence, Object> canonicalNames = container.getCanonicalNames();
-        for (Entry<CharSequence, Object> entry : canonicalNames.entrySet()) {
-            Object altKey = entry.getValue();
-            if (altKey instanceof CharSequence) {
-                if (!CharSequenceUtilities.textEquals(entry.getKey(), (CharSequence)altKey)) {
-                    err.printf("\tAltKey: %s->%s\n", entry.getKey(), altKey); //NOI18N
-                } 
-            } else if (altKey != null) {
-                err.printf("\tAltKeys: %s->%s\n", entry.getKey(), Arrays.asList((CharSequence[]) altKey).toString()); //NOI18N
-            }
-        }
-        for(Map.Entry<CharSequence, FileEntry> entry : entrySet){
-            err.println("\tEntry "+entry.getKey()); //NOI18N
-            if (entry.getValue().getStatePairs().isEmpty()) {
-                err.println("\t\tState EMPTY"); //NOI18N
-                continue;
-            }
-            for(PreprocessorStatePair pair : entry.getValue().getStatePairs()) {
-                err.println("\t\tState"); //NOI18N
-                String text = pair.toString();
-                StringTokenizer st = new StringTokenizer(text,"\n"); //NOI18N
-                while(st.hasMoreTokens()) {
-                    String s = st.nextToken();
-                    if ("Snapshot".equals(s)) { //NOI18N
-                        err.println("\t\t\t"+s+"{...}"); //NOI18N
-                        break;
-                    }
-                    err.println("\t\t\t"+s); //NOI18N
-                }
-            }
-        }
     }
 
     private final WeakContainer<GraphContainer> weakGraphContainer;
@@ -3276,18 +3239,50 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private final WeakContainer<ClassifierContainer> weakClassifierContainer;
-    final ClassifierContainer getClassifierSorage() {
+    private ClassifierContainer getClassifierSorage() {
         ClassifierContainer cc = weakClassifierContainer.getContainer();
         return cc != null ? cc : ClassifierContainer.empty();
     }
 
     public void traceProjectContainers(PrintStream printStream) {
-        dumpProjectContainers(getClassifierSorage(), printStream);
-        dumpProjectContainers(getDeclarationsSorage(), printStream);
+        dumpProjectClassifierContainer(this, printStream);
+        dumpProjectDeclarationContainer(this, printStream);
     }
 
-    private static void dumpProjectContainers(ClassifierContainer container, PrintStream printStream) {
+    /*package*/static void dumpProjectGrapthContainer(ProjectBase project, PrintStream printStream) {
+        GraphContainer container = project.getGraphStorage();
+        Map<CharSequence, CsmFile> map = new TreeMap<CharSequence, CsmFile>();
+        for (CsmFile f : project.getAllFiles()) {
+            map.put(f.getAbsolutePath(), f);
+        }
+        for (CsmFile file : map.values()) {
+            printStream.println("\n========== Dumping links for file " + file.getAbsolutePath());
+            Map<CharSequence, CsmFile> set = new TreeMap<CharSequence, CsmFile>();
+            for (CsmFile f : container.getInLinks(file)) {
+                set.put(f.getAbsolutePath(), (FileImpl) f);
+            }
+            if (set.size() > 0) {
+                printStream.println("\tInput");
+                for (CsmFile f : set.values()) {
+                    printStream.println("\t\t" + f.getAbsolutePath());
+                }
+                set.clear();
+            }
+            for (CsmFile f : container.getOutLinks(file)) {
+                set.put(f.getAbsolutePath(), (FileImpl) f);
+            }
+            if (set.size() > 0) {
+                printStream.println("\tOutput");
+                for (CsmFile f : set.values()) {
+                    printStream.println("\t\t" + f.getAbsolutePath());
+                }
+            }
+        }
+    }
+
+    /*package*/static void dumpProjectClassifierContainer(ProjectBase project, PrintStream printStream) {
         printStream.println("\n========== Dumping Dump Project Classifiers");//NOI18N
+        ClassifierContainer container = project.getClassifierSorage();
         for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTestClassifiers().entrySet()) {
             printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
             if (entry.getValue() == null) {
@@ -3307,8 +3302,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    private static void dumpProjectContainers(DeclarationContainerProject container, PrintStream printStream) {
+    /*package*/ static void dumpProjectDeclarationContainer(ProjectBase project, PrintStream printStream) {
         printStream.println("\n========== Dumping Project declarations");//NOI18N
+        DeclarationContainerProject container = project.getDeclarationsSorage();
         for (Map.Entry<CharSequence, Object> entry : container.getTestDeclarations().entrySet()) {
             printStream.println("\t" + entry.getKey().toString());//NOI18N
             TreeMap<CharSequence, CsmDeclaration> set = new TreeMap<CharSequence, CsmDeclaration>();
@@ -3353,4 +3349,41 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
     }
+
+    public static void dumpFileContainer(CsmProject project, PrintWriter printStream) {
+        FileContainer fileContainer = ((ProjectBase) project).getFileContainer();
+        printStream.println("\n========== Dumping File container");
+        Map<CharSequence, Object/*CharSequence or CharSequence[]*/> names = fileContainer.getCanonicalNames();
+        //for unit test only
+        Map<CharSequence, FileEntry> files = fileContainer.getFileStorage();
+        for(Map.Entry<CharSequence, FileEntry> entry : files.entrySet()){
+            CharSequence key = entry.getKey();
+            printStream.println("\tFile "+key.toString());
+            Object name = names.get(key);
+            if (name instanceof CharSequence[]) {
+                for(CharSequence alt : (CharSequence[])name) {
+                    printStream.println("\t\tAlias "+alt.toString());
+                }
+            } else if (name instanceof CharSequence) {
+                printStream.println("\t\tAlias "+name.toString());
+            }
+            FileEntry file = entry.getValue();
+            CsmFile csmFile = file.getTestFileUID().getObject();
+            printStream.println("\t\tModel File "+csmFile.getAbsolutePath());
+            printStream.println("\t\tNumber of states "+file.getPrerocStates().size());
+            for (PreprocessorStatePair statePair : file.getStatePairs()) {
+                StringTokenizer st = new StringTokenizer(FilePreprocessorConditionState.toStringBrief(statePair.pcState),"\n");
+                boolean first = true;
+                while (st.hasMoreTokens()) {
+                    if (first) {
+                        printStream.println("\t\tState "+st.nextToken());
+                        first = false;
+                    } else {
+                        printStream.println("\t\t\t"+st.nextToken());
+                    }
+                }
+            }
+        }
+    }
+
 }

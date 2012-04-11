@@ -42,162 +42,22 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
-import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
-import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
 import java.io.PrintStream;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFriend;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
-import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer.FileEntry;
+import java.io.PrintWriter;
 
 /**
  *
  * @author Alexander Simon
  */
 public final class Tracer {
+    private Tracer() {}
 
     public static void dumpProjectContainers(ProjectBase project){
         PrintStream printStream = System.out;
-        dumpProjectContainers(project.getClassifierSorage(), printStream);
-        dumpProjectContainers(project, printStream);
-        dumpProjectContainers(project.getDeclarationsSorage(), printStream);
-        dumpProjectContainers(project.getFileContainer(), printStream);
+        ProjectBase.dumpProjectClassifierContainer(project, printStream);
+        ProjectBase.dumpProjectGrapthContainer(project, printStream);
+        ProjectBase.dumpProjectDeclarationContainer(project, printStream);
+        ProjectBase.dumpFileContainer(project, new PrintWriter(printStream));
     }
 
-    private static void dumpProjectContainers(ClassifierContainer container, PrintStream printStream){
-        printStream.println("\n========== Dumping Dump Project Classifiers");
-        for(Map.Entry<CharSequence, CsmClassifier> entry : container.getTestClassifiers().entrySet()){
-            printStream.print("\t"+entry.getKey().toString()+" ");
-            if (entry.getValue() == null){
-                printStream.println("null");
-            } else {
-                printStream.println(entry.getValue().getUniqueName());
-            }
-        }
-        printStream.println("\n========== Dumping Dump Project Typedefs");
-        for(Map.Entry<CharSequence, CsmClassifier> entry : container.getTestTypedefs().entrySet()){
-            printStream.print("\t"+entry.getKey().toString()+" ");
-            if (entry.getValue() == null){
-                printStream.println("null");
-            } else {
-                printStream.println(entry.getValue().getUniqueName());
-            }
-        }
-    }
-
-    private static void dumpProjectContainers(ProjectBase project, PrintStream printStream){
-        GraphContainer container  = project.getGraphStorage();
-        Map<CharSequence, CsmFile> map = new TreeMap<CharSequence, CsmFile>();
-        for (CsmFile f : project.getAllFiles()){
-            map.put(f.getAbsolutePath(), f);
-        }
-        for (CsmFile file : map.values()){
-            printStream.println("\n========== Dumping links for file "+file.getAbsolutePath());
-            Map<CharSequence, CsmFile> set = new TreeMap<CharSequence, CsmFile>();
-            for (CsmFile f : container.getInLinks(file)){
-                set.put(f.getAbsolutePath(), (FileImpl)f);
-            }
-            if (set.size()>0) {
-                printStream.println("\tInput");
-                for (CsmFile f : set.values()){
-                    printStream.println("\t\t"+f.getAbsolutePath());
-                }
-                set.clear();
-            }
-            for (CsmFile f : container.getOutLinks(file)){
-                set.put(f.getAbsolutePath(), (FileImpl)f);
-            }
-            if (set.size()>0) {
-                printStream.println("\tOutput");
-                for (CsmFile f : set.values()){
-                    printStream.println("\t\t"+f.getAbsolutePath());
-                }
-            }
-        }
-    }
-
-    private static void dumpProjectContainers(DeclarationContainerProject container, PrintStream printStream){
-        printStream.println("\n========== Dumping Project declarations");
-        for(Map.Entry<CharSequence, Object> entry : container.getTestDeclarations().entrySet()){
-            printStream.println("\t"+entry.getKey().toString());
-            TreeMap<CharSequence, CsmDeclaration> set = new TreeMap<CharSequence, CsmDeclaration>();
-            Object o = entry.getValue();
-            if (o instanceof CsmUID<?>[]) {
-                // we know the template type to be CsmDeclaration
-                @SuppressWarnings("unchecked") // checked
-                CsmUID<CsmDeclaration>[] uids = (CsmUID<CsmDeclaration>[]) o;
-                for(CsmUID<CsmDeclaration> uidt : uids){
-                    set.put(((CsmOffsetableDeclaration)uidt.getObject()).getContainingFile().getAbsolutePath(), uidt.getObject());
-                }
-            } else if (o instanceof CsmUID<?>) {
-                // we know the template type to be CsmDeclaration
-                @SuppressWarnings("unchecked") // checked
-                CsmUID<CsmDeclaration> uidt = (CsmUID<CsmDeclaration>) o;
-                set.put(((CsmOffsetableDeclaration)uidt.getObject()).getContainingFile().getAbsolutePath(), uidt.getObject());
-            }
-            for(Map.Entry<CharSequence, CsmDeclaration> f : set.entrySet()){
-                printStream.println("\t\t" + f.getValue() + " from " + f.getKey()); //NOI18N
-            }
-        }
-        printStream.println("\n========== Dumping Project friends");
-        for(Map.Entry<CharSequence, Set<CsmUID<CsmFriend>>> entry : container.getTestFriends().entrySet()){
-            printStream.println("\t"+entry.getKey().toString());
-            TreeMap<CharSequence, CsmFriend> set = new TreeMap<CharSequence, CsmFriend>();
-            for(CsmUID<? extends CsmFriend> uid : entry.getValue()) {
-                CsmFriend f = uid.getObject();
-                set.put(f.getQualifiedName(), f);
-            }
-            for(Map.Entry<CharSequence, CsmFriend> f : set.entrySet()){
-                printStream.println("\t\t"+f.getKey().toString()+" "+f.getValue());
-            }
-        }
-    }
-
-    private static void dumpProjectContainers(FileContainer fileContainer, PrintStream printStream) {
-        printStream.println("\n========== Dumping File container");
-        Map<CharSequence, Object/*CharSequence or CharSequence[]*/> names = fileContainer.getCanonicalNames();
-        //for unit test only
-        Map<CharSequence, FileEntry> files = fileContainer.getFileStorage();
-        for(Map.Entry<CharSequence, FileEntry> entry : files.entrySet()){
-            CharSequence key = entry.getKey();
-            printStream.println("\tFile "+key.toString());
-            Object name = names.get(key);
-            if (name instanceof CharSequence[]) {
-                for(CharSequence alt : (CharSequence[])name) {
-                    printStream.println("\t\tAlias "+alt.toString());
-                }
-            } else if (name instanceof CharSequence) {
-                printStream.println("\t\tAlias "+name.toString());
-            }
-            FileEntry file = entry.getValue();
-            CsmFile csmFile = file.getTestFileUID().getObject();
-            printStream.println("\t\tModel File "+csmFile.getAbsolutePath());
-            printStream.println("\t\tNumber of states "+file.getPrerocStates().size());
-            for (PreprocessorStatePair statePair : file.getStatePairs()) {
-                StringTokenizer st = new StringTokenizer(FilePreprocessorConditionState.toStringBrief(statePair.pcState),"\n");
-                boolean first = true;
-                while (st.hasMoreTokens()) {
-                    if (first) {
-                        printStream.println("\t\tState "+st.nextToken());
-                        first = false;
-                    } else {
-                        printStream.println("\t\t\t"+st.nextToken());
-                    }
-                }
-            }
-        }
-    }
-
-
-    private Tracer() {
-    }
 }
