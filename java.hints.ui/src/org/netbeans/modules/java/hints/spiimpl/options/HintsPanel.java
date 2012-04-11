@@ -302,8 +302,8 @@ public final class HintsPanel extends javax.swing.JPanel   {
         editScriptButton.setVisible(editEnabled);
         editingButtons.setVisible(false);
         
-        severityComboBox.setVisible(useConfigCombo);
-        severityLabel.setVisible(useConfigCombo);
+        severityComboBox.setVisible(useConfigCombo || inOptionsDialog);
+        severityLabel.setVisible(useConfigCombo || inOptionsDialog);
         okButton.setVisible(showOkCancel);
         cancelButton.setVisible(showOkCancel);
         validate();
