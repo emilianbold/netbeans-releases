@@ -201,6 +201,14 @@ public class HintsInvoker {
                                         TreePath startAt,
                                         Iterable<? extends HintDescription> hints,
                                         Collection<? super MessageImpl> problems) {
+        return computeHints(info, startAt, true, hints, problems);
+    }
+    
+    public Map<HintDescription, List<ErrorDescription>> computeHints(CompilationInfo info,
+                                        TreePath startAt,
+                                        boolean recursive,
+                                        Iterable<? extends HintDescription> hints,
+                                        Collection<? super MessageImpl> problems) {
         Map<Class, List<HintDescription>> triggerKind2Hints = new HashMap<Class, List<HintDescription>>();
 
         for (Class<? extends Trigger> c : TRIGGER_KINDS) {
@@ -212,13 +220,15 @@ public class HintsInvoker {
 
             sorted.add(hd);
         }
-        
+
         if (caret != -1) {
             TreePath tp = info.getTreeUtilities().pathFor(caret);
-            return computeSuggestions(info, tp, triggerKind2Hints, problems);
+            return computeSuggestions(info, tp, true, triggerKind2Hints, problems);
         } else {
             if (from != (-1) && to != (-1)) {
                 return computeHintsInSpan(info, triggerKind2Hints, problems);
+            } else if (!recursive) {
+                return computeSuggestions(info, startAt, false, triggerKind2Hints, problems);
             } else {
                 return computeHintsImpl(info, startAt, triggerKind2Hints, problems);
             }
@@ -333,7 +343,7 @@ public class HintsInvoker {
         }
 
         if (path != null) {
-            mergeAll(errors, computeSuggestions(info, path, triggerKind2Hints, problems));
+            mergeAll(errors, computeSuggestions(info, path, true, triggerKind2Hints, problems));
         }
 
         return errors;
@@ -341,6 +351,7 @@ public class HintsInvoker {
 
     private Map<HintDescription, List<ErrorDescription>> computeSuggestions(CompilationInfo info,
                                         TreePath workOn,
+                                        boolean up,
                                         Map<Class, List<HintDescription>> triggerKind2Hints,
                                         Collection<? super MessageImpl> problems) {
         Map<HintDescription, List<ErrorDescription>> errors = new HashMap<HintDescription, List<ErrorDescription>>();
@@ -354,6 +365,7 @@ public class HintsInvoker {
 
             while (proc != null) {
                 new ScannerImpl(info, cancel, hints, problems).scanDoNotGoDeeper(proc, errors);
+                if (!up) break;
                 proc = proc.getParentPath();
             }
 
@@ -379,6 +391,7 @@ public class HintsInvoker {
 
             while (tp != null) {
                 paths.add(tp);
+                if (!up) break;
                 tp = tp.getParentPath();
             }
 

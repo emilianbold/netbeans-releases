@@ -183,7 +183,7 @@ public class InvertBooleanRefactoringPlugin implements RefactoringPlugin { //ext
                             format.setRightBrace("}$");
                             String initFormat = format.format(VAR_INIT);
 
-                            TransformationSupport.create(initFormat).setCancel(cancel).transformTreePath(parameter, TreePath.getPath(parameter.getCompilationUnit(), var.getInitializer()));
+                            TransformationSupport.create(initFormat).setCancel(cancel).transformTreePath(parameter, path);
                         }
                     } else if (leaf.getKind() == Kind.METHOD) {
                         MethodTree mt = (MethodTree) leaf;
