@@ -170,7 +170,7 @@ public abstract class LayerCacheManager {
                         err.log(Level.WARNING, null, ioe);
                         XMLFileSystem fallback = new XMLFileSystem();
                         try {
-                            fallback.setXmlUrls(urls.toArray(new URL[0]));
+                            fallback.setXmlUrls(urls.toArray(new URL[urls.size()]));
                         } catch (PropertyVetoException ex) {
                             err.log(Level.WARNING, null, ex);
                         }
