@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import java.awt.event.ActionEvent;
@@ -141,7 +141,7 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
             MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
             if (conf != null) {
                 // Get debugger type
-                EngineType projectDebuggerType = DebuggerManager.debuggerType(conf);
+                EngineType projectDebuggerType = NativeDebuggerManager.debuggerType(conf);
 
                 String path = conf.getAbsoluteOutputValue().replace("\\", "/"); // NOI18N
                 path = RemoteSyncSupport.getPathMap(exEnv, project).getRemotePath(path, true);
@@ -154,7 +154,7 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
                     dt.setHostName(ExecutionEnvironmentFactory.toUniqueID(exEnv));
                     dt.setEngine(projectDebuggerType);
 
-                    DebuggerManager.get().attach(dt);
+                    NativeDebuggerManager.get().attach(dt);
                 }
             }
         }

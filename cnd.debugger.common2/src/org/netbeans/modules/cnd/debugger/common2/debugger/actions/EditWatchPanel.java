@@ -62,7 +62,7 @@ import org.netbeans.spi.debugger.ui.Controller;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeWatch;
@@ -308,7 +308,7 @@ public class EditWatchPanel extends javax.swing.JPanel
 		return false;
 
 	    // point of no return
-	    DebuggerManager manager = DebuggerManager.get();
+	    NativeDebuggerManager manager = NativeDebuggerManager.get();
 	    String expr = watchText.getText();
 //	    if (useQCheckBox.isEnabled() && useQCheckBox.isSelected())
 //		expr = qWatchText.getText();

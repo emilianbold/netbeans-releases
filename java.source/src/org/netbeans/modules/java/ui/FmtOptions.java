@@ -519,9 +519,9 @@ public class FmtOptions {
             { usePackageImport, FALSE}, //NOI18N
             { useFQNs, FALSE}, //NOI18N
             { importInnerClasses, FALSE}, //NOI18N
-            { allowConvertToStarImport, TRUE}, //NOI18N
+            { allowConvertToStarImport, FALSE}, //NOI18N
             { countForUsingStarImport, "5"}, //NOI18N
-            { allowConvertToStaticStarImport, TRUE}, //NOI18N
+            { allowConvertToStaticStarImport, FALSE}, //NOI18N
             { countForUsingStaticStarImport, "3"}, //NOI18N
             { packagesForStarImport, ""}, //NOI18N
             { separateStaticImports, FALSE}, //NOI18N

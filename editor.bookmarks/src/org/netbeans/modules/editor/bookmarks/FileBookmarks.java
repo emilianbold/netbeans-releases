@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.bookmarks;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.openide.filesystems.FileObject;
@@ -62,10 +63,11 @@ public class FileBookmarks {
     
     private List<BookmarkInfo> bookmarks; // Sorted by line number
     
-    FileBookmarks(ProjectBookmarks projectBookmarks, URL url, List<BookmarkInfo> bookmarks) {
+    FileBookmarks(ProjectBookmarks projectBookmarks, URL url, FileObject fileObject, List<BookmarkInfo> bookmarks) {
         this.projectBookmarks = projectBookmarks;
         this.url = url;
-        this.bookmarks = bookmarks;
+        this.fileObject = fileObject;
+        this.bookmarks = new ArrayList<BookmarkInfo>(bookmarks);
         for (BookmarkInfo bookmark : bookmarks) {
             bookmark.setFileBookmarks(this);
         }

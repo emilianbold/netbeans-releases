@@ -80,7 +80,7 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
     private Map<String, Attribute> attributes = null;
     private Content content = null;
     private ContentModel contentModel = null;
-    private org.netbeans.modules.html.editor.lib.dtd.DTD.Element dtdElement = null;
+    private final org.netbeans.modules.html.editor.lib.dtd.DTD.Element dtdElement;
     private Collection<ProblemDescription> descriptions = null;
     private List<CharSequence> stack = null; //for debugging
     private Map<String, Object> properties;
@@ -92,27 +92,27 @@ public class AstNode implements FeaturedNode, OpenTag, CloseTag {
             org.netbeans.modules.html.editor.lib.dtd.DTD.Element dtdElement,
             boolean isEmpty,
             List<CharSequence> stack) {
-
-        this(name, nodeType, startOffset, endOffset, isEmpty);
-
-        this.dtdElement = dtdElement;
-
-        this.contentModel = dtdElement != null ? dtdElement.getContentModel() : null;
-
-        this.content = contentModel != null ? contentModel.getContent() : null;
-
-        this.stack = stack;
-    }
-
-    public AstNode(CharSequence name, ElementType nodeType, int startOffset, int endOffset, boolean isEmpty) {
-        Parameters.notNull("name", name);
-
+        
         this.name = name;
         this.nodeType = nodeType;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.logicalEndOffset = endOffset;
         this.empty = isEmpty;
+
+        this.dtdElement = dtdElement;
+        this.contentModel = dtdElement != null ? dtdElement.getContentModel() : null;
+        this.content = contentModel != null ? contentModel.getContent() : null;
+
+        this.stack = stack;
+    }
+
+    public AstNode(CharSequence name, 
+            ElementType nodeType, 
+            int startOffset, 
+            int endOffset, 
+            boolean isEmpty) {
+        this(name, nodeType, startOffset, endOffset, null, isEmpty, null);
     }
 
     @Override

@@ -203,7 +203,7 @@ public class NativeWatch {
 	    // Will come back as DebuggerManager.watchRemoved()
 	    // which will call WatchBag.remove()
 	} else {
-	    DebuggerManager.get().watchBag().remove(this);
+	    NativeDebuggerManager.get().watchBag().remove(this);
 	}
     }
 

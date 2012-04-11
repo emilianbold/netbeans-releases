@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.CorefileFilter;
 import org.netbeans.modules.cnd.debugger.common2.utils.masterdetail.RecordListListener;
 import org.netbeans.modules.cnd.debugger.common2.utils.masterdetail.RecordListEvent;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
@@ -172,7 +172,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         if (selectedProject != null) {
             final MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(selectedProject);
             if (conf != null) {
-                EngineType projectDebuggerType = DebuggerManager.debuggerType(conf);
+                EngineType projectDebuggerType = NativeDebuggerManager.debuggerType(conf);
                 if (getEngine() != projectDebuggerType) {
                     setError("ERROR_WRONG_FAMILY", false); // NOI18N
                 }
@@ -256,8 +256,8 @@ final class DebugCorePanel extends javax.swing.JPanel {
     private void initRemoteHost() {
         updateRemoteHostList();
 
-	if (DebuggerManager.isStandalone()) {
-	    CustomizableHostList hostlist = DebuggerManager.get().getHostList();
+	if (NativeDebuggerManager.isStandalone()) {
+	    CustomizableHostList hostlist = NativeDebuggerManager.get().getHostList();
 
 	    // listen to host host list model
 	    if (hostlist != null) {
@@ -418,7 +418,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 8, 0);
 	add(hostComboBox, gridBagConstraints);
 
-	if (!DebuggerManager.isStandalone())
+	if (!NativeDebuggerManager.isStandalone())
 	    hostsButton.setEnabled(false);      // IZ 147543
 
         hostsButton.setText(Catalog.get("TITLE_Hosts")); // NOI18N
@@ -563,7 +563,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         //gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
-	if (!DebuggerManager.isStandalone())
+	if (!NativeDebuggerManager.isStandalone())
 	    add(projectLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -574,7 +574,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 6, 12);
-	if (!DebuggerManager.isStandalone())
+	if (!NativeDebuggerManager.isStandalone())
 	    add(projectComboBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

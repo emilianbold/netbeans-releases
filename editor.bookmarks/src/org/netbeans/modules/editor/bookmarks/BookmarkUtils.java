@@ -44,9 +44,15 @@
 
 package org.netbeans.modules.editor.bookmarks;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
+import org.netbeans.modules.editor.bookmarks.ui.BookmarksView;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -62,10 +68,43 @@ import org.openide.text.Line;
 
 public final class BookmarkUtils {
     
+    // -J-Dorg.netbeans.modules.editor.bookmarks.BookmarkUtils.level=FINE
+    private static final Logger LOG = Logger.getLogger(BookmarkUtils.class.getName());
+
     private BookmarkUtils() {
         // no instances
     }
     
+    public static void setBookmarkNameUnderLock(BookmarkInfo bookmark, String bookmarkName) {
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            bookmark.setName(bookmarkName);
+            lockedBookmarkManager.updateNameOrKey(bookmark, true, false);
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
+    }
+    
+    public static void setBookmarkKeyUnderLock(BookmarkInfo bookmark, String bookmarkKey) {
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            bookmark.setKey(bookmarkKey);
+            lockedBookmarkManager.updateNameOrKey(bookmark, false, true);
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
+    }
+    
+    public static void removeBookmarkUnderLock(BookmarkInfo bookmark) {
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            lockedBookmarkManager.removeBookmarks(Collections.singletonList(bookmark));
+            BookmarkHistory.get().remove(bookmark);
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
+    }
+
     public static int offset2LineIndex(Document doc, int offset) {
         javax.swing.text.Element lineRoot = doc.getDefaultRootElement();
         int lineIndex = lineRoot.getElementIndex(offset);
@@ -80,6 +119,27 @@ public final class BookmarkUtils {
                 : doc.getLength();
         return offset;
         
+    }
+    
+    public static void postOpenEditor(BookmarkInfo bookmark) {
+        try {
+            final EditorCookie ec = BookmarkUtils.findEditorCookie(bookmark);
+            Document doc;
+            if (ec != null && (doc = ec.openDocument()) != null) {
+                BookmarkUtils.updateCurrentLineIndex(bookmark, doc);
+                BookmarkHistory.get().add(bookmark);
+                final int lineIndex = bookmark.getCurrentLineIndex();
+                // Post opening since otherwise the focus would get returned to an original pane
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        BookmarkUtils.openEditor(ec, lineIndex); // Take url from bookmarkInfo
+                    }
+                });
+            }
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, null, ex);
+        }
     }
     
     public static void openEditor(EditorCookie ec, int lineIndex) {

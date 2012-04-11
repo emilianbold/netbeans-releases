@@ -60,7 +60,7 @@ import org.netbeans.spi.debugger.ui.Controller;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import java.util.Collections;
 import org.netbeans.api.debugger.ActionsManager;
 
@@ -123,7 +123,7 @@ public class AddWatchAction extends NativeActionsProvider {
     @Override
     public void doAction(Object action) {
         final NativeDebugger debugger =
-	    DebuggerManager.get().currentNativeDebugger();
+	    NativeDebuggerManager.get().currentNativeDebugger();
 	AddWatchProcessor processor = new AddWatchProcessor(debugger, null);
 	processor.setVisible(true);		// blocks?
     }

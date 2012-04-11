@@ -203,28 +203,32 @@ public class BookmarkManager {
      * @param document non-null document for which the bookmarks should be loaded.
      */
     public FileBookmarks getFileBookmarks(Document document) {
-        FileBookmarks ret = null;
+        FileBookmarks fileBookmarks = null;
         ProjectBookmarks projectBookmarks = getProjectBookmarks(document);
         if (projectBookmarks != null) {
             if (projectBookmarks != null) {
                 FileObject fo = NbEditorUtilities.getFileObject (document); // fo should be non-null
                 URL url = fo.toURL();
-                ret = projectBookmarks.get(url);
+                fileBookmarks = projectBookmarks.get(url);
+                if (fileBookmarks == null) {
+                    fileBookmarks = new FileBookmarks(projectBookmarks, url, fo, Collections.<BookmarkInfo>emptyList());
+                    projectBookmarks.add(fileBookmarks);
+                }
             }
         }
-        return ret;
+        return fileBookmarks;
     }
 
     public ProjectBookmarks getProjectBookmarks(Document document) {
-        ProjectBookmarks ret = null;
+        ProjectBookmarks projectBookmarks = null;
         FileObject fo = NbEditorUtilities.getFileObject (document);
         if (fo != null) {
             Project project = FileOwnerQuery.getOwner(fo);
             if (project != null) {
-                ret = getProjectBookmarks(project, true, true);
+                projectBookmarks = getProjectBookmarks(project, true, true);
             }
         }
-        return ret;
+        return projectBookmarks;
     }
     
     public ProjectBookmarks getProjectBookmarks(Project project, boolean load, boolean forceCreation) {

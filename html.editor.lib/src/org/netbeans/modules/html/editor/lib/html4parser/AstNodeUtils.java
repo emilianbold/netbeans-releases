@@ -228,19 +228,23 @@ public class AstNodeUtils {
                 //process only siblings before the offset!
                 break;
             }
-            if (sibling.type() == ElementType.OPEN_TAG) {
-                DTD.Content subcontent = content.reduce(asibling.getDTDElement().getName());
-                if (subcontent != null) {
-                    //sibling reduced - update the content to the resolved one
-                    if(content == subcontent) {
-                        //the content is reduced to itself
+            if (asibling.type() == ElementType.OPEN_TAG) {
+                //test if the node represents a known html node
+                DTD.Element dtdElement = asibling.getDTDElement();
+                if (dtdElement != null) {
+                    DTD.Content subcontent = content.reduce(dtdElement.getName());
+                    if (subcontent != null) {
+                        //sibling reduced - update the content to the resolved one
+                        if (content == subcontent) {
+                            //the content is reduced to itself
+                        } else {
+                            content = subcontent;
+                            childrenBefore.add(asibling.getDTDElement());
+                        }
                     } else {
-                        content = subcontent;
-                        childrenBefore.add(asibling.getDTDElement());
+                        //the siblibg doesn't reduce the content - it is unallowed there - ignore it
                     }
-                } else {
-                    //the siblibg doesn't reduce the content - it is unallowed there - ignore it
-                }
+                } //else - unknown node, ignore
             }
         }
 

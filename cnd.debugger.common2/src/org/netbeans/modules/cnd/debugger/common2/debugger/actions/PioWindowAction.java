@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 
@@ -58,7 +58,7 @@ public final class PioWindowAction extends CallableSystemAction implements State
 
     // interface CallableSystemAction
     public void performAction() {
-	DebuggerManager.get().enablePioWindow();
+	NativeDebuggerManager.get().enablePioWindow();
     }
 
     // interface SystemAction
