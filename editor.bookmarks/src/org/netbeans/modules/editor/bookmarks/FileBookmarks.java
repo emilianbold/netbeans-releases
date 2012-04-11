@@ -88,6 +88,10 @@ public class FileBookmarks {
         return fileObject;
     }
     
+    public boolean containsAnyBookmarks() {
+        return (!bookmarks.isEmpty());
+    }
+
     public List<BookmarkInfo> getBookmarks() {
         return bookmarks;
     }
