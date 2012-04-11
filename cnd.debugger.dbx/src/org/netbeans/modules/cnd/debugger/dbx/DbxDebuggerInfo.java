@@ -46,9 +46,8 @@ package org.netbeans.modules.cnd.debugger.dbx;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RtcProfile;
-import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
-import org.netbeans.modules.cnd.debugger.dbx.options.DbxProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
+import org.netbeans.modules.cnd.debugger.dbx.options.DbxProfile;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -57,22 +56,9 @@ import org.openide.util.lookup.ServiceProvider;
  */
 
 public final class DbxDebuggerInfo extends NativeDebuggerInfo {
-
-    private DbgProfile dbxProfile = null;
-
     private DbxDebuggerInfo() {
 	super(DbxEngineCapabilityProvider.getDbxEngineType());
     } 
-
-    public DbgProfile getDbgProfile() {
-        if (dbxProfile == null)
-            dbxProfile = (DbgProfile) getConfiguration().getAuxObject(DbxProfile.PROFILE_ID);
-        return dbxProfile;
-    }
-
-    public void setDbgProfile(DbgProfile profile) {
-        dbxProfile = profile;
-    }
 
     private RtcProfile rtcOptions = null;
 
@@ -85,6 +71,11 @@ public final class DbxDebuggerInfo extends NativeDebuggerInfo {
 
     /*package*/ void setRtcProfile(RtcProfile rtcOptions) {
         this.rtcOptions = rtcOptions;
+    }
+    
+    @Override
+    protected String getDbgProfileId() {
+        return DbxProfile.PROFILE_ID;
     }
 
     /**

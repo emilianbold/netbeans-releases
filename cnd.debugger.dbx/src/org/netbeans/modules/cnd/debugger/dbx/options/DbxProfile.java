@@ -170,6 +170,9 @@ public class DbxProfile extends DbgProfile {
 	set.setName(Catalog.get("General"));
 	set.setDisplayName(Catalog.get("General"));
 	set.setShortDescription(Catalog.get("General"));
+        
+        set.put(DebuggerOption.DEBUG_COMMAND.createNodeProp(this));
+        set.put(DebuggerOption.DEBUG_DIR.createNodeProp(this));
 
 	set.put(DebuggerOption.DBX_INIT_FILE.createNodeProp(this));
 	set.put(new PathmapNodeProp(this, Catalog.get("PathmapPropDisplayName")));

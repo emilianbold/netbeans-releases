@@ -225,8 +225,9 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 
     protected void applyRunargs() {
 	String runargs = getArgsFlatEx();
-	if (runargs == null)
+	if (runargs == null) {
 	    runargs = "";
+        }
         String command = "runargs " + runargs; //NOI18N
 	// maybe conflict with "Standard output" implementation
 	boolean has_redir = runargs.contains("<") || runargs.contains(">");  //NOI18N
@@ -242,18 +243,14 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	}
 	dbx().sendCommand(0, 0, command);
     }
-
+    
     protected void applyRunDirectory() {
-
-	// NOTE: getRunDirectory() will attempt to cobble up something 
-	// based on config baseDir if no rundirectory was gven.
-        RunProfile runProfile = getCurrentSettings().runProfile();
-	if (runProfile.getRunDirectory() != null) {
+        String runDirectory = getRunDirectory();
+	if (runDirectory != null) {
 	    /* DEBUG
 	    String baseDir = mainRunProfile.getBaseDir();
 	    dbx().sendCommand(0, 0, "# baseDir " + baseDir); //NOI18N
 	    */
-	    String runDirectory = runProfile.getRunDirectory();
 	    runDirectory = dbxDebugger().localToRemote("applyRunDirectory", runDirectory); // NOI18N
 	    // CR 6983742, 7009459, 7024153
 	    boolean found = runDirectory.startsWith("//~") || runDirectory.startsWith("//."); // NOI18N
