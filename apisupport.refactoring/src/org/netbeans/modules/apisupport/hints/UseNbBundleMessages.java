@@ -179,13 +179,11 @@ public class UseNbBundleMessages {
             return null;
         }
         final boolean isAlreadyRegistered = isAlreadyRegistered(treePath, key);
-        EditableProperties ep;
         final FileObject bundleProperties;
         if (isAlreadyRegistered) {
             if (mit == null) {
                 return null; // nothing to do
             } // else still need to convert getMessage call
-            ep = null; // unused
             bundleProperties = null;
         } else {
             String bundleResource = compilationInfo.getCompilationUnit().getPackageName().toString().replace('.', '/') + "/Bundle.properties";
@@ -193,7 +191,7 @@ public class UseNbBundleMessages {
             if (bundleProperties == null) {
                 return warning(UseNbBundleMessages_no_such_bundle(bundleResource), span, compilationInfo);
             }
-            ep = new EditableProperties(true);
+            EditableProperties ep = new EditableProperties(true);
             try {
                 if (DataObject.find(bundleProperties).isModified()) {
                     // Using EditorCookie.document is quite difficult here due to encoding issues. Keep it simple.
@@ -263,22 +261,23 @@ public class UseNbBundleMessages {
                             Tree enclosing = findEnclosingElement(wc, treePath);
                             Tree modifiers;
                             Tree nueModifiers;
+                            ExpressionTree[] linesA = lines.toArray(new ExpressionTree[lines.size()]);
                             switch (enclosing.getKind()) {
                             case METHOD:
                                 modifiers = ((MethodTree) enclosing).getModifiers();
-                                nueModifiers = gu.appendToAnnotationValue(((MethodTree) enclosing).getModifiers(), nbBundleMessages, "value", lines.toArray(new ExpressionTree[0]));
+                                nueModifiers = gu.appendToAnnotationValue(((MethodTree) enclosing).getModifiers(), nbBundleMessages, "value", linesA);
                                 break;
                             case VARIABLE:
                                 modifiers = ((VariableTree) enclosing).getModifiers();
-                                nueModifiers = gu.appendToAnnotationValue(((VariableTree) enclosing).getModifiers(), nbBundleMessages, "value", lines.toArray(new ExpressionTree[0]));
+                                nueModifiers = gu.appendToAnnotationValue(((VariableTree) enclosing).getModifiers(), nbBundleMessages, "value", linesA);
                                 break;
                             case COMPILATION_UNIT:
                                 modifiers = enclosing;
-                                nueModifiers = gu.appendToAnnotationValue((CompilationUnitTree) enclosing, nbBundleMessages, "value", lines.toArray(new ExpressionTree[0]));
+                                nueModifiers = gu.appendToAnnotationValue((CompilationUnitTree) enclosing, nbBundleMessages, "value", linesA);
                                 break;
                             default:
                                 modifiers = ((ClassTree) enclosing).getModifiers();
-                                nueModifiers = gu.appendToAnnotationValue(((ClassTree) enclosing).getModifiers(), nbBundleMessages, "value", lines.toArray(new ExpressionTree[0]));
+                                nueModifiers = gu.appendToAnnotationValue(((ClassTree) enclosing).getModifiers(), nbBundleMessages, "value", linesA);
                             }
                             wc.rewrite(modifiers, nueModifiers);
                         // XXX remove NbBundle import if now unused
