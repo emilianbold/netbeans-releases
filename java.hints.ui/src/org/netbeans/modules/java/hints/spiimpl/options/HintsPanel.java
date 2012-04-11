@@ -221,7 +221,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         configCombo.setModel(new ConfigurationsComboModel(true));
         configCombo.setRenderer(new ConfigurationRenderer());
-        if (useConfigCombo) {
+        if (useConfigCombo || inOptionsDialog) {
             configCombo.setSelectedItem(null);
         }
         
