@@ -203,7 +203,7 @@ public final class HostSelectionPanel extends JPanel {
                     if (selectedNode == null || !selectedNode.getDisplayName().equals(node.getDisplayName())) {
                         selectedNode = node;
                         NeighbourHost host = node.getLookup().lookup(NeighbourHost.class);
-                        if (node != null) {
+                        if (host != null) {
                             set(host.getName(), 22);
                         }
                     }
