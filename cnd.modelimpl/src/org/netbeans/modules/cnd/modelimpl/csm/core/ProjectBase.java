@@ -61,7 +61,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -72,7 +71,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import java.util.logging.Level;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
@@ -3244,9 +3242,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return cc != null ? cc : ClassifierContainer.empty();
     }
 
-    public void traceProjectContainers(PrintStream printStream) {
-        dumpProjectClassifierContainer(this, printStream);
-        dumpProjectDeclarationContainer(this, printStream);
+    public static void dumpProjectContainers(PrintStream printStream, CsmProject prj, boolean dumpFiles) {
+        ProjectBase project = (ProjectBase) prj;
+        dumpProjectClassifierContainer(project, printStream);
+        dumpProjectDeclarationContainer(project, printStream);
+        if (dumpFiles) {
+            ProjectBase.dumpFileContainer(project, new PrintWriter(printStream));
+            ProjectBase.dumpProjectGrapthContainer(project, printStream);
+        }
     }
 
     /*package*/static void dumpProjectGrapthContainer(ProjectBase project, PrintStream printStream) {
