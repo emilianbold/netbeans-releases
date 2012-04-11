@@ -53,7 +53,7 @@ import org.openide.util.Cancellable;
 import org.openide.util.Task;
 
 /**
- * Manages some set of actions. Loads some set of ActionProviders registerred
+ * Manages some set of actions. Loads some set of ActionProviders registered
  * for some context, and allows to call isEnabled and doAction methods on them.
  *
  * @author   Jan Jancura
@@ -145,7 +145,7 @@ public final class ActionsManager {
     /**
      * Performs action on this DebbuggerEngine.
      *
-     * @param action action constant (default set of constanct are defined
+     * @param action action constant (default set of constants are defined
      *    in this class with ACTION_ prefix)
      * @return true if action has been performed
      */
@@ -177,15 +177,15 @@ public final class ActionsManager {
     }
     
     /**
-     * Post action on this DebbuggerEngine.
+     * Post action on this DebuggerEngine.
      * This method does not block till the action is done,
      * if {@link #canPostAsynchronously} returns true.
      * Otherwise it behaves like {@link #doAction}.
-     * The returned taks, or
+     * The returned task, or
      * {@link ActionsManagerListener} can be used to
      * be notified when the action is done.
      *
-     * @param action action constant (default set of constanct are defined
+     * @param action action constant (default set of constants are defined
      *    in this class with ACTION_ prefix)
      *
      * @return a task, that can be checked for whether the action finished
@@ -224,6 +224,7 @@ public final class ActionsManager {
             if (posted) {
                 final int[] count = new int[] { 0 };
                 Runnable notifier = new Runnable() {
+                    @Override
                     public void run() {
                         synchronized (count) {
                             if (--count[0] == 0) {
@@ -254,7 +255,7 @@ public final class ActionsManager {
     /**
      * Returns true if given action can be performed on this DebuggerEngine.
      * 
-     * @param action action constant (default set of constanct are defined
+     * @param action action constant (default set of constants are defined
      *    in this class with ACTION_ prefix)
      * @return true if given action can be performed on this DebuggerEngine
      */
@@ -336,7 +337,7 @@ public final class ActionsManager {
         Vector ls = (Vector) listeners.get (propertyName);
         if (ls == null) return;
         ls.removeElement (l);
-        if (ls.size () == 0)
+        if (ls.isEmpty())
             listeners.remove (propertyName);
     }
 
@@ -440,6 +441,7 @@ public final class ActionsManager {
         actionProviders = new HashMap ();
         aps = lookup.lookup(null, ActionsProvider.class);
         ((Customizer) aps).addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     synchronized (actionProvidersLock) {
                         actionProviders.clear();
@@ -515,6 +517,7 @@ public final class ActionsManager {
             notifyFinished();
         }
 
+        @Override
         public boolean cancel() {
             for (Iterator it = postedActions.iterator(); it.hasNext(); ) {
                 Object action = it.next();
@@ -531,6 +534,7 @@ public final class ActionsManager {
     }
     
     class MyActionListener implements ActionsProviderListener {
+        @Override
         public void actionStateChange (Object action, boolean enabled) {
             fireActionStateChanged (action);
         }
