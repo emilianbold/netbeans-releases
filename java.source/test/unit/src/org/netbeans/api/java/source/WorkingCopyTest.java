@@ -156,4 +156,33 @@ public class WorkingCopyTest extends NbTestCase {
 
         assertEquals(code, fo.asText());
     }
+    
+    public void testRewriteInComments185739() throws Exception {
+        File f = new File(getWorkDir(), "TestClass.java");
+        String code = "package foo;\n" +
+                      "public class TestClass{\n" +
+                      "   /**\n" +
+                      "    * aaaa\n" +
+                      "    */\n" +
+                      "   public void foo() {\n" +
+                      "   }\n" +
+                      "}";
+        TestUtilities.copyStringToFile(f, code);
+        FileObject fo = FileUtil.toFileObject(f);
+        JavaSource javaSource = JavaSource.forFileObject(fo);
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(Phase.RESOLVED);
+
+                int aaaa = copy.getText().indexOf("aaaa");
+
+                assertTrue(aaaa >= 0);
+                copy.rewriteInComment(aaaa, 2, "");
+                copy.rewriteInComment(aaaa + 2, 2, "");
+            }
+        }).commit();
+
+        assertEquals(code.replace("aaaa", ""), fo.asText("UTF-8"));
+    }
 }

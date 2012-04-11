@@ -117,7 +117,7 @@ public class WorkingCopy extends CompilationController {
     static Reference<WorkingCopy> instance;
     private Map<Tree, Tree> changes;
     private Map<JavaFileObject, CompilationUnitTree> externalChanges;
-    private Set<Diff> textualChanges;
+    private List<Diff> textualChanges;
     private Map<Integer, String> userInfo;
     private boolean afterCommit = false;
     private TreeMaker treeMaker;
@@ -137,7 +137,7 @@ public class WorkingCopy extends CompilationController {
         changes = new IdentityHashMap<Tree, Tree>();
         tree2Tag = new IdentityHashMap<Tree, Object>();
         externalChanges = null;
-        textualChanges = new HashSet<Diff>();
+        textualChanges = new ArrayList<Diff>();
         userInfo = new HashMap<Integer, String>();
 
         //#208490: force the current ElementOverlay:
