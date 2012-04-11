@@ -413,6 +413,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 return null;
             }
             FileUtil.refreshFor(folder);
+            // XXX might suffice to just listen to PROP_RESOURCE
             checkChanges(true, true);
             FileObject fo = FileUtil.toFileObject(folder);
             assert fo != null;

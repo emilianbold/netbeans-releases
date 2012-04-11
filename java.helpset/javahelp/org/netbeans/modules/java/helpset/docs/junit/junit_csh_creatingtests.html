@@ -17,9 +17,12 @@
   and suites for existing Java classes. You open the dialog box by right-clicking 
   any Java file, package, or the Source Packages node and choosing Tools &gt; 
   Create Tests (Ctrl-Shift-U). </p>
-<p>In addition to specifying the location of the generated test classes, you can 
-  specify the following options:</p>
+<p>You can specify the following options in this dialog box.</p>
   <ul>
+    <li><b>Class Name.</b> Specify the name for the test class. 
+        By default the IDE generates a name for the test class 
+        that is the fully-qualified class name appended with <i>Test</i>.</li>
+    <li><b>Location.</b> Select a test package from the dropdown list.</li>
     <li><b>Framework.</b> Select a unit testing framework from the dropdown list.</li>
     <li><b>Method Access Levels.</b> Specifies which methods to generate test 
       methods for.</li>
@@ -42,6 +45,17 @@
       for the test methods and comments that suggest how to implement the test 
       methods.</li>
   </ul>
+
+<p><b>Notes.</b></p>
+<ul class="notes">
+    <li>Depending on the version of the unit testing framework you are using,
+        the name of the test class is not required to end with <i>Test</i>.</li>
+    <li>You can modify the default name of the test class, but some of the 
+        navigation in the IDE between classes and test classes might not function
+        if the name of the test class does not contain the name of the
+        class that is tested.</li>
+</ul>
+
 <dl>
   <dt><a name="seealso">See Also</a></dt>
   <dd><a href="junit_creatingtests.html">Creating a Unit Test</a></dd>

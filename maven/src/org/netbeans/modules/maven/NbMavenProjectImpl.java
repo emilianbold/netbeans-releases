@@ -518,6 +518,8 @@ public final class NbMavenProjectImpl implements Project {
                 File[] kids = root.listFiles();
                 if (kids != null && /* #190626 */kids.length > 0) {
                     uris.add(root.toURI());
+                } else {
+                    watcher.addWatchedPath(root.toURI());
                 }
             }
         }
@@ -529,6 +531,8 @@ public final class NbMavenProjectImpl implements Project {
                         File[] kids = root.listFiles();
                         if (kids != null && kids.length > 0) {
                             uris.add(root.toURI());
+                        } else {
+                            watcher.addWatchedPath(root.toURI());
                         }
                     }
                 }
