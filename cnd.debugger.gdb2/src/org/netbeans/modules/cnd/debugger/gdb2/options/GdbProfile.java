@@ -171,6 +171,10 @@ public class GdbProfile extends DbgProfile implements
 	set.setName("General"); // NOI18N
 	set.setDisplayName(NbBundle.getMessage(GdbProfile.class, "GeneralTxt")); // NOI18N
 	set.setShortDescription(NbBundle.getMessage(GdbProfile.class, "GeneralHint")); // NOI18N
+        
+        set.put(DebuggerOption.DEBUG_COMMAND.createNodeProp(this));
+        set.put(DebuggerOption.DEBUG_DIR.createNodeProp(this));
+        
 	set.put(DebuggerOption.GDB_INIT_FILE.createNodeProp(this));
         set.put(DebuggerOption.GDB_SOURCE_DIRS.createNodeProp(this));
 	set.put(new PathmapNodeProp(this, "SubPropDisplayName")); // NOI18N
