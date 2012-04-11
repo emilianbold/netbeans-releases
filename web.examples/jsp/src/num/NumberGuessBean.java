@@ -71,7 +71,7 @@ public class NumberGuessBean {
     return numGuesses;
   }
 
-  private void reset() {
+  public void reset() {
     try {
         answer = Math.abs(SecureRandom.getInstance("SHA1PRNG").nextInt() % 100) + 1;
     } catch (NoSuchAlgorithmException ex) {
