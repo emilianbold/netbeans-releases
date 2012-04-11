@@ -103,6 +103,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -111,7 +112,11 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 
@@ -143,7 +148,7 @@ public class Flow {
 
         v.deadBranches.remove(null);
 
-        return new FlowResult(result, v.deadBranches);
+        return new FlowResult(Collections.unmodifiableMap(result), Collections.unmodifiableSet(v.deadBranches));
     }
 
     public static final class FlowResult {
@@ -208,6 +213,7 @@ public class Flow {
         private Map<Tree, State> use2Values = new IdentityHashMap<Tree, State>();
         private Map<Tree, Collection<Map<VariableElement, State>>> resumeBefore = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
         private Map<Tree, Collection<Map<VariableElement, State>>> resumeAfter = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
+        private Map<TypeMirror, Collection<Map<VariableElement, State>>> resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
         private boolean inParameters;
         private Tree nearestMethod;
         private Set<VariableElement> currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<VariableElement, Boolean>());
@@ -495,9 +501,11 @@ public class Flow {
         public Boolean visitMethod(MethodTree node, Void p) {
             Tree oldNearestMethod = nearestMethod;
             Set<VariableElement> oldCurrentMethodVariables = currentMethodVariables;
+            Map<TypeMirror, Collection<Map<VariableElement, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
 
             nearestMethod = node;
             currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<VariableElement, Boolean>());
+            resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
             
             try {
                 scan(node.getModifiers(), p);
@@ -518,6 +526,7 @@ public class Flow {
             } finally {
                 nearestMethod = oldNearestMethod;
                 currentMethodVariables = oldCurrentMethodVariables;
+                resumeOnExceptionHandler = oldResumeOnExceptionHandler;
             }
             
             return null;
@@ -633,6 +642,24 @@ public class Flow {
 
                 variable2State = new HashMap<VariableElement, Flow.State>(oldVariable2State);
 
+                if (ct.getParameter() != null) {
+                    TypeMirror caught = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), ct.getParameter()));
+
+                    if (caught != null && caught.getKind() != TypeKind.ERROR) {
+                        for (Iterator<Entry<TypeMirror, Collection<Map<VariableElement, State>>>> it = resumeOnExceptionHandler.entrySet().iterator(); it.hasNext();) {
+                            Entry<TypeMirror, Collection<Map<VariableElement, State>>> e = it.next();
+
+                            if (info.getTypes().isSubtype(e.getKey(), caught)) {
+                                for (Map<VariableElement, State> s : e.getValue()) {
+                                    variable2State = mergeOr(variable2State, s);
+                                }
+
+                                it.remove();
+                            }
+                        }
+                    }
+                }
+                
                 scan(ct, null);
 
                 variable2State = mergeOr(variable2StateBeforeCatch, variable2State);
@@ -739,6 +766,7 @@ public class Flow {
             
             variable2State = mergeOr(variable2State, oldVariable2State);
 
+            recordResumeOnExceptionHandler("java.lang.AssertionError");
             return null;
         }
 
@@ -789,6 +817,71 @@ public class Flow {
 
             super.visitContinue(node, p);
             return null;
+        }
+
+        public Boolean visitThrow(ThrowTree node, Void p) {
+            super.visitThrow(node, p);
+
+            if (node.getExpression() != null) {
+                TypeMirror thrown = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getExpression()));
+
+                recordResumeOnExceptionHandler(thrown);
+            }
+
+            return null;
+        }
+
+        public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
+            super.visitMethodInvocation(node, p);
+
+            Element invoked = info.getTrees().getElement(getCurrentPath());
+
+            if (invoked != null && invoked.getKind() == ElementKind.METHOD) {
+                recordResumeOnExceptionHandler((ExecutableElement) invoked);
+            }
+
+            return null;
+        }
+
+        public Boolean visitNewClass(NewClassTree node, Void p) {
+            super.visitNewClass(node, p);
+
+            Element invoked = info.getTrees().getElement(getCurrentPath());
+
+            if (invoked != null && invoked.getKind() == ElementKind.CONSTRUCTOR) {
+                recordResumeOnExceptionHandler((ExecutableElement) invoked);
+            }
+
+            return null;
+        }
+
+        private void recordResumeOnExceptionHandler(ExecutableElement invoked) {
+            for (TypeMirror tt : invoked.getThrownTypes()) {
+                recordResumeOnExceptionHandler(tt);
+            }
+
+            recordResumeOnExceptionHandler("java.lang.RuntimeException");
+            recordResumeOnExceptionHandler("java.lang.Error");
+        }
+
+        private void recordResumeOnExceptionHandler(String exceptionTypeFQN) {
+            TypeElement exc = info.getElements().getTypeElement(exceptionTypeFQN);
+
+            if (exc == null) return;
+
+            recordResumeOnExceptionHandler(exc.asType());
+        }
+
+        private void recordResumeOnExceptionHandler(TypeMirror thrown) {
+            if (thrown == null || thrown.getKind() == TypeKind.ERROR) return;
+            
+            Collection<Map<VariableElement, State>> r = resumeOnExceptionHandler.get(thrown);
+
+            if (r == null) {
+                resumeOnExceptionHandler.put(thrown, r = new ArrayList<Map<VariableElement, State>>());
+            }
+
+            r.add(new HashMap<VariableElement, State>(variable2State));
         }
 
         public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
@@ -846,11 +939,6 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitThrow(ThrowTree node, Void p) {
-            super.visitThrow(node, p);
-            return null;
-        }
-
         public Boolean visitSynchronized(SynchronizedTree node, Void p) {
             super.visitSynchronized(node, p);
             return null;
@@ -871,11 +959,6 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitNewClass(NewClassTree node, Void p) {
-            super.visitNewClass(node, p);
-            return null;
-        }
-
         public Boolean visitNewArray(NewArrayTree node, Void p) {
             super.visitNewArray(node, p);
             return null;
@@ -883,11 +966,6 @@ public class Flow {
 
         public Boolean visitModifiers(ModifiersTree node, Void p) {
             super.visitModifiers(node, p);
-            return null;
-        }
-
-        public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
-            super.visitMethodInvocation(node, p);
             return null;
         }
 

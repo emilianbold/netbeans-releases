@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.bookmarks;
 
 import java.util.Comparator;
+import org.openide.util.NbBundle;
 
 /**
  * Description of a bookmark that does not have a corresponding document
@@ -50,6 +51,11 @@ import java.util.Comparator;
  * @author Miloslav Metelka
  */
 public final class BookmarkInfo {
+    
+    /**
+     * Special entry used in popup switcher to represent jumping to bookmarks view.
+     */
+    public static BookmarkInfo BOOKMARKS_WINDOW = new BookmarkInfo(0, "Bookmarks Window", 0, "", null); // NOI18N
     
     public static final Comparator<BookmarkInfo> CURRENT_LINE_COMPARATOR = new Comparator<BookmarkInfo>() {
 
@@ -82,8 +88,14 @@ public final class BookmarkInfo {
     
     private BookmarkInfo(Integer id, String name, int lineIndex, String key, FileBookmarks fileBookmarks) {
         this.id = id;
+        if (name == null) {
+            throw new IllegalArgumentException("Null name not allowed"); // NOI18N
+        }
         this.name = name;
         setLineIndex(lineIndex); // Also call setCurrentLineIndex()
+        if (key == null) {
+            throw new IllegalArgumentException("Null key not allowed"); // NOI18N
+        }
         this.key = key;
         this.fileBookmarks = fileBookmarks;
     }
@@ -103,6 +115,22 @@ public final class BookmarkInfo {
             }
         }
         this.name = name;
+    }
+    
+    public String getDisplayName() {
+        String displayName;
+        if (this != BOOKMARKS_WINDOW) {
+            String location = getLocationDescriptionShort();
+            displayName = (name.length() > 0)
+                    ? NbBundle.getMessage(BookmarkInfo.class, "CTL_BookmarkNameAndLocation", name, location) // NOI18N
+                    : location;
+            if (key.length() > 0) {
+                displayName += " <" + key + ">"; // NOI18N
+            }
+        } else {
+            displayName = getBookmarksWindowDisplayName();
+        }
+        return displayName;
     }
 
     /**
@@ -130,16 +158,46 @@ public final class BookmarkInfo {
         this.currentLineIndex = currentLineIndex;
     }
 
+    public String getLocationDescriptionShort() {
+        return (this != BOOKMARKS_WINDOW)
+                ? NbBundle.getMessage(BookmarkInfo.class, "CTL_BookmarkFileAndLineShort",
+                        getFileBookmarks().getFileObject().getNameExt(),
+                        (getCurrentLineIndex() + 1))
+                : getBookmarksWindowDisplayName();
+    }
+
+    public String getLocationDescription() {
+        return (this != BOOKMARKS_WINDOW)
+                ? NbBundle.getMessage(BookmarkInfo.class, "CTL_BookmarkFileAndLine",
+                        getFullPathDescription(),
+                        (getCurrentLineIndex() + 1))
+                : getBookmarksWindowDisplayName();
+    }
+    
+    public String getFullPathDescription() {
+        return (this != BOOKMARKS_WINDOW)
+                ? getFileBookmarks().getFileObject().getPath()
+                : NbBundle.getMessage(BookmarkInfo.class, "CTL_BookmarksWindowDescription");
+    }
+    
+    private String getBookmarksWindowDisplayName() {
+        return NbBundle.getMessage(BookmarkInfo.class, "CTL_BookmarksWindowItem");
+    }
+
     public String getKey() {
         return key;
     }
     
     public void setKey(String key) {
         if (key.length() > 0) {
-            this.key = key.substring(0, 1).toUpperCase();
+            key = key.substring(0, 1).toUpperCase();
+            if (!key.matches("[0-9A-Z]")) {
+                key = "";
+            }
         } else {
-            this.key = "";
+            key = "";
         }
+        this.key = key;
     }
 
     public FileBookmarks getFileBookmarks() {
@@ -153,7 +211,7 @@ public final class BookmarkInfo {
     @Override
     public String toString() {
         return "id=" + id + ", name=\"" + name + "\", key='" + key + // NOI18N
-                "' at line=" + lineIndex + ", fileBookmarksIC=" + System.identityHashCode(fileBookmarks); // NOI18N
+                "' at line=" + lineIndex + ", fileBookmarks-IHC=" + System.identityHashCode(fileBookmarks); // NOI18N
     }
 
 }

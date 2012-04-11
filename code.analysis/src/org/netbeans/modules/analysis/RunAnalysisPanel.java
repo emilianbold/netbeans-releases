@@ -551,7 +551,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
     }
 
     String getSingleWarningId() {
-        return inspectionCombo.isEnabled() ? SPIAccessor.ACCESSOR.getWarningId((WarningDescription) inspectionCombo.getSelectedItem()) : null;
+        return inspectionCombo.isEnabled() ? SPIAccessor.ACCESSOR.getWarningId(((AnalyzerAndWarning) inspectionCombo.getSelectedItem()).wd) : null;
     }
 
     @Override

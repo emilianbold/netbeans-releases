@@ -66,6 +66,44 @@ public class InlineTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test210942() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public static void printGreeting() {\n"
+                + "    }\n"
+                + "    public void testMethod() {\n"
+                + "        if(true)\n"
+                + "            A.printGreeting();\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB() {\n"
+                + "        if(true)\n"
+                + "            A.printGreeting();\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void testMethod() {\n"
+                + "        if(true) {\n"
+                + "        }\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB() {\n"
+                + "        if(true) {\n"
+                + "        }\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void test210250() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

@@ -44,8 +44,8 @@ package org.netbeans.modules.java.hints.bugs;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.IfTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -55,7 +55,9 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
+import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.modules.java.hints.introduce.Flow;
 import org.netbeans.modules.java.hints.introduce.Flow.Cancel;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
@@ -65,6 +67,8 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,8 +79,15 @@ public class UnusedAssignmentOrBranch {
     
     private static final String UNUSED_ASSIGNMENT_ID = "org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment";
     private static final String DEAD_BRANCH_ID = "org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch";
+    private static final Object KEY_FLOW = new Object();
+    private static final Object KEY_COMPUTED_ASSIGNMENTS = new Object();
 
     private static FlowResult runFlow(final HintContext ctx) {
+        Object cachedFlow = ctx.getInfo().getCachedValue(KEY_FLOW);
+
+        if (cachedFlow instanceof FlowResult)
+            return (FlowResult) cachedFlow;
+
         FlowResult flow = Flow.assignmentsForUse(ctx.getInfo(), new TreePath(ctx.getInfo().getCompilationUnit()), new Cancel() {
             @Override
             public boolean isCanceled() {
@@ -85,16 +96,18 @@ public class UnusedAssignmentOrBranch {
         });
 
         if (flow == null || ctx.isCanceled()) return null;
-        else return flow;
+        else {
+            ctx.getInfo().putCachedValue(KEY_FLOW, flow, CacheClearPolicy.ON_TASK_END);
+            return flow;
+        }
     }
 
-    private static final Set<ElementKind> LOCAL_VARIABLES = EnumSet.of(ElementKind.EXCEPTION_PARAMETER, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
-
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment", description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment", category="bugs", id=UNUSED_ASSIGNMENT_ID, options={Options.QUERY})
-    @TriggerTreeKind(Tree.Kind.COMPILATION_UNIT)
-    public static List<ErrorDescription> unusedAssignment(final HintContext ctx) {
-        final String unusedAssignmentLabel = NbBundle.getMessage(UnusedAssignmentOrBranch.class, "LBL_UNUSED_ASSIGNMENT_LABEL");
+    private static Pair<Set<Tree>, Set<Element>> computeUsedAssignments(final HintContext ctx) {
         final CompilationInfo info = ctx.getInfo();
+        Pair<Set<Tree>, Set<Element>> result = (Pair<Set<Tree>, Set<Element>>) info.getCachedValue(KEY_COMPUTED_ASSIGNMENTS);
+
+        if (result != null) return result;
+
         FlowResult flow = runFlow(ctx);
 
         if (flow == null) return null;
@@ -145,41 +158,39 @@ public class UnusedAssignmentOrBranch {
             }
         }.scan(info.getCompilationUnit(), null);
 
-        if (ctx.isCanceled()) return null;
-
-        final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-
-        new CancellableTreePathScanner<Void, Void>() {
-            @Override public Void visitAssignment(AssignmentTree node, Void p) {
-                Element var = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getVariable()));
-
-                if (var != null && LOCAL_VARIABLES.contains(var.getKind()) && !usedAssignments.contains(node.getExpression()) && usedVariables.contains(var)) {
-                    unusedValue(node.getExpression());
-                }
-                return super.visitAssignment(node, p);
-            }
-            @Override public Void visitVariable(VariableTree node, Void p) {
-                Element var = info.getTrees().getElement(getCurrentPath());
-
-                if (var != null && LOCAL_VARIABLES.contains(var.getKind()) && node.getInitializer() != null && !usedAssignments.contains(node.getInitializer()) && usedVariables.contains(var)) {
-                    unusedValue(node.getInitializer());
-                }
-                return super.visitVariable(node, p);
-            }
-            @Override protected boolean isCanceled() {
-                return ctx.isCanceled();
-            }
-            private void unusedValue(Tree t) {
-                result.add(ErrorDescriptionFactory.forTree(ctx, t, unusedAssignmentLabel));
-            }
-
-        }.scan(info.getCompilationUnit(), null);
+        info.putCachedValue(KEY_COMPUTED_ASSIGNMENTS, result = new Pair<Set<Tree>, Set<Element>>(usedAssignments, usedVariables), CacheClearPolicy.ON_TASK_END);
 
         return result;
     }
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", category="bugs", id=DEAD_BRANCH_ID, options={Options.NO_BATCH, Options.QUERY})
-    @TriggerTreeKind(Tree.Kind.COMPILATION_UNIT)
+    private static final Set<ElementKind> LOCAL_VARIABLES = EnumSet.of(ElementKind.EXCEPTION_PARAMETER, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
+
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment", description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment", category="bugs", id=UNUSED_ASSIGNMENT_ID, options={Options.QUERY}, suppressWarnings="UnusedAssignment")
+    @TriggerPatterns({
+        @TriggerPattern("$var = $value"),
+        @TriggerPattern("$mods$ $type $var = $value;")
+    })
+    public static ErrorDescription unusedAssignment(final HintContext ctx) {
+        final String unusedAssignmentLabel = NbBundle.getMessage(UnusedAssignmentOrBranch.class, "LBL_UNUSED_ASSIGNMENT_LABEL");
+        Pair<Set<Tree>, Set<Element>> computedAssignments = computeUsedAssignments(ctx);
+
+        if (ctx.isCanceled() || computedAssignments == null) return null;
+
+        final CompilationInfo info = ctx.getInfo();
+        final Set<Tree> usedAssignments = computedAssignments.getA();
+        final Set<Element> usedVariables = computedAssignments.getB();
+        Element var = info.getTrees().getElement(ctx.getVariables().get("$var"));
+        Tree value = ctx.getVariables().get("$value").getLeaf();
+
+        if (var != null && LOCAL_VARIABLES.contains(var.getKind()) && !usedAssignments.contains(value) && usedVariables.contains(var)) {
+            return ErrorDescriptionFactory.forTree(ctx, value, unusedAssignmentLabel);
+        }
+
+        return null;
+    }
+
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", category="bugs", id=DEAD_BRANCH_ID, options={Options.NO_BATCH, Options.QUERY}, suppressWarnings="DeadBranch")
+    @TriggerTreeKind(Tree.Kind.IF)
     public static List<ErrorDescription> deadBranch(HintContext ctx) {
         String deadBranchLabel = NbBundle.getMessage(UnusedAssignmentOrBranch.class, "LBL_DEAD_BRANCH");
         FlowResult flow = runFlow(ctx);
@@ -187,10 +198,13 @@ public class UnusedAssignmentOrBranch {
         if (flow == null) return null;
 
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        Set<? extends Tree> flowResult = flow.getDeadBranches();
+        IfTree it = (IfTree) ctx.getPath().getLeaf();
 
-        for (Tree t : flow.getDeadBranches()) {
-            if (ctx.isCanceled()) return null;
-            result.add(ErrorDescriptionFactory.forTree(ctx, t, deadBranchLabel));
+        for (Tree t : new Tree[] {it.getThenStatement(), it.getElseStatement()}) {
+            if (flowResult.contains(t)) {
+                result.add(ErrorDescriptionFactory.forTree(ctx, t, deadBranchLabel));
+            }
         }
 
         return result;
