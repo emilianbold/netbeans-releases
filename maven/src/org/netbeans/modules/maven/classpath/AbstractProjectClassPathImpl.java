@@ -76,7 +76,6 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
         NbMavenProject.addPropertyChangeListener(proj, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                     List<PathResourceImplementation> newValues = getPath();
                     List<PathResourceImplementation> oldvalue;
                     boolean hasChanged;
@@ -94,7 +93,6 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
                     if (hasChanged) {
                         support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, oldvalue, newValues);
                     }
-                }
             }
         });
     }
