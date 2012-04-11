@@ -57,7 +57,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author tomslot
  */
-public class TypeInference68Test extends PHPTestBase {
+public class TypeInference68Test extends PHPCodeCompletionTestBase {
 
     public TypeInference68Test(String testName) {
         super(testName);
