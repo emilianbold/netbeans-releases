@@ -254,22 +254,60 @@ public class ElfReader extends ByteStreamReader {
     }
     
     private boolean readMachoHeader() throws IOException{
+        // 32  ce fa ed fe
+        // 64  cf fa ed fe 
+        // fat ca fe ba be
         isMachoFormat = true;
         elfHeader.elfData = LSB;
         elfHeader.elfClass = ElfConstants.ELFCLASS32;
         setDataEncoding(elfHeader.elfData);
         setFileClass(elfHeader.elfClass);
         seek(shiftIvArchive);
-        byte firstByte = readByte();
-        boolean is64 = firstByte == (byte)0xcf;
-        if (firstByte == (byte)0xfe) {
+        byte byte0 = readByte();
+        byte byte1 = readByte();
+        byte byte2 = readByte();
+        byte byte3 = readByte();
+        boolean is64 = byte0 == (byte)0xcf || byte0 == (byte)0xca;
+        boolean isFat = byte0 == (byte)0xca;
+        if (byte0 == (byte)0xfe) {
             elfHeader.elfData = MSB;
             setDataEncoding(elfHeader.elfData);
         }
+        if (isFat) {
+            elfHeader.elfData = MSB;
+            setDataEncoding(elfHeader.elfData);
+            seek(shiftIvArchive+4);
+            int archCount = readInt();
+            for(int j = 0; j < archCount; j++) {
+                int arch = readInt();
+                int i2 = readInt();
+                int offset = readInt();
+                int size = readInt();
+                int i4 = readInt();
+                if (arch == 0x01000007) { // 64 bit
+                    shiftIvArchive += offset; // shift to 64 binary
+                    break;
+                }
+            }
+            elfHeader.elfData = LSB;
+            elfHeader.elfClass = ElfConstants.ELFCLASS32;
+            setDataEncoding(elfHeader.elfData);
+            setFileClass(elfHeader.elfClass);
+            seek(shiftIvArchive);
+            byte0 = readByte();
+            byte1 = readByte();
+            byte2 = readByte();
+            byte3 = readByte();
+            is64 = byte0 == (byte)0xcf;
+            if (byte0 == (byte)0xfe) {
+                elfHeader.elfData = MSB;
+                setDataEncoding(elfHeader.elfData);
+            }
+        }
         seek(shiftIvArchive+16);
         int ncmds = readInt();
-        /*int sizeOfCmds =*/ readInt();
-        /*int flags =*/ readInt();
+        int sizeOfCmds = readInt();
+        int flags = readInt();
         if (is64){
             skipBytes(4);
         }

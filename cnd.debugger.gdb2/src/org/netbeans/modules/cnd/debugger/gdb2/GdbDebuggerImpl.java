@@ -378,10 +378,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	String gdbInitFile = DebuggerOption.GDB_INIT_FILE.getCurrValue(optionLayers());
 
 	// SHOULD process OPTION_EXEC32?
-        String runDir = gdi.getProfile().getRunDirectory();
-
-        final String origRunDir = gdi.getProfile().getRunDir();
-        boolean preventRunPathConvertion = origRunDir.startsWith("///"); // NOI18N
+        String runDir = gdi.getRunDir();
+        boolean preventRunPathConvertion = runDir.startsWith("///"); // NOI18N
 
         if (!preventRunPathConvertion) {
             runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N

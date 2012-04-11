@@ -50,6 +50,7 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.search.MatchingObject;
+import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
 import org.openide.cookies.EditCookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -111,7 +112,8 @@ public class MatchingObjectNode extends AbstractNode {
             return original.getIcon(type);
         } else {
             String img;
-            switch (matchingObject.getInvalidityStatus()) {
+            InvalidityStatus is = matchingObject.getInvalidityStatus();
+            switch (is == null ? InvalidityStatus.DELETED : is) {
                 case DELETED:
                     img = "org/netbeans/modules/search/res/invalid.png";//NOI18N
                     break;
