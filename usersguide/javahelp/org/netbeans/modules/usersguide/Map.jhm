@@ -385,10 +385,10 @@ Other names may be trademarks of their respective owners.
   <mapID target="org.netbeans.core.actions.OptionsAction$Templates" url="pending.html" />
 
  <!-- Options | Misc | Files -->
-    <mapID target="netbeans.optionsDialog.advanced.files" url="configure/csh/misc/options_file_types.html" />
+  <mapID target="netbeans.optionsDialog.advanced.files" url="configure/csh/misc/options_file_types.html" />
     
- <!-- TODO: Need help id #208839: Options | Misc | Terminal -->
-<!--    <mapID target="netbeans.optionsDialog.advanced.files" url="configure/csh/misc/options_terminal.html" />-->
+ <!-- Options | Misc | Terminal -->
+  <mapID target="netbeans.optionsDialog.advanced.terminal" url="configure/csh/misc/options_terminal.html" />
   
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
   <!--folder subnodes of Templates category; can be overridden in layer:-->
