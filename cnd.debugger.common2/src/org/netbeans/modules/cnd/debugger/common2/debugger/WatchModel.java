@@ -91,8 +91,8 @@ public final class WatchModel extends VariableModel
 	super();
     }
 
-    private static DebuggerManager manager() {
-	return DebuggerManager.get();
+    private static NativeDebuggerManager manager() {
+	return NativeDebuggerManager.get();
     }
 
     private static WatchBag watchBag() {
@@ -509,7 +509,7 @@ public final class WatchModel extends VariableModel
             if (expr == null || expr.trim().length() == 0 || infoStr.equals(expr)) {
                 return; // cancel action
             }
-            DebuggerManager.get().createWatch(expr.trim());
+            NativeDebuggerManager.get().createWatch(expr.trim());
 
 //            Vector v = (Vector) listeners.clone ();
 //            int i, k = v.size ();
