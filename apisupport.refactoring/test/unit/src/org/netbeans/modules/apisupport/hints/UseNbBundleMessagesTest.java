@@ -91,6 +91,46 @@ public class UseNbBundleMessagesTest {
                        "}\n");
     }
 
+    /* XXX pending #209375
+    @Test public void sequentialFixes() throws Exception {
+        HintTest.HintOutput output = HintTest.create().classpath(cp()).
+                input("package test;\n" +
+                       "class Test {\n" +
+                       "    void m() {\n" +
+                       "        String v1 = org.openide.util.NbBundle.getMessage(Test.class, \"k1\");\n" +
+                       "        String v2 = org.openide.util.NbBundle.getMessage(Test.class, \"k2\");\n" +
+                       "    }\n" +
+                       "}\n").
+                input("test/Bundle.properties", "k1=v1\nk2=v2\n", false).
+                run(UseNbBundleMessages.class);
+        output.findWarning("3:46-3:56:warning:" + UseNbBundleMessages_error_text()).
+                applyFix().
+                assertVerbatimOutput("test/Bundle.properties", "k2=v2\n").assertOutput("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "import static test.Bundle.*;\n" +
+                       "class Test {\n" +
+                       "    @Messages(\"k1=v1\")\n" +
+                       "    void m() {\n" +
+                       "        String v1 = k1();\n" +
+                       "        String v2 = org.openide.util.NbBundle.getMessage(Test.class, \"k2\");\n" +
+                       "    }\n" +
+                       "}\n");
+        output.findWarning("9:46-9:56:warning:" + UseNbBundleMessages_error_text()).
+                applyFix().
+                assertVerbatimOutput("test/Bundle.properties", "").
+                assertOutput("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "import static test.Bundle.*;\n" +
+                       "class Test {\n" +
+                       "    @Messages({\"k1=v1\", \"k2=v2\"})\n" +
+                       "    void m() {\n" +
+                       "        String v1 = k1();\n" +
+                       "        String v2 = k2();\n" +
+                       "    }\n" +
+                       "}\n");
+    }
+    */
+
     private URL cp() {
         URL cp = NbBundle.class.getProtectionDomain().getCodeSource().getLocation();
         return cp.toString().endsWith("/") ? cp : FileUtil.getArchiveRoot(cp);
