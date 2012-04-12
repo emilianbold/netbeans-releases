@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -3288,19 +3289,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         ClassifierContainer container = project.getClassifierSorage();
         for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTestClassifiers().entrySet()) {
             printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
-            if (entry.getValue() == null) {
+            CsmClassifier value = entry.getValue();
+            if (value == null) {
                 printStream.println("null");//NOI18N
             } else {
-                printStream.println(entry.getValue().getUniqueName());
+                String pos = CsmTracer.getOffsetString(value, true);
+                printStream.printf("%s %s\n", value.getUniqueName(), pos);
             }
         }
         printStream.println("\n========== Dumping Dump Project Typedefs");//NOI18N
         for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTestTypedefs().entrySet()) {
             printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
-            if (entry.getValue() == null) {
+            CsmClassifier value = entry.getValue();
+            if (value == null) {
                 printStream.println("null");//NOI18N
             } else {
-                printStream.println(entry.getValue().getUniqueName());
+                String pos = CsmTracer.getOffsetString(value, true);
+                printStream.printf("%s %s\n", value.getUniqueName(), pos);
             }
         }
     }
