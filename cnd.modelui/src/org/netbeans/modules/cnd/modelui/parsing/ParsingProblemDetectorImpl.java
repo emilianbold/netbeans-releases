@@ -152,6 +152,7 @@ public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
         int usedMemory = (int) ((runtime.totalMemory() - runtime.freeMemory()) / Mb);
         if (maxMemory - usedMemory < memoryThreshold) {
             isDialogShown = true;
+            LOG.log(Level.INFO, "Lack of Memory, Heap Size={0}Mb, Used Memory={1}Mb", new Object[]{maxMemory, usedMemory});
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
