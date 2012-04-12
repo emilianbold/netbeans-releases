@@ -122,6 +122,10 @@ final class StatisticsPanel extends JPanel {
         add(treePanel, BorderLayout.CENTER);
     }
 
+    public ResultPanelTree getTreePanel() {
+        return treePanel;
+    }
+
     public @Override boolean requestFocusInWindow() {
         return treePanel.requestFocusInWindow();
     }
