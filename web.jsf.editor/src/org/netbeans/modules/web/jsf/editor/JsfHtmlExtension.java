@@ -323,14 +323,14 @@ public class JsfHtmlExtension extends HtmlExtension {
             return Collections.emptyList();
         }
         OpenTag ot = (OpenTag) queriedNode;
-        String nsPrefix = ot.namespacePrefix().toString();
+        CharSequence nsPrefix = ot.namespacePrefix();
         if (nsPrefix == null) {
             //jsf tag always have a prefix
             return Collections.emptyList();
         }
         String tagName = ot.unqualifiedName().toString();
 
-        String namespace = getUriForPrefix(nsPrefix, declaredNS);
+        String namespace = getUriForPrefix(nsPrefix.toString(), declaredNS);
         AbstractFaceletsLibrary flib = libs.get(namespace);
         if (flib == null) {
             //The facelets library not found. This happens if one declares

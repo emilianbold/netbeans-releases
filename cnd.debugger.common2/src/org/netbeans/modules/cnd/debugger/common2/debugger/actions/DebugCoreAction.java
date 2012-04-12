@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -251,7 +251,7 @@ public class DebugCoreAction extends SystemAction {
         dt.setCorefile(corefile);
         dt.setHostName(seed.getHostName());
 	dt.setEngine(engineType);
-        DebuggerManager.get().debugCore(dt);
+        NativeDebuggerManager.get().debugCore(dt);
     }
 
     private void errorDialog(String txt) {

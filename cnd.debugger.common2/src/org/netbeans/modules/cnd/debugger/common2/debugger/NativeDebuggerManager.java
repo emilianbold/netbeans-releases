@@ -160,7 +160,7 @@ import org.openide.windows.WindowManager;
  * - management of the "$userdir/system/DbxGui" folder.
  * - ownership of global options
  */
-public final class DebuggerManager extends DebuggerManagerAdapter {
+public final class NativeDebuggerManager extends DebuggerManagerAdapter {
     private final static boolean standalone = "on".equals(System.getProperty("spro.dbxtool")); // NOI18N
 
     private NativeDebugger currentDebugger;
@@ -169,9 +169,9 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     // Keep a strong reference to 'changeListener' so it doesn't get GC'ed
     private ChangeListener changeListener;
 
-    private DebuggerManager() {
+    private NativeDebuggerManager() {
 
-        delegate().addDebuggerListener(DebuggerManager.this);	// for watchAdded
+        delegate().addDebuggerListener(NativeDebuggerManager.this);	// for watchAdded
     // for PROP_CURRENT_SESSION
 
     // for now we're not saving recent debug targets to disk so
@@ -181,10 +181,10 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     private static volatile boolean initialized = false;
     
     private final static class LazyInitializer {
-        private static final DebuggerManager singleton;
+        private static final NativeDebuggerManager singleton;
         static {
             initialized = true;
-            singleton = new DebuggerManager();
+            singleton = new NativeDebuggerManager();
             
             // Initialize DebuggerManager
             singleton.init();
@@ -197,7 +197,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         }
     }
 
-    public static DebuggerManager get() {
+    public static NativeDebuggerManager get() {
         return LazyInitializer.singleton;
     }
     
@@ -810,7 +810,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
             return ret;
         }
         EngineProfile engineProfile = (EngineProfile) configuration.getAuxObject(EngineProfile.PROFILE_ID);
-        if (engineProfile == null || !DebuggerManager.isChoosableEngine()) {
+        if (engineProfile == null || !NativeDebuggerManager.isChoosableEngine()) {
             ret = EngineTypeManager.getInherited();
         } else {
             ret = engineProfile.getEngineType();
@@ -951,7 +951,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
 
         } else if (start == Start.NEW) {
             if (currentDebugger != null) {
-                DebuggerManager.openComponent("sessionsView", true); // NOI18N
+                NativeDebuggerManager.openComponent("sessionsView", true); // NOI18N
             }
             debugNoAsk(ndi);
 
@@ -1057,7 +1057,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     }
 
     private static final Preferences prefs =
-        NbPreferences.forModule(DebuggerManager.class);
+        NbPreferences.forModule(NativeDebuggerManager.class);
     private static final String PREFIX = "Doption."; // NOI18N
     private static final String PREF_DONOTSHOWAGAIN =
         PREFIX + "doNotShowAgain";      // NOI18N
@@ -1180,6 +1180,12 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
             ndi.setAction(LOAD);
         } else {
             ndi.setAction(this.getAction());
+        }
+        
+        // override executable if needed
+        String debugExecutable = ndi.getDbgProfile().getExecutable();
+        if (debugExecutable != null && !debugExecutable.isEmpty()) {
+            ndi.setTarget(debugExecutable);
         }
 
         startDebugger(Start.NEW, ndi);

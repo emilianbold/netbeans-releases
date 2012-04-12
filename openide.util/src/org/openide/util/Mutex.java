@@ -52,6 +52,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -1366,44 +1367,47 @@ public final class Mutex extends Object {
             }
         }
 
-        final Throwable[] arr = new Throwable[1];
+        final AtomicReference<Union2<T,Throwable>> res = new AtomicReference<Union2<T,Throwable>>();
 
         try {
-            final List<T> res = new ArrayList<T>(1);
             class AWTWorker implements Runnable {
                 @Override
                 public void run() {
                     try {
-                        res.add(run.run());
+                        res.set(Union2.<T,Throwable>createFirst(run.run()));
                     } catch (Exception e) {
-                        arr[0] = e;
+                        res.set(Union2.<T,Throwable>createSecond(e));
                     } catch (LinkageError e) {
                         // #20467
-                        arr[0] = e;
+                        res.set(Union2.<T,Throwable>createSecond(e));
                     } catch (StackOverflowError e) {
                         // #20467
-                        arr[0] = e;
+                        res.set(Union2.<T,Throwable>createSecond(e));
                     }
                 }
             }
             
             AWTWorker w = new AWTWorker();
             EventQueue.invokeAndWait(w);
-
-            if (arr[0] == null) {
-                return res.get(0);
-            }
         } catch (InterruptedException e) {
-            arr[0] = e;
+            res.set(Union2.<T,Throwable>createSecond(e));
         } catch (InvocationTargetException e) {
-            arr[0] = e;
+            res.set(Union2.<T,Throwable>createSecond(e));
         }
 
-        if (arr[0] instanceof RuntimeException) {
-            throw (RuntimeException) arr[0];
+        Union2<T,Throwable> _res = res.get();
+        if (_res == null) {
+            throw new IllegalStateException("#210991: got neither a result nor an exception");
+        } else if (_res.hasFirst()) {
+            return _res.first();
+        } else {
+            Throwable e = _res.second();
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            } else {
+                throw notifyException(e);
+            }
         }
-
-        throw notifyException(arr[0]);
     }
 
     /** @return true iff current thread is EventDispatchThread */

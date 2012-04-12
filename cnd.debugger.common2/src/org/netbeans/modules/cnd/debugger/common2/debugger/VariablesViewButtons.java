@@ -86,12 +86,12 @@ public class VariablesViewButtons {
         toggleButton.setMargin(new Insets(1, 1, 1, 1));
         toggleButton.setToolTipText(tooltip);
         toggleButton.setFocusable(false);
-        toggleButton.setEnabled(!DebuggerManager.isStandalone()); //Disable for tool
+        toggleButton.setEnabled(!NativeDebuggerManager.isStandalone()); //Disable for tool
         return toggleButton;
     }
 
     public static boolean isShowAutos() {
-        if (DebuggerManager.isStandalone()) {
+        if (NativeDebuggerManager.isStandalone()) {
             return false; // always false in tool
         }
         Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(PREFERENCES_NAME);

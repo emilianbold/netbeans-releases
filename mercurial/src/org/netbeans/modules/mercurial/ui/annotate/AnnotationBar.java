@@ -44,44 +44,87 @@
 
 package org.netbeans.modules.mercurial.ui.annotate;
 
-import org.netbeans.editor.*;
-import org.netbeans.editor.Utilities;
-import org.netbeans.api.editor.fold.*;
-import org.netbeans.api.diff.*;
-import org.netbeans.modules.mercurial.HgException;
-import org.netbeans.spi.diff.*;
-import org.netbeans.modules.mercurial.ui.update.RevertModifications;
-import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
-import org.netbeans.modules.mercurial.ui.diff.DiffAction;
-import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.HgProgressSupport;
-import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.loaders.*;
-import org.openide.filesystems.*;
-import org.openide.text.*;
-import org.openide.util.*;
-import org.openide.xml.*;
-import javax.swing.*;
-import javax.swing.Timer;
-import javax.swing.event.*;
-import javax.swing.text.*;
-import javax.accessibility.Accessible;
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.util.*;
-import java.util.List;
-import java.util.logging.Level;
-import java.io.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.CharConversionException;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import javax.accessibility.Accessible;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.View;
+import org.netbeans.api.diff.Difference;
+import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseTextUI;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.StatusBar;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
+import org.netbeans.modules.mercurial.ui.diff.DiffAction;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
+import org.netbeans.modules.mercurial.ui.update.RevertModifications;
+import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
+import org.netbeans.spi.diff.DiffProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.xml.XMLUtil;
 
 /**
  * Represents annotation sidebar componnet in editor. It's
@@ -614,7 +657,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         if (revisionPerLine != null) {
             String key = getPreviousRevisionKey(originalFile.getAbsolutePath(), revisionPerLine);
             HgRevision previousRevision = getPreviousRevisions().get(key); // get from cache
-            if (previousRevision != null || getPreviousRevision(revisionPerLine) != null) {
+            if (previousRevision != null) {
                 if (!getPreviousRevisions().containsKey(key)) {
                     // get revision in a bg thread and cache the value
                     Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
@@ -718,26 +761,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         support.start(rp, root, NbBundle.getMessage(AnnotationBar.class, "MSG_Revert_Progress")); // NOI18N
     }
 
-    private HgRevision getPreviousRevision(String revision) {
-        boolean orderedAsc = logs.length > 1 && logs[0].getRevisionAsLong() < logs[1].getRevisionAsLong(); // logs order type
-        for(int i = 0; i < logs.length; i++) {
-            if (logs[i].getRevisionNumber().equals(revision)) {
-                if (orderedAsc) {
-                    // logs are ordered in an ascending order
-                    if (i > 0) {
-                        return logs[i - 1].getHgRevision();
-                    }
-                } else {
-                    // logs are ordered in a descending order
-                    if (i < logs.length - 1) {
-                        return logs[i + 1].getHgRevision();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     private HgRevision getParentRevision(File file, String revision) {
         String key = getPreviousRevisionKey(file.getAbsolutePath(), revision);
         HgRevision parent = getPreviousRevisions().get(key);
@@ -747,9 +770,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 parent = HgCommand.getParent(repositoryRoot, originalFile, revision);
             } catch (HgException ex) {
                 Mercurial.LOG.log(Level.INFO, null, ex);
-            }
-            if (parent == null) {
-                parent = getPreviousRevision(revision);
             }
             getPreviousRevisions().put(key, parent);
         }

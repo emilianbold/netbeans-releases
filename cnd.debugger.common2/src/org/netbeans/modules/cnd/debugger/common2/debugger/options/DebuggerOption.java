@@ -45,7 +45,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.options;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.CatalogDynamic;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.Option;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionValue;
@@ -66,7 +66,7 @@ public class DebuggerOption extends Option {
         else
 	*/
 	follow_choices = new String[] {"parent", "child", "both", "ask"}; // NOI18N
-	if (DebuggerManager.isStandalone())
+	if (NativeDebuggerManager.isStandalone())
 	    default_finish = "off"; // NOI18N
 	else
 	    default_finish = "on"; // NOI18N
@@ -729,4 +729,18 @@ public class DebuggerOption extends Option {
 			    "0.50",      // NOI18N //default value
 			    true, // is engine option
 			    TEXT_AREA, true, true);  //type
+    
+    public static final DebuggerOption DEBUG_COMMAND =
+	new DebuggerOption( // NOI18N
+			    "debug_command", // NOI18N //name
+			    "", // deault value
+			    false, // is engine option
+			    TEXT_AREA, false);  //type , hasToolTip
+    
+    public static final DebuggerOption DEBUG_DIR =
+	new DebuggerOption( // NOI18N
+			    "debug_dir", // NOI18N //name
+			    "", // deault value
+			    false, // is engine option
+			    DIRECTORY, false);  //type , hasToolTip
 }

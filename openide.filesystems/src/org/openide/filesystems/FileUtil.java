@@ -2148,13 +2148,22 @@ public final class FileUtil extends Object {
      */
     public static URL urlForArchiveOrDir(File entry) {
         try {
-            URL u = entry.toURI().toURL();
+            boolean wasDir;
+            boolean isDir;
+            URL u;            
+            do {
+                wasDir = entry.isDirectory();
+                LOG.finest("urlForArchiveOrDir:toURI:entry");   //NOI18N
+                u = entry.toURI().toURL();
+                isDir = entry.isDirectory();
+            } while (wasDir ^ isDir);
             if (isArchiveFile(u) || entry.isFile() && entry.length() < 4) {
                 return getArchiveRoot(u);
-            } else if (entry.isDirectory()) {
+            } else if (isDir) {
+                assert u.toExternalForm().endsWith("/");    //NOI18N
                 return u;
             } else if (!entry.exists()) {
-                if (!u.toString().endsWith("/")) {
+                if (!u.toString().endsWith("/")) {  //NOI18N
                     u = new URL(u + "/"); // NOI18N
                 }
                 return u;

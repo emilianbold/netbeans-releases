@@ -297,22 +297,22 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             int act = gdi.getAction();
             System.out.printf("START ==========\n\t"); // NOI18N
-            if ((act & DebuggerManager.RUN) != 0) {
+            if ((act & NativeDebuggerManager.RUN) != 0) {
                 System.out.printf("RUN "); // NOI18N
             }
-            if ((act & DebuggerManager.STEP) != 0) {
+            if ((act & NativeDebuggerManager.STEP) != 0) {
                 System.out.printf("STEP "); // NOI18N
             }
-            if ((act & DebuggerManager.ATTACH) != 0) {
+            if ((act & NativeDebuggerManager.ATTACH) != 0) {
                 System.out.printf("ATTACH "); // NOI18N
             }
-            if ((act & DebuggerManager.CORE) != 0) {
+            if ((act & NativeDebuggerManager.CORE) != 0) {
                 System.out.printf("CORE "); // NOI18N
             }
-            if ((act & DebuggerManager.LOAD) != 0) {
+            if ((act & NativeDebuggerManager.LOAD) != 0) {
                 System.out.printf("LOAD "); // NOI18N
             }
-            if ((act & DebuggerManager.CONNECT) != 0) {
+            if ((act & NativeDebuggerManager.CONNECT) != 0) {
                 System.out.printf("CONNECT "); // NOI18N
             }
             System.out.printf("\n"); // NOI18N
@@ -324,7 +324,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	// This might make sense for gdbserver for example
         final boolean connectExisting;
-        if ((gdi.getAction() & DebuggerManager.CONNECT) != 0) {
+        if ((gdi.getAction() & NativeDebuggerManager.CONNECT) != 0) {
             connectExisting = true;
         } else {
             connectExisting = false;
@@ -348,7 +348,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
 
         // See "README.startup"
-        if (DebuggerManager.isAsyncStart()) {
+        if (NativeDebuggerManager.isAsyncStart()) {
 
             // May not be neccessary in the future.
             SwingUtilities.invokeLater(new Runnable() {
@@ -378,10 +378,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	String gdbInitFile = DebuggerOption.GDB_INIT_FILE.getCurrValue(optionLayers());
 
 	// SHOULD process OPTION_EXEC32?
-        String runDir = gdi.getProfile().getRunDirectory();
-
-        final String origRunDir = gdi.getProfile().getRunDir();
-        boolean preventRunPathConvertion = origRunDir.startsWith("///"); // NOI18N
+        String runDir = gdi.getRunDir();
+        boolean preventRunPathConvertion = runDir.startsWith("///"); // NOI18N
 
         if (!preventRunPathConvertion) {
             runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
@@ -516,7 +514,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         gdb = tentativeGdb;
         gdb.setDebugger(this);
         GdbStartActionProvider.succeeded();
-        DebuggerManager.get().setCurrentDebugger(this);
+        NativeDebuggerManager.get().setCurrentDebugger(this);
 	// OLD initializeGdb(getGDI());
     }
 
@@ -1294,33 +1292,33 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * StepInto) after all initialization is done
      */
     private void initialAction() {
-        if (DebuggerManager.isStartModel()) {
+        if (NativeDebuggerManager.isStartModel()) {
             // OLD GdbDebuggerInfo gdi = this.getGDI();
             if (gdi != null) {
                 // For load and run
-                if ((gdi.getAction() & DebuggerManager.RUN) != 0) {
+                if ((gdi.getAction() & NativeDebuggerManager.RUN) != 0) {
                     rerun();
-                    gdi.removeAction(DebuggerManager.RUN);
+                    gdi.removeAction(NativeDebuggerManager.RUN);
                 }
                 // For attach
-                if ((gdi.getAction() & DebuggerManager.ATTACH) != 0) {
+                if ((gdi.getAction() & NativeDebuggerManager.ATTACH) != 0) {
 
                     doMIAttach(gdi);
-                    gdi.removeAction(DebuggerManager.ATTACH);
+                    gdi.removeAction(NativeDebuggerManager.ATTACH);
                 }
 
                 // For debugging core file
-                if ((gdi.getAction() & DebuggerManager.CORE) != 0) {
+                if ((gdi.getAction() & NativeDebuggerManager.CORE) != 0) {
 
                     doMICorefile(gdi);
-                    gdi.removeAction(DebuggerManager.CORE);
+                    gdi.removeAction(NativeDebuggerManager.CORE);
                 }
 
                 // For load and step
-                if ((gdi.getAction() & DebuggerManager.STEP) != 0) {
+                if ((gdi.getAction() & NativeDebuggerManager.STEP) != 0) {
                     //stepOver(); // gdb 6.1
 		    stepIntoMain(); // gdb 6.6
-                    gdi.removeAction(DebuggerManager.STEP);
+                    gdi.removeAction(NativeDebuggerManager.STEP);
                 }
             }
         }
@@ -1338,7 +1336,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         manager().formatStatusText("ReadyToRun"); // NOI18N
 
-        DebuggerManager.get().addRecentDebugTarget(progname, false);
+        NativeDebuggerManager.get().addRecentDebugTarget(progname, false);
 
         if (Log.Bpt.fix6810534) {
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -1465,7 +1463,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // SHOULD factor with inline code in DbxDebuggerImpl.noteProcGone
 
 	if (!DebuggerOption.FINISH_SESSION.isEnabled(optionLayers()) ||
-	    ((gdi.getAction() & DebuggerManager.LOAD) != 0)) {
+	    ((gdi.getAction() & NativeDebuggerManager.LOAD) != 0)) {
 	    return true;
 	} else {
 	    return false;
@@ -1509,7 +1507,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         setStatusText(msg);
 
-        if (!skipkill && DebuggerManager.isStartModel()) {
+        if (!skipkill && NativeDebuggerManager.isStartModel()) {
             postKill();
         }
 
@@ -4646,7 +4644,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebugger
-    public void forkThisWay(DebuggerManager.FollowForkInfo ffi) {
+    public void forkThisWay(NativeDebuggerManager.FollowForkInfo ffi) {
         notImplemented("forkThisWay");	// NOI18N
     }
 

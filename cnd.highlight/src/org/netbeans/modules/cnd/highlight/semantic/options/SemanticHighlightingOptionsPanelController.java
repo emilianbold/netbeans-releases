@@ -48,17 +48,10 @@ package org.netbeans.modules.cnd.highlight.semantic.options;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
-import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-@OptionsPanelController.SubRegistration(
-    id=CndUIConstants.TOOLS_OPTIONS_CND_HIGHLIGHTING_ID,
-    location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
-    displayName="#TAB_SemanticHighlightingTab", // NOI18N
-    position=500
-)
 public final class SemanticHighlightingOptionsPanelController extends OptionsPanelController {
 
     private SemanticHighlightingOptionsPanel panel = new SemanticHighlightingOptionsPanel();

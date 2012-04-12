@@ -52,7 +52,7 @@ import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 
@@ -73,7 +73,7 @@ public class TerminateProcessAction
 
     // interface CallableSystemAction
     public void performAction() {
-	NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+	NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger != null) {
 	    debugger.terminate();
 	}

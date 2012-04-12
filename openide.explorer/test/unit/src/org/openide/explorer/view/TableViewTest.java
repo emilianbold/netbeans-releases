@@ -57,6 +57,7 @@ import javax.swing.SwingUtilities;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -102,6 +103,18 @@ public class TableViewTest extends NbTestCase {
     Dialog dlg;
     static boolean exceptionInEDT;
 
+    @RandomlyFails /* NB-Core-Build #8129:
+java.awt.IllegalComponentStateException: component must be showing on the screen to determine its location
+	at java.awt.Component.getLocationOnScreen_NoTreeLock(Component.java:1964)
+	at java.awt.Component.getLocationOnScreen(Component.java:1938)
+	at javax.swing.JPopupMenu.show(JPopupMenu.java:887)
+	at org.openide.explorer.view.TableView.showPopup(TableView.java:339)
+	at org.openide.explorer.view.TableView.access$500(TableView.java:85)
+	at org.openide.explorer.view.TableView$PopupAdapter.showPopup(TableView.java:439)
+	at ...
+	at java.awt.Component.dispatchEvent(Component.java:4481)
+	at org.openide.explorer.view.TableViewTest.test170578NPE(TableViewTest.java:128)
+    */
     public void test170578NPE() throws InterruptedException, InvocationTargetException, AWTException {
         System.setProperty("sun.awt.exception.handler", AWTExceptionHandler.class.getName());
         final Keys ch = new Keys(false, "1", "2", "3");

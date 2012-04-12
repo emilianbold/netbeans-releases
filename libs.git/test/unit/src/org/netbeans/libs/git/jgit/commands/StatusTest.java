@@ -535,6 +535,9 @@ public class StatusTest extends AbstractGitTestCase {
             // tested on linux
             return;
         }
+        StoredConfig cfg = repository.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "false");
+        cfg.save();
         File f = new File(workDir, "f");
         String content = "";
         for (int i = 0; i < 10000; ++i) {
@@ -554,7 +557,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertEquals(0, status.getModified().size());
         
         // lets turn autocrlf on
-        StoredConfig cfg = repository.getConfig();
+        cfg = repository.getConfig();
         cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
         cfg.save();
         

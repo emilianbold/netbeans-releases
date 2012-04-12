@@ -527,19 +527,17 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
 
             genutils.copyComments(current, nju, true);
             genutils.copyComments(current, nju, false);
-
-            if (javaDoc != null) {
+            
+            if(synthConstructor) {
                 Comment comment = null;
                 switch (javaDoc) {
                     case UPDATE:
-                        ArrayList<VariableTree> removed = new ArrayList<VariableTree>(currentParameters);
-                        removed.removeAll(newParameters);
-                        comment = updateJavadoc((ExecutableElement) el, removed, paramInfos);
+                        comment = ChangeParamsJavaDocTransformer.updateJavadoc((ExecutableElement) el, paramInfos, workingCopy);
                         List<Comment> comments = workingCopy.getTreeUtilities().getComments(nju, true);
-                        if(comments.isEmpty()) {
+                        if (comments.isEmpty()) {
                             comment = null;
                         } else {
-                            if(comments.get(0).isDocComment()) {
+                            if (comments.get(0).isDocComment()) {
                                 make.removeComment(nju, 0, true);
                             } else {
                                 comment = null;
@@ -547,78 +545,37 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                         }
                         break;
                     case GENERATE:
-                        comment = generateJavadoc(newParameters, current);
+                        String returnTypeString;
+                        Tree returnType = nju.getReturnType();
+                        if (this.returnType == null) {
+                            boolean hasReturn = false;
+                            if (returnType != null && returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
+                                if (!((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
+                                    hasReturn = true;
+                                }
+                            }
+                            if (hasReturn) {
+                                returnTypeString = returnType.toString();
+                            } else {
+                                returnTypeString = null;
+                            }
+                        } else {
+                            if(this.returnType.equals("void")) {
+                                returnTypeString = null;
+                            } else {
+                                returnTypeString = this.returnType;
+                            }
+                        }
+                        comment = ChangeParamsJavaDocTransformer.generateJavadoc(newParameters, returnTypeString, current);
                         break;
                 }
-                if(comment != null) {
+                if (comment != null) {
                     make.addComment(nju, comment, true);
                 }
             }
-            
+
             rewrite(tree, nju);
         }
-    }
-
-    private Comment updateJavadoc(ExecutableElement method, List<? extends VariableTree> removed, ParameterInfo[] parameters) {
-        Doc javadoc = workingCopy.getElementUtilities().javaDocFor(method);
-        List<Tag> paramTags = new LinkedList<Tag>();
-        List<Tag> otherTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags()));
-        List<Tag> returnTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags("@return"))); // NOI18N
-        List<Tag> throwsTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags("@throws"))); // NOI18N
-        List<Tag> oldParamTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags("@param"))); // NOI18N
-
-        otherTags.removeAll(returnTags);
-        otherTags.removeAll(throwsTags);
-        otherTags.removeAll(oldParamTags);
-        
-        params: for (ParameterInfo parameter : parameters) {
-            if(parameter.getOriginalIndex() == -1) {
-                Tag newTag = new ParamTagImpl(parameter.getName(), "the value of " + parameter.getName(), javadoc); // NOI18N
-                paramTags.add(newTag);
-            } else {
-                for (Tag tag : oldParamTags) {
-                    ParamTag paramTag = (ParamTag) tag;
-                    if (parameter.getName().toString().equals(paramTag.parameterName())) {
-                        paramTags.add(tag);
-                        continue params;
-                    }
-                }
-            }
-        }
-        
-        StringBuilder text = new StringBuilder(javadoc.commentText()).append("\n\n"); // NOI18N
-        text.append(tagsToString(paramTags));
-        text.append(tagsToString(returnTags));
-        text.append(tagsToString(throwsTags));
-        text.append(tagsToString(otherTags));
-        
-        Comment comment = Comment.create(Comment.Style.JAVADOC, NOPOS, NOPOS, NOPOS, text.toString());
-        return comment;
-    }
-        
-    private Comment generateJavadoc(List<VariableTree> newParameters, MethodTree current) {
-        Tree returnType = current.getReturnType();
-        StringBuilder builder = new StringBuilder("\n"); // NOI18N
-        for (VariableTree variableTree : newParameters) {
-            builder.append(String.format("@param %s the value of %s", variableTree.getName(), variableTree.getName())); // NOI18N
-            builder.append("\n"); // NOI18N
-        }
-        boolean hasReturn = false;
-        if (returnType != null && returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
-            if (!((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
-                hasReturn = true;
-            }
-        }
-        if(hasReturn) {
-            builder.append("@return the ").append(returnType).append("\n"); // NOI18N
-        }
-        for (ExpressionTree expressionTree : current.getThrows()) {
-            builder.append("@throws ").append(expressionTree).append("\n"); // NOI18N
-        }
-        Comment comment = Comment.create(
-                Comment.Style.JAVADOC, NOPOS, NOPOS, NOPOS,
-                builder.toString());
-        return comment;
     }
 
     private boolean isMethodMatch(Element method, Element p) {

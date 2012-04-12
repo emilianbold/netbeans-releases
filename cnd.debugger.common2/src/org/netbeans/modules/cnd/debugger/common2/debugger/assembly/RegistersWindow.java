@@ -75,7 +75,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 
 public final class RegistersWindow extends TopComponent
@@ -144,7 +144,7 @@ public final class RegistersWindow extends TopComponent
     @Override
     protected void componentShowing () {
         super.componentShowing ();
-	connectToDebugger(DebuggerManager.get().currentDebugger());
+	connectToDebugger(NativeDebuggerManager.get().currentDebugger());
         needInitData=true;
         updateWindow();
     }

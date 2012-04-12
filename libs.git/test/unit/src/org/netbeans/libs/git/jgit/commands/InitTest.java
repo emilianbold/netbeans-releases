@@ -46,7 +46,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileBasedConfig;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.GitClient;
@@ -91,6 +93,7 @@ public class InitTest extends AbstractGitTestCase {
         assertEquals(0, index.getEntryCount());
         assertTrue(repo.getDirectory().exists());
         assertEquals("master", repo.getBranch());
+        assertConfig(new FileBasedConfig(new File(repo.getDirectory(), "config"), repo.getFS()));
 
         // test failure when repository already exists
         try {
@@ -99,6 +102,16 @@ public class InitTest extends AbstractGitTestCase {
         } catch (GitException ex) {
             assertTrue(ex.getMessage().contains("Git repository already exists"));
         }
+    }
+
+    private void assertConfig (FileBasedConfig config) throws Exception {
+        config.load();
+        // filemode
+        assertEquals(isWindows() ? "false" : "true", config.getString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE));
+        // bare
+        assertEquals("false", config.getString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_BARE));
+        // autocrlf
+        assertEquals(null, config.getString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF));
     }
 
 }

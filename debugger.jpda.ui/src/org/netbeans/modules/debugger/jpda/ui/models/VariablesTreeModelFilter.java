@@ -261,7 +261,9 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
                 }
             }
         } while (node != null);
-        evaluationTask = null;
+        synchronized (evaluationQueue) {
+            evaluationTask = null;
+        }
     }
     
     /** 

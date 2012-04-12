@@ -128,7 +128,7 @@ public final class EvaluationWindow extends TopComponent {
     @Override
     public void componentShowing () {
         super.componentShowing ();
-	boolean update = connectToDebugger(DebuggerManager.get().currentDebugger());
+	boolean update = connectToDebugger(NativeDebuggerManager.get().currentDebugger());
         if (update) {
             updateWindow();
             updateFormats();

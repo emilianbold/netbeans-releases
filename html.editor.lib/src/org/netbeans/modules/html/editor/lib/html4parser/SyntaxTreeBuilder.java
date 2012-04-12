@@ -240,7 +240,7 @@ public class SyntaxTreeBuilder {
                                 //no reduce
                                 //workaround
                                 stack.remove(lNode);
-                                lNode.setLogicalEndOffset(openTagNode.startOffset());
+                                lNode.setLogicalEndOffset(openTagNode.from());
 
                                 lNode =
                                         stack.getLast();
@@ -266,7 +266,7 @@ public class SyntaxTreeBuilder {
                                         reduce_index; i--) {
                                     AstNode node = stack.get(i);
                                     if (hasOptionalEndTag(node)) {
-                                        node.setLogicalEndOffset(openTagNode.startOffset());
+                                        node.setLogicalEndOffset(openTagNode.from());
                                         stack.remove(i);
                                     } else {
                                         break;
@@ -382,7 +382,7 @@ public class SyntaxTreeBuilder {
                         for (int i = stack.size() - 1; i >
                                 matched_index; i--) {
                             AstNode node = stack.get(i);
-                            node.setLogicalEndOffset(closeTagNode.startOffset());
+                            node.setLogicalEndOffset(closeTagNode.from());
                             stack.remove(i);
                         }
 
@@ -410,7 +410,7 @@ public class SyntaxTreeBuilder {
 
                     //wont' help GS at all, but should be ok
                     match.setMatchingNode(closeTagNode);
-                    match.setLogicalEndOffset(closeTagNode.endOffset());
+                    match.setLogicalEndOffset(closeTagNode.to());
                     closeTagNode.setMatchingNode(match);
 
                     //remove the matched tag from stack

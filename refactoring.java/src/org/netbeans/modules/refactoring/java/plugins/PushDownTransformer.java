@@ -167,13 +167,7 @@ public class PushDownTransformer extends RefactoringVisitor {
                         }
                         TreePath path = workingCopy.getTrees().getPath(member);
                         MethodTree methodTree = (MethodTree) path.getLeaf();
-                        List<Comment> comments = workingCopy.getTreeUtilities().getComments(methodTree, true);
-                        if(comments.isEmpty()) {
-                            comments = workingCopy.getTreeUtilities().getComments(methodTree, false);
-                        }
-                        if(comments.isEmpty()) { // TODO Remove when #206200 is fixed
-                            methodTree = genUtils.importComments(methodTree, path.getCompilationUnit());
-                        }
+                        methodTree = genUtils.importComments(methodTree, path.getCompilationUnit());
                         ModifiersTree mods = RefactoringUtils.makeAbstract(make, methodTree.getModifiers());
                         mods = make.addModifiersModifier(mods, Modifier.PUBLIC);
                         MethodTree njuMethod = make.Method(
@@ -199,9 +193,7 @@ public class PushDownTransformer extends RefactoringVisitor {
                         if(comments.isEmpty()) {
                             comments = workingCopy.getTreeUtilities().getComments(memberTree, false);
                         }
-                        if(comments.isEmpty()) { // TODO Remove when #206200 is fixed
-                            memberTree = genUtils.importComments(memberTree, path.getCompilationUnit());
-                        }
+                        memberTree = genUtils.importComments(memberTree, path.getCompilationUnit());
                         memberTree = genUtils.importFQNs(memberTree);
                         if (members[i].isMakeAbstract() && memberTree.getKind() == Tree.Kind.METHOD && member.getModifiers().contains((Modifier.PRIVATE))) {
                             MethodTree oldOne = (MethodTree) memberTree;
