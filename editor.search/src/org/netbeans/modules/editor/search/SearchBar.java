@@ -39,10 +39,7 @@
  */
 package org.netbeans.modules.editor.search;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -52,7 +49,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.*;
@@ -63,6 +62,8 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.text.*;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.MultiKeymap;
@@ -83,7 +84,6 @@ import org.openide.util.NbBundle;
 public final class SearchBar extends JPanel {
     private static SearchBar searchbarInstance = null;
     private static final Logger LOG = Logger.getLogger(SearchBar.class.getName());
-    private static final boolean CLOSE_ON_ENTER = Boolean.getBoolean("org.netbeans.modules.editor.search.closeOnEnter"); // NOI18N
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
     private static final Color NOT_FOUND = Color.RED.darker();
     private static final Color INVALID_REGEXP = Color.red;
@@ -110,8 +110,8 @@ public final class SearchBar extends JPanel {
     private final JButton closeButton;
     private final SearchExpandMenu expandMenu;
     private Map<String, Object> findProps = EditorFindSupport.getInstance().getFindProperties();
-    private boolean searched = false;
     private boolean popupMenuWasCanceled = false;
+    private Rectangle actualViewPort;
 
     public static SearchBar getInstance() {
         if (searchbarInstance == null) {
@@ -226,6 +226,16 @@ public final class SearchBar extends JPanel {
 
         makeBarExpandable(expandMenu);
         setVisible(false);       
+        usageLogging();
+    }
+    
+    private static void usageLogging() {
+        Logger logger = Logger.getLogger("org.netbeans.ui.metrics.editor"); // NOI18N
+        LogRecord rec = new LogRecord(Level.INFO, "USG_SEARCH_TYPE"); // NOI18N
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        rec.setParameters(new Object[] {prefs.get(SimpleValueNames.EDITOR_SEARCH_TYPE, "default")}); // NOI18N
+        rec.setLoggerName(logger.getName());
+        logger.log(rec);
     }
     
     private void makeBarExpandable(SearchExpandMenu expMenu) {
@@ -266,6 +276,8 @@ public final class SearchBar extends JPanel {
                     return;
                 }
                 hadFocusOnIncSearchTextField = false;
+                if (isClosingSearchType() && !ReplaceBar.getInstance(SearchBar.getInstance()).isVisible())
+                    looseFocus();
             }
         };
     }
@@ -341,9 +353,6 @@ public final class SearchBar extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 findPrevious();
-                if (CLOSE_ON_ENTER) {
-                    looseFocus();
-                }
             }
         });
     }
@@ -358,7 +367,7 @@ public final class SearchBar extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 findNext();
-                if (CLOSE_ON_ENTER) {
+                if (isClosingSearchType() && !ReplaceBar.getInstance(SearchBar.getInstance()).isVisible()) {
                     looseFocus();
                 }
             }
@@ -381,12 +390,10 @@ public final class SearchBar extends JPanel {
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                searched = false;
             }
 
             @Override
             public void insertUpdate(DocumentEvent e) {
-                searched = false;
                 // text changed - attempt incremental search
                 if (incSearchTextField.getText().length() > 3) {
                     searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_SHORT);
@@ -396,7 +403,6 @@ public final class SearchBar extends JPanel {
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                searched = false;
                 // text changed - attempt incremental search
                 if (incSearchTextField.getText().length() <= 3) {
                     searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_LONG);
@@ -405,7 +411,7 @@ public final class SearchBar extends JPanel {
             }
         };
     }
-
+    
     private JButton createCloseButton() {
         JButton button = CloseButtonFactory.createBigCloseButton();
         button.addActionListener(new ActionListener() {
@@ -565,17 +571,21 @@ public final class SearchBar extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (CLOSE_ON_ENTER && !searched) {
-                    findNext();
-                }
-                if (!popupMenuWasCanceled)
-                    looseFocus();
-                else
+                if (!popupMenuWasCanceled) {
+                    looseFocus();                
+                    if (isClosingSearchType())           
+                        getActualTextComponent().scrollRectToVisible(actualViewPort);
+                } else
                     popupMenuWasCanceled = false;
             }
         });
     }
 
+    private static boolean isClosingSearchType() {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        return prefs.get(SimpleValueNames.EDITOR_SEARCH_TYPE, "default").equals("closing"); // NOI18N
+    }
+    
     public void gainFocus() {
         incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
         SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) incSearchTextField);
@@ -605,15 +615,14 @@ public final class SearchBar extends JPanel {
             findPreviousButton.setEnabled(false);
             findNextButton.setEnabled(false);
         }
-        searched = false;
+        actualViewPort = getActualTextComponent().getVisibleRect();
     }
-
+    
     public void looseFocus() {
         hadFocusOnIncSearchTextField = false;
         if (!isVisible()) {
             return;
         }
-        org.netbeans.api.editor.completion.Completion.get().hideAll();
         EditorFindSupport.getInstance().setBlockSearchHighlight(0, 0);
         EditorFindSupport.getInstance().incSearchReset();
         EditorFindSupport.getInstance().setFocusedTextComponent(null);
@@ -643,6 +652,8 @@ public final class SearchBar extends JPanel {
 
         // search starting at current caret position
         int caretPosition = getActualTextComponent().getSelectionStart();
+        if (isClosingSearchType())
+            caretPosition = getActualTextComponent().getCaretPosition();
         if (regexpCheckBox.isSelected()) {
             Pattern pattern;
             String patternErrorMsg = null;
@@ -667,7 +678,6 @@ public final class SearchBar extends JPanel {
                 // text found - reset incremental search text field's foreground
                 incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
                 org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
-                searched = true;
             } else {
                 // text not found - indicate error in incremental search
                 // text field with red foreground
@@ -701,7 +711,6 @@ public final class SearchBar extends JPanel {
         if (findSupport.find(actualfindProps, !next) || empty) {
             // text found - reset incremental search text field's foreground
             incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
-            searched = true;
         } else {
             // text not found - indicate error in incremental search text field with red foreground
             incSearchTextField.setForeground(NOT_FOUND);
@@ -744,7 +753,17 @@ public final class SearchBar extends JPanel {
                         selText = selText.substring(0, n);
                     }
                     incSearchTextField.setText(selText);
-                } 
+                } else {
+                    if (isClosingSearchType()) {
+                        String findWhat = (String) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_WHAT);
+                        if (findWhat != null && findWhat.length() > 0) {
+                            incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
+                            incSearchTextField.setText(findWhat);
+                            incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
+                        }
+                    }
+                        
+                }
             }
 
             int blockSearchStartOffset = blockSearchVisible ? startSelection : 0;
@@ -854,13 +873,6 @@ public final class SearchBar extends JPanel {
         return regexpCheckBox;
     }
 
-    boolean isSearched() {
-        return searched;
-    }
-
-    void setSearched(boolean searched) {
-        this.searched = searched;
-    }
 
     JComponent getExpandButton() {
         return expandMenu.getExpandButton();

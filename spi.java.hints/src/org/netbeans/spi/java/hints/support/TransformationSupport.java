@@ -46,6 +46,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.annotations.common.NonNull;
@@ -177,11 +178,12 @@ public final class TransformationSupport {
      */
     private static void performTransformation(WorkingCopy workingCopy, TreePath on, String jackpotPattern, AtomicBoolean cancel) {
         Iterable<? extends HintDescription> hints = PatternConvertor.create(jackpotPattern);
-        SourcePositions sourcePositions = workingCopy.getTrees().getSourcePositions();
-        CompilationUnitTree compilationUnit = workingCopy.getCompilationUnit();
-        Tree tree = on.getLeaf();
-        HintsInvoker inv = new HintsInvoker(workingCopy, (int) sourcePositions.getStartPosition(compilationUnit, tree), (int) sourcePositions.getEndPosition(compilationUnit, tree), cancel);
-        List<ErrorDescription> errs = new ArrayList<ErrorDescription>(inv.computeHints(workingCopy, hints));
+        HintsInvoker inv = new HintsInvoker(workingCopy, cancel);
+        Map<HintDescription, List<ErrorDescription>> computeHints = inv.computeHints(workingCopy, on, false, hints, new ArrayList<MessageImpl>());
+        List<ErrorDescription> errs = new ArrayList<ErrorDescription>();
+        for (Entry<HintDescription, List<ErrorDescription>> entry: computeHints.entrySet()) {
+            errs.addAll(entry.getValue());
+        }
         List<MessageImpl> problems = new LinkedList<MessageImpl>();
 
         try {

@@ -63,7 +63,6 @@ public final class ReplaceBar extends JPanel {
 
     private static ReplaceBar replacebarInstance = null;
     private static final Logger LOG = Logger.getLogger(ReplaceBar.class.getName());
-    private static final boolean CLOSE_ON_ENTER = Boolean.getBoolean("org.netbeans.modules.editor.search.closeOnEnter"); // NOI18N
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
     private SearchBar searchBar;
     private final JComboBox replaceComboBox;
@@ -245,9 +244,6 @@ public final class ReplaceBar extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 replace();
-                if (CLOSE_ON_ENTER) {
-                    looseFocus();
-                }
             }
         });
     }
@@ -262,9 +258,6 @@ public final class ReplaceBar extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 replaceAll();
-                if (CLOSE_ON_ENTER) {
-                    looseFocus();
-                }
             }
         });
     }
