@@ -1209,6 +1209,10 @@ public class AstRenderer {
         return ClassForwardDeclarationImpl.create(ast, file, scope, container, !isRenderingLocalContext());
     }
 
+    protected ForwardClass createForwardClassIfNeeded(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
+        return ClassForwardDeclarationImpl.createForwardClassIfNeeded(ast, file, scope, container, !isRenderingLocalContext());
+    }
+
     protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
         return TypedefImpl.create(ast, file, container, type, name, !isRenderingLocalContext());
     }
@@ -1578,7 +1582,8 @@ public class AstRenderer {
             }
             if (keyword.getType() != CPPTokenTypes.LITERAL_enum && tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && !isRenderingLocalContext()) {
                 if(namespaceContainer == null && container2 == null && !functionParameter) {
-                    cfdi = createForwardClassDeclaration(ast, container2, file, null);
+//                    cfdi = createForwardClassDeclaration(ast, container2, file, null);
+                    createForwardClassIfNeeded(ast, container2, file, scope);
                 }
             }
             isThisReference = true;
@@ -1881,7 +1886,7 @@ public class AstRenderer {
             }
         }
         AstRendererEx renderer = new AstRendererEx(fileContent);
-        renderer.renderVariable(ast, null, null, scope1, true);
+        renderer.renderVariable(ast, null, null, null, true);
         return result;
     }
 
