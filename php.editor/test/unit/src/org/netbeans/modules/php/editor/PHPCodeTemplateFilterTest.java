@@ -58,7 +58,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPCodeTemplateFilterTest extends PHPTestBase {
+public class PHPCodeTemplateFilterTest extends PHPCodeCompletionTestBase {
 
     public PHPCodeTemplateFilterTest(String testName) {
         super(testName);

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
 
@@ -49,7 +49,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPVarCommentParserTest extends CslTestBase {
+public class PHPVarCommentParserTest extends PHPTestBase {
 
     public PHPVarCommentParserTest(String testName) {
         super(testName);

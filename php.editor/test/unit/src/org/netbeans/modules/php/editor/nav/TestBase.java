@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -53,13 +53,13 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -73,11 +73,11 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Lahoda
  */
-public abstract class TestBase extends CslTestBase {
-    
+public abstract class TestBase extends PHPTestBase {
+
     public TestBase(String testName) {
         super(testName);
-    }            
+    }
 
     private static final String FOLDER = "GsfPlugins";
 
@@ -103,19 +103,19 @@ public abstract class TestBase extends CslTestBase {
         TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
         PHPIndex.setClusterUrl("file:/bogus"); // No translation
         FileObject f = FileUtil.getConfigFile(FOLDER + "/text/html");
-        
+
         if (f != null) {
             f.delete();
         }
-                
+
         Logger.global.setFilter(new Filter() {
             public boolean isLoggable(LogRecord record) {
                 Throwable t = record.getThrown();
-                
+
                 if (t == null) {
                     return true;
                 }
-                
+
                 for (StackTraceElement e : t.getStackTrace()) {
                     if (   "org.netbeans.modules.php.editor.index.GsfUtilities".equals(e.getClassName())
                         && "getBaseDocument".equals(e.getMethodName())
@@ -127,11 +127,11 @@ public abstract class TestBase extends CslTestBase {
             }
         });
     }
-    
+
     protected static String computeFileName(int index) {
         return "test" + (index == (-1) ? "" : (char) ('a' + index)) + ".php";
     }
-    
+
     protected void performTest(String[] code, final UserTask task, boolean waitFinished) throws Exception {
         clearWorkDir();
         FileUtil.refreshAll();
@@ -164,9 +164,9 @@ public abstract class TestBase extends CslTestBase {
         DataObject dobj = DataObject.find(fileObject);
 
         EditorCookie ec = dobj.getCookie(EditorCookie.class);
-        
+
         assertNotNull(ec);
-        
+
         return ec.openDocument();
     }
 
@@ -209,7 +209,7 @@ public abstract class TestBase extends CslTestBase {
         workDir = FileUtil.toFileObject(getWorkDir());
         return workDir;
     }
-    
+
     protected final FileObject toFileObject(FileObject base, String relativePath, boolean isFolder) throws IOException {
         FileObject retval = null;
         if (isFolder) {

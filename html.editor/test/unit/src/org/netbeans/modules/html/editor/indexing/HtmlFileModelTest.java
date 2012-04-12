@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor;
+package org.netbeans.modules.html.editor.indexing;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.util.List;
+import javax.swing.text.Document;
+import org.netbeans.modules.html.editor.test.TestBase;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.web.common.api.FileReference;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author marekfukala
  */
-public class PHPCodeCompletion204958Test extends PHPCodeCompletionTestBase {
+public class HtmlFileModelTest extends TestBase {
 
-    public PHPCodeCompletion204958Test(String testName) {
-        super(testName);
+    public HtmlFileModelTest(String name) {
+        super(name);
     }
 
-    public void testUseCase1() throws Exception {
-        checkCompletion("testfiles/completion/lib/test204958/issue204958.php", "if ($obj instanceof ^", false);
+    //Bug 211073 - NullPointerException at org.netbeans.modules.html.editor.indexing.HtmlFileModel$ReferencesSearch.visit
+    public void testIssue211073() throws Exception {
+        Document doc = getDocument(getTestFile("testfiles/model/test1.html"));
+        Source source = Source.create(doc);
+        HtmlFileModel model = new HtmlFileModel(source);
+
+        //the erroneous references are not used
+        assertEquals(0, model.getReferences().size());
     }
 
-    public void testUseCase2() throws Exception {
-        checkCompletion("testfiles/completion/lib/test204958/issue204958.php", "if ($obj instanceof I^", false);
-    }
+    public void testReferences() throws Exception {
+        Document doc = getDocument(getTestFile("testfiles/model/test2.html"));
+        Source source = Source.create(doc);
+        HtmlFileModel model = new HtmlFileModel(source);
 
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        return Collections.singletonMap(
-            PhpSourcePath.SOURCE_CP,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test204958/"))
-            })
-        );
+        List<HtmlLinkEntry> entries = model.getReferences();
+        assertEquals(1, entries.size());
+        HtmlLinkEntry entry = entries.get(0);
+        
+        assertEquals("link", entry.getTagName());
+        FileReference ref = entry.getFileReference();
+        assertNotNull(ref);
+        
+        assertEquals("test1.html", ref.linkPath());
+        
     }
-
 }
