@@ -71,12 +71,7 @@ public class ModelImplTest extends ModelImplBaseTestCase {
     }
     
     public static void dumpProjectContainers(PrintStream printStream, ProjectBase project, boolean dumpFiles) {
-        ProjectBase.dumpProjectClassifierContainer(project, printStream);
-        ProjectBase.dumpProjectDeclarationContainer(project, printStream);
-        if (dumpFiles) {
-            ProjectBase.dumpFileContainer(project, new PrintWriter(printStream));
-            ProjectBase.dumpProjectGrapthContainer(project, printStream);
-        }
+        ProjectBase.dumpProjectContainers(printStream, project, dumpFiles);
     }
 
     public static void fireFileAdded(final CsmProject project, FileObject sourceFileObject) {
