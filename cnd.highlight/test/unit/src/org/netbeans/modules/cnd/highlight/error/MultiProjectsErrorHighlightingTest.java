@@ -125,7 +125,6 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         performStaticTest("forth/forth.cpp");
     }
     
-    // DISABLED, see IZ 202433
     public void testRedFilesWhenProjectClose202433() throws Exception {
         // #202433 - parser errors in studio system includes
         CsmModel model = super.getModel();

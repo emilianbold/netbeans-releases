@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -1519,7 +1520,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     if (thisProjectUpdateResult && startProject != this) {
                         // we found the "best from the bests" for the current lib
                         // have to be considered as the best in start project lib storage as well
-                        assert startProjectUpdateResult : " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject;
+                        if (!startProjectUpdateResult) {
+                            CndUtils.assertTrueInConsole(false, " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject);
+                        }
                     }
                     if (thisProjectUpdateResult) {
                         // TODO: think over, what if we aready changed entry,
@@ -2077,7 +2080,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public abstract void onFilePropertyChanged(NativeFileItem nativeFile);
 
-    public abstract void onFilePropertyChanged(List<NativeFileItem> items);
+    public abstract void onFilePropertyChanged(List<NativeFileItem> items, boolean invalidateLibs);
 
     protected abstract ParserQueue.Position getIncludedFileParserQueuePosition();
 
@@ -3244,7 +3247,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public static void dumpProjectContainers(PrintStream printStream, CsmProject prj, boolean dumpFiles) {
         ProjectBase project = (ProjectBase) prj;
-        dumpProjectClassifierContainer(project, printStream);
+        dumpProjectClassifierContainer(project, printStream, !dumpFiles);
         dumpProjectDeclarationContainer(project, printStream);
         if (dumpFiles) {
             ProjectBase.dumpFileContainer(project, new PrintWriter(printStream));
@@ -3283,24 +3286,28 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    /*package*/static void dumpProjectClassifierContainer(ProjectBase project, PrintStream printStream) {
+    /*package*/static void dumpProjectClassifierContainer(ProjectBase project, PrintStream printStream, boolean offsetString) {
         printStream.println("\n========== Dumping Dump Project Classifiers");//NOI18N
         ClassifierContainer container = project.getClassifierSorage();
         for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTestClassifiers().entrySet()) {
             printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
-            if (entry.getValue() == null) {
+            CsmClassifier value = entry.getValue();
+            if (value == null) {
                 printStream.println("null");//NOI18N
             } else {
-                printStream.println(entry.getValue().getUniqueName());
+                String pos = offsetString ? CsmTracer.getOffsetString(value, true) : "";//NOI18N
+                printStream.printf("%s %s\n", value.getUniqueName(), pos);//NOI18N
             }
         }
         printStream.println("\n========== Dumping Dump Project Typedefs");//NOI18N
         for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTestTypedefs().entrySet()) {
             printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
-            if (entry.getValue() == null) {
+            CsmClassifier value = entry.getValue();
+            if (value == null) {
                 printStream.println("null");//NOI18N
             } else {
-                printStream.println(entry.getValue().getUniqueName());
+                String pos = offsetString ? CsmTracer.getOffsetString(value, true) : "";//NOI18N
+                printStream.printf("%s %s\n", value.getUniqueName(), pos);//NOI18N
             }
         }
     }

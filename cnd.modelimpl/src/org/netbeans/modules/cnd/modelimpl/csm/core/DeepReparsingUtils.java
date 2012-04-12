@@ -258,7 +258,7 @@ public final class DeepReparsingUtils {
     /**
      * Reparse including/included files at file properties changed.
      */
-    public static void reparseOnPropertyChanged(Collection<NativeFileItem> items, ProjectBase changedProject) {
+    public static void reparseOnPropertyChanged(Collection<NativeFileItem> items, ProjectBase changedProject, boolean invalidateLibs) {
         if (TRACE) {
             LOG.log(Level.INFO, "reparseOnPropertyChanged {0}", toString(items));
         }        
@@ -301,6 +301,11 @@ public final class DeepReparsingUtils {
                 } else {
                     addCompilationUnitToReparse(parentImpl, true);
                 }
+            }
+            if (invalidateLibs) {
+                // invalide libraries when asked but after deep reparsing activity
+                assert !(changedProject instanceof LibProjectImpl): "shouldn't be library " + changedProject;
+                LibraryManager.getInstance().onProjectPropertyChanged(changedProject.getUID());
             }
         } catch (Exception e) {
             DiagnosticExceptoins.register(e);

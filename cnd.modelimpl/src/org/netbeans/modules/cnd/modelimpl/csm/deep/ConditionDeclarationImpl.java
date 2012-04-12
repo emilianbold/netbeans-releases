@@ -93,7 +93,7 @@ public final class ConditionDeclarationImpl extends OffsetableBase implements Cs
             }
 
         };
-        renderer.renderVariable(node, null, null, scope, false);
+        renderer.renderVariable(node, null, null, null, false);
     }
 
     @Override
