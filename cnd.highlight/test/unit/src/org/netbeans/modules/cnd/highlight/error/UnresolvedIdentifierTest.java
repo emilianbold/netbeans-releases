@@ -42,10 +42,13 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.io.File;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImplTest;
 
 /**
  * Test for IdentifierErrorProvider.
@@ -279,7 +282,26 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         // Bug 201258 - Forward declarations not resolved
         performStaticTest("bug201258.cpp");
     }
-    
+
+
+    public void test210983() throws Exception {
+        // 210983 - regression in inaccuracy tests (dbx projectl): forward declarations
+        File sourceFile = getDataFile("bug210983_1.cpp");
+        CsmFile csmFile = this.getCsmFile(sourceFile);
+        assertNotNull(csmFile);
+        // open file with duplicated struct
+        performStaticTest("bug210983_1.cpp");
+        // modify file and parse it
+        ModelImplTest.fireFileChanged(csmFile);
+        csmFile.scheduleParsing(true);
+        // open other file where same named, but different structure is used
+        performStaticTest("bug210983_2.cpp"); // there was unresolved 'savefd'
+        // check other files just to be sure
+        performStaticTest("bug210983_1.cpp");
+        performStaticTest("inc210983_1.h");
+        performStaticTest("inc210983_2.h");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
