@@ -169,7 +169,7 @@ final class CreateFilesWorker {
                 DeepReparsingUtils.reparseOnEdit(reparseOnEdit, project, true);
             }
             if (!reparseOnPropertyChanged.isEmpty()) {
-                DeepReparsingUtils.reparseOnPropertyChanged(reparseOnPropertyChanged, project);
+                DeepReparsingUtils.reparseOnPropertyChanged(reparseOnPropertyChanged, project, false);
             }
         }
     }
