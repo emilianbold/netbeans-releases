@@ -46,9 +46,11 @@ package org.netbeans.modules.javascript2.editor;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
 /**

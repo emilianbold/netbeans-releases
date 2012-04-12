@@ -111,7 +111,8 @@ public class JQueryCodeCompletion {
             token = ts.token();
             tokenId = token.id();
         }
-        return lastToken.id() == JsTokenId.IDENTIFIER && "$".equals(lastToken.text().toString());
+        return (lastToken.id() == JsTokenId.IDENTIFIER && "$".equals(lastToken.text().toString()))
+                || (!ts.movePrevious() && "$".equals(token.text().toString()));
     }
 
     private void addGlobalContext(final List<CompletionProposal> result, final ParserResult parserResult, final String prefix, final int offset) {
