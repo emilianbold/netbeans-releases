@@ -46,10 +46,12 @@ package org.netbeans.api.debugger;
 
 import java.beans.*;
 import java.util.*;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.openide.util.Cancellable;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 
 /**
@@ -151,14 +153,7 @@ public final class ActionsManager {
      */
     public final void doAction (final Object action) {
         doiingDo = true;
-        ArrayList<ActionsProvider> l;
-        synchronized (actionProvidersLock) {
-            if (actionProviders == null) initActionImpls ();
-            l = actionProviders.get(action);
-            if (l != null) {
-                l = (ArrayList<ActionsProvider>) l.clone ();
-            }
-        }
+        ArrayList<ActionsProvider> l = getActionProvidersForActionWithInit(action);
         boolean done = false;
         if (l != null) {
             int i, k = l.size ();
@@ -196,14 +191,7 @@ public final class ActionsManager {
      */
     public final Task postAction(final Object action) {
         doiingDo = true;
-        ArrayList<ActionsProvider> l;
-        synchronized (actionProvidersLock) {
-            if (actionProviders == null) initActionImpls ();
-            l = actionProviders.get(action);
-            if (l != null) {
-                l = (ArrayList<ActionsProvider>) l.clone ();
-            }
-        }
+        ArrayList<ActionsProvider> l = getActionProvidersForActionWithInit(action);
         boolean posted = false;
         int k;
         if (l != null) {
@@ -259,14 +247,28 @@ public final class ActionsManager {
      * @return true if given action can be performed on this DebuggerEngine
      */
     public final boolean isEnabled (final Object action) {
-        ArrayList<ActionsProvider> l;
+        boolean doInit = false;
         synchronized (actionProvidersLock) {
-            if (actionProviders == null) initActionImpls ();
-            l = actionProviders.get(action);
-            if (l != null) {
-                l = (ArrayList<ActionsProvider>) l.clone ();
+            if (actionProviders == null) {
+                actionProviders = new HashMap<Object, ArrayList<ActionsProvider>>();
+                doInit = true;
             }
         }
+        if (doInit) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                // Need to initialize lazily when called in AWT
+                // A state change will be fired after actions providers are initialized.
+                new RequestProcessor(ActionsManager.class).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        initActionImpls();
+                    }
+                });
+            } else {
+                initActionImpls();
+            }
+        }
+        ArrayList<ActionsProvider> l = getActionProvidersForAction(action);
         if (l != null) {
             int i, k = l.size ();
             for (i = 0; i < k; i++) {
@@ -423,6 +425,31 @@ public final class ActionsManager {
     
     // private support .........................................................
     
+    private ArrayList<ActionsProvider> getActionProvidersForAction(Object action) {
+        ArrayList<ActionsProvider> l;
+        synchronized (actionProvidersLock) {
+            l = actionProviders.get(action);
+            if (l != null) {
+                l = (ArrayList<ActionsProvider>) l.clone ();
+            }
+        }
+        return l;
+    }
+    
+    private ArrayList<ActionsProvider> getActionProvidersForActionWithInit(Object action) {
+        boolean doInit = false;
+        synchronized (actionProvidersLock) {
+            if (actionProviders == null) {
+                actionProviders = new HashMap<Object, ArrayList<ActionsProvider>>();
+                doInit = true;
+            }
+        }
+        if (doInit) {
+            initActionImpls ();
+        }
+        return getActionProvidersForAction(action);
+    }
+    
     private void registerActionsProvider (Object action, ActionsProvider p) {
         synchronized (actionProvidersLock) {
             ArrayList<ActionsProvider> l = actionProviders.get (action);
@@ -447,15 +474,14 @@ public final class ActionsManager {
     }
 
     private void initActionImpls () {
-        actionProviders = new HashMap<Object, ArrayList<ActionsProvider>>();
         aps = lookup.lookup(null, ActionsProvider.class);
         ((Customizer) aps).addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     synchronized (actionProvidersLock) {
                         actionProviders.clear();
-                        registerActionsProviders(aps);
                     }
+                    registerActionsProviders(aps);
                 }
         });
         registerActionsProviders(aps);
