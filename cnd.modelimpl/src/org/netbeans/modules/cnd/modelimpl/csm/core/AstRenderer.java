@@ -1568,6 +1568,7 @@ public class AstRenderer {
         }
         boolean isThisReference = false;
         CsmClassForwardDeclaration cfdi = null;
+        boolean createForwardClass = false;
         if (tokType != null &&
                 (tokType.getType() == CPPTokenTypes.LITERAL_struct ||
                 tokType.getType() == CPPTokenTypes.LITERAL_union ||
@@ -1582,8 +1583,7 @@ public class AstRenderer {
             }
             if (keyword.getType() != CPPTokenTypes.LITERAL_enum && tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && !isRenderingLocalContext()) {
                 if(namespaceContainer == null && container2 == null && !functionParameter) {
-//                    cfdi = createForwardClassDeclaration(ast, container2, file, null);
-                    createForwardClassIfNeeded(ast, container2, file, scope);
+                    createForwardClass = !isRenderingLocalContext();
                 }
             }
             isThisReference = true;
@@ -1688,6 +1688,9 @@ public class AstRenderer {
                 if (!hasVariables && functionParameter) {
                     // unnamed parameter
                     processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false, cfdi);
+                }
+                if (createForwardClass) {
+                    createForwardClassIfNeeded(ast, container2, file, scope);
                 }
                 return true;
             }
