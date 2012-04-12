@@ -128,11 +128,13 @@ import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.FQN2Files;
 import org.netbeans.lib.nbjavac.services.NBAttr;
+import org.netbeans.lib.nbjavac.services.NBClassReader;
 import org.netbeans.lib.nbjavac.services.NBEnter;
 import org.netbeans.lib.nbjavac.services.NBJavadocEnter;
 import org.netbeans.lib.nbjavac.services.NBJavadocMemberEnter;
 import org.netbeans.lib.nbjavac.services.NBMemberEnter;
 import org.netbeans.lib.nbjavac.services.NBParserFactory;
+import org.netbeans.lib.nbjavac.services.NBClassWriter;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -732,7 +734,7 @@ public class JavacParser extends Parser {
             task.setProcessors(processors);
         }
         Context context = task.getContext();
-        JavadocClassReader.preRegister(context, !backgroundCompilation);
+        NBClassReader.preRegister(context, !backgroundCompilation);
         if (cnih != null) {
             context.put(ClassNamesForFileOraculum.class, cnih);
         }
@@ -744,6 +746,7 @@ public class JavacParser extends Parser {
         }
         Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
         NBAttr.preRegister(context);
+        NBClassWriter.preRegister(context);
         NBParserFactory.preRegister(context);
         if (!backgroundCompilation) {
             JavacFlowListener.preRegister(context);
