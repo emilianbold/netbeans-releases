@@ -220,8 +220,12 @@ public class BookmarkManager {
     }
 
     public ProjectBookmarks getProjectBookmarks(Document document) {
-        ProjectBookmarks projectBookmarks = null;
         FileObject fo = NbEditorUtilities.getFileObject (document);
+        return getProjectBookmarks(fo);
+    }
+    
+    public ProjectBookmarks getProjectBookmarks(FileObject fo) {
+        ProjectBookmarks projectBookmarks = null;
         if (fo != null) {
             Project project = FileOwnerQuery.getOwner(fo);
             if (project != null) {
