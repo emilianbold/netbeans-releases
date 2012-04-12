@@ -60,6 +60,8 @@ import org.openide.util.NbBundle;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -88,6 +90,7 @@ import org.netbeans.api.java.source.ui.ElementJavadoc;
  */
 public final class JavaMembersModel extends DefaultTreeModel {
     static Element[] EMPTY_ELEMENTS_ARRAY = new Element[0];
+    private static final Comparator<Element> ALPHA_COMPARATOR = new ElementComparator();
     private FileObject fileObject;
     private ElementHandle<?>[] elementHandles;
     
@@ -393,7 +396,8 @@ public final class JavaMembersModel extends DefaultTreeModel {
             CompilationInfo compilationInfo, int index) {
             TypeElement typeElement = (TypeElement) element;
 
-            List<?extends Element> enclosedElements = typeElement.getEnclosedElements();
+            List<?extends Element> enclosedElements = new ArrayList<Element>(typeElement.getEnclosedElements());
+            Collections.sort(enclosedElements, ALPHA_COMPARATOR);
 
             for (Element enclosedElement : enclosedElements) {
                 AbstractMembersTreeNode node = null;
@@ -695,6 +699,38 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }        
     }
     
+    private static class ElementComparator implements Comparator<Element> {
+
+        @Override
+        public int compare(Element e1, Element e2) {
+            if ( k2i(e1.getKind()) != k2i(e2.getKind()) ) {
+                return k2i(e1.getKind()) - k2i(e2.getKind());
+            } 
+            return e1.getSimpleName().toString().compareTo(e2.getSimpleName().toString());
+        }
+
+        int k2i( ElementKind kind ) {
+            switch( kind ) {
+                case CONSTRUCTOR:
+                    return 1;
+                case METHOD:
+                    return 2;
+                case FIELD:
+                    return 3;
+                case CLASS:
+                    return 4;
+                case INTERFACE:
+                    return 5;
+                case ENUM:
+                    return 6;
+                case ANNOTATION_TYPE:                        
+                    return 7;
+                default:
+                    return 100;
+            }
+        }
+    }
+
     private static boolean include(AbstractMembersTreeNode delegateNode, String pattern, String patternLowerCase) {
         ElementKind elementKind = delegateNode.getElementKind();
         if (elementKind == ElementKind.CLASS ||
