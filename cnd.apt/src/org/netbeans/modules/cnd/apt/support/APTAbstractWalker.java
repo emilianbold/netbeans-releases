@@ -282,9 +282,6 @@ public abstract class APTAbstractWalker extends APTWalker {
             APTMacroMap.State postIncludeMacroState = getPreprocHandler().getMacroMap().getState();
             PostIncludeData newData = new PostIncludeData(postIncludeMacroState, postIncludeData.getDeadBlocks());
             cacheEntry.setIncludeData(aptInclude, newData);
-        } else if (postIncludeData != null && !postIncludeData.hasPostIncludeMacroState()) {
-            // clean what could be set in dead blocks, because of false include activity
-            postIncludeData.setDeadBlocks(null);
         }
     }
 }
