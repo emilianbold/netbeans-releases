@@ -223,7 +223,7 @@ public final class ActionToGoalUtils {
 
     public static NetbeansActionMapping getDefaultMapping(String action, Project project) {
         NetbeansActionMapping na = null;
-        Lookup.Result<MavenActionsProvider> res = Lookup.getDefault().lookup(new Lookup.Template<MavenActionsProvider>(MavenActionsProvider.class));
+        Lookup.Result<MavenActionsProvider> res = Lookup.getDefault().lookupResult(MavenActionsProvider.class);
         for (MavenActionsProvider add : res.allInstances()) {
             na = add.getMappingForAction(action, project);
             if (na != null) {
