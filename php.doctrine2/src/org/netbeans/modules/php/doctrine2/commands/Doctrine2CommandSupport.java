@@ -124,6 +124,8 @@ public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
         for (String param : script.getParameters()) {
             processBuilder = processBuilder.addArgument(param);
         }
+        processBuilder = processBuilder
+                .addArgument("--ansi"); // NOI18N
         return processBuilder;
     }
 
