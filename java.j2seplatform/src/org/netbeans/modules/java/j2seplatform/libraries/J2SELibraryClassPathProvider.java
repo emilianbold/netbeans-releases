@@ -48,6 +48,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -65,11 +66,21 @@ import org.openide.util.Exceptions;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.classpath.ClassPathProvider.class, position=150)
 public class J2SELibraryClassPathProvider implements ClassPathProvider {
+    
+    private static final Set<? extends String> SUPPORTED_CLASS_PATH_TYPES =
+            new HashSet<String>(Arrays.asList(new String[]{
+                ClassPath.SOURCE,
+                ClassPath.BOOT,
+                ClassPath.COMPILE
+            }));
 
     public ClassPath findClassPath(
             @NonNull final FileObject file,
             @NonNull final String type) {
         assert file != null;
+        if (!SUPPORTED_CLASS_PATH_TYPES.contains(type)) {
+            return null;
+        }
         Library ll = this.getLastUsedLibrary(file);
         if (ll != null) {
             ClassPath[] cp = findClassPathOrNull(file, type, ll);
