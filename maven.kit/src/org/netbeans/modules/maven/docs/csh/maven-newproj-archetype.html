@@ -21,24 +21,30 @@
         
         <p>In the Maven Archetype page of the wizard you select an archetype 
         to use as the template for your project from the Known Archetypes list.
-        By default, older versions of archetypes are filtered out and only 
-        the most recent version of each known archetype is displayed.
-        You can select the Show Older checkbox to remove the filter and view older versions of archetypes.</p>
+        By default, only the most recent version of each known archetype is displayed in the list.
+        You can select the Show Older checkbox if you want older versions of archetypes to be included in the list.
+        You can type a term in the Search field to locate archetypes that contain the search term in
+        the archetype name, group ID, version, artifact ID, repository or description fields.</p>
             
         <p>The Maven Archetype page of the wizard contains the following fields.</p>
         
         <ul>
-            <li><b>Filter.</b> Type in the text field to limit the list of archetypes.
-            When you type in the Filter field the list is updated to only display the 
-            archetypes that contain the entered text in 
-            the name, group ID, version, artifact ID, repository or description fields. </li>
+            <li><b>Search.</b> Type a search term in the text field to limit the list of archetypes 
+            to the archetypes that contain the term. </li>
             <li><b>Show Older.</b> When selected, older versions of archetypes are also included in the list. 
             By default the list only contains the most recent version of the archetype.</li>
+            <li><b>Known Archetypes.</b> Select an archetype in the list to view additional details.</li>
             <li><b>Group ID.</b> Displays the group ID of the selected archetype.</li>
             <li><b>Version.</b> Displays the version of the selected archetype.</li>
             <li><b>Artifact ID.</b> Displays the artifact ID of the selected archetype.</li>
             <li><b>Repository.</b> Displays the repository that contains the selected archetype.</li>
             <li><b>Description.</b> Displays a description of the selected archetype.</li>
+        </ul>
+        
+        <ul class="note">
+            <li>If you want to use an archetype that is not listed as a known archetype you can  
+            specify the archetype by entering the group ID, version, artifact ID and repository for the 
+            archetype in the respective fields.</li>
         </ul>
         
         <p>Click Next after you select the archetype to specify the project name and location.</p>
