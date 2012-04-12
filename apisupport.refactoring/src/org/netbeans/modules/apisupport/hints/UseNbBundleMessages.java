@@ -286,20 +286,20 @@ public class UseNbBundleMessages {
                             ExpressionTree[] linesA = lines.toArray(new ExpressionTree[lines.size()]);
                             switch (enclosing.getKind()) {
                             case METHOD:
-                                modifiers = ((MethodTree) enclosing).getModifiers();
-                                nueModifiers = gu.appendToAnnotationValue(((MethodTree) enclosing).getModifiers(), nbBundleMessages, "value", linesA);
+                                modifiers = wc.resolveRewriteTarget(((MethodTree) enclosing).getModifiers());
+                                nueModifiers = gu.appendToAnnotationValue((ModifiersTree) modifiers, nbBundleMessages, "value", linesA);
                                 break;
                             case VARIABLE:
-                                modifiers = ((VariableTree) enclosing).getModifiers();
-                                nueModifiers = gu.appendToAnnotationValue(((VariableTree) enclosing).getModifiers(), nbBundleMessages, "value", linesA);
+                                modifiers = wc.resolveRewriteTarget(((VariableTree) enclosing).getModifiers());
+                                nueModifiers = gu.appendToAnnotationValue((ModifiersTree) modifiers, nbBundleMessages, "value", linesA);
                                 break;
                             case COMPILATION_UNIT:
-                                modifiers = enclosing;
-                                nueModifiers = gu.appendToAnnotationValue((CompilationUnitTree) enclosing, nbBundleMessages, "value", linesA);
+                                modifiers = wc.resolveRewriteTarget(enclosing);
+                                nueModifiers = gu.appendToAnnotationValue((CompilationUnitTree) modifiers, nbBundleMessages, "value", linesA);
                                 break;
                             default:
-                                modifiers = ((ClassTree) enclosing).getModifiers();
-                                nueModifiers = gu.appendToAnnotationValue(((ClassTree) enclosing).getModifiers(), nbBundleMessages, "value", linesA);
+                                modifiers = wc.resolveRewriteTarget(((ClassTree) enclosing).getModifiers());
+                                nueModifiers = gu.appendToAnnotationValue((ModifiersTree) modifiers, nbBundleMessages, "value", linesA);
                             }
                             wc.rewrite(modifiers, nueModifiers);
                         // XXX remove NbBundle import if now unused
