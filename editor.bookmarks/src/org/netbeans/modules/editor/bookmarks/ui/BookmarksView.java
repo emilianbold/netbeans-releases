@@ -335,40 +335,43 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
             }
             
             List<ProjectBookmarks> loadedProjectBookmarks = lockedBookmarkManager.allLoadedProjectBookmarks();
-            projectNodes = new Node[loadedProjectBookmarks.size()];
-            int i = 0;
+            List<Node> projectNodeList = new ArrayList<Node>(loadedProjectBookmarks.size());
             for (ProjectBookmarks projectBookmarks : loadedProjectBookmarks) {
-                FileObject[] sortedFileObjects = lockedBookmarkManager.getSortedFileObjects(projectBookmarks);
-                ProjectBookmarksChildren children = new ProjectBookmarksChildren(projectBookmarks, sortedFileObjects);
-                LogicalViewProvider lvp = projectBookmarks.getProject().getLookup().lookup(LogicalViewProvider.class);
-                Node prjNode = (lvp != null) ? lvp.createLogicalView() : null;
-                if (prjNode == null) {
-                    prjNode = new AbstractNode(Children.LEAF);
-                    prjNode.setDisplayName(children.getProjectDisplayName());
-                }
-                Node n = new FilterNode(prjNode, children) {
-                    @Override
-                    public boolean canCopy() {
-                        return false;
+                if (projectBookmarks.containsAnyBookmarks()) {
+                    FileObject[] sortedFileObjects = lockedBookmarkManager.getSortedFileObjects(projectBookmarks);
+                    ProjectBookmarksChildren children = new ProjectBookmarksChildren(projectBookmarks, sortedFileObjects);
+                    LogicalViewProvider lvp = projectBookmarks.getProject().getLookup().lookup(LogicalViewProvider.class);
+                    Node prjNode = (lvp != null) ? lvp.createLogicalView() : null;
+                    if (prjNode == null) {
+                        prjNode = new AbstractNode(Children.LEAF);
+                        prjNode.setDisplayName(children.getProjectDisplayName());
                     }
-                    @Override
-                    public boolean canCut() {
-                        return false;
+                    Node n = new FilterNode(prjNode, children) {
+                        @Override
+                        public boolean canCopy() {
+                            return false;
+                        }
+                        @Override
+                        public boolean canCut() {
+                            return false;
+                        }
+                        @Override
+                        public boolean canDestroy() {
+                            return false;
+                        }
+                        @Override
+                        public boolean canRename() {
+                            return false;
+                        }
+                    };
+                    projectNodeList.add(n);
+                    if (projectBookmarks == selectedProjectBookmarks) {
+                        selectedProjectNode = n;
                     }
-                    @Override
-                    public boolean canDestroy() {
-                        return false;
-                    }
-                    @Override
-                    public boolean canRename() {
-                        return false;
-                    }
-                };
-                projectNodes[i++] = n;
-                if (projectBookmarks == selectedProjectBookmarks) {
-                    selectedProjectNode = n;
                 }
             }
+            projectNodes = new Node[projectNodeList.size()];
+            projectNodeList.toArray(projectNodes);
 
             // Sort by project's display name
             Arrays.sort(projectNodes, new Comparator<Node>() {

@@ -822,7 +822,7 @@ public class RefactoringPanel extends JPanel {
 
                 private StringBuffer getErrorDesc(int errorsNum, int occurencesNum) throws MissingResourceException {
                     StringBuffer errorsDesc = new StringBuffer();
-                    errorsDesc.append(" [" + occurencesNum); // NOI18N
+                    errorsDesc.append(" [").append(occurencesNum); // NOI18N
                     errorsDesc.append(' ');
                     errorsDesc.append(occurencesNum == 1 ?
                         NbBundle.getMessage(RefactoringPanel.class, "LBL_Occurence") :
@@ -831,7 +831,7 @@ public class RefactoringPanel extends JPanel {
                     if (errorsNum > 0) {
                         errorsDesc.append(',');
                         errorsDesc.append(' ');
-                        errorsDesc.append("<font color=#CC0000>" + errorsNum); // NOI18N
+                        errorsDesc.append("<font color=#CC0000>").append(errorsNum); // NOI18N
                         errorsDesc.append(' ');
                         errorsDesc.append(errorsNum == 1 ?
                             NbBundle.getMessage(RefactoringPanel.class, "LBL_Error") :
@@ -930,13 +930,6 @@ public class RefactoringPanel extends JPanel {
          }
          return result;
      }
-     
-     private void clearTimeStamps() {
-         timeStamps.clear();
-     }
- 
- 
-     
     
     private void createTree(TreeNode root) throws MissingResourceException {
         if (tree == null) {
@@ -1154,7 +1147,7 @@ public class RefactoringPanel extends JPanel {
     } */
     
     protected void closeNotify() {
-        clearTimeStamps();
+        timeStamps.clear();
         //UndoWatcher.stopWatching(this);
         if (tree!=null) {
             ToolTipManager.sharedInstance().unregisterComponent(tree);
@@ -1162,12 +1155,12 @@ public class RefactoringPanel extends JPanel {
         }
         if (scrollPane!=null)
             scrollPane.setViewport(null);
-        if (refCallerTC != null) {
-            TopComponent tc = refCallerTC.get();
-            if (tc != null && tc.isShowing()) {
-                tc.requestActive();
-            }
-        }
+//        if (refCallerTC != null) {
+//            TopComponent tc = refCallerTC.get();
+//            if (tc != null && tc.isShowing()) {
+//                tc.requestActive();
+//            }
+//        }
         cleanupTreeElements();
         PreviewManager.getDefault().clean(this);
         tree = null;

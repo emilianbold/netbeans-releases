@@ -181,7 +181,7 @@ public class BookmarkManager {
             foList = new ArrayList<FileObject>(allFileBookmarks.size());
             for (FileBookmarks fileBookmarks : allFileBookmarks) {
                 FileObject fo = fileBookmarks.getFileObject();
-                if (fo != null) {
+                if (fo != null && fileBookmarks.containsAnyBookmarks()) {
                     foList.add(fo);
                 } // else: could be obsolete URL of a removed file
             }
