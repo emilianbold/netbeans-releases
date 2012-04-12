@@ -387,7 +387,7 @@ public final class Manager {
                     public void run() {
                         final ResultWindow window = ResultWindow.getInstance();
                         Mode mode = WindowManager.getDefault().findMode(window);
-                        if (window.isOpened() && mode != null && !mode.getName().contains("SlidingSide")) {
+                        if (window.isOpened() && mode != null && !mode.getName().contains("SlidingSide")) {   //NOI18N
                             window.promote();
                         } else {
                             Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/testResults.png"));   //NOI18N
