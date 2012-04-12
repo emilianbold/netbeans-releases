@@ -46,9 +46,14 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider.NativeProjectImpl;
+import org.openide.filesystems.FileObject;
 
 /**
  * 
@@ -72,5 +77,32 @@ public class ModelImplTest extends ModelImplBaseTestCase {
             ProjectBase.dumpFileContainer(project, new PrintWriter(printStream));
             ProjectBase.dumpProjectGrapthContainer(project, printStream);
         }
+    }
+
+    public static void fireFileAdded(final CsmProject project, FileObject sourceFileObject) {
+        assertNotNull(project);
+        Object platform = project.getPlatformProject();
+        if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
+            NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
+            nativeProject.fireFileAdded(sourceFileObject);
+        }
+    }
+
+    public static void fireFileChanged(final CsmProject project, FileObject sourceFileObject) {
+        assertNotNull(project);
+        Object platform = project.getPlatformProject();
+        if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
+            NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
+            nativeProject.fireFileChanged(sourceFileObject);
+        } else {
+            assertTrue("can not send fireFileChanged using project " + platform, false);
+        }
+    }
+
+    public static void fireFileChanged(CsmFile file) {
+        FileObject fileObject = file.getFileObject();
+        assertNotNull("no file object for " + file, fileObject);
+        CsmProject project = file.getProject();
+        fireFileChanged(project, fileObject);
     }
 }
