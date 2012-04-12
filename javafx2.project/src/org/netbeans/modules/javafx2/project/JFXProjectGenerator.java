@@ -398,8 +398,9 @@ public class JFXProjectGenerator {
         ep.setProperty(JFXProjectProperties.JAVAFX_REBASE_LIBS, "false"); // NOI18N
         ep.setComment(JFXProjectProperties.JAVAFX_REBASE_LIBS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_rebase_libs")}, false); // NOI18N
         
-        ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "true"); // NOI18N
-        ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_updatemode")}, false); // NOI18N
+        // update mode set to false with signing on to prevent malfunction caused by so-far unresolved issues in JavaFX 2.1.x WebStart
+        ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "false"); // NOI18N
+        ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, type == WizardType.SWING ? "COMMENT_updatemode_swing" : "COMMENT_updatemode")}, false); // NOI18N
         ep.setProperty(JFXProjectProperties.ALLOW_OFFLINE, "true"); // NOI18N
 
         ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPathReference(platformName));
@@ -457,6 +458,7 @@ public class JFXProjectGenerator {
                 // Workaround of JavaFX 2.0 issue causing FXML apps crash when signing is disabled
                 ep.setProperty(JFXProjectProperties.JAVAFX_SIGNING_ENABLED, "true"); // NOI18N
                 ep.setProperty(JFXProjectProperties.JAVAFX_SIGNING_TYPE, JFXProjectProperties.SigningType.SELF.getString());
+                ep.setProperty(JFXProjectProperties.PERMISSIONS_ELEVATED, "true"); // NOI18N
             }
         }
 

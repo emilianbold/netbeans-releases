@@ -80,9 +80,13 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
             labelInitialRemark.setVisible(false);
             labelInitialRemark.setEnabled(false);
             labelInitialRemarkSwing.setVisible(true);
+            labelInitialRemarkSwing.setEnabled(true);
             labelProperties.setVisible(false);
-            checkBoxUpgradeBackground.setVisible(false);
-            checkBoxNoInternet.setVisible(false);
+            labelProperties.setEnabled(false);
+            labelPropertiesSwing.setVisible(true);
+            labelPropertiesSwing.setEnabled(true);
+            //checkBoxUpgradeBackground.setVisible(false);
+            //checkBoxNoInternet.setVisible(false);
             checkBoxInstallPerm.setVisible(false);
             checkBoxDeskShortcut.setVisible(false);
             checkBoxMenuShortcut.setVisible(false);
@@ -92,8 +96,8 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
             labelDownloadMode.setVisible(false);
             labelDownloadModeMessage.setVisible(false);
             buttonDownloadMode.setVisible(false);
-            checkBoxUpgradeBackground.setEnabled(false);
-            checkBoxNoInternet.setEnabled(false);
+            //checkBoxUpgradeBackground.setEnabled(false);
+            //checkBoxNoInternet.setEnabled(false);
             checkBoxInstallPerm.setEnabled(false);
             checkBoxDeskShortcut.setEnabled(false);
             checkBoxMenuShortcut.setEnabled(false);
@@ -105,10 +109,13 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
             buttonDownloadMode.setEnabled(false);
         } else {
             labelInitialRemark.setVisible(true);
+            labelInitialRemark.setEnabled(true);
             labelInitialRemarkSwing.setVisible(false);
             labelInitialRemarkSwing.setEnabled(false);
-            checkBoxUpgradeBackground.setModel(jfxProps.getBackgroundUpdateCheckModel());
-            checkBoxNoInternet.setModel(jfxProps.getAllowOfflineModel());
+            labelProperties.setVisible(true);
+            labelProperties.setEnabled(true);
+            labelPropertiesSwing.setVisible(false);
+            labelPropertiesSwing.setEnabled(false);
             checkBoxInstallPerm.setModel(jfxProps.getInstallPermanentlyModel());
             checkBoxDeskShortcut.setModel(jfxProps.getAddDesktopShortcutModel());
             checkBoxMenuShortcut.setModel(jfxProps.getAddStartMenuShortcutModel());
@@ -122,6 +129,9 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
                 refreshDownloadModeControls();
             }
         }
+        checkBoxUpgradeBackground.setModel(jfxProps.getBackgroundUpdateCheckModel());
+        checkBoxNoInternet.setModel(jfxProps.getAllowOfflineModel());
+
         textFieldIcon.setDocument(jfxProps.getIconDocumentModel());
         checkBoxUnrestrictedAcc.setSelected(jfxProps.getSigningEnabled());
         labelSigning.setEnabled(jfxProps.getSigningEnabled());
@@ -144,6 +154,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelInitialRemark = new javax.swing.JLabel();
         labelInitialRemarkSwing = new javax.swing.JLabel();
         labelProperties = new javax.swing.JLabel();
+        labelPropertiesSwing = new javax.swing.JLabel();
         checkBoxUpgradeBackground = new javax.swing.JCheckBox();
         checkBoxNoInternet = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
@@ -202,6 +213,15 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.insets = new java.awt.Insets(20, 0, 10, 0);
         panelTop.add(labelProperties, gridBagConstraints);
         labelProperties.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelProperties.AccessibleContext.accessibleDescription")); // NOI18N
+
+        labelPropertiesSwing.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelPropertiesSwing.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(20, 0, 10, 0);
+        panelTop.add(labelPropertiesSwing, gridBagConstraints);
 
         checkBoxUpgradeBackground.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(checkBoxUpgradeBackground, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.checkBoxUpgradeBackground.text")); // NOI18N
@@ -603,6 +623,7 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
     private javax.swing.JLabel labelInitialRemark;
     private javax.swing.JLabel labelInitialRemarkSwing;
     private javax.swing.JLabel labelProperties;
+    private javax.swing.JLabel labelPropertiesSwing;
     private javax.swing.JLabel labelSigning;
     private javax.swing.JLabel labelSigningMessage;
     private javax.swing.JPanel panelBottom;
