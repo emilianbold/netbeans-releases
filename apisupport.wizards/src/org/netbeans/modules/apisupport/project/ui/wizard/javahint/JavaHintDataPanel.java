@@ -72,7 +72,6 @@ public class JavaHintDataPanel extends BasicWizardIterator.Panel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -80,27 +79,17 @@ public class JavaHintDataPanel extends BasicWizardIterator.Panel {
         jScrollPane1 = new javax.swing.JScrollPane();
         description = new javax.swing.JTextArea();
         jLabel5 = new javax.swing.JLabel();
-        className = new javax.swing.JTextField();
         displayName = new javax.swing.JTextField();
         warningMessage = new javax.swing.JTextField();
         fixDisplayName = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setLabelFor(className);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(JavaHintDataPanel.class, "JavaHintDataPanel.jLabel1.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(jLabel1, gridBagConstraints);
-
         jLabel2.setLabelFor(displayName);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(JavaHintDataPanel.class, "JavaHintDataPanel.jLabel2.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel2, gridBagConstraints);
@@ -109,8 +98,7 @@ public class JavaHintDataPanel extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(JavaHintDataPanel.class, "JavaHintDataPanel.jLabel3.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel3, gridBagConstraints);
 
@@ -118,7 +106,7 @@ public class JavaHintDataPanel extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(JavaHintDataPanel.class, "JavaHintDataPanel.jLabel4.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel4, gridBagConstraints);
@@ -131,7 +119,7 @@ public class JavaHintDataPanel extends BasicWizardIterator.Panel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -144,7 +132,7 @@ public class JavaHintDataPanel extends BasicWizardIterator.Panel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.ipadx = 240;
@@ -159,18 +147,13 @@ public class JavaHintDataPanel extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(JavaHintDataPanel.class, "JavaHintDataPanel.jLabel5.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(12, 36, 12, 0);
         add(jLabel5, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
-        add(className, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipadx = 112;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
@@ -178,15 +161,13 @@ public class JavaHintDataPanel extends BasicWizardIterator.Panel {
         add(displayName, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 113;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(warningMessage, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipadx = 101;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
@@ -200,11 +181,9 @@ public class JavaHintDataPanel extends BasicWizardIterator.Panel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox automaticFix;
-    private javax.swing.JTextField className;
     private javax.swing.JTextArea description;
     private javax.swing.JTextField displayName;
     private javax.swing.JTextField fixDisplayName;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -225,7 +204,6 @@ public class JavaHintDataPanel extends BasicWizardIterator.Panel {
 
     @Override
     protected void storeToDataModel() {
-        data.setClassName(className.getText());
         data.setDisplayName(displayName.getText());
         data.setDescription(description.getText());
         data.setDoFix(automaticFix.isSelected());
@@ -237,7 +215,6 @@ public class JavaHintDataPanel extends BasicWizardIterator.Panel {
 
     @Override
     protected void readFromDataModel() {
-        className.setText(data.getClassName());
         displayName.setText(data.getDisplayName());
         description.setText(data.getDescription());
         automaticFix.setSelected(data.isDoFix());
