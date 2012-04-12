@@ -2,7 +2,7 @@ Name: TestNG
 Version: 6.5.1
 Description: Java testing framework.
 License: Apache-2.0
-OSR: TBD
+OSR: Oracle-8292
 Origin: http://testng.org/doc/download.html
 Files: testng-6.5.1-dist.jar, testng-6.5.1-javadoc.zip
 
