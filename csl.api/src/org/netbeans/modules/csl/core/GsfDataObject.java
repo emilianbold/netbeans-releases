@@ -122,7 +122,10 @@ public class GsfDataObject extends MultiDataObject {
         super.setModified(modif);
         if (!modif) {
             GenericEditorSupport ges = getLookup().lookup(GenericEditorSupport.class);
-            ges.removeSaveCookie();
+            // defect #203688, probably file deletion in parallel with DO's creation - not completed, so cookie not registered yet.
+            if (ges != null) {
+                ges.removeSaveCookie();
+            }
         }
     }
     

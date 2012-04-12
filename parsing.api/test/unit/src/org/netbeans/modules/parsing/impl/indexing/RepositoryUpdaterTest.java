@@ -61,6 +61,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -190,7 +191,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private final FooIndexerFactory indexerFactory = new FooIndexerFactory();
     private final EmbIndexerFactory eindexerFactory = new EmbIndexerFactory();
 
-    private final Map<String, Set<ClassPath>> registeredClasspaths = new HashMap<String, Set<ClassPath>>();
+    private final Map<String, Map<ClassPath,Void>> registeredClasspaths = new HashMap<String, Map<ClassPath,Void>>();
 
     public RepositoryUpdaterTest (String name) {
         super (name);
@@ -292,28 +293,30 @@ public class RepositoryUpdaterTest extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         for(String id : registeredClasspaths.keySet()) {
-            Set<ClassPath> classpaths = registeredClasspaths.get(id);
-            GlobalPathRegistry.getDefault().unregister(id, classpaths.toArray(new ClassPath[classpaths.size()]));
+            final Map<ClassPath,Void> classpaths = registeredClasspaths.get(id);
+            GlobalPathRegistry.getDefault().unregister(id, classpaths.keySet().toArray(new ClassPath[classpaths.size()]));
         }
 
         super.tearDown();
     }
 
     protected final void globalPathRegistry_register(String id, ClassPath [] classpaths) {
-        Set<ClassPath> set = registeredClasspaths.get(id);
-        if (set == null) {
-            set = new HashSet<ClassPath>();
-            registeredClasspaths.put(id, set);
+        Map<ClassPath,Void> map = registeredClasspaths.get(id);
+        if (map == null) {
+            map = new IdentityHashMap<ClassPath, Void>();
+            registeredClasspaths.put(id, map);
         }
-        set.addAll(Arrays.asList(classpaths));
+        for (ClassPath cp :  classpaths) {
+            map.put(cp,null);
+        }
         GlobalPathRegistry.getDefault().register(id, classpaths);
     }
 
     protected final void globalPathRegistry_unregister(String id, ClassPath [] classpaths) {
         GlobalPathRegistry.getDefault().unregister(id, classpaths);
-        Set<ClassPath> set = registeredClasspaths.get(id);
-        if (set != null) {
-            set.removeAll(Arrays.asList(classpaths));
+        final Map<ClassPath,Void> map = registeredClasspaths.get(id);
+        if (map != null) {
+            map.keySet().removeAll(Arrays.asList(classpaths));
         }
     }
 
@@ -361,7 +364,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         //Nothing should be scanned if the same cp is registered again
         handler.reset();
-        ClassPath cp1clone = ClassPathFactory.createClassPath(mcpi1);
+        final MutableClassPathImplementation mcpi1clone = new MutableClassPathImplementation();
+        mcpi1clone.addResource(this.srcRoot1);
+        ClassPath cp1clone = ClassPathFactory.createClassPath(mcpi1clone);
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1clone});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());

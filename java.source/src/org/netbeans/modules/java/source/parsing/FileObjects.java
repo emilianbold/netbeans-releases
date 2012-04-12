@@ -446,16 +446,7 @@ public class FileObjects {
         assert fo != null;
         if (fo instanceof Base) {
             Base baseFileObject = (Base) fo;
-            if (noExt) {
-                return baseFileObject.getName();
-            }
-            else {                
-                StringBuilder sb = new StringBuilder ();
-                sb.append (baseFileObject.getName());
-                sb.append('.'); //NOI18N
-                sb.append(baseFileObject.getExt());
-                return sb.toString();
-            }
+            return noExt ? baseFileObject.getNameWithoutExtension() : baseFileObject.getName();
         }
         try {
             final URL url = fo.toUri().toURL();

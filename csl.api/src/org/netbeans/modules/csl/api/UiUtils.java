@@ -247,7 +247,7 @@ public final class UiUtils {
             DataObject od = DataObject.find(fo);
             return NbDocument.openDocument(od, offset, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         } catch (DataObjectNotFoundException e) {
-            LOG.log(Level.WARNING, null, e);
+            LOG.log(Level.FINE, null, e);
         }
         return false;
     }

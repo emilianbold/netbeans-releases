@@ -95,6 +95,19 @@ public class InvertBooleanTest extends RefTestBase {
                       new File("META-INF/upgrade/test.Test.hint", "new test.Test($1, $2) :: $1 instanceof int && $2 instanceof java.util.List<java.lang.String> => test.Test.create($1, $2);;")*/
                      );
     }
+    
+    public void test210971() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("test/Test.java", "package test; public class Test { public boolean someMethod() { return true; } public int returnInt() { return 1099; } }")
+                                 );
+
+        performMethodTest();
+
+        assertContent(src,
+                      new File("test/Test.java", "package test; public class Test { public boolean c() { return false; } public int returnInt() { return 1099; } }")
+                     );
+    }
+    
 
     public void testInvertFieldStatic() throws Exception {
         writeFilesAndWaitForScan(src,
