@@ -44,11 +44,14 @@
 
 package org.netbeans.modules.java.j2seplatform.libraries;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -63,7 +66,9 @@ import org.openide.util.Exceptions;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.classpath.ClassPathProvider.class, position=150)
 public class J2SELibraryClassPathProvider implements ClassPathProvider {
 
-    public ClassPath findClassPath(FileObject file, String type) {
+    public ClassPath findClassPath(
+            @NonNull final FileObject file,
+            @NonNull final String type) {
         assert file != null;
         Library ll = this.getLastUsedLibrary(file);
         if (ll != null) {
@@ -84,7 +89,10 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
     }
 
     
-    private ClassPath[] findClassPathOrNull(FileObject file, String type, Library lib) {
+    private ClassPath[] findClassPathOrNull(
+            @NonNull final FileObject file,
+            @NonNull final String type,
+            @NonNull final Library lib) {
         if (lib.getType().equals(J2SELibraryTypeProvider.LIBRARY_TYPE)) {
             List<URL> resources = lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
             try {                
@@ -110,8 +118,10 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
         return null;
     }
 
-    private static FileObject getOwnerRoot (final FileObject fo, final List<? extends URL> roots) {
-        final URL foURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+    private FileObject getOwnerRoot (
+            @NonNull final FileObject fo,
+            @NonNull final List<? extends URL> roots) {
+        final URL foURL = toURL(fo);
         if (foURL == null) {
             //template or other nbfs
             return null;
@@ -195,7 +205,24 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
         this.lastUsedRoot = root;
         this.lastUsedLibrary = lib;
     }
+    
+    private synchronized URL toURL(@NonNull final FileObject file) {
+        final FileObject luw = lastUsedFile == null ? null : lastUsedFile.get();
+        if (luw != file) {
+            lastUsedFileURL = URLMapper.findURL(file, URLMapper.EXTERNAL);
+            lastUsedFile = new WeakReference<FileObject>(file);
+        }
+        return lastUsedFileURL;
+    }
 
+    //@GuardedBy("this")
     private FileObject lastUsedRoot;
+    //@GuardedBy("this")
     private Library lastUsedLibrary;
+    //@GuardedBy("this")
+    private Reference<FileObject> lastUsedFile;
+    //@GuardedBy("this")
+    private URL lastUsedFileURL;
+    
+    
 }
