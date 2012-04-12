@@ -3295,8 +3295,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (value == null) {
                 printStream.println("null");//NOI18N
             } else {
-                String pos = offsetString ? CsmTracer.getOffsetString(value, true) : "";
-                printStream.printf("%s %s\n", value.getUniqueName(), pos);
+                String pos = offsetString ? CsmTracer.getOffsetString(value, true) : "";//NOI18N
+                printStream.printf("%s %s\n", value.getUniqueName(), pos);//NOI18N
             }
         }
         printStream.println("\n========== Dumping Dump Project Typedefs");//NOI18N
@@ -3306,8 +3306,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (value == null) {
                 printStream.println("null");//NOI18N
             } else {
-                String pos = offsetString ? CsmTracer.getOffsetString(value, true) : "";
-                printStream.printf("%s %s\n", value.getUniqueName(), pos);
+                String pos = offsetString ? CsmTracer.getOffsetString(value, true) : "";//NOI18N
+                printStream.printf("%s %s\n", value.getUniqueName(), pos);//NOI18N
             }
         }
     }
