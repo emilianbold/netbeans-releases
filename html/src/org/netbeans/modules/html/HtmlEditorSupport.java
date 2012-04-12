@@ -57,6 +57,7 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
@@ -175,7 +176,13 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
 
         //FEQ cannot be run in saveFromKitToStream since document is locked for writing,
         //so setting the FEQ result to document property
-        getDocument().putProperty(DOCUMENT_SAVE_ENCODING, finalEncoding);
+        Document doc = getDocument();
+        //the document is already loaded so getDocument() should normally return 
+        //no null value, but if a CES redirector returns null from the redirected
+        //CES.getDocument() then we are not able to set the found encoding
+        if(doc != null) {
+            doc.putProperty(DOCUMENT_SAVE_ENCODING, finalEncoding);
+        }
     }
 
     @Override
@@ -214,7 +221,9 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
      */
     @Override
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
-        final Charset c = Charset.forName((String) doc.getProperty(DOCUMENT_SAVE_ENCODING));
+        String foundEncoding = (String) doc.getProperty(DOCUMENT_SAVE_ENCODING);
+        String usedEncoding = foundEncoding != null ? foundEncoding : UTF_8_ENCODING;
+        final Charset c = Charset.forName(usedEncoding);
         final Writer w = new OutputStreamWriter(stream, c);
         try {
             kit.write(w, doc, 0, doc.getLength());
