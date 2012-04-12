@@ -111,12 +111,12 @@ public class UseNbBundleMessages {
     })
     public static List<ErrorDescription> run(HintContext context) {
         final CompilationInfo compilationInfo = context.getInfo();
-        final TreePath treePath = context.getPath();
+        TreePath treePath = context.getPath();
         Tree tree = treePath.getLeaf();
         int[] span;
         final String key;
         final FileObject src = compilationInfo.getFileObject();
-        final MethodInvocationTree mit;
+        MethodInvocationTree mit;
         if (tree.getKind() == Kind.METHOD_INVOCATION) {
             mit = (MethodInvocationTree) tree;
             ExpressionTree methodSelect = mit.getMethodSelect();
@@ -217,8 +217,10 @@ public class UseNbBundleMessages {
             }
             @Override protected void performRewrite(JavaFix.TransformationContext ctx) throws Exception {
                 WorkingCopy wc = ctx.getWorkingCopy();
+                TreePath treePath = ctx.getPath();
                         TreeMaker make = wc.getTreeMaker();
-                        if (mit != null) {
+                        if (treePath.getLeaf().getKind() == Kind.METHOD_INVOCATION) {
+                            MethodInvocationTree mit = (MethodInvocationTree) treePath.getLeaf();
                             CompilationUnitTree cut = wc.getCompilationUnit();
                             boolean imported = false;
                             String importBundleStar = cut.getPackageName() + ".Bundle.*";
