@@ -465,7 +465,9 @@ public class WorkingCopy extends CompilationController {
                 @Override
                 public Void scan(Tree tree, Void p) {
                     if (changes.containsKey(tree)) {
+                        boolean clearCurrentParent = false;
                         if (currentParent == null) {
+                            clearCurrentParent = true;
                             currentParent = getParentPath(getCurrentPath(), tree);
                             pathsToRewrite.add(currentParent);
                             if (!parent2Rewrites.containsKey(currentParent)) {
@@ -481,7 +483,7 @@ public class WorkingCopy extends CompilationController {
                         
                         scan(rev, p);
                         
-                        if (currentParent != null && currentParent.getLeaf() == tree) {
+                        if (clearCurrentParent) {
                             currentParent = null;
                         }
                     } else {
