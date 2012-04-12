@@ -3247,7 +3247,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public static void dumpProjectContainers(PrintStream printStream, CsmProject prj, boolean dumpFiles) {
         ProjectBase project = (ProjectBase) prj;
-        dumpProjectClassifierContainer(project, printStream);
+        dumpProjectClassifierContainer(project, printStream, !dumpFiles);
         dumpProjectDeclarationContainer(project, printStream);
         if (dumpFiles) {
             ProjectBase.dumpFileContainer(project, new PrintWriter(printStream));
@@ -3286,7 +3286,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    /*package*/static void dumpProjectClassifierContainer(ProjectBase project, PrintStream printStream) {
+    /*package*/static void dumpProjectClassifierContainer(ProjectBase project, PrintStream printStream, boolean offsetString) {
         printStream.println("\n========== Dumping Dump Project Classifiers");//NOI18N
         ClassifierContainer container = project.getClassifierSorage();
         for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTestClassifiers().entrySet()) {
@@ -3295,7 +3295,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (value == null) {
                 printStream.println("null");//NOI18N
             } else {
-                String pos = CsmTracer.getOffsetString(value, true);
+                String pos = offsetString ? CsmTracer.getOffsetString(value, true) : "";
                 printStream.printf("%s %s\n", value.getUniqueName(), pos);
             }
         }
@@ -3306,7 +3306,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (value == null) {
                 printStream.println("null");//NOI18N
             } else {
-                String pos = CsmTracer.getOffsetString(value, true);
+                String pos = offsetString ? CsmTracer.getOffsetString(value, true) : "";
                 printStream.printf("%s %s\n", value.getUniqueName(), pos);
             }
         }
