@@ -47,6 +47,7 @@ package org.netbeans.core.startup;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -362,7 +363,11 @@ final class NbEvents extends Events {
         void show() {
             if (showDialog) {
                 showDialog = false;
-                RP.post(this, 0, Thread.MIN_PRIORITY).waitFinished ();
+                if (EventQueue.isDispatchThread()) {
+                    run();
+                } else {
+                    RP.post(this, 0, Thread.MIN_PRIORITY).waitFinished ();
+                }
             }
         }
 
