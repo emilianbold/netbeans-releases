@@ -47,6 +47,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -212,14 +213,21 @@ public class AnnotateAction extends ContextAction {
         if (list == null) return;
         AnnotateLine [] lines = toAnnotateLines(list);
         List<String> revisions = getRevisionNumbers(lines);
+        HgLogMessage initialRevision = null;
+        if (!revisions.isEmpty()) {
+            HgLogMessage [] logs = HgCommand.getLogMessages(repository, Collections.singleton(file), 
+                    revisions.get(0), "0", false, false, false, 1, Collections.<String>emptyList(), OutputLogger.getLogger(null), true);
+            if (logs.length == 1) {
+                initialRevision = logs[0];
+            }
+        }
         HgLogMessage [] logs = HgCommand.getRevisionInfo(repository, revisions, progress.getLogger());
         if (progress.isCanceled()) {
             return;
         }
         if (logs == null) return;
-        fillCommitMessages(lines, logs);
+        fillCommitMessages(lines, logs, initialRevision);
         ab.setAnnotatedRevision(revision);
-        ab.setLogs(logs);
         ab.annotationLines(file, Arrays.asList(lines));
     }
 
@@ -236,11 +244,12 @@ public class AnnotateAction extends ContextAction {
                 }
             }
         }
-        return new ArrayList<String>(revisions);
+        List<String> retval = new ArrayList<String>(revisions);
+        Collections.sort(retval);
+        return retval;
     }
 
-    private static void fillCommitMessages(AnnotateLine [] annotations, HgLogMessage [] logs) {
-        long lowestRevisionNumber = Long.MAX_VALUE;
+    private static void fillCommitMessages(AnnotateLine [] annotations, HgLogMessage [] logs, HgLogMessage initialRevision) {
         for (int i = 0; i < annotations.length; i++) {
             AnnotateLine annotation = annotations[i];
             if (annotation == null) {
@@ -253,9 +262,6 @@ public class AnnotateAction extends ContextAction {
                     Mercurial.LOG.log(Level.WARNING, "AnnotateAction: log {0} of {1} is null", new Object[]{j, logs.length}); //NOI18N
                     continue;
                 }
-                if (log.getRevisionAsLong() < lowestRevisionNumber) {
-                    lowestRevisionNumber = log.getRevisionAsLong();
-                }
                 if (annotation.getRevision().equals(log.getRevisionNumber())) {
                     annotation.setDate(log.getDate());
                     annotation.setId(log.getCSetShortID());
@@ -263,7 +269,7 @@ public class AnnotateAction extends ContextAction {
                 }
             }
         }
-        String lowestRev = Long.toString(lowestRevisionNumber);
+        String lowestRev = initialRevision == null ? "-1" : initialRevision.getRevisionNumber();
         for (int i = 0; i < annotations.length; i++) {
             AnnotateLine annotation = annotations[i];
             if (annotation == null) {
