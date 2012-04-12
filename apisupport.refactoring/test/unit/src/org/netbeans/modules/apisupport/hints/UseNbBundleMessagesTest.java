@@ -290,19 +290,225 @@ public class UseNbBundleMessagesTest {
                        "}\n");
     }
 
-    // XXX to be tested:
-    // - @Something(displayName="#key") on class
-    // - @Something(displayName="#key") on method
-    // - @Something(displayName="#key") on package-info.java
-    // - Messages, Bundle already imported
-    // - add to @Messages("firstkey=...")
-    // - add to @Messages({"firstkey=...", "secondkey=..."})
-    // - some enclosing element already has definition, just need to use
-    // - message formats
-    // - comments preceding key in bundle
-    // - other keys in bundle left behind
-    // - unusual characters (not identifier chars) in key
-    // - unusual characters (\n etc.) in value
+    @Test public void annotationOnClass() throws Exception {
+        HintTest.create().classpath(cp()).
+                input("package test;\n" +
+                       "@javax.annotation.Resource(description=\"#k\")\n" +
+                       "class Test {\n" +
+                       "}\n").
+                input("test/Bundle.properties", "k=v\n", false).
+                run(UseNbBundleMessages.class).
+                findWarning("1:27-1:43:warning:" + UseNbBundleMessages_error_text()).
+                applyFix().
+                assertVerbatimOutput("test/Bundle.properties", "").
+                assertOutput("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "@javax.annotation.Resource(description=\"#k\")\n" +
+                       "@Messages(\"k=v\")\n" +
+                       "class Test {\n" +
+                       "}\n");
+    }
+
+    @Test public void annotationOnMethod() throws Exception {
+        HintTest.create().classpath(cp()).
+                input("package test;\n" +
+                       "class Test {\n" +
+                       "    @javax.annotation.Resource(description=\"#k\")\n" +
+                       "    void m() {}\n" +
+                       "}\n").
+                input("test/Bundle.properties", "k=v\n", false).
+                run(UseNbBundleMessages.class).
+                findWarning("2:31-2:47:warning:" + UseNbBundleMessages_error_text()).
+                applyFix().
+                assertVerbatimOutput("test/Bundle.properties", "").
+                assertOutput("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "class Test {\n" +
+                       "    @javax.annotation.Resource(description=\"#k\")\n" +
+                       "    @Messages(\"k=v\")\n" +
+                       "    void m() {}\n" +
+                       "}\n");
+    }
+
+    @Test public void annotationOnField() throws Exception {
+        HintTest.create().classpath(cp()).
+                input("package test;\n" +
+                       "class Test {\n" +
+                       "    @javax.annotation.Resource(description=\"#k\")\n" +
+                       "    static final Void f = null;\n" +
+                       "}\n").
+                input("test/Bundle.properties", "k=v\n", false).
+                run(UseNbBundleMessages.class).
+                findWarning("2:31-2:47:warning:" + UseNbBundleMessages_error_text()).
+                applyFix().
+                assertVerbatimOutput("test/Bundle.properties", "").
+                assertOutput("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "class Test {\n" +
+                       "    @javax.annotation.Resource(description=\"#k\")\n" +
+                       "    @Messages(\"k=v\")\n" +
+                       "    static final Void f = null;\n" +
+                       "}\n");
+    }
+
+    @Test public void annotationOnPackage() throws Exception {
+        HintTest.create().classpath(cp()).
+                input("test/package-info.java",
+                       "@javax.annotation.Generated(value={}, comments=\"#k\")\n" +
+                       "package test;\n").
+                input("test/Bundle.properties", "k=v\n", false).
+                run(UseNbBundleMessages.class).
+                findWarning("0:38-0:51:warning:" + UseNbBundleMessages_error_text()).
+                applyFix().
+                assertVerbatimOutput("test/Bundle.properties", "").
+                assertOutput("test/package-info.java",
+                       "@javax.annotation.Generated(value={}, comments=\"#k\")\n" +
+                       "@Messages(\"k=v\")\n" +
+                       "package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n");
+    }
+
+    @Test public void addToExistingSingle() throws Exception {
+        HintTest.create().classpath(cp()).
+                input("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "import static test.Bundle.*;\n" +
+                       "class Test {\n" +
+                       "    @Messages(\"one=first\")\n" +
+                       "    String m(boolean flag) {\n" +
+                       "        return flag ? one() : org.openide.util.NbBundle.getMessage(Test.class, \"two\");\n" +
+                       "    }\n" +
+                       "}\n", /* Bundle not generated */false).
+                input("test/Bundle.properties", "two=second\nthree=third\n", false).
+                run(UseNbBundleMessages.class).
+                findWarning("6:56-6:66:warning:" + UseNbBundleMessages_error_text()).
+                applyFix().
+                assertVerbatimOutput("test/Bundle.properties", "three=third\n").
+                assertOutput("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "import static test.Bundle.*;\n" +
+                       "class Test {\n" +
+                       "    @Messages({\"one=first\", \"two=second\"})\n" +
+                       "    String m(boolean flag) {\n" +
+                       "        return flag ? one() : two();\n" +
+                       "    }\n" +
+                       "}\n");
+    }
+
+    @Test public void addToExistingMultiple() throws Exception {
+        HintTest.create().classpath(cp()).
+                input("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "import static test.Bundle.*;\n" +
+                       "class Test {\n" +
+                       "    @Messages({\"one=first\", \"two=second\"})\n" +
+                       "    String m(boolean flag1, boolean flag2) {\n" +
+                       "        return flag 1? one() : flag2 ? two() : org.openide.util.NbBundle.getMessage(Test.class, \"three\");\n" +
+                       "    }\n" +
+                       "}\n", false).
+                input("test/Bundle.properties", "three=third\n", false).
+                run(UseNbBundleMessages.class).
+                findWarning("6:73-6:83:warning:" + UseNbBundleMessages_error_text()).
+                applyFix().
+                assertVerbatimOutput("test/Bundle.properties", "").
+                assertOutput("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "import static test.Bundle.*;\n" +
+                       "class Test {\n" +
+                       "    @Messages({\"one=first\", \"two=second\", \"three=third\"})\n" +
+                       "    String m(boolean flag1, boolean flag2) {\n" +
+                       "        return flag 1? one() : flag2 ? two() : three();\n" +
+                       "    }\n" +
+                       "}\n");
+    }
+
+    @Test public void useAlreadyDefinedOnEnclosing() throws Exception {
+        HintTest.create().classpath(cp()).
+                input("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "@javax.annotation.Resource(description=\"#k\")\n" +
+                       "@Messages(\"k=v\")\n" +
+                       "class Test {\n" +
+                       "    String m() {\n" +
+                       "        return org.openide.util.NbBundle.getMessage(Test.class, \"k\");\n" +
+                       "    }\n" +
+                       "}\n").
+                run(UseNbBundleMessages.class).
+                findWarning("6:41-6:51:warning:" + UseNbBundleMessages_error_text()).
+                applyFix().
+                assertOutput("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "import static test.Bundle.*;\n" +
+                       "@javax.annotation.Resource(description=\"#k\")\n" +
+                       "@Messages(\"k=v\")\n" +
+                       "class Test {\n" +
+                       "    String m() {\n" +
+                       "        return k();\n" +
+                       "    }\n" +
+                       "}\n");
+    }
+
+    @Test public void alreadyDefinedOnAnnotation() throws Exception {
+        HintTest.create().classpath(cp()).
+                input("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "@javax.annotation.Resource(description=\"#k\")\n" +
+                       "@Messages(\"k=v\")\n" +
+                       "class Test {\n" +
+                       "}\n").
+                run(UseNbBundleMessages.class).
+                assertWarnings();
+    }
+
+    @Test public void messageFormatParametersAndComments() throws Exception {
+        HintTest.create().classpath(cp()).
+                input("package test;\n" +
+                       "class Test {\n" +
+                       "    String m(int x1, int x2) {\n" +
+                       "        return org.openide.util.NbBundle.getMessage(Test.class, \"k\", x1, x2);\n" +
+                       "    }\n" +
+                       "}\n").
+                input("test/Bundle.properties", "# leading comment\n# {0} - first\n# {1} - second\nk={0} out of {1}\n# unrelated comment\n", false).
+                run(UseNbBundleMessages.class).
+                findWarning("3:41-3:51:warning:" + UseNbBundleMessages_error_text()).
+                applyFix().
+                assertVerbatimOutput("test/Bundle.properties", "# unrelated comment\n").
+                assertOutput("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "import static test.Bundle.*;\n" +
+                       "class Test {\n" +
+                       "    @Messages({\"# leading comment\", \"# {0} - first\", \"# {1} - second\", \"k={0} out of {1}\"})\n" +
+                       "    String m(int x1, int x2) {\n" +
+                       "        return k(x1, x2);\n" +
+                       "    }\n" +
+                       "}\n");
+    }
+
+    @Test public void unusualCharacters() throws Exception {
+        HintTest.create().classpath(cp()).
+                input("package test;\n" +
+                       "class Test {\n" +
+                       "    String m() {\n" +
+                       "        return org.openide.util.NbBundle.getMessage(Test.class, \"1/0\");\n" +
+                       "    }\n" +
+                       "}\n").
+                input("test/Bundle.properties", "1/0=first \"line\"\\n\\\nand second\n", false).
+                run(UseNbBundleMessages.class).
+                findWarning("3:41-3:51:warning:" + UseNbBundleMessages_error_text()).
+                applyFix().
+                assertVerbatimOutput("test/Bundle.properties", "").
+                assertOutput("package test;\n" +
+                       "import org.openide.util.NbBundle.Messages;\n" +
+                       "import static test.Bundle.*;\n" +
+                       "class Test {\n" +
+                       "    @Messages(\"1/0=first \\\"line\\\"\\nand second\")\n" +
+                       "    String m() {\n" +
+                       "        return _1_0();\n" +
+                       "    }\n" +
+                       "}\n");
+    }
+
+    // XXX test interaction with @Override (#211037)
 
     /* XXX pending #209375
     @Test public void sequentialFixes() throws Exception {
