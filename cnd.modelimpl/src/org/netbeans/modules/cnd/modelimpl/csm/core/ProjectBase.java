@@ -1520,7 +1520,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     if (thisProjectUpdateResult && startProject != this) {
                         // we found the "best from the bests" for the current lib
                         // have to be considered as the best in start project lib storage as well
-                        assert startProjectUpdateResult : " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject;
+                        if (!startProjectUpdateResult) {
+                            CndUtils.assertTrueInConsole(false, " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject);
+                        }
                     }
                     if (thisProjectUpdateResult) {
                         // TODO: think over, what if we aready changed entry,
