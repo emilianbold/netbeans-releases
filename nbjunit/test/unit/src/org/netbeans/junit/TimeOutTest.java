@@ -47,7 +47,6 @@ package org.netbeans.junit;
 import java.util.Enumeration;
 import javax.swing.SwingUtilities;
 import junit.framework.AssertionFailedError;
-import junit.framework.Test;
 import junit.framework.TestFailure;
 import junit.framework.TestResult;
 
@@ -78,6 +77,9 @@ public class TimeOutTest extends NbTestCase {
     }
 
     public void run(TestResult result) {
+        if (!canRun()) {
+            return;
+        }
         this.main = Thread.currentThread();
         
         TestResult mine = new TestResult();
@@ -128,6 +130,8 @@ public class TimeOutTest extends NbTestCase {
         }
         expectedResult = true;
     }
+
+    @RandomlyFails // NB-Core-Build #8142
     public void testRunsShallSucceedWith1sDelay () throws InterruptedException {
         assertFalse(SwingUtilities.isEventDispatchThread());
         if (Thread.currentThread() == main) {

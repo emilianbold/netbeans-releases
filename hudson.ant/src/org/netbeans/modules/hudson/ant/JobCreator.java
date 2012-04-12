@@ -75,12 +75,13 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
+import static org.netbeans.modules.hudson.ant.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
 
@@ -128,14 +129,18 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
         return this;
     }
 
+    @Messages({
+        "JobCreator.copy_message=Global libraries should be copied to a dedicated libraries folder.",
+        "JobCreator.copy_label=&Copy Libraries..."
+    })
     public ConfigurationStatus status() {
         if (scm == null) {
             return Helper.noSCMError();
         }
         if (shar != null && !shar.isSharable()) {
-            String msg = NbBundle.getMessage(JobCreator.class, "JobCreator.copy_message");
+            String msg = JobCreator_copy_message();
             JButton button = new JButton();
-            Mnemonics.setLocalizedText(button, NbBundle.getMessage(JobCreator.class, "JobCreator.copy_label"));
+            Mnemonics.setLocalizedText(button, JobCreator_copy_label());
             button.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     shar.makeSharable();
@@ -228,6 +233,7 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
         return doc;
     }
 
+    @Messages({"# {0} - name of Ant target which be run if selected", "JobCreator.checkbox.a11y=Run Ant target: {0}"})
     private Map<Target,JCheckBox> initComponents() {
         Map<Target,JCheckBox> boxen = new LinkedHashMap<Target,JCheckBox>();
         for (Target t : config.targets()) {
@@ -236,7 +242,7 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
             box.setSelected(t.selected());
             box.setEnabled(t.enabled());
             Mnemonics.setLocalizedText(box, t.labelWithMnemonic());
-            box.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JobCreator.class, "JobCreator.checkbox.a11y", t.antName()));
+            box.getAccessibleContext().setAccessibleDescription(JobCreator_checkbox_a11y(t.antName()));
         }
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
