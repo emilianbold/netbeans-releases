@@ -122,8 +122,7 @@ public class AddCommand extends GitCommand {
                 while (treeWalk.next() && !monitor.isCanceled()) {
                     String path = treeWalk.getPathString();
                     WorkingTreeIterator f = treeWalk.getTree(1, WorkingTreeIterator.class);
-                    if (f != null && (treeWalk.getTree(0, DirCacheIterator.class) == null && f.isEntryIgnored()
-                            || Utils.isFromNested(f.getEntryFileMode().getBits()))) {
+                    if (f != null && (treeWalk.getTree(0, DirCacheIterator.class) == null && f.isEntryIgnored())) {
                         // file is not in index but is ignored, do nothing
                     } else if (!(path.equals(lastAddedFile))) {
                         if (f != null) { // the file exists
@@ -131,22 +130,28 @@ public class AddCommand extends GitCommand {
                             DirCacheEntry entry = new DirCacheEntry(path);
                             entry.setLastModified(f.getEntryLastModified());
                             int fm = f.getEntryFileMode().getBits();
-                            if (!checkExecutable) {
-                                fm = fm & ~0111;
-                            }
-                            entry.setFileMode(FileMode.fromBits(fm));
-                            InputStream in = f.openEntryStream();
-                            try {
-                                long sz = f.getEntryLength();
-                                if (autocrlf) {
-                                    ByteBuffer buf = IO.readWholeStream(in, (int) sz);
-                                    entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, buf.array(), buf.position(), buf.limit() - buf.position()));
-                                } else {
-                                    entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, sz, in));
-                                }
+                            long sz = f.getEntryLength();
+                            if (Utils.isFromNested(fm)) {
+                                entry.setFileMode(FileMode.fromBits(fm));
                                 entry.setLength(sz);
-                            } finally {
-                                in.close();
+                                entry.setObjectId(f.getEntryObjectId());
+                            } else {
+                                if (!checkExecutable) {
+                                    fm = fm & ~0111;
+                                }
+                                entry.setFileMode(FileMode.fromBits(fm));
+                                InputStream in = f.openEntryStream();
+                                try {
+                                    if (autocrlf) {
+                                        ByteBuffer buf = IO.readWholeStream(in, (int) sz);
+                                        entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, buf.array(), buf.position(), buf.limit() - buf.position()));
+                                    } else {
+                                        entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, sz, in));
+                                    }
+                                    entry.setLength(sz);
+                                } finally {
+                                    in.close();
+                                }
                             }
                             DirCacheIterator it = treeWalk.getTree(0, DirCacheIterator.class);
                             if (it == null || !it.getDirCacheEntry().getObjectId().equals(entry.getObjectId())) {

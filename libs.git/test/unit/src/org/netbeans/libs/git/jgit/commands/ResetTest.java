@@ -427,10 +427,11 @@ public class ResetTest extends AbstractGitTestCase {
         write(f2, "change");
         clientNested.add(new File[] { f2 }, NULL_PROGRESS_MONITOR);
         
-        client.reset(new File[] { workDir }, "HEAD", true, NULL_PROGRESS_MONITOR);
+        client.reset(new File[] { workDir, nested }, "HEAD", true, NULL_PROGRESS_MONITOR);
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
-        assertEquals(1, statuses.size());
+        assertEquals(2, statuses.size());
         assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
+        assertStatus(statuses, workDir, nested, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, nested, f2, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);

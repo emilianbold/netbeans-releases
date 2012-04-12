@@ -105,8 +105,7 @@ public class CheckoutIndex {
             }
             DirCacheIterator dit = treeWalk.getTree(0, DirCacheIterator.class);
             FileTreeIterator fit = treeWalk.getTree(1, FileTreeIterator.class);
-            if (dit != null && !Utils.isFromNested(dit.getEntryFileMode().getBits())
-                    && (recursively || directChild(roots, repository.getWorkTree(), path)) && (fit == null || fit.isModified(dit.getDirCacheEntry(), checkContent))) {
+            if (dit != null && (recursively || directChild(roots, repository.getWorkTree(), path)) && (fit == null || fit.isModified(dit.getDirCacheEntry(), checkContent))) {
                 // update entry
                 listener.notifyFile(path, treeWalk.getPathString());
                 checkoutEntry(repository, path, dit.getDirCacheEntry());
@@ -126,15 +125,21 @@ public class CheckoutIndex {
             return;
         }
 
-        if (exists && file.isDirectory()) {
-            monitor.notifyWarning(MessageFormat.format(Utils.getBundle(CheckoutIndex.class).getString("MSG_Warning_ReplacingDirectory"), file.getAbsolutePath())); //NOI18N
-            Utils.deleteRecursively(file);
-        }
-        file.createNewFile();
-        if (file.isFile()) {
-            DirCacheCheckout.checkoutEntry(repository, file, e);
+        if (Utils.isFromNested(e.getFileMode().getBits())) {
+            if (!exists) {
+                file.mkdirs();
+            }
         } else {
-            monitor.notifyError(MessageFormat.format(Utils.getBundle(CheckoutIndex.class).getString("MSG_Warning_CannotCreateFile"), file.getAbsolutePath())); //NOI18N
+            if (exists && file.isDirectory()) {
+                monitor.notifyWarning(MessageFormat.format(Utils.getBundle(CheckoutIndex.class).getString("MSG_Warning_ReplacingDirectory"), file.getAbsolutePath())); //NOI18N
+                Utils.deleteRecursively(file);
+            }
+            file.createNewFile();
+            if (file.isFile()) {
+                DirCacheCheckout.checkoutEntry(repository, file, e);
+            } else {
+                monitor.notifyError(MessageFormat.format(Utils.getBundle(CheckoutIndex.class).getString("MSG_Warning_CannotCreateFile"), file.getAbsolutePath())); //NOI18N
+            }
         }
     }
 

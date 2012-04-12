@@ -352,14 +352,16 @@ public class RemoveTest extends AbstractGitTestCase {
 
             @Override
             public void notifyError (String message) {
-                fail("No ERROR may ocur: " + message);
+                fail("No ERROR may occur: " + message);
             }
             
         };
         client.remove(new File[] { nested }, false, pm);
+        assertTrue(nested.exists());
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
-        assertEquals(1, statuses.size());
+        assertEquals(2, statuses.size());
         assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, nested, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
         
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
