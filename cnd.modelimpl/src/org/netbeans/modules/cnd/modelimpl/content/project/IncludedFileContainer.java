@@ -271,5 +271,10 @@ public final class IncludedFileContainer {
             assert storage != null;
             return storage;
         }
+
+        @Override
+        public String toString() {
+            return "Entry{" + "prjUID=" + prjUID + ", storage=" + storage + '}'; // NOI18N
+        }
     }
 }
