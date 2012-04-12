@@ -154,6 +154,11 @@ import org.openide.util.lookup.Lookups;
  */
 public class HintTest {
 
+    private static final Logger INDEXING_LOGGER = /* RepositoryUpdater.UI_LOGGER */ Logger.getLogger("org.netbeans.ui.indexing");
+    static {
+        INDEXING_LOGGER.setLevel(Level.WARNING);
+    }
+
     private final File workDir;
     private final FileObject sourceRoot;
     private final FileObject buildRoot;
