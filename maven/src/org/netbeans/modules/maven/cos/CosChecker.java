@@ -58,6 +58,7 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
@@ -95,6 +96,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -104,8 +107,10 @@ import org.openide.util.RequestProcessor;
 public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
 
     static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
+    private static final String STARTUP_ARGS_KEY = "run.jvmargs.ide"; // NOI18N
     private static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main"; //NOI18N
     private static final String DEBUG_MAIN = ActionProvider.COMMAND_DEBUG_SINGLE + ".main"; //NOI18N
+    private static final String PROFILE_MAIN = ActionProvider.COMMAND_PROFILE_SINGLE + ".main"; // NOI18N
 
     @Override
     public boolean checkRunConfig(RunConfig config) {
@@ -228,9 +233,11 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             if ((NbMavenProject.TYPE_JAR.equals(
                     config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType()) &&
                     (ActionProvider.COMMAND_RUN.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG.equals(actionName))) ||
+                    ActionProvider.COMMAND_DEBUG.equals(actionName) ||
+                    ActionProvider.COMMAND_PROFILE.equals(actionName))) ||
                     RUN_MAIN.equals(actionName) ||
-                    DEBUG_MAIN.equals(actionName)) {
+                    DEBUG_MAIN.equals(actionName) ||
+                    PROFILE_MAIN.equals(actionName)) {
                 long stamp = getLastCoSLastTouch(config, false);
                 //check the COS timestamp against critical files (pom.xml)
                 // if changed, don't do COS.
@@ -254,7 +261,8 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
                 }
                 if (RUN_MAIN.equals(actionName) ||
-                    DEBUG_MAIN.equals(actionName)) {
+                    DEBUG_MAIN.equals(actionName) ||
+                    PROFILE_MAIN.equals(actionName)) {
                     FileObject selected = config.getSelectedFileObject();
                     ClassPath srcs = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectSourcesClassPath(ClassPath.SOURCE);
                     String path = srcs.getResourceName(selected);
@@ -296,6 +304,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     boolean supported = JavaRunner.isSupported(action2Quick, params);
                     if (supported) {
                         try {
+                            collectStartupArgs(config, params);
                             JavaRunner.execute(action2Quick, params);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
@@ -317,7 +326,8 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     private boolean checkRunTest(RunConfig config) {
         String actionName = config.getActionName();
         if (!(ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
-                ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
+                ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) ||
+                ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName))) {
             return true;
         }
         if (RunUtils.hasTestCompileOnSaveEnabled(config)) {
@@ -521,6 +531,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             boolean supported = JavaRunner.isSupported(action2Quick, params);
             if (supported) {
                 try {
+                    collectStartupArgs(config, params);
                     ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
                 //TODO listen on result of execution
                 //if failed, tweak the timestamps to force a non-CoS build
@@ -735,13 +746,58 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             return JavaRunner.QUICK_RUN;
         } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || DEBUG_MAIN.equals(actionName)) {
             return JavaRunner.QUICK_DEBUG;
+        } else if (ActionProvider.COMMAND_PROFILE.equals(actionName) || PROFILE_MAIN.equals(actionName)) {
+            return JavaRunner.QUICK_PROFILE;
         } else if (ActionProvider.COMMAND_TEST.equals(actionName) || ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) || SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(actionName)) {
             return JavaRunner.QUICK_TEST;
         } else if (ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(actionName)) {
             return JavaRunner.QUICK_TEST_DEBUG;
+        } else if (ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName)) {
+            return JavaRunner.QUICK_TEST_PROFILE;
         }
         assert false : "Cannot convert " + actionName + " to quick actions.";
         return null;
+    }
+    
+    private void collectStartupArgs(RunConfig config, Map<String, Object> params) {
+        String actionName = config.getActionName();
+        StartupExtender.StartMode mode;
+        
+        if (ActionProvider.COMMAND_RUN.equals(actionName) || RUN_MAIN.equals(actionName)) {
+            mode = StartupExtender.StartMode.NORMAL;
+        } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || DEBUG_MAIN.equals(actionName)) {
+            mode = StartupExtender.StartMode.DEBUG;
+        } else if (ActionProvider.COMMAND_PROFILE.equals(actionName) || ActionProvider.COMMAND_PROFILE_SINGLE.equals(actionName) || PROFILE_MAIN.equals(actionName)) {
+            mode = StartupExtender.StartMode.PROFILE;
+        } else if (ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName)) {
+            mode = StartupExtender.StartMode.TEST_PROFILE;
+        } else {
+            // XXX could also set argLine for COMMAND_TEST and relatives (StartMode.TEST_*); need not be specific to TYPE_JAR
+            return;
+        }
+
+        InstanceContent ic = new InstanceContent();
+        Project p = config.getProject();
+        if (p != null) {
+            ic.add(p);
+            ActiveJ2SEPlatformProvider pp = p.getLookup().lookup(ActiveJ2SEPlatformProvider.class);
+            if (pp != null) {
+                ic.add(pp.getJavaPlatform());
+            }
+        }
+        Set<String> args = new HashSet<String>();
+
+        for (StartupExtender group : StartupExtender.getExtenders(new AbstractLookup(ic), mode)) {
+            args.addAll(group.getArguments());
+        }
+        
+        if (!args.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for(String arg : args) {
+                sb.append(arg).append(' ');
+            }
+            params.put(STARTUP_ARGS_KEY, sb.toString());
+        }
     }
 
     static void touchProject(Project project) {

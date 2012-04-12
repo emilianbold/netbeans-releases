@@ -70,6 +70,19 @@ made subject to such option by the copyright holder.
         </properties>
     </action>
     <action>
+        <actionName>profile</actionName>
+        <packagings>
+            <packaging>nbm-application</packaging>
+        </packagings>
+        <goals>
+            <goal>nbm:cluster-app</goal>
+            <goal>nbm:run-platform</goal>
+        </goals>
+        <properties>
+            <netbeans.run.params.ide/>
+        </properties>
+    </action>
+    <action>
         <actionName>nbmreload</actionName>
         <goals>
             <goal>package</goal>
