@@ -63,7 +63,6 @@ import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -131,10 +130,15 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
             BasePathSupport.Item item = (BasePathSupport.Item) includePathListModel.getElementAt(i);
             if (item.getType() == BasePathSupport.Item.Type.FOLDER
                     && !item.isBroken()) {
-                String filePath = item.getFilePath();
-                FileObject fileObject = FileUtil.toFileObject(new File(filePath));
+                FileObject fileObject = item.getFileObject(uiProps.getProject().getProjectDirectory());
+                if (fileObject == null) {
+                    // not broken but not found?!
+                    category.setErrorMessage(NbBundle.getMessage(CustomizerPhpIncludePath.class, "MSG_NotFound", item.getFilePath()));
+                    category.setValid(false);
+                    return;
+                }
                 if (CommandUtils.isUnderAnySourceGroup(uiProps.getProject(), fileObject, false)) {
-                    category.setErrorMessage(Bundle.CustomizerPhpIncludePath_error_projectFile(filePath));
+                    category.setErrorMessage(Bundle.CustomizerPhpIncludePath_error_projectFile(item.getAbsoluteFilePath(uiProps.getProject().getProjectDirectory())));
                     category.setValid(false);
                     return;
                 }

@@ -57,7 +57,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class PHPCodeCompletion188107Test extends PHPTestBase {
+public class PHPCodeCompletion188107Test extends PHPCodeCompletionTestBase {
 
     public PHPCodeCompletion188107Test(String testName) {
         super(testName);
@@ -66,11 +66,11 @@ public class PHPCodeCompletion188107Test extends PHPTestBase {
     public void testUseCase1() throws Exception {
         checkCompletion("testfiles/completion/lib/test188107/MyTable.php", "$this->^", false);
     }
-    
+
     public void testUseCase2() throws Exception {
         checkCompletion("testfiles/completion/lib/test188107/MyTable.php", "$this->db->^", false);
     }
-    
+
     public void testUseCase3() throws Exception {
         checkCompletion("testfiles/completion/lib/test188107/MyTable.php", "$this->db->select('Baf')->^", false);
     }

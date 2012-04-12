@@ -116,4 +116,108 @@ public class WorkingCopyTest extends NbTestCase {
             }
         }, true);
     }
+
+    public void testResolveRewriteTarget() throws Exception {
+        File f = new File(getWorkDir(), "TestClass.java");
+        String code = "package foo;" +
+                      "public class TestClass{" +
+                      "   public void foo() {" +
+                      "   }" +
+                      "}";
+
+        TestUtilities.copyStringToFile(f, code);
+        FileObject fo = FileUtil.toFileObject(f);
+        JavaSource javaSource = JavaSource.forFileObject(fo);
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(Phase.RESOLVED);
+
+                TreeMaker maker = copy.getTreeMaker();
+                ClassTree classTree = (ClassTree)copy.getCompilationUnit().getTypeDecls().get(0);
+                TypeElement serializableElement = copy.getElements().getTypeElement("java.io.Serializable");
+                ExpressionTree serializableTree = maker.QualIdent(serializableElement);
+                ClassTree newClassTree = maker.addClassImplementsClause(classTree, serializableTree);
+
+                copy.rewrite(classTree, newClassTree);
+
+                assertSame(newClassTree, copy.resolveRewriteTarget(classTree));
+
+                ClassTree finalClassTree = maker.removeClassImplementsClause(newClassTree, 0);
+
+                copy.rewrite(newClassTree, finalClassTree);
+
+                assertSame(finalClassTree, copy.resolveRewriteTarget(classTree));
+
+                // remove the following to make the test pass
+                copy.toPhase(Phase.RESOLVED);
+            }
+        }).commit();
+
+        assertEquals(code, fo.asText());
+    }
+    
+    public void testRewriteInComments185739() throws Exception {
+        File f = new File(getWorkDir(), "TestClass.java");
+        String code = "package foo;\n" +
+                      "public class TestClass{\n" +
+                      "   /**\n" +
+                      "    * aaaa\n" +
+                      "    */\n" +
+                      "   public void foo() {\n" +
+                      "   }\n" +
+                      "}";
+        TestUtilities.copyStringToFile(f, code);
+        FileObject fo = FileUtil.toFileObject(f);
+        JavaSource javaSource = JavaSource.forFileObject(fo);
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(Phase.RESOLVED);
+
+                int aaaa = copy.getText().indexOf("aaaa");
+
+                assertTrue(aaaa >= 0);
+                copy.rewriteInComment(aaaa, 2, "");
+                copy.rewriteInComment(aaaa + 2, 2, "");
+            }
+        }).commit();
+
+        assertEquals(code.replace("aaaa", ""), fo.asText("UTF-8"));
+    }
+    
+    public void testSynthetic2NonSynthetic185739() throws Exception {
+        File f = new File(getWorkDir(), "TestClass.java");
+        String code = "package foo;\n" +
+                      "public class TestClass {\n" +
+                      "    public void foo() {\n" +
+                      "    }\n" +
+                      "}";
+        TestUtilities.copyStringToFile(f, code);
+        FileObject fo = FileUtil.toFileObject(f);
+        JavaSource javaSource = JavaSource.forFileObject(fo);
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(Phase.RESOLVED);
+
+                CompilationUnitTree cut = copy.getCompilationUnit();
+                TreeMaker make = copy.getTreeMaker();
+                final ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+                final MethodTree mt = (MethodTree) ct.getMembers().get(0);
+                ModifiersTree modT = mt.getModifiers();
+                ModifiersTree newModT = make.removeModifiersModifier(modT, Modifier.PUBLIC);
+                copy.rewrite(modT, newModT);
+            }
+        }).commit();
+
+        String golden = "package foo;\n" +
+                        "public class TestClass {\n\n" +
+                        "    TestClass() {\n" +
+                        "    }\n" +
+                        "    public void foo() {\n" +
+                        "    }\n" +
+                        "}";
+        assertEquals(golden, fo.asText("UTF-8"));
+    }
 }
