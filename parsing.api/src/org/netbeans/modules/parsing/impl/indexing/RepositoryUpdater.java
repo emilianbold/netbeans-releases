@@ -3967,7 +3967,15 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
             if (previousLevel == null) {
                 previousLevel = LOGGER.getLevel() == null ? Level.ALL : LOGGER.getLevel();
-                LOGGER.setLevel(Level.FINE);
+                Level toSet;
+
+                try {
+                    toSet = Level.parse(System.getProperty("RepositoryUpdate.increasedLogLevel", "FINE"));
+                } catch (IllegalArgumentException ex) {
+                    toSet = Level.FINE;
+                }
+
+                LOGGER.setLevel(toSet);
                 LOGGER.warning("Non-empty roots encountered while no projects are opened; loglevel increased");
                 
                 Collection<? extends PathRecognizer> recogs = Lookup.getDefault().lookupAll(PathRecognizer.class);

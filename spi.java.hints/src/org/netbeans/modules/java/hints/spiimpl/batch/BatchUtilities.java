@@ -77,6 +77,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -174,7 +175,13 @@ public class BatchUtilities {
         };
 
         BatchSearch.getVerifiedSpans(candidates, progress, callback, problems, cancel);
+        
+        addResourceContentChanges(resourceContentChanges, result);
 
+        return Collections.singletonList(JavaSourceAccessor.getINSTANCE().createModificationResult(result, Collections.<Object, int[]>emptyMap()));
+    }
+
+    public static void addResourceContentChanges(final Map<FileObject, byte[]> resourceContentChanges, final Map<FileObject, List<Difference>> result) {
         for (Entry<FileObject, byte[]> e : resourceContentChanges.entrySet()) {
             try {
                 byte[] origBytes = e.getKey().asBytes();
@@ -189,8 +196,6 @@ public class BatchUtilities {
                 Exceptions.printStackTrace(ex);
             }
         }
-
-        return Collections.singletonList(JavaSourceAccessor.getINSTANCE().createModificationResult(result, Collections.<Object, int[]>emptyMap()));
     }
 
     private static String positionToString(ErrorDescription ed) {

@@ -51,7 +51,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 
@@ -59,7 +59,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UsedNamesComputerTest extends PHPTestBase {
+public class UsedNamesComputerTest extends PHPCodeCompletionTestBase {
 
     public UsedNamesComputerTest(String testName) {
         super(testName);

@@ -69,7 +69,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  */
 @ServiceProvider(service=WhiteListQueryImplementation.UserSelectable.class,
-    path="org-netbeans-api-java/whitelists/")
+    path="org-netbeans-api-java/whitelists")
 public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSelectable, PreferenceChangeListener {
 
     private static final Logger LOG = Logger.getLogger(WhiteListQueryImpl.class.getSimpleName());

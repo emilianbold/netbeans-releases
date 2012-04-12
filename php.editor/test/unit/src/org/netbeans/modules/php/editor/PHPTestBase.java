@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,34 +34,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
- * @author Tor Norbye
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class PHPTestBase extends CslTestBase {
+public class PHPTestBase extends CslTestBase {
 
     private static final int TEST_TIMEOUT = Integer.getInteger("nb.php.test.timeout", 10000); //NOI18N
-
-    static {
-        System.setProperty("nb.php.test.run", "true"); //NOI18N
-    }
 
     public PHPTestBase(String testName) {
         super(testName);
@@ -78,45 +60,4 @@ public abstract class PHPTestBase extends CslTestBase {
         return TEST_TIMEOUT;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
-        PHPIndex.setClusterUrl("file:/bogus"); // No translation
-        //getXTestJsCluster();
-    }
-
-    @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new PHPLanguage();
-    }
-
-    @Override
-    protected String getPreferredMimeType() {
-        return FileUtils.PHP_MIME_TYPE;
-    }
-
-     protected @Override Map<String, ClassPath> createClassPathsForTest() {
-        return Collections.singletonMap(
-            PhpSourcePath.SOURCE_CP,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib"))
-                //FileUtil.toFileObject(getDataFile("/testfiles/completion/lib"))
-            })
-        );
-    }
-
-    // Called via reflection from GsfUtilities. This is necessary because
-    // during tests, going from a FileObject to a BaseDocument only works
-    // if all the correct data loaders are installed and working - and that
-    // hasn't been the case; we end up with PlainDocuments instead of BaseDocuments.
-    // If anyone can figure this out, please let me know and simplify the
-    // test infrastructure.
-//    public static BaseDocument getDocumentFor(FileObject fo) {
-//        BaseDocument doc = CslTestBase.getDocument(read(fo));
-//        doc.putProperty(org.netbeans.api.lexer.Language.class, PHPTokenId.language());
-//        doc.putProperty("mimeType", PHPLanguage.PHP_MIME_TYPE);
-//
-//        return doc;
-//    }
 }

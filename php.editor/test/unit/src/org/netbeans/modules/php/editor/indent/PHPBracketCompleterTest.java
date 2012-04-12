@@ -57,7 +57,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
-import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
 
@@ -76,7 +76,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tor Norbye
  */
-public class PHPBracketCompleterTest extends PHPTestBase {
+public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
 
     public PHPBracketCompleterTest(String testName) {
         super(testName);

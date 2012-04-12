@@ -133,6 +133,16 @@ public class Model {
         Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
         prefs.put(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, value);
     }
+    
+    String getEditorSearchType() {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        return prefs.get(SimpleValueNames.EDITOR_SEARCH_TYPE, "default");
+    }
+
+    void setEditorSearchType(String value) {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        prefs.put(SimpleValueNames.EDITOR_SEARCH_TYPE, value);
+    }
 
     // private helper methods ..................................................
     

@@ -181,7 +181,7 @@ public class BookmarkManager {
             foList = new ArrayList<FileObject>(allFileBookmarks.size());
             for (FileBookmarks fileBookmarks : allFileBookmarks) {
                 FileObject fo = fileBookmarks.getFileObject();
-                if (fo != null) {
+                if (fo != null && fileBookmarks.containsAnyBookmarks()) {
                     foList.add(fo);
                 } // else: could be obsolete URL of a removed file
             }
@@ -220,8 +220,12 @@ public class BookmarkManager {
     }
 
     public ProjectBookmarks getProjectBookmarks(Document document) {
-        ProjectBookmarks projectBookmarks = null;
         FileObject fo = NbEditorUtilities.getFileObject (document);
+        return getProjectBookmarks(fo);
+    }
+    
+    public ProjectBookmarks getProjectBookmarks(FileObject fo) {
+        ProjectBookmarks projectBookmarks = null;
         if (fo != null) {
             Project project = FileOwnerQuery.getOwner(fo);
             if (project != null) {

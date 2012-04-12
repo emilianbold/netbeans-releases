@@ -81,7 +81,7 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
     
     private final ClasspathInfo cpInfo;
     private final String ejbClass;
-    private final EjbJar ejbModule;;
+    private final EjbJar ejbModule;
     private final SessionMethodController controller;
 
     public SessionChildren(EjbViewController ejbViewController) {
@@ -142,21 +142,21 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
     @Override
     protected Node[] createNodes(Key key) {
         if (Key.LOCAL.equals(key)) {
-            Children children = new MethodChildren(cpInfo, controller, controller.getLocalInterfaces(), MethodsNode.ViewType.LOCAL);
+            Children children = new MethodChildren(cpInfo, ejbModule, controller, controller.getLocalInterfaces(), MethodsNode.ViewType.LOCAL);
             MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, MethodsNode.ViewType.LOCAL);
             n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
             return new Node[] { n };
         }
         if (Key.REMOTE.equals(key)) {
-            Children children = new MethodChildren(cpInfo, controller, controller.getRemoteInterfaces(), MethodsNode.ViewType.REMOTE);
+            Children children = new MethodChildren(cpInfo, ejbModule, controller, controller.getRemoteInterfaces(), MethodsNode.ViewType.REMOTE);
             MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, MethodsNode.ViewType.REMOTE);
             n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));
             return new Node[] { n };
         }
         if (Key.BEAN.equals(key)) {
-            Children children = new MethodChildren(cpInfo, controller, controller.getBeanSuperclasses(), MethodsNode.ViewType.NO_INTERFACE);
+            Children children = new MethodChildren(cpInfo, ejbModule, controller, controller.getBeanSuperclasses(), MethodsNode.ViewType.NO_INTERFACE);
             MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, MethodsNode.ViewType.NO_INTERFACE);
             n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/MethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_BeanMethods"));

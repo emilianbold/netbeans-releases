@@ -216,12 +216,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      */
     private RequestProcessor.Task latestAnnotationTask = null;
 
-
-    /**
-     * The log messaages for the file stored in the AnnotationBar;
-     */
-    private HgLogMessage [] logs;
-
     /**
      * Repository root of annotated file
      */
@@ -657,7 +651,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         if (revisionPerLine != null) {
             String key = getPreviousRevisionKey(originalFile.getAbsolutePath(), revisionPerLine);
             HgRevision previousRevision = getPreviousRevisions().get(key); // get from cache
-            if (previousRevision != null) {
+            if (al.canBeRolledBack() && (previousRevision != null || !getPreviousRevisions().containsKey(key))) {
                 if (!getPreviousRevisions().containsKey(key)) {
                     // get revision in a bg thread and cache the value
                     Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
@@ -1319,10 +1313,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /** on JTextPane */
     @Override
     public void componentShown(ComponentEvent e) {
-    }
-
-    public void setLogs(HgLogMessage [] logs) {
-        this.logs = logs;
     }
 
     private static String getPreviousRevisionKey(String filePath, String revision) {
