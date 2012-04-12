@@ -445,6 +445,15 @@ public final class Manager {
             displayHandler = new ResultDisplayHandler(session);
             createIO(displayHandler);
             displayHandlers.put(session, displayHandler);
+            final ResultDisplayHandler dispHandler = displayHandler;
+            Mutex.EVENT.writeAccess(new Runnable() {
+
+                @Override
+                public void run() {
+                    StatisticsPanel comp = (StatisticsPanel) dispHandler.getDisplayComponent().getLeftComponent();
+                    dispHandler.setTreePanel(comp.getTreePanel());
+                }
+            });
         }
         return displayHandler;
     }
