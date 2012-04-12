@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.primefaces.ui;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -77,6 +79,14 @@ public class PrimefacesCustomizerPanel extends javax.swing.JPanel implements Hel
         initComponents();
         changeSupport.addChangeListener(changeListener);
         initLibraries(true);
+
+        primefacesLibrariesComboBox.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     /**
@@ -100,10 +110,9 @@ public class PrimefacesCustomizerPanel extends javax.swing.JPanel implements Hel
                     public void run() {
                         setPrimefacesLibrariesComboBox(primefacesLibraries);
                         if (setStoredValue && !primefacesLibraries.isEmpty()) {
-                            setDefaultPrimefacesComboBoxValue();
-                        } else {
-                            changeSupport.fireChange();
+                            setDefaultPrimefacesComboBoxValue(primefacesLibraries);
                         }
+                        changeSupport.fireChange();
                     }
                 });
             }
@@ -131,10 +140,14 @@ public class PrimefacesCustomizerPanel extends javax.swing.JPanel implements Hel
         primefacesLibrariesComboBox.setEnabled(!items.isEmpty());
     }
 
-    private void setDefaultPrimefacesComboBoxValue() {
+    private void setDefaultPrimefacesComboBoxValue(List<Library> foundLibraries) {
         Preferences preferences = PrimefacesImplementation.getPrimefacesPreferences();
-        primefacesLibrariesComboBox.setSelectedItem(
-                preferences.get(PrimefacesImplementation.PROP_PREFERRED_LIBRARY, "")); //NOI18N
+        String preferred = preferences.get(PrimefacesImplementation.PROP_PREFERRED_LIBRARY, ""); //NOI18N
+        for (Library library : foundLibraries) {
+            if (library.getName().equals(preferred)) {
+                primefacesLibrariesComboBox.setSelectedItem(library);
+            }
+        }
     }
 
     /**

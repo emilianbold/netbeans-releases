@@ -42,10 +42,10 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
-import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuildIterator;
@@ -139,11 +139,12 @@ public class AddCommand extends GitCommand {
                             try {
                                 long sz = f.getEntryLength();
                                 if (autocrlf) {
-                                    entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, IO.readWholeStream(in, (int) sz).array()));
+                                    ByteBuffer buf = IO.readWholeStream(in, (int) sz);
+                                    entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, buf.array(), buf.position(), buf.limit() - buf.position()));
                                 } else {
                                     entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, sz, in));
                                 }
-                                entry.setLength(or.getObjectSize(entry.getObjectId(), Constants.OBJ_BLOB));
+                                entry.setLength(sz);
                             } finally {
                                 in.close();
                             }

@@ -43,7 +43,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
     <folder name="Actions">
@@ -54,11 +54,23 @@ made subject to such option by the copyright holder.
             <file name="bookmark-previous.instance">
                 <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$Previous"/>
             </file>
+            <file name="bookmark-history-popup-next.instance">
+                <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$PopupNext"/>
+            </file>
+            <file name="bookmark-history-popup-previous.instance">
+                <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$PopupPrevious"/>
+            </file>
             <file name="bookmark-toggle.instance">
                 <attr name="instanceCreate" newvalue="org.netbeans.lib.editor.bookmarks.actions.ToggleBookmarkAction"/>
             </file>
             <file name="clear-document-bookmarks.instance">
                 <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$ClearDocumentBookmarks"/>
+            </file>
+            <file name="org-netbeans-modules-editor-bookmarks-ui-BookmarksViewOpenAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.netbeans.modules.editor.bookmarks.ui.BookmarksView.openAction"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/editor/bookmarks/resources/bookmark_16.png"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.editor.bookmarks.ui.Bundle#LBL_BookmarksAction"/>
             </file>
         </folder>
     </folder>
@@ -70,13 +82,13 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1900"/>
             </file>
             
-            <file name="org-netbeans-editor-bookmarks-BookmarkNext.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance"/>
+            <file name="bookmark-history-popup-next.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-history-popup-next.instance"/>
                 <attr name="position" intvalue="2000"/>
             </file>
             
-            <file name="org-netbeans-editor-bookmarks-BookmarkPrevious.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
+            <file name="bookmark-history-popup-previous.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-history-popup-previous.instance"/>
                 <attr name="position" intvalue="2100"/>
             </file>
             
@@ -84,6 +96,14 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="2200"/>
             </file>
+        </folder>
+        <folder name="Window">
+            <folder name="Navigator">
+                <file name="org-netbeans-modules-editor-bookmarks-ui-BookmarksViewOpenAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-bookmarks-ui-BookmarksViewOpenAction.instance"/>
+                    <attr name="position" intvalue="500"/>
+                </file>
+            </folder>
         </folder>
     </folder>
     
@@ -129,7 +149,29 @@ made subject to such option by the copyright holder.
     <folder name="ProjectXMLCatalog">
         <folder name="editor-bookmarks">
             <file name="1.xsd" url="editor-bookmarks-1.xsd"/>
+            <file name="2.xsd" url="editor-bookmarks-2.xsd"/>
         </folder>
+    </folder>
+
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="bookmarks.settings" url="bookmarks.settings"/>
+        </folder>
+
+        <folder name="Modes">
+            <folder name="output">
+                <file name="bookmarks.wstcref" url="bookmarks.wstcref">
+                    <attr name="position" intvalue="850"/>
+                </file>
+            </folder>
+        </folder>
+        
+        <folder name="Groups">
+            <folder name="Editor">
+                <file name="bookmarks.wstcgrp" url="bookmarks.wstcgrp"/>
+            </folder>
+        </folder>
+
     </folder>
 
 </filesystem>

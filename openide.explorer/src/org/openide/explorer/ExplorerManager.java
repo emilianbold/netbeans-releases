@@ -57,6 +57,8 @@ import java.io.*;
 import java.util.*;
 import java.util.ArrayList;
 import javax.swing.SwingUtilities;
+import static org.openide.explorer.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 
 /**
@@ -216,6 +218,10 @@ public final class ExplorerManager extends Object implements Serializable, Clone
     * @exception PropertyVetoException when the given nodes cannot be selected
     * @throws IllegalArgumentException if <code>null</code> is given (array or any element in array)
     */
+    @Messages({
+        "EXC_NodeCannotBeNull=Cannot use null for node selection.",
+        "EXC_NoElementOfNodeSelectionMayBeNull=No element of a node selection may be null."
+    })
     public final void setSelectedNodes(final Node[] value)
     throws PropertyVetoException {
         class AtomicSetSelectedNodes implements Runnable {
@@ -227,7 +233,7 @@ public final class ExplorerManager extends Object implements Serializable, Clone
             /** selects only nodes under root context */
             private void checkAndSet() {
                 if (value == null) {
-                    throw new IllegalArgumentException(getString("EXC_NodeCannotBeNull"));
+                    throw new IllegalArgumentException(EXC_NodeCannotBeNull());
                 }
 
                 if (equalNodes(value, selectedNodes)) {
@@ -237,7 +243,7 @@ public final class ExplorerManager extends Object implements Serializable, Clone
                 List<Node> validNodes = null;
                 for (int i = 0; i < value.length; i++) {
                     if (value[i] == null) {
-                        throw new IllegalArgumentException(getString("EXC_NoElementOfNodeSelectionMayBeNull"));
+                        throw new IllegalArgumentException(EXC_NoElementOfNodeSelectionMayBeNull());
                     }
                     
                     if (!isUnderRoot(value[i])) {
@@ -342,7 +348,7 @@ public final class ExplorerManager extends Object implements Serializable, Clone
                     return;
                 }
 
-                checkUnderRoot(value, "EXC_ContextMustBeWithinRootContext");
+                checkUnderRoot(value);
                 setSelectedNodes0(selection);
 
                 oldValue = exploredContext;
@@ -387,7 +393,7 @@ public final class ExplorerManager extends Object implements Serializable, Clone
                         return;
                     }
 
-                    checkUnderRoot(value, "EXC_ContextMustBeWithinRootContext");
+                    checkUnderRoot(value);
                     setSelectedNodes(selection);
 
                     oldValue = exploredContext;
@@ -469,9 +475,10 @@ public final class ExplorerManager extends Object implements Serializable, Clone
     * @param value the new node to serve as a root
     * @throws IllegalArgumentException if it is <code>null</code>
     */
+    @Messages("EXC_CannotHaveNullRootContext=Cannot have null root context.")
     public final void setRootContext(final Node value) {
         if (value == null) {
-            throw new IllegalArgumentException(getString("EXC_CannotHaveNullRootContext"));
+            throw new IllegalArgumentException(EXC_CannotHaveNullRootContext());
         }
 
         synchronized (LOCK) {
@@ -582,11 +589,12 @@ bigloop:
     /** Checks whether given Node is a subnode of rootContext.
     * and throws IllegalArgumentException if not.
     */
-    private void checkUnderRoot(Node value, String errorKey) {
+    @Messages({"# {0} - name of node to be selected", "# {1} - name of node at root", "EXC_ContextMustBeWithinRootContext=An explored context ({0}) must be within the root context ({1})."})
+    private void checkUnderRoot(Node value) {
         if ((value != null) && !isUnderRoot(value)) {
             throw new IllegalArgumentException(
-                NbBundle.getMessage(
-                    ExplorerManager.class, errorKey, value.getDisplayName(), rootContext.getDisplayName()
+                EXC_ContextMustBeWithinRootContext(
+                    value.getDisplayName(), rootContext.getDisplayName()
                 )
             );
         }
@@ -668,6 +676,7 @@ bigloop:
     /** Deserializes the view and initializes it
      * @serialData see writeObject
      */
+    @Messages({"# {0} - name of old node", "EXC_handle_failed=Could not restore Explorer window; the root node \"{0}\" could not be restored correctly."})
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         // perform initialization
         init();
@@ -718,9 +727,7 @@ bigloop:
 
                 if (!Utilities.compareObjects(ioe.getMessage(), ioe.getLocalizedMessage())) {
                     Exceptions.attachLocalizedMessage(safe,
-                                                      NbBundle.getMessage(ExplorerManager.class,
-                                                                          "EXC_handle_failed",
-                                                                          rootName));
+                                                      EXC_handle_failed(rootName));
                 }
 
                 throw safe;
@@ -881,10 +888,6 @@ bigloop:
         if (a != null) {
             a.waitFinished();
         }
-    }
-
-    private static String getString(String key) {
-        return NbBundle.getMessage(ExplorerManager.class, key);
     }
 
     //

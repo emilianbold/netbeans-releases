@@ -82,7 +82,7 @@ public class DirectoryStorage {
     
     private final Map<String, DirEntry> entries;
     private final File cacheFile;
-    private static final int VERSION = 4;
+    private static final int VERSION = 5;
     /* Incompatible version to discard */
     private static final int ODD_VERSION = 4;
 

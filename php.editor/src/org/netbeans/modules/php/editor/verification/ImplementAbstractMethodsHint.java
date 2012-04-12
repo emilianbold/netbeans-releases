@@ -96,7 +96,12 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
     }
 
     @Override
-    @Messages("ImplementAbstractMethodsHintDesc={0} is not abstract and does not override abstract method {1} in {2}")
+    @Messages({
+        "# {0} - Class name",
+        "# {1} - Abstract method name",
+        "# {2} - Owner (class) of abstract method",
+        "ImplementAbstractMethodsHintDesc={0} is not abstract and does not override abstract method {1} in {2}"
+    })
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
         Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(context.fileScope);
         FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();

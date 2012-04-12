@@ -60,6 +60,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.util.RequestProcessor;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
@@ -71,6 +72,9 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import javax.management.MBeanServerConnection;
+import org.netbeans.modules.j2ee.jboss4.JBRemoteAction;
+import org.netbeans.modules.j2ee.jboss4.JBoss5ProfileServiceProxy;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.jboss4.nodes.Util;
 
@@ -83,7 +87,9 @@ public class JBStartServer extends StartServer implements ProgressObject{
     static enum MODE { RUN, DEBUG, PROFILE };
     
     static enum ACTION_STATUS { SUCCESS, FAILURE, UNKNOWN };
-    
+
+    private static final Logger LOGGER = Logger.getLogger(JBStartServer.class.getName());
+
     private static final int AVERAGE_SERVER_INSTANCES = 2;
     
     private MODE mode;
@@ -214,7 +220,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
         SafeTrueTest test = new SafeTrueTest() {
 
             public void run() {
-                String checkingConfigName = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
+                final String checkingConfigName = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
                 String checkingServerDir = null;
 
                 try {
@@ -237,31 +243,45 @@ public class JBStartServer extends StartServer implements ProgressObject{
                     result = false;
                 }
 
-                Object serverName = Util.getMBeanParameter(dm, "ServerName", "jboss.system:type=ServerConfig"); //NOI18N
-                Object serverHome = Util.getMBeanParameter(dm, "ServerHomeLocation", "jboss.system:type=ServerConfig"); //NOI18N
-                boolean isJBoss6 = serverHome != null;
-                if (!isJBoss6) {
-                    serverHome = Util.getMBeanParameter(dm, "ServerHomeDir", "jboss.system:type=ServerConfig"); //NOI18N
-                }
+                final String localCheckingServerDir = checkingServerDir;
                 try {
-                    if (serverHome != null) {
-                        if (isJBoss6) {
-                            serverHome = new File(((URL) serverHome).toURI()).getAbsolutePath();
-                        } else {
-                            serverHome = ((File) serverHome).getAbsolutePath();
+                    dm.invokeRemoteAction(new JBRemoteAction<Void>() {
+
+                        @Override
+                        public Void action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                            Object serverName = Util.getMBeanParameter(connection, "ServerName", "jboss.system:type=ServerConfig"); //NOI18N
+                            Object serverHome = Util.getMBeanParameter(connection, "ServerHomeLocation", "jboss.system:type=ServerConfig"); //NOI18N
+                            boolean isJBoss6 = serverHome != null;
+                            if (!isJBoss6) {
+                                serverHome = Util.getMBeanParameter(connection, "ServerHomeDir", "jboss.system:type=ServerConfig"); //NOI18N
+                            }
+                            try {
+                                if (serverHome != null) {
+                                    if (isJBoss6) {
+                                        serverHome = new File(((URL) serverHome).toURI()).getAbsolutePath();
+                                    } else {
+                                        serverHome = ((File) serverHome).getAbsolutePath();
+                                    }
+                                }
+                            } catch (URISyntaxException use) {
+                                LOGGER.log(Level.WARNING, "error getting file from URI: " + serverHome, use); //NOI18N
+                            }
+
+                            if (serverName == null || serverHome == null) {
+                                result = false;
+                                return null;
+                            }
+                            if (checkingConfigName.equals(serverName) && localCheckingServerDir.equals(serverHome)) {
+                                result = true;
+                            }
+                            return null;
                         }
-                    }
-                } catch (URISyntaxException use) {
-                    Logger.getLogger(JBStartServer.class.getName()).log(Level.WARNING, "error getting file from URI: " + serverHome, use); //NOI18N
+
+                    });
+                } catch (ExecutionException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
                 }
-                
-                if (serverName == null || serverHome == null) {
-                    result = false;
-                    return;
-                }
-                if (checkingConfigName.equals(serverName) && checkingServerDir.equals(serverHome)) {
-                    result = true;
-            }
+
             }
         };
         

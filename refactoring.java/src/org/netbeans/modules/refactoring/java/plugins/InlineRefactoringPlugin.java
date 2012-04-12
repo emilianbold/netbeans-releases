@@ -46,22 +46,22 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.support.CancellableTreeScanner;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.InlineRefactoring;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -95,6 +95,13 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
         }
         throw new IllegalStateException();
     }
+    
+    protected ClasspathInfo getClasspathInfo(Set<FileObject> a) {
+        ClasspathInfo cpInfo;
+        cpInfo = JavaRefactoringUtils.getClasspathInfoFor(a.toArray(new FileObject[a.size()]));
+        refactoring.getContext().add(cpInfo);
+        return cpInfo;
+    }
 
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
@@ -117,7 +124,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
         TransformTask transform = new TransformTask(visitor, treePathHandle);
-        Problem problem = createAndAddElements(a, transform, refactoringElements, refactoring);
+        Problem problem = createAndAddElements(a, transform, refactoringElements, refactoring, getClasspathInfo(a));
         fireProgressListenerStop();
         if (visitor instanceof InlineMethodTransformer) {
             InlineMethodTransformer imt = (InlineMethodTransformer) visitor;

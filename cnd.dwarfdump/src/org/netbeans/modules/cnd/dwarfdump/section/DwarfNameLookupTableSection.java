@@ -53,14 +53,14 @@
 package org.netbeans.modules.cnd.dwarfdump.section;
 
 import java.io.ByteArrayOutputStream;
-import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
-import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfNameLookupTable;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
-import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfNameLookupTable;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
+import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 
 /**
  *
@@ -73,13 +73,9 @@ public class DwarfNameLookupTableSection extends ElfSection {
         super(reader, sectionIdx);
     }
 
-    public List<DwarfNameLookupTable> getNameLookupTables() {
+    public List<DwarfNameLookupTable> getNameLookupTables() throws IOException {
         if (tables == null) {
-            try {
-                tables = readNameLookupTables();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            tables = readNameLookupTables();
         }
         
         return tables;
@@ -146,7 +142,7 @@ public class DwarfNameLookupTableSection extends ElfSection {
         return st.toString();
     }
 
-    public DwarfNameLookupTable getNameLookupTableFor(long info_offset) {
+    public DwarfNameLookupTable getNameLookupTableFor(long info_offset) throws IOException {
         for (DwarfNameLookupTable table : getNameLookupTables()) {
             if (table.debug_info_offset == info_offset) {
                 return table;

@@ -136,9 +136,13 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
                 String rootPath = folder.getRootPath();
                 FileObject fo = RemoteFileUtil.getFileObject(conf.getBaseDirFileObject(), rootPath);
                 if (fo != null /*paranoia*/ && fo.isValid() && fo.isFolder()) {
-                    DataFolder dataFolder = DataFolder.findFolder(fo);
-                    if (dataFolder != null) {
-                        elems.add(dataFolder);
+                    try {
+                        DataFolder dataFolder = DataFolder.findFolder(fo);
+                        if (dataFolder != null) {
+                            elems.add(dataFolder);
+                        }
+                    } catch (IllegalArgumentException ex) {
+                        // do nothing
                     }
                     File file = FileUtil.toFile(fo);
                     if (file != null) {

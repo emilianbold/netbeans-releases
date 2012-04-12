@@ -748,12 +748,17 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         String serverInstanceID = provider.getServerInstanceID();
         if (serverInstanceID == null) {
-            Logger.getLogger(JaxWsNode.class.getName()).log(Level.INFO, "Can not detect target J2EE server"); //NOI18N
+            Logger.getLogger(JaxWsNode.class.getName()).log(Level.INFO, 
+                    "Can not detect target J2EE server"); //NOI18N
         }
         // getting port and host name
-        ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
+        ServerInstance serverInstance = Deployment.getDefault().
+            getServerInstance(serverInstanceID);
         try {
-            ServerInstance.Descriptor instanceDescriptor = serverInstance.getDescriptor();
+            ServerInstance.Descriptor instanceDescriptor = null;
+            if ( serverInstance != null ){
+                instanceDescriptor = serverInstance.getDescriptor();
+            }
             if (instanceDescriptor != null) {
                 int port = instanceDescriptor.getHttpPort();
                 portNumber = port == 0 ? "8080" : String.valueOf(port); //NOI18N

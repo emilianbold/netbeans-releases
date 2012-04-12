@@ -57,6 +57,7 @@ public class HelloWorldSampleWizardPanel extends SampleWizardPanel {
         super();
     }
 
+    @Override
     public SampleWizardPanelVisual getComponent() {
         if (myComponent == null) {
             myComponent = new HelloWorldSamplePanelVisual(this);

@@ -89,15 +89,9 @@ public class MissingClientPanel extends javax.swing.JPanel {
         buttonGroup1 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         tipLabel = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel2.text_1")); // NOI18N
-
-        buttonGroup1.add(downloadRadioButton);
-        downloadRadioButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(downloadRadioButton, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.bundledRadioButton.text")); // NOI18N
-
-        buttonGroup1.add(cliRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(cliRadioButton, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.cliRadioButton.text")); // NOI18N
 
         textPane.setBackground(jLabel1.getBackground());
         textPane.setBorder(null);
@@ -109,31 +103,27 @@ public class MissingClientPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(tipLabel, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.unix.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(forceGlobalCheckBox, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.forceGlobalCheckBox.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblBinariesAvailableTip, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.lblBinariesAvailableTip.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.cliRadioButton.text")); // NOI18N
+        jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.cliRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cliRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(downloadRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(textPane)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
+                        .addComponent(executablePathTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseButton))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(forceGlobalCheckBox)
-                            .addComponent(lblBinariesAvailableTip)
-                            .addComponent(textPane)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(executablePathTextField)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(browseButton))
-                            .addComponent(tipLabel))))
+                            .addComponent(jLabel2)
+                            .addComponent(tipLabel))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -141,13 +131,7 @@ public class MissingClientPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(downloadRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblBinariesAvailableTip)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(forceGlobalCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cliRadioButton)
+                .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(textPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -156,16 +140,11 @@ public class MissingClientPanel extends javax.swing.JPanel {
                     .addComponent(browseButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tipLabel)
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        downloadRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.downloadRadioButton.AccessibleContext.accessibleName")); // NOI18N
-        downloadRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.downloadRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
-        cliRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.cliRadioButton.AccessibleContext.accessibleName")); // NOI18N
-        cliRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.cliRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
         textPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
         textPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
-        forceGlobalCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.jCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -174,12 +153,9 @@ public class MissingClientPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton browseButton = new javax.swing.JButton();
     private javax.swing.ButtonGroup buttonGroup1;
-    final javax.swing.JRadioButton cliRadioButton = new javax.swing.JRadioButton();
-    final javax.swing.JRadioButton downloadRadioButton = new javax.swing.JRadioButton();
     final javax.swing.JTextField executablePathTextField = new javax.swing.JTextField();
-    final javax.swing.JCheckBox forceGlobalCheckBox = new javax.swing.JCheckBox();
     private javax.swing.JLabel jLabel1;
-    final javax.swing.JLabel lblBinariesAvailableTip = new javax.swing.JLabel();
+    private javax.swing.JLabel jLabel2;
     final javax.swing.JTextPane textPane = new javax.swing.JTextPane();
     private javax.swing.JLabel tipLabel;
     // End of variables declaration//GEN-END:variables

@@ -37,6 +37,9 @@
  */
 package org.netbeans.core.multiview.loaders;
 
+import java.awt.GraphicsEnvironment;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.openide.loaders.DefaultDataObjectHasNodeInLookupTest;
 
 /**
@@ -44,6 +47,11 @@ import org.openide.loaders.DefaultDataObjectHasNodeInLookupTest;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class DefaultDataObjectHasNodeInMVLookupTest extends DefaultDataObjectHasNodeInLookupTest {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(DefaultDataObjectHasNodeInLookupTest.class);
+    }
+
     public DefaultDataObjectHasNodeInMVLookupTest(String name) {
         super(name);
     }

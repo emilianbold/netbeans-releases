@@ -121,6 +121,7 @@ public class Context {
                     findContext(CsmSelect.getClassMembers(containingClass, filter), filter, offset);
                 }
             } else if( decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                    decl.getKind() == CsmDeclaration.Kind.FUNCTION_LAMBDA ||
                     decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
                 CsmFunctionDefinition fd = (CsmFunctionDefinition) decl;
                 if( fd.getStartOffset() < offset && offset < fd.getEndOffset()  ) {

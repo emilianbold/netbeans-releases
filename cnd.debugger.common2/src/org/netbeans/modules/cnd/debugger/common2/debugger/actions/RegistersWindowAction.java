@@ -52,7 +52,7 @@ import org.openide.util.HelpCtx;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
 
 public class RegistersWindowAction extends CallableSystemAction implements StateListener {
@@ -94,7 +94,7 @@ public class RegistersWindowAction extends CallableSystemAction implements State
     
     // interface CallableSystemAction
     public void performAction() {
-	NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+	NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 
  	if (debugger != null) {
 	    if (SwingUtilities.isEventDispatchThread()) {

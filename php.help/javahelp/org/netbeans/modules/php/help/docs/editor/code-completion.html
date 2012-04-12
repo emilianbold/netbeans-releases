@@ -24,6 +24,8 @@
             <li><a href="#cc-sql">SQL Code Completion</a></li>
             <li><a href="#cc-namespaces">PHP 5.3 Namespaces</a></li>
             <li><a href="#cc-overridden-methods">Overridden and Implemented Methods</a></li>
+            <li><a href="#annotations">Annotations</a></li>
+            <li><a href="#traits">PHP 5.4 Traits</a></li>
         </ul>
         <h3><a name="snippets"></a>Snippets </h3>
         <p>Snippets enable the user to generate code for various elements automatically.</p>
@@ -74,7 +76,7 @@
         <p>After you select the connection,  SQL code completion offers all tables from that database connection. </p>
         <p>If the table has columns, those are displayed as well.</p>
         <p>SQL code completion also works with table aliases.</p>
-        <h3><a name="cc-namespaces"></a>PHP 5.3 Namespaces</h3>
+        <h3><a name="cc-namespaces"></a>PHP 5.3+ Namespaces</h3>
         <p>Code completion supports fully qualified, partially qualified, and unqualified namespace 
             names from PHP 5.3. For more information, please see the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                 <param name="content" value="http://www.netbeans.com/kb/docs/php/namespace-code-completion-screencast.html">
@@ -85,7 +87,27 @@
         </p>
         <h3><a name="cc-overridden-methods"></a>Overridden and Implemented Methods</h3>
         <p>Code completion between class members offers to override or implement methods.</p>
-
+        <h3 id="annotations"></h3>
+        <p>NetBeans IDE code completion supports the following types of PHP annotations:</p>
+        <ul>
+            <li>ApiGen (legacy PHPDoc annotations)</li>
+            <li>PHPUnit</li>
+            <li>Doctrine 2 (ORM and ODM)</li> 
+            <li>Symfony 2</li>
+        </ul>
+        <p>Every annotation can be associated with a context. NetBeans IDE recognizes four contexts:</p>
+        <ul><li>function</li>
+            <li>class/interface (type)</li>
+            <li>method</li> 
+            <li>field</li></ul>
+        <p>You can add more annotations to code completion in Tools &gt; Options &gt; PHP &gt; Annotations.</p>
+        <h3 id="traits">PHP 5.4 Traits</h3>
+        <p>Traits are a mechanism of code reuse introduced in PHP 5.4.0. (For information about traits, see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://php.net/manual/en/language.oop5.traits.php">
+                <param name="text" value="<html><u>php.net documentation</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.) NetBeans IDE recognizes traits syntax and code completion includes methods, functions, and anything else inherited from or declared in a trait. </p>
 
         <dl> 
             <dt><a name="seealso">See Also</a></dt>

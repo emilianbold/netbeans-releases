@@ -56,9 +56,9 @@ public class ForwardClassNode extends ObjectNode {
 
     private CharSequence name;
     private CharSequence qname;
-
-    public ForwardClassNode(CsmClassForwardDeclaration cls, Children.Array key) {
-        super(cls, key);
+        
+    public ForwardClassNode(CsmClassForwardDeclaration cls, Children children) {
+        super(cls, children);
         init(cls);
     }
     

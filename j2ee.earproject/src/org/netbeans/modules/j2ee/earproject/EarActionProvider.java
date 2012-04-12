@@ -45,8 +45,11 @@
 package org.netbeans.modules.j2ee.earproject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -54,6 +57,9 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
+import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
@@ -67,6 +73,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.spi.project.ActionProgress;
@@ -83,6 +90,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Action provider of the Enterprise Application project.
@@ -102,6 +110,7 @@ public class EarActionProvider implements ActionProvider {
         COMMAND_REBUILD, 
         COMMAND_RUN, 
         COMMAND_DEBUG, 
+        COMMAND_PROFILE,
         EjbProjectConstants.COMMAND_REDEPLOY,
         COMMAND_VERIFY,
         COMMAND_DELETE,
@@ -125,6 +134,7 @@ public class EarActionProvider implements ActionProvider {
         commands.put(COMMAND_REBUILD, new String[] {"clean", "dist"}); // NOI18N
         commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
         commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
+        commands.put(COMMAND_PROFILE, new String[]{"profile"}); // NOI18N
         commands.put(EjbProjectConstants.COMMAND_REDEPLOY, new String[] {"run-deploy"}); // NOI18N
         commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
         commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
@@ -280,12 +290,52 @@ public class EarActionProvider implements ActionProvider {
                 }
                 p.setProperty("ear.docbase.dirs", edbd.toString()); // NOI18N
             }
+        // PROFILING PART
+        } else if (command.equals (COMMAND_PROFILE)) {
+            // TODO This is basically a copy of the debugging part for now. Figure out what to do here!
+            
+            if (!isSelectedServer ()) {
+                // no selected server => warning
+                String msg = NbBundle.getMessage(
+                        EarActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+                return null;
+            }
+            setDirectoryDeploymentProperty(p);
+//            
+//            if (isDebugged()) {
+//                p.setProperty("is.debugged", "true"); // NOI18N
+//            }
+
+            SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
+            if (null != spp) {
+                StringBuilder edbd = new StringBuilder();
+                final Set s = spp.getSubprojects();
+                Iterator iter = s.iterator();
+                while (iter.hasNext()) {
+                    Project proj = (Project) iter.next();
+                    WebModuleProvider wmp = proj.getLookup().lookup(WebModuleProvider.class);
+                    if (null != wmp) {
+                        WebModule wm = wmp.findWebModule(proj.getProjectDirectory());
+                        if (null != wm) {
+                            FileObject fo = wm.getDocumentBase();
+                            if (null != fo) {
+                                edbd.append(FileUtil.toFile(fo).getAbsolutePath()+":"); //NOI18N
+                            }
+                        }
+                    }
+                }
+                p.setProperty("ear.docbase.dirs", edbd.toString()); // NOI18N
+            }
         //COMPILATION PART
         } else {
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
         }
+        
+        collectStartupExtenderArgs(p, command);
 
         return targetNames;
     }
@@ -400,5 +450,44 @@ public class EarActionProvider implements ActionProvider {
     
     private boolean isCosEnabled() {
         return Boolean.parseBoolean(project.evaluator().getProperty(EarProjectProperties.J2EE_COMPILE_ON_SAVE));
+    }
+    
+    private void collectStartupExtenderArgs(Map p, String command) {
+        StringBuilder b = new StringBuilder();
+        for (String arg : runJvmargsIde(command)) {
+            b.append(' ').append(arg);
+        }
+        if (b.length() > 0) {
+            p.put("run.jvmargs.ide", b.toString()); // NOI18N
+        }
+    }
+    
+    private List<String> runJvmargsIde(String command) {
+        StartupExtender.StartMode mode;
+        if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
+            mode = StartupExtender.StartMode.NORMAL;
+        } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
+            mode = StartupExtender.StartMode.DEBUG;
+        } else if (command.equals(COMMAND_PROFILE) || command.equals(COMMAND_PROFILE_SINGLE)) {
+            mode = StartupExtender.StartMode.PROFILE;
+        } else if (command.equals(COMMAND_TEST) || command.equals(COMMAND_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_NORMAL;
+        } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_DEBUG;
+        } else if (command.equals(COMMAND_PROFILE_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_PROFILE;
+        } else {
+            return Collections.emptyList();
+        }
+        List<String> args = new ArrayList<String>();
+        JavaPlatform p = getActivePlatform();
+        for (StartupExtender group : StartupExtender.getExtenders(Lookups.fixed(project, p != null ? p : JavaPlatformManager.getDefault().getDefaultPlatform()), mode)) {
+            args.addAll(group.getArguments());
+        }
+        return args;
+    }
+    
+    private JavaPlatform getActivePlatform() {
+        return CommonProjectUtils.getActivePlatform(project.evaluator().getProperty("platform.active"));
     }
 }

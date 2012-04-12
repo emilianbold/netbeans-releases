@@ -134,22 +134,25 @@ class VarUsageVisitor extends RefactoringVisitor {
             ExpressionTree argument = arguments.get(i);
             Element argElement = asElement(argument); // TODO: Slow and misses ternary expressions
             if(p.equals(argElement)) {
-                ExecutableElement method = (ExecutableElement) asElement(node);
-                VariableElement parameter = method.getParameters().get(i);
-                Types types = workingCopy.getTypes();
-                TypeMirror parameterType = parameter.asType();
-                if(parameterType.getKind().equals(TypeKind.TYPEVAR)) {
-                    TypeVariable typeVariable = (TypeVariable) parameterType;
-                    TypeMirror upperBound = typeVariable.getUpperBound();
-                    TypeMirror lowerBound = typeVariable.getLowerBound();
-                    if(upperBound != null && !types.isSubtype(superTypeElement.asType(), upperBound)) {
+                Element element = asElement(node);
+                if (element.getKind() == ElementKind.METHOD) {
+                    ExecutableElement method = (ExecutableElement) element;
+                    VariableElement parameter = method.getParameters().get(i);
+                    Types types = workingCopy.getTypes();
+                    TypeMirror parameterType = parameter.asType();
+                    if(parameterType.getKind().equals(TypeKind.TYPEVAR)) {
+                        TypeVariable typeVariable = (TypeVariable) parameterType;
+                        TypeMirror upperBound = typeVariable.getUpperBound();
+                        TypeMirror lowerBound = typeVariable.getLowerBound();
+                        if(upperBound != null && !types.isSubtype(superTypeElement.asType(), upperBound)) {
+                            isReplCandidate = false;
+                        }
+                        if(lowerBound != null && !types.isSubtype(lowerBound, superTypeElement.asType())) {
+                            isReplCandidate = false;
+                        }
+                    } else if(!types.isAssignable(superTypeElement.asType(), parameterType)) {
                         isReplCandidate = false;
                     }
-                    if(lowerBound != null && !types.isSubtype(lowerBound, superTypeElement.asType())) {
-                        isReplCandidate = false;
-                    }
-                } else if(!types.isAssignable(superTypeElement.asType(), parameterType)) {
-                    isReplCandidate = false;
                 }
             }
         }

@@ -67,6 +67,11 @@ function checkSystemversion() {
                         result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0') == true;
 		    } catch (e) {}
 		}
+		if(!result) {
+		    try {
+                        result = system.files.fileExistsAtPath('/Library/Java/JavaVirtualMachines/1.7.0.jdk') == true;
+		    } catch (e) {}
+		}
 
 		if(!result) {
 			my.result.type = 'Fatal';

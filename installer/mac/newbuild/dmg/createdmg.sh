@@ -21,6 +21,7 @@ set -x -e
 
 dmgname=$1
 volname=$2
+outputdir=$3
 
 bunzip2 -d -c `dirname $0`/template.sparseimage.bz2 > ./dist/template.sparseimage
 
@@ -35,7 +36,11 @@ diskutil rename `pwd`/dist/mountpoint "$volname"
 echo "Running hdiutil detach..."
 hdiutil detach -verbose ./dist/mountpoint
 
+if [ ! -z $outputdir ]; then
+    mkdir -p ./dist/$outputdir
+fi
+
 echo "Running hdiutil create..."
-hdiutil create -verbose -srcdevice `pwd`/dist/template.sparseimage ./dist/"$dmgname"
+hdiutil create -verbose -srcdevice `pwd`/dist/template.sparseimage ./dist/"$outputdir$dmgname"
 rm -f ./dist/template.sparseimage
 rmdir ./dist/mountpoint

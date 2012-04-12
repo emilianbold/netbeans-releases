@@ -46,6 +46,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 /**
@@ -106,6 +107,11 @@ public class PhpOptionsPanelController extends BaseOptionsPanelController {
         // everything ok
         phpOptionsPanel.setError(" "); // NOI18N
         return true;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController"); // NOI18N
     }
 
 }

@@ -105,6 +105,9 @@ class GdbVariable extends Variable {
 
     public void setInScope(boolean inScope) {
 	this.inScope = inScope;
+        if (!inScope) {
+            setNumChild("0"); //NOI18N
+        }
     }
 
     public boolean isInScope() {

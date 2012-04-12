@@ -91,7 +91,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(PhpFrameworksPanel.class);
+        return new HelpCtx("org.netbeans.modules.php.project.ui.wizards.PhpFrameworksPanel"); // NOI18N
     }
 
     @Override

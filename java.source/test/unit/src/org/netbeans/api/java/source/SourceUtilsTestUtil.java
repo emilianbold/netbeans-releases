@@ -47,6 +47,7 @@ import com.sun.source.util.JavacTask;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Logger;
@@ -116,7 +117,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
     }
     
     private static Object[] extraLookupContent = null;
-    
+
     public static void prepareTest(String[] additionalLayers, Object[] additionalLookupContent) throws IOException, SAXException, PropertyVetoException {
         List<URL> layers = new LinkedList<URL>();
         
@@ -133,10 +134,23 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         
         XMLFileSystem xmlFS = new XMLFileSystem();
         xmlFS.setXmlUrls(layers.toArray(new URL[0]));
-        
+
         FileSystem system = new MultiFileSystem(new FileSystem[] {FileUtil.createMemoryFileSystem(), xmlFS});
-        
+
         Repository repository = new Repository(system);
+
+        try {
+            //the Repository.repository might have already been assigned (typically
+            //through a previous call to prepareTest, and then a listener on the openProjects)
+            //hard resetting:
+            Method repositoryReset = Repository.class.getDeclaredMethod("reset");
+
+            repositoryReset.setAccessible(true);
+            repositoryReset.invoke(null);
+        } catch (Exception ex) {
+            throw new IOException(ex);
+        }
+        
         extraLookupContent = new Object[additionalLookupContent.length + 1];
         
         System.arraycopy(additionalLookupContent, 0, extraLookupContent, 1, additionalLookupContent.length);

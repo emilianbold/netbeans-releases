@@ -53,7 +53,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.ItemSelectorResult;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Error;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Log;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ModelChangeDelegator;
@@ -109,8 +109,8 @@ public final class BreakpointManager {
 	return provider;
     }
 
-    private DebuggerManager manager() {
-        return DebuggerManager.get();
+    private NativeDebuggerManager manager() {
+        return NativeDebuggerManager.get();
     }
 
     private NativeDebugger debugger() {
@@ -536,7 +536,7 @@ public final class BreakpointManager {
         }
 
 
-        if (DebuggerManager.isPerTargetBpts()) {
+        if (NativeDebuggerManager.isPerTargetBpts()) {
             // per-target bpts
             if (bj.kind() != BreakpointJob.Kind.RESTORE1 &&
                 bj.kind() != BreakpointJob.Kind.RESTORE2 &&
@@ -699,12 +699,12 @@ public final class BreakpointManager {
      */
     private String handlerError(NativeBreakpoint b, HandlerCommand hc) {
 	final String msg;
-	if (hc.toString() == null) {
+	if (hc.getData() == null) {
 	    msg = Catalog.format("FMT_UnsupportedBpt",		// NOI18N
 				 b.getBreakpointType().getTypeDisplayName(),
 				 debugger().debuggerType());
 	} else {
-	    msg = hc.toString();
+	    msg = hc.getData();
 	}
 	return msg;
     }
@@ -1136,7 +1136,7 @@ public final class BreakpointManager {
             // Also see newBrokenHandler().
 
             if (matches.size() == 0) {
-                if (DebuggerManager.isPerTargetBpts()) {
+                if (NativeDebuggerManager.isPerTargetBpts()) {
                     // if per-target bpts don't restore it.
                     continue;
                 }
@@ -1183,7 +1183,7 @@ public final class BreakpointManager {
         final int rt = template.getRoutingToken();
         rememberRestoredBreakpoint(template, midLevel, rt);
 
-        if (hc.isOK()) {
+        if (!hc.isError()) {
             provider().postRestoreHandler(rt, hc);
         } else {
 	    BreakpointJob bj = getBreakpointJob(rt);
@@ -1205,7 +1205,7 @@ public final class BreakpointManager {
         rememberRestoredBreakpoint(topLevel, midLevel, rt);
 
         final HandlerCommand hc = provider().handlerExpert().commandFormNew(topLevel);
-        if (hc.isOK()) {
+        if (!hc.isError()) {
             provider().postRestoreHandler(rt, hc);
         } else {
 	    BreakpointJob bj = getBreakpointJob(rt);
@@ -1222,10 +1222,10 @@ public final class BreakpointManager {
         NativeBreakpoint b) {
         // DEBUG System.out.println("Spreading bpt creation ...");
 
-        if (DebuggerManager.isPerTargetBpts()) {
+        if (NativeDebuggerManager.isPerTargetBpts()) {
             return;		// no spreading if per-target bpts
         }
-        NativeSession[] sessions = DebuggerManager.get().getSessions();
+        NativeSession[] sessions = NativeDebuggerManager.get().getSessions();
         for (int sx = 0; sx < sessions.length; sx++) {
             NativeSession s = sessions[sx];
             DebuggerEngine engine = s.coreSession().getCurrentEngine();

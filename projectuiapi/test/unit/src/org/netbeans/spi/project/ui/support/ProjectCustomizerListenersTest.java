@@ -18,6 +18,7 @@
 package org.netbeans.spi.project.ui.support;
 
 import java.awt.Dialog;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
@@ -28,6 +29,8 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 
 import org.netbeans.junit.NbTestCase;
@@ -47,6 +50,10 @@ import org.openide.util.HelpCtx;
  */
 public class ProjectCustomizerListenersTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ProjectCustomizerListenersTest.class);
+    }
+
     private List<EventRecord> events = new ArrayList<EventRecord>();
     private enum LType { OK, STORE };
     

@@ -62,13 +62,12 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 
 
 /**
  *
- * @author ehucka, Revision Petr Cyhelsky
+ * @author ehucka, Revision Petr Cyhelsky, Jiri Kovalsky
  */
 public class FieldBreakpointsTest extends DebuggerTestCase {
 
@@ -78,7 +77,7 @@ public class FieldBreakpointsTest extends DebuggerTestCase {
         "testFieldBreakpointFunctionalityAccess",
         "testFieldBreakpointFunctionalityModification",
         "testConditionalFieldBreakpointFunctionality",
-        "testFieldBreakpointsValidation" 
+        "testFieldBreakpointsValidation"
     };
 
     private static boolean initialized = false;
@@ -131,8 +130,8 @@ public class FieldBreakpointsTest extends DebuggerTestCase {
         }
         NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
         setBreakpointType(dialog, "Field");
-        new JTextFieldOperator(dialog, 1).setText("examples.advanced.MemoryView");
-        new JTextFieldOperator(dialog, 0).setText("msgMemory");
+        new JEditorPaneOperator(dialog, 0).setText("examples.advanced.MemoryView");
+        new JEditorPaneOperator(dialog, 1).setText("msgMemory");
         new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Field_Breakpoint_Type_Access"));
         dialog.ok();
         Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
@@ -147,8 +146,8 @@ public class FieldBreakpointsTest extends DebuggerTestCase {
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
             setBreakpointType(dialog, "Field");
             new EventTool().waitNoEvent(500);
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 1).getText());
-            assertEquals("Field Name was not set to correct value.", "msgMemory", new JTextFieldOperator(dialog, 0).getText());
+            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JEditorPaneOperator(dialog, 0).getText());
+            assertEquals("Field Name was not set to correct value.", "msgMemory", new JEditorPaneOperator(dialog, 1).getText());
             dialog.cancel();        
     }
 
@@ -163,7 +162,7 @@ public class FieldBreakpointsTest extends DebuggerTestCase {
         dialog.ok();
         new EventTool().waitNoEvent(1500);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
+        assertTrue("Thread didn't stop at field breakpoint.", Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104."));
     }
 
     /**
@@ -175,7 +174,7 @@ public class FieldBreakpointsTest extends DebuggerTestCase {
         new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Field_Breakpoint_Type_Modification"));
         dialog.ok();
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:45");
+        assertTrue("Thread didn't stop at field breakpoint.", Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:45."));
     }
 
     public void testConditionalFieldBreakpointFunctionality() throws Throwable {        
@@ -183,48 +182,34 @@ public class FieldBreakpointsTest extends DebuggerTestCase {
         setBreakpointType(dialog, "Field");
         new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Field_Breakpoint_Type_Access"));
         new JCheckBoxOperator(dialog, 0).changeSelection(true);
-        new JEditorPaneOperator(dialog, 0).setText("UPDATE_TIME >= 1001");
+        new JEditorPaneOperator(dialog, 2).setText("UPDATE_TIME >= 1001");
         dialog.ok();
 
         EditorOperator eo = new EditorOperator("MemoryView.java");
-        //toggle breakpoints
         Utilities.toggleBreakpoint(eo, 109);
 
         Utilities.startDebugger();
-        try {
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:109");
-        } catch (Throwable e) {
-            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:109")) {
-                System.err.println(e.getMessage());
-                throw e;
-            }
-        }
+        assertTrue("Thread didn't stop at field breakpoint.", Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:109"));
         new ContinueAction().perform();
-        try {
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
-        } catch (Throwable e) {
-            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104")) {
-                System.err.println(e.getMessage());
-                throw e;
-            }
-        }
+        Thread.sleep(1000);
+        assertTrue("Thread didn't stop at field breakpoint.", Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104"));
     }
 
     public void testFieldBreakpointsValidation() {        
         NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
         setBreakpointType(dialog, "Field");
         String wrongname = "wrongname";
-        new JTextFieldOperator(dialog, 0).setText(wrongname);
+        new JEditorPaneOperator(dialog, 1).setText(wrongname);
         dialog.ok();
 
         Utilities.startDebugger();
-        Utilities.waitStatusText("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView.");
+        assertTrue("Warning about wrong field breakpoint missing.", Utilities.checkConsoleLastLineForText("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView.wrongname"));
         dialog = Utilities.newBreakpoint(36, 36);
         setBreakpointType(dialog, "Field");
         wrongname = "wrongname2";
-        new JTextFieldOperator(dialog, 0).setText(wrongname);
+        new JEditorPaneOperator(dialog, 1).setText(wrongname);
         dialog.ok();
-        Utilities.waitStatusText("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView.");
+        assertTrue("Warning about wrong field breakpoint missing.", Utilities.checkConsoleLastLineForText("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView.wrongname2"));
     }
 
     protected void setBreakpointType(NbDialogOperator dialog, String type) {

@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.javascript.editing.JsAnalyzer;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -356,7 +357,30 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
                 } else {
                     if (state.in_inlined_javascript || state.in_javascript) {
-                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
+                        //find end of the tpl code
+                        boolean wasInTpl = false;
+                        boolean wasInLiteral = false;
+                        boolean hasNext;
+                        while (hasNext = tokenSequence.moveNext()) {
+                            Token<? extends TokenId> innerToken = tokenSequence.token();
+                            if (!innerToken.id().name().equals("T_HTML")) { //NOI18N
+                                wasInTpl = true;
+                                if (CharSequenceUtilities.indexOf(innerToken.text(), "literal") > -1) { //NOI18N
+                                    wasInLiteral = true;
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+
+                        if (hasNext) { //do not move back if we are at the end of the sequence = cycle!
+                            //we are out of tpl code, lets move back to the previous token
+                            tokenSequence.movePrevious();
+                        }
+
+                        if (wasInTpl && !wasInLiteral) {
+                            embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
+                        }
                     }
                 }
             }

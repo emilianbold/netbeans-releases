@@ -63,10 +63,21 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class PHPTestBase extends CslTestBase {
 
+    private static final int TEST_TIMEOUT = Integer.getInteger("nb.php.test.timeout", 10000); //NOI18N
+
+    static {
+        System.setProperty("nb.php.test.run", "true"); //NOI18N
+    }
+
     public PHPTestBase(String testName) {
         super(testName);
     }
-    
+
+    @Override
+    protected int timeOut() {
+        return TEST_TIMEOUT;
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -74,12 +85,12 @@ public abstract class PHPTestBase extends CslTestBase {
         PHPIndex.setClusterUrl("file:/bogus"); // No translation
         //getXTestJsCluster();
     }
-    
+
     @Override
     protected DefaultLanguageConfig getPreferredLanguage() {
         return new PHPLanguage();
     }
-    
+
     @Override
     protected String getPreferredMimeType() {
         return FileUtils.PHP_MIME_TYPE;
@@ -94,7 +105,7 @@ public abstract class PHPTestBase extends CslTestBase {
             })
         );
     }
-     
+
     // Called via reflection from GsfUtilities. This is necessary because
     // during tests, going from a FileObject to a BaseDocument only works
     // if all the correct data loaders are installed and working - and that

@@ -43,6 +43,8 @@
  */
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
@@ -61,16 +63,26 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
     public static final int STANDARD_DEFAULT = 0;
     public static final int STANDARD_CPP98 = 1;
     public static final int STANDARD_CPP11 = 2;
+    public static final int STANDARD_INHERITED = 3;
     private static final String[] STANDARD_NAMES = {
         getString("STANDARD_DEFAULT"),
         getString("STANDARD_CPP98"),
-        getString("STANDARD_CPP11"),};
-    private IntConfiguration cppStandard;        
+        getString("STANDARD_CPP11"),
+        getString("STANDARD_INHERITED"),};
+    private static final String[] STANDARD_NAMES_ROOT = {
+        getString("STANDARD_DEFAULT"),
+        getString("STANDARD_CPP98"),
+        getString("STANDARD_CPP11"),};    
+    private IntConfiguration cppStandard;    
     
     // Constructors
     public CCCompilerConfiguration(String baseDir, CCCompilerConfiguration master, MakeConfiguration owner) {
         super(baseDir, master, owner);
-        cppStandard = new IntConfiguration(master != null ? master.getCppStandard() : null, STANDARD_DEFAULT, STANDARD_NAMES, null);
+        if (master != null) {
+            cppStandard = new IntConfiguration(null, STANDARD_INHERITED, STANDARD_NAMES, null);
+        } else {
+            cppStandard = new IntConfiguration(null, STANDARD_DEFAULT, STANDARD_NAMES_ROOT, null);
+        }
     }
     
     public void fixupMasterLinks(CCCompilerConfiguration compilerConfiguration) {
@@ -81,9 +93,31 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
     public IntConfiguration getCppStandard() {
         return cppStandard;
     }    
+
+    public int getCppStandardExternal() {
+        switch(getCppStandard().getValue()) {
+            case STANDARD_DEFAULT: return LanguageFlavor.DEFAULT.toExternal();
+            case STANDARD_CPP98: return LanguageFlavor.CPP.toExternal();
+            case STANDARD_CPP11: return LanguageFlavor.CPP11.toExternal();
+            case STANDARD_INHERITED:  return LanguageFlavor.UNKNOWN.toExternal();
+            default: return LanguageFlavor.UNKNOWN.toExternal();
+        }
+    }    
     
     public void setCppStandard(IntConfiguration cppStandard) {
         this.cppStandard = cppStandard;
+    }
+
+    public void setCppStandardExternal(int cppStandard) {
+        if (cppStandard == LanguageFlavor.DEFAULT.toExternal()) {
+            this.cppStandard.setValue(STANDARD_DEFAULT);
+        } else if (cppStandard == LanguageFlavor.CPP.toExternal()) {
+            this.cppStandard.setValue(STANDARD_CPP98);
+        } else if (cppStandard == LanguageFlavor.CPP11.toExternal()) {
+            this.cppStandard.setValue(STANDARD_CPP11);
+        } else if (cppStandard == LanguageFlavor.UNKNOWN.toExternal()) {
+            this.cppStandard.setValue(STANDARD_INHERITED);
+        }
     }
     
     // Clone and assign
@@ -97,6 +131,10 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
     public boolean getModified() {
         return super.getModified() || getCppStandard().getModified();
     }    
+    
+    public boolean isCppStandardChanged() {
+        return getCppStandard().getDirty() && getCppStandard().getPreviousValue() != getInheritedCppStandard();
+    }
     
     // Cloning
     @Override
@@ -143,7 +181,6 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
         options += compiler.getLanguageExtOptions(getLanguageExt().getValue()) + " "; // NOI18N
         //options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
         options += compiler.getSixtyfourBitsOption(getSixtyfourBits().getValue()) + " "; // NOI18N
-        options += compiler.getCppStandardOptions(getCppStandard().getValue()) + " "; // NOI18N              
         if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(DEVELOPMENT_MODE_TEST);
         }
@@ -178,8 +215,6 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
     }
     
     public String getAllOptions2(AbstractCompiler compiler) {
-        CCCompilerConfiguration master;
-        
         String options = ""; // NOI18N
         if (getDevelopmentMode().getValue() != DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
@@ -189,9 +224,21 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
         options += getPreprocessorOptions(compiler.getCompilerSet());
         options += getIncludeDirectoriesOptions(compiler.getCompilerSet());
         options += getLibrariesFlags();
+        options += compiler.getCppStandardOptions(getInheritedCppStandard());
         return CppUtils.reformatWhitespaces(options);
     }
 
+    public int getInheritedCppStandard() {
+        CCCompilerConfiguration master = this;
+        while (master != null) {
+            if (master.getCppStandard().getValue() != STANDARD_INHERITED) {
+                return master.getCppStandard().getValue();
+            }
+            master = (CCCompilerConfiguration) master.getMaster();
+        }
+        return STANDARDS_DEFAULT;
+    }
+    
     public String getPreprocessorOptions(CompilerSet cs) {
         CCCompilerConfiguration master = (CCCompilerConfiguration)getMaster();
         OptionToString visitor = new OptionToString(null, getUserMacroFlag(cs));
@@ -297,7 +344,8 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
                     }
                 }
             }
-        } else if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE && item == null && folder == null) {
+        }  
+        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
             set0.put(standardProp);
         }
         

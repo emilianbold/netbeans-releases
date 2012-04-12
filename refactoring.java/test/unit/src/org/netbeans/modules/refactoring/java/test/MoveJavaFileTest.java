@@ -219,6 +219,17 @@ public class MoveJavaFileTest extends RefactoringTestBase {
                 new File("u/C2.java", "package u; import t.C1; public class C2 { public void m(C1 c1) { c1.p=2; } }"));
     }
     
+    public void test206713() throws Exception { // #206713
+        writeFilesAndWaitForScan(src,
+                new File("a/Def.java", "package a; public class Def { public class B { } }"),
+                new File("a/A.java", "package a; import a.Def.B; public class A { B b; Def d; }"));
+        performMoveClass(Lookups.singleton(src.getFileObject("a/Def.java")), new URL(src.getURL(), "b/"));
+        verifyContent(src,
+                new File("b/Def.java", "package b; public class Def { public class B { } }"),
+                new File("a/A.java", "package a; import b.Def; import b.Def.B; public class A { B b; Def d; }"));
+    }
+    
+    
     public void testMoveClass() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("movepkgdst/package-info.java", "package movepkgdst;"),

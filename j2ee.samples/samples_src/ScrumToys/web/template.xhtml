@@ -61,9 +61,7 @@ Other names may be trademarks of their respective owners.
     <h:body>
         <div align="center">
             <h:panelGrid  width="990">
-                <scrum:menu>
-                    <ui:param name="image" value="/resources/images/menu/barraSuperior-04.png"></ui:param>
-                </scrum:menu>
+                <scrum:menu image="#{resource['images/menu:barraSuperior-04.png']}" />
                 <h:form id="navigationBar">
                     <div class="navBarClass">
                         <ui:insert name="navigationBar"></ui:insert>

@@ -125,7 +125,7 @@ public class JavacClassInfo extends SourceClassInfo {
         final Set<SourceClassInfo>[] rslt = new Set[]{Collections.EMPTY_SET};
         if (handle != null) {
             try {
-                getSource(true).runWhenScanFinished(new Task<CompilationController>() {
+                getSource(true).runUserActionTask(new Task<CompilationController>() {
                     @Override
                     public void run(CompilationController cc) throws Exception {
                         rslt[0] = getSubclasses(cc);
@@ -301,7 +301,7 @@ public class JavacClassInfo extends SourceClassInfo {
         final Set<SourceClassInfo> subs = new HashSet<SourceClassInfo>();
         TypeElement te = handle.resolve(cc);
         if (te != null) {
-            for(ElementHandle<TypeElement> eh : findImplementors(cc.getClasspathInfo(), handle)) {
+            for(ElementHandle<TypeElement> eh : ElementUtilitiesEx.findImplementors(cc.getClasspathInfo(), handle)) {
                 subs.add(new JavacClassInfo(eh, cc));
             }
         }
@@ -315,27 +315,6 @@ public class JavacClassInfo extends SourceClassInfo {
             name = name.substring(lastDot + 1);
         }
         return name;
-    }
-    
-    private static Set<ElementHandle<TypeElement>> findImplementors(ClasspathInfo cpInfo, final ElementHandle<TypeElement> baseType) {
-        final Set<ClassIndex.SearchKind> kind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
-        final Set<ClassIndex.SearchScope> scope = EnumSet.allOf(ClassIndex.SearchScope.class);
-        
-        Set<ElementHandle<TypeElement>> allImplementors = new HashSet<ElementHandle<TypeElement>>();
-        Set<ElementHandle<TypeElement>> implementors = cpInfo.getClassIndex().getElements(baseType, kind, scope);
-
-        do {
-            Set<ElementHandle<TypeElement>> tmpImplementors = new HashSet<ElementHandle<TypeElement>>();
-            allImplementors.addAll(implementors);
-
-            for (ElementHandle<TypeElement> element : implementors) {
-                tmpImplementors.addAll(cpInfo.getClassIndex().getElements(element, kind, scope));
-            }
-
-            implementors = tmpImplementors;
-        } while (!implementors.isEmpty());
-        
-        return allImplementors;
     }
 
     @Override

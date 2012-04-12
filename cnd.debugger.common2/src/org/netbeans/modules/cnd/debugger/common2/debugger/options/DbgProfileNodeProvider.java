@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.options;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import java.util.ArrayList;
@@ -82,7 +82,7 @@ public class DbgProfileNodeProvider implements CustomizerNodeProvider {
     }
 
     private CustomizerNode createDebugNode(Lookup lookup) {
-	if (DebuggerManager.isChoosableEngine()) {
+	if (NativeDebuggerManager.isChoosableEngine()) {
             Collection<EngineType> engineTypes = EngineTypeManager.getEngineTypes(false);
 	    Collection<CustomizerNode> childrenNodes = new ArrayList<CustomizerNode>(engineTypes.size());
             for (EngineType engineType : engineTypes) {
@@ -126,7 +126,7 @@ public class DbgProfileNodeProvider implements CustomizerNodeProvider {
         public Sheet getSheet(Configuration configuration) {
             EngineType engine = engineType;
             if (engineType == null) {
-                engine = DebuggerManager.debuggerType(configuration);
+                engine = NativeDebuggerManager.debuggerType(configuration);
             }
             String profileID = EngineTypeManager.engine2DebugProfileID(engine);
             DbgProfile dbgProfile = (DbgProfile) configuration.getAuxObject(profileID);

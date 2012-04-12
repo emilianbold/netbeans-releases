@@ -147,7 +147,8 @@ public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvi
                             targetOS, 
                             getTargetJava(),
                             attachSettings.isRemote(),
-                            attachSettings.getPort())));
+                            attachSettings.getPort(),
+                            false)));
 
         // Step 2
         hints.addStep(Bundle.JavaApplicationIntegrationProvider_ManualDirectStep2Message());

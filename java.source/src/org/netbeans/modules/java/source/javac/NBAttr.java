@@ -50,7 +50,7 @@ import com.sun.tools.javac.util.Context;
 public class NBAttr extends Attr {
 
     public static void preRegister(Context context) {
-        context.put(Attr.class, new Context.Factory<Attr>() {
+        context.put(attrKey, new Context.Factory<Attr>() {
             public Attr make(Context c) {
                 return new NBAttr(c);
             }

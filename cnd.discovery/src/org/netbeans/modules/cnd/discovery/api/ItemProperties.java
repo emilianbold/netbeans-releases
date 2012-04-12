@@ -99,6 +99,7 @@ public interface ItemProperties {
         Unknown,
         C, C89, C99,
         CPP, CPP11,
-        F77, F90, F95
+        F77, F90, F95,
+        Default
     }
 }

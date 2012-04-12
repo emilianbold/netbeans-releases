@@ -47,6 +47,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
@@ -58,6 +60,8 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserInnerPanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.Savable {
@@ -128,7 +132,12 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
 //        if (testRootChooser != null) {
 //            makeConfigurationDescriptor.setTestRoots(testRootChooser.getListData());
 //        }
-        makeConfigurationDescriptor.setFolderVisibilityQuery(ignoreFoldersTextField.getText());
+        try {
+            Pattern.compile(ignoreFoldersTextField.getText());
+            makeConfigurationDescriptor.setFolderVisibilityQuery(ignoreFoldersTextField.getText());
+        } catch (PatternSyntaxException ex) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.incorrectRegEx", ex.getMessage().trim()), NotifyDescriptor.ERROR_MESSAGE));
+        }
     }
 
     private static class SourceRootChooser extends DirectoryChooserInnerPanel {

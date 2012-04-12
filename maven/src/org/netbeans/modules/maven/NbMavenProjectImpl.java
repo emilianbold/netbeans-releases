@@ -185,6 +185,7 @@ public final class NbMavenProjectImpl implements Project {
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
         // @PSP's and the like, and PackagingProvider impls, may check project lookup for e.g. NbMavenProject, so init lookup in two stages:
         basicLookup = createBasicLookup(projectState, auxiliary);
+        //here we akways load the MavenProject instance because we need to touch the packaging from pom.
         completeLookup = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, basicLookup), "Projects/org-netbeans-modules-maven/Lookup");//NOI18N
     }
 
@@ -296,6 +297,18 @@ public final class NbMavenProjectImpl implements Project {
         }
         project = new SoftReference<MavenProject>(mp);
         return mp;
+    }
+    
+    /**
+     * a marginally unreliable, non blocking method for figuring if the model is loaded or not.
+     * @return 
+     */
+    public boolean isMavenProjectLoaded() {
+        Reference<MavenProject> prj = project;
+        if (prj != null) {
+            return prj.get() != null;
+        }
+        return false;
     }
 
     @Messages({
@@ -499,9 +512,29 @@ public final class NbMavenProjectImpl implements Project {
         File[] roots = new File(uri).listFiles();
         if (roots != null) {
             for (File root : roots) {
+                if (!test && root.getName().startsWith("test-")) {
+                    continue;
+                }
                 File[] kids = root.listFiles();
                 if (kids != null && /* #190626 */kids.length > 0) {
                     uris.add(root.toURI());
+                } else {
+                    watcher.addWatchedPath(root.toURI());
+                }
+            }
+        }
+        if (test) { // MCOMPILER-167
+            roots = new File(FileUtilities.getDirURI(getProjectDirectory(), "target/generated-sources")).listFiles();
+            if (roots != null) {
+                for (File root : roots) {
+                    if (root.getName().startsWith("test-")) {
+                        File[] kids = root.listFiles();
+                        if (kids != null && kids.length > 0) {
+                            uris.add(root.toURI());
+                        } else {
+                            watcher.addWatchedPath(root.toURI());
+                        }
+                    }
                 }
             }
         }

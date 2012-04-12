@@ -99,6 +99,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
         treeView = (BeanTreeView)jScrollPane1;
     }
     
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -113,6 +114,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
         RequestProcessor.getDefault().post(this);
     }
     
+    @Override
     public void run() {
         //#164852 somehow a folder dataobject slipped in, test mimetype to avoid that.
         // the root cause of the problem is unknown though
@@ -124,6 +126,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
                     List<Model> lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.getProjectEmbedder());
                     final Children ch = Children.create(new PomChildren(lin), false);
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                            treeView.setRootVisible(false);
                            explorerManager.setRootContext(new AbstractNode(ch));
@@ -131,6 +134,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
                     });
                 } catch (final ModelBuildingException ex) {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                            treeView.setRootVisible(true);
                            explorerManager.setRootContext(POMModelPanel.createErrorNode(ex));
@@ -139,6 +143,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
                 }
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                        treeView.setRootVisible(false);
                        explorerManager.setRootContext(createEmptyNode());
@@ -157,6 +162,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
         }
         current = null;
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                treeView.setRootVisible(false);
                explorerManager.setRootContext(createEmptyNode());
@@ -169,6 +175,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
      */
     public void showWaitNode() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                treeView.setRootVisible(true);
                explorerManager.setRootContext(createWaitNode());

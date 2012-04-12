@@ -45,6 +45,7 @@
 
 package org.netbeans.core.multiview;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
@@ -56,6 +57,8 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.openide.util.io.NbMarshalledObject;
@@ -69,6 +72,10 @@ import org.openide.windows.*;
  */
 public class MultiViewTopComponentTest extends AbstractMultiViewTopComponentTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(MultiViewTopComponentTest.class);
+    }
+
     public MultiViewTopComponentTest(String name) {
         super (name);
     }

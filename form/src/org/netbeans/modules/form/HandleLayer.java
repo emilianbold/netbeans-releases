@@ -313,7 +313,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             boolean painted = false;
             try {
                 boolean inLayout = selectedComponentsInSameVisibleContainer();
-                if (selectedComponentsInSameVisibleContainer() || isNewLayoutRootSelection()) {
+                if (inLayout || isNewLayoutRootSelection()) {
                     paintLayoutInnerSelection(g2);
                 }
                 for (RADComponent metacomp : formDesigner.getSelectedComponents()) {
@@ -412,8 +412,6 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     private void paintLayoutInnerSelection(Graphics2D g) {
         LayoutDesigner layoutDesigner = formDesigner.getLayoutDesigner();
         if (layoutDesigner != null) {
-            // TODO need to paint outer gaps of selected components with the parent clip,
-            // then for each selected component that is a container its inner gaps with the component clip
             Component topComp = formDesigner.getTopDesignComponentView();
             Point convertPoint = convertPointFromComponent(0, 0, topComp);
             g.translate(convertPoint.x, convertPoint.y);
@@ -1195,6 +1193,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         if (laysup == null) {
             Point p = convertPointToComponent(e.getPoint(), formDesigner.getTopDesignComponentView());
             if (formDesigner.getLayoutDesigner().selectInside(p)) {
+                FormEditor.getAssistantModel(getFormModel()).setContext("layoutGaps", "selectedLayoutGaps"); // NOI18N
                 repaint();
                 mouseHint = formDesigner.getLayoutDesigner().getToolTipText(p);
                 showToolTip(e);
@@ -1574,7 +1573,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     }
 
     private boolean isNewLayoutRootSelection() {
-        List<RADComponent> selected = formDesigner.getSelectedComponents();
+        List<RADComponent> selected = formDesigner.getSelectedLayoutComponents();
         if (selected.size() == 1) {
             RADComponent metacomp = selected.get(0);
             if (metacomp == formDesigner.getTopDesignComponent()
@@ -1987,8 +1986,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                         }
                         // Shift+left is reserved for interval or area selection,
                         // applied on mouse release or mouse dragged; ignore it here.
-                        else if (resizeType == 0 // no resizing
-                                 && (e.getClickCount() != 2 || !processDoubleClick(e)) // no doubleclick
+                        else if ((e.getClickCount() != 2 || !processDoubleClick(e)) // no doubleclick
+                                 && resizeType == 0 // no resizing
                                  && (!e.isShiftDown() || e.isAltDown())) {
                             RADComponent hitMetaComp = selectComponent(e, true); 
                             if (!modifier) { // plain single click
@@ -2145,7 +2144,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         if (metacomp instanceof RADVisualContainer && formDesigner.isInDesigner(metacomp)
                 && ((RADVisualContainer)metacomp).getLayoutSupport() == null) {
             Point p = convertPointToComponent(e.getPoint(), formDesigner.getTopDesignComponentView());
-            if (formDesigner.getLayoutDesigner().acceptsMouseWheel(p)) {
+            if (!viewOnly && formDesigner.getLayoutDesigner().acceptsMouseWheel(p)) {
                 if (wheeler == null) {
                     wheeler = new MouseWheeler(metacomp);
                     if (!wheelerBlocked) {

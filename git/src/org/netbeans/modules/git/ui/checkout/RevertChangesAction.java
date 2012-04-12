@@ -104,20 +104,19 @@ public class RevertChangesAction extends SingleRepositoryAction {
                         
                         // revert
                         if(revert.isRevertAll()) {
-                            // XXX log                            
-                            client.checkout(actionRoots, "HEAD", true, getProgressMonitor()); // XXX no constant for HEAD???
                             logRevert("revert all", actionRoots, repository);
+                            client.checkout(actionRoots, "HEAD", true, getProgressMonitor()); // XXX no constant for HEAD???
                         } else if (revert.isRevertIndex()) {
-                            client.reset(actionRoots, "HEAD", true, getProgressMonitor());
                             logRevert("revert index", actionRoots, repository);
+                            client.reset(actionRoots, "HEAD", true, getProgressMonitor());
                         } else if (revert.isRevertWT()) {
-                            client.checkout(actionRoots, null, true, getProgressMonitor());                             
                             logRevert("revert wt", actionRoots, repository);
+                            client.checkout(actionRoots, null, true, getProgressMonitor());                             
                         }
                         
                         if(revert.isRemove()) {
-                            client.clean(actionRoots, getProgressMonitor());
                             logRevert("clean ", actionRoots, repository);
+                            client.clean(actionRoots, getProgressMonitor());
                         }
                         
                     } catch (GitException ex) {
@@ -133,7 +132,7 @@ public class RevertChangesAction extends SingleRepositoryAction {
                 }
 
                 private void logRevert(String msg, File[] roots, File repository) {
-                    if(LOG.isLoggable(Level.INFO)) {
+                    if(LOG.isLoggable(Level.FINE)) {
                         String  repopath = repository.getAbsolutePath();
                         if(!repopath.endsWith("/")) {
                             repopath = repopath + "/";
@@ -152,7 +151,7 @@ public class RevertChangesAction extends SingleRepositoryAction {
                             }
                         }
                         sb.append("]");
-                        LOG.info(sb.toString());
+                        LOG.fine(sb.toString());
                     }
                 }
             };

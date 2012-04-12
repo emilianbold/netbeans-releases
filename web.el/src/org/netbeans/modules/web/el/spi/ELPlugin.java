@@ -65,7 +65,7 @@ public interface ELPlugin {
     public Collection<ImplicitObject> getImplicitObjects(FileObject file);
 
     /** A list of resource bundles for given file */
-    public List<ResourceBundle> getResourceBundles(FileObject file);
+    public List<ResourceBundle> getResourceBundles(FileObject file, ResolverContext context);
 
     /** A list of functions for given file */
     public List<Function> getFunctions(FileObject file);
@@ -86,10 +86,10 @@ public interface ELPlugin {
             return result;
         }
 
-        public static List<ResourceBundle> getResourceBundles(FileObject file) {
+        public static List<ResourceBundle> getResourceBundles(FileObject file, ResolverContext context) {
             List<ResourceBundle> result = new ArrayList<ResourceBundle>();
              for (ELPlugin plugin : getELPlugins()) {
-                result.addAll(plugin.getResourceBundles(file));
+                result.addAll(plugin.getResourceBundles(file, context));
             }
             return result;
         }

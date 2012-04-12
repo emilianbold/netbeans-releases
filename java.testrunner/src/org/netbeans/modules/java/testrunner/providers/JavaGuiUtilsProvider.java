@@ -70,6 +70,8 @@ public class JavaGuiUtilsProvider extends GuiUtilsProvider {
         checkboxes.put("CHK_SUITES", GuiUtils.CHK_SUITES);
         checkboxes.put("CHK_SETUP", GuiUtils.CHK_SETUP);
         checkboxes.put("CHK_TEARDOWN", GuiUtils.CHK_TEARDOWN);
+        checkboxes.put("CHK_BEFORE_CLASS", GuiUtils.CHK_BEFORE_CLASS);
+        checkboxes.put("CHK_AFTER_CLASS", GuiUtils.CHK_AFTER_CLASS);
         checkboxes.put("CHK_METHOD_BODIES", GuiUtils.CHK_METHOD_BODIES);
         checkboxes.put("CHK_JAVADOC", GuiUtils.CHK_JAVADOC);
         checkboxes.put("CHK_HINTS", GuiUtils.CHK_HINTS);

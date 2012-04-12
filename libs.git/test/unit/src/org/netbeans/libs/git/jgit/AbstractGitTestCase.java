@@ -48,6 +48,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.channels.Channels;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,10 +56,10 @@ import java.util.Map;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.libs.git.GitClient;
-import org.netbeans.libs.git.GitRepository;
 import org.netbeans.libs.git.ApiUtils;
+import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRepository;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.utils.TestUtils;
@@ -159,10 +160,14 @@ public class AbstractGitTestCase extends NbTestCase {
         assertEquals(conflict, status.isConflict());
     }
 
-    protected Repository getRepository (JGitRepository gitRepo) throws Exception {
-        Field f = JGitRepository.class.getDeclaredField("repository");
+    protected Repository getRepository (JGitRepository gitRepo) {
+        return gitRepo.getRepository();
+    }
+
+    protected Repository getRepository (GitClient client) throws Exception {
+        Field f = GitClient.class.getDeclaredField("gitRepository");
         f.setAccessible(true);
-        return (Repository) f.get(gitRepo);
+        return ((JGitRepository) f.get(client)).getRepository();
     }
 
 //    protected GitRepository cloneRemoteRepository (File target) throws GitException {
@@ -216,6 +221,10 @@ public class AbstractGitTestCase extends NbTestCase {
     
     protected void clearRepositoryPool() throws NoSuchFieldException, IllegalArgumentException, IllegalArgumentException, IllegalAccessException {
         ApiUtils.clearRepositoryPool();
+    }
+
+    protected boolean isWindows() {
+        return System.getProperty("os.name", "").toLowerCase().contains("windows");
     }
 
     protected static class Monitor extends ProgressMonitor.DefaultProgressMonitor implements FileListener {
@@ -294,5 +303,51 @@ public class AbstractGitTestCase extends NbTestCase {
         public void notifyWarning (String message) {
         }
 
+    }
+    
+    protected final List<String> runExternally (File workdir, List<String> command) throws Exception {
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.environment().putAll(System.getenv());
+        pb.directory(workdir);
+        Process p = pb.start();
+        final BufferedReader outReader = new BufferedReader(Channels.newReader(Channels.newChannel(p.getInputStream()), "UTF-8"));
+        final BufferedReader errReader = new BufferedReader(Channels.newReader(Channels.newChannel(p.getErrorStream()), "UTF-8"));
+        final List<String> output = new LinkedList<String>();
+        final List<String> err = new LinkedList<String>();
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run () {
+                try {
+                    for (String line = outReader.readLine(); line != null; line = outReader.readLine()) {
+                        output.add(line);
+                    }
+                } catch (IOException ex) {
+                    
+                }
+            }
+        });
+        Thread t2 = new Thread(new Runnable() {
+            @Override
+            public void run () {
+                try {
+                    for (String line = errReader.readLine(); line != null; line = errReader.readLine()) {
+                        err.add(line);
+                    }
+                } catch (IOException ex) {
+                    
+                }
+            }
+        });
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        p.waitFor();
+        outReader.close();
+        errReader.close();
+        if (!err.isEmpty()) {
+            throw new Exception(err.toString());
+        }
+        return output;
     }
 }

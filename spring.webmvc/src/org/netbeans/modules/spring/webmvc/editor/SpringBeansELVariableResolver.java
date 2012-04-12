@@ -59,6 +59,7 @@ import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.api.beans.model.SpringModel;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
+import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -67,10 +68,12 @@ import org.openide.util.lookup.ServiceProvider;
 public final class SpringBeansELVariableResolver implements ELVariableResolver {
 
     private static final Logger LOG = Logger.getLogger(SpringBeansELVariableResolver.class.getName());
+
+    private static final String CONTENT_NAME = "SpringBeans"; //NOI18N
     
     @Override
-    public String getBeanClass(String beanName, FileObject context) {
-        for (SpringBean bean : getSpringBeans(context)) {
+    public String getBeanClass(String beanName, FileObject target, ResolverContext context) {
+        for (SpringBean bean : getSpringBeans(target, context)) {
             if (beanName.equals(getBeanName(bean))) {
                 return bean.getClassName();
             }
@@ -79,8 +82,8 @@ public final class SpringBeansELVariableResolver implements ELVariableResolver {
     }
 
     @Override
-    public String getBeanName(String clazz, FileObject context) {
-        for (SpringBean bean : getSpringBeans(context)) {
+    public String getBeanName(String clazz, FileObject target, ResolverContext context) {
+        for (SpringBean bean : getSpringBeans(target, context)) {
             if (clazz.equals(bean.getClassName())) {
                 return getBeanName(bean);
             }
@@ -94,8 +97,8 @@ public final class SpringBeansELVariableResolver implements ELVariableResolver {
 //    }
     
     @Override
-    public List<VariableInfo> getManagedBeans(FileObject context) {
-        List<SpringBean> beans = getSpringBeans(context);
+    public List<VariableInfo> getManagedBeans(FileObject target, ResolverContext context) {
+        List<SpringBean> beans = getSpringBeans(target, context);
         List<VariableInfo> result = new ArrayList<VariableInfo>(beans.size());
         for (SpringBean bean : beans) {
             String beanName = getBeanName(bean);
@@ -108,43 +111,54 @@ public final class SpringBeansELVariableResolver implements ELVariableResolver {
     }
 
     @Override
-    public List<VariableInfo> getVariables(Snapshot snapshot, int offset) {
+    public List<VariableInfo> getVariables(Snapshot snapshot, int offset, ResolverContext context) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<VariableInfo> getBeansInScope(String scope, Snapshot context) {
+    public List<VariableInfo> getBeansInScope(String scope, Snapshot snapshot, ResolverContext context) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<VariableInfo> getRawObjectProperties(String name, Snapshot context) {
+    public List<VariableInfo> getRawObjectProperties(String name, Snapshot snapshot, ResolverContext context) {
         return Collections.emptyList();
     }
 
-    private List<SpringBean> getSpringBeans(FileObject context) {
-        SpringScope scope = SpringScope.getSpringScope(context);
-        final List<SpringBean> allSpringBeans = new ArrayList<SpringBean>();
-        if (scope != null) {
-            // gets all Spring beans from config files
-            for (SpringConfigModel model : scope.getAllConfigModels()) {
-                try {
-                    model.runReadAction(new Action<SpringBeans>() {
-
-                        @Override
-                        public void run(SpringBeans beans) {
-                            allSpringBeans.addAll(beans.getBeans());
-                        }
-                    });
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+    private List<SpringBean> getSpringBeans(FileObject target, ResolverContext context) {
+        SpringScope scope = SpringScope.getSpringScope(target);
+        if (scope == null) {
+            return Collections.<SpringBean>emptyList();
+        } else {
+            if (context.getContent(CONTENT_NAME) == null) {
+                context.setContent(CONTENT_NAME, getBeansFromScope(target, scope));
             }
-            
-            // gets all Spring beans from annotation support
-            allSpringBeans.addAll(getAnnotatedBeans(scope.getSpringAnnotationModel(context)));
+            return (List<SpringBean>) context.getContent(CONTENT_NAME);
         }
-        return allSpringBeans;
+    }
+
+    private List<SpringBean> getBeansFromScope(FileObject target, SpringScope scope) {
+        final List<SpringBean> springBeans = new ArrayList<SpringBean>();
+
+        // gets all Spring beans from config files
+        for (SpringConfigModel model : scope.getAllConfigModels()) {
+            try {
+                model.runReadAction(new Action<SpringBeans>() {
+
+                    @Override
+                    public void run(SpringBeans beans) {
+                        springBeans.addAll(beans.getBeans());
+                    }
+                });
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        // gets all Spring beans from annotation support
+        springBeans.addAll(getAnnotatedBeans(scope.getSpringAnnotationModel(target)));
+
+        return springBeans;
     }
 
     private static String getBeanName(SpringBean bean) {

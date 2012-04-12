@@ -109,12 +109,6 @@ public class StartProfiledServer extends Task implements Deployment.Logger {
             String msg = NbBundle.getMessage(StartProfiledServer.class, "MSG_StartupFailed");
             throw new BuildException(msg);
         }
-        log(NbBundle.getMessage(StartProfiledServer.class, "MSG_AttachingProfiler"));
-        if (!profiler.attachProfiler(getProject().getProperties())) {
-            String msg = NbBundle.getMessage(StartProfiledServer.class, "MSG_AttachFailed");
-            throw new BuildException(msg);
-        }
-        log(NbBundle.getMessage(StartProfiledServer.class, "MSG_ProfilerAttached"));
         // wait for the server to finish its startup
         long timeout = System.currentTimeMillis() + startupTimeout;
         while (profiler.getState() != ProfilerSupport.STATE_INACTIVE) {

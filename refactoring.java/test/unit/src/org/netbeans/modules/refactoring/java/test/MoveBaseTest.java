@@ -175,9 +175,10 @@ public class MoveBaseTest extends RefactoringTestBase {
                     handles[i] = TreePathHandle.create(allMembers.get(position[i]), info);
                 }
                 r[0] = new MoveRefactoring(Lookups.fixed((Object[]) handles));
+                properties[0] = new JavaMoveMembersProperties(handles);
+                
                 TypeElement typeElement = info.getElements().getTypeElement(target);
                 r[0].setTarget(Lookups.singleton(TreePathHandle.create(typeElement, info)));
-                properties[0] = new JavaMoveMembersProperties(TreePathHandle.create(typeElement, info));
             }
         }, true);
         properties[0].setVisibility(visibility);

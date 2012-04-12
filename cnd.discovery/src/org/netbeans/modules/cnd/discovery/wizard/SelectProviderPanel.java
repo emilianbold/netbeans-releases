@@ -335,17 +335,22 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
                 return false;
             }
         };
+        DiscoveryProvider defProvider = (DiscoveryProvider) ((WizardDescriptor)wizardDescriptor).getProperty("PreferedProvider"); // NOI18N
+        ProviderItem def = null;
         List<ProviderItem> list = new ArrayList<ProviderItem>();
         for(DiscoveryProvider provider : DiscoveryProviderFactory.findAllProviders()){
             if (provider.isApplicable(proxy)) {
-                list.add(new ProviderItem(provider));
+                final ProviderItem providerItem = new ProviderItem(provider);
+                if (defProvider != null && defProvider.getID().equals(provider.getID())) {
+                    def = providerItem;
+                }
+                list.add(providerItem);
             }
         }
         Collections.<ProviderItem>sort(list);
         for(ProviderItem item:list){
             model.addElement(item);
         }
-        ProviderItem def = getDefaultProvider(list,proxy,wizardDescriptor);
         if (def != null){
             prividersComboBox.setSelectedItem(def);
         }
@@ -377,26 +382,6 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         return null;
     }
 
-    private ProviderItem getDefaultProvider(List<ProviderItem> list, ProjectProxy proxy, DiscoveryDescriptor wizardDescriptor){
-        ProviderItem def = null;
-        int assurance = 0;
-        for(ProviderItem item:list){
-            if ("dwarf-executable".equals(item.getID())){ // NOI18N
-                // select executable if make project has output
-                // and output has debug information.
-                item.getProvider().getProperty("executable").setValue(wizardDescriptor.getBuildResult()); // NOI18N
-            } else if ("dwarf-folder".equals(item.getID())){ // NOI18N
-                item.getProvider().getProperty("folder").setValue(wizardDescriptor.getRootFolder()); // NOI18N
-            }
-            int i = item.getProvider().canAnalyze(proxy).getPriority();
-            if (i > assurance) {
-                def = item;
-                assurance = i;
-            }
-        }
-        return def;
-    }
-    
     void store(DiscoveryDescriptor wizardDescriptor) {
         ProviderItem provider = (ProviderItem)prividersComboBox.getSelectedItem();
         wizardDescriptor.setProvider(provider.getProvider());
@@ -505,9 +490,9 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     public void parserIdle() {
     }
 
-    private static class ProviderItem implements Comparable<ProviderItem> {
+    static class ProviderItem implements Comparable<ProviderItem> {
         private DiscoveryProvider provider;
-        private ProviderItem(DiscoveryProvider provider){
+        ProviderItem(DiscoveryProvider provider){
             this.provider = provider;
         }
         @Override

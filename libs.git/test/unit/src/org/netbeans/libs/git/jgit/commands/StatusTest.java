@@ -466,6 +466,10 @@ public class StatusTest extends AbstractGitTestCase {
     }
     
     public void testIgnoreExecutable () throws Exception {
+        if (isWindows()) {
+            // no reason to test on win
+            return;
+        }
         File f = new File(workDir, "f");
         write(f, "hi, i am executable");
         f.setExecutable(true);
@@ -527,6 +531,13 @@ public class StatusTest extends AbstractGitTestCase {
     }
     
     public void testStatusMixedLineEndings () throws Exception {
+        if (isWindows()) {
+            // tested on linux
+            return;
+        }
+        StoredConfig cfg = repository.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "false");
+        cfg.save();
         File f = new File(workDir, "f");
         String content = "";
         for (int i = 0; i < 10000; ++i) {
@@ -546,7 +557,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertEquals(0, status.getModified().size());
         
         // lets turn autocrlf on
-        StoredConfig cfg = repository.getConfig();
+        cfg = repository.getConfig();
         cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
         cfg.save();
         

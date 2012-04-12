@@ -137,7 +137,7 @@ public class CompletionUtilities {
 
             boolean searchFunctionsOnly = false;
             boolean searchSpecializationsOnly = false;
-            int[] idBlk = NbEditorUtilities.getIdentifierAndMethodBlock(baseDoc, dotPos);
+            int[] idBlk = getIdentifierAndMethodBlock(baseDoc, dotPos);
             searchFunctionsOnly = (idBlk != null) ? (idBlk.length == 3) : false;
             if (idBlk == null || idBlk.length == 2) {
                 idBlk = getIdentifierAndInstantiationBlock(baseDoc, dotPos);
@@ -182,6 +182,35 @@ public class CompletionUtilities {
         return out;
     }
 
+    private static int[] getIdentifierAndMethodBlock(BaseDocument doc, int offset)
+    throws BadLocationException {
+        int[] idBlk = Utilities.getIdentifierBlock(doc, offset);
+        if (idBlk != null) {
+            int[] funBlk = getFunctionBlock(doc, idBlk);
+            if (funBlk != null) {
+                return new int[] { idBlk[0], idBlk[1], funBlk[1] };
+            }
+        }
+        return idBlk;
+    }
+    
+    private static int[] getFunctionBlock(BaseDocument doc, int[] identifierBlock) throws BadLocationException {
+        if (identifierBlock != null) {
+            int nwPos = Utilities.getFirstNonWhiteFwd(doc, identifierBlock[1]);
+            if ((nwPos >= 0) && (doc.getChars(nwPos, 1)[0] == '(')) {
+                return new int[] { identifierBlock[0], nwPos + 1 };
+            }
+            if ((nwPos >= 0) && (doc.getChars(nwPos, 1)[0] == '<')) {
+                int eoi = findEndOfInstantiation(doc, nwPos);
+                nwPos = Utilities.getFirstNonWhiteFwd(doc, eoi);
+                if ((nwPos >= 0) && (doc.getChars(nwPos, 1)[0] == '(')) {
+                    return new int[] { identifierBlock[0], nwPos + 1 };
+                }
+            }
+        }
+        return null;
+    }
+    
     private static int[] getIdentifierAndInstantiationBlock(BaseDocument doc, int offset) throws BadLocationException {
         int[] idBlk = Utilities.getIdentifierBlock(doc, offset);
         if (idBlk != null) {

@@ -235,32 +235,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
     }
 
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
-        Lookup lookup = prj.getLookup();
-        final Result<J2eeModuleProvider> result = lookup.lookupResult(J2eeModuleProvider.class);
-        LookupListener listener = new LookupListener(){
-
-            @Override
-            public void resultChanged( LookupEvent event ) {
-                synchronized (result) {
-                    result.notifyAll();
-                }
-            }
-            
-        };
-        result.addLookupListener( listener );
-        synchronized (result) {
-            while (lookup.lookup(J2eeModuleProvider.class) == null) {
-                try {
-                    result.wait();
-                }
-                catch( InterruptedException e ){
-                    Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.INFO,
-                            "Lookup change wait is interrupted", e); //NOI18N
-                }
-            }
-        }
-        result.removeLookupListener( listener );
-        return lookup.lookup(J2eeModuleProvider.class).getJ2eeModule().getMetadataModel(
+        return WSUtils.getModuleProvider(prj).getJ2eeModule().getMetadataModel(
                 WebservicesMetadata.class);
     }
     

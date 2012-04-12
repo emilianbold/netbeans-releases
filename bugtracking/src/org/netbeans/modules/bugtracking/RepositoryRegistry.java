@@ -399,7 +399,7 @@ public class RepositoryRegistry {
         String user;
         char[] password;
         if(BugtrackingUtil.isNbRepository(url)) {
-            user = getNBUsername();
+            user = getBugzillaNBUsername();
             char[] psswdArray = getNBPassword();
             password = psswdArray != null ? psswdArray : new char[0];
         } else {
@@ -478,7 +478,7 @@ public class RepositoryRegistry {
         return NbPreferences.root().node("org/netbeans/modules/jira"); // NOI18N
     }
 
-    private static String getNBUsername() {
+    public static String getBugzillaNBUsername() {
         String user = getBugzillaPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
         return user;                         
     }

@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
@@ -134,7 +134,7 @@ public class IOPack {
         
         if (ndi.isClone()) { // follow fork clone
             res = new IOPack(console, exEnv, false);
-        } else if (DebuggerManager.isStandalone()) {
+        } else if (NativeDebuggerManager.isStandalone()) {
             TermComponent pio;
             if (remote || Utilities.isWindows()) {
                 pio = PioPack.makePio(0);
@@ -153,7 +153,7 @@ public class IOPack {
         } else if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
             // no support on windows, IZ 193740, switch to external
             if (Utilities.isWindows() && !remote) {
-                DebuggerManager.warning(Catalog.get("MSG_Console_Type_Unsupported"));
+                NativeDebuggerManager.warning(Catalog.get("MSG_Console_Type_Unsupported"));
                 res = new IOPack(console, exEnv, true);
             } else {
                 res = new OutputPack(console, io, exEnv);
@@ -161,7 +161,7 @@ public class IOPack {
         } else {
             // switch to external if no pty on windows
             if (Utilities.isWindows() && !remote && !PtySupport.isSupportedFor(exEnv)) {
-                DebuggerManager.warning(Catalog.get("MSG_Console_Type_Unsupported"));
+                NativeDebuggerManager.warning(Catalog.get("MSG_Console_Type_Unsupported"));
                 res = new IOPack(console, exEnv, true);
             } else {
                 res = new InternalTerminalPack(console, io, exEnv);

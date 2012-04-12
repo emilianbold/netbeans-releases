@@ -92,6 +92,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.loaders.CreateFromTemplateHandler;
+import org.openide.util.Exceptions;
 
 /**
  * Creates a MakeProject from scratch according to some initial configuration.
@@ -217,7 +218,12 @@ public class MakeProjectGeneratorImpl {
         final Iterator<LogicalFolderItemsInfo> logicalFolderItems = prjParams.getLogicalFolderItems();
         final Iterator<LogicalFoldersInfo> logicalFolders = prjParams.getLogicalFolders();
         String mainFile = prjParams.getMainFile();
-        MakeProjectHelper h = MakeProjectGenerator.createProject(dirFO, MakeProjectTypeImpl.TYPE);
+        MakeProjectHelper h = null;
+        try {
+            h = MakeProjectGenerator.createProject(dirFO, MakeProjectTypeImpl.TYPE);
+        } catch (IllegalArgumentException e) {
+            throw new IOException(e);
+        }
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.PROJECT_CONFIGURATION__NAME_NAME);
@@ -266,12 +272,7 @@ public class MakeProjectGeneratorImpl {
         Project project = projectDescriptor.getProject();
         projectDescriptor.setProject(project);
         // create main source file
-        final String mainFilePath;
-        if (mainFile.length() > 0) {
-            mainFilePath = createMain(mainFile, dirFO, prjParams.getTemplateParams());
-        } else {
-            mainFilePath = null;
-        }
+        final CreateMainParams mainFileParams = prepareMainIfNeeded(mainFile, dirFO, prjParams.getTemplateParams());
         if (sourceFoldersFilter != null && !MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN.equals(sourceFoldersFilter)) {
             projectDescriptor.setFolderVisibilityQuery(sourceFoldersFilter);
         }
@@ -279,10 +280,11 @@ public class MakeProjectGeneratorImpl {
 
             @Override
             public void run() {
-                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders, logicalFolders, logicalFolderItems, importantItems, mainFilePath, prjParams.getFullRemote()); // FIXUP: need a better check whether logical folder should be ccreated or not.
-                
+                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders, logicalFolders, logicalFolderItems, importantItems, mainFileParams.mainFilePath, prjParams.getFullRemote()); // FIXUP: need a better check whether logical folder should be ccreated or not.
                 
                 projectDescriptor.save();
+                // finish postponed activity when project metadata is ready
+                mainFileParams.doPostProjectCreationWork();
                 projectDescriptor.closed();
                 projectDescriptor.clean();
             }
@@ -368,39 +370,72 @@ public class MakeProjectGeneratorImpl {
         return dirFO;
     }
 
-    private static String createMain(String mainFile, FileObject srcFolder, Map<String, Object> templateParams) throws IOException {
+    private static CreateMainParams prepareMainIfNeeded(String mainFile, FileObject srcFolder, Map<String, Object> templateParams) throws IOException {
+        if (mainFile.length() == 0) {
+            return new CreateMainParams(null, null);
+        }
         String mainName = mainFile.substring(0, mainFile.indexOf('|'));
         String template = mainFile.substring(mainFile.indexOf('|') + 1);
 
         if (mainName.length() == 0) {
-            return null;
+            return new CreateMainParams(null, null);
         }
 
         FileObject mainTemplate = FileUtil.getConfigFile(template);
 
         if (mainTemplate == null) {
-            return null; // Don't know the template
+            return new CreateMainParams(null, null); // Don't know the template
         }
-        String createdMainName = mainName;
+        final String createdMainName;
          if (mainName.indexOf('\\') > 0 || mainName.indexOf('/') > 0) {
             String absPath = CndPathUtilitities.toAbsolutePath(srcFolder, mainName);
             absPath = FileSystemProvider.getCanonicalPath(srcFolder.getFileSystem(), absPath);
             srcFolder = FileUtil.createFolder(srcFolder, CndPathUtilitities.getDirName(mainName));
             createdMainName = CndPathUtilitities.getBaseName(absPath);
+         } else {
+            createdMainName = mainName;
          }
 
-        DataObject mt = DataObject.find(mainTemplate);
-        DataFolder pDf = DataFolder.findFolder(srcFolder);
+        final DataObject mt = DataObject.find(mainTemplate);
+        final DataFolder pDf = DataFolder.findFolder(srcFolder);
 
-        Map<String, Object> params = new HashMap<String, Object>();
+        final Map<String, Object> params = new HashMap<String, Object>();
         params.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
         params.putAll(templateParams);
 
-        mt.createFromTemplate(pDf, createdMainName, params);
+        // manipulation with file content should be postponed
+        // project does not yet know about main file and can not provide
+        // settings which can affect i.e. formatting of file
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mt.createFromTemplate(pDf, createdMainName, params);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
 
-        return mainName;
+        return new CreateMainParams(mainName, runnable);
     }
 
+    private static final class CreateMainParams {
+        final String mainFilePath;
+        private final Runnable postProjectSaveWorker;
+
+        public CreateMainParams(String mainName, Runnable postProjectSaveWorker) {
+            this.mainFilePath = mainName;
+            this.postProjectSaveWorker = postProjectSaveWorker;
+        }
+
+        private void doPostProjectCreationWork() {
+            if (postProjectSaveWorker != null) {
+                postProjectSaveWorker.run();
+            }
+        }
+
+    }
 }
 
 

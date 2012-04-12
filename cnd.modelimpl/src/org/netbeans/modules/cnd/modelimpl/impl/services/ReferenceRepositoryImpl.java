@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -398,12 +399,9 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         if (ts == null || !file.isValid()) {
             return null;
         }
-        APTPreprocHandler.State ppState = null;
-        Collection<APTPreprocHandler.State> preprocStates = file.getProjectImpl(false).getPreprocStates(file);
-        if (!preprocStates.isEmpty()) {
-            // use start file from one of states (i.e. first)
-            ppState = preprocStates.iterator().next();
-        }
+         // use start file from one of states (i.e. first)
+        CharSequence fileKey = FileContainer.getFileKey(file.getAbsolutePath(), false);
+        APTPreprocHandler.State ppState = file.getProjectImpl(false).getFirstValidPreprocState(fileKey);
         return file.getLanguageFilter(ppState).getFilteredStream( new APTCommentsFilter(ts));
     }
 

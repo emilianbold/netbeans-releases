@@ -44,9 +44,12 @@
 
 package org.netbeans.core.windows;
 
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.junit.NbTestCase;
@@ -66,6 +69,10 @@ import org.openide.windows.WindowManager;
  * 
  */
 public class TopComponentCreationTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TopComponentCreationTest.class);
+    }
 
     private static boolean loaded = false;
     

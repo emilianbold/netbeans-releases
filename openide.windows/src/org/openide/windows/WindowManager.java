@@ -95,6 +95,8 @@ public abstract class WindowManager extends Object implements Serializable {
 
     /** the registry */
     private TopComponent.Registry registry;
+    /** handle {@link OnShowing} */
+    private final OnShowingHandler onShowing = new OnShowingHandler(null, this);
 
     /** Singleton instance accessor method for window manager. Provides entry
      * point for further work with window system API of the system.
@@ -172,10 +174,8 @@ public abstract class WindowManager extends Object implements Serializable {
         if (registry != null) {
             return registry;
         }
-
-        registry = componentRegistry();
-
-        return registry;
+        onShowing.initialize();
+        return registry = componentRegistry();
     }
 
     /** Creates new workspace.

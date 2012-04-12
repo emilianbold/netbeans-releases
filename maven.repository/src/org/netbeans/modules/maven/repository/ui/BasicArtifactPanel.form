@@ -86,26 +86,19 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="lblGroupId" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="lblArtifactId" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="lblVersion" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="lblPackaging" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="txtArtifactId" alignment="0" pref="316" max="32767" attributes="0"/>
-                                      <Component id="txtGroupId" alignment="0" pref="316" max="32767" attributes="0"/>
-                                      <Component id="txtVersion" alignment="0" pref="316" max="32767" attributes="0"/>
-                                      <Component id="txtPackaging" alignment="0" pref="316" max="32767" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="lblClassifier" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="txtClassifier" pref="315" max="32767" attributes="0"/>
-                              </Group>
+                              <Component id="lblGroupId" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="lblArtifactId" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="lblVersion" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="lblPackaging" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="lblClassifier" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="txtClassifier" max="32767" attributes="0"/>
+                              <Component id="txtArtifactId" alignment="0" pref="316" max="32767" attributes="0"/>
+                              <Component id="txtGroupId" alignment="0" pref="316" max="32767" attributes="0"/>
+                              <Component id="txtVersion" alignment="0" pref="316" max="32767" attributes="0"/>
+                              <Component id="txtPackaging" alignment="0" pref="316" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>

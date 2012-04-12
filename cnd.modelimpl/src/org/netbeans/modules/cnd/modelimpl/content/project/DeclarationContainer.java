@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -80,8 +81,8 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
     private final TreeMap<CharSequence, Object> declarations;
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
 
-    protected DeclarationContainer(Key key, boolean hangInRepository) {
-        super(key, hangInRepository);
+    protected DeclarationContainer(Key key) {
+        super(key);
         declarations = new TreeMap<CharSequence, Object>(CharSequences.comparator());
     }
 
@@ -106,7 +107,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
                 int k = size;
                 for (int i = 0; i < size; i++) {
                     CsmUID<CsmOffsetableDeclaration> uid = uids[i];
-                    if (UIDUtilities.isSameFile(uid, anUid)) {
+                    if (anUid.equals(uid)) {
                         uids[i] = null;
                         k--;
                     } else {
@@ -160,18 +161,23 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
             declarationsLock.writeLock().lock();
 
             Object o = declarations.get(name);
+            // there could be at max only one forward class and
+            // we don't want forward class to overwrite anything
+            if (o != null && ForwardClass.isForwardClass(decl)) {
+                return;
+            }
             if (o instanceof CsmUID<?>[]) {
                 @SuppressWarnings("unchecked")
                 CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID[]) o;
-                boolean find = false;
+                boolean found = false;
                 for (int i = 0; i < uids.length; i++) {
-                    if (UIDUtilities.isSameFile(uids[i], uid)) {
+                    if (UIDUtilities.isSameFile(uids[i], uid) || UIDUtilities.isForwardClass(uids[i])) {
                         uids[i] = uid;
-                        find = true;
+                        found = true;
                         break;
                     }
                 }
-                if (!find) {
+                if (!found) {
                     @SuppressWarnings("unchecked")
                     CsmUID<CsmOffsetableDeclaration>[] res = new CsmUID[uids.length + 1];
                     res[0] = uid;
@@ -181,7 +187,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
             } else if (o instanceof CsmUID<?>) {
                 @SuppressWarnings("unchecked")
                 CsmUID<CsmOffsetableDeclaration> oldUid = (CsmUID<CsmOffsetableDeclaration>) o;
-                if (UIDUtilities.isSameFile(oldUid, uid)) {
+                if (UIDUtilities.isSameFile(oldUid, uid) || UIDUtilities.isForwardClass(oldUid)) {
                     declarations.put(name, uid);
                 } else {
                     CsmUID<?>[] uids = new CsmUID<?>[]{uid, oldUid};

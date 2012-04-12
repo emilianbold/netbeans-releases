@@ -816,12 +816,10 @@ class FilesystemHandler extends VCSInterceptor {
                             // check if the file wasn't just deleted in this session
                             revertDeleted(client, toStatus, to, true);
 
-                            internalyDeletedFiles.add(from);
                             moved = from.renameTo(to);
                             if (moved) {
                                 client.revert(from, true);
                             }
-                            internalyDeletedFiles.remove(from);
                         } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
                                 || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn
                             // check if the file wasn't just deleted in this session

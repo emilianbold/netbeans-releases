@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
@@ -56,6 +57,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@RandomlyFails // NB-Core-Build #8077: Nothing in the registry expected:<null> but was:<displayname>
 public class SaveIsAsynchronousTest extends NbTestCase {
     private ContextAwareAction saveAction;
     private Action saveAllAction;

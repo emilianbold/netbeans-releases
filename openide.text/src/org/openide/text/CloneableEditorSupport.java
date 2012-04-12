@@ -581,6 +581,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return false;
         }
     }
+    
+    void checkReleaseDoc() {
+        if (isStrongSet && canReleaseDoc()) {
+            isStrongSet = false;
+            setStrong(false, true);
+        }
+    }
 
     //
     // EditorCookie implementation
@@ -615,10 +622,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 t.addTaskListener(new TaskListener() {
                     public void taskFinished(Task task) {
                         counterPrepareDocument--;
-                        if (isStrongSet && canReleaseDoc()) {
-                            isStrongSet = false;
-                            CloneableEditorSupport.this.setStrong(false, true);
-                        }
+                        checkReleaseDoc();
                         task.removeTaskListener(this);
                     }
                 });
@@ -683,7 +687,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             prepareTask = RP.create(new Runnable() {
                                                    private boolean runningInAtomicLock;
                                                    private boolean fireEvent;
-                                                   private StyledDocument d;
+                                                   private StyledDocument d = getDoc();
 
                                                    public void run() {
                                                        doRun();
@@ -734,7 +738,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                    ((UndoRedoManager)urm).markSavepoint();
                                                                }
                                                                getDoc().addUndoableEditListener(urm);
-                                                               d = getDoc();
                                                            } catch (DelegateIOExc t) {
                                                                prepareDocumentRuntimeException = t;
                                                            } catch (RuntimeException t) {
@@ -885,10 +888,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 if (wasCounterIncremented) {
                     counterOpenDocument--;
                 }
-                if (isStrongSet && canReleaseDoc()) {
-                    isStrongSet = false;
-                    setStrong(false, true);
-                }
+                checkReleaseDoc();
             }
         }
     }
@@ -997,10 +997,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         }
                     } finally {
                         counterGetDocument--;
-                        if (isStrongSet && canReleaseDoc()) {
-                            isStrongSet = false;
-                            setStrong(false, true);
-                        }
+                        checkReleaseDoc();
                     }
                 }
             }
@@ -1557,7 +1554,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @param s the new MIME type
     */
     public void setMIMEType(String s) {
-        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this, true);
         if (redirect != null) {
             redirect.setMIMEType(s);
             return;
@@ -2598,10 +2595,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     counterRun--;
                     if (counterRun == 0) {
                         counterOpenAtImpl--;
-                        if (isStrongSet && canReleaseDoc()) {
-                            isStrongSet = false;
-                            CloneableEditorSupport.this.setStrong(false, true);
-                        }
+                        checkReleaseDoc();
                     }
                 }
             }

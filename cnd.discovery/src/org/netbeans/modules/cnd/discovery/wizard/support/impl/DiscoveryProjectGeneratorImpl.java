@@ -56,10 +56,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.discovery.buildsupport.CompileSupport;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
@@ -75,7 +73,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
@@ -792,7 +792,7 @@ public class DiscoveryProjectGeneratorImpl {
     }
 
     private void setupFile(FileConfiguration config, Item item, ItemProperties.LanguageKind lang) {
-        projectBridge.setSourceTool(item,lang, config.getLanguageStandard());
+        ProjectBridge.setSourceTool(item,lang, config.getLanguageStandard(), wizard.isIncrementalMode());
         if (ConsolidationStrategy.FILE_LEVEL.equals(level)){ // NOI18N
             Set<String> set = new HashSet<String>();
             Map<String,String> macros = new HashMap<String,String>();

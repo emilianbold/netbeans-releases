@@ -64,6 +64,8 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -72,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -108,7 +111,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
     
     /** Creates a new instance of ClassifierContainer */
     public ClassifierContainer(ProjectBase project) {
-        super(new ClassifierContainerKey(project.getUniqueName()), false);
+        super(new ClassifierContainerKey(project.getUniqueName()));
         classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         inheritances = new HashMap<CharSequence, Set<CsmUID<CsmInheritance>>>();
@@ -130,7 +133,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
 
     // only for EMPTY static field
     private ClassifierContainer() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
+        super((org.netbeans.modules.cnd.repository.spi.Key) null);
         classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         inheritances = new HashMap<CharSequence, Set<CsmUID<CsmInheritance>>>();
@@ -260,7 +263,8 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
         boolean put = false;
         try {
             declarationsLock.writeLock().lock();
-            if (!map.containsKey(qn)) {
+            CsmUID<CsmClassifier> old = map.get(qn);
+            if (old == null || (!UIDUtilities.isForwardClass(uid) && UIDUtilities.isForwardClass(old))) {
                 assert uid != null;
                 map.put(qn, uid);
                 assert (UIDCsmConverter.UIDtoDeclaration(uid) != null);
@@ -277,6 +281,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
 
     public void removeClassifier(CsmDeclaration decl) {
         Map<CharSequence, CsmUID<CsmClassifier>> map;
+        CsmUID<?> uid = UIDs.get(decl);
         if (isTypedef(decl)) {
             map = typedefs;
         } else {
@@ -301,28 +306,32 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
             }
         }
         CharSequence qn = decl.getQualifiedName();
-        removeClassifier(map, qn);
+        removeClassifier(map, qn, uid);
 
         // Special case for nested structs in C
         // See Bug 144535 - wrong error highlighting for inner structure
         CharSequence qn2 = getQualifiedNameWithoutScopeStructNameForC(decl);
         if (qn2 != null && qn.length() != qn2.length()) {
             // TODO: think about multiple objects per name in classifier as well
-            removeClassifier(map, qn2);
+            removeClassifier(map, qn2, uid);
         }
-
     }
 
-    private void removeClassifier(Map<CharSequence, CsmUID<CsmClassifier>> map, CharSequence qn) {
-        CsmUID<CsmClassifier> uid;
+    private void removeClassifier(Map<CharSequence, CsmUID<CsmClassifier>> map, CharSequence qn, CsmUID<?> uid) {
+        CsmUID<CsmClassifier> removed;
         try {
             declarationsLock.writeLock().lock();
-            uid = map.remove(qn);
+            removed = map.get(qn);
+            if (removed != null && removed.equals(uid)) {
+                map.remove(qn);
+            } else {
+                removed = null;
+            }
         } finally {
             declarationsLock.writeLock().unlock();
         }
-        assert (uid == null) || (UIDCsmConverter.UIDtoCsmObject(uid) != null) : " no object for UID " + uid;
-        if (uid != null) {
+        assert (removed == null) || (UIDCsmConverter.UIDtoCsmObject(removed) != null) : " no object for UID " + removed;
+        if (removed != null) {
             put();
         }
     }

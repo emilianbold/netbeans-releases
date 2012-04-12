@@ -55,6 +55,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -105,7 +106,7 @@ import org.openide.util.Utilities;
  * @author Tomas Zezula
  */
 //@NotTreadSafe
-public class LuceneIndex implements Index.Transactional {
+public class LuceneIndex implements Index.Transactional, Runnable {
 
     private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N
     private static final String PROP_CACHE_SIZE = "java.index.size";    //NOI18N
@@ -114,13 +115,13 @@ public class LuceneIndex implements Index.Transactional {
     private static final CachePolicy cachePolicy = getCachePolicy();
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
     
-    private static LockFactory lockFactory;
+    private static boolean disableLocks;
     
     private final DirCache dirCache;       
     
     /** unit tests */
     public static void setDisabledLocks(final boolean disabled) {
-        lockFactory = disabled ? NoLockFactory.getNoLockFactory() : null;
+        disableLocks = disabled;
     }
 
     public static LuceneIndex create (final File cacheRoot, final Analyzer analyzer) throws IOException {
@@ -132,7 +133,13 @@ public class LuceneIndex implements Index.Transactional {
     private LuceneIndex (final File refCacheRoot, final Analyzer analyzer) throws IOException {
         assert refCacheRoot != null;
         assert analyzer != null;
-        this.dirCache = new DirCache(refCacheRoot,cachePolicy, analyzer);
+        this.dirCache = new DirCache(
+                refCacheRoot,
+                cachePolicy,
+                analyzer,
+                disableLocks ?
+                    NoLockFactory.getNoLockFactory():
+                    new RecordOwnerLockFactory());
     }
     
     @Override
@@ -341,6 +348,11 @@ public class LuceneIndex implements Index.Transactional {
         }
         return result;
     }
+    
+    @Override
+    public void run() {
+        dirCache.beginTx();
+    }
 
     @Override
     public void commit() throws IOException {
@@ -365,7 +377,7 @@ public class LuceneIndex implements Index.Transactional {
                         new Object[] { this, toAdd.size(), toDelete.size() }
                         );
             }
-            _doStore(toAdd, toDelete, docConvertor, queryConvertor, wr, false);
+            _doStore(toAdd, toDelete, docConvertor, queryConvertor, wr);
         } finally {
             // nothing committed upon failure - readers not affected
             boolean ok = false;
@@ -382,9 +394,12 @@ public class LuceneIndex implements Index.Transactional {
         }
     }
     
-    private <S, T> void _doStore(Collection<T> data, 
-            Collection<S> toDelete, Convertor<? super T, ? extends Document> docConvertor, 
-            Convertor<? super S, ? extends Query> queryConvertor, IndexWriter[] ret, boolean optimize) throws IOException {
+    private <S, T> void _doStore(
+            @NonNull final Collection<T> data, 
+            @NonNull final Collection<S> toDelete,
+            @NonNull final Convertor<? super T, ? extends Document> docConvertor, 
+            @NonNull final Convertor<? super S, ? extends Query> queryConvertor,
+            @NonNull final IndexWriter[] ret) throws IOException {
         final IndexWriter out = dirCache.acquireWriter();
         try {
             ret[0] = out;
@@ -450,7 +465,7 @@ public class LuceneIndex implements Index.Transactional {
         
         IndexWriter[] wr = new IndexWriter[1];
         try {
-            _doStore(data, toDelete, docConvertor, queryConvertor, wr, optimize);
+            _doStore(data, toDelete, docConvertor, queryConvertor, wr);
         } finally {
             LOGGER.log(Level.FINE, "Committing {0}", this);
             dirCache.close(wr[0]);
@@ -535,6 +550,7 @@ public class LuceneIndex implements Index.Transactional {
         private static volatile long currentCacheSize;
         
         private final File folder;
+        private final LockFactory lockFactory;
         private final CachePolicy cachePolicy;
         private final Analyzer analyzer;
         private volatile FSDirectory fsDir;
@@ -543,7 +559,7 @@ public class LuceneIndex implements Index.Transactional {
         private IndexReader reader;
         private volatile boolean closed;
         private volatile Status validCache;
-        private long lastUsedWriter;
+        private final OwnerReference owner = new OwnerReference();
         private final ReadWriteLock rwLock = new java.util.concurrent.locks.ReentrantReadWriteLock();
         
         /**
@@ -554,12 +570,15 @@ public class LuceneIndex implements Index.Transactional {
         private DirCache(
                 final @NonNull File folder,
                 final @NonNull CachePolicy cachePolicy,
-                final @NonNull Analyzer analyzer) throws IOException {
+                final @NonNull Analyzer analyzer,
+                final @NonNull LockFactory lockFactory) throws IOException {
             assert folder != null;
             assert cachePolicy != null;
             assert analyzer != null;
+            assert lockFactory != null;
             this.folder = folder;
-            this.fsDir = createFSDirectory(folder);
+            this.lockFactory = lockFactory;
+            this.fsDir = createFSDirectory(folder, lockFactory);
             this.cachePolicy = cachePolicy;                        
             this.analyzer = analyzer;
         }
@@ -602,23 +621,17 @@ public class LuceneIndex implements Index.Transactional {
                     final File[] children = cacheDir.listFiles();
                     if (children != null) {
                         for (final File child : children) {                                                
-                            if (!child.delete()) {
-                                final Class c = fsDir.getClass();
-                                int refCount = -1;
-                                try {
-                                    final Field field = c.getDeclaredField("refCount"); //NOI18N
-                                    field.setAccessible(true);
-                                    refCount = field.getInt(fsDir);
-                                } catch (NoSuchFieldException e) {/*Not important*/}
-                                  catch (IllegalAccessException e) {/*Not important*/}
-                                final Map<Thread,StackTraceElement[]> sts = Thread.getAllStackTraces();
+                            if (!child.delete()) {                                
+                                final Map<Thread,List<StackTraceElement>> sts = stackTraces(Thread.getAllStackTraces());
                                 throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
                                         child.exists()  +","+                                               //NOI18N
                                         child.canRead() +","+                                               //NOI18N
                                         child.canWrite() +","+                                              //NOI18N
                                         cacheDir.canRead() +","+                                            //NOI18N
                                         cacheDir.canWrite() +","+                                           //NOI18N
-                                        refCount +","+                                                      //NOI18N
+                                        (lockFactory instanceof RecordOwnerLockFactory ?
+                                            ((RecordOwnerLockFactory)lockFactory).getOwner():
+                                            "???") +","+                                                    //NOI18N
                                         sts +")");                                                          //NOI18N
                             }
                         }
@@ -627,7 +640,7 @@ public class LuceneIndex implements Index.Transactional {
             } finally {
                 //Need to recreate directory, see issue: #148374
                 this.doClose(true);
-                this.fsDir = createFSDirectory(this.folder);
+                this.fsDir = createFSDirectory(this.folder, this.lockFactory);
                 closed = false;
             }
         }
@@ -642,6 +655,7 @@ public class LuceneIndex implements Index.Transactional {
                 if (txWriter.get() == writer) {
                     LOGGER.log(Level.FINE, "TX writer cleared for {0}", this);
                     txWriter.remove();
+                    owner.clear();
                     refreshReader();
                 }
             }
@@ -750,20 +764,24 @@ public class LuceneIndex implements Index.Transactional {
         }
         
         boolean rollbackTxWriter() throws IOException {
-            IndexWriter writer = txWriter.get();
+            final IndexWriter writer = txWriter.get();
             if (writer != null) {
                 try {
                     writer.rollback();
                     return true;
                 } finally {
                     txWriter.remove();
+                    owner.clear();
                 }
             } else {
                 return false;
             }
         }
         
-        private static final long STALE_WRITER_THRESHOLD = 120 /* sec */ * 1000;
+        void beginTx() {
+            owner.assertNoModifiedWriter();
+            owner.setOwner(Thread.currentThread());
+        }
         
         /**
          * The writer operates under readLock(!) since we do not want to lock out readers,
@@ -782,11 +800,7 @@ public class LuceneIndex implements Index.Transactional {
             IndexWriter writer = txWriter.get();
             try {
                 if (writer != null) {
-                    long current = System.currentTimeMillis();
-                    if (current - lastUsedWriter > STALE_WRITER_THRESHOLD) {
-                        LOGGER.log(Level.WARNING, "Using stale writer, possibly forgotten call to store ?", new Throwable());
-                    }
-                    lastUsedWriter = current;
+                    owner.assertSingleThreadWriter();
                     ok = true;
                     return writer;
                 }
@@ -804,8 +818,8 @@ public class LuceneIndex implements Index.Transactional {
                         iwc.setMergePolicy(mergePolicy);
                     }
                     final IndexWriter iw = new FlushIndexWriter (this.fsDir, iwc);
-                    lastUsedWriter = System.currentTimeMillis();
                     txWriter.set(iw);
+                    owner.modified();
                     ok = true;
                     return iw;
                 } catch (IOException ioe) {
@@ -989,8 +1003,11 @@ public class LuceneIndex implements Index.Transactional {
             return Exceptions.attachMessage(ioe, message.toString());
         }
         
-        private static FSDirectory createFSDirectory (final File indexFolder) throws IOException {
+        private static FSDirectory createFSDirectory (
+                final File indexFolder,
+                final LockFactory lockFactory) throws IOException {
             assert indexFolder != null;
+            assert lockFactory != null;
             final FSDirectory directory  = FSDirectory.open(indexFolder, lockFactory);
             directory.getLockFactory().setLockPrefix(CACHE_LOCK_PREFIX);
             return directory;
@@ -1010,6 +1027,66 @@ public class LuceneIndex implements Index.Transactional {
                 per = DEFAULT_CACHE_SIZE;
             }
             return (long) (per * Runtime.getRuntime().maxMemory());
+        }
+        
+        private Map<Thread,List<StackTraceElement>> stackTraces(final Map<Thread,StackTraceElement[]> traces) {
+            final Map<Thread,List<StackTraceElement>> result = new HashMap<Thread, List<StackTraceElement>>();
+            for (Map.Entry<Thread,StackTraceElement[]> entry : traces.entrySet()) {
+                result.put(entry.getKey(), Arrays.asList(entry.getValue()));
+            }
+            return result;
+        }
+                
+        private final class OwnerReference {
+            
+            //@GuardedBy("this")
+            private Thread txThread;
+            //@GuardedBy("this")
+            private boolean modified;
+            
+            synchronized void setOwner (@NullAllowed final Thread thread) {
+                txThread = thread;
+                modified = false;
+            }
+            
+            synchronized void clear() {
+                txThread = null;
+                modified = false;
+            }
+            
+            synchronized void modified() {
+                modified = true;
+            }
+            
+            synchronized void assertNoModifiedWriter() {
+                if (txThread != null && modified) {
+                    final Throwable t = new Throwable(String.format(
+                        "Using stale writer, possibly forgotten call to store, " +  //NOI18N
+                        "old owner Thread %s, " +           //NOI18N
+                        "new owner Thread %s .",            //NOI18N
+                            txThread,
+                            Thread.currentThread()));
+                    LOGGER.log(
+                        Level.WARNING,
+                        "Using stale writer",   //NOI18N
+                        t);
+                }
+            }
+            
+            synchronized void assertSingleThreadWriter() {
+                if (txThread != null && txThread != Thread.currentThread()) {
+                    final Throwable t = new Throwable(String.format(
+                        "Other thread using opened writer, " +       //NOI18N
+                        "old owner Thread %s , " +          //NOI18N
+                        "new owner Thread %s.",             //NOI18N
+                            txThread,
+                            Thread.currentThread()));
+                    LOGGER.log(
+                        Level.WARNING,
+                        "Multiple writers",   //NOI18N
+                        t);
+                }
+            }
         }
         
         private final class CleanReference extends SoftReference<RAMDirectory[]> implements Runnable {

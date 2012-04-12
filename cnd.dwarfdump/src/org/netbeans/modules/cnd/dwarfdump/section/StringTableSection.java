@@ -52,11 +52,11 @@
 package org.netbeans.modules.cnd.dwarfdump.section;
 
 import java.io.ByteArrayOutputStream;
-import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 
 /**
  *
@@ -65,7 +65,7 @@ import java.util.List;
 public class StringTableSection extends ElfSection {
     private byte[] stringtable = null;
     
-    public StringTableSection(ElfReader reader, int sectionIdx) {
+    public StringTableSection(ElfReader reader, int sectionIdx) throws IOException {
         super(reader, sectionIdx);
         read();
     }
@@ -76,17 +76,12 @@ public class StringTableSection extends ElfSection {
     }
     
     @Override
-    public final StringTableSection read() {
-        try {
-            long filePos = reader.getFilePointer();
-            reader.seek(header.getSectionOffset());
-            stringtable = new byte[(int)header.getSectionSize()];
-            reader.read(stringtable);
-            reader.seek(filePos);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        
+    public final StringTableSection read() throws IOException {
+        long filePos = reader.getFilePointer();
+        reader.seek(header.getSectionOffset());
+        stringtable = new byte[(int)header.getSectionSize()];
+        reader.read(stringtable);
+        reader.seek(filePos);
         return this;
     }
     

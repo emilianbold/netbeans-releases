@@ -653,22 +653,32 @@ final class LayoutDragger implements LayoutConstants {
             r.x = resizingGap.paintRect.x;
             r.width = resizingGap.paintRect.width;
         }
-        layoutPainter.paintGapResizing(g, resizingGap, r, false);
+        layoutPainter.paintGapResizing(g, resizingGap, r);
         PositionDef gapPos = bestPositions[dimension];
         if (gapPos.snapped) {
-            paintGapResizingSnap(g, resizingGap, movingSpace.positions[dimension], gapPos.alignment, gapPos.paddingType, false);
+            paintGapResizingSnap(g, resizingGap, movingSpace.positions[dimension],
+                    gapPos.alignment, gapPos.paddingType, false, null);
         }
     }
 
     private static void paintGapResizingSnap(Graphics2D g, GapInfo gapInfo,
             int[] paintPos, int resEdge, PaddingType resPaddingType,
-            boolean atContainerBorder) {
+            boolean atContainerBorder, LayoutRegion clipSpace) {
         Stroke oldStroke = g.getStroke();
         g.setStroke(dashedStroke);
+        int[] clipPos = (clipSpace != null && clipSpace.isSet()) ? clipSpace.positions[gapInfo.dimension^1] : null;
+        int ortPos1 = gapInfo.ortPositions[LEADING];
+        if (clipPos != null && ortPos1 < clipPos[LEADING]) {
+            ortPos1 = clipPos[LEADING];
+        }
+        ortPos1 -= GL_TIP;
+        int ortPos2 = gapInfo.ortPositions[TRAILING];
+        if (clipPos != null && ortPos2 > clipPos[TRAILING]) {
+            ortPos2 = clipPos[TRAILING];
+        }
+        ortPos2 += GL_TIP;
         int d = resEdge == LEADING ? -1 : 1;
         int start = paintPos[resEdge^1];
-        int ortPos1 = gapInfo.ortPositions[LEADING] - GL_TIP;
-        int ortPos2 = gapInfo.ortPositions[TRAILING] + GL_TIP;
         for (PaddingType p : PaddingType.values()) {
             if (p == PaddingType.INDENT) {
                 continue;
@@ -689,15 +699,21 @@ final class LayoutDragger implements LayoutConstants {
         g.setStroke(oldStroke);
     }
 
-    static void paintGapResizingSnap(Graphics2D g, GapInfo gapInfo) {
-        // TODO set color?
+    static void paintGapResizingSnap(Graphics2D g, GapInfo gapInfo, LayoutComponent gapContainer) {
         int edge = gapInfo.resizeTrailing ? TRAILING : LEADING;
         PaddingType pt = gapInfo.gap.getPaddingType();
         boolean atContainerBorder = edge==TRAILING && pt == null
                 && gapInfo.defaultGapSizes.length == 1 && gapInfo.defaultGapSizes[0] > 0;
+        LayoutRegion clipSpace = null;
+        if (gapContainer != null && gapContainer.isLayoutContainer() && gapContainer.getParent() != null) {
+            LayoutInterval outerInterval = gapContainer.getLayoutInterval(gapInfo.dimension);
+            if (outerInterval != null) {
+                clipSpace = outerInterval.getCurrentSpace();
+            }
+        }
         paintGapResizingSnap(g, gapInfo,
                 new int[] { gapInfo.position, gapInfo.position+gapInfo.currentSize },
-                edge, pt, atContainerBorder);
+                edge, pt, atContainerBorder, clipSpace);
     }
 
     String[] positionCode() {
@@ -721,8 +737,6 @@ final class LayoutDragger implements LayoutConstants {
                             code[i] = "indent"; // NOI18N
                         }
                     }
-                } else if (componentSnappedToDefaultSize(i)) {
-                    code[i] = "snappedToDefault" + dimensionCode(i); // NOI18N
                 }
             }
         }
@@ -731,7 +745,11 @@ final class LayoutDragger implements LayoutConstants {
             code[1] = null;
         }
         if (code[0] == null) {
-            code[0] = isResizing() ? "generalResizing" : "generalPosition"; // NOI18N
+            if (isResizing()) {
+                code[0] = isComponentOperation() ? "generalResizing" : "gapResizing"; // NOI18N
+            } else {
+                code[0] = "generalPosition"; // NOI18N
+            }
         }
         return code;
     }

@@ -49,7 +49,10 @@ import org.openide.util.SharedClassObject;
 
 /**
  * Optional custom module lifecycle hooks.
- * Most modules should not need this.
+ * Most modules should not need this. In case you believe you really have
+ * to execute some code on start, consider using {@link OnStart} or its 
+ * dual peer {@link OnStop}.
+ * 
 * <p>Specify this class in the manifest file with <code>OpenIDE-Module-Install</code>.
 * @author Petr Hamernik, Jaroslav Tulach, Jesse Glick
 */
@@ -97,6 +100,8 @@ public class ModuleInstall extends SharedClassObject {
      * for example, its class loader is ready for general use, any objects registered
      * declaratively to lookup are ready to be
      * queried, and so on.
+     * 
+     * @see OnStart
      */
     public void restored() {
     }
@@ -125,6 +130,7 @@ public class ModuleInstall extends SharedClassObject {
      * Called when NetBeans is about to exit. The default implementation returns <code>true</code>.
      * The module may cancel the exit if it is not prepared to be shut down.
     * @return <code>true</code> if it is ok to exit
+    * @see OnStop
     */
     public boolean closing() {
         return true;
@@ -132,6 +138,7 @@ public class ModuleInstall extends SharedClassObject {
 
     /**
      * Called when all modules agreed with closing and NetBeans will be closed.
+     * @see OnStop
     */
     public void close() {
     }

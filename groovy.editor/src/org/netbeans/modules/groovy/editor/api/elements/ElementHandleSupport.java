@@ -54,6 +54,8 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.openide.filesystems.FileObject;
 
@@ -78,7 +80,7 @@ public class ElementHandleSupport {
             return new GroovyElementHandle(null, object, ((IndexedElement)object).getFileObject());
         }
 
-        if (!(object instanceof AstElement)) {
+        if (!(object instanceof ASTElement)) {
             return null;
         }
 
@@ -99,7 +101,7 @@ public class ElementHandleSupport {
     }
 
     @SuppressWarnings("unchecked")
-    public static ElementHandle createHandle(ParserResult result, final AstElement object) {
+    public static ElementHandle createHandle(ParserResult result, final ASTElement object) {
         ASTNode root = AstUtilities.getRoot(result);
 
         return new GroovyElementHandle(root, object, result.getSnapshot().getSource().getFileObject());
@@ -115,8 +117,8 @@ public class ElementHandleSupport {
             return h.object;
         }
 
-        if (h.object instanceof AstElement) {
-            oldNode = ((AstElement)h.object).getNode(); // XXX Make it work for DefaultComObjects...
+        if (h.object instanceof ASTElement) {
+            oldNode = ((ASTElement)h.object).getNode(); // XXX Make it work for DefaultComObjects...
         } else {
             return null;
         }
@@ -130,7 +132,7 @@ public class ElementHandleSupport {
         ASTNode newNode = find(oldRoot, oldNode, newRoot);
 
         if (newNode != null) {
-            GroovyElement co = AstElement.create(AstUtilities.getParseResult(info), newNode);
+            GroovyElement co = ASTElement.create(AstUtilities.getParseResult(info), newNode);
 
             return co;
         }
