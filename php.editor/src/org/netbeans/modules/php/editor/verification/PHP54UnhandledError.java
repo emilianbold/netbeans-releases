@@ -60,6 +60,7 @@ public class PHP54UnhandledError extends DefaultVisitor {
     private FileObject fileObject;
     private List<PHPVersionError> errors = new ArrayList<PHPVersionError>();
     private static final String BINARY_PREFIX = "0b"; //NOI18N
+    private boolean checkAnonymousObjectVariable;
 
     public PHP54UnhandledError(FileObject fobj) {
         this.fileObject = fobj;
@@ -89,8 +90,24 @@ public class PHP54UnhandledError extends DefaultVisitor {
     }
 
     @Override
+    public void visit(MethodInvocation node) {
+        checkAnonymousObjectVariable = true;
+        super.visit(node);
+        checkAnonymousObjectVariable = false;
+    }
+
+    @Override
+    public void visit(FieldAccess node) {
+        checkAnonymousObjectVariable = true;
+        super.visit(node);
+        checkAnonymousObjectVariable = false;
+    }
+
+    @Override
     public void visit(AnonymousObjectVariable node) {
-        createError(node);
+        if (checkAnonymousObjectVariable) {
+            createError(node);
+        }
     }
 
     @Override

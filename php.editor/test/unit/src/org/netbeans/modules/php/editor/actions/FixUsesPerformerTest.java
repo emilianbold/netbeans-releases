@@ -56,7 +56,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
@@ -74,7 +74,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class FixUsesPerformerTest extends PHPTestBase {
+public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
     private Index index;
 
     public FixUsesPerformerTest(String testName) {

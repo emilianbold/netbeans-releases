@@ -234,12 +234,24 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
                         oldServices.remove(key);
                         newServices.remove(key);
                     }
+                    
                     // remove old services
                     boolean needToSave = false;
                     for (String key : oldServices.keySet()) {
                         jaxWsModel.removeService(oldServices.get(key).getName());
                         needToSave = true;
                     }
+                    Set<String> removedFromWsdl = new HashSet<String>( 
+                            oldServicesFromWsdl.keySet());
+                    removedFromWsdl.removeAll( newServices.keySet() );
+                    for( String key : removedFromWsdl ){
+                        Service service = oldServicesFromWsdl.remove(key);
+                        if ( service != null ){
+                            jaxWsModel.removeService(service.getName());
+                        }
+                    }
+
+                    
                     // add new services
                     for (String key : newServices.keySet()) { // services from WSDL
                         if (key.startsWith("fromWsdl:")) { //NOI18N
