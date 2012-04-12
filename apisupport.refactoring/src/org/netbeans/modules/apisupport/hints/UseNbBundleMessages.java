@@ -131,6 +131,10 @@ public class UseNbBundleMessages {
             if (!String.valueOf(invoker).equals("org.openide.util.NbBundle")) {
                 return null;
             }
+            FileObject file = compilationInfo.getFileObject();
+            if (file != null && file.getNameExt().equals("Bundle.java")) {
+                return null;
+            }
             span = compilationInfo.getTreeUtilities().findNameSpan(mst);
             if (span == null) {
                 return null;

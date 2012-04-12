@@ -549,6 +549,18 @@ public class UseNbBundleMessagesTest {
                        "}\n");
     }
 
+    @Test public void skipBundleJava() throws Exception {
+        HintTest.create().classpath(cp()).
+                input("test/Bundle.java", "package test;\n" +
+                       "class Bundle {\n" +
+                       "    static String somekey() {\n" +
+                       "        return org.openide.util.NbBundle.getMessage(Bundle.class, \"somekey\");\n" +
+                       "    }\n" +
+                       "}\n").
+                run(UseNbBundleMessages.class).
+                assertWarnings();
+    }
+
     private URL cp() {
         URL cp = NbBundle.class.getProtectionDomain().getCodeSource().getLocation();
         return cp.toString().endsWith("/") ? cp : FileUtil.getArchiveRoot(cp);
