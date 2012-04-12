@@ -59,8 +59,11 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheCheckout;
 import org.eclipse.jgit.dircache.DirCacheEntry;
+import org.eclipse.jgit.errors.CheckoutConflictException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.FileMode;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -74,6 +77,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 
 /**
@@ -591,8 +595,9 @@ public class CheckoutTest extends AbstractGitTestCase {
         
         client.checkout(new File[] { workDir }, null, true, NULL_PROGRESS_MONITOR);
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
-        assertEquals(1, statuses.size());
+        assertEquals(2, statuses.size());
         assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, nested, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, nested, f2, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
@@ -600,19 +605,110 @@ public class CheckoutTest extends AbstractGitTestCase {
         clientNested.add(new File[] { f2 }, NULL_PROGRESS_MONITOR);
         client.checkout(new File[] { workDir }, "HEAD", true, NULL_PROGRESS_MONITOR);
         statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
-        assertEquals(1, statuses.size());
+        assertEquals(2, statuses.size());
         assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, nested, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, nested, f2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         
         client.checkoutRevision("master", true, NULL_PROGRESS_MONITOR);
         statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
-        assertEquals(1, statuses.size());
+        assertEquals(2, statuses.size());
+        assertStatus(statuses, workDir, nested, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
         assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, nested, f2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
+    }
+
+    public void testCheckoutWithAddedNestedRoot () throws Exception {
+        File f = new File(workDir, "f");
+        write(f, "file");
+        
+        GitClient client = getClient(workDir);
+        client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        client.createBranch(BRANCH, "master", NULL_PROGRESS_MONITOR);
+        
+        File nested = new File(workDir, "nested");
+        nested.mkdirs();
+        File f2 = new File(nested, "f");
+        write(f2, "file");
+        GitClient clientNested = getClient(nested);
+        clientNested.init(NULL_PROGRESS_MONITOR);
+        clientNested.add(new File[] { f2 }, NULL_PROGRESS_MONITOR);
+        clientNested.commit(new File[] { f2 }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        // add the root as gitlink
+        client.add(new File[] { nested }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { nested }, "nested repo added", null, null, NULL_PROGRESS_MONITOR);
+        Utils.deleteRecursively(nested);
+        nested.mkdirs();
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, nested, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        
+        client.checkoutRevision(BRANCH, true, NULL_PROGRESS_MONITOR);
+        assertFalse(nested.isDirectory());
+        statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        
+        //jgit test, when starting to fail, remove the whole block and the WA
+        checkoutJGitTestNestedAddedRoot(repository, "master");
+        assertFalse(nested.isDirectory()); // when starting to fail, remove the workaround in CheckoutRevisionCommand
+        client.checkoutRevision(BRANCH, true, NULL_PROGRESS_MONITOR);
+        client.checkout(new File[] { nested }, "HEAD", true, NULL_PROGRESS_MONITOR);
+        assertFalse(nested.isDirectory());
+        statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        
+        // ours
+        assertFalse(nested.isDirectory());
+        client.checkoutRevision("master", true, NULL_PROGRESS_MONITOR);
+        assertTrue(nested.isDirectory());
+        DirCacheEntry e = repository.readDirCache().getEntry("nested");
+        assertEquals(FileMode.GITLINK, e.getFileMode());
+        statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(2, statuses.size());
+        assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, nested, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+
+        //checkout index - aka revert
+        assertTrue(nested.delete());
+        client.remove(new File[] { nested }, true, NULL_PROGRESS_MONITOR);
+        client.checkout(new File[] { nested }, "master", true, NULL_PROGRESS_MONITOR);
+        assertTrue(nested.isDirectory());
+        e = repository.readDirCache().getEntry("nested");
+        assertEquals(FileMode.GITLINK, e.getFileMode());
+        statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(2, statuses.size());
+        assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, nested, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+    }
+
+    private void checkoutJGitTestNestedAddedRoot (Repository repository, String revision) throws Exception {
+        try {
+            ObjectId headTree = Utils.findCommit(repository, Constants.HEAD).getTree();
+            DirCache cache = repository.lockDirCache();
+            DirCacheCheckout dco = null;
+            RevCommit commit;
+            try {
+                commit = Utils.findCommit(repository, revision);
+                dco = new DirCacheCheckout(repository, headTree, cache, commit.getTree());
+                dco.setFailOnConflict(true);
+                dco.checkout();
+            } catch (CheckoutConflictException ex) {
+                List<String> conflicts = dco.getConflicts();
+                throw new GitException.CheckoutConflictException(conflicts.toArray(new String[conflicts.size()]));
+            } finally {
+                cache.unlock();
+            }
+        } catch (IOException ex) {
+            throw new GitException(ex);
+        }
     }
     
     public void testLineEndingsWindows () throws Exception {

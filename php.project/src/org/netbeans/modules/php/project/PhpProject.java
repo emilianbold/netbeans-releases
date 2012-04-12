@@ -160,12 +160,12 @@ public final class PhpProject implements Project {
     private final SearchFilterDefinition searchFilterDef = new PhpSearchFilterDef();
 
     // #165136
-    // @GuardedBy(PhpProject.this)
-    volatile FileObject sourcesDirectory;
-    // @GuardedBy(PhpProject.this)
-    volatile FileObject testsDirectory;
-    // @GuardedBy(PhpProject.this)
-    volatile FileObject seleniumDirectory;
+    // @GuardedBy("this")
+    private FileObject sourcesDirectory;
+    // @GuardedBy("this")
+    private FileObject testsDirectory;
+    // @GuardedBy("this")
+    private FileObject seleniumDirectory;
     // ok to read it more times
     volatile FileObject webRootDirectory;
 
@@ -177,9 +177,9 @@ public final class PhpProject implements Project {
     private final AntProjectListener phpAntProjectListener = new PhpAntProjectListener();
     private final PropertyChangeListener projectPropertiesListener = new ProjectPropertiesListener();
 
-    // @GuardedBy(ProjectManager.mutex())
-    volatile Set<BasePathSupport.Item> ignoredFolders;
-    final Object ignoredFoldersLock = new Object();
+    // @GuardedBy("ignoredFoldersLock")
+    private Set<BasePathSupport.Item> ignoredFolders;
+    private final Object ignoredFoldersLock = new Object();
     // changes in ignored files - special case because of PhpVisibilityQuery
     final ChangeSupport ignoredFoldersChangeSupport = new ChangeSupport(this);
 
@@ -509,31 +509,24 @@ public final class PhpProject implements Project {
     }
 
     private void putIgnoredProjectFiles(Set<File> ignored) {
-        if (ignoredFolders == null) {
-            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
-                @Override
-                public Void run() {
-                    synchronized (ignoredFoldersLock) {
-                        if (ignoredFolders == null) {
-                            ignoredFolders = resolveIgnoredFolders();
-                        }
-                    }
-                    return null;
-                }
-            });
-        }
-        assert ignoredFolders != null : "Ignored folders cannot be null";
+        synchronized (ignoredFoldersLock) {
+            if (ignoredFolders == null) {
+                ignoredFolders = resolveIgnoredFolders();
+            }
+            assert ignoredFolders != null : "Ignored folders cannot be null";
 
-        File projectDir = FileUtil.toFile(getProjectDirectory());
-        for (BasePathSupport.Item item : ignoredFolders) {
-            if (item.isBroken()) {
-                continue;
+            for (BasePathSupport.Item item : ignoredFolders) {
+                if (item.isBroken()) {
+                    continue;
+                }
+                ignored.add(new File(item.getAbsoluteFilePath(helper.getProjectDirectory())));
             }
-            File file = new File(item.getFilePath());
-            if (!file.isAbsolute()) {
-                file = helper.resolveFile(item.getFilePath());
-            }
-            ignored.add(file);
+        }
+    }
+
+    private void resetIgnoredFolders() {
+        synchronized (ignoredFoldersLock) {
+            ignoredFolders = null;
         }
     }
 
@@ -661,8 +654,6 @@ public final class PhpProject implements Project {
         buffer.append(getClass().getName());
         buffer.append(" [ project directory: ");
         buffer.append(getProjectDirectory());
-        buffer.append(", source directory: ");
-        buffer.append(sourcesDirectory);
         buffer.append(" ]");
         return buffer.toString();
     }
@@ -717,7 +708,7 @@ public final class PhpProject implements Project {
     }
 
     public void fireIgnoredFilesChange() {
-        ignoredFolders = null;
+        resetIgnoredFolders();
         ignoredFoldersChangeSupport.fireChange();
     }
 
@@ -794,7 +785,7 @@ public final class PhpProject implements Project {
             reinitFolders();
 
             resetFrameworks();
-            LOGGER.log(Level.FINE, "Adding frameworks listener for {0}", sourcesDirectory);
+            LOGGER.log(Level.FINE, "Adding frameworks listener for {0}", getSourcesDirectory());
             PhpFrameworks.addFrameworksListener(frameworksListener);
             List<PhpFrameworkProvider> frameworkProviders = getFrameworks();
             getName();
@@ -832,9 +823,10 @@ public final class PhpProject implements Project {
         @Override
         protected void projectClosed() {
             try {
-                assert sourcesDirectory != null;
-                sourcesDirectory.removeFileChangeListener(sourceDirectoryFileChangeListener);
-                LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", sourcesDirectory);
+                FileObject sources = getSourcesDirectory();
+                assert sources != null;
+                sources.removeFileChangeListener(sourceDirectoryFileChangeListener);
+                LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", sources);
                 PhpFrameworks.removeFrameworksListener(frameworksListener);
 
 
@@ -870,7 +862,7 @@ public final class PhpProject implements Project {
             resetTestsDirectory();
             resetSeleniumDirectory();
             webRootDirectory = null;
-            ignoredFolders = null;
+            resetIgnoredFolders();
 
             // #139159 - we need to hold sources FO to prevent gc
             getSourcesDirectory();

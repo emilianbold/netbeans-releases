@@ -527,17 +527,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 public @Override Void run() {
                     try {
                         initIndexer();
-                        //need to delete the index and recreate? the scan(update) parameter doesn't work?
                         assert indexer != null;
-                        assert indexer.getIndexingContexts() != null;
-                        IndexingContext cntx = indexer.getIndexingContexts().get(repo.getId());
-                        if (cntx != null) {
-                            indexer.removeIndexingContext(cntx, true);
-                        }
-                        boolean index = loadIndexingContext2(repo);
-                        //mkleint: hmm... the initial indexing is done inside the loadIndexingContext(repo) with indexLoadedRepo(repo, TRUE) params
-                        //do we perform the indexing twice??
-                        indexLoadedRepo(repo, index);
+                        boolean noIndexExists = loadIndexingContext2(repo);
+                        indexLoadedRepo(repo, !noIndexExists);
                     } catch (IOException x) {
                         LOGGER.log(Level.INFO, "could not (re-)index " + repo.getId(), x);
                     }

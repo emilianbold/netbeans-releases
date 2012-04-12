@@ -52,7 +52,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPLexerUtils;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.ASTPHP5Parser;
@@ -66,7 +66,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class FormatVisitorTest extends PHPTestBase {
+public class FormatVisitorTest extends PHPCodeCompletionTestBase {
 
     public FormatVisitorTest(String testName) {
         super(testName);
@@ -87,7 +87,7 @@ public class FormatVisitorTest extends PHPTestBase {
             // Ignore -- we've already registered this either via layers or other means
         }
     }
-    
+
     public void testArrays1()  throws Exception {
         executeTest("testfiles/formatting/arrays1.php");
     }
@@ -110,7 +110,7 @@ public class FormatVisitorTest extends PHPTestBase {
 
 
     /**
-     * This is "manual" test, when you need format more php files. 
+     * This is "manual" test, when you need format more php files.
      *
      */
     public void xtestSizeOfFormatTokens() throws Exception {

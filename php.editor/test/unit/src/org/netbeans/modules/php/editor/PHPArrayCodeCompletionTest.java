@@ -54,28 +54,28 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPArrayCodeCompletionTest extends PHPTestBase {
+public class PHPArrayCodeCompletionTest extends PHPCodeCompletionTestBase {
 
     public PHPArrayCodeCompletionTest(String testName) {
         super(testName);
     }
-    
+
     public void testArrays_01() throws Exception {
         checkCompletion("testfiles/completion/lib/arrays/arrays.php", "(new ArraysCc)->field[0]->^field;", false);
-    }   
-    
+    }
+
     public void testArrays_02() throws Exception {
         checkCompletion("testfiles/completion/lib/arrays/arrays.php", "$a[0]->^field;", false);
-    } 
-    
+    }
+
     public void testArrays_03() throws Exception {
         checkCompletion("testfiles/completion/lib/arrays/arrays.php", "arrayFunctionName()[0]->^field;", false);
-    } 
-    
+    }
+
     public void testArrays_04() throws Exception {
         checkCompletion("testfiles/completion/lib/arrays/arrays.php", "$b[0]->^field;", false);
-    } 
-    
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
@@ -85,5 +85,5 @@ public class PHPArrayCodeCompletionTest extends PHPTestBase {
             })
         );
     }
-    
+
 }

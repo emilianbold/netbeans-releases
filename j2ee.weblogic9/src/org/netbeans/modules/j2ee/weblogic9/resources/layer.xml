@@ -131,6 +131,12 @@ made subject to such option by the copyright holder.
                         <file name="META-INF\weblogic-ejb-jar.xml"/>
                     </folder>
                 </folder>
+                
+                <file name="WhitelistVerifier.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.deploy.WebLogicVerifier"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
+                </file>
+                
             </folder>
         </folder>
     </folder>

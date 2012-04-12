@@ -59,12 +59,14 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.SessionMethodController;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodModel;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodViewStrategy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode.ViewType;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -80,11 +82,19 @@ public class MethodChildren extends ComponentMethodModel {
     private final SessionMethodController controller;
     private final MethodsNode.ViewType viewType;
     
-    public MethodChildren(ClasspathInfo cpInfo, SessionMethodController smc, Collection<String> interfaces, MethodsNode.ViewType viewType) {
-        super(cpInfo, smc.getBeanClass(), interfaces, viewType == viewType.NO_INTERFACE? null:viewType == viewType.LOCAL ? smc.getLocalHome() : smc.getHome());
+    public MethodChildren(ClasspathInfo cpInfo, EjbJar ejbModule, SessionMethodController smc, Collection<String> interfaces, MethodsNode.ViewType viewType) {
+        super(cpInfo, ejbModule, smc.getBeanClass(), interfaces, getHomeInterface(smc, viewType));
         controller = smc;
         this.viewType = viewType;
         mvs = new SessionStrategy();
+    }
+
+    private static String getHomeInterface(SessionMethodController smc, MethodsNode.ViewType viewType) {
+        if (viewType == ViewType.NO_INTERFACE) {
+            return null;
+        } else {
+            return viewType == ViewType.LOCAL ? smc.getLocalHome() : smc.getHome();
+        }
     }
 
     @Override

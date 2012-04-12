@@ -201,15 +201,19 @@ public class HtmlFileModel {
                     if(AttrValuesCompletion.FILE_NAME_SUPPORT == avc) {
                         //found file reference
                         CharSequence unquotedValue = attr.unquotedValue();
-                        boolean isQuoted = attr.isValueQuoted();
-                        int offset = attr.valueOffset() + (isQuoted ? 1 : 0);
-                        
-                        getReferencesCollectionInstance().add(
-                                createFileReferenceEntry(unquotedValue.toString(),
-                                new OffsetRange(offset,
-                                offset + unquotedValue.length()),
-                                tnode.name().toString(),
-                                attr.name().toString()));
+                        //html5 parser retunrs empty strings for non existing value,
+                        //html4 parse returns null in the same situation
+                        if(unquotedValue != null && unquotedValue.length() > 0) {
+                            boolean isQuoted = attr.isValueQuoted();
+                            int offset = attr.valueOffset() + (isQuoted ? 1 : 0);
+
+                            getReferencesCollectionInstance().add(
+                                    createFileReferenceEntry(unquotedValue.toString(),
+                                    new OffsetRange(offset,
+                                    offset + unquotedValue.length()),
+                                    tnode.name().toString(),
+                                    attr.name().toString()));
+                        }
                     }
                 }
             }

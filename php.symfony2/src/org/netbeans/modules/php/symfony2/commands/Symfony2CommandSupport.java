@@ -131,6 +131,8 @@ public final class Symfony2CommandSupport extends FrameworkCommandSupport {
         for (String param : symfony2Script.getParameters()) {
             processBuilder = processBuilder.addArgument(param);
         }
+        processBuilder = processBuilder
+                .addArgument("--ansi"); // NOI18N
         return processBuilder;
     }
 

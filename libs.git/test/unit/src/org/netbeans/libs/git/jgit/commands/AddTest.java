@@ -55,7 +55,14 @@ import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
-import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.lib.ConfigConstants;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.FileMode;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectInserter;
+import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
@@ -333,7 +340,6 @@ public class AddTest extends AbstractGitTestCase {
         assertEquals(null, exs[0]);
     }
     
-    // must not return status for nested repositories
     public void testAddNested () throws Exception {
         File f = new File(workDir, "f");
         write(f, "file");
@@ -342,21 +348,31 @@ public class AddTest extends AbstractGitTestCase {
         client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
         client.commit(new File[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
         
+        Thread.sleep(1100);
         File nested = new File(workDir, "nested");
         nested.mkdirs();
         File f2 = new File(nested, "f");
         write(f2, "file");
         GitClient clientNested = getClient(nested);
         clientNested.init(NULL_PROGRESS_MONITOR);
+        clientNested.add(new File[] { f2 }, NULL_PROGRESS_MONITOR);
+        clientNested.commit(new File[] { f2 }, "aaa", null, null, NULL_PROGRESS_MONITOR);
+        write(f2, "change");
         
         client.add(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
-        assertEquals(1, statuses.size());
+        assertEquals(2, statuses.size());
         assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        // nested should be added as gitlink
+        assertStatus(statuses, workDir, nested, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false);
+        DirCacheEntry e = repository.readDirCache().getEntry("nested");
+        assertEquals(FileMode.GITLINK, e.getFileMode());
+        assertEquals(nested.length(), e.getLength());
+        assertNotSame(ObjectId.zeroId().name(), e.getObjectId().getName());
         
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
-        assertStatus(statuses, nested, f2, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
+        assertStatus(statuses, nested, f2, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
     }
     
     public void testAddMixedLineEndings () throws Exception {
