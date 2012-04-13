@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
+import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
@@ -841,40 +842,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }    
 
     private void firePropertiesChanged(Item[] items, boolean cFiles, boolean ccFiles, boolean projectChanged) {
-        ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
-        ArrayList<NativeFileItem> deleted = new ArrayList<NativeFileItem>();
-        MakeConfiguration conf = getActiveConfiguration();
-        // Handle project and file level changes
-        for (int i = 0; i < items.length; i++) {
-            ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf);
-            if (itemConfiguration != null) { // prevent NPE for corrupted projects IZ#174350
-                if (itemConfiguration.getExcluded().getValue()) {
-                    deleted.add(items[i]);
-                    continue;
-                }
-                if ((cFiles && itemConfiguration.getTool() == PredefinedToolKind.CCompiler)
-                        || (ccFiles && itemConfiguration.getTool() == PredefinedToolKind.CCCompiler)
-                        || items[i].hasHeaderOrSourceExtension(cFiles, ccFiles)) {
-                    list.add(items[i]);
-                }
-            }
-        }
-        if (deleted.size() > 0) {
-            getNativeProjectChangeSupport().fireFilesRemoved(deleted);
-        }
-        firePropertiesChanged(list, projectChanged);
-    }
-    
-    private void firePropertiesChanged(List<NativeFileItem> list, boolean projectChanged) {
-        if (list.size() > 1 || (projectChanged && list.size() == 1)) {
-            getNativeProjectChangeSupport().fireFilesPropertiesChanged(list);
-        } else if (list.size() == 1) {
-            List<NativeFileItem> items = new ArrayList<NativeFileItem>();
-            items.add(list.get(0));
-            getNativeProjectChangeSupport().fireFilesPropertiesChanged(items);
-        } else {
-            // nothing
-        }
+        NativeProjectProvider.firePropertiesChanged(items, cFiles, ccFiles, projectChanged, getActiveConfiguration(), getNativeProjectChangeSupport());
     }
     
     public void checkForChangedItems(Delta delta) {
