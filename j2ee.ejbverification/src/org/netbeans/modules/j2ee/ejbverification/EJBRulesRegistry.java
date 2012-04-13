@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.j2ee.ejbverification.rules.AnnotationPostContruct;
 import org.netbeans.modules.j2ee.ejbverification.rules.BMnotPartOfRBIandLBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.BeanHasDifferentLBIandRBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.BeanImplementsBI;
@@ -67,7 +68,6 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public class EJBRulesRegistry {
     private static Collection<? extends EJBVerificationRule> rules = Arrays.asList(
-            
             new HasNoArgContructor(),
             new SBSuperClassNotSB(),
             new BeanImplementsBI(),
@@ -79,8 +79,8 @@ public class EJBRulesRegistry {
             new RemoteAnnotatedBeanHasRBI(),
             new SessionSynchImplementedBySFSBOnly(),
             new ValueNotSpecifiedForRemoteAnnotationInterface(),
-            new BusinessMethodExposed()
-            
+            new BusinessMethodExposed(),
+            new AnnotationPostContruct()
             );
     
     public static Collection<ErrorDescription> check(EJBProblemContext ctx){
