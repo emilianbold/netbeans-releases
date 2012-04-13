@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.web.jsf.icefaces
 OpenIDE-Module-Layer: org/netbeans/modules/web/jsf/icefaces/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/jsf/icefaces/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.3
-
+AutoUpdate-Show-In-Client: true
+OpenIDE-Module-Provides: org.netbeans.modules.web.jsf.complib

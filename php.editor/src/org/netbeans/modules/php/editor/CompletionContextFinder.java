@@ -487,8 +487,8 @@ class CompletionContextFinder {
                 return CompletionContext.NONE;
             default:
         }
-        if (isEachOfTokens(getLeftPreceedingTokens(tokenSequence),
-                new PHPTokenId[] {PHPTokenId.PHP_GLOBAL, PHPTokenId.WHITESPACE})) {
+        if (isEachOfTokens(getLeftPreceedingTokens(tokenSequence), new PHPTokenId[] {PHPTokenId.PHP_GLOBAL, PHPTokenId.WHITESPACE})
+                || (isWhiteSpace(token) && isEachOfTokens(getLeftPreceedingTokens(tokenSequence), new PHPTokenId[] {PHPTokenId.PHP_GLOBAL}))) {
             return CompletionContext.GLOBAL;
         }
 

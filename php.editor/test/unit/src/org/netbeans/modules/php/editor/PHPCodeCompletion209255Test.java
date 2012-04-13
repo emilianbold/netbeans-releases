@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,41 +34,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor;
 
-package org.netbeans.modules.j2ee.ejbverification;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * This class defines constants that represent various annotation type names
- * defined in EJB specification.
  *
- * @author Sanjeeb.Sahoo@Sun.COM
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface EJBAPIAnnotations {
-    String REMOTE = "javax.ejb.Remote"; //NOI18N
-    String LOCAL = "javax.ejb.Local"; //NOI18N
+public class PHPCodeCompletion209255Test extends PHPCodeCompletionTestBase {
 
-    String STATELESS = "javax.ejb.Stateless"; // NOI18N
+    public PHPCodeCompletion209255Test(String testName) {
+        super(testName);
+    }
 
-    String STATEFUL = "javax.ejb.Stateful"; // NOI18N
-    String INIT = "javax.ejb.Init"; // NOI18N
-    String REMOVE = "javax.ejb.Remove"; // NOI18N
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test209255/test209255.php", "global ^    //CC", false);
+    }
 
-    String MESSAGE_DRIVEN = "javax.ejb.MessageDriven"; // NOI18N
-    String ACTIVATION_CONFIG_PROPERTY = "javax.ejb.ActivationConfigProperty"; // NOI18N
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test209255/"))
+            })
+        );
+    }
 
-    String REMOTE_HOME = "javax.ejb.RemoteHome"; //NOI18N
-    String LOCAL_HOME = "javax.ejb.LocalHome"; //NOI18N
-
-    String TRANSACTION_MANAGEMENT = "javax.ejb.TransactionManagement"; //NOI18N
-
-    //value attribute in annotations with single attribute
-    String VALUE = "value"; //NOI18N
-
-    String WEB_SERVICE = "javax.jws.WebService"; //NOI18N
-    // TODO: Add other ones here including enum types
-    String LOCAL_BEAN = "javax.ejb.LocalBean";
-
-    String POST_CONSTRUCT = "javax.annotation.PostConstruct";
-    String AROUND_INVOKE = "javax.interceptor.AroundInvoke";
 }
