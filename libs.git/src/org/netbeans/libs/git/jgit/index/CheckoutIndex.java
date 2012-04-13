@@ -43,17 +43,22 @@
 package org.netbeans.libs.git.jgit.index;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheCheckout;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.dircache.DirCacheIterator;
+import org.eclipse.jgit.lib.CoreConfig;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.WorkingTreeOptions;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
@@ -73,6 +78,7 @@ public class CheckoutIndex {
     private final ProgressMonitor monitor;
     private final boolean checkContent;
     private final boolean recursively;
+    private static final Logger LOG = Logger.getLogger(CheckoutIndex.class.getName());
 
     public CheckoutIndex (Repository repository, DirCache cache, File[] roots, boolean recursively, FileListener listener, ProgressMonitor monitor, boolean checkContent) {
         this.repository = repository;
@@ -95,6 +101,10 @@ public class CheckoutIndex {
         treeWalk.addTree(new DirCacheIterator(cache));
         treeWalk.addTree(new FileTreeIterator(repository));
         String lastAddedPath = null;
+        WorkingTreeOptions opt = repository.getConfig().get(WorkingTreeOptions.KEY);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "checkout: autocrlf={0}", opt.getAutoCRLF()); //NOI18N
+        }
         while (treeWalk.next() && !monitor.isCanceled()) {
             File path = new File(repository.getWorkTree(), treeWalk.getPathString());
             if (treeWalk.getPathString().equals(lastAddedPath)) {
@@ -108,12 +118,12 @@ public class CheckoutIndex {
             if (dit != null && (recursively || directChild(roots, repository.getWorkTree(), path)) && (fit == null || fit.isModified(dit.getDirCacheEntry(), checkContent))) {
                 // update entry
                 listener.notifyFile(path, treeWalk.getPathString());
-                checkoutEntry(repository, path, dit.getDirCacheEntry());
+                checkoutEntry(repository, path, dit.getDirCacheEntry(), opt);
             }
         }
     }
 
-    public void checkoutEntry (Repository repository, File file, DirCacheEntry e) throws IOException, GitException {
+    public void checkoutEntry (Repository repository, File file, DirCacheEntry e, WorkingTreeOptions opt) throws IOException, GitException {
         // ... create/overwrite this file ...
         if (!ensureParentFolderExists(file.getParentFile())) {
             return;
@@ -137,6 +147,28 @@ public class CheckoutIndex {
             file.createNewFile();
             if (file.isFile()) {
                 DirCacheCheckout.checkoutEntry(repository, file, e);
+                if (LOG.isLoggable(Level.FINEST) && opt.getAutoCRLF() == CoreConfig.AutoCRLF.TRUE && isWindows()) {
+                    FileInputStream fis = new FileInputStream(file);
+                    try {
+                        int ch;
+                        int buf = -1;
+                        while ((ch = fis.read()) != -1) {
+                            if (ch == '\r') {
+                                buf = '\r';
+                            } else {
+                                if (ch == '\n' && buf != '\r') {
+                                    LOG.log(Level.FINEST, "Checkout file {0} on windows with autocrlf ON leaves it with UNIX line-endings", file);
+                                    break;
+                                }
+                                buf = -1;
+                            }
+                        }
+                    } finally {
+                        if (fis != null) {
+                            try { fis.close(); } catch (IOException ex) {}
+                        }
+                    }
+                }
             } else {
                 monitor.notifyError(MessageFormat.format(Utils.getBundle(CheckoutIndex.class).getString("MSG_Warning_CannotCreateFile"), file.getAbsolutePath())); //NOI18N
             }
@@ -168,5 +200,9 @@ public class CheckoutIndex {
             }
         }
         return false;
+    }
+
+    private static boolean isWindows () {
+        return System.getProperty("os.name", "").toLowerCase().contains("windows"); //NOI18N
     }
 }
