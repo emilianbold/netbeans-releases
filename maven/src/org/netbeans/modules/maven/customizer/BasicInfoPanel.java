@@ -52,10 +52,11 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.customizer.support.ReflectionTextComponentUpdater;
 import org.netbeans.modules.maven.api.customizer.support.TextComponentUpdater;
+import static org.netbeans.modules.maven.customizer.Bundle.*;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -104,6 +105,8 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
                     model.getProject().setName(getNewValue());
                 }
             })); //NOI18N
+            //in this case referring to parent project for default value is wrong. packaging
+            //doesn't get inherited from parent. the default value is jar no matter what the parent has.
             listeners.add(new ReflectionTextComponentUpdater("getPackaging",  mdl, project, txtPackaging, lblPackaging, handle, new ReflectionTextComponentUpdater.Operation() {
                 @Override
                 public void performOperation(POMModel model) {
@@ -260,6 +263,7 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
         category.setValid(isValid);
     }
 
+    @Messages("ERR_Coord_breaks_pom=Error: Group Id or Artifact Id would invalidate Maven POM xml file.")
     private boolean checkCoord(JTextField field) {
         String coord = field.getText();
         boolean result = false;
@@ -273,7 +277,7 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
         if (result) {
             result = !containsMultiByte(coord);
         } else {
-            category.setErrorMessage(NbBundle.getMessage(BasicInfoPanel.class, "ERR_Coord_breaks_pom"));
+            category.setErrorMessage(ERR_Coord_breaks_pom());
         }
 
         if (result) {
@@ -283,11 +287,12 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
         return result;
     }
 
+    @Messages("ERR_multibyte=Error: Multibyte chars forbidden in Group Id and Artifact Id.")
     boolean containsMultiByte (String text) {
         char[] textChars = text.toCharArray();
         for (int i = 0; i < textChars.length; i++) {
             if ((int)textChars[i] > 255) {
-                category.setErrorMessage(NbBundle.getMessage(BasicInfoPanel.class, "ERR_multibyte"));
+                category.setErrorMessage(ERR_multibyte());
                 return true;
             }
 
