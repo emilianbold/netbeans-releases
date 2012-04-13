@@ -67,6 +67,8 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
     private String name;
     private String class2;
     private Table table;
+    
+    private boolean valid;
 
     // transient: set to null in javaContextLeft()
     private IdClassImpl idClass;
@@ -77,7 +79,7 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         super(helper, typeElement);
         this.root = root;
         helper.addJavaContextListener(this);
-        boolean valid = refresh(typeElement);
+        valid = refresh(typeElement);
         assert valid;
     }
 
@@ -147,8 +149,8 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
     @Override
     public void javaContextLeft() {
         attributes = null;
-        //table = null;
         idClass = null;
+        valid = false;//use soft refresh if possible
     }
 
     public void setName(String value) {
@@ -196,9 +198,16 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
     }
 
     public Table getTable() {
-//        if(table == null){
-//            refresh(getTypeElement());
-//        }
+        if(!valid){
+            TypeElement te = null;
+            try{
+                te = getTypeElement();
+            } catch (IllegalStateException ex){
+                //refresh only if possible
+                //table use videly used out of UserActionTask as cached value
+            }
+            if(te!=null)valid = refresh(te);
+        }
         return table;
     }
 
