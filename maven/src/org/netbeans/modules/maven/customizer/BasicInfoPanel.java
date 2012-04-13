@@ -105,6 +105,8 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
                     model.getProject().setName(getNewValue());
                 }
             })); //NOI18N
+            //in this case referring to parent project for default value is wrong. packaging
+            //doesn't get inherited from parent. the default value is jar no matter what the parent has.
             listeners.add(new ReflectionTextComponentUpdater("getPackaging",  mdl, project, txtPackaging, lblPackaging, handle, new ReflectionTextComponentUpdater.Operation() {
                 @Override
                 public void performOperation(POMModel model) {
