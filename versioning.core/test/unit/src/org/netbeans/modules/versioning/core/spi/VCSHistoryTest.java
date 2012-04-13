@@ -46,6 +46,7 @@ package org.netbeans.modules.versioning.core.spi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Date;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
@@ -56,6 +57,8 @@ import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCSHistoryProvider;
+import org.netbeans.modules.versioning.ui.history.HistoryTestKit;
+import org.openide.nodes.Node;
 
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
@@ -117,6 +120,27 @@ public class VCSHistoryTest extends NbTestCase {
         assertTrue(provider.revisionprovided);
     }
     
+    public void testHistoryEntryProvidesParent() throws IOException {
+        ParentProviderImpl provider = new ParentProviderImpl();
+        VCSFileProxy file = VCSFileProxy.createFileProxy(new File(""));
+        VCSHistoryProvider.HistoryEntry h =
+                new VCSHistoryProvider.HistoryEntry(
+                new VCSFileProxy[] {file},
+                new Date(System.currentTimeMillis()),
+                "msg",
+                "user",
+                "username",
+                "12345",
+                "1234567890",
+                new Action[0],
+                null,
+                null,
+                provider);
+        HistoryEntry parent = h.getParentEntry(file);
+        assertNotNull(parent);
+        assertEquals(ParentProviderImpl.PARENT_MSG, parent.getMessage());
+    }
+
     public void testHistoryEntryDoesntProvideRevision() throws IOException {
         RevisionProviderImpl provider = new RevisionProviderImpl();
         provider.revisionprovided = false;
@@ -132,6 +156,25 @@ public class VCSHistoryTest extends NbTestCase {
                     new Action[0], 
                     null);
         h.getRevisionFile(VCSFileProxy.createFileProxy(new File("")), VCSFileProxy.createFileProxy(new File("")));
+        // nothing happend
+    }
+    
+    public void testHistoryEntryDoesntProvideParent() throws IOException {
+        RevisionProviderImpl provider = new RevisionProviderImpl();
+        provider.revisionprovided = false;
+        VCSFileProxy file = VCSFileProxy.createFileProxy(new File(""));
+        VCSHistoryProvider.HistoryEntry h = 
+                new VCSHistoryProvider.HistoryEntry(
+                    new VCSFileProxy[] {file}, 
+                    new Date(System.currentTimeMillis()), 
+                    "msg", 
+                    "user", 
+                    "username", 
+                    "12345", 
+                    "1234567890", 
+                    new Action[0], 
+                    null);
+        h.getParentEntry(file);
         // nothing happend
     }
     
@@ -202,6 +245,32 @@ public class VCSHistoryTest extends NbTestCase {
         assertTrue(TestVCSHistoryProvider.instance.revisionProvided);
     }
     
+    public void testHistoryNodesProperlySetup() throws IOException {
+        File f1 = new File(dataRootDir, "workdir/root-test-versioned/file1" + TestVCSHistoryProvider.FILE_PROVIDES_REVISIONS_SUFFIX);
+        f1.createNewFile();
+        VCSFileProxy proxy1 = VCSFileProxy.createFileProxy(f1);
+        File f2 = new File(dataRootDir, "workdir/root-test-versioned/file2" + TestVCSHistoryProvider.FILE_PROVIDES_REVISIONS_SUFFIX);
+        f2.createNewFile();
+        VCSFileProxy proxy2 = VCSFileProxy.createFileProxy(f2);
+        VCSSystemProvider.VersioningSystem pvs = Utils.getOwner(proxy1);
+        assertNotNull(pvs);
+        org.netbeans.modules.versioning.core.spi.VCSHistoryProvider php = pvs.getVCSHistoryProvider();
+        assertNotNull(php);
+
+        org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEntry[] phistory = php.getHistory(new VCSFileProxy[] {proxy1, proxy2}, null);
+        assertNotNull(phistory);
+        assertTrue(phistory.length > 0);
+        
+        Node node = HistoryTestKit.createHistoryNode(phistory[0]);
+        assertNotNull(node.getLookup().lookup(HistoryEntry.class));
+        
+        Collection<? extends VCSFileProxy> proxies = node.getLookup().lookupAll(VCSFileProxy.class);
+        assertNotNull(proxies);
+        assertTrue(proxies.size() >= 2);
+        assertTrue(proxies.contains(proxy1));
+        assertTrue(proxies.contains(proxy2));
+    }
+    
     private void deleteRecursively(File f) {
         if(f.isFile()) {
             f.delete();
@@ -231,4 +300,23 @@ public class VCSHistoryTest extends NbTestCase {
             this.message = message;
         }
     }       
+    
+    private class ParentProviderImpl implements VCSHistoryProvider.ParentProvider {
+        static final String PARENT_MSG = "im.the.parent";
+        @Override
+        public HistoryEntry getParentEntry(VCSFileProxy file) {
+            return new HistoryEntry(
+                    new VCSFileProxy[] {file}, 
+                    new Date(System.currentTimeMillis()), 
+                    PARENT_MSG, 
+                    "user", 
+                    "username", 
+                    "12345", 
+                    "1234567890", 
+                    new Action[0], 
+                    null,
+                    null);
+}
+    }
+
 }

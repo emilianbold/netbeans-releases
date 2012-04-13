@@ -52,11 +52,14 @@ import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
  *
  * @author tomas
  */
-public class TestVCSHistoryProvider implements VCSHistoryProvider, VCSHistoryProvider.RevisionProvider {
+public class TestVCSHistoryProvider implements VCSHistoryProvider, VCSHistoryProvider.RevisionProvider, VCSHistoryProvider.ParentProvider {
     public static final String FILE_PROVIDES_REVISIONS_SUFFIX = "providesRevisions";
     public static TestVCSHistoryProvider instance;
     
+    public static String PARENT_MSG = "im.the.parent";
+    
     public boolean revisionProvided = false;
+    public boolean parentrevisionProvided = false;
     public static HistoryEntry[] history;
     
     public TestVCSHistoryProvider() {
@@ -83,6 +86,8 @@ public class TestVCSHistoryProvider implements VCSHistoryProvider, VCSHistoryPro
                             "12345", 
                             "1234567890", 
                             new Action[0], 
+                            this,
+                            null, 
                             this)};
                 
             }
@@ -114,4 +119,20 @@ public class TestVCSHistoryProvider implements VCSHistoryProvider, VCSHistoryPro
     public void getRevisionFile(File originalFile, File revisionFile) {
         revisionProvided = true;
     }
+
+    @Override
+    public HistoryEntry getParentEntry(File file) {
+        return new VCSHistoryProvider.HistoryEntry(
+                            new File[] {file}, 
+                            new Date(System.currentTimeMillis()), 
+                            PARENT_MSG, 
+                            "user", 
+                            "username", 
+                            "12345", 
+                            "1234567890", 
+                            new Action[0], 
+                            this);
+}
+
+
 }
