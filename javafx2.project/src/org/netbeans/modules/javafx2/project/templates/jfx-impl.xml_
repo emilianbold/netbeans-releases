@@ -1707,10 +1707,41 @@
     <macrodef name="deploy-deploy-swing">
         <sequential>
             <antcall target="-pre-jfx-deploy"/>
+            <local name="permissions-elevated-token"/>
+            <condition property="permissions-elevated-token" value="${line.separator}    &lt;security&gt;${line.separator}        &lt;all-permissions/&gt;${line.separator}    &lt;/security&gt;" else="">
+                <isset property="permissions-elevated"/>
+            </condition>
+            <local name="offline-allowed-token"/>
+            <condition property="offline-allowed-token" value="${line.separator}        &lt;offline-allowed/&gt;" else="">
+                <isset property="offline-allowed"/>
+            </condition>
+            <local name="update-mode-background-token"/>
+            <condition property="update-mode-background-token" value="background" else="always">
+                <isset property="update-mode-background"/>
+            </condition>
+            <local name="javafx.deploy.icon.basename"/>
+            <basename property="javafx.deploy.icon.basename" file="${javafx.deploy.icon}"/>
+            <local name="local-icon-filename-available"/>
+            <condition property="local-icon-filename-available">
+                <and>
+                    <isset property="icon-available"/>
+                    <isset property="javafx.deploy.icon.basename"/>
+                    <not><equals arg1="${javafx.deploy.icon.basename}" arg2=""/></not>
+                    <not><contains string="${javafx.deploy.icon.basename}" substring="$${javafx" casesensitive="false"/></not>
+                    <not><contains string="${javafx.deploy.icon}" substring="http:" casesensitive="false"/></not>
+                </and>
+            </condition>
+            <local name="icon-token"/>
+            <condition property="icon-token" value="${line.separator}        &lt;icon href=&quot;${javafx.deploy.icon.basename}&quot; kind=&quot;default&quot;/&gt;">
+                <isset property="local-icon-filename-available"/>
+            </condition>
+            <condition property="icon-token" value="${line.separator}        &lt;icon href=&quot;${javafx.deploy.icon}&quot; kind=&quot;default&quot;/&gt;" else="">
+                <isset property="icon-available"/>
+            </condition>
             <basename property="dist.filename" file="${dist.jar}" suffix=".jar"/>
             <length file="${dist.jar}" property="dist.jar.size" />
             <filterchain id="jnlp.template.filter">
-            <replacetokens>
+                <replacetokens>
                     <token key="NAME" value="${dist.filename}"/>
                     <token key="MAINCLASS" value="${main.class}"/>
                     <token key="FILESIZE" value="${dist.jar.size}"/>
@@ -1718,6 +1749,10 @@
                     <token key="TITLE" value="${application.title}"/>
                     <token key="WIDTH" value="${javafx.run.width}"/>
                     <token key="HEIGHT" value="${javafx.run.height}"/>
+                    <token key="PERMISSIONS" value="${permissions-elevated-token}"/>
+                    <token key="OFFLINE" value="${offline-allowed-token}"/>
+                    <token key="UPDATEMODE" value="${update-mode-background-token}"/>
+                    <token key="ICON" value="${icon-token}"/>
                 </replacetokens>
             </filterchain>
             <copy file="${basedir}${file.separator}nbproject${file.separator}templates${file.separator}FXSwingTemplateApplication.jnlp" 
@@ -1731,7 +1766,33 @@
             <copy file="${basedir}${file.separator}nbproject${file.separator}templates${file.separator}FXSwingTemplate.html" 
                     tofile="${dist.dir}${file.separator}${dist.filename}.html" >
                     <filterchain refid="jnlp.template.filter"/>
-            </copy>        
+            </copy>
+            <script language="javascript">
+                <![CDATA[
+                    var PREF = "file:";
+                    var doCopy = project.getProperty("local-icon-filename-available");
+                    if(doCopy != null) {
+                        var iconProp = project.getProperty("javafx.deploy.icon");
+                        if(iconProp.indexOf(PREF) == 0) {
+                            iconProp = iconProp.slice(PREF.length);
+                        }
+                        while(iconProp.charAt(0) == "/") {
+                            iconProp = iconProp.slice(1);
+                        }
+                        var S = java.io.File.separator;
+                        var baseDir = project.getProperty("basedir");
+                        var distDir = project.getProperty("dist.dir");
+                        var copyTask = project.createTask("copy");
+                        var source = new java.io.File(iconProp);
+                        var target = new java.io.File(baseDir + S + distDir);
+                        copyTask.setFile(source);
+                        copyTask.setTodir(target);
+                        copyTask.setFlatten(true);
+                        copyTask.setFailOnError(false);
+                        copyTask.perform();
+                    }
+                ]]>
+            </script>
             <antcall target="-post-jfx-deploy"/>
         </sequential>
     </macrodef>
