@@ -72,7 +72,9 @@ public class J2EEPrerequisitesChecker implements PrerequisitesChecker, LateBound
         ActionProvider.COMMAND_RUN,
         ActionProvider.COMMAND_RUN_SINGLE + ".deploy",
         ActionProvider.COMMAND_DEBUG,
-        ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy"
+        ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy",
+        ActionProvider.COMMAND_PROFILE,
+        ActionProvider.COMMAND_PROFILE + ".deploy"
     });
     
 
