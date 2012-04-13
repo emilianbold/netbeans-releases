@@ -786,7 +786,11 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     knownKeys.add(d.getManagementKey());
                 }
             }
-            localProj = localProj.getParent();
+            try {
+                localProj = localProj.getParent();
+            } catch (IllegalStateException x) { // #197994 variant
+                break;
+            }
         }
 
         return result;

@@ -78,7 +78,12 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
     
     private void initValues() {
         Project mdl = handle.getPOMModel().getProject();
-        MavenProject project = handle.getProject().getParent();
+        MavenProject project;
+        try {
+            project = handle.getProject().getParent();
+        } catch (IllegalStateException x) { // #200320
+            project = null;
+        }
         listeners = new ArrayList<TextComponentUpdater>();
         try {
             listeners.add(new ReflectionTextComponentUpdater("getGroupId", mdl, project, txtGroupId, lblGroupId, handle, new ReflectionTextComponentUpdater.Operation() {
