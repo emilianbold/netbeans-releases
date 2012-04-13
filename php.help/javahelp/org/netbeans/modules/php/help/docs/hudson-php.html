@@ -15,9 +15,8 @@
 <h2>Using a Continuous Build Server With PHP</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
 <p>The IDE supports creating and starting build jobs using the Hudson build server.
-Hudson is an open-source server that you can use to build your applications.
-You can use the Hudson server as part of your continuous integration (CI) process
-for automated building, verification and testing.</p>
+Hudson's usefulness for PHP projects is that it allows
+PhpUnit tests to be performed automatically according to a schedule.</p>
 
 <p>For more information about setting up and using a Hudson build server, see the following documents.</p>
 <ul>
@@ -39,7 +38,21 @@ for automated building, verification and testing.</p>
 
 <p>The Jenkins build server should also work with the IDE, though this is not as well tested.</p>
 
-<p><strong>Adding a Hudson Instance.</strong></p>
+<h3>Hudson Administrator</h3>
+<p>Hudson is usually run on a remote machine. This section contains information for the 
+    administrator of the Hudson or Jenkins host machine.</p>
+<p>In order for Hudson (or Jenkins)
+to be used with PHP and to provide test results, the Hudson or Jenkins server should be set up with 
+the plugins described on the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://jenkins-php.org/">
+    <param name="text" value="<html><u>Template for Jenkins Jobs for PHP</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object> web page. (Hudson has equivalent plugins.) The host machine for the Hudson or Jenkins server
+should also have PHP and PEAR installed with the PHP plugins listed on the Template for Jenkins Jobs
+for PHP page.</p>
+
+<h3>Adding a Hudson Instance.</h3>
 <ol>
     <li>Right-click the Hudson Builders node in the Services window and choose Add Hudson Instance.</li>
     <li>Type the Name for the instance that will be displayed under the Hudson Builders node.</li>
@@ -51,18 +64,6 @@ for automated building, verification and testing.</p>
 <p>After you add a Hudson instance, a node for the instance is added below the Hudson Builders node.
 You can expand the node to view the status of builds on that instance.</p>
 
-<h3>Hudson Administrator</h3>
-<p>Hudson is usually run on a remote machine. Its usefulness for PHP projects is that it allows
-PhpUnit tests to be performed automatically on continuous builds. In order for Hudson (or Jenkins)
-to be used with PHP and to provide test results, the Hudson or Jenkins server should be set up with 
-the plugins described on the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://jenkins-php.org/">
-    <param name="text" value="<html><u>Template for Jenkins Jobs for PHP</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object> web page. (Hudson has equivalent plugins.) The host machine for the Hudson or Jenkins server
-should also have PHP and PEAR installed with the PHP plugins listed on the Template for Jenkins Jobs
-for PHP page.</p>
 
 <h3>Setting Up a PHP Project to be Built</h3>
 <p>For a PHP project to build on Hudson, the project must have the following set up:</p>
@@ -86,6 +87,10 @@ for PHP page.</p>
         <param name="textColor" value="blue">
     </object> page.</p>
 
+<h3>PHP Options for Hudson</h3>
+<p>To set PHP options, open Tools > Options > PHP (NetBeans Preferences > PHP on Mac) and go to
+    the Hudson tab.
+
 <p><strong>Setting Up a New Build Job.</strong></p>
 <ol>
     <li>Choose Team &gt; Create Build Job from the main menu.<br>
@@ -108,11 +113,15 @@ You can expand the node for the job to view past builds and build artifacts.
     <li>To create builds and start jobs you must have access to a Hudson server.</li>
 </ul>
 
-<!--  <dl>
+ <dl>
       <dt><a name="seealso">See also</a></dt>
-      <dd><a href="comp_classpath.html">Managing the Classpath</a></dd>
-      <dd><a href="../run/run_args.html">Setting the Main Class and Runtime Arguments</a></dd>    
-  </dl>-->
+      <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="https://blogs.oracle.com/netbeansphp/entry/continuous_integration_support">
+                    <param name="text" value="<html><u>Continuous Integration Support</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object> (NetBeansPHP blog entry)</dd>
+  </dl>
 
 <hr>
 <small><a href="credits.html">Legal Notices</a></small> 
