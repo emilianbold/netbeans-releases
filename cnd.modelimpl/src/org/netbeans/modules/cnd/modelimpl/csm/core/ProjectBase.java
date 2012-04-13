@@ -3296,27 +3296,32 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /*package*/static void dumpProjectClassifierContainer(ProjectBase project, PrintStream printStream, boolean offsetString) {
-        printStream.println("\n========== Dumping Dump Project Classifiers");//NOI18N
         ClassifierContainer container = project.getClassifierSorage();
-        for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTestClassifiers().entrySet()) {
-            printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
-            CsmClassifier value = entry.getValue();
-            if (value == null) {
-                printStream.println("null");//NOI18N
-            } else {
-                String pos = offsetString ? CsmTracer.getOffsetString(value, true) : "";//NOI18N
-                printStream.printf("%s %s\n", value.getUniqueName(), pos);//NOI18N
+        for (int phase = 0; phase < 3; phase++) {
+            Map<CharSequence, CsmClassifier> map = null;
+            switch (phase) {
+                case 0:
+                    printStream.println("\n========== Dumping Dump Project Classifiers");//NOI18N
+                    map = container.getTestClassifiers();
+                    break;
+                case 1:
+                    printStream.println("\n========== Dumping Dump Project Short Classifiers");//NOI18N
+                    map = container.getTestShortClassifiers();
+                    break;
+                case 2:
+                    printStream.println("\n========== Dumping Dump Project Typedefs");//NOI18N
+                    map = container.getTestTypedefs();
+                    break;
             }
-        }
-        printStream.println("\n========== Dumping Dump Project Typedefs");//NOI18N
-        for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTestTypedefs().entrySet()) {
-            printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
-            CsmClassifier value = entry.getValue();
-            if (value == null) {
-                printStream.println("null");//NOI18N
-            } else {
-                String pos = offsetString ? CsmTracer.getOffsetString(value, true) : "";//NOI18N
-                printStream.printf("%s %s\n", value.getUniqueName(), pos);//NOI18N
+            for (Map.Entry<CharSequence, CsmClassifier> entry : map.entrySet()) {
+                printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
+                CsmClassifier value = entry.getValue();
+                if (value == null) {
+                    printStream.println("null");//NOI18N
+                } else {
+                    String pos = offsetString ? CsmTracer.getOffsetString(value, true) : "";//NOI18N
+                    printStream.printf("%s %s\n", value.getUniqueName(), pos);//NOI18N
+                }
             }
         }
     }
