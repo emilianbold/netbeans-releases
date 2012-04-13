@@ -81,6 +81,19 @@ public final class UndoManager {
     private String description;
     private ProgressListener progress;
     private static UndoManager instance;
+    
+    public boolean autoConfirm = false;
+
+    /**
+     * Set the value of autoConfirm.
+     * Used just for tests to disable UI.
+     *
+     * @param autoConfirm new value of autoConfirm
+     */
+    public void setAutoConfirm(boolean autoConfirm) {
+        this.autoConfirm = autoConfirm;
+    }
+
 
     /**
      * Singleton instance
@@ -167,7 +180,7 @@ public final class UndoManager {
     public void undo() {
         //System.out.println("************* Starting UNDO");
         if (isUndoAvailable()) {
-            if (JOptionPane.showConfirmDialog(
+            if (!autoConfirm && JOptionPane.showConfirmDialog(
                     WindowManager.getDefault().getMainWindow(),
                     NbBundle.getMessage(UndoManager.class, "MSG_ReallyUndo", getUndoDescription()),
                     NbBundle.getMessage(UndoManager.class, "MSG_ConfirmUndo"),
@@ -235,7 +248,7 @@ public final class UndoManager {
     public void redo() {
         //System.out.println("************* Starting REDO");
         if (isRedoAvailable()) {
-            if (JOptionPane.showConfirmDialog(
+            if (!autoConfirm && JOptionPane.showConfirmDialog(
                     WindowManager.getDefault().getMainWindow(),
                     NbBundle.getMessage(UndoManager.class, "MSG_ReallyRedo", getRedoDescription()),
                     NbBundle.getMessage(UndoManager.class, "MSG_ConfirmRedo"),
@@ -394,12 +407,12 @@ public final class UndoManager {
 
         @Override
         public void undo() {
-            change.undoRefactoring(false);
+            change.undoRefactoring(true);
         }
 
         @Override
         public void redo() {
-            change.doRefactoring(false);
+            change.doRefactoring(true);
         }
     }
 }
