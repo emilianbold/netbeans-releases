@@ -777,6 +777,7 @@ public final class ParserQueue {
     }
 
     public void onStartAddingProjectFiles(ProjectBase project) {
+        suspend();
         boolean fire;
         synchronized(onStartLevel) {
             AtomicInteger level = onStartLevel.get(project);
@@ -817,6 +818,7 @@ public final class ParserQueue {
                 handleLastProjectFile(project, pd);
             }
         }
+        resume();
     }
 
     /*package*/ void onFileParsingFinished(FileImpl file) {
