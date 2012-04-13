@@ -84,7 +84,6 @@ public class HistoryDiffView implements PropertyChangeListener {
     private DiffPanel panel;
     private Component diffComponent;
     private DiffController diffView;                
-    private Runnable prepareDiff = null;
     private Task prepareDiffTask = null;
     private PreparingDiffHandler preparingDiffPanel;
         
@@ -168,15 +167,13 @@ public class HistoryDiffView implements PropertyChangeListener {
     }           
     
     private void refreshRevisionDiffPanel(HistoryEntry entry1, HistoryEntry entry2, VCSFileProxy file1, VCSFileProxy file2) { 
-        prepareDiff = new RevisionDiffPrepareTask(entry1, entry2, file1, file2, onSelectionLastDifference);
         onSelectionLastDifference = false;
-        scheduleTask(prepareDiff);
+        scheduleTask(new RevisionDiffPrepareTask(entry1, entry2, file1, file2, onSelectionLastDifference));
     } 
     
     private void refreshCurrentDiffPanel(HistoryEntry entry, VCSFileProxy file) {  
-        prepareDiff = new CurrentDiffPrepareTask(entry, file, onSelectionLastDifference);
         onSelectionLastDifference = false;
-        scheduleTask(prepareDiff);
+        scheduleTask(new CurrentDiffPrepareTask(entry, file, onSelectionLastDifference));
     }        
 
     private void scheduleTask(Runnable runnable) {          
@@ -185,7 +182,7 @@ public class HistoryDiffView implements PropertyChangeListener {
             getPreparingDiffHandler().finish();
         }
         prepareDiffTask = History.getInstance().getRequestProcessor().create(runnable);
-        prepareDiffTask.schedule(0);        
+        prepareDiffTask.schedule(500);        
     }
 
     private PreparingDiffHandler getPreparingDiffHandler() {
@@ -524,7 +521,7 @@ public class HistoryDiffView implements PropertyChangeListener {
             GridBagConstraints c = new GridBagConstraints();
             add(label, c);
             label.setEnabled(false);
-            timer = new Timer(800, this);
+            timer = new Timer(0, this);
         }
         
         void start() {
