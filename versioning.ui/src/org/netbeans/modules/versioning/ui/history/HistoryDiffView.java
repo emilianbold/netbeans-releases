@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.util.Collection;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.*;
@@ -193,8 +194,8 @@ public class HistoryDiffView implements PropertyChangeListener {
     }
 
     private VCSFileProxy getFile(Node node, HistoryEntry entry) {
-        VCSFileProxy file = node.getLookup().lookup(VCSFileProxy.class);
-        return file != null ? file : entry.getFiles()[0];
+        Collection<? extends VCSFileProxy> proxies = node.getLookup().lookupAll(VCSFileProxy.class);
+        return proxies != null && proxies.size() == 1 ? proxies.iterator().next() : entry.getFiles()[0];
     }
 
     private boolean onSelectionLastDifference = false;

@@ -668,7 +668,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         }
 
         private HistoryEntry delegateHistoryEntry(VCSFileProxy[] proxies, final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he) {
-            return new HistoryEntry(
+            return Utils.createHistoryEntry(
                         proxies, 
                         he.getDateTime(), 
                         he.getMessage(), 
@@ -679,7 +679,8 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                         he.getActions(), 
                         delegateRevisionProvider(he),
                         delegateMessageEditProvider(he), 
-                        delegateParentProvider(he));
+                        delegateParentProvider(he),
+                        new Object[] {he});
             }
 
         private class DelegateChangeListener implements org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryChangeListener {

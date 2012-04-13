@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import javax.swing.Action;
+import org.openide.util.ContextAwareAction;
 
 
 /**
@@ -342,11 +343,16 @@ public interface VCSHistoryProvider {
         }
         
         /**
-         * Returns actions which might be called for this HistoryEntry.
+         * Returns actions which might be called for this HistoryEntry as it is presented 
+         * in the history view.<br>
+         * It is ensured that if the returned actions are a {@link ContextAwareAction}, they 
+         * will be provided with a context containing the nodes selected in the history view.
+         * The lookup of those nodes will again contain the relevant {@link HistoryEntry} 
+         * and {@link java.io.File}-s for which the action should be invoked.
          * 
          * @return a field of actions
          * 
-         * @since 1.29
+         * @since 1.31
          */
         public Action[] getActions() {
             return actions;

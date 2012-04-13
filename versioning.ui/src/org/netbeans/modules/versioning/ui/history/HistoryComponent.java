@@ -215,11 +215,11 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                         for (Node n : activatedNodes) {
                             activatedNodesContent.remove(n);
                         }
+                    } 
                         activatedNodes = newSelection;
                         for (Node n : activatedNodes) {
                             activatedNodesContent.add(n);
                         }
-                    }
                     if(newSelection != null) {
                         getToolbar().modeCombo.setEnabled(newSelection.length == 1);
                         getToolbar().modeLabel.setEnabled(newSelection.length == 1);
