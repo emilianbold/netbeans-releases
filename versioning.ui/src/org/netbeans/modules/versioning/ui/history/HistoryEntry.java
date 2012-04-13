@@ -104,6 +104,11 @@ public class HistoryEntry {
         return entry.canEdit();
     }
     
+    public HistoryEntry getParent(VCSFileProxy file) {
+        VCSHistoryProvider.HistoryEntry parent = entry.getParentEntry(file);
+        return parent != null ? new HistoryEntry(parent, local) : null;
+    }
+    
     public boolean isLocalHistory() {
         return local;
     }
@@ -137,5 +142,4 @@ public class HistoryEntry {
         return sb.toString();
     }
 
-    
 }
