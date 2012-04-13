@@ -131,6 +131,10 @@ public class UseNbBundleMessages {
             if (!String.valueOf(invoker).equals("org.openide.util.NbBundle")) {
                 return null;
             }
+            FileObject file = compilationInfo.getFileObject();
+            if (file != null && file.getNameExt().equals("Bundle.java")) {
+                return null;
+            }
             span = compilationInfo.getTreeUtilities().findNameSpan(mst);
             if (span == null) {
                 return null;
@@ -211,10 +215,26 @@ public class UseNbBundleMessages {
                 return warning(UseNbBundleMessages_no_such_key(key), span, compilationInfo);
             }
         }
-        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, UseNbBundleMessages_error_text(), Collections.<Fix>singletonList(new JavaFix(compilationInfo, treePath) {
+        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, UseNbBundleMessages_error_text(), Collections.<Fix>singletonList(new UseMessagesFix(compilationInfo, treePath, isAlreadyRegistered, key, bundleProperties).toEditorFix()), compilationInfo.getFileObject(), span[0], span[1]));
+    }
+
+    private static class UseMessagesFix extends JavaFix {
+
+        private final boolean isAlreadyRegistered;
+        private final String key;
+        private final FileObject bundleProperties;
+
+        public UseMessagesFix(CompilationInfo compilationInfo, TreePath treePath, boolean isAlreadyRegistered, String key, FileObject bundleProperties) {
+            super(compilationInfo, treePath);
+            this.isAlreadyRegistered = isAlreadyRegistered;
+            this.key = key;
+            this.bundleProperties = bundleProperties;
+        }
+
             @Override protected String getText() {
                 return UseNbBundleMessages_displayName();
             }
+
             @Override protected void performRewrite(JavaFix.TransformationContext ctx) throws Exception {
                 WorkingCopy wc = ctx.getWorkingCopy();
                 TreePath treePath = ctx.getPath();
@@ -266,20 +286,20 @@ public class UseNbBundleMessages {
                             ExpressionTree[] linesA = lines.toArray(new ExpressionTree[lines.size()]);
                             switch (enclosing.getKind()) {
                             case METHOD:
-                                modifiers = ((MethodTree) enclosing).getModifiers();
-                                nueModifiers = gu.appendToAnnotationValue(((MethodTree) enclosing).getModifiers(), nbBundleMessages, "value", linesA);
+                                modifiers = wc.resolveRewriteTarget(((MethodTree) enclosing).getModifiers());
+                                nueModifiers = gu.appendToAnnotationValue((ModifiersTree) modifiers, nbBundleMessages, "value", linesA);
                                 break;
                             case VARIABLE:
-                                modifiers = ((VariableTree) enclosing).getModifiers();
-                                nueModifiers = gu.appendToAnnotationValue(((VariableTree) enclosing).getModifiers(), nbBundleMessages, "value", linesA);
+                                modifiers = wc.resolveRewriteTarget(((VariableTree) enclosing).getModifiers());
+                                nueModifiers = gu.appendToAnnotationValue((ModifiersTree) modifiers, nbBundleMessages, "value", linesA);
                                 break;
                             case COMPILATION_UNIT:
-                                modifiers = enclosing;
-                                nueModifiers = gu.appendToAnnotationValue((CompilationUnitTree) enclosing, nbBundleMessages, "value", linesA);
+                                modifiers = wc.resolveRewriteTarget(enclosing);
+                                nueModifiers = gu.appendToAnnotationValue((CompilationUnitTree) modifiers, nbBundleMessages, "value", linesA);
                                 break;
                             default:
-                                modifiers = ((ClassTree) enclosing).getModifiers();
-                                nueModifiers = gu.appendToAnnotationValue(((ClassTree) enclosing).getModifiers(), nbBundleMessages, "value", linesA);
+                                modifiers = wc.resolveRewriteTarget(((ClassTree) enclosing).getModifiers());
+                                nueModifiers = gu.appendToAnnotationValue((ModifiersTree) modifiers, nbBundleMessages, "value", linesA);
                             }
                             wc.rewrite(modifiers, nueModifiers);
                         // XXX remove NbBundle import if now unused
@@ -292,7 +312,7 @@ public class UseNbBundleMessages {
                     }
                 // XXX after JavaFix rewrite, Savable.save (on DataObject.find(src)) no longer works (JG13 again)
             }
-                    private Tree findEnclosingElement(WorkingCopy wc, TreePath treePath) {
+                    private static Tree findEnclosingElement(WorkingCopy wc, TreePath treePath) {
                         Tree leaf = treePath.getLeaf();
                         Kind kind = leaf.getKind();
                         switch (kind) {
@@ -319,8 +339,7 @@ public class UseNbBundleMessages {
                         }
                         return findEnclosingElement(wc, parentPath);
                     }
-        }.toEditorFix()), compilationInfo.getFileObject(), span[0], span[1]));
-    }
+        }
 
     private static List<ErrorDescription> warning(String text, int[] span, CompilationInfo compilationInfo) {
         return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, text, Collections.<Fix>emptyList(), compilationInfo.getFileObject(), span[0], span[1]));
