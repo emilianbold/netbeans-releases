@@ -146,7 +146,7 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         performStaticTest("second/second.cpp");
     }
 
-    public void testRedFilesWhenReopenProject210898() throws Exception {
+    public void DISABLED_testRedFilesWhenReopenProject210898() throws Exception {
         // #210898 incorrect content of system includes after reopening projects => unresolved identifiers in dependent projects
         CsmModel model = super.getModel();
         assertNotNull("null model", model);
