@@ -61,9 +61,9 @@ import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 
 /**
- * Versioning SPI unit tests of VCSInterceptor.
+ * Versioning SPI unit tests of VCSHistoryProvide.
  * 
- * @author Maros Sandor
+ * @author Tomas Stupka
  */
 public class VCSHistoryTest extends NbTestCase {
     

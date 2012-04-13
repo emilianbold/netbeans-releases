@@ -58,9 +58,9 @@ import org.netbeans.modules.versioning.spi.testvcs.TestVCSHistoryProvider;
 import org.openide.util.Lookup;
 
 /**
- * Versioning SPI unit tests of VCSInterceptor.
+ * Versioning SPI unit tests of VCSHistoryProvider.
  * 
- * @author Maros Sandor
+ * @author Tomas Stupka
  */
 public class VCSHistoryTest extends NbTestCase {
     
