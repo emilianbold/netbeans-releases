@@ -251,6 +251,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         setProperty(antProps, "platform.java", javaTool);
         setProperty(antProps, "work.dir", workDir);
         setProperty(antProps, "run.jvmargs", toOneLine(runJVMArgs));
+        setProperty(antProps, "run.jvmargs.ide", (String)properties.get("run.jvmargs.ide"));
         if (tmpDir != null) {
             setProperty(antProps, "tmp.dir", tmpDir);   //NOI18N
         }

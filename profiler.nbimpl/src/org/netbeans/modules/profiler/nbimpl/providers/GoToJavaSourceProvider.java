@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.profiler.nbimpl.providers;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -51,19 +50,19 @@ import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.common.CommonUtils;
+import org.netbeans.lib.profiler.ui.SwingWorker;
+import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
+import org.netbeans.modules.profiler.api.ProgressDisplayer;
 import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.modules.profiler.nbimpl.javac.ParsingUtils;
 import org.netbeans.modules.profiler.spi.java.GoToSourceProvider;
-import org.netbeans.modules.profiler.utils.IDEUtils;
+import org.netbeans.modules.profiler.ui.ProfilerProgressDisplayer;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -71,6 +70,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -79,49 +79,121 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = GoToSourceProvider.class)
 public final class GoToJavaSourceProvider extends GoToSourceProvider {
-    @Override
-    public boolean openSource(final Lookup.Provider project, final String className, final String methodName, final String signature, final int line) {
-        final AtomicBoolean result = new AtomicBoolean(false);
-
-        SourceClassInfo ci = ProfilerTypeUtils.resolveClass(className, project);
-        FileObject sourceFile = ci != null ? ci.getFile() : null;
-
-        if (sourceFile == null) {
-            return false;
+    private static class GotoSourceRunnable implements Runnable {
+        private Lookup.Provider project;
+        private String className;
+        private String methodName;
+        private String signature;
+        private int line;
+        final private AtomicBoolean cancelled;
+        final private AtomicBoolean result = new AtomicBoolean(true);
+        
+        public GotoSourceRunnable(Lookup.Provider project, String className, String methodName, String signature, int line, AtomicBoolean cancelled) {
+            this.project = project;
+            this.className = className;
+            this.methodName = methodName;
+            this.signature = signature;
+            this.line = line;
+            this.cancelled = cancelled;
         }
+        
+        @Override
+        public void run() {
+            SourceClassInfo ci = ProfilerTypeUtils.resolveClass(className, project);
+            FileObject sourceFile = ci != null ? ci.getFile() : null;
 
-        JavaSource js = JavaSource.forFileObject(sourceFile);
-        if (js != null) {
-            ParsingUtils.invokeScanSensitiveTask(js.getClasspathInfo(), new Task<CompilationController>() {
+            if (sourceFile == null) {
+                return;
+            }
 
-                public void run(CompilationController controller) throws Exception {
-                    if (!controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).equals(JavaSource.Phase.ELEMENTS_RESOLVED)) {
-                        return;
-                    }
-                    TypeElement parentClass = ElementUtilitiesEx.resolveClassByName(className, controller, true);
-                    if (ElementOpen.open(controller.getClasspathInfo(), parentClass)) {
-                        Document doc = controller.getDocument();
-                        if (doc != null && doc instanceof StyledDocument) {
-                            if (openAtLine(controller, doc, methodName, line)) {
-                                result.set(true);
-                                return;
-                            }
-                            if (methodName != null) {
-                                ExecutableElement methodElement = ElementUtilitiesEx.resolveMethodByName(controller, parentClass, methodName, signature);
-                                if (methodElement != null && ElementOpen.open(controller.getClasspathInfo(), methodElement)) {
+            final JavaSource js = JavaSource.forFileObject(sourceFile);
+            if (js != null) {
+                ParsingUtils.invokeScanSensitiveTask(js.getClasspathInfo(), new Task<CompilationController>() {
+
+                    public void run(CompilationController controller) throws Exception {
+                        if (!controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).equals(JavaSource.Phase.ELEMENTS_RESOLVED)) {
+                            return;
+                        }
+                        TypeElement parentClass = ElementUtilitiesEx.resolveClassByName(className, controller, true);
+
+                        if (cancelled != null && cancelled.get()) return;
+                        
+                        if (ElementOpen.open(controller.getClasspathInfo(), parentClass)) {
+                            Document doc = controller.getDocument();
+                            if (doc != null && doc instanceof StyledDocument) {
+                                if (openAtLine(controller, doc, methodName, line)) {
                                     result.set(true);
                                     return;
                                 }
+                                if (methodName != null) {
+                                    ExecutableElement methodElement = ElementUtilitiesEx.resolveMethodByName(controller, parentClass, methodName, signature);
+                                    if (methodElement != null && ElementOpen.open(controller.getClasspathInfo(), methodElement)) {
+                                        result.set(true);
+                                        return;
+                                    }
+                                }
                             }
+                            result.set(true);
                         }
-                        result.set(true);
                     }
-                }
-            });
-
+                });
+            }
+        }
+        
+        public boolean isSuccess() {
             return result.get();
         }
-        return false;
+    }
+    
+    @Override
+    @NbBundle.Messages({
+        "MSG_ScanningInProgress=Scanning in progress...",
+        "# {0} - full target name Class.Method(Signature)",
+        "MSG_Opening=Opening {0}",
+        "# {0} - full target name Class.Method(Signature)",
+        "# {1} - line number",
+        "MSG_OpeningOnLine=Opening {0}, line {1}"
+    })
+    public boolean openSource(final Lookup.Provider project, final String className, final String methodName, final String signature, final int line) {        
+        final ProgressDisplayer pd = ProfilerProgressDisplayer.getDefault();
+        final AtomicBoolean cancelled = new AtomicBoolean(false);
+        final ProgressDisplayer.ProgressController[] pc = new ProgressDisplayer.ProgressController[1];
+        final GotoSourceRunnable r = new GotoSourceRunnable(project, className, methodName, signature, line, cancelled);
+        
+        new SwingWorker(false) {
+            @Override
+            protected void doInBackground() {
+                r.run();
+            }
+
+            @Override
+            protected void nonResponding() {
+                // register a progress controller
+                pc[0] = new ProgressDisplayer.ProgressController() {
+
+                    @Override
+                    public boolean cancel() {
+                        // close the progress dialog
+                        pd.close();
+                        // set as cancelled
+                        return cancelled.compareAndSet(false, true);
+                    }
+                };
+                // get the formmatted target name out of class/method/signature information
+                String target = MethodNameFormatterFactory.getDefault().getFormatter().formatMethodName(className, methodName, signature).toFormatted();
+                // open the progress dialog
+                pd.showProgress(Bundle.MSG_ScanningInProgress(), (line == -1) ? Bundle.MSG_Opening(target) : Bundle.MSG_OpeningOnLine(target, line), pc[0]);
+            }
+
+            @Override
+            protected void done() {
+                // if not cancelled close the progress dialog
+                if (!cancelled.get()) {
+                    pd.close();
+                }
+            }            
+        }.execute();
+        return r.isSuccess();
     }
 
     @Override
@@ -157,7 +229,7 @@ public final class GoToJavaSourceProvider extends GoToSourceProvider {
                 if (parentMethod != null) {
                     String offsetMethodName = parentMethod.getSimpleName().toString();
                     if (methodName.equals(offsetMethodName)) {
-                        LineCookie lc = od.getCookie(LineCookie.class);
+                        LineCookie lc = od.getLookup().lookup(LineCookie.class);
                         if (lc != null) {
                             final Line l = lc.getLineSet().getCurrent(line - 1);
 

@@ -102,4 +102,33 @@ made subject to such option by the copyright holder.
         </properties>
     </action>
     
+    <action>
+        <actionName>profile</actionName>
+        <packagings>
+            <packaging>ejb</packaging>
+            <packaging>ear</packaging>
+            <packaging>war</packaging>
+        </packagings>
+        <goals>
+            <goal>package</goal>
+        </goals>
+        <properties>
+            <netbeans.deploy>true</netbeans.deploy>
+            <netbeans.deploy.profilemode>true</netbeans.deploy.profilemode>
+        </properties>
+    </action>
+    <action>
+        <actionName>profile.single.deploy</actionName>
+        <packagings>
+            <packaging>war</packaging>
+        </packagings>
+        <goals>
+            <goal>package</goal>
+        </goals>
+        <properties>
+            <netbeans.deploy>true</netbeans.deploy>
+            <netbeans.deploy.clientUrlPart>${webpagePath}</netbeans.deploy.clientUrlPart>
+            <netbeans.deploy.profilemode>true</netbeans.deploy.profilemode>
+        </properties>
+    </action>
 </actions>
