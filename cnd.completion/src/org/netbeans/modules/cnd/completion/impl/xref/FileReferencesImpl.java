@@ -266,8 +266,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
         private final BaseDocument doc;
         private final ReferenceContextBuilder contextBuilder;
         private final FileReferencesContext fileReferncesContext;
-        private Token<TokenId> derefToken;
-        private int derefTokenOffset;
+        private CppTokenId derefToken;
         private BlockConsumer blockConsumer;
         private boolean afterParen = false;
         private boolean skipReferences = false;
@@ -291,7 +290,6 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             this.fileReferncesContext = p.fileReferncesContext;
             this.contextBuilder = new ReferenceContextBuilder(p.contextBuilder);
             this.derefToken = p.derefToken;
-            this.derefTokenOffset = p.derefTokenOffset;
             this.afterParen = p.afterParen;
             this.skipReferences = p.skipReferences;
         }
@@ -326,11 +324,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
                         // void AAA::foo() {
                         ReferenceImpl ref = ReferencesSupport.createReferenceImpl(
                                 csmFile, doc, tokenOffset, CndTokenUtilities.createTokenItem(token, tokenOffset), derefToken == null ? null : null /*CsmReferenceKind.AFTER_DEREFERENCE_USAGE*/);
-                        if (derefToken == null) {
-                            contextBuilder.reference(ref, null);
-                        } else {
-                            contextBuilder.reference(ref, CndTokenUtilities.createTokenItem(derefToken, derefTokenOffset));
-                        }
+                        contextBuilder.reference(ref, derefToken);
                         ref.setFileReferencesContext(fileReferncesContext);
                         derefToken = null;
                         if (!skip && !skipReferences) {
@@ -343,29 +337,28 @@ public final class FileReferencesImpl extends CsmFileReferences  {
                     case ARROW:
                     case ARROWMBR:
                     case SCOPE:
-                        derefToken = token;
-                        derefTokenOffset = tokenOffset;
+                        derefToken = (CppTokenId)id;
                         break;
                     case LBRACE:
                         if (afterParen) {
                             // Compiler extension "({...})"
                             blockConsumer = new BlockConsumer(CppTokenId.LBRACE, CppTokenId.RBRACE);
                         } else {
-                            contextBuilder.open(CndTokenUtilities.createTokenItem(token, tokenOffset));
+                            contextBuilder.open((CppTokenId)id);
                         }
                         derefToken = null;
                         break;
                     case LBRACKET:
                     case LPAREN:
                     case LT:
-                        contextBuilder.open(CndTokenUtilities.createTokenItem(token, tokenOffset));
+                        contextBuilder.open((CppTokenId)id);
                         derefToken = null;
                         break;
                     case RBRACE:
                     case RBRACKET:
                     case RPAREN:
                     case GT:
-                        contextBuilder.close(CndTokenUtilities.createTokenItem(token, tokenOffset));
+                        contextBuilder.close((CppTokenId)id);
                         derefToken = null;
                         break;
                     case __ATTRIBUTE__:
@@ -391,7 +384,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
                         // OK, do nothing
                         break;
                     default:
-                        contextBuilder.other(CndTokenUtilities.createTokenItem(token, tokenOffset));
+                        contextBuilder.other((CppTokenId)id);
                         derefToken = null;
                 }
 
@@ -420,25 +413,25 @@ public final class FileReferencesImpl extends CsmFileReferences  {
 
         private static final int FULLCOPY_INTERVAL = 50;
         private ReferenceContextImpl context;
-        private final List<TokenItem<? extends TokenId>> brackets;
+        private final List<CppTokenId> brackets;
         private final List<Integer> pushes;
         private int snapshots;
 
         public ReferenceContextBuilder() {
             context = new ReferenceContextImpl();
-            brackets = new ArrayList<TokenItem<? extends TokenId>>();
+            brackets = new ArrayList<CppTokenId>();
             pushes = new ArrayList<Integer>();
             pushes.add(0);
         }
 
         public ReferenceContextBuilder(ReferenceContextBuilder b) {
             context = new ReferenceContextImpl(b.context);
-            brackets = new ArrayList<TokenItem<? extends TokenId>>(b.brackets);
+            brackets = new ArrayList<CppTokenId>(b.brackets);
             pushes = new ArrayList<Integer>(b.pushes);
             snapshots = b.snapshots;
         }
 
-        public void open(TokenItem<? extends TokenId> leftBracket) {
+        public void open(CppTokenId leftBracket) {
             if (peek(pushes) == 0 && peek(brackets) != null) {
                 // insert a dummy reference if needed
                 context.push(peek(brackets), null);
@@ -449,7 +442,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             pushes.add(0);
         }
 
-        public void close(TokenItem<? extends TokenId> rightBracket) {
+        public void close(CppTokenId rightBracket) {
             if (match(peek(brackets), rightBracket)) {
                 // close corresponding bracket if possible
                 pop(brackets);
@@ -460,13 +453,10 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             }
         }
 
-        public void other(TokenItem<? extends TokenId> token) {
-            if (token.id() == CppTokenId.SEMICOLON) {
-                TokenItem<? extends TokenId> peek = peek(brackets);
-                if (peek != null && peek.id() == CppTokenId.LT) {
-                    // semicolon can't appear inside angle brackets
-                    close(CndTokenUtilities.createTokenItem(CppTokenId.GT, token.offset(), CppTokenId.GT.fixedText()));
-                }
+        public void other(CppTokenId token) {
+            if (token == CppTokenId.SEMICOLON && peek(brackets) == CppTokenId.LT) {
+                // semicolon can't appear inside angle brackets
+                close(CppTokenId.GT);
             }
             for (int i = 0; i < peek(pushes); ++i) {
                 context.pop();
@@ -475,10 +465,10 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             pushes.add(0);
         }
 
-        public void reference(ReferenceImpl ref, TokenItem<? extends TokenId> derefToken) {
+        public void reference(CsmReference ref, CppTokenId derefToken) {
             int pushCount = 0;
             if (derefToken == null) {
-                other(ref.getToken());
+                other(CppTokenId.IDENTIFIER);
                 context.push(peek(brackets), ref);
                 ++pushCount;
             } else {
@@ -508,12 +498,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             }
         }
 
-        private static boolean match(TokenItem<? extends TokenId> leftItem, TokenItem<? extends TokenId> rightItem) {
-            if (leftItem == null || rightItem == null) {
-                return false;
-            }
-            TokenId l = leftItem.id();
-            TokenId r = rightItem.id();
+        private static boolean match(CppTokenId l, CppTokenId r) {
             return l == CppTokenId.LBRACE && r == CppTokenId.RBRACE
                     || l == CppTokenId.LBRACKET && r == CppTokenId.RBRACKET
                     || l == CppTokenId.LPAREN && r == CppTokenId.RPAREN
@@ -521,7 +506,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
         }
 
         public CsmReferenceContext getContext() {
-            ReferenceContextImpl snapshot;
+            CsmReferenceContext snapshot;
             if (FULLCOPY_INTERVAL <= snapshots++) {
                 snapshot = new ReferenceContextImpl(context, true);
                 snapshots = 0;
