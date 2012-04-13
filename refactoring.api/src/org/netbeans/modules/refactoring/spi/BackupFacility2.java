@@ -472,7 +472,7 @@ abstract class BackupFacility2 {
                     if (doc==null) {
                         return false;
                     }
-                    if (doc.isAtomicLock()) {
+                    if (doc.isAtomicLock() || fileObj.isLocked()) {
                         //undo already performed
                         if (entry.isUndo()) {
                             entry.setUndo(false);
