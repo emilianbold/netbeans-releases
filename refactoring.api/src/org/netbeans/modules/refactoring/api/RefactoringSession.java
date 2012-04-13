@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.refactoring.api;
 
+import java.io.IOException;
 import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,6 +70,7 @@ import org.netbeans.modules.refactoring.spi.impl.UndoableWrapper;
 import org.netbeans.spi.editor.document.UndoableEditWrapper;
 import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -138,6 +140,10 @@ public final class RefactoringSession {
                     }
                 }
             } finally {
+                for (Transaction commit:SPIAccessor.DEFAULT.getCommits(bag)) {
+                    SPIAccessor.DEFAULT.check(commit, false);
+                }
+
                 UndoableWrapper wrapper = MimeLookup.getLookup("").lookup(UndoableWrapper.class);
                 for (Transaction commit:SPIAccessor.DEFAULT.getCommits(bag)) {
                     if (wrapper !=null)
@@ -149,9 +155,21 @@ public final class RefactoringSession {
                 }
                 if (wrapper !=null)
                     wrapper.close();
+                for (Transaction commit : SPIAccessor.DEFAULT.getCommits(bag)) {
+                    SPIAccessor.DEFAULT.sum(commit);
+                }
+                
             }
             if (saveAfterDone) {
                 LifecycleManager.getDefault().saveAll();
+                for (DataObject dob:DataObject.getRegistry().getModified()) {
+                    SaveCookie cookie = dob.getCookie(SaveCookie.class);
+                    try {
+                        cookie.save();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
             for (RefactoringElementImplementation fileChange:SPIAccessor.DEFAULT.getFileChanges(bag)) {
                 if (fileChange.isEnabled()) {
@@ -193,6 +211,9 @@ public final class RefactoringSession {
                     f.undoChange();
                 }
             }
+            for (Transaction commit : SPIAccessor.DEFAULT.getCommits(bag)) {
+                SPIAccessor.DEFAULT.check(commit, true);
+            }
             UndoableWrapper wrapper = MimeLookup.getLookup("").lookup(UndoableWrapper.class);
             for (ListIterator<Transaction> commitIterator = commits.listIterator(commits.size()); commitIterator.hasPrevious();) {
                 final Transaction commit = commitIterator.previous();
@@ -201,6 +222,10 @@ public final class RefactoringSession {
                 unsetWrappers(commit, wrapper);
             }
             wrapper.close();
+            for (Transaction commit : SPIAccessor.DEFAULT.getCommits(bag)) {
+                SPIAccessor.DEFAULT.sum(commit);
+            }
+
             while (it.hasPrevious()) {
                 fireProgressListenerStep();
                 RefactoringElementImplementation element = (RefactoringElementImplementation) it.previous();
