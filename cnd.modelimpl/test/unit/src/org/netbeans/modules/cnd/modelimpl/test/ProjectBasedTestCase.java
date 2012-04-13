@@ -211,13 +211,16 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     }
 
     protected CsmProject getProject(String name) {
+        CsmProject out = null;
         for (TestModelHelper testModelHelper : projectHelpers.values()) {
             CsmProject project = testModelHelper.getProject();
             if (name.contentEquals(project.getName())) {
-                return project;
+                assertTrue("two projects with the same name " + name + " " + out + " and " + project, out == null);
+                out = project;
+                // do not break to allow initialization of all names in TestModelHelpers
             }
         }
-        return null;
+        return out;
     }
 
     protected CsmModel getModel() {
@@ -228,15 +231,27 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         return null;
     }
 
+    protected void reopenProject(String name) {
+        for (TestModelHelper testModelHelper : projectHelpers.values()) {
+            if (name.contentEquals(testModelHelper.getProjectName())) {
+                testModelHelper.getProject();
+                return;
+            }
+        }
+    }
+
     protected void reparseProject(CsmProject project) {
         ModelImplTest.reparseProject(project);
     }
 
-    protected void closeProject(CsmProject project) {
-        CsmModel model = getModel();
-        if (model instanceof ModelImpl && project instanceof ProjectBase) {
-            ((ModelImpl)model).closeProjectBase((ProjectBase)project, false);
+    protected void closeProject(String name) {
+        for (TestModelHelper testModelHelper : projectHelpers.values()) {
+            if (name.contentEquals(testModelHelper.getProjectName())) {
+                testModelHelper.resetProject();
+                return;
+            }
         }
+        assertFalse("Project not found or getProject was not called for this name before: " + name, true);
     }
     
     protected int getOffset(File testSourceFile, int lineIndex, int colIndex) throws Exception {
