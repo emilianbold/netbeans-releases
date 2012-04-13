@@ -136,45 +136,143 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("test01");
     }
 
-    public void testNowdoc () throws Exception {
+    public void testNowdoc_01 () throws Exception {
         performTest("nowdoc01");
+    }
+
+    public void testNowdoc_02() throws Exception {
         performTest("nowdoc02");
+    }
+
+    public void testNowdoc_03() throws Exception {
         performTest("nowdoc_000");
+    }
+
+    public void testNowdoc_04() throws Exception {
         performTest("nowdoc_001");
+    }
+
+    public void testNowdoc_05() throws Exception {
         performTest("nowdoc_002");
+    }
+
+    public void testNowdoc_06() throws Exception {
         performTest("nowdoc_003");
+    }
+
+    public void testNowdoc_07() throws Exception {
         performTest("nowdoc_004");
+    }
+
+    public void testNowdoc_08() throws Exception {
         performTest("nowdoc_005");
+    }
+
+    public void testNowdoc_09() throws Exception {
         performTest("nowdoc_006");
+    }
+
+    public void testNowdoc_10() throws Exception {
         performTest("nowdoc_007");
+    }
+
+    public void testNowdoc_11() throws Exception {
         performTest("nowdoc_008");
+    }
+
+    public void testNowdoc_12() throws Exception {
         performTest("nowdoc_009");
+    }
+
+    public void testNowdoc_13() throws Exception {
         performTest("nowdoc_010");
+    }
+
+    public void testNowdoc_14() throws Exception {
         performTest("nowdoc_011");
+    }
+
+    public void testNowdoc_15() throws Exception {
         performTest("nowdoc_012");
+    }
+
+    public void testNowdoc_16() throws Exception {
         performTest("nowdoc_013");
+    }
+
+    public void testNowdoc_17() throws Exception {
         performTest("nowdoc_014");
+    }
+
+    public void testNowdoc_18() throws Exception {
         performTest("nowdoc_015");
     }
 
-    public void testHereDoc() throws Exception {
+    public void testHereDoc_01() throws Exception {
         performTest("heredoc00");
-        //unfinished hredoc
+    }
+
+    public void testHereDoc_02() throws Exception {
         performTest("heredoc01");
+    }
+
+    public void testHereDoc_03() throws Exception {
         performTest("heredoc_001");
+    }
+
+    public void testHereDoc_04() throws Exception {
         performTest("heredoc_002");
+    }
+
+    public void testHereDoc_05() throws Exception {
         performTest("heredoc_003");
+    }
+
+    public void testHereDoc_06() throws Exception {
         performTest("heredoc_004");
+    }
+
+    public void testHereDoc_07() throws Exception {
         performTest("heredoc_005");
+    }
+
+    public void testHereDoc_08() throws Exception {
         performTest("heredoc_006");
+    }
+
+    public void testHereDoc_09() throws Exception {
         performTest("heredoc_007");
+    }
+
+    public void testHereDoc_10() throws Exception {
         performTest("heredoc_008");
+    }
+
+    public void testHereDoc_11() throws Exception {
         performTest("heredoc_009");
+    }
+
+    public void testHereDoc_12() throws Exception {
         performTest("heredoc_010");
+    }
+
+    public void testHereDoc_13() throws Exception {
         performTest("heredoc_011");
+    }
+
+    public void testHereDoc_14() throws Exception {
         performTest("heredoc_012");
+    }
+
+    public void testHereDoc_15() throws Exception {
         performTest("heredoc_013");
+    }
+
+    public void testHereDoc_16() throws Exception {
         performTest("heredoc_014");
+    }
+
+    public void testHereDoc_17() throws Exception {
         performTest("heredoc_015");
     }
 
