@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -53,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider.NativeProjectImpl;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -60,6 +60,7 @@ import org.openide.filesystems.FileObject;
  * @author Vladimir Voskresensky
  */
 public class ModelImplTest extends ModelImplBaseTestCase {
+
     public ModelImplTest(String testName) {
         super(testName);
     }
@@ -99,5 +100,12 @@ public class ModelImplTest extends ModelImplBaseTestCase {
         assertNotNull("no file object for " + file, fileObject);
         CsmProject project = file.getProject();
         fireFileChanged(project, fileObject);
+    }
+
+    public static void reparseProject(CsmProject firstPrj) {
+        if (firstPrj instanceof ProjectBase) {
+            ((ProjectBase)firstPrj).scheduleReparse();
+            TraceModelBase.waitProjectParsed(((ProjectBase)firstPrj), true);
+        }
     }
 }

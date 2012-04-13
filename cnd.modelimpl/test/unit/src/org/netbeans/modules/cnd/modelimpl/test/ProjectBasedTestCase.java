@@ -51,6 +51,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImplTest;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
@@ -226,7 +227,11 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         assert false : "no initialized projects";
         return null;
     }
-    
+
+    protected void reparseProject(CsmProject project) {
+        ModelImplTest.reparseProject(project);
+    }
+
     protected void closeProject(CsmProject project) {
         CsmModel model = getModel();
         if (model instanceof ModelImpl && project instanceof ProjectBase) {
