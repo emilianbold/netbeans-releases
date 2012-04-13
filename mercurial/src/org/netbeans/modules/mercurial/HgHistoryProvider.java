@@ -113,13 +113,13 @@ public class HgHistoryProvider implements VCSHistoryProvider {
             toRevision = dateFormat.format(new Date(System.currentTimeMillis()));
         }
 
+        File repositoryRoot = repositories.iterator().next();
         for (File file : files) {
             FileInformation info = Mercurial.getInstance().getFileStatusCache().refresh(file);
             int status = info.getStatus();
             if ((status & FileInformation.STATUS_VERSIONED) == 0) {
                 continue;
             }
-            File repositoryRoot = repositories.iterator().next();
             HgLogMessage[] history = HistoryRegistry.getInstance().getLogs(repositoryRoot, files, fromRevision, toRevision);
             for (HgLogMessage h : history) {
                 String r = h.getHgRevision().getRevisionNumber();
@@ -136,23 +136,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         for(HgLogMessage h : rev2LMMap.values()) {
             Set<File> s = rev2FileMap.get(h.getHgRevision().getRevisionNumber());
             File[] involvedFiles = s.toArray(new File[s.size()]);
-            String username = h.getUsername();
-            String author = h.getAuthor();
-            if(username == null || "".equals(username.trim())) {
-                username = author;
-            }
-            
-            HistoryEntry e = new HistoryEntry(
-                    involvedFiles, 
-                    h.getDate(), 
-                    h.getMessage(), 
-                    author, 
-                    username, 
-                    h.getHgRevision().getRevisionNumber() + ":" + h.getHgRevision().getChangesetId(), 
-                    h.getHgRevision().getRevisionNumber(), 
-                    createActions(h.getHgRevision(), files), 
-                    new RevisionProviderImpl(h.getHgRevision()));
-            ret.add(e);
+            ret.add(createHistoryEntry(h, repositoryRoot, involvedFiles));
         }
         return ret.toArray(new HistoryEntry[ret.size()]);
     }
@@ -237,6 +221,50 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         }
     }
 
+    private class ParentProviderImpl implements ParentProvider {
+        private HgLogMessage logMessage;
+        private File[] files;
+        private File repository;
+
+        public ParentProviderImpl(HgLogMessage logMessage, File[] files, File repository) {
+            this.logMessage = logMessage;
+            this.files = files;
+            this.repository = repository;
+        }
+
+        @Override
+        public HistoryEntry getParentEntry(File file) {
+            HgRevision ancestor = logMessage.getAncestor(file);
+            HgLogMessage[] history = HistoryRegistry.getInstance().getLogs(repository, new File[] {file}, ancestor.getChangesetId(), ancestor.getChangesetId());
+            if(history == null || history.length == 0) {
+                return null;
+            }
+            assert history.length == 1;
+            
+            return createHistoryEntry(history[0], repository, files);
+        }
+    }
+    
+    private HistoryEntry createHistoryEntry(HgLogMessage h, File repository, File[] files) {
+        String username = h.getUsername();
+        String author = h.getAuthor();
+        if(username == null || "".equals(username.trim())) { // NOI18N
+            username = author;
+        }
+        return new HistoryEntry(
+                files, 
+                h.getDate(), 
+                h.getMessage(), 
+                author, 
+                username, 
+                h.getHgRevision().getRevisionNumber() + ":" + h.getHgRevision().getChangesetId(), // NOI18N
+                h.getHgRevision().getRevisionNumber(), 
+                createActions(h.getHgRevision(), files), 
+                new RevisionProviderImpl(h.getHgRevision()),
+                null,
+                new ParentProviderImpl(h, files, repository));
+    }
+    
     private static class OpenHistoryAction extends AbstractAction {
         private final File[] files;
 
