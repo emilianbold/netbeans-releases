@@ -46,6 +46,7 @@ package org.netbeans.modules.form.layoutdesign;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.Shape;
 
 public interface VisualMapper extends LayoutConstants  {
 
@@ -133,4 +134,6 @@ public interface VisualMapper extends LayoutConstants  {
      *        not in the design view.
      */
     void repaintDesigner(String forComponentId);
+
+    Shape getComponentVisibilityClip(String componentId);
 }
