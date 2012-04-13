@@ -103,8 +103,23 @@ public final class PhpUnitTestGroupsFetcher {
         phpProperties = new PhpProjectProperties(project);
     }
 
-    public void fetch(final File workingDirectory) {
-        testGroups.addAll(fetchAllTestGroups(workingDirectory));
+    @NbBundle.Messages("PhpUnitTestGroupsFetcher.error.fetchGroups=Test groups cannot be listed. Review Output window for details.")
+    public boolean fetch(final File workingDirectory, PhpUnit.ConfigFiles configFiles) {
+        TestGroupsOutputProcessorFactory processorFactory = fetchAllTestGroups(workingDirectory, configFiles, false);
+        if (processorFactory == null) {
+            return false;
+        }
+        if (!processorFactory.hasTestGroups()) {
+            if (processorFactory.hasOutput()) {
+                // some error occured => rerun command to Output window and inform user
+                fetchAllTestGroups(workingDirectory, configFiles, true);
+                NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                        Bundle.PhpUnitTestGroupsFetcher_error_fetchGroups(), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(descriptor);
+                return false;
+            }
+        }
+        testGroups.addAll(processorFactory.getTestGroups());
 
         if (testsContainCustomGroups()) {
             runInEdtAndWait(new Runnable() {
@@ -114,32 +129,50 @@ public final class PhpUnitTestGroupsFetcher {
                 }
             });
         }
+        return true;
     }
 
     @NbBundle.Messages("LBL_FetchingTestGroups=Fetching Test Groups...")
-    private Collection<String> fetchAllTestGroups(File workingDirectory) {
+    private TestGroupsOutputProcessorFactory fetchAllTestGroups(File workingDirectory, PhpUnit.ConfigFiles configFiles, boolean frontWindow) {
         final PhpUnit phpUnit = CommandUtils.getPhpUnit(project, true);
         if (phpUnit == null) {
             // in fact, should not happen
             assert false : "Valid PhpUnit should already be found";
-            return Collections.emptyList();
+            return null;
         }
         TestGroupsOutputProcessorFactory outputProcessorFactory = new TestGroupsOutputProcessorFactory();
-        ExternalProcessBuilder processBuilder = phpUnit.getProcessBuilder()
+        ExternalProcessBuilder processBuilder = phpUnit.getProcessBuilder();
+        if (configFiles.bootstrap != null) {
+            processBuilder = processBuilder
+                    .addArgument(PhpUnit.PARAM_BOOTSTRAP)
+                    .addArgument(configFiles.bootstrap.getAbsolutePath());
+        }
+        if (configFiles.configuration != null) {
+            processBuilder = processBuilder
+                    .addArgument(PhpUnit.PARAM_CONFIGURATION)
+                    .addArgument(configFiles.configuration.getAbsolutePath());
+        }
+        processBuilder = processBuilder
                 .addArgument(PhpUnit.PARAM_LIST_GROUPS)
                 .addArgument(workingDirectory.getAbsolutePath());
 
-        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
-                .inputOutput(InputOutput.NULL)
-                .outProcessorFactory(outputProcessorFactory);
+        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor();
+        if (frontWindow) {
+            executionDescriptor = executionDescriptor
+                    .frontWindow(true);
+        } else {
+            executionDescriptor = executionDescriptor
+                    .inputOutput(InputOutput.NULL)
+                    .outProcessorFactory(outputProcessorFactory);
+        }
 
         try {
             PhpProgram.execute(processBuilder, executionDescriptor, Bundle.LBL_FetchingTestGroups(), Bundle.LBL_FetchingTestGroups());
         } catch (CancellationException ex) {
-            return Collections.emptyList();
+            return null;
         }
 
-        return outputProcessorFactory.getTestGroups();
+        return outputProcessorFactory;
     }
 
     private boolean testsContainCustomGroups() {
@@ -251,6 +284,8 @@ public final class PhpUnitTestGroupsFetcher {
 
         private final Pattern testGroupName = Pattern.compile("^\\s-\\s(.*)$"); // NOI18N
         private final Collection<String> testGroups = Collections.synchronizedCollection(new ArrayList<String>());
+        private volatile boolean hasOutput = false;
+
 
         @Override
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
@@ -258,6 +293,7 @@ public final class PhpUnitTestGroupsFetcher {
 
                 @Override
                 public void processLine(String line) {
+                    hasOutput = true;
                     Matcher matcher = testGroupName.matcher(line);
                     if (matcher.matches()) {
                         testGroups.add(matcher.group(1).trim());
@@ -277,6 +313,14 @@ public final class PhpUnitTestGroupsFetcher {
 
         public Collection<String> getTestGroups() {
             return testGroups;
+        }
+
+        public boolean hasTestGroups() {
+            return !testGroups.isEmpty();
+        }
+
+        public boolean hasOutput() {
+            return hasOutput;
         }
 
     }
