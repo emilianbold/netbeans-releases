@@ -27,6 +27,6 @@
             <tocitem target="php_codegen" text="Code Generators"/>
             <tocitem target="def_var_in_comment" text="Defining Variables in Comments"/>
         </tocitem>
-        
+        <tocitem text="Using a Continuous Build Server With PHP" target="php_hudson"/>
     </tocitem>
 </toc>
