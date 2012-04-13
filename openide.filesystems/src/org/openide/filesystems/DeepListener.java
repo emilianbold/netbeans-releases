@@ -43,6 +43,7 @@
 package org.openide.filesystems;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,18 +60,20 @@ import org.openide.util.WeakSet;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class DeepListener extends WeakReference<FileChangeListener>
-implements FileChangeListener, Runnable, Callable<Boolean> {
+implements FileChangeListener, Runnable, Callable<Boolean>, FileFilter {
     private static final Logger LOG = Logger.getLogger(DeepListener.class.getName());
     private final File path;
     private FileObject watching;
     private boolean removed;
     private final Callable<Boolean> stop;
+    private final FileFilter filter;
     private static List<DeepListener> keep = new ArrayList<DeepListener>();
 
-    DeepListener(FileChangeListener listener, File path, Callable<Boolean> stop) {
+    DeepListener(FileChangeListener listener, File path, FileFilter ff, Callable<Boolean> stop) {
         super(listener, Utilities.activeReferenceQueue());
         this.path = path;
         this.stop = stop;
+        this.filter = ff;
         keep.add(this);
     }
     
@@ -226,5 +229,10 @@ implements FileChangeListener, Runnable, Callable<Boolean> {
     @Override
     public Boolean call() throws Exception {
         return stop != null ? stop.call() : null;
+    }
+
+    @Override
+    public boolean accept(File pathname) {
+        return filter == null || filter.accept(pathname);
     }
 }

@@ -353,7 +353,7 @@ public final class Stamps {
                     tmp.add(tok.nextToken());
                 }
             }
-            dirs = tmp.toArray(new String[0]);
+            dirs = tmp.toArray(new String[tmp.size()]);
         }
         return dirs;
     }

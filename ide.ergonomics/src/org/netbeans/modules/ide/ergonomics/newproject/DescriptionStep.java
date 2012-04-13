@@ -273,7 +273,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             if (iterator instanceof FeatureOnDemandWizardIterator) {
                 Logger LOG = Logger.getLogger(DescriptionStep.class.getName());
                 LOG.warning(
-                    "There is still wrong interator " + // NOI18N
+                    "There is still wrong iterator " + // NOI18N
                     iterator.getClass().getName() +
                     " for file object " + fo // NOI18N
                 );
@@ -285,7 +285,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                     boolean npe = false;
                     assert npe = true;
                     if (npe) {
-                        throw new NullPointerException("Send us the messages.log please!"); // NOI18N
+                        throw new NullPointerException("No iterator for " + fo); // NOI18N
                     }
                     return; // give up
                 }
