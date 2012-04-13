@@ -65,6 +65,8 @@ public class VisualState implements LayoutConstants {
     private Map<LayoutComponent, List<GapInfo>> containerGaps = new HashMap<LayoutComponent, List<GapInfo>>();
     private Map<LayoutComponent, List<GapInfo>> contGapsToUpdate;
 
+    private Map<LayoutComponent, Shape> clippingCache = new HashMap<LayoutComponent, Shape>();
+
     private static final int PROXIMITY = 32;
 
     // TODO internationalize
@@ -125,6 +127,7 @@ public class VisualState implements LayoutConstants {
         container.setDiffToMinimumSize(VERTICAL, bounds.height - minimum.height);
 
         prepareGapsForUpdate();
+        clippingCache.clear();
     }
 
     /**
@@ -876,6 +879,15 @@ public class VisualState implements LayoutConstants {
 
     // -----
 
+    Shape getComponentVisibilityClip(LayoutComponent component) {
+        Shape clip = clippingCache.get(component);
+        if (!clippingCache.containsKey(component)) {
+            clip = visualMapper.getComponentVisibilityClip(component.getId());
+            clippingCache.put(component, clip);
+        }
+        return clip;
+    }
+
     /**
      * Returns a shape object suitable as a clip region for painting given gaps.
      * If there are some components that would be painted over, the provided
@@ -883,7 +895,7 @@ public class VisualState implements LayoutConstants {
      * 'baseClipeRect' instance is returned, meaning no additional restriction
      * is needed for painting the gaps.
      */
-    Shape clipForGapPainting(Collection<GapInfo> gaps, Shape baseClipRect) {
+    Shape getClipForGapPainting(Collection<GapInfo> gaps, Shape baseClipRect) {
         if (gaps == null || gaps.isEmpty()) {
             throw new IllegalArgumentException();
         }

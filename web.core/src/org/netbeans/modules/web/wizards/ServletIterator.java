@@ -245,7 +245,7 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
         if (!deployData.hasDD()) {
             // Create web.xml
             WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-            if (wm != null) {
+            if (wm != null && wm.getDocumentBase() != null) {
                 FileObject webInf = wm.getWebInf();
                 if (webInf == null) {
                     webInf = FileUtil.createFolder(wm.getDocumentBase(), "WEB-INF");    //NOI18N

@@ -44,11 +44,9 @@
 
 package org.netbeans.modules.form.layoutdesign;
 
-import java.awt.Graphics2D;
-import java.awt.Stroke;
-import java.awt.BasicStroke;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import static org.netbeans.modules.form.layoutdesign.VisualState.GapInfo;
 
 /*
@@ -663,10 +661,9 @@ final class LayoutDragger implements LayoutConstants {
 
     private static void paintGapResizingSnap(Graphics2D g, GapInfo gapInfo,
             int[] paintPos, int resEdge, PaddingType resPaddingType,
-            boolean atContainerBorder, LayoutRegion clipSpace) {
+            boolean atContainerBorder, int[] clipPos) {
         Stroke oldStroke = g.getStroke();
         g.setStroke(dashedStroke);
-        int[] clipPos = (clipSpace != null && clipSpace.isSet()) ? clipSpace.positions[gapInfo.dimension^1] : null;
         int ortPos1 = gapInfo.ortPositions[LEADING];
         if (clipPos != null && ortPos1 < clipPos[LEADING]) {
             ortPos1 = clipPos[LEADING];
@@ -699,21 +696,33 @@ final class LayoutDragger implements LayoutConstants {
         g.setStroke(oldStroke);
     }
 
-    static void paintGapResizingSnap(Graphics2D g, GapInfo gapInfo, LayoutComponent gapContainer) {
+    static void paintGapResizingSnap(Graphics2D g, GapInfo gapInfo, LayoutComponent gapContainer, VisualState visualState) {
         int edge = gapInfo.resizeTrailing ? TRAILING : LEADING;
         PaddingType pt = gapInfo.gap.getPaddingType();
         boolean atContainerBorder = edge==TRAILING && pt == null
                 && gapInfo.defaultGapSizes.length == 1 && gapInfo.defaultGapSizes[0] > 0;
-        LayoutRegion clipSpace = null;
-        if (gapContainer != null && gapContainer.isLayoutContainer() && gapContainer.getParent() != null) {
-            LayoutInterval outerInterval = gapContainer.getLayoutInterval(gapInfo.dimension);
-            if (outerInterval != null) {
-                clipSpace = outerInterval.getCurrentSpace();
+
+        Shape clip = visualState.getComponentVisibilityClip(gapContainer);
+        int[] clipPos;
+        if (clip instanceof Rectangle) {
+            Rectangle r = (Rectangle) clip;
+            int c1;
+            int c2;
+            if (gapInfo.dimension == HORIZONTAL) {
+                c1 = r.y;
+                c2 = c1 + r.height;
+            } else {
+                c1 = r.x;
+                c2 = c1 + r.width;
             }
+            clipPos = new int[] { c1, c2 };
+        } else {
+            clipPos = null;
         }
+
         paintGapResizingSnap(g, gapInfo,
                 new int[] { gapInfo.position, gapInfo.position+gapInfo.currentSize },
-                edge, pt, atContainerBorder, clipSpace);
+                edge, pt, atContainerBorder, clipPos);
     }
 
     String[] positionCode() {

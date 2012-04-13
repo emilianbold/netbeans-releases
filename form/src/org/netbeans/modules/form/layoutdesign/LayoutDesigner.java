@@ -1456,36 +1456,42 @@ public final class LayoutDesigner implements LayoutConstants {
         if (!paintGaps) {
             return false;
         }
-        LayoutComponent component = selectedComponents.size() == 1 ? selectedComponents.get(0) : null;
-        if (component == null || !component.isLayoutContainer()) {
-            return false;
-        }
 
         GapInfo selected = null;
-        // Preferentially try to select a gap of a component selected before the
-        // click (if clicking into its parent). If such a component was selected,
-        // LayoutPainter still has the painted gaps at this moment.
-        Collection<GapInfo> gaps = layoutPainter.getPaintedGapsForContainer(component);
-        if (gaps != null && gaps.isEmpty()) {
-            gaps = null;
-        }
-        boolean searchNew = true;
-        do {
-            if (gaps == null) {
-                gaps = visualState.getContainerGaps(component);
-                searchNew = false;
+        for (LayoutComponent component : selectedComponents) {
+            if (!component.isLayoutContainer()) {
+                continue;
             }
-            for (GapInfo gapInfo : gaps) {
-                if (pointInGap(p, gapInfo)
-                        && component.getDefaultLayoutRoot(gapInfo.dimension).isParentOf(gapInfo.gap)) {
-                    selected = gapInfo;
-                    if (selected == selectedGap) {
-                        break;
-                    } // otherwise preferring last one
+            // Preferentially try to select a gap of a component selected before the
+            // click (if clicking into its parent). If such a component was selected,
+            // LayoutPainter still has the painted gaps at this moment.
+            Collection<GapInfo> gaps = layoutPainter.getPaintedGapsForContainer(component);
+            if (gaps != null && gaps.isEmpty()) {
+                gaps = null;
+            }
+            boolean searchedAll = false;
+            selected = null;
+            do {
+                if (gaps == null) {
+                    gaps = visualState.getContainerGaps(component);
+                    searchedAll = true;
                 }
+                for (GapInfo gapInfo : gaps) {
+                    if (pointInGap(p, gapInfo)
+                            && component.getDefaultLayoutRoot(gapInfo.dimension).isParentOf(gapInfo.gap)) {
+                        selected = gapInfo;
+                        if (selected == selectedGap) {
+                            break;
+                        } // otherwise preferring last one
+                    }
+                }
+                gaps = null;
+            } while (!searchedAll && selected == null);
+
+            if (selected != null) {
+                break;
             }
-            gaps = null;
-        } while (searchNew && selected == null);
+        }
 
         if (selected != selectedGap) {
             if (selected != null) {
@@ -1564,7 +1570,8 @@ public final class LayoutDesigner implements LayoutConstants {
             if (lastWheelGap != null && paintWheelGapSnap && selectedGap != null) {
                 if (selectedGap.gap == lastWheelGap) {
                     LayoutDragger.paintGapResizingSnap(g, selectedGap,
-                            selectedComponents.size() == 1 ? selectedComponents.get(0) : null);
+                            selectedComponents.size() == 1 ? selectedComponents.get(0) : null,
+                            visualState);
                 }
             }
         }

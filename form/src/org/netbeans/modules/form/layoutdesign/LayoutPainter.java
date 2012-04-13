@@ -78,9 +78,12 @@ public class LayoutPainter implements LayoutConstants {
             @Override
             public void layoutChanged(LayoutEvent ev) {
                 int type = ev.getType();
+                // cached data about painted gaps can survive simple change
                 if (type != LayoutEvent.INTERVAL_SIZE_CHANGED
                         && type != LayoutEvent.INTERVAL_PADDING_TYPE_CHANGED) {
-                    paintedGaps = null;
+                    if (paintedGaps != null) {
+                        paintedGaps.clear();
+                    }
                     componentsOfPaintedGaps = null;
                 }
             }
@@ -93,16 +96,32 @@ public class LayoutPainter implements LayoutConstants {
      * @param selectedComponents Components selected in the designer.
      */
     void paintComponents(Graphics2D g, Collection<LayoutComponent> selectedComponents, boolean paintAlignment) {
+        Shape originalClip = g.getClip();
+        LayoutComponent parent = null;
         for (LayoutComponent comp : selectedComponents) {
-            if (!isDesignRootSelected(comp)) {
-                if (paintAlignment) {
-                    paintSelectedComponent(g, comp, HORIZONTAL);
-                    paintSelectedComponent(g, comp, VERTICAL);
-                }
-                if (LayoutComponent.isUnplacedComponent(comp)) {
-                    paintUnplacedWarningImage(g, comp);
-                }
+            if (isDesignRootSelected(comp)) {
+                continue;
             }
+            if (paintAlignment) {
+                if (comp.getParent() != parent) {
+                    if (parent != null) {
+                        g.setClip(originalClip);
+                    }
+                    parent = comp.getParent();
+                    Shape clip = visualState.getComponentVisibilityClip(parent);
+                    if (clip != null) {
+                        g.clip(clip);
+                    }
+                }
+                paintSelectedComponent(g, comp, HORIZONTAL);
+                paintSelectedComponent(g, comp, VERTICAL);
+            }
+            if (LayoutComponent.isUnplacedComponent(comp)) {
+                paintUnplacedWarningImage(g, comp);
+            }
+        }
+        if (parent != null) {
+            g.setClip(originalClip);
         }
     }
 
@@ -434,6 +453,18 @@ public class LayoutPainter implements LayoutConstants {
 
     // -----
 
+    // Rules for painting gaps
+    // 1) In a base situation the gaps are painted for the selected component:
+    //   a) The gaps around the component in its parent layout.
+    //   b) All gaps inside the component if it is a container.
+    // 2) If some gap is selected then only gaps from its container are painted.
+    //    So e.g. if a gap is selected inside a container, the outer gaps next
+    //    the container are not painted. They'll be painted again when clicking
+    //    in the container on a place without a gap or component.
+    // 3) If a gap next to a selected component is selected, which also selects
+    //    the container, then only gaps of the previosly selected components are
+    //    painted, not all gaps of the container.
+
     Collection<GapInfo> getPaintedGapsForContainer(LayoutComponent container) {
         return paintedGaps != null ? paintedGaps.get(container) : null;
     }
@@ -445,26 +476,25 @@ public class LayoutPainter implements LayoutConstants {
      */
     void paintGaps(Graphics2D g, Collection<LayoutComponent> selectedComponents, GapInfo selectedGap) {
         if (selectedComponents == null || selectedComponents.isEmpty()) {
-            paintedGaps = null;
+            if (paintedGaps != null) {
+                paintedGaps.clear();
+            }
             rootSelection = false;
             componentsOfPaintedGaps = null;
             return;
         }
 
         LayoutComponent parent = null;
-        boolean root; // root can't paint its surrounding gaps in parent
-        if (selectedComponents.size() == 1) {
-            LayoutComponent oneSelected = selectedComponents.toArray(new LayoutComponent[1])[0];
-            root = isDesignRootSelected(oneSelected);
-            if (root && oneSelected.isLayoutContainer()) {
-                parent = oneSelected;
+        boolean root = true; // root can't paint its surrounding gaps in parent
+        for (LayoutComponent selComp : selectedComponents) {
+            if (!isDesignRootSelected(selComp)) {
+                root = false;
+                break;
             }
-        } else {
-            root = false;
         }
         boolean newGaps = newGapsForNewSelection(selectedComponents, selectedGap, root);
-        rootSelection = root;
         if (newGaps) {
+            rootSelection = root;
             if (paintedGaps == null) {
                 paintedGaps = new HashMap<LayoutComponent, Collection<GapInfo>>();
             } else {
@@ -475,10 +505,10 @@ public class LayoutPainter implements LayoutConstants {
 
         // part 1: paint gaps inside selected components that are containers
         for (LayoutComponent comp : componentsOfPaintedGaps) {
-            if (!root && parent == null) {
+            if (!rootSelection && parent == null) {
                 parent = comp.getParent();
             }
-            if (comp.isLayoutContainer()) { // 
+            if (comp.isLayoutContainer()) {
                 Collection<GapInfo> gaps = visualState.getContainerGaps(comp);
                 for (GapInfo gapInfo : gaps) {
                     if (!newGaps && gapInfo.paintRect != null) {
@@ -489,7 +519,11 @@ public class LayoutPainter implements LayoutConstants {
                 if (paintedGaps.get(comp) == null) {
                     paintedGaps.put(comp, gaps);
                 }
-                paintGapsInContainer(g, comp, gaps, selectedGap, null);
+                if (selectedComponents.contains(comp)) {
+                    paintGapsInContainer(g, comp, gaps, selectedGap, null);
+                } // Don't paint inner gaps of this component if an outer gap has
+                  // been selected for it in parent. Still have the gaps ready for
+                  // the case the component is directly selected again.
             }
         }
         // part 2: paint gaps for selected components in their parent
@@ -527,7 +561,11 @@ public class LayoutPainter implements LayoutConstants {
             if (cached == null) {
                 paintedGaps.put(parent, gaps);
             }
-            paintGapsInContainer(g, parent, gaps, selectedGap, null);
+            if (selectedGap == null || gaps.contains(selectedGap)) {
+                paintGapsInContainer(g, parent, gaps, selectedGap, null);
+            } // Don't paint outer gaps if there is a selected inner gap in this
+              // container. Still keep the gaps ready for the case the gap is
+              // unselected by clicking elsewhere in the container.
         }
     }
 
@@ -567,14 +605,26 @@ public class LayoutPainter implements LayoutConstants {
         // Check for special case when clicked on a gap next to a selected
         // component. Even though the container gets selected in such case,
         // we don't want to paint all container gaps, but only the gaps of
-        // previously selected component (i.e. same gaps as so far).
-        LayoutComponent maybeparent = selectedComponents.toArray(new LayoutComponent[1])[0];
-        for (LayoutComponent comp : componentsOfPaintedGaps) {
-            if (comp.getParent() != maybeparent) {
-                return true; // not the case, new selection is not parent of previously selected component
+        // previously selected component (i.e. same gaps as so far). We remember
+        // the components in 'componentsOfPaintedGaps' list.
+        LayoutComponent maybeParent = null;
+        for (LayoutComponent selComp : selectedComponents) {
+            if (selComp.isLayoutContainer()) {
+                for (LayoutComponent prevComp : componentsOfPaintedGaps) {
+                    if (prevComp.getParent() == selComp) {
+                        maybeParent = selComp;
+                        break;
+                    }
+                }
+                if (maybeParent != null) {
+                    break;
+                }
             }
         }
-        Collection<GapInfo> prevGaps = (paintedGaps != null) ? paintedGaps.get(maybeparent) : null;
+        if (maybeParent == null) {
+            return true; // not the case, new selection is not parent of previously selected component
+        }
+        Collection<GapInfo> prevGaps = (paintedGaps != null) ? paintedGaps.get(maybeParent) : null;
         if (prevGaps == null || !prevGaps.contains(selectedGap)) {
             return true; // not the case, the selected gap does not belong to previously selected component
         }
@@ -621,35 +671,11 @@ public class LayoutPainter implements LayoutConstants {
             return;
         }
 
-        LayoutRegion innerSpace = container.getDefaultLayoutRoot(HORIZONTAL).getCurrentSpace();
-        LayoutInterval outerInterval = container.getLayoutInterval(HORIZONTAL);
-        LayoutRegion outerSpace = (outerInterval != null) ? outerInterval.getCurrentSpace() : null;
-        LayoutRegion clipSpace = null;
-        if (outerSpace != null && outerSpace.isSet()) {
-            for (int dim=HORIZONTAL; dim < DIM_COUNT; dim++) {
-                int[] posIn = innerSpace.positions[dim];
-                int[] posOut = outerSpace.positions[dim];
-                if (posOut[TRAILING] < posIn[TRAILING]) {
-                    if (posOut[TRAILING] <= posIn[LEADING]) {
-                        return; // assuming it can't be clipped in leading direction
-                    }
-                    if (clipSpace == null) {
-                        clipSpace = new LayoutRegion(innerSpace);
-                    }
-                    clipSpace.setPos(dim, TRAILING, posOut[TRAILING]);
-                }
-            }
-        }
-        if (clipSpace == null) {
-            clipSpace = innerSpace;
-        }
-
         Shape originalClip = g.getClip();
-        Rectangle containerClip = clipSpace.toRectangle(new Rectangle());
-        // avoid painting over components and out of container boundaries (clipped)
-        Shape componentsClip = visualState.clipForGapPainting(gaps, containerClip);
-        if (componentsClip != containerClip || clipSpace != innerSpace) {
-            g.clip(componentsClip);
+        Shape containerClip = visualState.getComponentVisibilityClip(container);
+        if (containerClip != null) {
+            // avoid painting over components and out of container boundaries (clipped)
+            g.clip(visualState.getClipForGapPainting(gaps, containerClip));
         }
         Color originalColor = g.getColor();
         boolean paintSelectedGap = false;
@@ -679,8 +705,6 @@ public class LayoutPainter implements LayoutConstants {
             return;
         }
         LayoutComponent parent = null;
-        LayoutComponent containerOfResizingGap = null;
-        // paint gaps in selected components that are containers
         for (LayoutComponent comp : componentsOfPaintedGaps) {
             if (parent == null) {
                 parent = comp.getParent();
@@ -688,19 +712,14 @@ public class LayoutPainter implements LayoutConstants {
             if (comp.isLayoutContainer()) {
                 Collection<GapInfo> gaps = visualState.getContainerGaps(comp);
                 if (gaps.contains(resGap)) {
-                    containerOfResizingGap = comp; // paint this as last
-                } else {
-                    paintGapsInContainer(g, comp, gaps, resGap, resRect);
+                    parent = comp;
+                    break;
                 }
             }
         }
-        if (parent != null) { // paint gaps for selected components in their parent
+        if (parent != null) { // we only paint gaps of the container where the gap is being resized
             Collection<GapInfo> gaps = paintedGaps.get(parent);
             paintGapsInContainer(g, parent, gaps, resGap, resRect);
-        }
-        if (containerOfResizingGap != null) { // paint the resizing gap (if it was not in 'parent')
-            Collection<GapInfo> gaps = paintedGaps.get(containerOfResizingGap);
-            paintGapsInContainer(g, containerOfResizingGap, gaps, resGap, resRect);
         }
     }
 
