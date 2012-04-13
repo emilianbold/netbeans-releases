@@ -42,12 +42,14 @@
 
 package org.netbeans.modules.php.editor.codegen;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
@@ -60,17 +62,15 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.VariableName;
-import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -83,6 +83,9 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
     private final static String VARIABLE_FROM_NEXT_ASSIGNMENT_TYPE = "variableFromNextAssignmentType"; //NOI18N
     private static final String VARIABLE_FROM_PREVIOUS_ASSIGNMENT = "variableFromPreviousAssignment"; //NOI18N
     private static final String INSTANCE_OF = "instanceof"; //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(PHPCodeTemplateProcessor.class);
+    private static final Logger LOGGER = Logger.getLogger(PHPCodeTemplateProcessor.class.getName());
+    private static final int TIMEOUT = 500;
 
     private final CodeTemplateInsertRequest request;
     // @GuardedBy("this")
@@ -274,26 +277,40 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         if (info != null) {
             return true;
         }
-        Document doc = request.getComponent().getDocument();
+        final Document doc = request.getComponent().getDocument();
         FileObject file = NavUtils.getFile(doc);
         if (file == null) {
             return false;
         }
-        try {
-            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+        Future<?> future = RP.submit(new Runnable() {
 
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    PHPParseResult parserResult = (PHPParseResult) resultIterator.getParserResult();
-                    if (parserResult != null) {
-                        PHPCodeTemplateProcessor.this.info = parserResult;
-                    }
+            @Override
+            public void run() {
+                try {
+                    ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            PHPParseResult parserResult = (PHPParseResult) resultIterator.getParserResult();
+                            if (parserResult != null) {
+                                PHPCodeTemplateProcessor.this.info = parserResult;
+                            }
+                        }
+                    });
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                    info = null;
                 }
-            });
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-            info = null;
-            return false;
+            }
+        });
+        try {
+            future.get(TIMEOUT, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.FINE, "Getting of parser result has been interrupted.");
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.SEVERE, "Exception has been thrown during getting of parser result.", ex);
+        } catch (TimeoutException ex) {
+            LOGGER.log(Level.FINE, "Timeout for getting parser result has been exceed: {0}", TIMEOUT);
         }
         if (info == null) {
             return false;

@@ -51,6 +51,11 @@ import com.sun.source.util.SourcePositions;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -173,5 +178,21 @@ public class HintsUtils {
         public int getEndOffset(){
             return endOffset;
         }
+    }
+
+    public static boolean isContainingKnownClasses(ExecutableElement method) {
+        if (method.getReturnType().getKind() == TypeKind.ERROR)
+            return false;
+
+        for (TypeMirror type : method.getThrownTypes()) {
+            if (type.getKind() == TypeKind.ERROR)
+                return false;
+        }
+
+        for (VariableElement variableElement : method.getParameters()) {
+            if (variableElement.asType().getKind() == TypeKind.ERROR)
+                return false;
+        }
+        return true;
     }
 }
