@@ -123,6 +123,7 @@ public interface VCSHistoryProvider {
         private Action[] actions;
         private RevisionProvider revisionProvider;
         private MessageEditProvider messageEditProvider;
+        private ParentProvider parentProvider;
         
         /**
          * Creates a new HistoryEntry instance.
@@ -195,6 +196,41 @@ public interface VCSHistoryProvider {
         {
             this(files, dateTime, message, username, usernameShort, revision, revisionShort, actions, revisionProvider);
             this.messageEditProvider = messageEditProvider;
+        }
+        
+        /**
+         * Creates a new HistoryEntry instance.
+         * 
+         * @param files involved files
+         * @param dateTime the date and time when the versioning revision was created
+         * @param message the message describing the versioning revision 
+         * @param username full description of the user who created the versioning revision 
+         * @param usernameShort short description of the user who created the versioning revision 
+         * @param revision full description of the versioning revision
+         * @param revisionShort short description of the versioning revision
+         * @param actions actions which might be called in regard with this revision
+         * @param revisionProvider a RevisionProvider to get access to a files contents in this revision
+         * @param messageEditProvider a MessageEditProvider to change a revisions message
+         * @param parentProvider a ParentProvider to provide this entries parent entry. Not necessary for VCS
+         * where a revisions parent always is the time nearest previous revision.
+         * 
+         * @since 1.30
+         */
+        public HistoryEntry(
+                File[] files, 
+                Date dateTime, 
+                String message, 
+                String username, 
+                String usernameShort, 
+                String revision, 
+                String revisionShort, 
+                Action[] actions, 
+                RevisionProvider revisionProvider,
+                MessageEditProvider messageEditProvider,
+                ParentProvider parentProvider) 
+        {
+            this(files, dateTime, message, username, usernameShort, revision, revisionShort, actions, revisionProvider, messageEditProvider);
+            this.parentProvider = parentProvider;
         }
         
         /**
@@ -332,6 +368,21 @@ public interface VCSHistoryProvider {
         }
         
         /**
+         * Returns this revisions parent entry or null if not available.
+         * 
+         * @param file the file for whitch the parent HistoryEntry should be returned
+         * @return this revisions parent entry
+         * 
+         * @since 1.30
+         */
+        public HistoryEntry getParentEntry(File file) {
+            if(parentProvider != null) {
+                return parentProvider.getParentEntry(file);
+            } 
+            return null;
+        }
+        
+        /**
          * Returns the RevisionProvider
          * @return the RevisionProvider
          */
@@ -345,6 +396,14 @@ public interface VCSHistoryProvider {
          */
         MessageEditProvider getMessageEditProvider() {
             return messageEditProvider;
+        }
+
+        /**
+         * Returns the ParentProvider or null 
+         * @return the ParentProvider
+         */        
+        ParentProvider getParentProvider() {
+            return parentProvider;
         }
     }
     
@@ -390,6 +449,24 @@ public interface VCSHistoryProvider {
         * @since 1.29
         */
         void getRevisionFile(File originalFile, File revisionFile);
+    }
+    
+    /**
+     * Implement and pass over to a {@link HistoryEntry} in case you want 
+     * {@link HistoryEntry#getParentProvider()} to return relevant values.
+     * 
+     * @since 1.30
+     */
+    public interface ParentProvider {
+        /**
+         * Return a {@link HistoryEntry} representing the parent of the {@link HistoryEntry}
+         * configured with this ParentProvider.
+         * 
+         * @param file the file for whitch the parent HistoryEntry should be returned
+         * @return the parent HistoryEntry
+         * @since 1.30
+         */
+        HistoryEntry getParentEntry(File file);
     }
     
     /**

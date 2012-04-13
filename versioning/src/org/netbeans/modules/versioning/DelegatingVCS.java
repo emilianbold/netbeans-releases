@@ -609,8 +609,35 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
             HistoryEntry[] proxyHistory = new HistoryEntry[history.length];
             for (int i = 0; i < proxyHistory.length; i++) {
                 final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he = history[i];
-                RevisionProvider rp = new RevisionProvider() {
+                proxyHistory[i] = delegateHistoryEntry(proxies, he);
+            }
+            return proxyHistory;
+        }
+
+        @Override
+        public Action createShowHistoryAction(VCSFileProxy[] proxies) {
+            File[] files = toFiles(proxies);
+            return getDelegate().getVCSHistoryProvider().createShowHistoryAction(files);
+        }
+
+        private MessageEditProvider delegateMessageEditProvider(final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he) {
+            if(he.canEdit()) {
+                return new MessageEditProvider() {
                     @Override
+                    public void setMessage(String message) throws IOException {
+                        org.netbeans.modules.versioning.spi.VCSHistoryProvider.MessageEditProvider provider = Accessor.IMPL.getMessageEditProvider(he);
+                        if(provider != null) {
+                            provider.setMessage(message);
+                        }
+                    }
+                };
+            }
+            return null;
+        }
+
+        private RevisionProvider delegateRevisionProvider(final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he) {
+            return new RevisionProvider() {
+                @Override
                     public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
                         org.netbeans.modules.versioning.spi.VCSHistoryProvider.RevisionProvider provider = Accessor.IMPL.getRevisionProvider(he);
                         if(provider != null) {
@@ -622,20 +649,26 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                         }
                     }
                 };
-                MessageEditProvider mep = null;
-                if(he.canEdit()) {
-                    mep = new MessageEditProvider() {
-                        @Override
-                        public void setMessage(String message) throws IOException {
-                            org.netbeans.modules.versioning.spi.VCSHistoryProvider.MessageEditProvider provider = Accessor.IMPL.getMessageEditProvider(he);
-                            if(provider != null) {
-                                provider.setMessage(message);
-                            }
+        }
+
+        private ParentProvider delegateParentProvider(final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he) {
+            return new ParentProvider() {
+                @Override
+                public HistoryEntry getParentEntry(VCSFileProxy file) {
+                    org.netbeans.modules.versioning.spi.VCSHistoryProvider.ParentProvider provider = Accessor.IMPL.getParentProvider(he);
+                    if(provider != null) {
+                        org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he = provider.getParentEntry(file.toFile());
+                        if(he != null) {
+                            return delegateHistoryEntry(toProxies(he.getFiles()), he);
                         }
-                    };
+                    }
+                    return null;
                 }
-                proxyHistory[i] = 
-                    new HistoryEntry(
+            };
+        }
+
+        private HistoryEntry delegateHistoryEntry(VCSFileProxy[] proxies, final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he) {
+            return new HistoryEntry(
                         proxies, 
                         he.getDateTime(), 
                         he.getMessage(), 
@@ -644,17 +677,10 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                         he.getRevision(), 
                         he.getRevisionShort(), 
                         he.getActions(), 
-                        rp,
-                        mep);
+                        delegateRevisionProvider(he),
+                        delegateMessageEditProvider(he), 
+                        delegateParentProvider(he));
             }
-            return proxyHistory;
-        }
-
-        @Override
-        public Action createShowHistoryAction(VCSFileProxy[] proxies) {
-            File[] files = toFiles(proxies);
-            return getDelegate().getVCSHistoryProvider().createShowHistoryAction(files);
-        }
 
         private class DelegateChangeListener implements org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryChangeListener {
             private final VCSHistoryProvider.HistoryChangeListener delegate;

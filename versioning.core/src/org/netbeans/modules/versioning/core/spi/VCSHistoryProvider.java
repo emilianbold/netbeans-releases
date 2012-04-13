@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.versioning.core.spi;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import javax.swing.Action;
@@ -115,6 +116,7 @@ public interface VCSHistoryProvider {
         private Action[] actions;
         private RevisionProvider revisionProvider;
         private MessageEditProvider mep;
+        private ParentProvider parentProvider;        
         
         /**
          * Creates a new HistoryEntry instance.
@@ -186,6 +188,40 @@ public interface VCSHistoryProvider {
             this(files, dateTime, message, username, usernameShort, revision, revisionShort, actions, rp);
             this.mep = mep;
         }        
+        
+       /**
+         * Creates a new HistoryEntry instance.
+         * 
+         * @param files involved files
+         * @param dateTime the date and time when the versioning revision was created
+         * @param message the message describing the versioning revision 
+         * @param username full description of the user who created the versioning revision 
+         * @param usernameShort short description of the user who created the versioning revision 
+         * @param revision full description of the versioning revision
+         * @param revisionShort short description of the versioning revision
+         * @param actions actions which might be called in regard with this revision
+         * @param revisionProvider a RevisionProvider to get access to a files contents in this revision
+         * @param messageEditProvider a MessageEditProvider to change a revisions message
+         * @param parentProvider a ParentProvider to provide this entries parent entry. Not necessary for VCS
+         * where a revisions parent always is the time nearest previous revision.
+         * 
+         */
+        public HistoryEntry(
+                VCSFileProxy[] files, 
+                Date dateTime, 
+                String message, 
+                String username, 
+                String usernameShort, 
+                String revision, 
+                String revisionShort, 
+                Action[] actions, 
+                RevisionProvider revisionProvider,
+                MessageEditProvider messageEditProvider,
+                ParentProvider parentProvider) 
+        {
+            this(files, dateTime, message, username, usernameShort, revision, revisionShort, actions, revisionProvider, messageEditProvider);
+            this.parentProvider = parentProvider;
+        }
         
        /**
         * Determines if this HistoryEntry instance supports changes.
@@ -298,6 +334,20 @@ public interface VCSHistoryProvider {
                 revisionProvider.getRevisionFile(originalFile, revisionFile);
             }
         }
+        
+        /**
+         * Returns this revisions parent entry or null if not available.
+         * 
+         * @param file the file for whitch the parent HistoryEntry should be returned
+         * @return this revisions parent entry
+         */
+        public HistoryEntry getParentEntry(VCSFileProxy file) {
+            if(parentProvider != null) {
+                return parentProvider.getParentEntry(file);
+            }
+            return null;
+        }
+
     }
 
     /**
@@ -354,6 +404,23 @@ public interface VCSHistoryProvider {
      */    
     public interface RevisionProvider {
         void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile);
+    }
+    
+    /**
+     * Implement and pass over to a {@link HistoryEntry} in case you want 
+     * {@link HistoryEntry#getParentProvider()} to return relevant values.
+     * 
+     * @since 1.30
+     */
+    public interface ParentProvider {
+        /**
+         * Return a {@link HistoryEntry} representing the parent of the {@link HistoryEntry}
+         * configured with this ParentProvider.
+         * 
+         * @param file the file for whitch the parent HistoryEntry should be returned
+         * @return the parent HistoryEntry
+         */
+        HistoryEntry getParentEntry(VCSFileProxy file);
     }
     
     /**
