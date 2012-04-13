@@ -54,6 +54,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -95,6 +97,7 @@ import org.openide.util.actions.Presenter.Popup;
 public class NewFile extends ProjectAction implements PropertyChangeListener, Popup {
 
     private static final RequestProcessor RP = new RequestProcessor(NewFile.class);
+    private static final Logger LOG = Logger.getLogger(NewFile.class.getName());
 
     private JMenu subMenu;
 
@@ -276,6 +279,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             }
         }
 
+        LOG.log(Level.FINE, "#210919: found preselected folder {0} for {1}", new Object[] {preselectedFolder, context});
         return preselectedFolder;
     }
 
