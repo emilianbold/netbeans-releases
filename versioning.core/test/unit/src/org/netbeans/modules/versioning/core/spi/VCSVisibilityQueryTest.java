@@ -53,8 +53,8 @@ import java.io.File;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
-import org.netbeans.modules.versioning.spi.testvcs.TestVCSVisibilityQuery;
+import org.netbeans.modules.versioning.core.spi.testvcs.TestVCS;
+import org.netbeans.modules.versioning.core.spi.testvcs.TestVCSVisibilityQuery;
 import org.openide.util.test.MockLookup;
 
 /**

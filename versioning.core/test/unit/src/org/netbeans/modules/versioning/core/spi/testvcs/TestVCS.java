@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.spi.testvcs;
+package org.netbeans.modules.versioning.core.spi.testvcs;
 
 
 import java.awt.event.ActionEvent;

@@ -54,8 +54,8 @@ import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEntry;
 import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
-import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
-import org.netbeans.modules.versioning.spi.testvcs.TestVCSHistoryProvider;
+import org.netbeans.modules.versioning.core.spi.testvcs.TestVCS;
+import org.netbeans.modules.versioning.core.spi.testvcs.TestVCSHistoryProvider;
 
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
@@ -313,7 +313,7 @@ public class VCSHistoryTest extends NbTestCase {
                     new Action[0], 
                     null,
                     null);
-}
+        }
     }
 
 }
