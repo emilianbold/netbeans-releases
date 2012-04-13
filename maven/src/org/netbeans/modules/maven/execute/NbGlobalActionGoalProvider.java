@@ -42,19 +42,17 @@
 
 package org.netbeans.modules.maven.execute;
 
-import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -66,6 +64,7 @@ import org.openide.filesystems.FileUtil;
 public class NbGlobalActionGoalProvider extends AbstractMavenActionsProvider {
     
     public static final String FILENAME = "Projects/org-netbeans-modules-maven/nbactions.xml"; //NOI18N
+    private static final Logger LOG = Logger.getLogger(NbGlobalActionGoalProvider.class.getName());
     
     private Date lastModified = new Date();
     private boolean lastTimeExists = true;
@@ -74,6 +73,7 @@ public class NbGlobalActionGoalProvider extends AbstractMavenActionsProvider {
     public NbGlobalActionGoalProvider() {
     }
     
+    @Override
     public InputStream getActionDefinitionStream() {
         FileObject fo = FileUtil.getConfigFile(FILENAME);
         lastTimeExists = fo != null;
@@ -82,7 +82,7 @@ public class NbGlobalActionGoalProvider extends AbstractMavenActionsProvider {
                 lastModified = fo.lastModified();
                 return fo.getInputStream();
             } catch (FileNotFoundException ex) {
-                ex.printStackTrace();
+                LOG.log(Level.FINE, "File not found: " + FileUtil.getFileDisplayName(fo), ex);
             }
         }
         lastModified = new Date();
@@ -117,9 +117,9 @@ public class NbGlobalActionGoalProvider extends AbstractMavenActionsProvider {
             }
             return toRet.toArray(new NetbeansActionMapping[toRet.size()]);
         } catch (XmlPullParserException ex) {
-            ex.printStackTrace();
+            LOG.log(Level.FINE, "cannot parse", ex);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            LOG.log(Level.FINE, "", ex);
         }
         return fallbackActions;
     }

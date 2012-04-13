@@ -164,7 +164,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     private void refreshOriginalContent() {
         originalContentSerial++;
         sidebarTemporarilyDisabled = false;
-        LOG.finer("refreshing diff in refreshOriginalContent");
+        LOG.log(Level.FINE, "refreshOriginalContent(): {0}", fileObject != null ? fileObject.getPath() : null);
         refreshDiff();
     }
     
@@ -834,7 +834,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         void refresh() {
             List<DiffMark> oldMarks = marks;
             marks = getMarksForDifferences();
-            LOG.log(Level.FINE, "refreshing marks for {0}", fileObject != null ? fileObject.getPath() : null);
+            LOG.log(Level.FINER, "refreshing marks for {0}", fileObject != null ? fileObject.getPath() : null);
             firePropertyChange(PROP_MARKS, oldMarks, marks);
         }
 
@@ -910,19 +910,19 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         private void fetchOriginalContent() {
-            LOG.log(Level.FINE, "fetching original contet for {0}", fileObject != null ? fileObject.getPath() : null);
             int serial = originalContentSerial;
             if ((originalContentBuffer != null) && (originalContentBufferSerial == serial)) {
                 return;
             }
             originalContentBufferSerial = serial;
 
+            LOG.log(Level.FINER, "fetching original contet for {0}", fileObject != null ? fileObject.getPath() : null);
             originalContentBuffer = getText(ownerVersioningSystem);
             if (originalContentBuffer == null) {
                 // no content for the file, setting sidebar visibility to false eliminates repeated asking for the content
                 // file can be deleted, or new?
                 sidebarTemporarilyDisabled = true;
-                LOG.log(Level.FINE, "Disabling diffsidebar for {0}, no content available", fileObject.getPath()); //NOI18N
+                LOG.log(Level.FINE, "Disabling diffsidebar for {0}, no content available", fileObject != null ? fileObject.getPath() : null); //NOI18N
             }
         }
     }

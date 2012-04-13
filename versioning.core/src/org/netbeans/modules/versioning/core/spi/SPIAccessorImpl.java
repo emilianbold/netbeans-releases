@@ -46,6 +46,7 @@ package org.netbeans.modules.versioning.core.spi;
 import java.util.*;
 import org.netbeans.modules.versioning.core.SPIAccessor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEntry;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -58,5 +59,15 @@ final class SPIAccessorImpl extends SPIAccessor {
     @Override
     public VCSContext createContextForFiles(Set<VCSFileProxy> files, Set<? extends FileObject> originalFiles) {
         return VCSContext.forFiles(files, originalFiles);
+    }
+    
+    @Override
+    public void setLookupObjects(HistoryEntry entry, Object[] lookupObjects) {
+        entry.setLookupObjects(lookupObjects);
+    }
+
+    @Override
+    public Object[] getLookupObjects(HistoryEntry entry) {
+        return entry.getLookupObjects();
     }
 }

@@ -55,6 +55,7 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.history.HistoryAction;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.openide.util.NbBundle;
@@ -66,8 +67,8 @@ import org.openide.util.RequestProcessor;
  */
 public class HgHistoryProvider implements VCSHistoryProvider {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    
     private final List<VCSHistoryProvider.HistoryChangeListener> listeners = new LinkedList<VCSHistoryProvider.HistoryChangeListener>();
+    private Action[] actions;
 
     @Override
     public void addHistoryChangeListener(VCSHistoryProvider.HistoryChangeListener l) {
@@ -83,8 +84,6 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         }
     }
     
-    
-    private Map<File, List<HgLogMessage>> paths = new HashMap<File, List<HgLogMessage>>();
     @Override
     public synchronized HistoryEntry[] getHistory(File[] files, Date fromDate) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
@@ -113,13 +112,13 @@ public class HgHistoryProvider implements VCSHistoryProvider {
             toRevision = dateFormat.format(new Date(System.currentTimeMillis()));
         }
 
+        File repositoryRoot = repositories.iterator().next();
         for (File file : files) {
             FileInformation info = Mercurial.getInstance().getFileStatusCache().refresh(file);
             int status = info.getStatus();
             if ((status & FileInformation.STATUS_VERSIONED) == 0) {
                 continue;
             }
-            File repositoryRoot = repositories.iterator().next();
             HgLogMessage[] history = HistoryRegistry.getInstance().getLogs(repositoryRoot, files, fromRevision, toRevision);
             for (HgLogMessage h : history) {
                 String r = h.getHgRevision().getRevisionNumber();
@@ -136,23 +135,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         for(HgLogMessage h : rev2LMMap.values()) {
             Set<File> s = rev2FileMap.get(h.getHgRevision().getRevisionNumber());
             File[] involvedFiles = s.toArray(new File[s.size()]);
-            String username = h.getUsername();
-            String author = h.getAuthor();
-            if(username == null || "".equals(username.trim())) {
-                username = author;
-            }
-            
-            HistoryEntry e = new HistoryEntry(
-                    involvedFiles, 
-                    h.getDate(), 
-                    h.getMessage(), 
-                    author, 
-                    username, 
-                    h.getHgRevision().getRevisionNumber() + ":" + h.getHgRevision().getChangesetId(), 
-                    h.getHgRevision().getRevisionNumber(), 
-                    createActions(h.getHgRevision(), files), 
-                    new RevisionProviderImpl(h.getHgRevision()));
-            ret.add(e);
+            ret.add(createHistoryEntry(h, repositoryRoot, involvedFiles));
         }
         return ret.toArray(new HistoryEntry[ret.size()]);
     }
@@ -237,6 +220,50 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         }
     }
 
+    private class ParentProviderImpl implements ParentProvider {
+        private HgLogMessage logMessage;
+        private File[] files;
+        private File repository;
+
+        public ParentProviderImpl(HgLogMessage logMessage, File[] files, File repository) {
+            this.logMessage = logMessage;
+            this.files = files;
+            this.repository = repository;
+        }
+
+        @Override
+        public HistoryEntry getParentEntry(File file) {
+            HgRevision ancestor = logMessage.getAncestor(file);
+            HgLogMessage[] history = HistoryRegistry.getInstance().getLogs(repository, new File[] {file}, ancestor.getChangesetId(), ancestor.getChangesetId());
+            if(history == null || history.length == 0) {
+                return null;
+            }
+            assert history.length == 1;
+            
+            return createHistoryEntry(history[0], repository, files);
+        }
+    }
+    
+    private HistoryEntry createHistoryEntry(HgLogMessage h, File repository, File[] files) {
+        String username = h.getUsername();
+        String author = h.getAuthor();
+        if(username == null || "".equals(username.trim())) { // NOI18N
+            username = author;
+        }
+        return new HistoryEntry(
+                files, 
+                h.getDate(), 
+                h.getMessage(), 
+                author, 
+                username, 
+                h.getHgRevision().getRevisionNumber() + ":" + h.getHgRevision().getChangesetId(), // NOI18N
+                h.getHgRevision().getRevisionNumber(), 
+                getActions(), 
+                new RevisionProviderImpl(h.getHgRevision()),
+                null,
+                new ParentProviderImpl(h, files, repository));
+    }
+    
     private static class OpenHistoryAction extends AbstractAction {
         private final File[] files;
 
@@ -266,57 +293,76 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         
     }
 
-    private Action[] createActions(final HgRevision revision, final File... files) {
-        return new Action[] {new AbstractAction(NbBundle.getMessage(LogAction.class, "CTL_SummaryView_RollbackTo", "" + revision.getRevisionNumber())) { // NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                final File root = Mercurial.getInstance().getRepositoryRoot(files[0]);
-                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
-                HgProgressSupport support = new HgProgressSupport() {
+    private synchronized Action[] getActions() {
+        if(actions == null) {
+            actions = new Action[] {
+                new HistoryAction() {
                     @Override
-                    public void perform() {
-                        RevertModificationsAction.performRevert(
-                            root,   
-                            revision.getRevisionNumber(),                           
-                            files, 
-                            HgModuleConfig.getDefault().getBackupOnRevertModifications(), 
-                            false, 
-                            this.getLogger());
+                    protected void perform(final HistoryEntry entry, final Set<File> files) {
+                        final File root = Mercurial.getInstance().getRepositoryRoot(files.iterator().next());
+                        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
+                        HgProgressSupport support = new HgProgressSupport() {
+                            @Override
+                            public void perform() {
+                                RevertModificationsAction.performRevert(
+                                    root,   
+                                    getHgRevision(entry).getRevisionNumber(),                           
+                                    new LinkedList<File>(files), 
+                                    HgModuleConfig.getDefault().getBackupOnRevertModifications(), 
+                                    false, 
+                                    this.getLogger());
+                            }
+                        };
+                        support.start(rp, root, NbBundle.getMessage(LogAction.class, "MSG_Revert_Progress")); // NOI18N
+                    }    
+                    @Override
+                    protected boolean isMultipleHistory() {
+                        return false;
                     }
-                };
-                support.start(rp, root, NbBundle.getMessage(LogAction.class, "MSG_Revert_Progress")); // NOI18N
-            }    
-        }, 
-        new AbstractAction(NbBundle.getMessage(LogAction.class, "CTL_SummaryView_View")) { // NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                view(revision, false, files);
-            }
-
-        },
-        new AbstractAction(NbBundle.getMessage(LogAction.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                view(revision, true, files);
-            }
-        }};
+                    @Override
+                    public String getName() {
+                        HistoryEntry he = getHistoryEntry();
+                        return NbBundle.getMessage(LogAction.class, "CTL_SummaryView_RollbackTo", he.getRevisionShort()); 
+                    }
+                },
+                new HistoryAction(NbBundle.getMessage(LogAction.class, "CTL_SummaryView_View")) { // NOI18N
+                    @Override
+                    protected void perform(HistoryEntry entry, Set<File> files) {
+                        view(entry, false, files);
+                    }
+                },
+                new HistoryAction(NbBundle.getMessage(LogAction.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
+                    @Override
+                    protected void perform(HistoryEntry entry, Set<File> files) {
+                        view(entry, true, files);
+                    }
+                }
+            };
+        }
+        return actions;
     }
     
-    private void view(final HgRevision revision, final boolean showAnnotations, final File... files) {
-        final File root = Mercurial.getInstance().getRepositoryRoot(files[0]);
+    private void view(final HistoryEntry entry, final boolean showAnnotations, final Set<File> files) {
+        final File root = Mercurial.getInstance().getRepositoryRoot(files.iterator().next());
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         rp.post(new Runnable() {
             @Override
             public void run() {
                 for (File f : files) {
                     try {
-                        HgUtils.openInRevision(f, -1, revision, showAnnotations);
+                        HgUtils.openInRevision(f, -1, getHgRevision(entry), showAnnotations);
                     } catch (IOException ex) {
                         // Ignore if file not available in cache
                     }
                 }
             }
         });
+    }
+    
+    private HgRevision getHgRevision(HistoryEntry entry) {
+        String[] revs = entry.getRevision().split(":");
+        final HgRevision revision = new HgRevision(revs[1], revs[0]);
+        return revision;
     }
     
     /**
