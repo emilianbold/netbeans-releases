@@ -93,6 +93,7 @@ final class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementati
         this.testProps = testProps;
     }
     
+    @Override
     public Result findBinaryRoots(URL sourceRoot) {
         assert sourceRoot != null;
         BinaryForSourceQuery.Result result = cache.get(sourceRoot);
@@ -135,27 +136,34 @@ final class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementati
             eval.addPropertyChangeListener(this);
         }
         
+        @Override
         public URL[] getRoots() {
             List<URL> urls = new ArrayList<URL>();
             for (String propName : propNames) {
                 String val = eval.getProperty(propName);
-                if (val != null) {                
-                    urls.add(FileUtil.urlForArchiveOrDir(helper.resolveFile(val)));
+                if (val != null) {
+                    final URL url = FileUtil.urlForArchiveOrDir(helper.resolveFile(val));
+                    if (url != null) {
+                        urls.add(url);
+                    }
                 }
             }
             return urls.toArray(new URL[urls.size()]);
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             assert l != null;
             changeSupport.addChangeListener(l);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             assert l != null;
             changeSupport.removeChangeListener(l);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent event) {
             changeSupport.fireChange();
         }
