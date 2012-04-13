@@ -123,8 +123,9 @@
        The hint then consists of this sole method. Any number of such hints may be created in a single class.
    </usecase>
    <usecase id="testing" name="Creating a Tests for the Newly Created Java Hint">
-       Creating automated tests for the hints is simple: subclass <a href="@TOP@/../org-netbeans-modules-java-hints-test/org/netbeans/modules/java/hints/test/api/TestBase.html">TestBase</a>
-       and use its <code>performAnalysisTest</code>, <code>performFixTest</code>.
+       Creating automated tests for the hints is simple: create a test class, and used
+       <a href="@TOP@/../org-netbeans-modules-java-hints-test/org/netbeans/modules/java/hints/test/api/HintTest.html">HintTest</a>
+       to setup the test, run the hint and verify that its outcomes are correct.
        The tests automatically run with <code>test</code> branding, so create <code>Bundle_test.properties</code>, and add
        bundle keys into it for ErrorDescription and Fix display names, to isolate the test from changes in the production
        <code>Bundle.properties</code>.
