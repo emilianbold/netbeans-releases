@@ -126,7 +126,7 @@ public class StatusTestHidden extends AbstractCommandTestCase {
         
         File[] files = new File[] { notmanagedfile, notmanagedfolder, unversioned, added, uptodate, deleted, ignoredFile, ignoredFolder, fileInIgnoredFolder, external };
         ISVNStatus[] sNb;
-        if (isCommandLine() || isSvnkit()) {
+        if (isCommandLine()) {
             try {
                 getNbClient().getStatus(files);
                 fail("Should fail with this client, status throws a warning");
@@ -215,10 +215,10 @@ public class StatusTestHidden extends AbstractCommandTestCase {
         //                          descend  getAll contactServer  ignoreExternals
         status(notmanagedfolder,    false,   true,  false,          true            , 1, false);               
         status(notmanagedfolder,    false,   false, false,          true            , 1, false);               
-        status(notmanagedfile,      false,   true,  false,          true            , 1, isSvnkit());               
-        status(notmanagedfile,      false,   false, false,          true            , 1, isSvnkit());               
-        status(unversioned,         false,   true,  false,          true            , 1, isSvnkit());               
-        status(unversioned,         false,   false, false,          true            , 1, isSvnkit());               
+        status(notmanagedfile,      false,   true,  false,          true            , 1, false);               
+        status(notmanagedfile,      false,   false, false,          true            , 1, false);               
+        status(unversioned,         false,   true,  false,          true            , 1, false);               
+        status(unversioned,         false,   false, false,          true            , 1, false);               
         status(added,               false,   true,  false,          true            , 1, false);               
         status(added,               false,   false, false,          true            , 1, false);               
         status(uptodate,            false,   true,  false,          true            , 1, false);               
@@ -227,7 +227,7 @@ public class StatusTestHidden extends AbstractCommandTestCase {
         status(deleted,             false,   false, false,          true            , 1, false);               
         status(ignoredFile,         false,   false, false,          true            , 1, false);
         status(ignoredFolder,       false,   false, false,          true            , 1, false);
-        status(fileInIgnoredFolder, false,   false, false,          true            , 1, isSvnkit());
+        status(fileInIgnoredFolder, false,   false, false,          true            , 1, false);
   
     }        
     
@@ -273,13 +273,13 @@ public class StatusTestHidden extends AbstractCommandTestCase {
         //                        descend  getAll contactServer  ignoreExternals
         status(notmanagedFolder1,  false,  true,  false,          true           , 1, false);               
         status(notmanagedFolder1,  true,   true,  false,          true           , 1, false);               
-        status(notmanagedFolder2,  false,  false, false,          true           , 1, isSvnkit());               
-        status(notmanagedFolder2,  true,   false, false,          true           , 1, isSvnkit());               
+        status(notmanagedFolder2,  false,  false, false,          true           , 1, false);               
+        status(notmanagedFolder2,  true,   false, false,          true           , 1, false);               
                 
         status(unversionedFolder1, false,  true,  false,          true          , 1, false);               
         status(unversionedFolder1, true,   true,  false,          true          , 1, false);                       
-        status(unversionedFolder2, false,  true,  false,          true          , 1, isSvnkit());               
-        status(unversionedFolder2, true,   true,  false,          true          , 1, isSvnkit());                       
+        status(unversionedFolder2, false,  true,  false,          true          , 1, false);               
+        status(unversionedFolder2, true,   true,  false,          true          , 1, false);                       
         
         status(addedFolder1,       false,  true,  false,          true          , 2, false);               
         status(addedFolder1,       true,   true,  false,          true          , 3, false);                       
