@@ -394,6 +394,7 @@
 <mapID target="org.netbeans.modules.refactoring.java.ui.InnerToOuterRefactoringUI" url="refactor/csh/move-inner_db.html" /> 
 <!--Usages window-->
 <mapID target="org.netbeans.modules.refactoring.java.ui.RefactoringPanelContainer.find-usages" url="refactor/csh/usagesWindow.html" />
+<mapID target="org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer.find-usages" url="refactor/csh/usagesWindow.html" />
 <!--Refactoring window: -->
 <mapID target="org.netbeans.modules.refactoring.java.ui.RefactoringPanelContainer.refactoring-preview" url="refactor/csh/previewWindow.html" />
 <!--Inspect and Transform window: -->
