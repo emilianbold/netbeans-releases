@@ -662,49 +662,52 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return;
         }
         boolean notify = false;
-        synchronized (fileCreateLock) {
-            if (status == Status.Initial || status == Status.Restored) {
-                try {
-                    setStatus((status == Status.Initial) ? Status.AddingFiles : Status.Validating);
-                    long time = 0;
-                    if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
-                        System.err.println("suspend queue");
-                        ParserQueue.instance().suspend();
-                        if (TraceFlags.TIMING) {
-                            time = System.currentTimeMillis();
-                        }
-                    }
-                    ParserQueue.instance().onStartAddingProjectFiles(this);
-                    registerProjectListeners();
-                    NativeProject nativeProject = ModelSupport.getNativeProject(platformProject);
-                    if (nativeProject != null) {
-                        try {
+        try {
+            synchronized (fileCreateLock) {
+                if (status == Status.Initial || status == Status.Restored) {
+                    try {
+                        setStatus((status == Status.Initial) ? Status.AddingFiles : Status.Validating);
+                        long time = 0;
+                        if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
+                            System.err.println("suspend queue");
                             ParserQueue.instance().suspend();
-                            createProjectFilesIfNeed(nativeProject);
-                        } finally {
+                            if (TraceFlags.TIMING) {
+                                time = System.currentTimeMillis();
+                            }
+                        }
+                        ParserQueue.instance().onStartAddingProjectFiles(this);
+                        notify = true;
+                        registerProjectListeners();
+                        NativeProject nativeProject = ModelSupport.getNativeProject(platformProject);
+                        if (nativeProject != null) {
+                            try {
+                                ParserQueue.instance().suspend();
+                                createProjectFilesIfNeed(nativeProject);
+                            } finally {
+                                ParserQueue.instance().resume();
+                            }
+                        }
+                        if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
+                            if (TraceFlags.TIMING) {
+                                time = System.currentTimeMillis() - time;
+                                System.err.println("getting files from project system + put in queue took " + time + "ms");
+                            }
+                            System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before resuming queue");
+                            sleep(TraceFlags.SUSPEND_PARSE_TIME * 1000);
+                        }
+                    } finally {
+                        if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
+                            System.err.println("woke up after sleep");
                             ParserQueue.instance().resume();
                         }
+                        setStatus(Status.Ready);
                     }
-                    if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
-                        if (TraceFlags.TIMING) {
-                            time = System.currentTimeMillis() - time;
-                            System.err.println("getting files from project system + put in queue took " + time + "ms");
-                        }
-                        System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before resuming queue");
-                        sleep(TraceFlags.SUSPEND_PARSE_TIME * 1000);
-                    }
-                    notify = true;
-                } finally {
-                    if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
-                        System.err.println("woke up after sleep");
-                        ParserQueue.instance().resume();
-                    }
-                    setStatus(Status.Ready);
                 }
             }
-        }
-        if (notify) {
-            ParserQueue.instance().onEndAddingProjectFiles(this);
+        } finally {
+            if (notify) {
+                ParserQueue.instance().onEndAddingProjectFiles(this);
+            }
         }
     }
     
