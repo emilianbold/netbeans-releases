@@ -692,11 +692,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         }
                         System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before resuming queue");
                         sleep(TraceFlags.SUSPEND_PARSE_TIME * 1000);
-                        System.err.println("woke up after sleep");
-                        ParserQueue.instance().resume();
                     }
                     notify = true;
                 } finally {
+                    if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
+                        System.err.println("woke up after sleep");
+                        ParserQueue.instance().resume();
+                    }
                     setStatus(Status.Ready);
                 }
             }
