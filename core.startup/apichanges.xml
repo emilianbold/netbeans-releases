@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -56,6 +56,21 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="get-default-automatic-dependencies">
+        <api name="bridge"/>
+        <summary>getDefault</summary>
+        <version major="1" minor="39"/>
+        <date day="13" month="4" year="2012"/>
+        <author login="jrechtacek"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            Returns instance of AutomaticDependencies based on default
+            list of transformations.
+        </p>
+        </description>
+        <class package="org.netbeans.core.startup" name="AutomaticDependencies"/>
+    </change>
      <change id="is.au.visible">
         <api name="bridge"/>
         <summary>isShowInAutoUpdateClient</summary>
