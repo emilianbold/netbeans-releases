@@ -237,7 +237,7 @@ public class TraceModelBase {
         return out;
     }
 
-    protected final void waitProjectParsed(ProjectBase main, boolean trace) {
+    public static void waitProjectParsed(ProjectBase main, boolean trace) {
         boolean wasWait = true;
         while (wasWait) {
             wasWait = waitParsed(main, trace);
@@ -245,8 +245,8 @@ public class TraceModelBase {
                 if (trace) {
                     System.err.println("checking libraries");
                 }
-                for (Iterator it = main.getLibraries().iterator(); it.hasNext();) {
-                    CsmProject lib = (CsmProject) it.next();
+                for (Iterator<CsmProject> it = main.getLibraries().iterator(); it.hasNext();) {
+                    CsmProject lib = it.next();
                     if (trace) {
                         System.err.println("checking library " + lib.getName());
                     }
@@ -256,7 +256,7 @@ public class TraceModelBase {
         }
     }
 
-    private boolean waitParsed(ProjectBase project, boolean trace) {
+    private static boolean waitParsed(ProjectBase project, boolean trace) {
         boolean wasWait = false;
         project.waitParse();
         return wasWait;

@@ -369,9 +369,13 @@ public final class LibraryManager {
         return entry;
     }
 
-    public void onProjectPropertyChanged(CsmUID<CsmProject> project) {
+    public void onProjectPropertyChanged(ProjectBase project) {
+        CsmUID<CsmProject> uid = project.getUID();
         for (LibraryEntry entry : librariesEntries.values()) {
-            entry.removeProject(project);
+            Boolean removed = entry.removeProject(uid);
+            if (removed != null) {
+                project.invalidateLibraryStorage(entry.libraryUID);
+            }
         }
     }
 
@@ -545,8 +549,8 @@ public final class LibraryManager {
             dependentProjects.put(project, Boolean.TRUE);
         }
 
-        private void removeProject(CsmUID<CsmProject> project) {
-            dependentProjects.remove(project);
+        private Boolean removeProject(CsmUID<CsmProject> project) {
+            return dependentProjects.remove(project);
         }
 
         @Override

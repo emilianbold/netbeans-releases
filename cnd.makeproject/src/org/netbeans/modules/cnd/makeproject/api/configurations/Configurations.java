@@ -285,7 +285,7 @@ public final class Configurations {
             configurationsLock.readLock().unlock();
         }
         if (fire) {
-            pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, old, def);
+            fireChangedActiveConfiguration(old, def);
         }
     }
 
@@ -319,7 +319,7 @@ public final class Configurations {
             configurationsLock.readLock().unlock();
         }
 
-        pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, old, def);
+        fireChangedActiveConfiguration(old, def);
     }
 
     public void fireChangedActiveConfiguration(Configuration oldActive, Configuration newActive) {

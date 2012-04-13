@@ -328,13 +328,6 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
     }
 
-    private void fireFilePropertiesChanged(NativeFileItem nativeFileIetm) {
-        //System.out.println("fireFilePropertiesChanged " + nativeFileIetm.getFile());
-        for (NativeProjectItemsListener listener : getListenersCopy()) {
-            listener.filePropertiesChanged(nativeFileIetm);
-        }
-    }
-
     @Override
     public void fireFilesPropertiesChanged(List<NativeFileItem> fileItems) {
         //System.out.println("fireFilesPropertiesChanged " + fileItems);
@@ -516,13 +509,23 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         fireFilesRemoved(deleted);
         fireFilesAdded(added);
-        firePropertiesChanged(list, true);
+        if (!list.isEmpty()) {
+            this.fireFilesPropertiesChanged(list);
+        }
     }
 
     private void firePropertiesChanged(Item[] items, boolean cFiles, boolean ccFiles, boolean projectChanged) {
+        MakeConfiguration conf = getMakeConfiguration();
+        firePropertiesChanged(items, cFiles, ccFiles, projectChanged, conf, this);
+    }
+
+    public static void firePropertiesChanged(Item[] items, boolean cFiles, boolean ccFiles, boolean projectChanged,
+            MakeConfiguration conf, NativeProjectChangeSupport nativeProjectChangeSupport) {
+        if (nativeProjectChangeSupport == null) {
+            return;
+        }
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
         ArrayList<NativeFileItem> deleted = new ArrayList<NativeFileItem>();
-        MakeConfiguration conf = getMakeConfiguration();
         // Handle project and file level changes
         for (int i = 0; i < items.length; i++) {
             ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf);
@@ -538,19 +541,13 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 }
             }
         }
-        if (deleted.size() > 0) {
-            fireFilesRemoved(deleted);
+        if (!deleted.isEmpty()) {
+            nativeProjectChangeSupport.fireFilesRemoved(deleted);
         }
-        firePropertiesChanged(list, projectChanged);
-    }
-
-    private void firePropertiesChanged(List<NativeFileItem> list, boolean projectChanged) {
-        if (list.size() > 1 || (projectChanged && list.size() == 1)) {
-            fireFilesPropertiesChanged(list);
-        } else if (list.size() == 1) {
-            fireFilePropertiesChanged(list.get(0));
-        } else {
-            // nothing
+        if (projectChanged) {
+            nativeProjectChangeSupport.fireFilesPropertiesChanged();
+        } else if (!list.isEmpty()) {
+            nativeProjectChangeSupport.fireFilesPropertiesChanged(list);
         }
     }
 
