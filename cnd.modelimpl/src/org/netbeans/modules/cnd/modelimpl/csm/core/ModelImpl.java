@@ -791,8 +791,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         Collection<Object> platformProjects = new ArrayList<Object>();
         for (ProjectBase projectBase : toReparse) {
             final Object platformProject = projectBase.getPlatformProject();
-            platformProjects.add(platformProject);
-            closeProject(platformProject, true);
+            if (platformProject != null) {
+                platformProjects.add(platformProject);
+                closeProject(platformProject, true);
+            }
         }
         for (LibProjectImpl lib : libs) {
             Object platformProject = lib.getPlatformProject();
