@@ -818,10 +818,11 @@ public class PHPBracketCompleter implements KeystrokeHandler {
     private static boolean isClosedComment(CharSequence txt, int pos) {
         int length = txt.length();
         int quotation = 0;
+        int simpleQuotation = 0;
         for (int i = pos; i < length; i++) {
             char c = txt.charAt(i);
             if (c == '*' && i < length - 1 && txt.charAt(i + 1) == '/') {
-                if (quotation == 0 && i < length - 2) {
+                if (quotation == 0 && simpleQuotation == 0 && i < length - 2) {
                     return true;
                 }
                 // guess it is not just part of some text constant
@@ -831,6 +832,9 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                     if (cc == '\n') {
                         break;
                     } else if (cc == '"' && j < length - 1 && txt.charAt(j + 1) != '\'') {
+                        isClosed = false;
+                        break;
+                    } else if (cc == '\'' && j < length - 1) {
                         isClosed = false;
                         break;
                     }
@@ -844,8 +848,11 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 return false;
             } else if (c == '\n') {
                 quotation = 0;
+                simpleQuotation = 0;
             } else if (c == '"' && i < length - 1 && txt.charAt(i + 1) != '\'') {
                 quotation = ++quotation % 2;
+            } else if (c == '\'' && i < length - 1) {
+                simpleQuotation = ++simpleQuotation % 2;
             }
         }
 
