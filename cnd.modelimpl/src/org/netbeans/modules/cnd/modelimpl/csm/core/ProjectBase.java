@@ -1565,6 +1565,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         includedFileContainer.putStorage(includedProject);
     }
 
+    void invalidateLibraryStorage(CsmUID<CsmProject> libraryUID) {
+        includedFileContainer.invalidateIncludeStorage(libraryUID);
+    }
+
     void prepareIncludeStorage(ProjectBase includedProject) {
         includedFileContainer.prepareIncludeStorage(includedProject);
     }

@@ -303,9 +303,12 @@ public final class DeepReparsingUtils {
                 }
             }
             if (invalidateLibs) {
+                if (TRACE) {
+                    LOG.log(Level.INFO, "reparseOnPropertyChanged invalidates all libraries for {0}", changedProject);
+                }
                 // invalide libraries when asked but after deep reparsing activity
-                assert !(changedProject instanceof LibProjectImpl): "shouldn't be library " + changedProject;
-                LibraryManager.getInstance().onProjectPropertyChanged(changedProject.getUID());
+                assert (changedProject instanceof ProjectImpl): "should be ProjectImpl: " + changedProject;
+                LibraryManager.getInstance().onProjectPropertyChanged(changedProject);
             }
         } catch (Exception e) {
             DiagnosticExceptoins.register(e);
