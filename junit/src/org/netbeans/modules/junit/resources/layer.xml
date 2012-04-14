@@ -48,10 +48,7 @@ made subject to such option by the copyright holder.
     <!-- templates -->
     <folder name="Templates">    	
     	          
-        <folder name="JUnit">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
-            <attr name="position" intvalue="1200"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/JUnitFolder.html"/>
+        <folder name="UnitTests">
             
             <!-- JUnit wizards -->
             

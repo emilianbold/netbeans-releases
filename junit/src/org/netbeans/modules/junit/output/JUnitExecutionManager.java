@@ -177,7 +177,7 @@ public class JUnitExecutionManager implements RerunHandler{
         String id = dateFormat.format(new Date());
 
         try {
-            FileObject templateFO = FileUtil.getConfigFile("Templates/JUnit/junit-custom.xml"); //NOI18N
+            FileObject templateFO = FileUtil.getConfigFile("Templates/UnitTests/junit-custom.xml"); //NOI18N
             DataObject templateDO = DataObject.find(templateFO);
             FileObject tmpDir = FileUtil.toFileObject(new File(System.getProperty("java.io.tmpdir")).getCanonicalFile());
             FileObject targetFO = tmpDir.createFolder("junit-custom-" + id);                //NOI18N
