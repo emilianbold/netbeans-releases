@@ -12,6 +12,7 @@
     <mapID target="php_process" url="process.html"/>
     <mapID target="org.netbeans.modules.php.help.about" url="help-about.html"/>
     <mapID target="php_projects" url="php-projects.html"/>
+    <mapID target="xdebug_setup" url="xdebug-setup.html"/>
     <mapID target="php_hudson" url="hudson-php.html"/>
     <!-- TOC Editor help -->
     <mapID target="php_editor" url="editor/editor-about.html"/>
