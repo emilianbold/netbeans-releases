@@ -71,6 +71,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.classpath.ClassPathAccessor;
 import org.netbeans.modules.java.classpath.SimplePathResourceImplementation;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -928,7 +929,10 @@ public final class ClassPath {
             return filter == null || filter.includes(url, path);
         }
 
-        Entry(URL url, FilteringPathResourceImplementation filter) {
+        Entry(
+                @NonNull final URL url,
+                @NullAllowed FilteringPathResourceImplementation filter) {
+            Parameters.notNull("url", url); //NOI18N
             this.url = url;
             this.filter = filter;
         }
