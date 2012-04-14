@@ -1,0 +1,78 @@
+<!--       
+*     Copyright © 1997, 2012, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+        <link rel="stylesheet" href=
+              "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type=
+              "text/css">
+        <meta name="keywords" content="hudson, jenkins, php">
+
+        <title>PHP Options: Hudson</title>
+    </head>
+
+    <body>
+        <h2>PHP Options: Hudson</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+        <p>In this dialog you set options for continuously testing PHP projects on
+            a Hudson server. For more information about using Hudson with PHP, see <a 
+                href="../hudson-php.html">Using a Continuous Build Server With PHP</a>.
+        </p>
+        <ul class="note">
+            <li>You must have a Hudson or Jenkins server registered with the IDE
+                in order to test PHP projects on such a server.</li>
+        </ul>
+        <h3>PPW (Php Project Wizard) Script</h3>
+                <p>To create a Hudson or Jenkins build job on a PHP project, you
+                    need a local copy of the Php Project Wizard script. Install the script
+                using PEAR, as described on the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="https://github.com/sebastianbergmann/php-project-wizard">
+                    <param name="text" value="<html><u>PPW github page</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>.</p>
+                <ul>
+                    <li><strong>PPW script.</strong> The path to the installed PPW script.
+                        <ul>
+                            <li><strong>Browse.</strong> Browse your local file system for
+                            the path to the PPW script.</li>
+                            <li><strong>Search.</strong> Click for the IDE to search your
+                            filesystem for all PPW script files. A combo box opens in which
+                            you select which script to use.</li>
+                        </ul></li>
+                </ul>
+
+                <h3>Job Configuration</h3>
+                <p>You require a local copy of a <code>config.xml</code> file for Hudson or
+                Jenkins jobs. This file must include information about all relevant Hudson or
+                Jenkins plugins. The IDE includes a <code>config.xml</code> with all Jenkins
+                Template for PHP plugins. Alternatively, the administrator of your Jenkins or
+                Hudson server can provide you with a file.</p>
+                <ul>
+                    <li><strong>Job Config.</strong> Path to the <code>config.xml</code> file
+                    for Hudson or Jenkins PHP jobs.
+                    <ul>
+                            <li><strong>Browse.</strong> Browse your local file system for
+                            the path to the <code>config.xml</code> file.</li>
+                            <li><strong>Default.</strong> Select the default <code>config.xml</code> file, at <tt>NETBEANS_INSTALLATION/php/hudson/config.xml</tt>.</li>
+                        </ul></li>
+                </ul>
+        <dl> 
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="https://blogs.oracle.com/netbeansphp/entry/continuous_integration_support">
+                    <param name="text" value="<html><u>Continuous Integration Support</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object> (NetBeansPHP blog entry)</dd>
+            <dd><a href="../hudson-php.html">Using a Continuous Build Server with PHP</a></dd>
+            </dl>
+        <hr>
+        <p>
+            <small><a href="../credits.html">Legal Notices</a></small>
+        </p>
+    </body>
+</html>
