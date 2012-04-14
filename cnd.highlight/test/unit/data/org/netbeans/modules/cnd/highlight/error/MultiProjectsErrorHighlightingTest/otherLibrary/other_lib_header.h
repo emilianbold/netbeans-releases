@@ -14,4 +14,14 @@ namespace ns210384 {
     }
 }
 
+#ifdef MY_PLUS_PLUS
+class MyClass202433_Other {
+    void foo2();
+};
+#else
+struct MyClass202433_Yet_Other {
+    void boo2();
+};
+#endif
+
 #endif

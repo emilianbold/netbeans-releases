@@ -56,6 +56,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.ui.JavaRenameProperties;
+import org.netbeans.modules.refactoring.spi.impl.UndoManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
 
@@ -89,6 +90,82 @@ public class RenameTest extends RefactoringTestBase {
         JavaRenameProperties props = new JavaRenameProperties();
         props.setIsRenameGettersSetters(true);
         performRename(src.getFileObject("t/A.java"), 1, "renamed", props);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private int renamed;\n"
+                + "    public void setRenamed(int renamed) {\n"
+                + "        this.renamed = renamed;\n"
+                + "    }\n"
+                + "    public int getRenamed() {\n"
+                + "        return renamed;\n"
+                + "    }\n"
+                + "    public int foo() {\n"
+                + "        A a = new A();\n"
+                + "        a.setRenamed(1);\n"
+                + "        return a.getRenamed();\n"
+                + "    }\n"
+                + "}"));
+
+    }
+
+    
+    public void testRenamePropUndoRedo() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private int property;\n"
+                + "    public void setProperty(int property) {\n"
+                + "        this.property = property;\n"
+                + "    }\n"
+                + "    public int getProperty() {\n"
+                + "        return property;\n"
+                + "    }\n"
+                + "    public int foo() {\n"
+                + "        A a = new A();\n"
+                + "        a.setProperty(1);\n"
+                + "        return a.getProperty();\n"
+                + "    }\n"
+                + "}"));
+        JavaRenameProperties props = new JavaRenameProperties();
+        props.setIsRenameGettersSetters(true);
+        performRename(src.getFileObject("t/A.java"), 1, "renamed", props);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private int renamed;\n"
+                + "    public void setRenamed(int renamed) {\n"
+                + "        this.renamed = renamed;\n"
+                + "    }\n"
+                + "    public int getRenamed() {\n"
+                + "        return renamed;\n"
+                + "    }\n"
+                + "    public int foo() {\n"
+                + "        A a = new A();\n"
+                + "        a.setRenamed(1);\n"
+                + "        return a.getRenamed();\n"
+                + "    }\n"
+                + "}"));
+        UndoManager undoManager = UndoManager.getDefault();
+        undoManager.setAutoConfirm(true);
+        undoManager.undo();
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private int property;\n"
+                + "    public void setProperty(int property) {\n"
+                + "        this.property = property;\n"
+                + "    }\n"
+                + "    public int getProperty() {\n"
+                + "        return property;\n"
+                + "    }\n"
+                + "    public int foo() {\n"
+                + "        A a = new A();\n"
+                + "        a.setProperty(1);\n"
+                + "        return a.getProperty();\n"
+                + "    }\n"
+                + "}"));
+        undoManager.redo();
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"

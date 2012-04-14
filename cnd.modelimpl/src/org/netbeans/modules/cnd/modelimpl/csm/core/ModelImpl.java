@@ -595,7 +595,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         }
     }
 
-    public void suspend() {
+    private void suspend() {
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.suspend");
         }
@@ -603,7 +603,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         ParserQueue.instance().suspend();
     }
 
-    public void resume() {
+    private void resume() {
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.resume");
         }

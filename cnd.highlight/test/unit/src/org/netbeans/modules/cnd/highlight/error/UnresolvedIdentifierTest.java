@@ -302,6 +302,23 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("inc210983_2.h");
     }
 
+    public void test211143() throws Exception {
+        // 211143 - regression in inaccuracy tests (vlc projectl)
+        File sourceFile = getDataFile("bug211143_1.cpp");
+        CsmFile csmFile = this.getCsmFile(sourceFile);
+        assertNotNull(csmFile);
+        // open file with duplicated struct
+        performStaticTest("bug211143_1.cpp");
+        // modify file and parse it
+        ModelImplTest.fireFileChanged(csmFile);
+        csmFile.scheduleParsing(true);
+        // open other file where same named, but different structure is used
+        performStaticTest("bug211143_2.cpp"); // there was unresolved 'savefd'
+        // check other files just to be sure
+        performStaticTest("bug211143_1.cpp");
+        performStaticTest("inc211143.h");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
