@@ -20,18 +20,23 @@
         <p>NetBeans IDE supports the XDebug third-party PHP debugger. If Xdebug is installed
             correctly and the PHP environment is configured correctly, you can debug PHP projects
             inside the IDE. You can also debug PHP files remotely if you set up path mapping.</p>
+        <p>Additional information can be found in the netbeans.org <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://wiki.netbeans.org/HowToConfigureXDebug">
+                <param name="text" value="<html><u>How to Configure XDebug wiki</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.</p>
         <h3>Checking If XDebug Is Installed</h3>
         <p>The first step you should take is to see if XDebug is already installed on your
-            system. Some AMP packages come with XDebug. Run <code>phpinfo()</code>. If there
+            system. Some AMP packages come with XDebug. Run <tt>phpinfo()</tt>. If there
             is an XDebug section in your PHP info, XDebug is installed. If XDebug is installed,
             go to <a href="#setup">Setting Up XDebug</a></p>
         <h3>Installing XDebug</h3>
         <p>The NetBeans IDE for PHP community consensus is that the XDebug installation
             wizard should be used to install XDebug.</p>
-        <p><strong>To install XDebug:</strong></p>
         <ol>
-            <li>Run <code>phpinfo()</code>.</li>
-            <li>Copy the results of <code>phpinfo()</code> from your browser into the
+            <li>Run <tt>phpinfo()</tt>.</li>
+            <li>Copy the results of <tt>phpinfo()</tt> from your browser into the
                 clipboard.</li>
             <li>In a browser window, open <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://xdebug.org/wizard.php">
@@ -44,9 +49,8 @@
         </ol>
         <h3 id="setup">Setting Up XDebug</h3>
         <p>In this section we assume you have XDebug installed and you need to set it up.</p>
-        <p><strong>To set up XDebug:</strong></p>
         <ol>
-            <li>Run <code>phpinfo()</code>.</li>
+            <li>Run <tt>phpinfo()</tt>.</li>
             <li>In the PHP info, find the entries for Loaded Configuration File and
             Additional .ini Files Parsed.</li>
             <li>For each php.ini or xdebug.ini file you find, open that file and perform
@@ -60,13 +64,13 @@ xdebug.remote_mode=req
 xdebug.remote_host=127.0.0.1
 xdebug.remote_port=9000</pre>
                     <ul class="note">
-                        <li>These settings are usually in a section labeled <code>[XDebug]</code>.
+                        <li>These settings are usually in a section labeled <tt>[XDebug]</tt>.
                         If such a section does not exist, create one. However, some AMPs may
                         differ. For example, in some versions of XAMPP AMP, the line
-                        <code>zend_extension = "G:\xampp\php\ext\php_xdebug.dll"</code> is
-                        outside of the <code>[XDebug]</code> section, and the name of the .dll
-                        file is nonstandard (<code>php_xdebug.dll</code> instead of 
-                        <code>xdebug.dll</code>).</li>
+                        <tt>zend_extension = "G:\xampp\php\ext\php_xdebug.dll"</tt> is
+                        outside of the <tt>[XDebug]</tt> section, and the name of the .dll
+                        file is nonstandard (<tt>php_xdebug.dll</tt> instead of 
+                        <tt>xdebug.dll</tt>).</li>
                     </ul></li>
                     <li>Comment out all entries 
 for Zend Optimizer, Zend Studio 
@@ -77,11 +81,10 @@ Debugger, or other Zend extensions.</li>
         <p>Before trying out XDebug from inside NetBeans IDE, you should test your XDebug
         installation from the command-line. One way to test XDebug is to write a test in
         PHP and run a debug session on it.</p>
-        <p><strong>To test XDebug:</strong></p>
         <ol>
             <li>You need an arbitrary PHP file. If you do not have one, create a file
-                called <code>index.php</code>, put any code into it and save it.</li>
-            <li>Using a text editor, create a file called <code>dbgtest.php</code> and
+                called <tt>index.php</tt>, put any code into it and save it.</li>
+            <li>Using a text editor, create a file called <tt>dbgtest.php</tt> and
             type or paste the following code into the file (save the file afterward).
             <pre>&lt;?php
   $address = '127.0.0.1';
@@ -94,13 +97,13 @@ Debugger, or other Zend extensions.</li>
   socket_close($client);
   socket_close($sock);
 ?&gt;</pre></li>
-<li>Run the code from the command line (e.g. <code>/usr/bin/php dbgtest.php</code>, see<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<li>Run the code from the command line (e.g. <tt>/usr/bin/php dbgtest.php</tt>, see<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
         <param name="content" value="http://php.net/manual/en/features.commandline.php">
         <param name="text" value="<html><u>php.net documentation</u></html>">
         <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
     </object>).</li>
-<li>Start a debug session for an arbitrary PHP file from within a browser window (e.g. <code>http://localhost/index.php?XDEBUG_SESSION_START=mysession</code>. See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<li>Start a debug session for an arbitrary PHP file from within a browser window (e.g. <tt>http://localhost/index.php?XDEBUG_SESSION_START=mysession</tt>. See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
         <param name="content" value="http://xdebug.org/docs/remote#browser_session">
         <param name="text" value="<html><u>XDebug documentation on starting browser sessions</u></html>">
         <param name="textFontSize" value="medium">
@@ -115,10 +118,24 @@ Debugger, or other Zend extensions.</li>
         open the Debugging tab, and click Help.</p>
         <dl> 
             <dt><a name="seealso">See Also</a></dt>
-            <dd></dd>
-            <dd><a href=""></a></dd>
-            <dd><a href=""></a>
-            </dd></dl>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://wiki.netbeans.org/HowToConfigureXDebug">
+                    <param name="text" value="<html><u>How to Configure XDebug</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object> (NetBeans wiki page)</dd>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://xdebug.org/docs/install">
+                    <param name="text" value="<html><u>XDebug installation guide</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></dd>
+                <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                        <param name="content" value="http://forums.netbeans.org/viewtopic.php?t=1513&sid=1bf924860f28bbffc0f55b92fca9395e">
+                        <param name="text" value="<html><u>Won't Connect to XDebug</u></html>">
+                        <param name="textFontSize" value="medium">
+                        <param name="textColor" value="blue">
+                    </object> (NetBeans PHP User's Forum thread)</dd></dl>
         <hr>
         <p>
             <small><a href="./credits.html">Legal Notices</a></small>
