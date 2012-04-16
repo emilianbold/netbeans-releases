@@ -999,6 +999,11 @@ public class LuceneIndex implements Index.Transactional, Runnable {
                     append(" r: ").append(c.canRead()).
                     append(" w: ").append(c.canWrite()).append("\n");  //NOI18N
                 }
+                message.append("threads: ").append(stackTraces(Thread.getAllStackTraces())).append("\n").   //NOI18N
+                append("owner: ").append(lockFactory instanceof RecordOwnerLockFactory?                     //NOI18N
+                    ((RecordOwnerLockFactory)lockFactory).getOwner():
+                    "???"); //NOI18N
+                
             }
             return Exceptions.attachMessage(ioe, message.toString());
         }
