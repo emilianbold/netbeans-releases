@@ -771,14 +771,15 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         // remove old cached value
         FileImpl file = (FileImpl) getContainingFile();
         file.removeResolvedReference(new CsmTypeReferenceImpl(this));
-        this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
+        CsmUID<CsmClassifier> cUID = UIDCsmConverter.declarationToUID(classifier);
+        this.classifierUID = cUID;
         // register new cached value
-        if (classifierUID != null && classifier != null && !CsmKindUtilities.isBuiltIn(classifier) && CsmBaseUtilities.isValid(classifier) && !CsmKindUtilities.isTypedef(classifier)
+        if (cUID != null && classifier != null && !CsmKindUtilities.isBuiltIn(classifier) && CsmBaseUtilities.isValid(classifier) && !CsmKindUtilities.isTypedef(classifier)
             //&& !CsmKindUtilities.isTemplate(classifier) && !isInstantiation()
            ) {
            file.addResolvedReference(new CsmTypeReferenceImpl(this), classifier);
         }
-        assert (classifierUID != null || classifier == null);
+        assert (cUID != null || classifier == null);
     }
 
     @Override
