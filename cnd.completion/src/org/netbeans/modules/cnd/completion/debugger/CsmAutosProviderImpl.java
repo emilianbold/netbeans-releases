@@ -42,13 +42,9 @@
 
 package org.netbeans.modules.cnd.completion.debugger;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Element;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.*;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -154,52 +150,110 @@ public class CsmAutosProviderImpl implements AutosProvider {
 
         final int startOffset = lineStartOffset;
         final int endOffset = lineEndOffset;
-
+                
+        final Set<Integer> arraysStartOffsets = new HashSet<Integer>();
+        final Set<Integer> excludeOffsets = new HashSet<Integer>();
+        
         CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
             @Override
             public void visit(CsmReferenceContext context) {
                 CsmReference reference = context.getReference();
-                    if (startOffset <= reference.getStartOffset() && reference.getEndOffset() <= endOffset) {
-                        CsmObject referencedObject = reference.getReferencedObject();
-                        if (CsmKindUtilities.isVariable(referencedObject) && !filterAuto((CsmVariable)referencedObject)) {
-                            StringBuilder sb = new StringBuilder(reference.getText());
-                            if (context.size() > 1) {
-                                outer: for (int i = context.size()-1; i >= 0; i--) {
-                                    CppTokenId token = context.getToken(i);
-                                    switch (token) {
-                                        case DOT:
-                                        case ARROW:
-                                        case SCOPE:
-                                            break;
-                                        default: break outer;
+                if (startOffset <= reference.getStartOffset() && reference.getEndOffset() <= endOffset) {
+                    CsmObject referencedObject = reference.getReferencedObject();
+                    if (CsmKindUtilities.isVariable(referencedObject) && !filterAuto((CsmVariable)referencedObject)) {
+                        StringBuilder sb = new StringBuilder(reference.getText());
+                        if (context.size() > 1) {
+                            outer: for (int i = context.size()-1; i >= 0; i--) {
+                                CppTokenId token = context.getToken(i);
+                                switch (token) {
+                                    case DOT:
+                                    case ARROW:
+                                    case SCOPE:
+                                        break;
+                                    case LBRACKET:
+                                        arraysStartOffsets.add(context.getReference(i-1).getStartOffset());
+                                    default: break outer;
+                                }
+                                if (i > 0) {
+                                    sb.insert(0, token.fixedText());
+                                    CsmReference prevReference = context.getReference(i-1);
+                                    if (prevReference == null) {
+                                        break outer;
                                     }
-                                    if (i > 0) {
-                                        sb.insert(0, token.fixedText());
-                                        CsmReference prevReference = context.getReference(i-1);
-                                        if (prevReference == null) {
-                                            break outer;
-                                        }
-                                        sb.insert(0, prevReference.getText());
-                                    }
+                                    sb.insert(0, prevReference.getText());
                                 }
                             }
-                            autos.add(sb.toString());
-                        } else if (AUTOS_INCLUDE_MACROS && CsmKindUtilities.isMacro(referencedObject)) {
-                            String txt = reference.getText().toString();
-                            int[] macroExpansionSpan = CsmMacroExpansion.getMacroExpansionSpan(document, reference.getStartOffset(), false);
-                            if (macroExpansionSpan != null && macroExpansionSpan[0] != macroExpansionSpan[1]) {
-                                try {
-                                    txt = document.getText(macroExpansionSpan[0], macroExpansionSpan[1] - macroExpansionSpan[0]);
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                            autos.add(txt);
                         }
+                        autos.add(sb.toString());
+                    } else if (AUTOS_INCLUDE_MACROS && CsmKindUtilities.isMacro(referencedObject)) {
+                        String txt = reference.getText().toString();
+                        int[] macroExpansionSpan = CsmMacroExpansion.getMacroExpansionSpan(document, reference.getStartOffset(), false);
+                        if (macroExpansionSpan != null && macroExpansionSpan[0] != macroExpansionSpan[1]) {
+                            try {
+                                txt = document.getText(macroExpansionSpan[0], macroExpansionSpan[1] - macroExpansionSpan[0]);
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        autos.add(txt);
+                    } else {
+                        excludeOffsets.add(context.getReference().getStartOffset());
                     }
+                }
             }
         });
+        
+        //Parsing arrays' statements
+        if (!arraysStartOffsets.isEmpty()) {
+            
+            document.render(new Runnable() {
+
+                @Override
+                public void run() {
+                    for (Integer arrayStartOffset : arraysStartOffsets) {
+                        try{
+                            String res = matchChar(document, arrayStartOffset, endOffset, '[', ']', excludeOffsets);
+                            if(res != null){
+                                autos.add(res);
+                            }
+                        } catch(BadLocationException ex){}
+                    }
+                }
+            });
+        }
+        
         return lineStartOffset;
+    }
+    
+    public static String matchChar(Document document,
+            int offset,
+            int limit,
+            char origin,
+            char matching,
+            Set<Integer> excludeOffsets) throws BadLocationException {
+        int lookahead =  limit - offset;
+        
+        // check the character at the right from the caret
+        Segment text = new Segment();
+        document.getText(offset, lookahead, text);
+
+        int count = 0;
+        for(int i = 0 ; i < lookahead; i++) {
+            if (origin == text.array[text.offset + i]) {
+                count++;
+            } else if (matching == text.array[text.offset + i]) {
+                if (--count == 0) {
+                    for (Integer excOffset : excludeOffsets) {
+                        if( offset<=excOffset && excOffset<=(text.offset + i) ){
+                            return null;
+                        }
+                    }
+                    return text.subSequence(0, i + 1).toString();
+                }
+            }
+        }
+        
+        return null;
     }
 
     private static CsmOffsetable getStatement(CsmFile csmFile, int offset) {

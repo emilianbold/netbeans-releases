@@ -72,6 +72,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
 import javax.lang.model.element.TypeElement;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -79,6 +80,7 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -1153,7 +1155,7 @@ public final class CreatedModifiedFiles {
                 public @Override void run() throws IOException {
                     final FileObject srcRoot = FileUtil.createFolder(top, srcRootPath);
                     final FileObject srcFile = srcRoot.getFileObject(srcRelPath);
-                    JavaSource source;
+                    final JavaSource source;
                     if (srcFile != null) {
                         source = JavaSource.forFileObject(srcFile);
                         if (source == null) {
@@ -1162,6 +1164,9 @@ public final class CreatedModifiedFiles {
                     } else {
                         source = JavaSource.create(ClasspathInfo.create(srcRoot));
                     }
+                    try {
+                        source.runWhenScanFinished(new Task<CompilationController>() { // #194569
+                            @Override public void run(CompilationController parameter) throws Exception {
                         source.runModificationTask(new Task<WorkingCopy>() {
                             public @Override void run(WorkingCopy wc) throws Exception {
                                 wc.toPhase(JavaSource.Phase.RESOLVED);
@@ -1204,6 +1209,15 @@ public final class CreatedModifiedFiles {
                                 wc.rewrite(old, nue);
                             }
                         }).commit();
+                            }
+                        }, false).get();
+                    } catch (IOException x) {
+                        throw x;
+                    } catch (InterruptedException x) {
+                        throw new IOException(x);
+                    } catch (ExecutionException x) {
+                        throw new IOException(x);
+                    }
                         FileObject srcFile2 = srcFile != null ? srcFile : srcRoot.getFileObject(srcRelPath);
                         if (srcFile2 == null) {
                             throw new IOException("#204274: no package-info.java created?");

@@ -48,9 +48,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -64,6 +66,8 @@ public final class DocumentBasedIndexManager {
     value="DMI_COLLECTION_OF_URLS"
     /*,justification="URLs have never host part"*/)
     private final Map<URL, DocumentIndex> indexes = new HashMap<URL, DocumentIndex> ();
+    //@GuardedBy("this")
+    private boolean closed;
 
     private DocumentBasedIndexManager() {}
 
@@ -82,12 +86,16 @@ public final class DocumentBasedIndexManager {
         return instance;
     }
 
+   @CheckForNull
    @org.netbeans.api.annotations.common.SuppressWarnings(
     value="DMI_COLLECTION_OF_URLS"
     /*,justification="URLs have never host part"*/)
     public synchronized DocumentIndex getIndex (final URL root, final Mode mode) throws IOException {
         assert root != null;
         assert PathRegistry.noHostPart(root) : root;
+        if (closed) {
+            return null;
+        }
         DocumentIndex li = indexes.get(root);
         if (li == null) {
             try {
@@ -117,5 +125,19 @@ public final class DocumentBasedIndexManager {
         }
         return li;
     }
+   
+   public synchronized void close() {
+       if (closed) {
+           return;
+       }
+       closed = true;
+       for (DocumentIndex index : indexes.values()) {
+           try {
+            index.close();
+           } catch (IOException ioe) {
+               Exceptions.printStackTrace(ioe);
+           }
+       }
+   }
 
 }

@@ -200,7 +200,7 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
     protected String toString(CsmErrorInfo info, String sourceFileName) {
         return String.format("%s %s [%d-%d]: %s", info.getSeverity(), sourceFileName, info.getStartOffset(), info.getEndOffset(), info.getMessage());
     }
-    
+
     /**
      * Performs undo for changes that are made in a document
      */

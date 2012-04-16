@@ -136,6 +136,14 @@ public class AutosTestCase extends ProjectBasedTestCase {
     public void testAutosScope() throws Exception {
         performTest("file.cc", 31);
     }
+    
+    public void testAutosArrays() throws Exception {
+        performTest("file.cc", 36);
+    }
+    
+    public void testAutosArrays2() throws Exception {
+        performTest("file.cc", 38);
+    }
 
     private void performTest(String source, int lineIndex) throws Exception {
         File workDir = getWorkDir();

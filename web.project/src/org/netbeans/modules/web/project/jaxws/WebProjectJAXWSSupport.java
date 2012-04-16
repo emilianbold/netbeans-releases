@@ -274,7 +274,6 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
             if(mapping.getServletName().equals(serviceName)){
                 webApp.removeServletMapping(mapping);
                 changed = true;
-                break;
             }
         }
         return changed;

@@ -510,7 +510,6 @@ public class UseNbBundleMessagesTest {
 
     // XXX test interaction with @Override (#211037)
 
-    /* XXX pending #209375
     @Test public void sequentialFixes() throws Exception {
         HintTest.HintOutput output = HintTest.create().classpath(cp()).
                 input("package test;\n" +
@@ -534,6 +533,7 @@ public class UseNbBundleMessagesTest {
                        "        String v2 = org.openide.util.NbBundle.getMessage(Test.class, \"k2\");\n" +
                        "    }\n" +
                        "}\n");
+        // XXX #211087: may not be enough
         output.findWarning("9:46-9:56:warning:" + UseNbBundleMessages_error_text()).
                 applyFix().
                 assertVerbatimOutput("test/Bundle.properties", "").
@@ -548,7 +548,18 @@ public class UseNbBundleMessagesTest {
                        "    }\n" +
                        "}\n");
     }
-    */
+
+    @Test public void skipBundleJava() throws Exception {
+        HintTest.create().classpath(cp()).
+                input("test/Bundle.java", "package test;\n" +
+                       "class Bundle {\n" +
+                       "    static String somekey() {\n" +
+                       "        return org.openide.util.NbBundle.getMessage(Bundle.class, \"somekey\");\n" +
+                       "    }\n" +
+                       "}\n").
+                run(UseNbBundleMessages.class).
+                assertWarnings();
+    }
 
     private URL cp() {
         URL cp = NbBundle.class.getProtectionDomain().getCodeSource().getLocation();

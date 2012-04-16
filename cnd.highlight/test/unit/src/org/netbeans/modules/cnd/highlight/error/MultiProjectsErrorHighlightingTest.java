@@ -50,6 +50,8 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
  * @author vv159170
  */
 public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTestCase {
+    private static final String PROJECT_FIRST = "project_first";
+    private static final String PROJECT_FIFTH = "project_fifth";
 
     public MultiProjectsErrorHighlightingTest(String testName) {
         super(testName);
@@ -70,13 +72,15 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         // we have following structure for this test
         // test-folder
         //  --first\
-        //        first.cc
+        //        first.cpp
         //  --second\
-        //        second.cc
+        //        second.cpp
         //  --third\
-        //        third.cc
+        //        third.cpp
         //  --forth\
-        //        forth.cc
+        //        forth.cpp
+        //  --fifth\
+        //        fifth.cpp
         //  --includedLibrary\ 
         //        lib_header.h
         //  --otherLibrary\
@@ -88,17 +92,19 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         File srcDir2 = new File(projectDir, "second");
         File srcDir3 = new File(projectDir, "third");
         File srcDir4 = new File(projectDir, "forth");
+        File srcDir5 = new File(projectDir, "fifth");
         File incl1 = new File(projectDir, "includedLibrary");
         File incl2 = new File(projectDir, "otherLibrary");
         checkDir(srcDir1);
         checkDir(srcDir2);
         checkDir(srcDir3);
         checkDir(srcDir4);
+        checkDir(srcDir5);
         checkDir(incl1);
         checkDir(incl2);
         List<String> sysIncludes = Arrays.asList(incl1.getAbsolutePath(), incl2.getAbsolutePath());
         super.setSysIncludes(sysIncludes);
-        return new File[] {srcDir1, srcDir2, srcDir3, srcDir4};
+        return new File[] {srcDir1, srcDir2, srcDir3, srcDir4, srcDir5};
     }
     
     private void checkDir(File srcDir) {
@@ -111,11 +117,11 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         CsmModel model = super.getModel();
         assertNotNull("null model", model);
         performStaticTest("first/first.cpp");
-        CsmProject firstPrj = super.getProject("project_first");
+        CsmProject firstPrj = super.getProject(PROJECT_FIRST);
         assertNotNull("null project for first", firstPrj);
         CsmProject secondPrj = super.getProject("project_second");
         assertNotNull("null project for second", secondPrj);
-        CsmProject thirdPrj = super.getProject("project_first");
+        CsmProject thirdPrj = super.getProject(PROJECT_FIRST);
         assertNotNull("null project for first", thirdPrj);
         CsmProject forthPrj = super.getProject("project_second");
         assertNotNull("null project for second", forthPrj);
@@ -130,13 +136,32 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         CsmModel model = super.getModel();
         assertNotNull("null model", model);
         performStaticTest("first/first.cpp");
-        CsmProject firstPrj = super.getProject("project_first");
+        CsmProject firstPrj = super.getProject(PROJECT_FIRST);
         assertNotNull("null project for first", firstPrj);
         CsmProject secondPrj = super.getProject("project_second");
         assertNotNull("null project for second", secondPrj);
-        super.closeProject(firstPrj);
+        super.closeProject(PROJECT_FIRST);
         performStaticTest("includedLibrary/lib_header.h");
         performStaticTest("otherLibrary/other_lib_header.h");
         performStaticTest("second/second.cpp");
+    }
+
+    public void DISABLED_testRedFilesWhenReopenProject210898() throws Exception {
+        // #210898 incorrect content of system includes after reopening projects => unresolved identifiers in dependent projects
+        CsmModel model = super.getModel();
+        assertNotNull("null model", model);
+        performStaticTest("first/first.cpp");
+        CsmProject firstPrj = super.getProject(PROJECT_FIRST);
+        assertNotNull("null project for first", firstPrj);
+        // fifth project defines macro which defines extra classes
+        CsmProject macroDefinedProject = super.getProject(PROJECT_FIFTH);
+        assertNotNull("null project for first", macroDefinedProject);
+        // close project which uses this extra classes
+        super.closeProject(PROJECT_FIFTH);
+        // reparse the first project
+        super.reparseProject(firstPrj);
+        performStaticTest("first/first.cpp");
+        super.reopenProject(PROJECT_FIFTH);
+        performStaticTest("fifth/fifth.cpp");
     }
 }

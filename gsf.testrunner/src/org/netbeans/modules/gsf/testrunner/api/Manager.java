@@ -387,9 +387,10 @@ public final class Manager {
                     public void run() {
                         final ResultWindow window = ResultWindow.getInstance();
                         Mode mode = WindowManager.getDefault().findMode(window);
-                        if (window.isOpened() && mode != null && !mode.getName().contains("SlidingSide")) {   //NOI18N
+                        boolean isInSlidingMode = mode != null && mode.getName().contains("SlidingSide");   //NOI18N
+                        if (window.isOpened() && !isInSlidingMode) {
                             window.promote();
-                        } else {
+                        } else if (!window.isOpened() || (window.isOpened() && !window.isShowing() && isInSlidingMode)) {
                             Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/testResults.png"));   //NOI18N
                             String projectname = ProjectUtils.getInformation(session.getProject()).getDisplayName();
                             

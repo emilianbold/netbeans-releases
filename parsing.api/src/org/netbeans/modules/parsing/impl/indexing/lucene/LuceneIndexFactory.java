@@ -57,18 +57,21 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneIndexFactory implements IndexFactoryImpl {
+public final class LuceneIndexFactory implements IndexFactoryImpl {
     
     private static final int VERSION = 1;
     //@GuardedBy("LuceneIndexFactory.class")
     private static LuceneIndexFactory instance;
     //@GuardedBy("indexes")
     private final Map<URL,LayeredDocumentIndex> indexes = new HashMap<URL, LayeredDocumentIndex>();
+    //@GuardedBy("indexes")
+    private boolean closed;
 
     
     private LuceneIndexFactory(){}
@@ -99,6 +102,9 @@ public class LuceneIndexFactory implements IndexFactoryImpl {
         final URL luceneIndexFolder = getIndexFolder(indexBaseFolder);
         
         synchronized (indexes) {
+            if (closed) {
+                return null;
+            }
             LayeredDocumentIndex res = indexes.get(luceneIndexFolder);
             if (res == null) {
                 final DocumentIndex base = DocumentBasedIndexManager.getDefault().getIndex(
@@ -124,6 +130,22 @@ public class LuceneIndexFactory implements IndexFactoryImpl {
             result = new URL(surl+'/');  //NOI18N
         }
         return result;
+    }
+    
+    public void close() {
+        synchronized (indexes) {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            for (LayeredDocumentIndex index : indexes.values()) {
+                try {
+                    index.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
     
     @NonNull

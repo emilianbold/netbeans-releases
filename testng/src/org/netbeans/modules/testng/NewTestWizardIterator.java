@@ -59,16 +59,18 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.NbBundle;
 
 /**
  * Wizard to create a new TestNG file.
  */
-@TemplateRegistration(folder = "TestNG", position = 1000,
+@TemplateRegistration(folder = "UnitTests", position = 1000,
         content = "resources/EmptyTestNGTest.java.template",
         scriptEngine = "freemarker",
-        displayName = "#Templates/TestNG/TestNGTest.java",
+        displayName = "#EmptyTestNGTest_displayName",
         iconBase = "org/netbeans/modules/testng/resources/testng.gif",
         description = "/org/netbeans/modules/testng/resources/newTest.html")
+@NbBundle.Messages("EmptyTestNGTest_displayName=TestNG Test Case")
 public final class NewTestWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
     private transient int index;

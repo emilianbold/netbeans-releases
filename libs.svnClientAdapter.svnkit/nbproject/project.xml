@@ -101,15 +101,15 @@ made subject to such option by the copyright holder.
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/svnkit-1.7.4.jar</runtime-relative-path>
-                <binary-origin>external/org.tmatesoft.svnkit_1.7.4.rc1_t20120321_0030.jar</binary-origin>
+                <binary-origin>external/org.tmatesoft.svnkit_1.7.4.t20120412_2022.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/sqljet-1.1.0.jar</runtime-relative-path>
-                <binary-origin>external/sqljet-1.1.0-SNAPSHOT_r1197_v20120313_1735.jar</binary-origin>
+                <binary-origin>external/sqljet-1.1.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/trilead-ssh2-1.0.0-build214.jar</runtime-relative-path>
-                <binary-origin>external/trilead-ssh2-1.0.0-build214.jar</binary-origin>
+                <runtime-relative-path>ext/trilead.ssh2_1.0.0.jar</runtime-relative-path>
+                <binary-origin>external/com.trilead.ssh2_1.0.0.build214.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
