@@ -56,6 +56,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
@@ -154,6 +155,7 @@ public final class SyncPanel extends JPanel {
         initComponents();
         viewCheckBoxes = getViewCheckBoxes();
         initViewCheckBoxes();
+        initViewButtons();
         initTable();
         initOperationButtons();
         initDiffButton();
@@ -163,6 +165,7 @@ public final class SyncPanel extends JPanel {
 
     private JCheckBox createViewCheckBox() {
         ViewCheckBox viewCheckBox = new ViewCheckBox();
+        viewCheckBox.setSelected(true);
         viewCheckBox.addItemListener(viewListener);
         return viewCheckBox;
     }
@@ -267,6 +270,21 @@ public final class SyncPanel extends JPanel {
 
     private void initViewCheckBox(JCheckBox checkBox, String titleWithMnemonic) {
         Mnemonics.setLocalizedText(checkBox, titleWithMnemonic);
+    }
+
+    private void initViewButtons() {
+        checkAllButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setViewCheckBoxesSelected(true);
+            }
+        });
+        uncheckAllButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setViewCheckBoxesSelected(false);
+            }
+        });
     }
 
     private void initTable() {
@@ -538,6 +556,12 @@ public final class SyncPanel extends JPanel {
         }
     }
 
+    void setViewCheckBoxesSelected(boolean selected) {
+        for (ViewCheckBox checkBox : viewCheckBoxes) {
+            checkBox.setSelected(selected);
+        }
+    }
+
     /**
      * To preserve correct order and to show items that belong to more
      * view groups (e.g. symlink - warning & symlink).
@@ -556,8 +580,6 @@ public final class SyncPanel extends JPanel {
                     }
                 }
             }
-        } else {
-            displayedItems.addAll(allItems);
         }
         tableModel.fireSyncItemsChange();
     }
@@ -582,16 +604,20 @@ public final class SyncPanel extends JPanel {
 
         infoLabel = new JLabel();
         warningLabel = new JLabel();
-        viewLabel = new JLabel();
-        viewNoopCheckBox = createViewCheckBox();
+        operationsPanel = new JPanel();
         viewDownloadCheckBox = createViewCheckBox();
         viewUploadCheckBox = createViewCheckBox();
+        viewNoopCheckBox = createViewCheckBox();
         viewDeleteCheckBox = createViewCheckBox();
-        viewSymlinkCheckBox = createViewCheckBox();
-        viewFileDirCollisionCheckBox = createViewCheckBox();
-        viewFileConflictCheckBox = createViewCheckBox();
+        problemsPanel = new JPanel();
         viewWarningCheckBox = createViewCheckBox();
         viewErrorCheckBox = createViewCheckBox();
+        viewFileConflictCheckBox = createViewCheckBox();
+        viewFileDirCollisionCheckBox = createViewCheckBox();
+        viewSymlinkCheckBox = createViewCheckBox();
+        spaceHolderPanel = new JPanel();
+        uncheckAllButton = new JButton();
+        checkAllButton = new JButton();
         itemScrollPane = new JScrollPane();
         itemTable = new JTable();
         syncInfoLabel = new JLabel();
@@ -603,11 +629,60 @@ public final class SyncPanel extends JPanel {
         deleteButton = new JButton();
         resetButton = new JButton();
         showSummaryCheckBox = new JCheckBox();
-
         Mnemonics.setLocalizedText(infoLabel, "INFO"); // NOI18N
-        itemTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         Mnemonics.setLocalizedText(warningLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.warningLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(viewLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.viewLabel.text")); // NOI18N
+
+        operationsPanel.setBorder(BorderFactory.createTitledBorder(NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationsPanel.title"))); // NOI18N
+
+        GroupLayout operationsPanelLayout = new GroupLayout(operationsPanel);
+        operationsPanel.setLayout(operationsPanelLayout);
+        operationsPanelLayout.setHorizontalGroup(
+            operationsPanelLayout.createParallelGroup(Alignment.LEADING).addGroup(operationsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+
+                .addGroup(operationsPanelLayout.createParallelGroup(Alignment.LEADING).addComponent(viewDownloadCheckBox).addComponent(viewUploadCheckBox)).addGap(18, 18, 18).addGroup(operationsPanelLayout.createParallelGroup(Alignment.LEADING).addComponent(viewNoopCheckBox).addComponent(viewDeleteCheckBox)).addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        operationsPanelLayout.setVerticalGroup(
+            operationsPanelLayout.createParallelGroup(Alignment.LEADING).addGroup(operationsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+
+                .addGroup(operationsPanelLayout.createParallelGroup(Alignment.TRAILING).addComponent(viewNoopCheckBox).addComponent(viewDownloadCheckBox)).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(operationsPanelLayout.createParallelGroup(Alignment.TRAILING).addComponent(viewUploadCheckBox).addComponent(viewDeleteCheckBox)).addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        problemsPanel.setBorder(BorderFactory.createTitledBorder(NbBundle.getMessage(SyncPanel.class, "SyncPanel.problemsPanel.title"))); // NOI18N
+
+        GroupLayout problemsPanelLayout = new GroupLayout(problemsPanel);
+        problemsPanel.setLayout(problemsPanelLayout);
+        problemsPanelLayout.setHorizontalGroup(
+            problemsPanelLayout.createParallelGroup(Alignment.LEADING).addGroup(problemsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+
+                .addGroup(problemsPanelLayout.createParallelGroup(Alignment.LEADING).addComponent(viewWarningCheckBox).addComponent(viewErrorCheckBox)).addGap(18, 18, 18).addGroup(problemsPanelLayout.createParallelGroup(Alignment.LEADING).addComponent(viewFileConflictCheckBox).addComponent(viewFileDirCollisionCheckBox)).addGap(18, 18, 18).addComponent(viewSymlinkCheckBox).addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        problemsPanelLayout.setVerticalGroup(
+            problemsPanelLayout.createParallelGroup(Alignment.LEADING).addGroup(problemsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+
+                .addGroup(problemsPanelLayout.createParallelGroup(Alignment.TRAILING).addComponent(viewSymlinkCheckBox).addComponent(viewFileConflictCheckBox).addComponent(viewWarningCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addGroup(problemsPanelLayout.createParallelGroup(Alignment.TRAILING).addComponent(viewErrorCheckBox).addComponent(viewFileDirCollisionCheckBox)).addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        Mnemonics.setLocalizedText(uncheckAllButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.uncheckAllButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(checkAllButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.checkAllButton.text")); // NOI18N
+
+        GroupLayout spaceHolderPanelLayout = new GroupLayout(spaceHolderPanel);
+        spaceHolderPanel.setLayout(spaceHolderPanelLayout);
+        spaceHolderPanelLayout.setHorizontalGroup(
+            spaceHolderPanelLayout.createParallelGroup(Alignment.LEADING).addComponent(uncheckAllButton).addComponent(checkAllButton, Alignment.TRAILING)
+        );
+
+        spaceHolderPanelLayout.linkSize(SwingConstants.HORIZONTAL, new Component[] {checkAllButton, uncheckAllButton});
+
+        spaceHolderPanelLayout.setVerticalGroup(
+            spaceHolderPanelLayout.createParallelGroup(Alignment.LEADING).addGroup(spaceHolderPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(checkAllButton)
+
+                .addPreferredGap(ComponentPlacement.RELATED).addComponent(uncheckAllButton).addContainerGap())
+        );
 
         itemTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         itemScrollPane.setViewportView(itemTable);
@@ -615,7 +690,8 @@ public final class SyncPanel extends JPanel {
         Mnemonics.setLocalizedText(syncInfoLabel, "SYNC INFO LABEL"); // NOI18N
         Mnemonics.setLocalizedText(operationLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationLabel.text")); // NOI18N
 
-        diffButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png")));         diffButton.setEnabled(false);
+        diffButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png"))); // NOI18N
+        diffButton.setEnabled(false);
 
         Mnemonics.setLocalizedText(noopButton, " "); // NOI18N
         noopButton.setEnabled(false);
@@ -646,26 +722,9 @@ public final class SyncPanel extends JPanel {
                         .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                                 .addComponent(operationLabel)
 
-                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(diffButton).addGap(18, 18, 18).addComponent(noopButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton)).addComponent(infoLabel).addComponent(syncInfoLabel).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup()
-                                .addComponent(viewLabel)
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(diffButton).addGap(18, 18, 18).addComponent(noopButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton)).addComponent(infoLabel).addComponent(syncInfoLabel).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addGap(0, 91, Short.MAX_VALUE)).addGroup(layout.createSequentialGroup()
 
-                                .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
-                                        .addComponent(viewFileDirCollisionCheckBox)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(viewFileConflictCheckBox)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(viewWarningCheckBox)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(viewErrorCheckBox)).addGroup(layout.createSequentialGroup()
-                                        .addComponent(viewNoopCheckBox)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(viewDownloadCheckBox)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(viewUploadCheckBox)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(viewDeleteCheckBox)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(viewSymlinkCheckBox))))).addGap(0, 91, Short.MAX_VALUE))).addContainerGap())
+                        .addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED, 0, GroupLayout.PREFERRED_SIZE).addComponent(spaceHolderPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(0, 0, 0))).addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {deleteButton, downloadButton, noopButton, resetButton, uploadButton});
@@ -675,7 +734,7 @@ public final class SyncPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(infoLabel)
 
-                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewLabel).addComponent(viewNoopCheckBox).addComponent(viewDownloadCheckBox).addComponent(viewUploadCheckBox).addComponent(viewDeleteCheckBox).addComponent(viewSymlinkCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewFileDirCollisionCheckBox).addComponent(viewFileConflictCheckBox).addComponent(viewWarningCheckBox).addComponent(viewErrorCheckBox)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createParallelGroup(Alignment.LEADING, false).addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addComponent(spaceHolderPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                         .addComponent(syncInfoLabel)
 
                         .addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteButton).addComponent(resetButton).addComponent(operationLabel))).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
@@ -685,6 +744,7 @@ public final class SyncPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JButton checkAllButton;
     private JButton deleteButton;
     private JButton diffButton;
     private JButton downloadButton;
@@ -693,16 +753,19 @@ public final class SyncPanel extends JPanel {
     private JTable itemTable;
     private JButton noopButton;
     private JLabel operationLabel;
+    private JPanel operationsPanel;
+    private JPanel problemsPanel;
     private JButton resetButton;
     private JCheckBox showSummaryCheckBox;
+    private JPanel spaceHolderPanel;
     private JLabel syncInfoLabel;
+    private JButton uncheckAllButton;
     private JButton uploadButton;
     private JCheckBox viewDeleteCheckBox;
     private JCheckBox viewDownloadCheckBox;
     private JCheckBox viewErrorCheckBox;
     private JCheckBox viewFileConflictCheckBox;
     private JCheckBox viewFileDirCollisionCheckBox;
-    private JLabel viewLabel;
     private JCheckBox viewNoopCheckBox;
     private JCheckBox viewSymlinkCheckBox;
     private JCheckBox viewUploadCheckBox;
