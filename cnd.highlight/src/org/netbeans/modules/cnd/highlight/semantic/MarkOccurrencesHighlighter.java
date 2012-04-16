@@ -84,6 +84,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -165,7 +166,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         if (phase == Phase.CLEANUP) {
             clean();
         } else {
-            BaseDocument doc = getDocument();
+            final BaseDocument doc = getDocument();
 
             if (doc == null) {
                 clean();
@@ -230,40 +231,33 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                     }
                 }
 
-                Collection<CsmReference> out = getOccurrences(doc, file, lastPosition, interrupter);
+                final Collection<CsmReference> out = getOccurrences(doc, file, lastPosition, interrupter);
                 if (out.isEmpty() || interrupter.cancelled()) {
                     if (!SemanticHighlightingOptions.instance().getKeepMarks()) {
                         clean();
                     }
                 } else {
-                    PositionsBag obag = new PositionsBag(doc);
+                    final PositionsBag obag = new PositionsBag(doc);
                     obag.clear();
-                    String mimeType = fo.getMIMEType();
-                    for (CsmReference csmReference : out) {
+                    final AttributeSet attrs = defaultColors.get(fo.getMIMEType());
+                    for (final CsmReference csmReference : out) {
                         if (interrupter.cancelled()) {
                             break;
                         }
-                        int usages[][] = CsmMacroExpansion.getUsages(doc, csmReference.getStartOffset());
-                        if (usages != null) {
-                            for (int i = 0; i < usages.length; i++) {
-                                int startOffset = usages[i][0];
-                                int endOffset = usages[i][1];
-                                if (startOffset < doc.getLength() && endOffset > 0 && startOffset < endOffset) {
-                                    obag.addHighlight(
-                                            doc.createPosition((startOffset > 0) ? startOffset : 0), 
-                                            doc.createPosition((endOffset < doc.getLength()) ? endOffset : doc.getLength()), defaultColors.get(mimeType));
+                        Runnable runnable = new Runnable() {
+
+                            @Override
+                            public void run() {
+                                try {
+                                    addHighlight(doc, obag, csmReference, attrs);
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
                                 }
                             }
-                        } else {
-                            int startOffset = getDocumentOffset(doc, csmReference.getStartOffset());
-                            int endOffset = getDocumentOffset(doc, csmReference.getEndOffset());
-                            if (startOffset < doc.getLength() && endOffset > 0 && startOffset < endOffset) {
-                                obag.addHighlight(doc.createPosition((startOffset > 0) ? startOffset : 0),
-                                                  doc.createPosition((endOffset < doc.getLength()) ? endOffset : doc.getLength()), defaultColors.get(mimeType));
-                            }
-                        }
-                    }
 
+                        };
+                        doc.render(runnable);
+                    }
                     if (interrupter.cancelled()) {
                         // no need to mark dirty occurrences, they will be recalculated on the next run
                         return;
@@ -272,12 +266,33 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                     OccurrencesMarkProvider.get(doc).setOccurrences(
                             OccurrencesMarkProvider.createMarks(doc, out, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
                 }
-            } catch (BadLocationException ex) {
             } finally {
                 if (listener != null) {
                     doc.removeDocumentListener(listener);
                 }
             }            
+        }
+    }
+    
+    private void addHighlight(BaseDocument doc, PositionsBag obag, CsmReference csmReference, AttributeSet attrs) throws BadLocationException {
+        int usages[][] = CsmMacroExpansion.getUsages(doc, csmReference.getStartOffset());
+        if (usages != null) {
+            for (int i = 0; i < usages.length; i++) {
+                int startOffset = usages[i][0];
+                int endOffset = usages[i][1];
+                if (startOffset < doc.getLength() && endOffset > 0 && startOffset < endOffset) {
+                    obag.addHighlight(
+                            doc.createPosition((startOffset > 0) ? startOffset : 0),
+                            doc.createPosition((endOffset < doc.getLength()) ? endOffset : doc.getLength()), attrs);
+                }
+            }
+        } else {
+            int startOffset = getDocumentOffset(doc, csmReference.getStartOffset());
+            int endOffset = getDocumentOffset(doc, csmReference.getEndOffset());
+            if (startOffset < doc.getLength() && endOffset > 0 && startOffset < endOffset) {
+                obag.addHighlight(doc.createPosition((startOffset > 0) ? startOffset : 0),
+                        doc.createPosition((endOffset < doc.getLength()) ? endOffset : doc.getLength()), attrs);
+            }
         }
     }
 
