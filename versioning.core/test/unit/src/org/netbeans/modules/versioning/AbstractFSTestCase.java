@@ -48,7 +48,7 @@ import java.io.File;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
+import org.netbeans.modules.versioning.core.spi.testvcs.TestVCS;
 import org.openide.filesystems.FileObject;
 import org.openide.util.test.MockLookup;
 

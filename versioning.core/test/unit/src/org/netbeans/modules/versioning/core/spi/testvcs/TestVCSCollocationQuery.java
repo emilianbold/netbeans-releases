@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,25 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.versioning.core.spi.testvcs;
 
-package org.netbeans.modules.versioning.spi.testvcs;
-
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
+import java.io.File;
+import java.net.URI;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class TestVCSVisibilityQuery extends VCSVisibilityQuery {
+public class TestVCSCollocationQuery implements CollocationQueryImplementation2 {
 
-    public static final String INVISIBLE_FILE_SUFFIX = "invisible";
-
+    public static String COLLOCATED_FILENAME_SUFFIX = "_iscollocated";
     @Override
-    public boolean isVisible(VCSFileProxy file) {
-        return !file.getName().endsWith(INVISIBLE_FILE_SUFFIX);
+    public boolean areCollocated(URI file1, URI file2) {
+        String name1 = file1.getPath();
+        String name2 = file2.getPath();
+        
+        return name1.endsWith(COLLOCATED_FILENAME_SUFFIX) && name2.endsWith(COLLOCATED_FILENAME_SUFFIX);
     }
 
+    @Override
+    public URI findRoot(URI uri) {
+        File root = getRoot(new File(uri));
+        return root != null ? root.toURI() : null;
+    }
+    
+    private File getRoot(File file) {
+        File topmost = null;
+        for (; file != null; file = file.getParentFile()) {
+            if (file.getName().endsWith(TestVCS.VERSIONED_FOLDER_SUFFIX)) {
+                topmost = file;
+            }
+        }
+        return topmost;
+    }
+    
 }

@@ -39,41 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.spi.testvcs;
+package org.netbeans.core.output2;
 
-import java.io.File;
-import java.net.URI;
-import org.netbeans.spi.queries.CollocationQueryImplementation2;
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.SwingUtilities;
+import org.netbeans.junit.NbTestCase;
+import org.openide.windows.IOProvider;
 
 /**
  *
- * @author Tomas Stupka
+ * @author jhavlin
  */
-public class TestVCSCollocationQuery implements CollocationQueryImplementation2 {
+public class ControllerTest extends NbTestCase {
 
-    public static String COLLOCATED_FILENAME_SUFFIX = "_iscollocated";
-    @Override
-    public boolean areCollocated(URI file1, URI file2) {
-        String name1 = file1.getPath();
-        String name2 = file2.getPath();
-        
-        return name1.endsWith(COLLOCATED_FILENAME_SUFFIX) && name2.endsWith(COLLOCATED_FILENAME_SUFFIX);
+    public ControllerTest(String name) {
+        super(name);
     }
 
-    @Override
-    public URI findRoot(URI uri) {
-        File root = getRoot(new File(uri));
-        return root != null ? root.toURI() : null;
-    }
-    
-    private File getRoot(File file) {
-        File topmost = null;
-        for (; file != null; file = file.getParentFile()) {
-            if (file.getName().endsWith(TestVCS.VERSIONED_FOLDER_SUFFIX)) {
-                topmost = file;
+    public void testUpdaterRemovesUnavailableTabs() throws InterruptedException,
+            InvocationTargetException {
+        Controller c = new Controller();
+        final Controller.CoalescedNameUpdater updater =
+                c.new CoalescedNameUpdater();
+        final NbIO io = (NbIO) IOProvider.getDefault().getIO(
+                "test", true);                                          //NOI18N
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                OutputTab ot = new OutputTab(io);
+                updater.add(ot);
+                assertTrue(updater.contains(ot));
+                updater.run();
+                assertFalse(updater.contains(ot));
             }
-        }
-        return topmost;
+        });
     }
-    
 }
