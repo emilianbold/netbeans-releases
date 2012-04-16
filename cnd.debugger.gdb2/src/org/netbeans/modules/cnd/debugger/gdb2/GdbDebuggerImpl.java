@@ -2766,8 +2766,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public Set<String> requestAutos() {
         Set<String> autoNames = super.requestAutos();
-        if(autoNames != null){
-            LinkedList<Variable> res = new LinkedList<Variable>();
+        LinkedList<Variable> res = new LinkedList<Variable>();
+        if (autoNames != null) {
             for (String auto : autoNames) {
                 GdbVariable var = variableBag.get(auto, false, VariableBag.FROM_BOTH);
                 if (var == null) {
@@ -2776,16 +2776,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 }
                 res.add(var);
             }
-            synchronized (autos) {
+        } else {
+            res = null;
+        }
+        
+        synchronized (autos) {
                 autos.clear();
                 autos.addAll(res);
-            }
-        } else{
-            synchronized (autos) {
-                autos.clear();
-                autos.add(null);
-            }
         }
+        
         return autoNames;
     }
 
