@@ -622,7 +622,7 @@ public class LuceneIndex implements Index.Transactional, Runnable {
                     if (children != null) {
                         for (final File child : children) {                                                
                             if (!child.delete()) {                                
-                                final Map<Thread,List<StackTraceElement>> sts = stackTraces(Thread.getAllStackTraces());
+                                final Map<String,String> sts = stackTraces(Thread.getAllStackTraces());
                                 throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
                                         child.exists()  +","+                                               //NOI18N
                                         child.canRead() +","+                                               //NOI18N
@@ -999,11 +999,14 @@ public class LuceneIndex implements Index.Transactional, Runnable {
                     append(" r: ").append(c.canRead()).
                     append(" w: ").append(c.canWrite()).append("\n");  //NOI18N
                 }
-                message.append("threads: ").append(stackTraces(Thread.getAllStackTraces())).append("\n").   //NOI18N
-                append("owner: ").append(lockFactory instanceof RecordOwnerLockFactory?                     //NOI18N
-                    ((RecordOwnerLockFactory)lockFactory).getOwner():
-                    "???"); //NOI18N
-                
+                message.append("threads: ").append(stackTraces(Thread.getAllStackTraces())).append("\n");   //NOI18N
+                if (lockFactory instanceof RecordOwnerLockFactory) {
+                    final Thread ownerThread = ((RecordOwnerLockFactory)lockFactory).getOwner();
+                    if (ownerThread != null) {
+                        message.append("owner:").append(ownerThread).             //NOI18N
+                        append("(").append(ownerThread.getId()).append(")");      //NOI18N
+                    }
+                }
             }
             return Exceptions.attachMessage(ioe, message.toString());
         }
@@ -1034,10 +1037,12 @@ public class LuceneIndex implements Index.Transactional, Runnable {
             return (long) (per * Runtime.getRuntime().maxMemory());
         }
         
-        private Map<Thread,List<StackTraceElement>> stackTraces(final Map<Thread,StackTraceElement[]> traces) {
-            final Map<Thread,List<StackTraceElement>> result = new HashMap<Thread, List<StackTraceElement>>();
+        private Map<String,String> stackTraces(final Map<Thread,StackTraceElement[]> traces) {
+            final Map<String,String> result = new HashMap<String, String>();
             for (Map.Entry<Thread,StackTraceElement[]> entry : traces.entrySet()) {
-                result.put(entry.getKey(), Arrays.asList(entry.getValue()));
+                result.put(
+                    entry.getKey().toString()+"("+entry.getKey().getId()+")",   //NOI18N
+                    Arrays.toString(entry.getValue()));
             }
             return result;
         }
