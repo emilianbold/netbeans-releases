@@ -15,6 +15,7 @@
     </resources>
     <applet-desc width="@WIDTH@" height="@HEIGHT@"
          main-class="@MAINCLASS@"
-         name="@NAME@" />
+         name="@NAME@">@PARAMETERS@
+    </applet-desc>
     <update check="@UPDATEMODE@"/>
 </jnlp>

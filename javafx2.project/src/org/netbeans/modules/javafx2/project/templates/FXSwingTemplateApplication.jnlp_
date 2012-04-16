@@ -13,6 +13,7 @@
         <jfx:javafx-runtime version="2.0+" 
             href="http://javadl.sun.com/webapps/download/GetFile/javafx-latest/windows-i586/javafx2.jnlp"/>
     </resources>
-    <application-desc main-class="@MAINCLASS@"/>
+    <application-desc main-class="@MAINCLASS@">@ARGUMENTS@
+    </application-desc>
     <update check="@UPDATEMODE@"/>
 </jnlp>
