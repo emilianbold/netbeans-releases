@@ -136,6 +136,8 @@ public final class SyncPanel extends JPanel {
     private NotificationLineSupport notificationLineSupport = null;
     // @GuardedBy(AWT)
     private Boolean rememberShowSummary = null;
+    // @GuardedBy(AWT)
+    private JButton okButton = null;
 
 
     SyncPanel(PhpProject project, String remoteConfigurationName, List<SyncItem> items, RemoteClient remoteClient, boolean forProject, boolean firstRun) {
@@ -168,27 +170,32 @@ public final class SyncPanel extends JPanel {
     @NbBundle.Messages({
         "# {0} - project name",
         "# {1} - remote configuration name",
-        "SyncPanel.title=Remote Synchronization for {0}: {1}"
+        "SyncPanel.title=Remote Synchronization for {0}: {1}",
+        "SyncPanel.button.titleWithMnemonics=S&ynchronize"
     })
     public boolean open() {
         assert SwingUtilities.isEventDispatchThread();
+        okButton = new JButton();
+        Mnemonics.setLocalizedText(okButton, Bundle.SyncPanel_button_titleWithMnemonics());
         descriptor = new DialogDescriptor(
                 this,
                 Bundle.SyncPanel_title(project.getName(), remoteConfigurationName),
                 true,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.OK_OPTION,
+                new Object[] {okButton, DialogDescriptor.CANCEL_OPTION},
+                okButton,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
                 null);
         notificationLineSupport = descriptor.createNotificationLineSupport();
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        descriptor.setButtonListener(new OkActionListener(dialog));
+        okButton.addActionListener(new OkActionListener(dialog));
         descriptor.setClosingOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
         validateItems();
         updateSyncInfo();
         boolean okPressed;
         try {
             dialog.setVisible(true);
-            okPressed = descriptor.getValue() == NotifyDescriptor.OK_OPTION;
+            okPressed = descriptor.getValue() == okButton;
         } finally {
             dialog.dispose();
         }
@@ -443,16 +450,19 @@ public final class SyncPanel extends JPanel {
     void setError(String error) {
         notificationLineSupport.setErrorMessage(error);
         descriptor.setValid(false);
+        okButton.setEnabled(false);
     }
 
     void setWarning(String warning) {
         notificationLineSupport.setWarningMessage(warning);
         descriptor.setValid(true);
+        okButton.setEnabled(true);
     }
 
     void clearError() {
         notificationLineSupport.clearMessages();
         descriptor.setValid(true);
+        okButton.setEnabled(true);
     }
 
     @NbBundle.Messages({
@@ -917,24 +927,22 @@ public final class SyncPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == NotifyDescriptor.OK_OPTION) {
-                if (rememberShowSummary != null) {
-                    PhpOptions.getInstance().setRemoteSyncShowSummary(rememberShowSummary);
-                }
-                if (!showSummaryCheckBox.isVisible()
-                        || !showSummaryCheckBox.isSelected()) {
-                    closeDialog();
-                    return;
-                }
-                SyncInfo syncInfo = getSyncInfo();
-                SummaryPanel panel = new SummaryPanel(
-                        syncInfo.upload,
-                        syncInfo.download,
-                        syncInfo.delete,
-                        syncInfo.noop);
-                if (panel.open()) {
-                    closeDialog();
-                }
+            if (rememberShowSummary != null) {
+                PhpOptions.getInstance().setRemoteSyncShowSummary(rememberShowSummary);
+            }
+            if (!showSummaryCheckBox.isVisible()
+                    || !showSummaryCheckBox.isSelected()) {
+                closeDialog();
+                return;
+            }
+            SyncInfo syncInfo = getSyncInfo();
+            SummaryPanel panel = new SummaryPanel(
+                    syncInfo.upload,
+                    syncInfo.download,
+                    syncInfo.delete,
+                    syncInfo.noop);
+            if (panel.open()) {
+                closeDialog();
             }
         }
 
