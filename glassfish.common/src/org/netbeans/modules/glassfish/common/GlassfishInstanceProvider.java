@@ -73,13 +73,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
     private static final String AUTOINSTANCECOPIED = "autoinstance-copied"; // NOI18N
 
-    // Always lock ee6Provider first and preludeProviderLock second when both
-    // locks are required to avoid deadlock conditions.
-    /** Internal lock for <code>ee6Provider</code> initialization. */
-    private static final Object ee6ProviderLock = new Object();
     private volatile static GlassfishInstanceProvider ee6Provider;
-    /** Internal lock for <code>preludeProvider</code> initialization. */
-    private static final Object preludeProviderLock = new Object();
     private volatile static GlassfishInstanceProvider preludeProvider;
 
     public static final String EE6_DEPLOYER_FRAGMENT = "deployer:gfv3ee6"; // NOI18N
@@ -112,10 +106,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             return ee6Provider;
         }
         else {
-            synchronized(ee6ProviderLock) {
+            boolean runInit = false;
+            synchronized(GlassfishInstanceProvider.class) {
                 if (ee6Provider == null) {
-                    GlassfishInstanceProvider provider;
-                    provider = new GlassfishInstanceProvider(
+                    runInit = true;
+                    ee6Provider = new GlassfishInstanceProvider(
                             new String[]{EE6_DEPLOYER_FRAGMENT, EE6WC_DEPLOYER_FRAGMENT},
                             new String[]{EE6_INSTANCES_PATH, EE6WC_INSTANCES_PATH},
                             null,
@@ -131,10 +126,10 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                         }
 
                     });
-                    provider.init();
-                    // Everything must be finished before setting ee6Provider value.
-                    ee6Provider = provider;
                 }
+            }
+            if (runInit) {
+                ee6Provider.init();                
             }
             return ee6Provider;
         }
@@ -145,14 +140,13 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             return preludeProvider;
         }
         else {
-            synchronized(preludeProviderLock) {
+            boolean runInit = false;
+            synchronized(GlassfishInstanceProvider.class) {
                 if (preludeProvider == null) {
-                    GlassfishInstanceProvider provider;
-                    String[] uriFragments = new String[]{PRELUDE_DEPLOYER_FRAGMENT};
-                    String[] instanceDirs = new String[]{PRELUDE_INSTANCES_PATH};
-                    provider = new GlassfishInstanceProvider(
-                            uriFragments,
-                            instanceDirs,
+                    runInit = true;
+                    preludeProvider = new GlassfishInstanceProvider(
+                            new String[]{PRELUDE_DEPLOYER_FRAGMENT},
+                            new String[]{PRELUDE_INSTANCES_PATH},
                             org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
                                 "STR_PRELUDE_SERVER_NAME", new Object[]{}), // NOI18N
                             false,
@@ -167,10 +161,10 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                                 }
 
                             });
-                    provider.init();
-                    // Everything must be finished before setting preludeProvider value.
-                    preludeProvider = provider;
                 }
+            }
+            if (runInit) {
+                preludeProvider.init();                
             }
             return preludeProvider;
         }
@@ -238,14 +232,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
      *         is initialized or <code>false</code> otherwise.
      */
     @SuppressWarnings("NestedSynchronizedStatement")
-    public static boolean initialized() {
-        // Acquire both locks to make sure there is no initialization
-        // in progress.
-        synchronized(ee6ProviderLock) {
-            synchronized(preludeProviderLock) {
-                return preludeProvider != null || ee6Provider != null;
-            }
-        }
+    public static synchronized boolean initialized() {
+        return preludeProvider != null || ee6Provider != null;
     }
 
     public static Logger getLogger() {

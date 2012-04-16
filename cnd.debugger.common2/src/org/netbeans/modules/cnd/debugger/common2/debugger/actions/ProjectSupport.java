@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionSet;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionValue;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
@@ -373,7 +373,7 @@ public final class ProjectSupport {
 	// OLD adjustDefaults(seed);
 
         final ProjectSeed static_seed = seed;
-	if ( ! DebuggerManager.isStandalone()) {
+	if ( ! NativeDebuggerManager.isStandalone()) {
             fillCndConfiguration(static_seed);
 	}
     }

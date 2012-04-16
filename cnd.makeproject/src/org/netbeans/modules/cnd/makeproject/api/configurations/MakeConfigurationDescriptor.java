@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
+import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
@@ -734,6 +735,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
                 if (!cFiles && itemConfiguration.getCCompilerConfiguration().isCStandardChanged()) {
                     itemConfiguration.getCCompilerConfiguration().getCStandard().setDirty(false);
+                    itemConfiguration.updateLanguageFlavor();
                     cFiles = true;
                 }
                 if (!cFiles && itemConfiguration.getCCompilerConfiguration().getSixtyfourBits().getDirty()) {
@@ -752,6 +754,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
                 if (!ccFiles && itemConfiguration.getCCCompilerConfiguration().isCppStandardChanged()) {
                     itemConfiguration.getCCCompilerConfiguration().getCppStandard().setDirty(false);
+                    itemConfiguration.updateLanguageFlavor();
                     ccFiles = true;
                 }
                 if (!ccFiles && itemConfiguration.getCCCompilerConfiguration().getSixtyfourBits().getDirty()) {
@@ -839,40 +842,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }    
 
     private void firePropertiesChanged(Item[] items, boolean cFiles, boolean ccFiles, boolean projectChanged) {
-        ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
-        ArrayList<NativeFileItem> deleted = new ArrayList<NativeFileItem>();
-        MakeConfiguration conf = getActiveConfiguration();
-        // Handle project and file level changes
-        for (int i = 0; i < items.length; i++) {
-            ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf);
-            if (itemConfiguration != null) { // prevent NPE for corrupted projects IZ#174350
-                if (itemConfiguration.getExcluded().getValue()) {
-                    deleted.add(items[i]);
-                    continue;
-                }
-                if ((cFiles && itemConfiguration.getTool() == PredefinedToolKind.CCompiler)
-                        || (ccFiles && itemConfiguration.getTool() == PredefinedToolKind.CCCompiler)
-                        || items[i].hasHeaderOrSourceExtension(cFiles, ccFiles)) {
-                    list.add(items[i]);
-                }
-            }
-        }
-        if (deleted.size() > 0) {
-            getNativeProjectChangeSupport().fireFilesRemoved(deleted);
-        }
-        firePropertiesChanged(list, projectChanged);
-    }
-    
-    private void firePropertiesChanged(List<NativeFileItem> list, boolean projectChanged) {
-        if (list.size() > 1 || (projectChanged && list.size() == 1)) {
-            getNativeProjectChangeSupport().fireFilesPropertiesChanged(list);
-        } else if (list.size() == 1) {
-            List<NativeFileItem> items = new ArrayList<NativeFileItem>();
-            items.add(list.get(0));
-            getNativeProjectChangeSupport().fireFilesPropertiesChanged(items);
-        } else {
-            // nothing
-        }
+        NativeProjectProvider.firePropertiesChanged(items, cFiles, ccFiles, projectChanged, getActiveConfiguration(), getNativeProjectChangeSupport());
     }
     
     public void checkForChangedItems(Delta delta) {
@@ -1112,7 +1082,12 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             //    // Always check for missing or out-of-date makefiles. They may not have been generated or have been removed.
             //    new ConfigurationMakefileWriter(this).writeMissingMakefiles();
             //}
-            new ConfigurationMakefileWriter(this).write();
+            try {
+                new ConfigurationMakefileWriter(this).write();
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Error writing ConfigurationMakefile", ex);
+            }
+
             ConfigurationPrivateXMLWriter();
             saveProject();
 
@@ -1160,7 +1135,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, "Error writing configuration", ex);
             }
-            new ConfigurationMakefileWriter(this).write();
+
+            try {
+                new ConfigurationMakefileWriter(this).write();
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Error writing ConfigurationMakefile", ex);
+            }
+
             ConfigurationProjectXMLWriter();
             ConfigurationPrivateXMLWriter();
             saveProject();

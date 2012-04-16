@@ -3541,31 +3541,35 @@ public class Reformatter implements ReformatTask {
                         }
                         if (currWSPos < 0) {
                             currWSPos = i;
-                            if (col > cs.getRightMargin() && cs.wrapCommentText() && !noFormat && lastWSPos >= 0) {
-                                int endOff = pendingDiff != null ? pendingDiff.getEndOffset() - offset : lastWSPos + 1;
-                                String s = pendingDiff != null && pendingDiff.text != null && pendingDiff.text.charAt(0) == '\n' ? pendingDiff.text : NEWLINE + lineStartString;
-                                col = getCol(lineStartString) + i - endOff;
-                                if (align > 0) {
-                                    int num = align - lineStartString.length();
-                                    if (num > 0) {
-                                        s += getSpaces(num);
-                                        col += num;
+                            if (noFormat) {
+                                col++;
+                            } else {
+                                if (col > cs.getRightMargin() && cs.wrapCommentText() && lastWSPos >= 0) {
+                                    int endOff = pendingDiff != null ? pendingDiff.getEndOffset() - offset : lastWSPos + 1;
+                                    String s = pendingDiff != null && pendingDiff.text != null && pendingDiff.text.charAt(0) == '\n' ? pendingDiff.text : NEWLINE + lineStartString;
+                                    col = getCol(lineStartString) + i - endOff;
+                                    if (align > 0) {
+                                        int num = align - lineStartString.length();
+                                        if (num > 0) {
+                                            s += getSpaces(num);
+                                            col += num;
+                                        }
+                                    } else {
+                                        col++;
                                     }
+                                    if (!s.equals(text.substring(lastWSPos, endOff)))
+                                        addDiff(new Diff(offset + lastWSPos, offset + endOff, s));
+                                } else if (pendingDiff != null) {
+                                    String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
+                                    if (!sub.equals(pendingDiff.text)) {
+                                        addDiff(pendingDiff);
+                                    }
+                                    col++;
                                 } else {
                                     col++;
                                 }
-                                if (!s.equals(text.substring(lastWSPos, endOff)))
-                                    addDiff(new Diff(offset + lastWSPos, offset + endOff, s));
-                            } else if (pendingDiff != null) {
-                                String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
-                                if (!sub.equals(pendingDiff.text)) {
-                                    addDiff(pendingDiff);
-                                }
-                                col++;
-                            } else {
-                                col++;
+                                pendingDiff = null;
                             }
-                            pendingDiff = null;
                         }
                     }
                     if (c == '\n') {
@@ -3649,7 +3653,6 @@ public class Reformatter implements ReformatTask {
                                     noFormat = true;
                                     break;
                                 case 6:
-                                    lastWSPos = -1;
                                     preserveNewLines = true;
                                     break;
                             }
@@ -3826,12 +3829,15 @@ public class Reformatter implements ReformatTask {
                             String sub = currWSPos >= 0 ? text.substring(currWSPos, i) : null;
                             if (!s.equals(sub))
                                 addDiff(new Diff(currWSPos >= 0 ? offset + currWSPos : offset + i, offset + i, s));
-                            col = getCol(s);
+                            if (cs.wrapOneLineComments())
+                                col = getCol(lineStartString);
                             firstLine = false;
                         } else if (currWSPos >= 0) {
-                            lastWSPos = currWSPos;
-                            if (!noFormat && currWSPos < i - 1)
-                                pendingDiff = new Diff(offset + currWSPos + 1, offset + i, null);
+                            if (!noFormat) {
+                                lastWSPos = currWSPos;
+                                if (currWSPos < i - 1)
+                                    pendingDiff = new Diff(offset + currWSPos + 1, offset + i, null);
+                            }
                         } else if (c != '*') {
                             preserveNewLines = false;
                         }

@@ -211,6 +211,37 @@ public class ClassPathProviderImplTest extends NbTestCase {
         assertRoots(ClassPath.getClassPath(gtsrc2, ClassPath.SOURCE), tsrc, gtsrc, gtsrc2);
     }
 
+    public void testNewlyCreatedSourceGroup() throws Exception { // #190852
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>0</version>" +
+                "</project>");
+        FileObject src = FileUtil.createFolder(d, "src/main/java");
+        FileObject tsrc = FileUtil.createFolder(d, "src/test/java");
+        ClassPath sourcepath = ClassPath.getClassPath(src, ClassPath.SOURCE);
+        ClassPath tsourcepath = ClassPath.getClassPath(tsrc, ClassPath.SOURCE);
+        assertRoots(sourcepath, src);
+        assertRoots(tsourcepath, tsrc);
+        MockPropertyChangeListener l = new MockPropertyChangeListener();
+        sourcepath.addPropertyChangeListener(l);
+        FileObject gsrc = FileUtil.createFolder(d, "target/generated-sources/xjc");
+        gsrc.createData("Whatever.class");
+        l.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
+        assertRoots(sourcepath, src, gsrc);
+        assertSame(sourcepath, ClassPath.getClassPath(gsrc, ClassPath.SOURCE));
+        tsourcepath.addPropertyChangeListener(l);
+        FileObject gtsrc = FileUtil.createFolder(d, "target/generated-test-sources/jaxb");
+        gtsrc.createData("Whatever.class");
+        l.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
+        assertRoots(tsourcepath, tsrc, gtsrc);
+        assertSame(tsourcepath, ClassPath.getClassPath(gtsrc, ClassPath.SOURCE));
+    }
+
     public void testArchetypeResources() throws Exception { // #189037
         TestFileUtils.writeFile(d,
                 "pom.xml",

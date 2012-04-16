@@ -53,7 +53,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -440,14 +439,25 @@ public class Installer extends ModuleInstall implements Runnable {
 
     static void writeOut(LogRecord r) {
         try {
+            boolean logOverflow;
+            boolean logSizeControl;
             synchronized (UIGESTURE_LOG_LOCK) {
                 LogRecords.write(logStream(), r);
-            }
-            if (logsSize >= UIHandler.MAX_LOGS) {
-                if(preferencesWritable) {
-                    prefs.putInt("count", UIHandler.MAX_LOGS);
+                logsSize++;
+                logOverflow = logsSize > UIHandler.MAX_LOGS;
+                if (preferencesWritable) {
+                    if (logOverflow) {
+                        prefs.putInt("count", UIHandler.MAX_LOGS);
+                    } else if (prefs.getInt("count", 0) < logsSize) {
+                        prefs.putInt("count", logsSize);
+                    }
                 }
-                closeLogStream();
+                if (logOverflow) {
+                    closeLogStream();
+                }
+                logSizeControl = (logsSize % 100) == 0 && !logOverflow;
+            }
+            if (logOverflow) {
                 if (isHintsMode()) {
                     class Auto implements Runnable {
                         @Override
@@ -464,15 +474,10 @@ public class Installer extends ModuleInstall implements Runnable {
                         f1.delete();
                     }
                     f.renameTo(f1);
-                }
-                logsSize = 0;
-            } else {
-                logsSize++;
-                if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
-                    prefs.putInt("count", logsSize);
+                    logsSize = 0;
                 }
             }
-            if ((logsSize % 100) == 0) {
+            if (logSizeControl) {
                 synchronized (UIGESTURE_LOG_LOCK) {
                     //This is fallback to avoid growing log file over any limit.
                     File f = logFile(0);
@@ -482,7 +487,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         LOG.log(Level.INFO, "Log file:{0} Size:{1} Bytes", new Object[]{f, f.length()}); // NOI18N
                         closeLogStream();
                         logsSize = 0;
-                        if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
+                        if (preferencesWritable) {
                             prefs.putInt("count", logsSize);
                         }
                         f.delete();
@@ -599,31 +604,37 @@ public class Installer extends ModuleInstall implements Runnable {
 
     /** Append content of source to target */
     private static void appendFile (File source, File target) {
+        byte[] buf = new byte[8192];
+        FileInputStream is = null;
+        FileOutputStream os = null;
+        long targetSize = -1;
         try {
-            FileInputStream is = null;
-            FileOutputStream os = null;
-            try {
-                is = new FileInputStream(source);
-                BufferedInputStream bis = new BufferedInputStream(is);
+            is = new FileInputStream(source);
+            targetSize = target.length();
+            os = new FileOutputStream(target, true);
 
-                os = new FileOutputStream(target, true);
-                BufferedOutputStream bos = new BufferedOutputStream(os);
-
-                int c;
-                while ((c = bis.read()) != -1) {
-                    bos.write(c);
-                }
-                bos.flush();
-            } finally {
-                if (is != null) {
-                    is.close();
-                }
-                if (os != null) {
-                    os.close();
-                }
+            int l;
+            while ((l = is.read(buf)) != -1) {
+                os.write(buf, 0, l);
             }
+            os.flush();
         } catch (IOException ex) {
+            if (os != null) {
+                // Write failed, to assure consistency of data, truncate the file back to the original size:
+                DataConsistentFileOutputStream.truncateFileToConsistentSize(os, targetSize);
+            }
             Exceptions.printStackTrace(ex);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ex) {}
+            }
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException ex) {}
+            }
         }
     }
 
@@ -700,12 +711,14 @@ public class Installer extends ModuleInstall implements Runnable {
 
     public static int getLogsSize() {
         UIHandler.waitFlushed();
-        return prefs.getInt("count", 0); // NOI18N
+        synchronized (UIGESTURE_LOG_LOCK) {
+            return prefs.getInt("count", 0); // NOI18N
+        }
     }
 
     static void readLogs(Handler handler){
+        UIHandler.waitFlushed();
         synchronized (UIGESTURE_LOG_LOCK) {
-            UIHandler.waitFlushed();
 
             File f = logFile(0);
             if (f == null || !f.exists()) {
@@ -898,7 +911,7 @@ public class Installer extends ModuleInstall implements Runnable {
         File logFile = logFile(0);
         if (logFile != null) {
             logFile.getParentFile().mkdirs();
-            os = new BufferedOutputStream(new FileOutputStream(logFile, true));
+            os = new DataConsistentFileOutputStream(logFile, true);
         } else {
             os = new NullOutputStream();
         }
@@ -926,7 +939,7 @@ public class Installer extends ModuleInstall implements Runnable {
         File logFile = logFileMetrics(0);
         if (logFile != null) {
             logFile.getParentFile().mkdirs();
-            os = new BufferedOutputStream(new FileOutputStream(logFile, true));
+            os = new DataConsistentFileOutputStream(logFile, true);
         } else {
             os = new NullOutputStream();
         }
@@ -974,19 +987,21 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     static void clearLogs() {
-        closeLogStream();
+        synchronized (UIGESTURE_LOG_LOCK) {
+            closeLogStream();
 
-        for (int i = 0; ; i++) {
-            File f = logFile(i);
-            if (f == null || !f.exists()) {
-                break;
+            for (int i = 0; ; i++) {
+                File f = logFile(i);
+                if (f == null || !f.exists()) {
+                    break;
+                }
+                f.delete();
             }
-            f.delete();
-        }
 
-        logsSize = 0;
-        if(preferencesWritable) {
-            prefs.putInt("count", 0);
+            logsSize = 0;
+            if (preferencesWritable) {
+                prefs.putInt("count", 0);
+            }
         }
         UIHandler.SUPPORT.firePropertyChange(null, null, null);
     }

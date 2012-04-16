@@ -191,6 +191,10 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
             }
             for (Artifact a : includeArtifacts) {
                 handle.progress(MSG_Downloading(a.getId()), index);
+                
+                //XXX --------
+                //XXX project.getRemoteArtifactRepositories() might not be entirely reliable, we might want to use
+                //XXX     RepositoryPreferences.getInstance().getRepositoryInfos() as well..
                 try {
                     online.resolve(a, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                     AtomicBoolean cancel = ProgressTransferListener.activeListener().cancel;

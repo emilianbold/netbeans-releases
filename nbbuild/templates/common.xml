@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -681,7 +681,7 @@ made subject to such option by the copyright holder.
                 <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
             </sequential>
         </macrodef>
-        <junit-impl test.type="${run.test.type}" />
+        <junit-impl test.type="${run.test.type}" disable.apple.ui="${disable.apple.ui}"/>
     </target>
 
     <target name="-do-testng" depends="test-init">
@@ -707,7 +707,7 @@ made subject to such option by the copyright holder.
                 <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
             </sequential>
         </macrodef>
-        <testng-impl test.type="${run.test.type}"/>
+        <testng-impl test.type="${run.test.type}" disable.apple.ui="${disable.apple.ui}"/>
     </target>
 
     <target name="test-generate-html" depends="-build-dir-init">
@@ -743,7 +743,7 @@ made subject to such option by the copyright holder.
                 <property name="run.jvmargs.ide" value=""/> 
                 <mkdir dir="${build.test.@{test.type}.results.dir}"/>
                 <condition property="test.runner" value ="testng" else="junit">
-                    <available classname="org.testng.annotations.Test" classpathref="test.@{test.type}.run.cp"/>
+                    <available classname="org.testng.annotations.Test" classpath="${test.@{test.type}.runtime.cp}"/>
                 </condition>
                 <antcall target="-do-${test.runner}-single">
                     <param name="test.type" value="@{test.type}"/>
@@ -812,7 +812,7 @@ made subject to such option by the copyright holder.
                 <fail unless="test.class">Must set test.class</fail>
                 <mkdir dir="${build.test.@{test.type}.results.dir}"/>
                 <condition property="test.runner" value ="testng" else="junit">
-                    <available classname="org.testng.annotations.Test" classpathref="test.@{test.type}.run.cp"/>
+                    <available classname="org.testng.annotations.Test" classpath="${test.@{test.type}.runtime.cp}"/>
                 </condition>
                 <antcall target="-do-${test.runner}-debug-single">
                     <param name="test.type" value="@{test.type}"/>
@@ -931,7 +931,7 @@ made subject to such option by the copyright holder.
                 <property name="run.jvmargs.ide" value=""/>
                 <mkdir dir="${build.test.@{test.type}.results.dir}"/>
                 <condition property="test.runner" value ="testng" else="junit">
-                    <available classname="org.testng.annotations.Test" classpathref="test.@{test.type}.run.cp"/>
+                    <available classname="org.testng.annotations.Test" classpath="${test.@{test.type}.runtime.cp}"/>
                 </condition>
                 <antcall target="-do-${test.runner}-testmethod">
                     <param name="test.type" value="@{test.type}"/>

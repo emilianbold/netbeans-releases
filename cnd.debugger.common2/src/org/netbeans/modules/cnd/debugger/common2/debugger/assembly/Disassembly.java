@@ -143,7 +143,7 @@ public abstract class Disassembly implements StateModel.Listener {
     }
     
      static Disassembly getCurrent() {
-        NativeDebugger currentDebugger = org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager.get().currentDebugger();
+        NativeDebugger currentDebugger = org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager.get().currentDebugger();
         if (currentDebugger != null) {
             return currentDebugger.getDisassembly();
         }

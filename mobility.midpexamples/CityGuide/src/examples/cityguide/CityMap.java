@@ -1,8 +1,9 @@
 /*
  *
- * Copyright (c) 2010, Oracle.
+ * Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+
  *
- * All rights reserved.
+ * This file is available and licensed under the following license:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- *  * Neither the name of Oracle nor the names of its contributors
+ *  * Neither the name of Oracle Corporation nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,14 +32,12 @@
  */
 package examples.cityguide;
 
+import javax.microedition.lcdui.Image;
+import javax.microedition.location.*;
 import java.io.IOException;
-
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
-
-import javax.microedition.lcdui.Image;
-import javax.microedition.location.*;
 
 
 /**
@@ -72,11 +71,15 @@ public class CityMap implements LocationListener {
     private int[] visitorXY;
     private boolean visitorActive;
     private MyMapLandmark[] landmarks;
-    private Vector mapListeners;
+    private final Vector mapListeners;
     private boolean disabled;
+    private boolean cleaning;
 
-    /** Creates a new instance of CityMap */
-    public CityMap(String[] imageNames, Coordinates topLeftCoordinates,
+    /**
+     * Creates a new instance of CityMap
+     */
+    public CityMap (
+        String[] imageNames, Coordinates topLeftCoordinates,
         Coordinates bottomRightCoordinates, Coordinates visitorCoordinates, Vector categories,
         ImageManager imageManager, LandmarkStore landmarkStore, LocationProvider locationProvider) {
         this.topLeftCoordinates = topLeftCoordinates;
@@ -85,52 +88,58 @@ public class CityMap implements LocationListener {
         this.landmarkStore = landmarkStore;
         this.locationProvider = locationProvider;
 
-        this.visitorCoordinates = new Coordinates(0, 0, 0);
+        this.visitorCoordinates = new Coordinates (0, 0, 0);
         this.visitorXY = new int[2];
-        this.visitorActive = (locationProvider.getState() == LocationProvider.AVAILABLE);
+        this.visitorActive = (locationProvider.getState () == LocationProvider.AVAILABLE);
 
-        this.mapListeners = new Vector();
+        this.mapListeners = new Vector ();
+        this.cleaning = false;
 
         images = new Image[IMAGE_LAST + 1];
 
         for (int i = 0; i <= IMAGE_LAST; ++i) {
-            images[i] = imageManager.getImage(imageNames[i]);
+            images[i] = imageManager.getImage (imageNames[i]);
         }
 
-        setCategories(categories);
-        setVisitorCoordinates(visitorCoordinates);
+        setCategories (categories);
+        setVisitorCoordinates (visitorCoordinates);
 
-        locationProvider.setLocationListener(this, -1, -1, -1);
+        locationProvider.setLocationListener (this, 1, -1, -1);
     }
 
     /**
      * Changes the landmark set to contain only landmarks of the given
      * categories.
      */
-    public void setCategories(Vector categories) {
-        Hashtable tmpLandmarks = new Hashtable();
+    public synchronized void setCategories (Vector categories) {
+        if (cleaning) {
+            return;
+        }
 
-        Enumeration enumCategories = categories.elements();
+        Hashtable tmpLandmarks = new Hashtable ();
 
-        while (enumCategories.hasMoreElements()) {
-            String category = (String)enumCategories.nextElement();
+        Enumeration enumCategories = categories.elements ();
+
+        while (enumCategories.hasMoreElements ()) {
+            String category = (String) enumCategories.nextElement ();
             Enumeration categoryLandmarks = null;
 
             try {
                 // get the landmarks of the given category from the landmark
                 // store
-                categoryLandmarks = landmarkStore.getLandmarks(category, null);
-            } catch (IOException e) {
+                categoryLandmarks = landmarkStore.getLandmarks (category, null);
+            }
+            catch (IOException e) {
             }
 
             if (categoryLandmarks != null) {
-                while (categoryLandmarks.hasMoreElements()) {
-                    Landmark landmark = (Landmark)categoryLandmarks.nextElement();
+                while (categoryLandmarks.hasMoreElements ()) {
+                    Landmark landmark = (Landmark) categoryLandmarks.nextElement ();
 
-                    if (!tmpLandmarks.containsKey(landmark)) {
+                    if (!tmpLandmarks.containsKey (landmark)) {
                         // set the image of a landmark according to the first 
                         // category the landmark belongs to
-                        tmpLandmarks.put(landmark, imageManager.getImage(category));
+                        tmpLandmarks.put (landmark, imageManager.getImage (category));
                     }
                 }
             }
@@ -140,50 +149,54 @@ public class CityMap implements LocationListener {
         synchronized (this) {
             if (landmarks != null) {
                 for (int i = 0; i < landmarks.length; ++i) {
-                    locationProvider.removeProximityListener(landmarks[i]);
+                    LocationProvider.removeProximityListener (landmarks[i]);
                 }
             }
         }
 
-        MyMapLandmark[] landmarks = new MyMapLandmark[tmpLandmarks.size()];
-        Enumeration enumKeys = tmpLandmarks.keys();
-        Enumeration enumElements = tmpLandmarks.elements();
+        MyMapLandmark[] landmarks = new MyMapLandmark[tmpLandmarks.size ()];
+        Enumeration enumKeys = tmpLandmarks.keys ();
+        Enumeration enumElements = tmpLandmarks.elements ();
         int j = 0;
         int[] xy = new int[2];
 
-        while (enumKeys.hasMoreElements()) {
-            Landmark landmark = (Landmark)enumKeys.nextElement();
-            Image image = (Image)enumElements.nextElement();
+        while (enumKeys.hasMoreElements ()) {
+            Landmark landmark = (Landmark) enumKeys.nextElement ();
+            Image image = (Image) enumElements.nextElement ();
             // calculate the xy coordinates of a landmark
-            convertCoordinatesToXY(xy, landmark.getQualifiedCoordinates());
-            landmarks[j] = new MyMapLandmark(landmark, xy[X], xy[Y], image);
+            convertCoordinatesToXY (xy, landmark.getQualifiedCoordinates ());
+            landmarks[j] = new MyMapLandmark (landmark, xy[X], xy[Y], image);
             ++j;
         }
 
         // update the set of landmarks and notify the listeners about it
-        setLandmarks(landmarks);
+        setLandmarks (landmarks);
 
         // register the new landmarks as proximity listeners
         synchronized (this) {
             for (int i = 0; i < landmarks.length; ++i) {
                 try {
-                    locationProvider.addProximityListener(landmarks[i],
-                        landmarks[i].getLandmark().getQualifiedCoordinates(), ACTIVATION_RADIUS);
-                } catch (LocationException e) {
+                    LocationProvider.addProximityListener (
+                        landmarks[i],
+                        landmarks[i].getLandmark ().getQualifiedCoordinates (), ACTIVATION_RADIUS);
+                }
+                catch (LocationException e) {
                 }
             }
         }
     }
 
-    /** Updates the set of map landmarks and notifies the listeners about it. */
-    private synchronized void setLandmarks(MyMapLandmark[] mapLandmarks) {
+    /**
+     * Updates the set of map landmarks and notifies the listeners about it.
+     */
+    private synchronized void setLandmarks (MyMapLandmark[] mapLandmarks) {
         landmarks = mapLandmarks;
 
         synchronized (mapListeners) {
-            Enumeration listeners = mapListeners.elements();
+            Enumeration listeners = mapListeners.elements ();
 
-            while (listeners.hasMoreElements()) {
-                ((MapListener)listeners.nextElement()).landmarksChanged(this);
+            while (listeners.hasMoreElements ()) {
+                ((MapListener) listeners.nextElement ()).landmarksChanged (this);
             }
         }
     }
@@ -192,19 +205,19 @@ public class CityMap implements LocationListener {
      * Activates / deactivates the given landmark and notifies listeners about
      * it.
      */
-    private synchronized void activateLandmark(MyMapLandmark landmark, boolean activate) {
+    private synchronized void activateLandmark (MyMapLandmark landmark, boolean activate) {
         if (disabled) {
             return;
         }
 
-        if (landmark.isActive() != activate) {
-            landmark.setActive(activate);
+        if (landmark.isActive () != activate) {
+            landmark.setActive (activate);
 
             synchronized (mapListeners) {
-                Enumeration listeners = mapListeners.elements();
+                Enumeration listeners = mapListeners.elements ();
 
-                while (listeners.hasMoreElements()) {
-                    ((MapListener)listeners.nextElement()).landmarkStateChanged(this, landmark);
+                while (listeners.hasMoreElements ()) {
+                    ((MapListener) listeners.nextElement ()).landmarkStateChanged (this, landmark);
                 }
             }
         }
@@ -214,34 +227,42 @@ public class CityMap implements LocationListener {
      * Changes the coordinates of the visitor and notifies the listeners about
      * it.
      */
-    public synchronized void setVisitorCoordinates(Coordinates newCoordinates) {
-        if ((visitorCoordinates.getLatitude() != newCoordinates.getLatitude()) ||
-                (visitorCoordinates.getLongitude() != newCoordinates.getLongitude())) {
-            visitorCoordinates.setLatitude(newCoordinates.getLatitude());
-            visitorCoordinates.setLongitude(newCoordinates.getLongitude());
-            convertCoordinatesToXY(visitorXY, visitorCoordinates);
+    public synchronized void setVisitorCoordinates (Coordinates newCoordinates) {
+        if ((visitorCoordinates.getLatitude () != newCoordinates.getLatitude ()) ||
+            (visitorCoordinates.getLongitude () != newCoordinates.getLongitude ())) {
+
+            if (cleaning) {
+                return;
+            }
+
+            visitorCoordinates.setLatitude (newCoordinates.getLatitude ());
+            visitorCoordinates.setLongitude (newCoordinates.getLongitude ());
+            convertCoordinatesToXY (visitorXY, visitorCoordinates);
 
             synchronized (mapListeners) {
-                Enumeration listeners = mapListeners.elements();
+                Enumeration listeners = mapListeners.elements ();
 
-                while (listeners.hasMoreElements()) {
-                    ((MapListener)listeners.nextElement()).visitorPositionChanged(this);
+                while (listeners.hasMoreElements ()) {
+                    ((MapListener) listeners.nextElement ()).visitorPositionChanged (this);
                 }
             }
 
             // deactivate active landmarks, which are now too away from the 
             // visitor
             for (int i = 0; i < landmarks.length; ++i) {
-                if (landmarks[i].isActive() &&
-                        (newCoordinates.distance(landmarks[i].getLandmark().getQualifiedCoordinates()) > DEACTIVATION_RADIUS)) {
-                    activateLandmark(landmarks[i], false);
+                if (landmarks[i].isActive () &&
+                    (newCoordinates.distance (landmarks[i].getLandmark ().getQualifiedCoordinates ())
+                        > DEACTIVATION_RADIUS)) {
+                    activateLandmark (landmarks[i], false);
 
                     try {
                         // re-register a deactivated landmark to the location
                         // provider, so we can get notified again
-                        locationProvider.addProximityListener(landmarks[i],
-                            landmarks[i].getLandmark().getQualifiedCoordinates(), ACTIVATION_RADIUS);
-                    } catch (LocationException e) {
+                        LocationProvider.addProximityListener (
+                            landmarks[i],
+                            landmarks[i].getLandmark ().getQualifiedCoordinates (), ACTIVATION_RADIUS);
+                    }
+                    catch (LocationException e) {
                     }
                 }
             }
@@ -252,22 +273,24 @@ public class CityMap implements LocationListener {
      * Changes the state of the visitor. A deactivated visitor doesn't change
      * his position.
      */
-    public synchronized void setVisitorActive(boolean active) {
+    public synchronized void setVisitorActive (boolean active) {
         if (visitorActive != active) {
             visitorActive = active;
 
             synchronized (mapListeners) {
-                Enumeration listeners = mapListeners.elements();
+                Enumeration listeners = mapListeners.elements ();
 
-                while (listeners.hasMoreElements()) {
-                    ((MapListener)listeners.nextElement()).visitorStateChanged(this);
+                while (listeners.hasMoreElements ()) {
+                    ((MapListener) listeners.nextElement ()).visitorStateChanged (this);
                 }
             }
         }
     }
 
-    /** Returns the xy coordinates of the visitor. */
-    public synchronized int[] getVisitorXY(int[] dest) {
+    /**
+     * Returns the xy coordinates of the visitor.
+     */
+    public synchronized int[] getVisitorXY (int[] dest) {
         if (dest == null) {
             dest = new int[2];
         }
@@ -278,32 +301,42 @@ public class CityMap implements LocationListener {
         return dest;
     }
 
-    /** Returns the visitor icon based on his state. */
-    public Image getVisitorImage() {
+    /**
+     * Returns the visitor icon based on his state.
+     */
+    public Image getVisitorImage () {
         return images[visitorActive ? IMAGE_VISITOR_ON : IMAGE_VISITOR_OFF];
     }
 
-    /** Returns the map image. */
-    public Image getMapImage() {
+    /**
+     * Returns the map image.
+     */
+    public Image getMapImage () {
         return images[IMAGE_MAP];
     }
 
-    /** Returns the set of the map landmarks. */
-    public MapLandmark[] getMapLandmarks() {
+    /**
+     * Returns the set of the map landmarks.
+     */
+    public MapLandmark[] getMapLandmarks () {
         return landmarks;
     }
 
-    /** Registers a map listener. */
-    void addMapListener(MapListener listener) {
+    /**
+     * Registers a map listener.
+     */
+    void addMapListener (MapListener listener) {
         synchronized (mapListeners) {
-            mapListeners.addElement(listener);
+            mapListeners.addElement (listener);
         }
     }
 
-    /** Unregisters a map listener. */
-    void removeMapListener(MapListener listener) {
+    /**
+     * Unregisters a map listener.
+     */
+    void removeMapListener (MapListener listener) {
         synchronized (mapListeners) {
-            mapListeners.removeElement(listener);
+            mapListeners.removeElement (listener);
         }
     }
 
@@ -311,22 +344,22 @@ public class CityMap implements LocationListener {
      * Converts from the given latitude / longitude coordinates to the map
      * xy coordinates.
      */
-    public int[] convertCoordinatesToXY(int[] dest, Coordinates coords) {
+    public int[] convertCoordinatesToXY (int[] dest, Coordinates coords) {
         if (dest == null) {
             dest = new int[2];
         }
 
-        double leftLatitude = topLeftCoordinates.getLatitude();
-        double rightLatitude = bottomRightCoordinates.getLatitude();
-        double topLongitude = topLeftCoordinates.getLongitude();
-        double bottomLongitude = bottomRightCoordinates.getLongitude();
+        double leftLatitude = topLeftCoordinates.getLatitude ();
+        double rightLatitude = bottomRightCoordinates.getLatitude ();
+        double topLongitude = topLeftCoordinates.getLongitude ();
+        double bottomLongitude = bottomRightCoordinates.getLongitude ();
 
-        double normalizedX = (coords.getLatitude() - leftLatitude) / (rightLatitude - leftLatitude);
+        double normalizedX = (coords.getLatitude () - leftLatitude) / (rightLatitude - leftLatitude);
         double normalizedY =
-            (coords.getLongitude() - topLongitude) / (bottomLongitude - topLongitude);
+            (coords.getLongitude () - topLongitude) / (bottomLongitude - topLongitude);
 
-        dest[X] = (int)(normalizedX * images[IMAGE_MAP].getWidth());
-        dest[Y] = (int)(normalizedY * images[IMAGE_MAP].getHeight());
+        dest[X] = (int) (normalizedX * images[IMAGE_MAP].getWidth ());
+        dest[Y] = (int) (normalizedY * images[IMAGE_MAP].getHeight ());
 
         return dest;
     }
@@ -335,21 +368,24 @@ public class CityMap implements LocationListener {
      * Converts from the given map xy coordinates to the latitude / longitude
      * coordinates.
      */
-    public Coordinates convertXYToCoordinates(Coordinates dest, int[] xy) {
+    public Coordinates convertXYToCoordinates (Coordinates dest, int[] xy) {
         double latitude =
-            topLeftCoordinates.getLatitude() +
-            (((bottomRightCoordinates.getLatitude() - topLeftCoordinates.getLatitude()) * xy[X]) / images[IMAGE_MAP].getWidth());
+            topLeftCoordinates.getLatitude () +
+                (((bottomRightCoordinates.getLatitude () - topLeftCoordinates.getLatitude ()) * xy[X])
+                    / images[IMAGE_MAP].getWidth ());
         double longitude =
-            topLeftCoordinates.getLongitude() +
-            (((bottomRightCoordinates.getLongitude() - topLeftCoordinates.getLongitude()) * xy[Y]) / images[IMAGE_MAP].getHeight());
-        float altitude = topLeftCoordinates.getAltitude();
+            topLeftCoordinates.getLongitude () +
+                (((bottomRightCoordinates.getLongitude () - topLeftCoordinates.getLongitude ()) * xy[Y])
+                    / images[IMAGE_MAP].getHeight ());
+        float altitude = topLeftCoordinates.getAltitude ();
 
         if (dest == null) {
-            dest = new Coordinates(latitude, longitude, altitude);
-        } else {
-            dest.setLatitude(latitude);
-            dest.setLongitude(longitude);
-            dest.setAltitude(altitude);
+            dest = new Coordinates (latitude, longitude, altitude);
+        }
+        else {
+            dest.setLatitude (latitude);
+            dest.setLongitude (longitude);
+            dest.setAltitude (altitude);
         }
 
         return dest;
@@ -359,24 +395,24 @@ public class CityMap implements LocationListener {
      * A method which is called by the location provider when the current
      * location is changed.
      */
-    public synchronized void locationUpdated(LocationProvider provider, Location location) {
+    public synchronized void locationUpdated (LocationProvider provider, Location location) {
         if (disabled) {
             return;
         }
 
-        Coordinates coordinates = location.getQualifiedCoordinates();
-        double latitude = coordinates.getLatitude();
-        double longitude = coordinates.getLongitude();
-        double lat0 = topLeftCoordinates.getLatitude();
-        double lat1 = bottomRightCoordinates.getLatitude();
-        double lon0 = topLeftCoordinates.getLongitude();
-        double lon1 = bottomRightCoordinates.getLongitude();
+        Coordinates coordinates = location.getQualifiedCoordinates ();
+        double latitude = coordinates.getLatitude ();
+        double longitude = coordinates.getLongitude ();
+        double lat0 = topLeftCoordinates.getLatitude ();
+        double lat1 = bottomRightCoordinates.getLatitude ();
+        double lon0 = topLeftCoordinates.getLongitude ();
+        double lon1 = bottomRightCoordinates.getLongitude ();
 
         if ((((latitude >= lat0) && (latitude <= lat1)) ||
-                ((latitude >= lat1) && (latitude <= lat0))) &&
-                (((longitude >= lon0) && (longitude <= lon1)) ||
+            ((latitude >= lat1) && (latitude <= lat0))) &&
+            (((longitude >= lon0) && (longitude <= lon1)) ||
                 ((longitude >= lon1) && (longitude <= lon0)))) {
-            setVisitorCoordinates(coordinates);
+            setVisitorCoordinates (coordinates);
         }
     }
 
@@ -384,36 +420,52 @@ public class CityMap implements LocationListener {
      * A method which is called by the location provider when its state changes
      * (for example, when its services are temporary unavailable).
      */
-    public synchronized void providerStateChanged(LocationProvider provider, int newState) {
+    public synchronized void providerStateChanged (LocationProvider provider, int newState) {
         if (disabled) {
             return;
         }
 
-        setVisitorActive(newState == LocationProvider.AVAILABLE);
+        setVisitorActive (newState == LocationProvider.AVAILABLE);
     }
 
     /**
      * Sets the city map to the disabled state. In the disabled state it ignores
      * all notifications from the location provider.
      */
-    public synchronized void disable() {
+    public synchronized void disable () {
         disabled = true;
     }
 
     /**
      * Sets the city map to the enabled state.
      */
-    public synchronized void enable() {
+    public synchronized void enable () {
         disabled = false;
     }
 
-    /** The final unregistration. */
-    public synchronized void cleanup() {
-        for (int i = 0; i < landmarks.length; ++i) {
-            locationProvider.removeProximityListener(landmarks[i]);
+    /**
+     * The final unregistration.
+     */
+    public void cleanup () {
+
+        MyMapLandmark[] tmpLandmarks;
+
+        synchronized (this) {
+            cleaning = true;
+            tmpLandmarks = new MyMapLandmark[landmarks.length];
+            System.arraycopy (landmarks, 0, tmpLandmarks, 0, landmarks.length);
         }
 
-        locationProvider.setLocationListener(null, -1, -1, -1);
+        for (int i = 0; i < tmpLandmarks.length; ++i) {
+            LocationProvider.removeProximityListener (tmpLandmarks[i]);
+        }
+
+        try {
+            locationProvider.setLocationListener (null, -1, -1, -1);
+        }
+        catch (SecurityException e) {
+            // ignore
+        }
     }
 
     /**
@@ -422,21 +474,19 @@ public class CityMap implements LocationListener {
      * events and delegates the proximity events to the CityMap instance.
      */
     private class MyMapLandmark extends MapLandmark implements ProximityListener {
-        private int index;
-
-        public MyMapLandmark(Landmark landmark, int x, int y, Image image) {
-            super(landmark, x, y, image);
+        public MyMapLandmark (Landmark landmark, int x, int y, Image image) {
+            super (landmark, x, y, image);
         }
 
-        public void setActive(boolean active) {
+        public void setActive (boolean active) {
             this.active = active;
         }
 
-        public void monitoringStateChanged(boolean isMonitoringActive) {
+        public void monitoringStateChanged (boolean isMonitoringActive) {
         }
 
-        public void proximityEvent(Coordinates coordinates, Location location) {
-            activateLandmark(this, true);
+        public void proximityEvent (Coordinates coordinates, Location location) {
+            activateLandmark (this, true);
         }
     }
 }

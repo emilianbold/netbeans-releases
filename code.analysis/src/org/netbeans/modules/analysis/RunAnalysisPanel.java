@@ -42,9 +42,12 @@
 package org.netbeans.modules.analysis;
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,6 +73,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -86,6 +90,7 @@ import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
 import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.modules.analysis.ui.AdjustConfigurationPanel;
+import org.netbeans.modules.analysis.ui.ConfigurationsComboModel;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -106,12 +111,13 @@ import org.openide.util.NbBundle.Messages;
  * @author lahvac
  */
 public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListener {
-    
+
+    private static final String COMBO_PROTOTYPE = "999999999999999999999999999999999999999999999999999999999999";
     private final JPanel progress;
     private final RequiredPluginsPanel requiredPlugins;
     private       Collection<? extends AnalyzerFactory> analyzers;
     private final Lookup.Result<AnalyzerFactory> analyzersResult;
-    private final Map<String, WarningDescription> warningId2Description = new HashMap<String, WarningDescription>();
+    private final Map<String, AnalyzerAndWarning> warningId2Description = new HashMap<String, AnalyzerAndWarning>();
 
     public RunAnalysisPanel(ProgressHandle handle, Lookup context) {
         this.analyzersResult = Lookup.getDefault().lookupResult(AnalyzerFactory.class);
@@ -289,14 +295,15 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
                 }
 
                 warnings.add(wd);
-                warningId2Description.put(SPIAccessor.ACCESSOR.getWarningId(wd), wd);
             }
 
             for (Entry<String, Collection<WarningDescription>> catE : cat2Warnings.entrySet()) {
                 inspectionModel.addElement("  " + catE.getKey());
 
                 for (WarningDescription wd : catE.getValue()) {
-                    inspectionModel.addElement(wd);
+                    AnalyzerAndWarning aaw = new AnalyzerAndWarning(a, wd);
+                    inspectionModel.addElement(aaw);
+                    warningId2Description.put(SPIAccessor.ACCESSOR.getWarningId(wd), aaw);
                 }
             }
         }
@@ -400,6 +407,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jLabel2, gridBagConstraints);
 
+        configurationCombo.setPrototypeDisplayValue(COMBO_PROTOTYPE);
         configurationCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configurationComboActionPerformed(evt);
@@ -454,6 +462,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(singleInspectionRadio, gridBagConstraints);
 
+        inspectionCombo.setPrototypeDisplayValue(COMBO_PROTOTYPE);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
@@ -482,7 +491,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
     }//GEN-LAST:event_configurationComboActionPerformed
 
     private void manageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageActionPerformed
-        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, null);
+        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, null, null);
         DialogDescriptor nd = new DialogDescriptor(panel, "Configurations", true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null);
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
@@ -499,7 +508,19 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
     }//GEN-LAST:event_singleInspectionRadioActionPerformed
 
     private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
-        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, "XXX");
+        Object selectedInspection = inspectionCombo.getSelectedItem();
+        AnalyzerFactory analyzerToSelect;
+        String warningToSelect;
+        
+        if (selectedInspection instanceof AnalyzerAndWarning) {
+            analyzerToSelect = ((AnalyzerAndWarning) selectedInspection).analyzer;
+            warningToSelect = SPIAccessor.ACCESSOR.getWarningId(((AnalyzerAndWarning) selectedInspection).wd);
+        } else {
+            analyzerToSelect = null;
+            warningToSelect = "";
+        }
+
+        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, analyzerToSelect, warningToSelect);
         DialogDescriptor nd = new DialogDescriptor(panel, "Configurations", true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null);
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
@@ -530,7 +551,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
     }
 
     String getSingleWarningId() {
-        return inspectionCombo.isEnabled() ? SPIAccessor.ACCESSOR.getWarningId((WarningDescription) inspectionCombo.getSelectedItem()) : null;
+        return inspectionCombo.isEnabled() ? SPIAccessor.ACCESSOR.getWarningId(((AnalyzerAndWarning) inspectionCombo.getSelectedItem()).wd) : null;
     }
 
     @Override
@@ -567,7 +588,13 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
 
                 return this;
             }
-            
+
+            if (index == list.getModel().getSize()-5 && list.getModel() instanceof ConfigurationsComboModel && ((ConfigurationsComboModel) list.getModel()).canModify()) {
+                setBorder(new Separator(list.getForeground()));
+            } else {
+                setBorder(null);
+            }
+
             return super.getListCellRendererComponent(list, (indent ? "  " : "") + value, index, isSelected, cellHasFocus);
         }
     }
@@ -575,8 +602,8 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
     private static final class InspectionRenderer extends DefaultListCellRenderer {
 
         @Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (value instanceof WarningDescription) {
-                value = "    " + SPIAccessor.ACCESSOR.getWarningDisplayName((WarningDescription) value);
+            if (value instanceof AnalyzerAndWarning) {
+                value = "    " + SPIAccessor.ACCESSOR.getWarningDisplayName(((AnalyzerAndWarning) value).wd);
             } else if (value instanceof String) {
                 setFont(getFont().deriveFont(Font.ITALIC));
                 setText((String) value);
@@ -718,6 +745,45 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
             }
 
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+    }
+
+    private static class Separator implements Border {
+
+        private Color fgColor;
+
+        Separator(Color color) {
+            fgColor = color;
+        }
+
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics gr = g.create();
+            if (gr != null) {
+                try {
+                    gr.translate(x, y);
+                    gr.setColor(fgColor);
+                    gr.drawLine(0, height - 1, width - 1, height - 1);
+                } finally {
+                    gr.dispose();
+                }
+            }
+        }
+
+        public boolean isBorderOpaque() {
+            return true;
+        }
+
+        public Insets getBorderInsets(Component c) {
+            return new Insets(0, 0, 1, 0);
+        }
+    }
+
+    private static final class AnalyzerAndWarning {
+        private final AnalyzerFactory analyzer;
+        private final WarningDescription wd;
+        public AnalyzerAndWarning(AnalyzerFactory analyzer, WarningDescription wd) {
+            this.analyzer = analyzer;
+            this.wd = wd;
         }
     }
 }

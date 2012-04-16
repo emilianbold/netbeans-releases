@@ -44,8 +44,10 @@
 package org.netbeans.modules.refactoring.plugins;
 
 import java.io.IOException;
+import java.util.Collections;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.impl.CannotUndoRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
@@ -127,6 +129,9 @@ public class FileRenamePlugin implements RefactoringPlugin {
         @Override
         public void undoChange(){
             try {
+                if (!fo.isValid()) {
+                    throw new CannotUndoRefactoring(Collections.singleton(fo.getPath()));
+                }
                 DataObject.find(fo).rename(oldName);
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);

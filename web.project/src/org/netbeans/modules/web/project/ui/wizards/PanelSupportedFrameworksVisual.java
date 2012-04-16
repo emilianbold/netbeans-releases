@@ -46,17 +46,14 @@ package org.netbeans.modules.web.project.ui.wizards;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.KeyEvent;
 import java.text.MessageFormat;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -108,6 +105,8 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
 
         model = new FrameworksTableModel();
         jTableFrameworks.setModel(model);
+        jTableFrameworks.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "none"); //NOI18N
         createFrameworksList(project, filter);
 
         FrameworksTableCellRenderer renderer = new FrameworksTableCellRenderer();

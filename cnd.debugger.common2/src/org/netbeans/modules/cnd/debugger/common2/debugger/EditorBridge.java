@@ -372,7 +372,7 @@ public final class EditorBridge {
 	    // OLD line.show(line.SHOW_SHOW);
 	    // line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FRONT);
 	    line.show(Line.ShowOpenType.OPEN, focus ? Line.ShowVisibilityType.FOCUS : Line.ShowVisibilityType.FRONT);
-	    if (DebuggerOption.FRONT_IDE.isEnabled(DebuggerManager.get().globalOptions()))
+	    if (DebuggerOption.FRONT_IDE.isEnabled(NativeDebuggerManager.get().globalOptions()))
 		WindowManager.getDefault().getMainWindow().toFront();
 
 	} catch (Exception e) {

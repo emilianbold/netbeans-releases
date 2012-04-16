@@ -1304,8 +1304,10 @@ class LayoutOperations implements LayoutConstants {
         }
 
         // 2) Remove gaps where needed (to be substituted, or if just invalid).
-        PaddingType effectiveLeadingPadding = null; // if not null, the leading padding has default preferred size
-        PaddingType effectiveTrailingPadding = null; // if not null, the trailing padding has default preferred size
+        boolean defaultLeadingPadding = false;
+        boolean defaultTrailingPadding = false;
+        PaddingType leadingPadding = null;
+        PaddingType trailingPadding = null;
         boolean effectiveExplicitGapLeading = false; // in case effectiveLeadingPadding is null
         boolean effectiveExplicitGapTrailing = false; // in case effectiveTrailingPadding is null
         boolean resizingGapLeading = false;
@@ -1337,10 +1339,8 @@ class LayoutOperations implements LayoutConstants {
                     if (isEndingGapEffective(li, dimension, LEADING)) {
                         if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
                             // default padding to be used as common gap
-                            effectiveLeadingPadding = gap.getPaddingType();
-                            if (effectiveLeadingPadding == null) {
-                                effectiveLeadingPadding = PaddingType.RELATED;
-                            }
+                            defaultLeadingPadding = true;
+                            leadingPadding = gap.getPaddingType();
                         } else {
                             effectiveExplicitGapLeading = true;
                         }
@@ -1382,10 +1382,8 @@ class LayoutOperations implements LayoutConstants {
                     if (isEndingGapEffective(li, dimension, TRAILING)) {
                         if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
                             // default padding to be used as common gap
-                            effectiveTrailingPadding = gap.getPaddingType();
-                            if (effectiveTrailingPadding == null) {
-                                effectiveTrailingPadding = PaddingType.RELATED;
-                            }
+                            defaultTrailingPadding = true;
+                            trailingPadding = gap.getPaddingType();
                         } else {
                             effectiveExplicitGapTrailing = true;
                         }
@@ -1464,10 +1462,10 @@ class LayoutOperations implements LayoutConstants {
         if (validLeadingGapRemoved) {
             if (!anyAlignedLeading) { // group is open at leading edge
                 int size = groupInnerPosLeading - groupOuterPos[LEADING];
-                if (size > 0 || effectiveLeadingPadding != null) {
+                if (size > 0 || defaultLeadingPadding) {
                     leadingGap = new LayoutInterval(SINGLE);
-                    if (effectiveLeadingPadding != null) {
-                        leadingGap.setPaddingType(effectiveLeadingPadding);
+                    if (defaultLeadingPadding) {
+                        leadingGap.setPaddingType(leadingPadding);
                     } else if (effectiveExplicitGapLeading) {
                         leadingGap.setPreferredSize(size);
                         if (resizingGapLeading) {
@@ -1490,7 +1488,7 @@ class LayoutOperations implements LayoutConstants {
                 leadingGap = new LayoutInterval(SINGLE);
                 leadingGap.setSize(commonGapLeadingSize);
                 if (commonGapLeadingSize == DEFAULT) {
-                    leadingGap.setPaddingType(effectiveLeadingPadding);
+                    leadingGap.setPaddingType(leadingPadding);
                 }
                 if (!reduceToZeroGapsLeading.isEmpty()) {
                     int sizeDiff = groupInnerPosLeading - groupOuterPos[LEADING];
@@ -1507,10 +1505,10 @@ class LayoutOperations implements LayoutConstants {
         if (validTrailingGapRemoved) {
             if (!anyAlignedTrailing) { // group is open at trailing edge
                 int size = groupOuterPos[TRAILING] - groupInnerPosTrailing;
-                if (size > 0 || effectiveTrailingPadding != null) {
+                if (size > 0 || defaultTrailingPadding) {
                     trailingGap = new LayoutInterval(SINGLE);
-                    if (effectiveTrailingPadding != null) {
-                        trailingGap.setPaddingType(effectiveTrailingPadding);
+                    if (defaultTrailingPadding) {
+                        trailingGap.setPaddingType(trailingPadding);
                     } else if (effectiveExplicitGapTrailing) {
                         trailingGap.setPreferredSize(size);
                         if (resizingGapTrailing) {
@@ -1533,7 +1531,7 @@ class LayoutOperations implements LayoutConstants {
                 trailingGap = new LayoutInterval(SINGLE);
                 trailingGap.setSize(commonGapTrailingSize);
                 if (commonGapTrailingSize == DEFAULT) {
-                    trailingGap.setPaddingType(effectiveTrailingPadding);
+                    trailingGap.setPaddingType(trailingPadding);
                 }
                 if (!reduceToZeroGapsTrailing.isEmpty()) {
                     int sizeDiff = groupOuterPos[TRAILING] - groupInnerPosTrailing;

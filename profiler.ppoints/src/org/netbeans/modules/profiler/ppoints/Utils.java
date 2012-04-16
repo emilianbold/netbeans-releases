@@ -662,8 +662,12 @@ public class Utils {
         Line line = getEditorLine(location); 
         if (line == null) return false;
         
+        // #211135, line.getText() returns null for closed documents
+        String lineText = line.getText();
+        if (lineText == null) return false;
+        
         // Fail if location immediately after method declaration - JUST A BEST GUESS!
-        String lineText = line.getText().trim();
+        lineText = lineText.trim();
         if (lineText.endsWith("{") && lineText.indexOf('{') == lineText.lastIndexOf('{')) return false; // NOI18N
         
         return true;

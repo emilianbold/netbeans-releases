@@ -528,7 +528,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                             execProperties.put("tmp.dir", updateHelper.getAntProjectHelper().resolvePath(evaluator.getProperty(ProjectProperties.BUILD_DIR)));   //NOI18N
                             updateJavaRunnerClasspath(command, execProperties);
                             task =
-                            JavaRunner.execute(command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? JavaRunner.QUICK_TEST : (SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command) ? JavaRunner.QUICK_TEST_DEBUG :JavaRunner.QUICK_TEST_PROFILE),
+                            JavaRunner.execute(command.equals(COMMAND_TEST_SINGLE) ? JavaRunner.QUICK_TEST : (COMMAND_DEBUG_TEST_SINGLE.equals(command) ? JavaRunner.QUICK_TEST_DEBUG :JavaRunner.QUICK_TEST_PROFILE),
                                                execProperties);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);

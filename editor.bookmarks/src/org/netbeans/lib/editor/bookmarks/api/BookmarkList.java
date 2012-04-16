@@ -60,6 +60,7 @@ import javax.swing.text.Element;
 import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.bookmarks.BookmarkHistory;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkManager;
 import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
@@ -320,13 +321,7 @@ public final class BookmarkList {
         if (removed) {
             info2bookmark.remove(bookmark.info());
             bookmark.release();
-            BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
-            try {
-                lockedBookmarkManager.removeBookmarks(
-                        Collections.singletonList(bookmark.info()));
-            } finally {
-                lockedBookmarkManager.unlock();
-            }
+            BookmarkUtils.removeBookmarkUnderLock(bookmark.info());
             fireChange();
         }
         return removed;
@@ -366,6 +361,7 @@ public final class BookmarkList {
                 bookmark = addBookmarkForInfo(info, offset);
                 fileBookmarks.add(info);
                 lockedBookmarkManager.addBookmarkNotify(info);
+                BookmarkHistory.get().add(info);
                 fireChange();
             }
         } finally {

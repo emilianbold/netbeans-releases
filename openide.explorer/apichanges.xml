@@ -50,6 +50,24 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="OutlineView_setPropertyColumnAttribute">
+        <api name="explorer"/>
+        <summary>setPropertyColumnAttribute() method added to OutlineView</summary>
+        <version major="6" minor="44"/>
+        <date day="4" month="4" year="2012"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            In order to conveniently set attributes to column properties,
+            setPropertyColumnAttribute() method is added to OutlineView.
+            After OutlineView.setProperties() method was deprecated, the preferred
+            way how to add columns is via addPropertyColumn()/setPropertyColumns().
+            But then there's no Node.Property to set additional attributes on.
+            This is why setPropertyColumnAttribute() method is introduced.
+        </description>
+        <class package="org.openide.explorer.view" name="OutlineView"/>
+        <issue number="208713"/>
+    </change>
     <change id="OutlineView_with_quicksearch">
         <api name="explorer"/>
         <summary>QuickSearch attached to OutlineView</summary>

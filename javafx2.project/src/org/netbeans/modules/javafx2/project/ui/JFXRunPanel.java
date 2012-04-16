@@ -66,6 +66,7 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.extbrowser.ExtWebBrowser;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties.PropertiesTableModel;
 import org.netbeans.modules.javafx2.project.JFXProjectUtils;
@@ -108,6 +109,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
             NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.applicationParams.name"), // NOI18N
             NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.applicationParams.value") // NOI18N
         };
+    private final boolean isFXinSwing;
     
     private volatile boolean configChangedRunning = false;
     private volatile boolean comboConfigActionRunning = false;
@@ -127,8 +129,9 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         project = jfxProps.getProject();
         evaluator = jfxProps.getEvaluator();
         configs = jfxProps.getConfigs();
+        isFXinSwing = JFXProjectProperties.isTrue(props.getEvaluator().getProperty(JFXProjectProperties.JAVAFX_SWING));
         
-        if(JFXProjectProperties.isTrue(props.getEvaluator().getProperty(JFXProjectProperties.JAVAFX_SWING))) {
+        if(isFXinSwing) {
             checkBoxPreloader.setVisible(false);
             textFieldPreloader.setVisible(false);
             labelPreloaderClass.setVisible(false);
@@ -161,7 +164,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
             labelWorkDir,
         };
         keys = new String[] {
-            JFXProjectProperties.MAIN_CLASS,
+            isFXinSwing ? ProjectProperties.MAIN_CLASS : JFXProjectProperties.MAIN_CLASS,
             JFXProjectProperties.RUN_JVM_ARGS,
             JFXProjectProperties.RUN_IN_HTMLTEMPLATE,
             JFXProjectProperties.RUN_APP_HEIGHT,
@@ -1512,10 +1515,12 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
          private final JButton okButton;
          private final PropertyEvaluator evaluator;
          private final Project project;
+         private final boolean FXinSwing;
          
          MainClassListener( final @NonNull Project p, final @NonNull PropertyEvaluator pe ) {            
              this.evaluator = pe;
              this.project = p;
+             this.FXinSwing = JFXProjectUtils.isFXinSwingProject(p);
              this.okButton  = new JButton (NbBundle.getMessage (JFXRunPanel.class, "LBL_ChooseMainClass_OK")); // NOI18N
              this.okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (JFXRunPanel.class, "AD_ChooseMainClass_OK"));  // NOI18N
          }
@@ -1549,7 +1554,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
              okButton.setEnabled (false);
              DialogDescriptor desc = new DialogDescriptor (
                  panel,
-                 NbBundle.getMessage (JFXRunPanel.class, "LBL_ChooseMainClass_Title" ),  // NOI18N
+                 NbBundle.getMessage (JFXRunPanel.class, FXinSwing ? "LBL_ChooseMainClass_Title_Swing" : "LBL_ChooseMainClass_Title" ),  // NOI18N
                  true, 
                  options, 
                  options[0], 

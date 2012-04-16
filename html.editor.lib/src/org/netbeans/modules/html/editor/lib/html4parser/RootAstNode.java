@@ -62,11 +62,6 @@ public class RootAstNode extends AstNode {
     }
 
     @Override
-    public boolean isRootNode() {
-        return true;
-    }
-
-    @Override
     public List<Element> getAllPossibleElements() {
         return dtd == null ? Collections.emptyList() : dtd.getElementList(null);
     }

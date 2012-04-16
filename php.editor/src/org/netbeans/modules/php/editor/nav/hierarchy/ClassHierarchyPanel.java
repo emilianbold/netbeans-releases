@@ -97,7 +97,10 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
                     Object lastPathComponent = selPath.getLastPathComponent();
                     if (lastPathComponent instanceof TypeNode) {
                         final TypeNode typeNode = (TypeNode) lastPathComponent;
-                        UiUtils.open(typeNode.getFileObject(), typeNode.getOffset());
+                        final FileObject fileObject = typeNode.getFileObject();
+                        if (fileObject != null && fileObject.isValid()) {
+                            UiUtils.open(fileObject, typeNode.getOffset());
+                        }
                     }
                 }
             }

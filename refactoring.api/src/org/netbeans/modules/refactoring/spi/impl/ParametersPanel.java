@@ -169,6 +169,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         //cancel.setEnabled(false);
         next.setVisible(!forcePreview);
         validate();
+        Dimension preferredSize = progressPanel.getPreferredSize();
+        progressPanel.setPreferredSize(preferredSize);
     }
 
     @Override
@@ -482,7 +484,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
                     try {
                         if (!previewAll && session != null) {
-                            if (session.getRefactoringElements().isEmpty()) {
+                            if (!rui.isQuery() && session.getRefactoringElements().isEmpty()) {
                                 DialogDescriptor nd = new DialogDescriptor(NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"),
                                         rui.getName(),
                                         true,
@@ -702,7 +704,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             }
         });
 
-        if (customComponent != null && rui.hasParameters() && APIAccessor.DEFAULT.hasPluginsWithProgress(rui.getRefactoring())) {
+        if (customComponent!=null || rui.hasParameters() || APIAccessor.DEFAULT.hasPluginsWithProgress(rui.getRefactoring())) {
             dialog.pack();
             dialog.setVisible(true);
         }

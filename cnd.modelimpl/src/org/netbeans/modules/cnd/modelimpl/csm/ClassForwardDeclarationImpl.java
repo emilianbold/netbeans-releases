@@ -100,6 +100,12 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         return cfdi;
     }
 
+    public static ForwardClass createForwardClassIfNeeded(AST ast, CsmFile file, CsmScope scope, MutableDeclarationsContainer container, boolean global) {
+        ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, false);
+        cfdi.createForwardClassIfNeed(ast, scope, global);
+        return cfdi.createForwardClassIfNeed(ast, scope, global);
+    }
+
     public static ClassForwardDeclarationImpl create(AST ast, CsmFile file, boolean global) {
          ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, global);
          if (!global) {
@@ -314,8 +320,8 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     /**
      * Creates a fake class this forward declaration refers to
      */
-    protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
-        return ForwardClass.create(name.toString(), getContainingFile(), ast, this.getStartOffset(), this.getEndOffset(), scope, registerInProject);
+    protected ForwardClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
+        return ForwardClass.createIfNeeded(name.toString(), getContainingFile(), ast, this.getStartOffset(), this.getEndOffset(), scope, registerInProject);
     }
 
     @Override

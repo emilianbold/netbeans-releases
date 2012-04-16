@@ -52,7 +52,7 @@ import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.SideBarFactory;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
@@ -176,7 +176,7 @@ public class DisInfoPanel extends JPanel {
         }
         
         DisassemblyUtils.showLine(1);
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+        NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger instanceof NativeDebuggerImpl) {
             ((NativeDebuggerImpl)debugger).disController().requestDis(selectedItem, 100, true);
         }

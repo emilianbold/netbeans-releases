@@ -68,7 +68,7 @@ import org.netbeans.spi.debugger.ui.Controller;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DialogManager;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.EditBreakpointPanel;
@@ -144,16 +144,16 @@ public class NewBreakpointAction
 	    boolean done = false;
 	    Controller controller = panel.getController();
 	    if (yes) {
-		DebuggerManager.get().registerDialog(this);
+		NativeDebuggerManager.get().registerDialog(this);
 		//System.out.println("NewBreakpointProcessor: OK");
 		done = controller.ok();
 		// keep up until bringDown is called externally.
 	    } else {
-		DebuggerManager.get().registerDialog(this);
+		NativeDebuggerManager.get().registerDialog(this);
 		//System.out.println("NewBreakpointProcessor: Cancel");
 		done = controller.cancel();
 		// will call bringDown:
-		DebuggerManager.get().bringDownDialog();
+		NativeDebuggerManager.get().bringDownDialog();
 	    }
 	}
 
@@ -214,10 +214,10 @@ public class NewBreakpointAction
 
 	boolean canDo;
 
-	if (! DebuggerManager.isPerTargetBpts()) {
+	if (! NativeDebuggerManager.isPerTargetBpts()) {
 	    canDo = true;
 	} else {
-	    NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+	    NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 	    if (debugger == null)
 		canDo = false;
 	    else if (!debugger.state().isLoaded)
@@ -230,7 +230,7 @@ public class NewBreakpointAction
 	    NewBreakpointProcessor processor = new NewBreakpointProcessor();
 	    processor.setVisible(true);
 	} else {
-	    DebuggerManager.errorLoadBeforeBpt();
+	    NativeDebuggerManager.errorLoadBeforeBpt();
 	}
     }
     

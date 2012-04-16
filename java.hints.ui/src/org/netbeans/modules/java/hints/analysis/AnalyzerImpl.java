@@ -50,7 +50,6 @@ import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.JPanel;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
@@ -64,6 +63,7 @@ import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.Folder;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.Resource;
 import org.netbeans.modules.java.hints.spiimpl.batch.ProgressHandleWrapper;
 import org.netbeans.modules.java.hints.spiimpl.batch.Scopes;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsPanel;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.spiimpl.refactoring.Utilities.ClassPathBasedHintWrapper;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -79,7 +79,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class AnalyzerImpl implements Analyzer {
 
-    private static final String ID_JAVA_HINTS_PREFIX = "text/x-java:";
+    public static final String ID_JAVA_HINTS_PREFIX = "text/x-java:";
 
     private final AtomicBoolean cancel = new AtomicBoolean();
     private final Context ctx;
@@ -109,7 +109,7 @@ public class AnalyzerImpl implements Analyzer {
             if (singleWarning != null) {
                 if (!singleWarning.equals(e.getKey().id)) continue;
             } else if (ctx.getSettings() != null) {
-                if (!HintsSettings.isEnabled(e.getKey(), ctx.getSettings())) continue;
+                if (!HintsSettings.isEnabled(e.getKey(), ctx.getSettings().node(e.getKey().id))) continue;
             } else if (!HintsSettings.isEnabled(e.getKey())) continue;
 
             hints.addAll(e.getValue());
@@ -188,16 +188,46 @@ public class AnalyzerImpl implements Analyzer {
         }
 
         @Override
-        public CustomizerProvider<ClassPathBasedHintWrapper, JPanel> getCustomizerProvider() {
-            return new CustomizerProvider<ClassPathBasedHintWrapper, JPanel>() {
+        public CustomizerProvider<ClassPathBasedHintWrapper, HintsPanel> getCustomizerProvider() {
+            return new CustomizerProvider<ClassPathBasedHintWrapper, HintsPanel>() {
                 @Override public ClassPathBasedHintWrapper initialize() {
                     ClassPathBasedHintWrapper w = new ClassPathBasedHintWrapper();
 
                     w.compute();
                     return w;
                 }
-                @Override public JPanel createComponent(CustomizerContext context) {
-                    return new JPanel();
+                @Override public HintsPanel createComponent(CustomizerContext<ClassPathBasedHintWrapper, HintsPanel> context) {
+                    if (context.getPreselectId() == null) {
+                        HintsPanel prev = context.getPreviousComponent();
+                        if (prev != null) {
+                            prev.setOverlayPreferences(context.getSettings());
+                            return prev;
+                        }
+                        return new HintsPanel(context.getSettings(), context.getData());
+                    } else {
+                        HintMetadata toSelect = null;
+                        for (HintMetadata hm : RulesManager.getInstance().readHints(null, null, new AtomicBoolean()).keySet()) {
+                            if (context.getPreselectId().equals(ID_JAVA_HINTS_PREFIX + hm.id)) {
+                                toSelect = hm;
+                                break;
+                            }
+                        }
+
+                        for (HintMetadata hm : context.getData().getHints().keySet()) {
+                            if (context.getPreselectId().equals(ID_JAVA_HINTS_PREFIX + hm.id)) {
+                                toSelect = hm;
+                                break;
+                            }
+                        }
+
+                        HintsPanel prev = context.getPreviousComponent();
+                        if (prev != null) {
+                            prev.select(toSelect);
+                            return prev;
+                        }
+
+                        return new HintsPanel(toSelect, context, context.getData());
+                    }
                 }
             };
         }

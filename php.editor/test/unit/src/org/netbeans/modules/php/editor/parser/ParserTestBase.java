@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,19 +34,19 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.parser;
 
 import java.io.File;
-import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.PHPTestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -54,7 +54,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public abstract class ParserTestBase extends CslTestBase {
+public abstract class ParserTestBase extends PHPTestBase {
 
     public ParserTestBase(String testName) {
         super(testName);
@@ -81,10 +81,10 @@ public abstract class ParserTestBase extends CslTestBase {
     protected void performTest(String filename, String caretLine) throws Exception {
         // parse the file
         String result = getTestResult(filename, caretLine);
-        
+
         String fullClassName = this.getClass().getName();
         String goldenFileDir = fullClassName.replace('.', '/');
-        
+
         // try to find golden file
         String goldenFolder = getDataSourceDir().getAbsolutePath() + "/goldenfiles/" + goldenFileDir + "/";
         File goldenFile = new File(goldenFolder + filename + ".pass");
@@ -94,15 +94,15 @@ public abstract class ParserTestBase extends CslTestBase {
             copyStringToFileObject(goldenFO, result);
         }
         else {
-            // if exist, compare it. 
+            // if exist, compare it.
             goldenFile = getGoldenFile(filename + ".pass");
             FileObject resultFO = touch(getWorkDir(), filename + ".result");
             copyStringToFileObject(resultFO, result);
             assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
         }
     }
-    
-    
+
+
 
     @Override
     protected String getPreferredMimeType() {

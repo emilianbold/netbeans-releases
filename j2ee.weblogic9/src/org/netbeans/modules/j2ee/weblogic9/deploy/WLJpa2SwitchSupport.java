@@ -292,7 +292,7 @@ public final class WLJpa2SwitchSupport {
                     WLPluginProperties.getMiddlewareHome(serverRoot), null);
             for (URL url : classpath) {
                 URL file = FileUtil.getArchiveFile(url);
-                if (file.getFile().endsWith(JPA_JAR_1)) {
+                if (file != null && file.getFile().endsWith(JPA_JAR_1)) {
                     return true;
                 }
             }

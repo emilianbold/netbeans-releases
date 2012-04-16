@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -505,6 +504,7 @@ public class ElementNode extends AbstractNode {
                         return 1;
                     case FUNCTION_DEFINITION:
                     case FUNCTION_FRIEND_DEFINITION:
+                    case FUNCTION_LAMBDA:
                         return 2;
                     case VARIABLE:
                     case VARIABLE_DEFINITION:

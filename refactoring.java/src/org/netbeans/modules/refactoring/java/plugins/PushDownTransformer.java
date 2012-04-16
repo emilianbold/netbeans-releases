@@ -131,6 +131,8 @@ public class PushDownTransformer extends RefactoringVisitor {
                                         method.getThrows(),
                                         (BlockTree) null,
                                         (ExpressionTree)method.getDefaultValue());
+                                genUtils.copyComments(method, nju, true);
+                                genUtils.copyComments(method, nju, false);
                                 rewrite(method, nju);
                             }
                         } else {
@@ -163,7 +165,9 @@ public class PushDownTransformer extends RefactoringVisitor {
                         if (RefactoringUtils.elementExistsIn((TypeElement) el, member, workingCopy)) {
                             problem = MoveTransformer.createProblem(problem, false, org.openide.util.NbBundle.getMessage(PushDownTransformer.class, "ERR_PushDown_AlreadyExists", member.getSimpleName(), el.getSimpleName()));
                         }
-                        MethodTree methodTree = workingCopy.getTrees().getTree((ExecutableElement) member);
+                        TreePath path = workingCopy.getTrees().getPath(member);
+                        MethodTree methodTree = (MethodTree) path.getLeaf();
+                        methodTree = genUtils.importComments(methodTree, path.getCompilationUnit());
                         ModifiersTree mods = RefactoringUtils.makeAbstract(make, methodTree.getModifiers());
                         mods = make.addModifiersModifier(mods, Modifier.PUBLIC);
                         MethodTree njuMethod = make.Method(
@@ -175,6 +179,8 @@ public class PushDownTransformer extends RefactoringVisitor {
                                 methodTree.getThrows(),
                                 (BlockTree) null,
                                 null);
+                        genUtils.copyComments(methodTree, njuMethod, true);
+                        genUtils.copyComments(methodTree, njuMethod, false);
                         njuClass = genUtils.insertClassMember(njuClass, njuMethod);
                         makeClassAbstract = true;
                     } else {
@@ -187,9 +193,7 @@ public class PushDownTransformer extends RefactoringVisitor {
                         if(comments.isEmpty()) {
                             comments = workingCopy.getTreeUtilities().getComments(memberTree, false);
                         }
-                        if(comments.isEmpty()) { // TODO Remove when #206200 is fixed
-                            memberTree = genUtils.importComments(memberTree, path.getCompilationUnit());
-                        }
+                        memberTree = genUtils.importComments(memberTree, path.getCompilationUnit());
                         memberTree = genUtils.importFQNs(memberTree);
                         if (members[i].isMakeAbstract() && memberTree.getKind() == Tree.Kind.METHOD && member.getModifiers().contains((Modifier.PRIVATE))) {
                             MethodTree oldOne = (MethodTree) memberTree;
@@ -202,6 +206,8 @@ public class PushDownTransformer extends RefactoringVisitor {
                                     oldOne.getThrows(),
                                     oldOne.getBody(),
                                     (ExpressionTree) oldOne.getDefaultValue());
+                            genUtils.copyComments(memberTree, m, true);
+                            genUtils.copyComments(memberTree, m, false);
                             njuClass = genUtils.insertClassMember(njuClass, m);
                         } else {
                             njuClass = genUtils.insertClassMember(njuClass, memberTree);

@@ -273,7 +273,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
             if ((!Utilities.autoPopupOnJavaIdentifierPart() || !(this instanceof VariableItem) || !((VariableItem)this).newVarName)
-                    && evt.getModifiers() == 0 && Utilities.getJavaCompletionSelectors().indexOf(evt.getKeyChar()) >= 0) {
+                    && Utilities.getJavaCompletionSelectors().indexOf(evt.getKeyChar()) >= 0
+                    && (' ' != evt.getKeyChar() || (evt.getModifiers() & InputEvent.CTRL_MASK) == 0)) {
                 if (evt.getKeyChar() == '(' && !(this instanceof AnnotationItem)
                         && !(this instanceof ConstructorItem)
                         && !(this instanceof DefaultConstructorItem)
@@ -2995,13 +2996,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String FIELD_ST_PUBLIC = "org/netbeans/modules/editor/resources/completion/field_static_16.png"; //NOI18N
         private static final String FIELD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/field_static_protected_16.png"; //NOI18N
         private static final String FIELD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/field_static_package_private_16.png"; //NOI18N
+        private static final String FIELD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/field_static_private_16.png"; //NOI18N
         private static final String FIELD_COLOR = "<font color=#0000b2>"; //NOI18N
         private static final String METHOD_ST_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_static_16.png"; //NOI18N
         private static final String METHOD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_static_protected_16.png"; //NOI18N
         private static final String METHOD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/method_static_package_private_16.png"; //NOI18N
+        private static final String METHOD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_static_private_16.png"; //NOI18N
         private static final String METHOD_COLOR = "<font color=#7c0000>"; //NOI18N
         private static final String PARAMETER_NAME_COLOR = "<font color=#b200b2>"; //NOI18N
-        private static ImageIcon icon[][] = new ImageIcon[2][3];
+        private static ImageIcon icon[][] = new ImageIcon[2][4];
         
         private TypeMirrorHandle<DeclaredType> typeHandle;
         private boolean isDeprecated;
@@ -3110,13 +3113,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected ImageIcon getBaseIcon(){
             int level = getProtectionLevel(modifiers);
             boolean isField = getElementHandle().getKind().isField();
-            ImageIcon cachedIcon = icon[isField ? 0 : 1][level - 1];
+            ImageIcon cachedIcon = icon[isField ? 0 : 1][level];
             if (cachedIcon != null)
                 return cachedIcon;            
 
             String iconPath = null;
             if (isField) {
                 switch (level) {
+                    case PRIVATE_LEVEL:
+                        iconPath = FIELD_ST_PRIVATE;
+                        break;
+
                     case PACKAGE_LEVEL:
                         iconPath = FIELD_ST_PACKAGE;
                         break;
@@ -3131,6 +3138,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }else{
                 switch (level) {
+                    case PRIVATE_LEVEL:
+                        iconPath = METHOD_ST_PRIVATE;
+                        break;
+
                     case PACKAGE_LEVEL:
                         iconPath = METHOD_ST_PACKAGE;
                         break;
@@ -3147,7 +3158,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (iconPath == null)
                 return null;
             ImageIcon newIcon = ImageUtilities.loadImageIcon(iconPath, false);
-            icon[isField ? 0 : 1][level - 1] = newIcon;
+            icon[isField ? 0 : 1][level] = newIcon;
             return newIcon;            
         }
 

@@ -53,6 +53,30 @@ public class MoveMethodTest extends MoveBaseTest {
     public MoveMethodTest(String name) {
         super(name);
     }
+    
+    public void testMoveAbstractPolymorphic() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "        System.out.println(i());\n"
+                + "    }\n"
+                + "    public abstract void bar();\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B extends A {\n"
+                + "    public void foo() {\n"
+                + "        System.out.println(j());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public interface C {\n"
+                + "    void doo();"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/C.java"), Visibility.PUBLIC, false, new Problem(true, "ERR_MoveMethodPolymorphic"));
+        performMove(src.getFileObject("t/A.java"), new int[]{2}, src.getFileObject("t/C.java"), Visibility.PUBLIC, false, new Problem(true, "ERR_MoveAbstractMember"));
+        performMove(src.getFileObject("t/C.java"), new int[]{0}, src.getFileObject("t/A.java"), Visibility.PUBLIC, false, new Problem(true, "ERR_MoveFromClass"));
+    }
 
     public void test209620() throws Exception {
         writeFilesAndWaitForScan(src,

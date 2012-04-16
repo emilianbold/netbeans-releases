@@ -65,6 +65,7 @@ import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.shortcut.FileShortcut;
 import org.netbeans.installer.utils.system.shortcut.LocationType;
 import org.netbeans.installer.utils.system.shortcut.Shortcut;
+import org.netbeans.installer.utils.system.windows.WindowsRegistry;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
@@ -691,6 +692,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
         }
         
+        if (SystemUtils.isWindows()) {
+            checkAndDeleteWindowsRegistry(installLocation.getAbsolutePath());                        
+        }
+        
         product.setProperty("uninstallation.timestamp",
                 new Long(System.currentTimeMillis()).toString());
 
@@ -850,6 +855,50 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         shortcut.setModifyPath(true);
 
         return shortcut;
+    }
+    
+    private void checkAndDeleteWindowsRegistry(String installLocation) {
+        final int HKEY = WindowsRegistry.HKEY_CLASSES_ROOT;
+        final String KEY_ROOT = "Applications";
+        final String KEY_ENDS[] = {"netbeans.exe\\shell\\open\\command",
+            "netbeans64.exe\\shell\\open\\command"};
+
+        final WindowsRegistry windowsRegistry = new WindowsRegistry();
+
+        LogManager.log("Checking windows registry");
+
+        for (String key : KEY_ENDS) {
+            String fullKey = KEY_ROOT + WindowsRegistry.SEPARATOR + key;
+            try {
+                if (windowsRegistry.keyExists(HKEY, fullKey)) {
+                    final String value = windowsRegistry.getStringValue(HKEY, fullKey, StringUtils.EMPTY_STRING);
+
+                    String launcherPath = getLauncherPathFromRegistryValue(value);
+
+                    File launcher = new File(launcherPath);
+                    if (!launcher.exists() || launcherPath.startsWith(installLocation)) {
+                        while (!fullKey.equals(KEY_ROOT)) {
+                            windowsRegistry.deleteKey(HKEY, fullKey);
+                            LogManager.log("... key deleted : " + fullKey);
+                            fullKey = fullKey.substring(0, fullKey.lastIndexOf("\\"));
+                        }                                                            
+                    }
+                }
+            } catch (NativeException e) {
+                LogManager.log(
+                        getString("CL.uninstall.error.registry", "HKEY_CLASSES_ROOT" + WindowsRegistry.SEPARATOR + fullKey), // NOI18N
+                        e);
+            }
+        }
+    }
+    
+    private String getLauncherPathFromRegistryValue(String value) {
+        String splittedRegistry[] = value.split("\"");
+        if (splittedRegistry.length > 2) {
+            return splittedRegistry[1];
+        } else {
+            return StringUtils.EMPTY_STRING;
+        }
     }
     
     @Override

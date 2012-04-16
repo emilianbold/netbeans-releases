@@ -713,6 +713,20 @@ final public class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("mode frame state=" + modeCfg.frameState); // NOI18N
         }
+        if( modeCfg.frameState == Frame.MAXIMIZED_BOTH && Utilities.isWindows() ) {
+            //#200199 - when a window is maximized on MS Windows its bounds origin
+            //are shifted -4 pixels horizontally and vertically for some reason
+            //so the window location may seem to be out of screen on some multi-monitor setups
+            if( modeCfg.bounds.x < 0 ) {
+                modeCfg.bounds.x += 4;
+                modeCfg.bounds.width -= 4;
+            }
+            if( modeCfg.bounds.y < 0 ) {
+                modeCfg.bounds.y += 4;
+                modeCfg.bounds.height -= 4;
+            }
+
+        }
         
         TopComponent selectedTC = mode.getSelectedTopComponent();
         if(selectedTC != null) {

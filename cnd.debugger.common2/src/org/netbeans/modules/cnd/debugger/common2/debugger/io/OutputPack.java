@@ -72,7 +72,7 @@ class OutputPack extends IOPack {
 
     @Override
     public String[] getIOFiles() {
-        return new String[]{ioProxy.getInFilename(), ioProxy.getOutFilename()};
+        return ioProxy.getIOFiles();
     }
 
     @Override

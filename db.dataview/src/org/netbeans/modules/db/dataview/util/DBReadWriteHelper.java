@@ -209,6 +209,10 @@ public class DBReadWriteHelper {
                 // Try to get a blob object (delay loading till the data is used!)
                 try {
                     Blob blob = rs.getBlob(index);
+                    
+                    if (blob == null) {
+                        return null;
+                    }
 
                     Object result = null;
                     
@@ -262,11 +266,16 @@ public class DBReadWriteHelper {
                 try {
                     Clob clob = rs.getClob(index);
 
+                    if (clob == null) {
+                        return null;
+                    }
+
                     Object result = null;
                     
                     if (! rs.wasNull()) {
                         result =  new FileBackedClob(clob.getCharacterStream());
                     }
+                    
                     try {
                         clob.free();
                     } catch (java.lang.AbstractMethodError err) {

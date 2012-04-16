@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Offsetable;
@@ -368,12 +369,11 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
 
     @Override
     public Collection<CsmCompilationUnit> getCompilationUnits(CsmFile file, int contextOffset) {
-        CsmCompilationUnit backup = CsmCompilationUnit.createCompilationUnit(file.getProject(), file.getAbsolutePath(), file);
         Collection<CsmCompilationUnit> out = new ArrayList<CsmCompilationUnit>(1);
         boolean addBackup = true;
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
-            Collection<State> states = ((ProjectBase) impl.getProject()).getPreprocStates(impl);
+            Collection<State> states = ((ProjectBase) impl.getProject()).getIncludedPreprocStates(impl);
             for (State state : states) {
                 StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
                 ProjectBase startProject = Utils.getStartProject(startEntry);
@@ -389,7 +389,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             }
         }
         if (addBackup) {
-            out.add(backup);
+            out.add(CsmCompilationUnit.createCompilationUnit(file.getProject(), file.getAbsolutePath(), file));
         }
         return out;
     }
@@ -398,12 +398,12 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     public List<CsmInclude> getIncludeStack(CsmFile file) {
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
-            Collection<State> preprocStates = ((ProjectBase) impl.getProject()).getPreprocStates(impl);
-            if (preprocStates.isEmpty()) {
+            // use stack from one of states (i.e. first)
+            CharSequence fileKey = FileContainer.getFileKey(impl.getAbsolutePath(), false);
+            APTPreprocHandler.State state = ((ProjectBase) impl.getProject()).getFirstValidPreprocState(fileKey);
+            if (state == null) {
                 return Collections.<CsmInclude>emptyList();
             }
-            // use stack from one of states (i.e. first)
-            APTPreprocHandler.State state = preprocStates.iterator().next();
             CndUtils.assertNotNull(state, "state must not be null in non empty collection");// NOI18N
             List<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
             StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);

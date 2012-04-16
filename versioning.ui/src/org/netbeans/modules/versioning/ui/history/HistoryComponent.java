@@ -75,9 +75,9 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.history.LinkButton;
-import org.netbeans.modules.versioning.ui.history.RevisionNode.Filter;
 import org.netbeans.modules.versioning.ui.options.HistoryOptions;
 import org.netbeans.modules.versioning.util.NoContentPanel;
+import org.netbeans.swing.etable.QuickFilter;
 import org.openide.cookies.SaveCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
@@ -215,11 +215,11 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                         for (Node n : activatedNodes) {
                             activatedNodesContent.remove(n);
                         }
+                    } 
                         activatedNodes = newSelection;
                         for (Node n : activatedNodes) {
                             activatedNodesContent.add(n);
                         }
-                    }
                     if(newSelection != null) {
                         getToolbar().modeCombo.setEnabled(newSelection.length == 1);
                         getToolbar().modeLabel.setEnabled(newSelection.length == 1);
@@ -253,10 +253,6 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                 });
             }
         }
-    }
-    
-    Filter getSelectedFilter() {
-        return (Filter) getToolbar().filterCombo.getSelectedItem();
     }
     
     HistoryEntry getParentEntry(HistoryEntry entry) {
@@ -371,10 +367,10 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }
 
     private void onFilterChange() {
-        Filter filter = getSelectedFilter();
+        Filter filter = (Filter) getToolbar().filterCombo.getSelectedItem();
         getToolbar().containsLabel.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
         getToolbar().containsField.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
-        masterView.setFilter(getSelectedFilter());
+        masterView.setFilter(filter);
         getToolbar().containsField.setText(""); // NOI18N
         getToolbar().containsField.requestFocus();
     }
@@ -701,6 +697,38 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         return new HelpCtx("org.netbeans.modules.localhistory.ui.view.LHHistoryTab");   // NO18N
     }
 
+    public static abstract class Filter implements QuickFilter {
+        public boolean filtersProperty(Property property) {
+            return false;
+        }
+        public abstract String getDisplayName();
+        protected HistoryEntry getEntry(Object value) {
+            if(value instanceof Node) {
+                return getHistoryEntry((Node)value);
+        }
+            return null;
+        }
+ 
+        private HistoryEntry getHistoryEntry(Node node) {
+            HistoryEntry entry = node.getLookup().lookup(HistoryEntry.class);
+            if(entry != null) {
+                return entry;
+            } else {
+                Node[] nodes = node.getChildren().getNodes();
+                return nodes != null && nodes.length > 0 ? getHistoryEntry(nodes[0]) : null;
+            }
+        }
+        
+        public String getRendererValue(String value) {
+            return HistoryUtils.escapeForHTMLLabel(value);
+        }
+
+        @Override
+        public String toString() {
+            return getDisplayName();
+        }
+    }
+    
     private class AllFilter extends Filter {
         @Override
         public boolean accept(Object value) {

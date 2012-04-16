@@ -178,7 +178,7 @@ public class Product implements Serializable {
 
     @Override
     public String toString() {
-        return "jpa.entities.Product[productId=" + productId + "]";
+        return productId.toString();
     }
 
 }

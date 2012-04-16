@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
 import java.io.File;
+import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -53,10 +54,15 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -64,10 +70,20 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider {
-    private static final long serialVersionUID = -8749295793687117024L;
+
+    private static final long serialVersionUID = 897213245757143454L;
+
+    private final Category category;
+    private final PhpProjectProperties uiProps;
+    private final DefaultListModel includePathListModel;
+
 
     public CustomizerPhpIncludePath(Category category, PhpProjectProperties uiProps) {
         initComponents();
+
+        this.category = category;
+        this.uiProps = uiProps;
+        includePathListModel = uiProps.getIncludePathListModel();
 
         PathUiSupport.EditMediator.FileChooserDirectoryHandler directoryHandler = new PathUiSupport.EditMediator.FileChooserDirectoryHandler() {
             @Override
@@ -80,8 +96,22 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
             }
         };
 
-        includePathList.setModel(uiProps.getIncludePathListModel());
+        includePathList.setModel(includePathListModel);
         includePathList.setCellRenderer(uiProps.getIncludePathListRenderer());
+        includePathListModel.addListDataListener(new ListDataListener() {
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+                validateData();
+            }
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+                validateData();
+            }
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                validateData();
+            }
+        });
         PathUiSupport.EditMediator.register(uiProps.getProject(),
                                                includePathList,
                                                addFolderButton.getModel(),
@@ -89,6 +119,33 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
                                                moveUpButton.getModel(),
                                                moveDownButton.getModel(),
                                                directoryHandler);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - file path",
+        "CustomizerPhpIncludePath.error.projectFile=Path {0} is already part of project."
+    })
+    void validateData() {
+        for (int i = 0; i < includePathListModel.getSize(); i++) {
+            BasePathSupport.Item item = (BasePathSupport.Item) includePathListModel.getElementAt(i);
+            if (item.getType() == BasePathSupport.Item.Type.FOLDER
+                    && !item.isBroken()) {
+                FileObject fileObject = item.getFileObject(uiProps.getProject().getProjectDirectory());
+                if (fileObject == null) {
+                    // not broken but not found?!
+                    category.setErrorMessage(NbBundle.getMessage(CustomizerPhpIncludePath.class, "MSG_NotFound", item.getFilePath()));
+                    category.setValid(false);
+                    return;
+                }
+                if (CommandUtils.isUnderAnySourceGroup(uiProps.getProject(), fileObject, false)) {
+                    category.setErrorMessage(Bundle.CustomizerPhpIncludePath_error_projectFile(item.getAbsoluteFilePath(uiProps.getProject().getProjectDirectory())));
+                    category.setValid(false);
+                    return;
+                }
+            }
+        }
+        category.setErrorMessage(null);
+        category.setValid(true);
     }
 
     /** This method is called from within the constructor to

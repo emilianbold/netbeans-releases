@@ -474,7 +474,7 @@ public class HtmlBrowser extends JPanel {
 
                     SwingUtilities.invokeLater(this);
                 } else {
-                    if (url.equals(browserImpl.getURL()) && sameHosts) { // see bug 9470
+                    if (sameHosts && url.equals(browserImpl.getURL())) { // see bug 9470
                         browserImpl.reloadDocument();
                     } else {
                         browserImpl.setURL(url);

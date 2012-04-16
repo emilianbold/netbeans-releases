@@ -158,28 +158,36 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         // on attach we should set breakpoints and watches later, see IZ 197786
         if (debugger.getNDI().getPid() != -1) {
             return 0xffffffff & ~DIRTY_BREAKPOINTS & ~DIRTY_WATCHES;
-        } else {
+        } else if (debugger.getNDI().getCorefile() != null) {
             return super.getProgLoadedDirty();
+        } else {
+            // do not create watches, this will be done on the first stop, see IZ 210468
+            return super.getProgLoadedDirty() & ~DIRTY_WATCHES;
         }
     }
     
     void noteAttached() {
         initialApply(DIRTY_BREAKPOINTS | DIRTY_WATCHES);
     }
+    
+    void noteFistStop() {
+        initialApply(DIRTY_WATCHES);
+    }
 
     @Override
     protected void applyRunargs() {
 	String runargs = getArgsFlatEx();
-	if (runargs == null)
+	if (runargs == null) {
 	    runargs = "";
+        }
 	gdbDebugger.runArgs(runargs + ioRedirect());
     }
 
     @Override
     protected void applyRunDirectory() {
-        RunProfile mainRunProfile = getMainSettings().runProfile();
-        if (mainRunProfile.getRunDirectory() != null) {
-            gdbDebugger.runDir(mainRunProfile.getRunDirectory());
+        String runDirectory = getRunDirectory();
+	if (runDirectory != null) {
+            gdbDebugger.runDir(runDirectory);
         }
     }
 

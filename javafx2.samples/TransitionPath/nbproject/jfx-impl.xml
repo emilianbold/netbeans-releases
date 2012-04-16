@@ -709,10 +709,10 @@
     
     <!-- Legacy targets kept for compatibility with older build-impl.xml scripts -->
 
-    <!-- Note: target "-check-javafx" is referenced from NB 7.1 build-impl.xml -->
-    <target name="-check-javafx" depends="-check-jdk-version, -check-jfx-runtime, -check-jfx-deployment"/>
+    <!-- Note: target "-check-javafx" is not necessary any more but is referenced from NB 7.1 build-impl.xml -->
+    <target name="-check-javafx"/>
     <!-- Note: target "-javafx-check-error" is not necessary any more but is referenced from NB 7.1 build-impl.xml -->
-    <target name="-javafx-check-error" depends="-check-javafx"/>    
+    <target name="-javafx-check-error"/>    
     <!-- Note: target "-init-javafx" is not necessary any more but is referenced from NB 7.1 build-impl.xml -->
     <target name="-init-javafx"/>
 
@@ -761,6 +761,12 @@
             <and>
                 <isset property="javafx.preloader"/>
                 <equals arg1="${javafx.preloader}" arg2="true"/>
+            </and>
+        </condition>
+        <condition property="fx-in-swing-app">
+            <and>
+                <isset property="javafx.swing"/>
+                <equals arg1="${javafx.swing}" arg2="true"/>
             </and>
         </condition>
         <condition property="html-template-available">
@@ -824,6 +830,7 @@
         <echo message="app-with-preloader-without-project = ${app-with-preloader-without-project}" level="verbose"/>
         <echo message="app-without-preloader = ${app-without-preloader}" level="verbose"/>
         <echo message="preloader-app = ${preloader-app}" level="verbose"/>
+        <echo message="fx-in-swing-app = ${fx-in-swing-app}" level="verbose"/>
         <echo message="html-template-available = ${html-template-available}" level="verbose"/>
         <echo message="icon-available = ${icon-available}" level="verbose"/>
         <echo message="dimensions-available = ${dimensions-available}" level="verbose"/>
@@ -1128,10 +1135,14 @@
         -deploy-app-sign-preloader-notemplate,
         -deploy-app-sign-nopreloader-template,
         -deploy-app-sign-preloader-template,
+        -deploy-app-sign-nopreloader-notemplate-swing,
+        -deploy-app-sign-nopreloader-template-swing,
         -deploy-app-nosign-nopreloader-notemplate,
         -deploy-app-nosign-preloader-notemplate,
         -deploy-app-nosign-nopreloader-template,
-        -deploy-app-nosign-preloader-template"
+        -deploy-app-nosign-preloader-template,
+        -deploy-app-nosign-nopreloader-notemplate-swing,
+        -deploy-app-nosign-nopreloader-template-swing"
         if="jfx-deployment-available">
     </target>
 
@@ -1684,6 +1695,39 @@
         </sequential>
     </macrodef>
 
+    <!-- JavaFX 2.0+ deploy task as yet can not generate pre-FX jnlp which is needed for FX-in-Swing projects-->
+    <macrodef name="deploy-deploy-swing">
+        <sequential>
+            <antcall target="-pre-jfx-deploy"/>
+            <basename property="dist.filename" file="${dist.jar}" suffix=".jar"/>
+            <length file="${dist.jar}" property="dist.jar.size" />
+            <filterchain id="jnlp.template.filter">
+            <replacetokens>
+                    <token key="NAME" value="${dist.filename}"/>
+                    <token key="MAINCLASS" value="${main.class}"/>
+                    <token key="FILESIZE" value="${dist.jar.size}"/>
+                    <token key="VENDOR" value="${application.vendor}"/>
+                    <token key="TITLE" value="${application.title}"/>
+                    <token key="WIDTH" value="${javafx.run.width}"/>
+                    <token key="HEIGHT" value="${javafx.run.height}"/>
+                </replacetokens>
+            </filterchain>
+            <copy file="${basedir}${file.separator}nbproject${file.separator}templates${file.separator}FXSwingTemplateApplication.jnlp" 
+                    tofile="${dist.dir}${file.separator}${dist.filename}_application.jnlp" >
+                    <filterchain refid="jnlp.template.filter"/>
+            </copy>        
+            <copy file="${basedir}${file.separator}nbproject${file.separator}templates${file.separator}FXSwingTemplateApplet.jnlp" 
+                    tofile="${dist.dir}${file.separator}${dist.filename}_applet.jnlp" >
+                    <filterchain refid="jnlp.template.filter"/>
+            </copy>        
+            <copy file="${basedir}${file.separator}nbproject${file.separator}templates${file.separator}FXSwingTemplate.html" 
+                    tofile="${dist.dir}${file.separator}${dist.filename}.html" >
+                    <filterchain refid="jnlp.template.filter"/>
+            </copy>        
+            <antcall target="-post-jfx-deploy"/>
+        </sequential>
+    </macrodef>
+
 
     <!-- Project Deployment Targets -->
 
@@ -1692,24 +1736,42 @@
             <and>
                 <isset property="app-without-preloader"/>
                 <not><isset property="html-template-available"/></not>
+                <not><isset property="fx-in-swing-app"/></not>
             </and>
         </condition>
         <condition property="sign-preloader-notemplate">
             <and>
                 <isset property="app-with-preloader"/>
                 <not><isset property="html-template-available"/></not>
+                <not><isset property="fx-in-swing-app"/></not>
             </and>
         </condition>
         <condition property="sign-nopreloader-template">
             <and>
                 <isset property="app-without-preloader"/>
                 <isset property="html-template-available"/>
+                <not><isset property="fx-in-swing-app"/></not>
             </and>
         </condition>
         <condition property="sign-preloader-template">
             <and>
                 <isset property="app-with-preloader"/>
                 <isset property="html-template-available"/>
+                <not><isset property="fx-in-swing-app"/></not>
+            </and>
+        </condition>
+        <condition property="sign-nopreloader-notemplate-swing">
+            <and>
+                <isset property="app-without-preloader"/>
+                <not><isset property="html-template-available"/></not>
+                <isset property="fx-in-swing-app"/>
+            </and>
+        </condition>
+        <condition property="sign-nopreloader-template-swing">
+            <and>
+                <isset property="app-without-preloader"/>
+                <isset property="html-template-available"/>
+                <isset property="fx-in-swing-app"/>
             </and>
         </condition>
     </target>
@@ -1719,6 +1781,7 @@
                 <isset property="app-without-preloader"/>
                 <not><isset property="html-template-available"/></not>
                 <not><isset property="javafx.signed.true"/></not>
+                <not><isset property="fx-in-swing-app"/></not>
             </and>
         </condition>
         <condition property="nosign-preloader-notemplate">
@@ -1726,6 +1789,7 @@
                 <isset property="app-with-preloader"/>
                 <not><isset property="html-template-available"/></not>
                 <not><isset property="javafx.signed.true"/></not>
+                <not><isset property="fx-in-swing-app"/></not>
             </and>
         </condition>
         <condition property="nosign-nopreloader-template">
@@ -1733,6 +1797,7 @@
                 <isset property="app-without-preloader"/>
                 <isset property="html-template-available"/>
                 <not><isset property="javafx.signed.true"/></not>
+                <not><isset property="fx-in-swing-app"/></not>
             </and>
         </condition>
         <condition property="nosign-preloader-template">
@@ -1740,6 +1805,23 @@
                 <isset property="app-with-preloader"/>
                 <isset property="html-template-available"/>
                 <not><isset property="javafx.signed.true"/></not>
+                <not><isset property="fx-in-swing-app"/></not>
+            </and>
+        </condition>
+        <condition property="nosign-nopreloader-notemplate-swing">
+            <and>
+                <isset property="app-without-preloader"/>
+                <not><isset property="html-template-available"/></not>
+                <not><isset property="javafx.signed.true"/></not>
+                <isset property="fx-in-swing-app"/>
+            </and>
+        </condition>
+        <condition property="nosign-nopreloader-template-swing">
+            <and>
+                <isset property="app-without-preloader"/>
+                <isset property="html-template-available"/>
+                <not><isset property="javafx.signed.true"/></not>
+                <isset property="fx-in-swing-app"/>
             </and>
         </condition>
     </target>
@@ -1793,6 +1875,31 @@
         <deploy-deploy/>
     </target>
 
+    <!-- project without preloader -->
+    <!-- no html template -->
+    <!-- FX in Swing app -->
+    <target name="-deploy-app-sign-nopreloader-notemplate-swing" depends="-check-sign" if="sign-nopreloader-notemplate-swing" unless="preloader-app">
+        <echo message="-deploy-app-sign-nopreloader-notemplate-swing" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign/>
+        <deploy-deploy-swing/>
+    </target>
+
+    <!-- project without preloader -->
+    <!-- html template -->
+    <!-- FX in Swing app -->
+    <target name="-deploy-app-sign-nopreloader-template-swing" depends="-check-sign" if="sign-nopreloader-template-swing" unless="preloader-app">
+        <echo message="-deploy-app-sign-nopreloader-template-swing" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign/>
+        <deploy-process-template/>
+        <deploy-deploy-swing/>
+    </target>
+
 
     <!-- NO SIGNING -->
 
@@ -1838,12 +1945,35 @@
         <deploy-deploy/>
     </target>
 
+    <!-- project without preloader -->
+    <!-- no html template -->
+    <!-- FX in Swing app -->
+    <target name="-deploy-app-nosign-nopreloader-notemplate-swing" depends="-check-nosign" if="nosign-nopreloader-notemplate-swing" unless="preloader-app">
+        <echo message="-deploy-app-nosign-nopreloader-notemplate-swing" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-deploy-swing/>
+    </target>
+
+    <!-- project without preloader -->
+    <!-- html template -->
+    <!-- FX in Swing app -->
+    <target name="-deploy-app-nosign-nopreloader-template-swing" depends="-check-nosign" if="nosign-nopreloader-template-swing" unless="preloader-app">
+        <echo message="-deploy-app-nosign-nopreloader-template-swing" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-process-template/>
+        <deploy-deploy-swing/>
+    </target>
+
 
     <!-- Running/Debugging Standalone -->
 
-    <target name="jfxsa-run" depends="run"/>
+    <target name="jfxsa-run" depends="-check-jfx-runtime,run"/>
 
-    <target name="jfxsa-debug" depends="jar,debug"/>
+    <target name="jfxsa-debug" depends="jar,-check-jfx-runtime,debug"/>
 
 
     <!-- Shared Debugging init -->
@@ -1872,9 +2002,15 @@
 
     <!-- Running/Debugging as WebStart -->
     
-    <target name="-check-jnlp-file">
+    <target name="-check-jnlp-file-fx" depends="-check-project" unless="fx-in-swing-app">
         <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
         <property name="jfx.deployment.jnlp" location="${jfx.deployment.dir}${file.separator}${jfx.deployment.base}.jnlp"/>
+    </target>
+    <target name="-check-jnlp-file-swing" depends="-check-project" if="fx-in-swing-app">
+        <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
+        <property name="jfx.deployment.jnlp" location="${jfx.deployment.dir}${file.separator}${jfx.deployment.base}_application.jnlp"/>
+    </target>
+    <target name="-check-jnlp-file" depends="-check-jnlp-file-fx,-check-jnlp-file-swing">
         <condition property="jnlp-file-exists">
             <available file="${jfx.deployment.jnlp}"/>
         </condition>
@@ -1891,14 +2027,14 @@
         <antcall target="-check-jnlp-file"/>
     </target>
 
-    <target name="jfxws-run" if="jnlp-file-exists" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file" description="Start fx javaws execution">
+    <target name="jfxws-run" if="jnlp-file-exists" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime" description="Start fx javaws execution">
         <echo message="Executing ${jfx.deployment.jnlp} using ${active.webstart.executable}"/>
         <exec executable="${active.webstart.executable}">
             <arg file="${jfx.deployment.jnlp}"/>
         </exec>
     </target>
     
-    <target name="jfxws-debug" if="jnlp-file-exists+netbeans.home" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-debug-start-debugger,-debug-javaws-debuggee" 
+    <target name="jfxws-debug" if="jnlp-file-exists+netbeans.home" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,-debug-start-debugger,-debug-javaws-debuggee" 
         description="Debug fx javaws project in IDE"/>
         
     <target name="-debug-javaws-debuggee" depends="-init-debug-args">
@@ -1951,7 +2087,7 @@
         </condition>
     </target>
 
-    <target name="jfxbe-run" if="html-file-exists" depends="-check-jdk-7u4-mac,jar,-check-selected-browser-path,-set-html-file" description="Start JavaFX execution in browser">
+    <target name="jfxbe-run" if="html-file-exists" depends="-check-jdk-7u4-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime" description="Start JavaFX execution in browser">
         <echo message="Executing ${jfx.deployment.html} using ${javafx.run.inbrowser}"/>
         <echo message="(${javafx.run.inbrowser.path})"/>
         <exec executable="${javafx.run.inbrowser.path}">
@@ -1959,7 +2095,7 @@
         </exec>
     </target>
     
-    <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="-check-jdk-7u4-mac,jar,-check-selected-browser-path,-set-html-file,-debug-start-debugger,-debug-jfxbe-debuggee" 
+    <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="-check-jdk-7u4-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime,-debug-start-debugger,-debug-jfxbe-debuggee" 
         description="Debug JavaFX project in browser"/>
         
     <target name="-debug-jfxbe-debuggee" depends="-init-debug-args">

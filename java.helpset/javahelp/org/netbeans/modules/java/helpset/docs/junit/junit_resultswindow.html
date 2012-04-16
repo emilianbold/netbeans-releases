@@ -13,17 +13,53 @@
 <h2>Unit Test Results Window</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>Unit test results are displayed in the Test Results window. 
-When you run a test, the IDE automatically opens the window and displays the results in two tabs:</p>
-<ul>
-  <li>A summary of the passed and failed tests and the description of failed tests 
-    are displayed in the left pane of the window. 
-    Click the filter button (&nbsp;<img src="../images/junit_filter.gif" width="20" height="18" alt="filter icon">&nbsp;) 
-     to switch between viewing all test results and viewing only the failed tests.</li>
-  <li>The textual output from the unit tests themselves is displayed in the right pane of the window.</li>
-</ul>
+When you run a test, the IDE automatically opens the window and displays a
+   summary and description of the tests in the left pane of the window and 
+  the textual output from the unit tests in the right pane of the window.</p>
+<p>You can filter the results that are displayed in the left pane by
+    enabling and disabling the filters in the left side of the Test Results window.
+    The following table describes the icons representing the filters that you can
+    apply to the test results that are displayed.</p>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <tr align="left" valign="top">
+                <th scope="col">Icon</th>
+                <th scope="col">Description</th>
+        </tr>
+        <tr>
+                <td align="center"><img src="../images/test-rerun.png" alt="Rerun test"></td>
+                <td>Rerun test</td>
+        </tr>
+        <tr>
+                <td align="center"><img src="../images/test-ok_16.png" alt="Show passed"></td>
+                <td>Show passed</td>
+        </tr>
+        <tr>
+                <td align="center"><img src="../images/test-ok_withErrors_16.png" alt="Show passed with errors"></td>
+                <td>Show passed with errors</td>
+        </tr>
+        <tr>
+                <td align="center"><img src="../images/test-error_16.png" alt="Show failed"></td>
+                <td>Show failed</td>
+        </tr>
+        <tr>
+                <td align="center"><img src="../images/test-warning_16.png" alt="Show error"></td>
+                <td>Show error</td>
+        </tr>
+        <tr>
+                <td align="center"><img src="../images/test-ignored_16.png" alt="Show ignored"></td>
+                <td>Show ignored</td>
+        </tr>
+        <tr>
+                <td align="center"><img src="../images/test-skipped_16.png" alt="Show skipped"></td>
+                <td>Show skipped</td>
+        </tr>
+    </table>
 
-<p>After you run a unit test class you can right-click any test method displayed in the
-Test Results and choose Run Again from the popup menu to run the individual test method again. </p>
+    
+<p>After you run a test class you can right-click any test method displayed in the
+Test Results window and choose Run Again from the popup menu to run the individual test method again
+or Debug to debug the test. </p>
+
 
 <dl> 
   <dt><a name="seealso">See Also</a></dt>

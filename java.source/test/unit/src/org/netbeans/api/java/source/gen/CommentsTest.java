@@ -1921,6 +1921,52 @@ public class CommentsTest extends GeneratorTestBase {
         assertEquals(golden, res);
     }
 
+    public void test210760() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        final String content =  "package test;\n" +
+                                "import javax.swing.*;\n" +
+                                "public class Test {\n" +
+                                "    private void initComponents() {\n" +
+                                "        jButton1.getAccessibleContext().setAccessibleName(test.Test.getMessage(Test.class, \"NewJPanel1.jButton1.AccessibleContext.accessibleName\")); // NOI18N\n" +
+                                "        jButton1.getAccessibleContext().setAccessibleDescription(test.Test.NbBundle.getMessage(Test.class, \"NewJPanel1.jButton1.AccessibleContext.accessibleDescription\")); // NOI18N\n" +
+                                "    }\n" +
+                                "    private javax.swing.JButton jButton1;\n" +
+                                "    private String getMessage(Class c, String k) { return k; } \n" +
+                                "}\n";
+        final String golden =  "package test;\n" +
+                                "import javax.swing.*;\n" +
+                                "public class Test {\n" +
+                                "    private void initComponents() {\n" +
+                                "        jButton1.getAccessibleContext().setAccessibleName(Test.getMessage(Test.class, \"NewJPanel1.jButton1.AccessibleContext.accessibleName\")); // NOI18N\n" +
+                                "        jButton1.getAccessibleContext().setAccessibleDescription(Test.NbBundle.getMessage(Test.class, \"NewJPanel1.jButton1.AccessibleContext.accessibleDescription\")); // NOI18N\n" +
+                                "    }\n" +
+                                "    private JButton jButton1;\n" +
+                                "    private String getMessage(Class c, String k) { return k; } \n" +
+                                "}\n";
+
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, content);
+
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
+                workingCopy.rewrite(clazz, gu.importFQNs(gu.importComments(clazz, workingCopy.getCompilationUnit())));
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        DataObject d = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        ec.saveDocument();
+
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

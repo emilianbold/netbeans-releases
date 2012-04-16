@@ -90,6 +90,21 @@ public class LogReaderTest extends TestCase {
     public void testMultySources() {
         testCompilerInvocation(ItemProperties.LanguageKind.CPP, "c++ -g3 -gdwarf-2 -o container_1 container_1a.cc container_1b.cc", 2);
     }
+    
+    public void testArtifatC() {
+        testLanguageArtifact("c++", "gcc -x c++ -g3 -gdwarf-2 -o qq qq.cc");
+        testLanguageArtifact("c99", "cc -g3 -gdwarf-2 -xc99 -o qq qq.cc");
+        testLanguageArtifact("c99", "gcc -g3 -gdwarf-2 -std=c99 -o qq qq.cc");
+        testLanguageArtifact("c89", "gcc -g3 -gdwarf-2 -std=c89 -o qq qq.cc");
+    }
+
+    public void testArtifatCpp() {
+        testLanguageArtifact("c", "g++ -x c -g3 -gdwarf-2 -o qq qq.cc");
+        testLanguageArtifact("c++11", "g++ -g3 -std=c++0x -gdwarf-2 -o qq qq.cc");
+        testLanguageArtifact("c++11", "g++ -g3 -std=c++11 -gdwarf-2 -o qq qq.cc");
+        testLanguageArtifact("c++11", "g++ -g3 -std=gnu++0x -gdwarf-2 -o qq qq.cc");
+        testLanguageArtifact("c++11", "g++ -g3 -std=gnu++11 -gdwarf-2 -o qq qq.cc");
+    }
 
     /**
     make:
@@ -721,5 +736,13 @@ public class LogReaderTest extends TestCase {
             CommandLineSource cs = new CommandLineSource(li, languageArtifacts, "/", what, userIncludes, userMacros, null);
             assertEquals(cs.getLanguageKind(), ct);
         }
+    }
+
+    private void testLanguageArtifact(String artifact, String line) {
+        List<String> userIncludes = new ArrayList<String>();
+        Map<String, String> userMacros = new HashMap<String, String>();
+        List<String> languageArtifacts = new ArrayList<String>();
+        DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, userIncludes, userMacros, null, languageArtifacts, null, false);
+        assert languageArtifacts.contains(artifact);
     }
 }

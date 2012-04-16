@@ -146,9 +146,13 @@ public class NeonLexerTest extends NeonTestBase {
     public void testIssue210049_02() throws Exception {
         performTest("issue210049_02");
     }
-    
+
     public void testIssue210049_03() throws Exception {
         performTest("issue210049_03");
+    }
+
+    public void testHashInCommonUse() throws Exception {
+        performTest("hashInCommonUse");
     }
 
     @Override

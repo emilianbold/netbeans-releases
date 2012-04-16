@@ -200,6 +200,7 @@ public final class Utils {
                 .setTitle(NbBundle.getMessage(Utils.class, "LBL_SelectUnitTestFolder", ProjectUtils.getInformation(phpProject).getDisplayName()))
                 .setDirectoriesOnly(true)
                 .setDefaultWorkingDirectory(FileUtil.toFile(phpProject.getProjectDirectory()))
+                .forceUseOfDefaultWorkingDirectory(true)
                 .showOpenDialog();
         if (selectedFile != null) {
             textField.setText(FileUtil.normalizeFile(selectedFile).getAbsolutePath());

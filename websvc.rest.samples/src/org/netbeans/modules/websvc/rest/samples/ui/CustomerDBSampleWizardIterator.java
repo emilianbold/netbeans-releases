@@ -86,12 +86,13 @@ public class CustomerDBSampleWizardIterator extends SampleWizardIterator {
                 "nbproject/project.properties", "nbproject/project.xml", 
                 "build.xml"
             };        
-        replaceTokens(getProject().getProjectDirectory(), files, tokens);
+        replaceTokens(getProjectDirectory(), files, tokens);
         
         FileObject dirParent = null;
         
-        if( getProject()!= null && getProject().getProjectDirectory()!=null)
-            dirParent = getProject().getProjectDirectory().getParent();
+        if( getProjectDirectory()!=null) {
+            dirParent = getProjectDirectory().getParent();
+        }
                 
         // See issue 80520.
         // On some machines the project just created is not immediately detected.

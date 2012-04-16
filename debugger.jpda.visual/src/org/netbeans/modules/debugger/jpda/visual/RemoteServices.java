@@ -68,10 +68,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -163,7 +166,7 @@ public class RemoteServices {
             ClassObjectReference basicClass = null;
             for (RemoteClass rc : remoteClasses) {
                 String className = rc.name;
-                if (basicClass == null && className.indexOf('$') < 0) {
+                if (basicClass == null && className.indexOf('$') < 0 && className.endsWith("Service")) {
                     if ((sType == ServiceType.AWT && className.contains("AWT")) ||
                         (sType == ServiceType.FX && className.contains("FX"))) {
                         List<ReferenceType> classesByName = VirtualMachineWrapper.classesByName(vm, className);
@@ -207,7 +210,7 @@ public class RemoteServices {
                             uploaded = false;
                             while (!uploaded) {
                                 theUploadedClass = (ClassObjectReference) ObjectReferenceWrapper.invokeMethod(cl, tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
-                                if (basicClass == null && rc.name.indexOf('$') < 0) {
+                                if (basicClass == null && rc.name.indexOf('$') < 0 && rc.name.endsWith("Service")) {
                                     try {
                                         // Disable collection only of the basic class
                                         ObjectReferenceWrapper.disableCollection(theUploadedClass);
@@ -783,6 +786,59 @@ public class RemoteServices {
             }
         }, ServiceType.AWT);
         return retPtr[0];
+    }
+
+    static void attachHierarchyListeners(final boolean attach, ServiceType sType) {
+        final Set<Entry<JPDADebugger, ClassObjectReference>> serviceClasses;
+        synchronized (remoteServiceClasses) {
+            serviceClasses = new HashSet<Entry<JPDADebugger, ClassObjectReference>>(remoteServiceClasses.entrySet());
+        }
+        
+        for (Entry<JPDADebugger, ClassObjectReference> serviceEntry : serviceClasses) {
+            JPDADebugger debugger = serviceEntry.getKey();
+            ClassObjectReference cor = serviceEntry.getValue();
+            final ClassType serviceClass;
+            try {
+                serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(cor);
+            } catch (InternalExceptionWrapper ex) {
+                continue;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                continue;
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                continue;
+            }
+            List<JPDAThread> allThreads = debugger.getThreadsCollector().getAllThreads();
+            JPDAThread thread = null;
+            for (JPDAThread t : allThreads) {
+                if (sType == ServiceType.AWT && t.getName().startsWith(RemoteAWTScreenshot.AWTThreadName)) {
+                    thread = t;
+                }
+            }
+            if (thread != null) {
+                final JPDAThread t = thread;
+                final ThreadReference tr = ((JPDAThreadImpl) t).getThreadReference();
+                try {
+                    runOnStoppedThread(t, new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if (attach) {
+                                    Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()V");
+                                    ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                                } else {
+                                    Method stopHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "stopHierarchyListener", "()V");
+                                    ClassTypeWrapper.invokeMethod(serviceClass, tr, stopHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                                }
+                            } catch (VMDisconnectedExceptionWrapper vmd) {                
+                            } catch (Exception ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }, sType);
+                } catch (PropertyVetoException ex) {
+                }
+            }
+        }
     }
     
     public static ClassObjectReference getServiceClass(JPDADebugger debugger) {

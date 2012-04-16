@@ -338,6 +338,9 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                         return token(CppStringTokenId.DOUBLE_QUOTE);
                     }
                 case '\\': //NOI18N
+                    if (rawString) {
+                        continue;
+                    }
                     if (input.readLength() > 1) {// already read some text
                         input.backup(1);
                         return token(CppStringTokenId.TEXT);

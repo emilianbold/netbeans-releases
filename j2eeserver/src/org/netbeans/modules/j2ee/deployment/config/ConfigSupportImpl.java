@@ -116,6 +116,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     private static final Logger LOGGER = Logger.getLogger(ConfigSupportImpl.class.getName());
 
     private static final File[] EMPTY_FILE_LIST = new File[0];
+    private static final String GENERIC_NAME = "netbeans"; // NOI18N
     private static final String GENERIC_EXTENSION = ".dpf"; // NOI18N
     
     private String configurationPrimaryFileName = null;
@@ -946,7 +947,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
     
     private static String getStandardDeploymentPlanName(Server server) {
-        return server.getShortName() + GENERIC_EXTENSION;
+        return (server != null ? server.getShortName() : GENERIC_NAME) + GENERIC_EXTENSION;
     }
 
     private J2eeModule.Type getModuleType() {

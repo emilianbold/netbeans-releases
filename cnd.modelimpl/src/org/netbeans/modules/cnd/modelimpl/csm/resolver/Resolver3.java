@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.resolver;
 
-import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
+import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
@@ -198,9 +197,8 @@ public final class Resolver3 implements Resolver {
 
     public static Collection<CsmProject> getSearchLibraries(CsmProject prj) {
         if (prj.isArtificial() && prj instanceof ProjectBase) {
-            List<ProjectBase> dependentProjects = ((ProjectBase)prj).getDependentProjects();
             Set<CsmProject> libs = new HashSet<CsmProject>();
-            for (ProjectBase projectBase : dependentProjects) {
+            for (ProjectBase projectBase : ((ProjectBase)prj).getDependentProjects()) {
                 if (!projectBase.isArtificial()) {
                     libs.addAll(projectBase.getLibraries());
                 }
@@ -219,7 +217,7 @@ public final class Resolver3 implements Resolver {
         AntiLoop set = new AntiLoop(100);
         while (true) {
             set.add(orig);
-            CsmClassifier resovedClassifier = null;
+            CsmClassifier resovedClassifier;
             if (CsmKindUtilities.isClassForwardDeclaration(orig)){
                 CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
                 resovedClassifier = fd.getCsmClass();
@@ -259,7 +257,7 @@ public final class Resolver3 implements Resolver {
         if (ns != null) {
             CsmUID<?> uid = UIDs.get(out);
             CharSequence fqn = out.getQualifiedName();
-            Collection<CsmOffsetableDeclaration> col = null;
+            Collection<CsmOffsetableDeclaration> col;
             if (ns instanceof NamespaceImpl) {
                 col = ((NamespaceImpl)ns).getDeclarationsRange(fqn,
                         new Kind[]{Kind.CLASS, Kind.UNION, Kind.STRUCT, Kind.ENUM, Kind.TYPEDEF, Kind.TEMPLATE_DECLARATION, Kind.TEMPLATE_SPECIALIZATION, Kind.CLASS_FORWARD_DECLARATION});
@@ -314,7 +312,7 @@ public final class Resolver3 implements Resolver {
         }
         if (result == null) {
             CsmUsingResolver ur = CsmUsingResolver.getDefault();
-             Collection<CsmDeclaration> decls = null;
+            Collection<CsmDeclaration> decls;
             decls = ur.findUsedDeclarations(containingNS);
             for (CsmDeclaration decl : decls) {
                 if (CharSequences.comparator().compare(nameToken, decl.getName()) == 0) {
@@ -339,7 +337,7 @@ public final class Resolver3 implements Resolver {
             System.out.println("\t"+parent); // NOI18N
             parent = (Resolver3) parent.parentResolver;
         }
-        new Exception().printStackTrace();
+        new Exception().printStackTrace(System.err);
     }
 
     @Override
@@ -541,8 +539,11 @@ public final class Resolver3 implements Resolver {
             CsmDeclaration decl = resolveUsingDeclaration((CsmUsingDeclaration) element);
             if( decl != null ) {
                 CharSequence id;
-                if( decl.getKind() == CsmDeclaration.Kind.FUNCTION || decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
-                        decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND || decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND) {
+                if( decl.getKind() == CsmDeclaration.Kind.FUNCTION ||
+                        decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                        decl.getKind() == CsmDeclaration.Kind.FUNCTION_LAMBDA ||
+                        decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND ||
+                        decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
                     // TODO: decide how to resolve functions
                     id = ((CsmFunction) decl).getSignature();
                 } else {
@@ -785,7 +786,7 @@ public final class Resolver3 implements Resolver {
     }
 
     private CsmObject resolveCompoundName(CharSequence[] nameTokens, CsmObject result, int interestedKind) {
-        CsmNamespace containingNS = null;
+        CsmNamespace containingNS;
         String fullName = fullName(nameTokens);
         if (needClassifiers()) {
             result = findClassifierUsedInFile(fullName);

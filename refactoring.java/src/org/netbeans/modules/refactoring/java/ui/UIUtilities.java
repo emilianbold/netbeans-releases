@@ -1111,7 +1111,9 @@ public final class UIUtilities {
             if (isInherited) {
                 sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
             }
-            sb.append(UIUtilities.escape(e.getSimpleName().toString()));
+        }
+        sb.append(UIUtilities.escape(e.getSimpleName().toString()));
+        if(html) {
             if (isDeprecated) {
                 sb.append("</s>"); // NOI18N
             }
@@ -1153,7 +1155,7 @@ public final class UIUtilities {
         if (sc == null
                 || e.getKind() == ElementKind.ENUM
                 || e.getKind() == ElementKind.ANNOTATION_TYPE
-                || "Object".equals(sc.toString()) || // NOI18N
+                || "java.lang.Object".equals(sc.toString()) || // NOI18N
                 "<none>".equals(sc.toString())) { // NOI18N
             scName = null;
         }

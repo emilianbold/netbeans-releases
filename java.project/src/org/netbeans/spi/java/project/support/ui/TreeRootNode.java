@@ -54,12 +54,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -67,6 +67,7 @@ import org.netbeans.modules.java.project.PackageDisplayUtils;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -74,6 +75,7 @@ import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.FolderRenameHandler;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -82,6 +84,8 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
@@ -105,7 +109,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
     }
     
     private TreeRootNode (Node originalNode, DataFolder folder, SourceGroup g, boolean reduced) {
-        super(originalNode, reduced ? Children.create(new ReducedChildren(folder, new GroupDataFilter(g)), true) : new PackageFilterChildren(originalNode),
+        super(originalNode, reduced ? Children.create(new ReducedChildren(folder, new GroupDataFilter(g), g), true) : new PackageFilterChildren(originalNode),
             new ProxyLookup(
                 originalNode.getLookup(),
                 Lookups.singleton(new PathFinder(g, reduced))
@@ -287,10 +291,12 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
 
         private final DataFolder folder;
         private final ChangeableDataFilter filter;
+        private final SourceGroup g;
 
-        ReducedChildren(DataFolder folder, ChangeableDataFilter filter) {
+        ReducedChildren(DataFolder folder, ChangeableDataFilter filter, SourceGroup g) {
             this.folder = folder;
             this.filter = filter;
+            this.g = g;
             filter.addChangeListener(WeakListeners.change(this, filter));
             folder.addPropertyChangeListener(WeakListeners.propertyChange(this, folder));
         }
@@ -340,7 +346,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             if (!key.isValid()) {
                 return null;
             }
-            return key instanceof DataFolder ? new PackageFilterNode((DataFolder) key, folder, filter) : key.getNodeDelegate().cloneNode();
+            return key instanceof DataFolder ? new PackageFilterNode((DataFolder) key, folder, filter, g) : key.getNodeDelegate().cloneNode();
         }
 
         @Override public void stateChanged(ChangeEvent e) {
@@ -376,24 +382,29 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
 
         /** Non-null only in reduced mode. */
         private final DataFolder parent;
+        /** Non-null only in reduced mode. */
+        private final SourceGroup g;
         
-        public PackageFilterNode (final Node origNode) {
+        public PackageFilterNode(final Node origNode) {
             super (origNode, new PackageFilterChildren (origNode));
             parent = null;
+            g = null;
         }
 
-        PackageFilterNode(DataFolder folder, DataFolder parent, ChangeableDataFilter filter) {
-            super(folder.getNodeDelegate(), Children.create(new ReducedChildren(folder, filter), true));
+        PackageFilterNode(DataFolder folder, DataFolder parent, ChangeableDataFilter filter, SourceGroup g) {
+            super(folder.getNodeDelegate(), Children.create(new ReducedChildren(folder, filter, g), true));
             this.parent = parent;
+            this.g = g;
         }
 
         @Override public String getName() {
             if (parent != null) {
                 DataObject d = getLookup().lookup(DataObject.class);
                 if (d != null) {
-                    String rel = FileUtil.getRelativePath(parent.getPrimaryFile(), d.getPrimaryFile());
-                    if (rel != null) {
-                        return rel.replace('/', '.');
+                    final String relName = FileUtil.getRelativePath(parent.getPrimaryFile(), d.getPrimaryFile());
+                    //Null after DO move.
+                    if (relName != null) {
+                        return relName.replace('/', '.');   //NOI18N
                     }
                 }
             }
@@ -418,25 +429,36 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             }
         }
 
-        @Override public boolean canRename() {
-            return parent == null; // XXX #210107
-        }
-        
+        @Messages("MSG_unsupported_rename=Renaming nonterminal package components is not supported in reduced tree mode when subpackages are present.")
         @Override
         public void setName (final String name) {
             if (parent != null) {
-                throw new IllegalArgumentException("not supported"); // XXX #210107
-                /*
                 if (PackageViewChildren.isValidPackageName(name)) {
-                    PackageRenameHandler h = Lookup.getDefault().lookup(PackageRenameHandler.class);
-                    if (h != null) {
-                        ClassPath src = ClassPath.getClassPath(parent.getPrimaryFile(), ClassPath.SOURCE);
-                        if (src != null) {
-                            String parentPackage = src.getResourceName(parent.getPrimaryFile(), '.', true);
-                            if (parentPackage != null) {
-                                h.handleRename(this, parentPackage + '.' + name);
+                    PackageRenameHandler prh = Lookup.getDefault().lookup(PackageRenameHandler.class);
+                    FolderRenameHandler frh = Lookup.getDefault().lookup(FolderRenameHandler.class);
+                    if (prh != null && frh != null) { // refactoring support present
+                        DataFolder folder = getLookup().lookup(DataFolder.class);
+                        String old = getName();
+                        int dot = old.lastIndexOf('.');
+                        if (name.lastIndexOf('.') == dot) { // case 1
+                            if (dot == -1) {
+                                frh.handleRename(folder, name);
+                                return;
+                            } else if (dot != -1 && name.substring(0, dot).equals(old.substring(0, dot))) {
+                                frh.handleRename(folder, name.substring(dot + 1));
                                 return;
                             }
+                        }
+                        for (DataObject d : folder.getChildren()) {
+                            if (d instanceof DataFolder) { // case 3
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_unsupported_rename(), NotifyDescriptor.INFORMATION_MESSAGE));
+                                return;
+                            }
+                        }
+                        String parentPackageSlashes = FileUtil.getRelativePath(g.getRootFolder(), parent.getPrimaryFile());
+                        if (parentPackageSlashes != null) { // case 2
+                            prh.handleRename(new PackageViewChildren(g).new PackageNode(g.getRootFolder(), folder), (parentPackageSlashes.isEmpty() ? "" : parentPackageSlashes.replace('/', '.') + '.') + name);
+                            return;
                         }
                     }
                     FileObject d = getLookup().lookup(DataObject.class).getPrimaryFile();
@@ -470,7 +492,6 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_InvalidPackageName(), NotifyDescriptor.INFORMATION_MESSAGE));
                 }
                 return;
-                */
             }
             if (Utilities.isJavaIdentifier (name)) {
                 super.setName (name);
@@ -570,15 +591,15 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             }
         }
 
-        @Override public String getShortDescription() {
-            DataObject doj = getLookup().lookup(DataObject.class);
-            if (doj != null) {
-                FileObject f = doj.getPrimaryFile();
-                ClassPath src = ClassPath.getClassPath(f, ClassPath.SOURCE);
-                if (src != null) {
-                    String pkg = src.getResourceName(f, '.', false);
-                    if (pkg != null) {
-                        return PackageDisplayUtils.getToolTip(f, pkg);
+        @Override
+        public String getShortDescription() {
+            if (g != null) {
+                final DataObject doj = getLookup().lookup(DataObject.class);
+                if (doj != null) {
+                    final FileObject f = doj.getPrimaryFile();
+                    String rel = FileUtil.getRelativePath(g.getRootFolder(), f);
+                    if (rel != null) {
+                        return PackageDisplayUtils.getToolTip(f, rel.replace('/', '.'));    //NOI18N
                     }
                 }
             }

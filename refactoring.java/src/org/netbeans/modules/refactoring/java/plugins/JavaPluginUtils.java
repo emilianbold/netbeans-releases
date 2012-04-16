@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import javax.lang.model.SourceVersion;
@@ -60,6 +61,7 @@ import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -431,6 +433,32 @@ public final class JavaPluginUtils {
         else {
             return sb.toString();
         }
+    }
+
+    public static CompilationUnitTree createCompilationUnit(FileObject sourceRoot, String relativePath, Tree typeDecl, WorkingCopy workingCopy, TreeMaker make) {
+        GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+        CompilationUnitTree newCompilation;
+        try {
+            newCompilation = genUtils.createFromTemplate(sourceRoot, relativePath, ElementKind.CLASS);
+            List<? extends Tree> typeDecls = newCompilation.getTypeDecls();
+            if (typeDecls.isEmpty()) {
+                newCompilation = make.addCompUnitTypeDecl(newCompilation, typeDecl);
+            } else {
+                List<Tree> typeDeclarations = new LinkedList<Tree>(newCompilation.getTypeDecls());
+                Tree templateClazz = typeDeclarations.remove(0); // TODO: Check for class with correct name, template could start with another type.
+                if (workingCopy.getTreeUtilities().getComments(typeDecl, true).isEmpty()) {
+                    genUtils.copyComments(templateClazz, typeDecl, true);
+                } else if (workingCopy.getTreeUtilities().getComments(typeDecl, false).isEmpty()) {
+                    genUtils.copyComments(templateClazz, typeDecl, false);
+                }
+                typeDeclarations.add(0, typeDecl);
+                newCompilation = make.CompilationUnit(newCompilation.getPackageAnnotations(), sourceRoot, relativePath, newCompilation.getImports(), typeDeclarations);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            newCompilation = make.CompilationUnit(sourceRoot, relativePath, null, Collections.singletonList(typeDecl));
+        }
+        return newCompilation;
     }
     
     public static final class VariablesFilter implements ElementUtilities.ElementAcceptor {

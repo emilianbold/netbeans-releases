@@ -406,7 +406,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 spt[0].setupProfileProject(project, profiledFile, enableOverride);
 
                 String targetName = Utils.getProjectName(project) + ((profiledFile == null) ? "" : (": " + profiledFile.getNameExt())); // NOI18N
-                spt[0].dd = new DialogDescriptor(spt, Bundle.SelectProfilingTask_ProfileDialogCaption(targetName), true,
+                spt[0].dd = new DialogDescriptor(spt[0], Bundle.SelectProfilingTask_ProfileDialogCaption(targetName), true,
                                             new Object[] { spt[0].runButton, spt[0].cancelButton }, spt[0].runButton, 0, null, null);
                 Dialog d = DialogDisplayer.getDefault().createDialog(spt[0].dd);
                 d.getAccessibleContext().setAccessibleDescription(d.getTitle());

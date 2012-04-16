@@ -563,6 +563,39 @@ public class CommentCollectorTest extends NbTestCase {
         src.runModificationTask(task);
 
     }
+
+    public void testImportCommentsIdempotent206200() throws Exception {
+        File testFile = new File(work, "Test.java");
+        final String origin =
+                       "package test;\n" +
+                       "public class Test {\n /**prec*/\npublic void aa() {\n//aa\n int ii = 0;} }\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(0);
+                VariableTree var = (VariableTree) mt.getBody().getStatements().get(0);
+                
+                GeneratorUtilities.get(workingCopy).importComments(var, workingCopy.getCompilationUnit());
+                GeneratorUtilities.get(workingCopy).importComments(var, workingCopy.getCompilationUnit());
+
+                final CommentHandlerService service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+
+                verify(var, CommentSet.RelativePosition.PRECEDING, service, "//aa");
+
+                GeneratorUtilities.get(workingCopy).importComments(clazz, workingCopy.getCompilationUnit());
+
+                verify(var, CommentSet.RelativePosition.PRECEDING, service, "//aa");
+                verify(mt, CommentSet.RelativePosition.PRECEDING, service, "/**prec*/");
+                verify(clazz, CommentSet.RelativePosition.PRECEDING, service);
+            }
+        };
+        src.runModificationTask(task);
+
+    }
     
     void verify(Tree tree, CommentSet.RelativePosition position, CommentHandler service, String... comments) {
         assertNotNull("Comments handler service not null", service);

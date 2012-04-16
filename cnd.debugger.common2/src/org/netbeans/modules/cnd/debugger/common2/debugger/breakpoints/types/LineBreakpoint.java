@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.props.IntegerProperty;
 import org.netbeans.modules.cnd.debugger.common2.utils.props.StringProperty;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -166,7 +166,7 @@ public final class LineBreakpoint extends NativeBreakpoint {
     public void seedToplevelAnnotations() {
 	super.seedToplevelAnnotations();
 
-	if (DebuggerManager.isPerTargetBpts()) {
+	if (NativeDebuggerManager.isPerTargetBpts()) {
 	    return;
         }
 

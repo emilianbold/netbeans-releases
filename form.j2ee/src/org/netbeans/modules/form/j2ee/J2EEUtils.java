@@ -182,8 +182,7 @@ public class J2EEUtils {
         } else {
             // The first persistence unit - use EclipseLink provider
             // (it is delivered as a part of NetBeans J2EE support)
-            //provider = ProviderUtil.ECLIPSELINK_PROVIDER;
-            provider = ProviderUtil.TOPLINK_PROVIDER1_0;
+            provider = ProviderUtil.ECLIPSELINK_PROVIDER;
         }
 
         unit = ProviderUtil.buildPersistenceUnit(puName, provider, connection, persistence.getVersion());
@@ -244,7 +243,7 @@ public class J2EEUtils {
             return new String[0];
         }
         if (persistenceXML == null) return new String[0];
-        Persistence persistence = null;
+        Persistence persistence;
         try {
              persistence = PersistenceMetadata.getDefault().getRoot(persistenceXML);
         } catch (IOException ioex) {
@@ -519,10 +518,11 @@ public class J2EEUtils {
      * @param driver JDBC driver to be used in the project.
      */
     public static void updateProjectForUnit(FileObject fileInProject, PersistenceUnit unit, JDBCDriver driver) {
-        // Make sure that TopLink JAR files are on the classpath (if using TopLink)
-        if(ProviderUtil.ECLIPSELINK_PROVIDER.equals(ProviderUtil.getProvider(unit)) || ProviderUtil.ECLIPSELINK_PROVIDER1_0.equals(ProviderUtil.getProvider(unit))) {//the same for eclipselink
+        // Make sure that TopLink/EclipseLink JAR files are on the classpath
+        Provider provider = ProviderUtil.getProvider(unit);
+        if (ProviderUtil.ECLIPSELINK_PROVIDER.equals(provider) || ProviderUtil.ECLIPSELINK_PROVIDER1_0.equals(provider)) {
             updateProjectForEclipseLink(fileInProject);
-        }    else    if (ProviderUtil.TOPLINK_PROVIDER1_0.equals(ProviderUtil.getProvider(unit))) {
+        } else if (ProviderUtil.TOPLINK_PROVIDER1_0.equals(provider)) {
             updateProjectForTopLink(fileInProject);
         }
 

@@ -310,8 +310,6 @@ public class ServerFileDistributor extends ServerProgress {
         }
         setStatusDistributeRunning(NbBundle.getMessage(ServerFileDistributor.class, "MSG_RunningIncrementalDeploy", target));
         try {
-            //get relative-path-key map from FDL
-            File dir = incremental.getDirectoryForModule(target);
             // mkdirs()/toFileObject is not tolerated any more
             FileObject destRoot = FileUtil.createFolder(destDir);
 
@@ -348,7 +346,7 @@ public class ServerFileDistributor extends ServerProgress {
                 return mc;
 
             File[] paths = new File[rPaths.length];
-            for (int n=0; null != configFile && n<rPaths.length; n++) {
+            for (int n = 0; null != configFile && n < rPaths.length; n++) {
                 paths[n] = new File(FileUtil.toFile(destRoot), rPaths[n]);
                 if (null != paths[n] && paths[n].exists() && paths[n].lastModified() > configFile.lastModified())
                     // FIXME destdir
@@ -424,7 +422,7 @@ public class ServerFileDistributor extends ServerProgress {
                 return mc;
 
             File[] paths = new File[rPaths.length];
-            for (int n=0; n<rPaths.length; n++) {
+            for (int n = 0; null != configFile && n < rPaths.length; n++) {
                 File dest = FileUtil.toFile(destRoot);
                 assert dest != null;
                 paths[n] = new File(dest, rPaths[n]);

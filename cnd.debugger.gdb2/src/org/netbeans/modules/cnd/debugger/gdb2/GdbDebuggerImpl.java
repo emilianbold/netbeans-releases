@@ -297,22 +297,22 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             int act = gdi.getAction();
             System.out.printf("START ==========\n\t"); // NOI18N
-            if ((act & DebuggerManager.RUN) != 0) {
+            if ((act & NativeDebuggerManager.RUN) != 0) {
                 System.out.printf("RUN "); // NOI18N
             }
-            if ((act & DebuggerManager.STEP) != 0) {
+            if ((act & NativeDebuggerManager.STEP) != 0) {
                 System.out.printf("STEP "); // NOI18N
             }
-            if ((act & DebuggerManager.ATTACH) != 0) {
+            if ((act & NativeDebuggerManager.ATTACH) != 0) {
                 System.out.printf("ATTACH "); // NOI18N
             }
-            if ((act & DebuggerManager.CORE) != 0) {
+            if ((act & NativeDebuggerManager.CORE) != 0) {
                 System.out.printf("CORE "); // NOI18N
             }
-            if ((act & DebuggerManager.LOAD) != 0) {
+            if ((act & NativeDebuggerManager.LOAD) != 0) {
                 System.out.printf("LOAD "); // NOI18N
             }
-            if ((act & DebuggerManager.CONNECT) != 0) {
+            if ((act & NativeDebuggerManager.CONNECT) != 0) {
                 System.out.printf("CONNECT "); // NOI18N
             }
             System.out.printf("\n"); // NOI18N
@@ -324,7 +324,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	// This might make sense for gdbserver for example
         final boolean connectExisting;
-        if ((gdi.getAction() & DebuggerManager.CONNECT) != 0) {
+        if ((gdi.getAction() & NativeDebuggerManager.CONNECT) != 0) {
             connectExisting = true;
         } else {
             connectExisting = false;
@@ -348,7 +348,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
 
         // See "README.startup"
-        if (DebuggerManager.isAsyncStart()) {
+        if (NativeDebuggerManager.isAsyncStart()) {
 
             // May not be neccessary in the future.
             SwingUtilities.invokeLater(new Runnable() {
@@ -378,8 +378,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	String gdbInitFile = DebuggerOption.GDB_INIT_FILE.getCurrValue(optionLayers());
 
 	// SHOULD process OPTION_EXEC32?
-        String runDir = gdi.getProfile().getRunDirectory();
-        runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
+        String runDir = gdi.getRunDir();
+        boolean preventRunPathConvertion = runDir.startsWith("///"); // NOI18N
+
+        if (!preventRunPathConvertion) {
+            runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
+        }
 
 	factory = new Gdb.Factory(executor, additionalArgv,
 	    listener, false, isShortName(),
@@ -510,7 +514,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         gdb = tentativeGdb;
         gdb.setDebugger(this);
         GdbStartActionProvider.succeeded();
-        DebuggerManager.get().setCurrentDebugger(this);
+        NativeDebuggerManager.get().setCurrentDebugger(this);
 	// OLD initializeGdb(getGDI());
     }
 
@@ -727,6 +731,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
     
     private boolean targetAttach = false;
+    private static final String ATTACH_ID = "ATTACH"; //NOI18N
     
     private void doMIAttach(GdbDebuggerInfo gdi) {
         String cmdString;
@@ -742,31 +747,27 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             cmdString = "attach " + Long.toString(pid); //NOI18N
         }
         
-        final long newPid = pid;
-        MICommand cmd =
-            new MiCommandImpl(cmdString) {
+        firstBreakpointId = ATTACH_ID;
+        send(cmdString);
+    }
+    
+    private void attachDone() {
+        state().isProcess = true;
+        stateChanged();
+        session().setSessionState(state());
+        long pid = getNDI().getPid();
+        if (pid != -1) {
+            session().setPid(pid);
+        }
+        //see IZ 197786, we set breakpoints here not on prog load
+        ((GdbDebuggerSettingsBridge)profileBridge).noteAttached();
 
-                    @Override
-                    protected void onDone(MIRecord record) {
-                        state().isProcess = true;
-                        stateChanged();
-			session().setSessionState(state());
-                        if (newPid != -1) {
-                            session().setPid(newPid);
-                        }
-                        //see IZ 197786, we set breakpoints here not on prog load
-                        ((GdbDebuggerSettingsBridge)profileBridge).noteAttached();
-                        
-                        // continue, see IZ 198495
-                        if (DebuggerOption.RUN_AUTOSTART.isEnabled(optionLayers())) {
-                            go();
-                        } else {
-                            requestStack(null);
-                        }
-                        finish();
-                    }
-            };
-        gdb.sendCommand(cmd);
+        // continue, see IZ 198495
+        if (DebuggerOption.RUN_AUTOSTART.isEnabled(optionLayers())) {
+            go();
+        } else {
+            requestStack(null);
+        }
     }
 
     private void doMICorefile(GdbDebuggerInfo gdi) {
@@ -1092,7 +1093,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
     }
     
-    private String firstBreakpointId = null;
+    private volatile String firstBreakpointId = null;
     
     private void setFirstBreakpointId(MIRecord record) {
         MIValue bkptValue = record.results().valueOf(MI_BKPT);
@@ -1291,33 +1292,33 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * StepInto) after all initialization is done
      */
     private void initialAction() {
-        if (DebuggerManager.isStartModel()) {
+        if (NativeDebuggerManager.isStartModel()) {
             // OLD GdbDebuggerInfo gdi = this.getGDI();
             if (gdi != null) {
                 // For load and run
-                if ((gdi.getAction() & DebuggerManager.RUN) != 0) {
+                if ((gdi.getAction() & NativeDebuggerManager.RUN) != 0) {
                     rerun();
-                    gdi.removeAction(DebuggerManager.RUN);
+                    gdi.removeAction(NativeDebuggerManager.RUN);
                 }
                 // For attach
-                if ((gdi.getAction() & DebuggerManager.ATTACH) != 0) {
+                if ((gdi.getAction() & NativeDebuggerManager.ATTACH) != 0) {
 
                     doMIAttach(gdi);
-                    gdi.removeAction(DebuggerManager.ATTACH);
+                    gdi.removeAction(NativeDebuggerManager.ATTACH);
                 }
 
                 // For debugging core file
-                if ((gdi.getAction() & DebuggerManager.CORE) != 0) {
+                if ((gdi.getAction() & NativeDebuggerManager.CORE) != 0) {
 
                     doMICorefile(gdi);
-                    gdi.removeAction(DebuggerManager.CORE);
+                    gdi.removeAction(NativeDebuggerManager.CORE);
                 }
 
                 // For load and step
-                if ((gdi.getAction() & DebuggerManager.STEP) != 0) {
+                if ((gdi.getAction() & NativeDebuggerManager.STEP) != 0) {
                     //stepOver(); // gdb 6.1
 		    stepIntoMain(); // gdb 6.6
-                    gdi.removeAction(DebuggerManager.STEP);
+                    gdi.removeAction(NativeDebuggerManager.STEP);
                 }
             }
         }
@@ -1335,7 +1336,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         manager().formatStatusText("ReadyToRun"); // NOI18N
 
-        DebuggerManager.get().addRecentDebugTarget(progname, false);
+        NativeDebuggerManager.get().addRecentDebugTarget(progname, false);
 
         if (Log.Bpt.fix6810534) {
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -1462,7 +1463,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // SHOULD factor with inline code in DbxDebuggerImpl.noteProcGone
 
 	if (!DebuggerOption.FINISH_SESSION.isEnabled(optionLayers()) ||
-	    ((gdi.getAction() & DebuggerManager.LOAD) != 0)) {
+	    ((gdi.getAction() & NativeDebuggerManager.LOAD) != 0)) {
 	    return true;
 	} else {
 	    return false;
@@ -1506,7 +1507,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         setStatusText(msg);
 
-        if (!skipkill && DebuggerManager.isStartModel()) {
+        if (!skipkill && NativeDebuggerManager.isStartModel()) {
             postKill();
         }
 
@@ -2765,18 +2766,25 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public Set<String> requestAutos() {
         Set<String> autoNames = super.requestAutos();
-        LinkedList<Variable> res = new LinkedList<Variable>();
-        for (String auto : autoNames) {
-            GdbVariable var = variableBag.get(auto, false, VariableBag.FROM_BOTH);
-            if (var == null) {
-                var = new GdbWatch(this, watchUpdater(), auto);
-                createMIVar(var, true);
+        if(autoNames != null){
+            LinkedList<Variable> res = new LinkedList<Variable>();
+            for (String auto : autoNames) {
+                GdbVariable var = variableBag.get(auto, false, VariableBag.FROM_BOTH);
+                if (var == null) {
+                    var = new GdbWatch(this, watchUpdater(), auto);
+                    createMIVar(var, true);
+                }
+                res.add(var);
             }
-            res.add(var);
-        }
-        synchronized (autos) {
-            autos.clear();
-            autos.addAll(res);
+            synchronized (autos) {
+                autos.clear();
+                autos.addAll(res);
+            }
+        } else{
+            synchronized (autos) {
+                autos.clear();
+                autos.add(null);
+            }
         }
         return autoNames;
     }
@@ -3156,10 +3164,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         
         // detect first stop (in _start or main)
         if (firstBreakpointId != null) {
+            if (ATTACH_ID.equals(firstBreakpointId)) {
+                firstBreakpointId = null;
+                attachDone();
+                return;
+            }
             MIValue bkptnoValue = results.valueOf("bkptno"); // NOI18N
             boolean cont = (bkptnoValue == null && !STEP_INTO_ID.equals(firstBreakpointId)) ||
                (bkptnoValue != null && (firstBreakpointId.equals(bkptnoValue.asConst().value())));
             firstBreakpointId = null;
+            
+            // see IZ 210468, init watches here
+            ((GdbDebuggerSettingsBridge)profileBridge).noteFistStop();
+            
             sendPidCommand(cont);
             if (cont) {
                 return;
@@ -3762,6 +3779,44 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public FormatOption[] getMemoryFormats() {
         return GdbMemoryFormat.values();
     }
+    
+    static List<String> parseMem(MIRecord record) {
+        LinkedList<String> res = new LinkedList<String>();
+
+        int size[] = new int[MEMORY_READ_WIDTH];
+
+        for (MITListItem elem : record.results().valueOf("memory").asList()) { //NOI18N
+            MITList line = ((MITList)elem);
+            MIValue dataValue = line.valueOf("data"); //NOI18N
+            int count = 0;
+            for (MITListItem dataElem : dataValue.asList()) {
+                int len = ((MIConst)dataElem).value().length();
+                size[count] = Math.max(size[count], len);
+                count++;
+            }
+        }
+
+        for (MITListItem elem : record.results().valueOf("memory").asList()) { //NOI18N
+            StringBuilder sb = new StringBuilder();
+            MITList line = ((MITList)elem);
+            String addr = line.getConstValue("addr"); //NOI18N
+            sb.append(addr).append(':'); //NOI18N
+            MIValue dataValue = line.valueOf("data"); //NOI18N
+            int count = 0;
+            for (MITListItem dataElem : dataValue.asList()) {
+                for(int i = 0; i < size[count]-((MIConst)dataElem).value().length()+1; i++) {
+                    sb.append(' '); //NOI18N
+                }
+                sb.append(((MIConst)dataElem).value());
+                count++;
+            }
+            String ascii = line.getConstValue("ascii"); //NOI18N
+            sb.append(" \"").append(ascii).append("\""); //NOI18N
+            res.add(sb.toString() + "\n"); //NOI18N
+        }
+        
+        return res;
+    }
 
     private static final int MEMORY_READ_WIDTH = 16;
     
@@ -3777,21 +3832,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             @Override
             protected void onDone(MIRecord record) {
                 if (MemoryWindow.getDefault().isShowing()) {
-                    LinkedList<String> res = new LinkedList<String>();
-                    for (MITListItem elem : record.results().valueOf("memory").asList()) { //NOI18N
-                        StringBuilder sb = new StringBuilder();
-                        MITList line = ((MITList)elem);
-                        String addr = line.getConstValue("addr"); //NOI18N
-                        sb.append(addr).append(':'); //NOI18N
-                        MIValue dataValue = line.valueOf("data"); //NOI18N
-                        for (MITListItem dataElem : dataValue.asList()) {
-                            sb.append(' ').append(((MIConst)dataElem).value());
-                        }
-                        String ascii = line.getConstValue("ascii"); //NOI18N
-                        sb.append(" \"").append(ascii).append("\""); //NOI18N
-                        res.add(sb.toString() + "\n"); //NOI18N
-                    }
-                    MemoryWindow.getDefault().updateData(res);
+                    
+                    MemoryWindow.getDefault().updateData(parseMem(record));
                 }
                 finish();
             }
@@ -4602,7 +4644,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebugger
-    public void forkThisWay(DebuggerManager.FollowForkInfo ffi) {
+    public void forkThisWay(NativeDebuggerManager.FollowForkInfo ffi) {
         notImplemented("forkThisWay");	// NOI18N
     }
 

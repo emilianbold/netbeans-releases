@@ -58,6 +58,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -70,7 +71,6 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import org.netbeans.modules.j2ee.jboss4.nodes.Util;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
@@ -222,16 +222,21 @@ public class JBDeployer implements ProgressObject, Runnable {
                 }
 
             }
-            
+
             // try to start the app (to be sure we won't hit the old content
-            try { 
-                // profile service is available only fo JBoss5+
-                JBoss5ProfileServiceProxy profileService = dm.getProfileService();
-                if (profileService != null) {
-                    profileService.startAndWait(mainModuleID.getModuleID(), TIMEOUT);
-                }
-            } catch (Exception ex) {
-                // pass through, try the old way
+            try {
+                dm.invokeRemoteAction(new JBRemoteAction<Void>() {
+
+                    @Override
+                    public Void action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                        // profile service is available only fo JBoss5+
+                        if (profileService != null) {
+                            profileService.startAndWait(mainModuleID.getModuleID(), TIMEOUT);
+                        }
+                        return null;
+                    }
+                });
+            } catch (ExecutionException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
 
@@ -290,32 +295,38 @@ public class JBDeployer implements ProgressObject, Runnable {
         //return isApplicationReady(deployedFile, moduleID.getModuleID(), previousDeploymentTime, false);
     }
 
-    private Long getDeploymentTime(File fileToDeploy) {
+    private Long getDeploymentTime(final File fileToDeploy) {
         assert fileToDeploy != null;
 
         try {
-            // jboss does not escape url special characters
-            Object info = dm.invokeMBeanOperation(new ObjectName("jboss.system:service=MainDeployer"), // NOI18N
-                    "getDeployment", new Object[] {fileToDeploy.getCanonicalFile().toURL()}, new String[] {"java.net.URL"}); // NOI18N
-            if (info == null) {
-                info = dm.invokeMBeanOperation(new ObjectName("jboss.system:service=MainDeployer"), // NOI18N
-                    "getDeployment", new Object[] {fileToDeploy.toURL()}, new String[] {"java.net.URL"}); // NOI18N
-            }
-            if (info == null) {
-                return Long.MIN_VALUE;
-            }
+            dm.invokeRemoteAction(new JBRemoteAction<Long>() {
 
-            Class infoClass = info.getClass();
-            return infoClass.getDeclaredField("lastDeployed").getLong(info); // NOI18N
-        } catch (Exception ex) {
+                @Override
+                public Long action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                    // jboss does not escape url special characters
+                    Object info = connection.invoke(new ObjectName("jboss.system:service=MainDeployer"), // NOI18N
+                            "getDeployment", new Object[] {fileToDeploy.getCanonicalFile().toURL()}, new String[] {"java.net.URL"}); // NOI18N
+                    if (info == null) {
+                        info = connection.invoke(new ObjectName("jboss.system:service=MainDeployer"), // NOI18N
+                            "getDeployment", new Object[] {fileToDeploy.toURL()}, new String[] {"java.net.URL"}); // NOI18N
+                    }
+                    if (info == null) {
+                        return Long.MIN_VALUE;
+                    }
+
+                    Class infoClass = info.getClass();
+                    return infoClass.getDeclaredField("lastDeployed").getLong(info); // NOI18N
+                }
+            });
+        } catch (ExecutionException ex) {
             // pass through, return MIN_VALUE
             LOGGER.log(Level.FINE, null, ex);
         }
         return null;
     }
 
-    private boolean isApplicationReady(File deployedFile, String mainName,
-            String warName, Long previouslyDeployed, boolean initial) throws InterruptedException {
+    private boolean isApplicationReady(final File deployedFile, final String mainName,
+            final String warName, final Long previouslyDeployed, final boolean initial) throws InterruptedException {
 
         assert deployedFile != null;
         assert warName != null;
@@ -324,58 +335,55 @@ public class JBDeployer implements ProgressObject, Runnable {
             // safety wait - avoids hitting previous content
             Thread.sleep(2000);
         }
-        
-        try {  
-            JBoss5ProfileServiceProxy profileService = dm.getProfileService();
-            if (profileService != null) {
-                return profileService.isReady(mainName);
-            }
-        } catch (Exception ex) {
-            // pass through, try the old way
-            LOGGER.log(Level.INFO, null, ex);
-        }        
-        
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        // Try JMX deployer first.
         try {
-            // jboss does not escape url special characters
-            Object info = dm.invokeMBeanOperation(new ObjectName("jboss.system:service=MainDeployer"), // NOI18N
-                    "getDeployment", new Object[] {deployedFile.getCanonicalFile().toURL()} , new String[] {"java.net.URL"}); //NOI18N
-            if (info == null) {
-                info = dm.invokeMBeanOperation(new ObjectName("jboss.system:service=MainDeployer"), // NOI18N
-                    "getDeployment", new Object[] {deployedFile.toURL()}, new String[] {"java.net.URL"}); // NOI18N
-            }
+            return dm.invokeRemoteAction(new JBRemoteAction<Boolean>() {
 
-            if (info != null) {
-                Thread.currentThread().setContextClassLoader(info.getClass().getClassLoader());
-                Class infoClass = info.getClass();
-                long lastDeployed = infoClass.getDeclaredField("lastDeployed").getLong(info); // NOI18N
-                Object state = infoClass.getDeclaredField("state").get(info); // NOI18N
-                Object requiredState = state.getClass().getDeclaredField("STARTED").get(null); // NOI18N
-                return requiredState.equals(state)
-                        && (previouslyDeployed == null || previouslyDeployed.longValue() != lastDeployed);
-            }
-        } catch (Exception ex) {
-            // pass through, try the old way
-            LOGGER.log(Level.INFO, null, ex);
-        } finally {
-            Thread.currentThread().setContextClassLoader(orig);
-        }
+                @Override
+                public Boolean action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                    try {
+                        if (profileService != null) {
+                            return profileService.isReady(mainName);
+                        }
+                    } catch (Exception ex) {
+                        // pass through, try the old way
+                        LOGGER.log(Level.INFO, null, ex);
+                    }
 
-        // We will try the old way (in fact this does not work for EAR).
-        orig = Thread.currentThread().getContextClassLoader();
-        try {
-            ObjectName searchPattern = new ObjectName("jboss.web.deployment:war=" + warName + ",*"); // NOI18N
-            
-            MBeanServerConnection server = Util.getRMIServer(dm);
-            Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
-            
-            return !server.queryMBeans(searchPattern, null).isEmpty();
-        } catch (Exception ex) {
-            // pass through, try the old way
+                    // Try JMX deployer first.
+                    try {
+                        // jboss does not escape url special characters
+                        Object info = connection.invoke(new ObjectName("jboss.system:service=MainDeployer"), // NOI18N
+                                "getDeployment", new Object[]{deployedFile.getCanonicalFile().toURL()}, new String[]{"java.net.URL"}); //NOI18N
+                        if (info == null) {
+                            info = connection.invoke(new ObjectName("jboss.system:service=MainDeployer"), // NOI18N
+                                    "getDeployment", new Object[]{deployedFile.toURL()}, new String[]{"java.net.URL"}); // NOI18N
+                        }
+
+                        if (info != null) {
+                            Class infoClass = info.getClass();
+                            long lastDeployed = infoClass.getDeclaredField("lastDeployed").getLong(info); // NOI18N
+                            Object state = infoClass.getDeclaredField("state").get(info); // NOI18N
+                            Object requiredState = state.getClass().getDeclaredField("STARTED").get(null); // NOI18N
+                            return requiredState.equals(state)
+                                    && (previouslyDeployed == null || previouslyDeployed.longValue() != lastDeployed);
+                        }
+                    } catch (Exception ex) {
+                        // pass through, try the old way
+                        LOGGER.log(Level.INFO, null, ex);
+                    }
+
+                    try {
+                        // We will try the old way (in fact this does not work for EAR).
+                        ObjectName searchPattern = new ObjectName("jboss.web.deployment:war=" + warName + ",*"); // NOI18N
+                        return !connection.queryMBeans(searchPattern, null).isEmpty();
+                    } catch (Exception ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    }
+                    return false;
+                }
+            });
+        } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
-        } finally {
-            Thread.currentThread().setContextClassLoader(orig);
         }
 
         return false;

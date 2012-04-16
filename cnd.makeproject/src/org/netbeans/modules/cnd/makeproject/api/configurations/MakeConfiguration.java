@@ -104,6 +104,7 @@ public class MakeConfiguration extends Configuration {
     public static final String CND_PLATFORM_MACRO = "${CND_PLATFORM}"; // NOI18N
     public static final String CND_DISTDIR_MACRO = "${CND_DISTDIR}"; // NOI18N
     public static final String CND_BUILDDIR_MACRO = "${CND_BUILDDIR}"; // NOI18N
+    public static final String CND_DLIB_EXT_MACRO = "${CND_DLIB_EXT}"; // NOI18N
     // Project Types
     private static String[] TYPE_NAMES_UNMANAGED = {
         getString("MakefileName")
@@ -1083,6 +1084,10 @@ public class MakeConfiguration extends Configuration {
         return ProjectActionSupport.getInstance().canHandle(this, null, PredefinedType.DEBUG);
     }
 
+    public String getLibraryExtension() {
+        return Platforms.getPlatform(getDevelopmentHost().getBuildPlatform()).getLibraryExtension();
+    }
+    
     public String expandMacros(String val) {
         // Substitute macros
         val = CndPathUtilitities.expandMacro(val, "${TESTDIR}", MakeConfiguration.CND_BUILDDIR_MACRO + '/' + MakeConfiguration.CND_CONF_MACRO + '/' + MakeConfiguration.CND_PLATFORM_MACRO + "/" + "tests"); // NOI18N
@@ -1094,6 +1099,7 @@ public class MakeConfiguration extends Configuration {
         val = CndPathUtilitities.expandMacro(val, MakeConfiguration.CND_CONF_MACRO, getName()); // NOI18N
         val = CndPathUtilitities.expandMacro(val, MakeConfiguration.CND_DISTDIR_MACRO, MakeConfiguration.DIST_FOLDER); // NOI18N
         val = CndPathUtilitities.expandMacro(val, MakeConfiguration.CND_BUILDDIR_MACRO, MakeConfiguration.BUILD_FOLDER); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, MakeConfiguration.CND_DLIB_EXT_MACRO, getLibraryExtension()); // NOI18N
         return val;
     }
 

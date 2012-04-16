@@ -123,6 +123,10 @@ public class NamespacesModule extends CssEditorModule {
                 }
                 break;
 
+            case generic_at_rule:
+                proposals.add(CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false));
+                break;
+                
             case namespace:
                 CssTokenId tokenId = context.getTokenSequence().token().id();
                 if (tokenId == CssTokenId.NAMESPACE_SYM) {

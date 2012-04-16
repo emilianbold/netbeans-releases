@@ -45,12 +45,15 @@ package org.netbeans.modules.mercurial;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileLock;
@@ -59,7 +62,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.test.MockLookup;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -75,7 +78,9 @@ public class InterceptorTest extends AbstractHgTestCase {
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
         super.setUp();
-        MockLookup.setLayersAndInstances();
+        MockServices.setServices(new Class[] {
+            VersioningAnnotationProvider.class,
+            MercurialVCS.class});
         // create
         FileObject fo = FileUtil.toFileObject(getWorkTreeDir());
     }
@@ -628,6 +633,96 @@ public class InterceptorTest extends AbstractHgTestCase {
         assertEquals(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, getCache().refresh(toFile).getStatus());
     }
     
+    public void testRenameFileChangeCase_DO () throws Exception {
+        // prepare
+        File fromFile = createFile("file");
+        File toFile = new File(getWorkTreeDir(), "FILE");
+        commit(fromFile);
+        
+        // move
+        renameDO(fromFile, toFile.getName());
+        
+        // test
+        if (Utilities.isWindows() || Utilities.isMac()) {
+            assertTrue(Arrays.asList(toFile.getParentFile().list()).contains(toFile.getName()));
+            assertFalse(Arrays.asList(fromFile.getParentFile().list()).contains(fromFile.getName()));
+        } else {
+            assertFalse(fromFile.exists());
+            assertTrue(toFile.exists());
+            assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCache().refresh(fromFile).getStatus());
+            assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getCache().refresh(toFile).getStatus());
+        }
+    }
+    
+    public void testRenameFileChangeCase_FO () throws Exception {
+        // prepare
+        File fromFile = createFile("file");
+        File toFile = new File(getWorkTreeDir(), "FILE");
+        commit(fromFile);
+        
+        // move
+        renameFO(fromFile, toFile.getName());
+        
+        // test
+        if (Utilities.isWindows() || Utilities.isMac()) {
+            assertTrue(Arrays.asList(toFile.getParentFile().list()).contains(toFile.getName()));
+            assertFalse(Arrays.asList(fromFile.getParentFile().list()).contains(fromFile.getName()));
+        } else {
+            assertFalse(fromFile.exists());
+            assertTrue(toFile.exists());
+            assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCache().refresh(fromFile).getStatus());
+            assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getCache().refresh(toFile).getStatus());
+        }
+    }
+    
+    public void testRenameFolderChangeCase_DO () throws Exception {
+        // prepare
+        File fromFolder = createFolder("folder");
+        File fromFile = createFile(fromFolder, "file");
+        File toFolder = new File(getWorkTreeDir(), "FOLDER");
+        File toFile = new File(toFolder, fromFile.getName());
+        commit(fromFolder);
+        
+        // move
+        renameDO(fromFolder, toFolder.getName());
+        
+        // test
+        if (Utilities.isWindows() || Utilities.isMac()) {
+            assertTrue(Arrays.asList(toFolder.getParentFile().list()).contains(toFolder.getName()));
+            assertFalse(Arrays.asList(fromFolder.getParentFile().list()).contains(fromFolder.getName()));
+        } else {
+            assertFalse(fromFolder.exists());
+            assertTrue(toFolder.exists());
+            assertTrue(toFile.exists());
+            assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCache().refresh(fromFile).getStatus());
+            assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getCache().refresh(toFile).getStatus());
+        }
+    }
+    
+    public void testRenameFolderChangeCase_FO () throws Exception {
+        // prepare
+        File fromFolder = createFolder("folder");
+        File fromFile = createFile(fromFolder, "file");
+        File toFolder = new File(getWorkTreeDir(), "FOLDER");
+        File toFile = new File(toFolder, fromFile.getName());
+        commit(fromFolder);
+        
+        // move
+        renameFO(fromFolder, toFolder.getName());
+        
+        // test
+        if (Utilities.isWindows() || Utilities.isMac()) {
+            assertTrue(Arrays.asList(toFolder.getParentFile().list()).contains(toFolder.getName()));
+            assertFalse(Arrays.asList(fromFolder.getParentFile().list()).contains(fromFolder.getName()));
+        } else {
+            assertFalse(fromFolder.exists());
+            assertTrue(toFolder.exists());
+            assertTrue(toFile.exists());
+            assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCache().refresh(fromFile).getStatus());
+            assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getCache().refresh(toFile).getStatus());
+        }
+    }
+    
     public void testCopyFileToIgnoredFolder_DO () throws Exception {
         // prepare
         File folder = createFolder("ignoredFolder");
@@ -680,6 +775,24 @@ public class InterceptorTest extends AbstractHgTestCase {
         FileLock lock = foFrom.lock();
         try {
             foFrom.move(lock, foTarget, to.getName(), null);
+        } finally {
+            lock.releaseLock();
+        }
+    }
+    
+    private void renameDO (File from, String newName) throws DataObjectNotFoundException, IOException {
+        DataObject daoFrom = DataObject.find(FileUtil.toFileObject(from));
+        daoFrom.rename(newName);
+    }
+
+    private void renameFO (File from, String newName) throws DataObjectNotFoundException, IOException {
+        // need to let FS know about it
+        FileObject parent = FileUtil.toFileObject(from.getParentFile());
+        FileObject foFrom = FileUtil.toFileObject(from);
+        assertNotNull(foFrom);
+        FileLock lock = foFrom.lock();
+        try {
+            foFrom.rename(lock, newName, null);
         } finally {
             lock.releaseLock();
         }

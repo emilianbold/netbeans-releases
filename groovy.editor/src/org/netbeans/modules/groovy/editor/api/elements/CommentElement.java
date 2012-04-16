@@ -63,12 +63,13 @@ public class CommentElement extends GroovyElement {
         this.text = text;
     }
 
+    @Override
     public String getName() {
         return text;
     }
 
+    @Override
     public ElementKind getKind() {
         return ElementKind.KEYWORD;
     }
-
 }

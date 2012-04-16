@@ -174,10 +174,8 @@ public abstract class WindowManager extends Object implements Serializable {
         if (registry != null) {
             return registry;
         }
-
-        registry = componentRegistry();
-
-        return registry;
+        onShowing.initialize();
+        return registry = componentRegistry();
     }
 
     /** Creates new workspace.

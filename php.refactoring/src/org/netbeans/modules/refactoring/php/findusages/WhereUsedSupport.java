@@ -190,9 +190,17 @@ public final class WhereUsedSupport {
         }
     }
 
+    private static Occurence findOccurence(final Model model, final int offset) {
+        Occurence result = model.getOccurencesSupport(offset).getOccurence();
+        if (result == null) {
+            result = model.getOccurencesSupport(offset + "$".length()).getOccurence(); //NOI18N
+        }
+        return result;
+    }
+
     public static WhereUsedSupport getInstance(final PHPParseResult info, final int offset) {
         Model model = ModelFactory.getModel(info);
-        final Occurence occurence = model.getOccurencesSupport(offset).getOccurence();
+        final Occurence occurence = findOccurence(model, offset);
         final Set<ModelElement> declarations = new HashSet<ModelElement>();
         final Collection<? extends PhpElement> allDeclarations = occurence != null ? occurence.getAllDeclarations() : Collections.<PhpElement>emptyList();
         boolean canContinue = occurence != null && allDeclarations.size() > 0 && allDeclarations.size() < 5;

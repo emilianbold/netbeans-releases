@@ -109,7 +109,7 @@ public class OrganizeImports {
                 public void run(ResultIterator resultIterator) throws Exception {
                     WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
                     copy.toPhase(Phase.RESOLVED);
-                    doOrganizeImports(copy);
+                    doOrganizeImports(copy, context.isBulkMode());
                 }
             });
         } catch (ParseException ex) {
@@ -117,7 +117,7 @@ public class OrganizeImports {
         }
         List<? extends Difference> diffs = result != null ? result.getDifferences(source.getFileObject()) : null;
         if (diffs != null && !diffs.isEmpty()) {
-            Fix fix = new OrganizeImportsFix(context.getInfo(), context.getPath()).toEditorFix();
+            Fix fix = new OrganizeImportsFix(context.getInfo(), context.getPath(), context.isBulkMode()).toEditorFix();
             SourcePositions sp = context.getInfo().getTrees().getSourcePositions();
             int offset = diffs.get(0).getStartPosition().getOffset();
             CompilationUnitTree cu = context.getInfo().getCompilationUnit();
@@ -130,7 +130,7 @@ public class OrganizeImports {
         return null;
     }
 
-    private static void doOrganizeImports(WorkingCopy copy) throws IllegalStateException {
+    private static void doOrganizeImports(WorkingCopy copy, boolean isBulkMode) throws IllegalStateException {
         CompilationUnitTree cu = copy.getCompilationUnit();
         List<? extends ImportTree> imports = cu.getImports();
         if (!imports.isEmpty()) {
@@ -150,7 +150,7 @@ public class OrganizeImports {
             Set<Element> starImports = cs.countForUsingStarImport() == Integer.MAX_VALUE ? new HashSet<Element>() : null;
             Set<Element> staticStarImports = cs.countForUsingStaticStarImport() == Integer.MAX_VALUE ? new HashSet<Element>() : null;
             Set<Element> toImport = getUsedElements(copy, cu, starImports, staticStarImports);
-            if (!toImport.isEmpty()) {
+            if (!toImport.isEmpty() || isBulkMode) {
                 List<ImportTree> imps;
                 TreeMaker maker = copy.getTreeMaker();
                 if (starImports != null || staticStarImports != null) {
@@ -187,7 +187,7 @@ public class OrganizeImports {
                 }
                 CompilationUnitTree cut = maker.CompilationUnit(cu.getPackageAnnotations(), cu.getPackageName(), imps, cu.getTypeDecls(), cu.getSourceFile());
                 ((JCCompilationUnit)cut).packge = ((JCCompilationUnit)cu).packge;
-                CompilationUnitTree ncu = GeneratorUtilities.get(copy).addImports(cut, toImport);
+                CompilationUnitTree ncu = toImport.isEmpty() ? cut : GeneratorUtilities.get(copy).addImports(cut, toImport);
                 copy.rewrite(cu, ncu);
             }
         }
@@ -278,8 +278,11 @@ public class OrganizeImports {
 
     private static final class OrganizeImportsFix extends JavaFix {
 
-        public OrganizeImportsFix(CompilationInfo info, TreePath tp) {
+        private final boolean isBulkMode;
+        
+        public OrganizeImportsFix(CompilationInfo info, TreePath tp, boolean isBulkMode) {
             super(info, tp);
+            this.isBulkMode = isBulkMode;
         }
 
         @Override
@@ -291,7 +294,7 @@ public class OrganizeImports {
         protected void performRewrite(TransformationContext ctx) {
             WorkingCopy wc = ctx.getWorkingCopy();
             TreePath tp = ctx.getPath();
-            doOrganizeImports(wc);
+            doOrganizeImports(wc, isBulkMode);
         }
     }
 }

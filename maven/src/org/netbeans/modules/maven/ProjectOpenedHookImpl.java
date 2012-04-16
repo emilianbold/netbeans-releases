@@ -264,17 +264,17 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
                 }
             }
         }
-        List<ArtifactRepository> mirrors = repo.getMirroredRepositories();
-        if (mirrors.isEmpty()) {
+        List<ArtifactRepository> mirrored = repo.getMirroredRepositories();
+        if (mirrored.isEmpty()) {
             try {
-                RepositoryPreferences.getInstance().addTransientRepository(this, repo.getId(), repo.getId(), repo.getUrl());
+                RepositoryPreferences.getInstance().addTransientRepository(this, repo.getId(), repo.getId(), repo.getUrl(), RepositoryInfo.MirrorStrategy.ALL);
             } catch (URISyntaxException x) {
                 LOGGER.log(Level.WARNING, "Ignoring repo with malformed URL: {0}", x.getMessage());
             }
         } else {
-            for (ArtifactRepository mirr : mirrors) {
+            for (ArtifactRepository mirr : mirrored) {
                 try {
-                    RepositoryPreferences.getInstance().addTransientRepository(this, mirr.getId(), mirr.getId(), mirr.getUrl());
+                    RepositoryPreferences.getInstance().addTransientRepository(this, mirr.getId(), mirr.getId(), mirr.getUrl(), RepositoryInfo.MirrorStrategy.ALL);
                 } catch (URISyntaxException x) {
                     LOGGER.log(Level.WARNING, "Ignoring repo with malformed URL: {0}", x.getMessage());
                 }

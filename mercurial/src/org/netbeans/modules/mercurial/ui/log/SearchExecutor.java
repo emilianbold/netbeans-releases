@@ -43,14 +43,19 @@
  */
 package org.netbeans.modules.mercurial.ui.log;
 
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import javax.swing.*;
-import java.text.SimpleDateFormat;
-import java.text.DateFormat;
-import java.util.*;
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -59,6 +64,8 @@ import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Executes searches in Search History panel.
@@ -87,6 +94,7 @@ class SearchExecutor extends HgProgressSupport {
     private int limitRevisions;
     private final String branchName;
     static final int DEFAULT_LIMIT = 10;
+    static final int UNLIMITTED = -1;
     private final boolean includeMerges;
     private HgBranch[] branches;
 
@@ -98,7 +106,7 @@ class SearchExecutor extends HgProgressSupport {
         includeMerges = criteria.isIncludeMerges();
         limitRevisions = criteria.getLimit();
         if (limitRevisions <= 0) {
-            limitRevisions = DEFAULT_LIMIT;
+            limitRevisions = UNLIMITTED;
         }
         branchName = criteria.getBranch();
         

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -157,8 +158,11 @@ public class WhereUsedPanelVariable extends WhereUsedPanel.WhereUsedInnerPanel {
 
             @Override
             public void run() {
-                label.setText("<html>" + labelText + "</html>"); // NOI18N
+                Dimension preferredSize = label.getPreferredSize();
+                label.setText(labelText);
                 label.setIcon(labelIcon);
+                label.setPreferredSize(preferredSize);
+                label.setMinimumSize(preferredSize);
             }
         });
     }

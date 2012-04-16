@@ -72,7 +72,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ContextGlobalProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.AbstractLookup;
@@ -500,6 +499,7 @@ public class NavigatorTCTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #8126: Expected LastSelMime2Panel2 panel to be selected, but selected is LastSelMime1Panel3
     public void test_112954_LastSelected () throws Exception {
         System.out.println("Testing feature #112954, remembering last selected panel for context type...");
 

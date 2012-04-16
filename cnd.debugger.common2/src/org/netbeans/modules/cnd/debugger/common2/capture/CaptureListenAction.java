@@ -69,7 +69,7 @@ import org.openide.util.NbPreferences;
 import org.netbeans.modules.cnd.debugger.common2.utils.masterdetail.MasterView;
 import org.netbeans.modules.cnd.debugger.common2.utils.InfoPanel;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CustomizableHostList;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
@@ -112,7 +112,7 @@ public class CaptureListenAction extends SystemAction implements Presenter.Menu 
 	    CustomizableHostList hostlist = null;
 	    hostlist = CustomizableHostList.getInstance();
 
-	    if (DebuggerManager.isStandalone()) {
+	    if (NativeDebuggerManager.isStandalone()) {
 		hostChoices = hostlist.getRecordsName();
 	    } else {
                 hostChoices = CndRemote.getServerListIDs();
@@ -123,7 +123,7 @@ public class CaptureListenAction extends SystemAction implements Presenter.Menu 
 			break;
 
 		    String hostDispName = hostName = hostChoices[i];
-		    if (DebuggerManager.isStandalone()) {
+		    if (NativeDebuggerManager.isStandalone()) {
 			CustomizableHost host = hostlist.getHostByName(hostName);
 			hostDispName = host.displayName();
 		    }
@@ -147,7 +147,7 @@ public class CaptureListenAction extends SystemAction implements Presenter.Menu 
 	    EditHostListAction editHostListAction = SharedClassObject.findObject(EditHostListAction.class, true);
 	    if (editHostListAction != null) {
 		editHostListAction.setEnabled( hostChoices.length > 0 );
-		if (DebuggerManager.isStandalone()) {
+		if (NativeDebuggerManager.isStandalone()) {
 		    menu.add(new JSeparator());
 		    menu.add(editHostListAction.getMenuPresenter());
 		}
@@ -197,7 +197,7 @@ public class CaptureListenAction extends SystemAction implements Presenter.Menu 
 	    else {
 		if (!isDoNotShowAgain()) {
 		    String msg;
-		    if (DebuggerManager.isStandalone())
+		    if (NativeDebuggerManager.isStandalone())
 			msg = Catalog.get("MSG_dbxtool_ss_attach_info"); // NOI18N
 		    else
 			msg = Catalog.get("MSG_ss_attach_info"); // NOI18N

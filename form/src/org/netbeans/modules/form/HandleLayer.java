@@ -96,8 +96,12 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     public static final int COMP_SELECTED = 1; // get the deepest selected component
     public static final int COMP_ABOVE_SELECTED = 2; // get the component above the deepest selected component
     public static final int COMP_UNDER_SELECTED = 3; // get the component under the deepest selected component
-    
+
     private static final int DESIGNER_RESIZING = 256; // flag for resizeType
+    private static final int INBOUND_RESIZING = 512; // flag for resizeType
+    private static final int RESIZE_MASK = LayoutSupportManager.RESIZE_UP | LayoutSupportManager.RESIZE_DOWN
+                                         | LayoutSupportManager.RESIZE_LEFT | LayoutSupportManager.RESIZE_RIGHT;
+
     private static MessageFormat resizingHintFormat;
     private static MessageFormat sizeHintFormat;
 
@@ -313,7 +317,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             boolean painted = false;
             try {
                 boolean inLayout = selectedComponentsInSameVisibleContainer();
-                if (selectedComponentsInSameVisibleContainer() || isNewLayoutRootSelection()) {
+                if (inLayout || isNewLayoutRootSelection(true)) {
                     paintLayoutInnerSelection(g2);
                 }
                 for (RADComponent metacomp : formDesigner.getSelectedComponents()) {
@@ -412,8 +416,6 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     private void paintLayoutInnerSelection(Graphics2D g) {
         LayoutDesigner layoutDesigner = formDesigner.getLayoutDesigner();
         if (layoutDesigner != null) {
-            // TODO need to paint outer gaps of selected components with the parent clip,
-            // then for each selected component that is a container its inner gaps with the component clip
             Component topComp = formDesigner.getTopDesignComponentView();
             Point convertPoint = convertPointFromComponent(0, 0, topComp);
             g.translate(convertPoint.x, convertPoint.y);
@@ -1043,7 +1045,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         hitMetaComp = getMetaComponentAt(e.getPoint(), selMode);
 
         // Help with selecting a component in scroll pane (e.g. JTable of zero size).
-        // Prefer selcting the component rather than the scrollpane if the view port
+        // Prefer selecting the component rather than the scrollpane if the view port
         // or header is clicked.
         if (hitMetaComp != null && !e.isAltDown()
                 && hitMetaComp.getAuxValue("autoScrollPane") != null // NOI18N
@@ -1237,8 +1239,12 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
  	if(selectedComps.isEmpty()) return null;
 
         for (Iterator it = selectedComps.iterator(); it.hasNext(); ) {
-            RADComponent metacomp = (RADComponent) it.next();
-            if (!(metacomp instanceof RADVisualComponent)) continue;
+            RADComponent sc = (RADComponent) it.next();
+            if (!(sc instanceof RADVisualComponent)) {
+                continue;
+            }
+            RADVisualComponent metacomp = (RADVisualComponent) sc;
+
             boolean subcontained = false;
             for (Iterator it2 = selectedComps.iterator(); it2.hasNext(); ) {
                 RADComponent metacomp2 = (RADComponent) it2.next();
@@ -1248,21 +1254,21 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 }
             }
             if (!subcontained) {
-                RADVisualContainer metacont =
-                    (RADVisualContainer) metacomp.getParentComponent();
-                
-                if (substituteForContainer(metacont)) {
-                    // hack: if trying to drag something in scrollpane,
-                    // drag the whole scrollpane instead
-                    metacomp = metacont;
-                    metacont = (RADVisualContainer) metacomp.getParentComponent();
+                if ((resizeType & INBOUND_RESIZING) != 0) {
+                    // If trying to resize a layout gap in a container that is in scrollpane,
+                    // make sure the enclosed container is used, not the scrollpane.
+                    metacomp = FormDesigner.substituteWithSubComponent(metacomp);
+                } else { // Otherwise, if trying to drag something in scrollpane,
+                         // drag the whole scrollpane instead.
+                    metacomp = formDesigner.substituteWithContainer(metacomp);
                 }
+                RADVisualContainer metacont = (RADVisualContainer) metacomp.getParentComponent();
 
                 if (parent != null) {
                     if (parent != metacont)
                         return null; // components in different containers
                 } else {
-                    if (resizeType != 0 && isNewLayoutRootSelection()) {
+                    if (resizeType != 0 && isNewLayoutRootSelection(false)) {
                         metacont = (RADVisualContainer) metacomp;
                     } else if (metacont == null || !formDesigner.isInDesigner(metacont)) {
                         return null; // out of visible tree
@@ -1455,7 +1461,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         if (!e.isAltDown() && !e.isControlDown() && !e.isShiftDown()) {
             Point p = e.getPoint();
             boolean compInLayout = selectedComponentsInSameVisibleContainer();
-            if (compInLayout || isNewLayoutRootSelection()) {
+            if (compInLayout || isNewLayoutRootSelection(false)) {
                 resizing = checkLayoutResizing(p);
             }
             if (resizing == 0 && compInLayout) {
@@ -1548,6 +1554,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 } else if (resizability[LayoutConstants.VERTICAL] == LayoutConstants.TRAILING) {
                      resizeType |= LayoutSupportManager.RESIZE_DOWN;
                 }
+                resizeType |= INBOUND_RESIZING;
             }
             mouseHint = layoutDesigner.getToolTipText(p);
        }
@@ -1574,13 +1581,14 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         return true;
     }
 
-    private boolean isNewLayoutRootSelection() {
-        List<RADComponent> selected = formDesigner.getSelectedComponents();
-        if (selected.size() == 1) {
-            RADComponent metacomp = selected.get(0);
-            if (metacomp == formDesigner.getTopDesignComponent()
-                    && metacomp instanceof RADVisualContainer
-                    && ((RADVisualContainer)metacomp).getLayoutSupport() == null) {
+    private boolean isNewLayoutRootSelection(boolean checkVisibility) {
+        List<RADVisualComponent> selectedLayoutComponents = formDesigner.getSelectedLayoutComponents();
+        if (selectedLayoutComponents.size() == 1) {
+            RADVisualComponent metacomp = selectedLayoutComponents.get(0);
+            metacomp = FormDesigner.substituteWithSubComponent(metacomp);
+            if (metacomp instanceof RADVisualContainer
+                    && ((RADVisualContainer)metacomp).getLayoutSupport() == null
+                    && (!checkVisibility || formDesigner.isInDesigner(metacomp))) {
                 return true;
             }
         }
@@ -1767,12 +1775,6 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 }
             }
             return constraints;
-    }
-
-    private static boolean substituteForContainer(RADVisualContainer metacont) {
-        return metacont != null
-               && metacont.getBeanClass().isAssignableFrom(JScrollPane.class)
-               && metacont.getSubComponents().length > 0;
     }
 
     // ------
@@ -2045,7 +2047,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     }
                     else  {
                         draggedComponent = new ResizeComponentDrag(
-                            draggedComps, lastLeftMousePoint, resizeType&~DESIGNER_RESIZING);
+                            draggedComps, lastLeftMousePoint, resizeType);
                     }
                 }
             }
@@ -2146,7 +2148,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         if (metacomp instanceof RADVisualContainer && formDesigner.isInDesigner(metacomp)
                 && ((RADVisualContainer)metacomp).getLayoutSupport() == null) {
             Point p = convertPointToComponent(e.getPoint(), formDesigner.getTopDesignComponentView());
-            if (formDesigner.getLayoutDesigner().acceptsMouseWheel(p)) {
+            if (!viewOnly && formDesigner.getLayoutDesigner().acceptsMouseWheel(p)) {
                 if (wheeler == null) {
                     wheeler = new MouseWheeler(metacomp);
                     if (!wheelerBlocked) {
@@ -2475,8 +2477,11 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     metacont = metacont.getParentContainer();
                 }
             }
-            if (substituteForContainer(metacont)) {
-                metacont = metacont.getParentContainer();
+            if (FormDesigner.isTransparentContainer(metacont)) {
+                RADVisualContainer parent = metacont.getParentContainer();
+                if (parent != null && formDesigner.isInDesigner(parent)) {
+                    metacont = parent;
+                }
             }
             return metacont;
         }
@@ -2994,6 +2999,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     // for resizing existing components
     private class ResizeComponentDrag extends ComponentDrag {
         private int resizeType;
+        private boolean inboundResizing;
         private Dimension originalSize;
 
         private ComponentDragger oldDragger; // drags components in the old layout support
@@ -3003,29 +3009,38 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                             int resizeType)
         {
             super(comps, hotspot);
-            this.resizeType = resizeType;
+            inboundResizing = (resizeType & INBOUND_RESIZING) != 0;
+            this.resizeType = resizeType & RESIZE_MASK;
             init();
         }
 
         @Override
-        void init() {
-            RADVisualContainer sourceCont = getSourceContainer();
-            if (isTopComponent()) {
+        final void init() {
+            RADVisualContainer sourceCont;
+            if (isTopComponent() || inboundResizing) {
                 LayoutModel layoutModel = getLayoutModel();
                 newDrag = layoutModel != null
                           && layoutModel.getLayoutComponent(movingComponents[0].getId()) != null;
                 oldDrag = !newDrag;
-                fixedTarget = null;
-                originalSize = formDesigner.getComponentLayer().getDesignerSize();
-            }
-            else if (sourceCont != null) {
-                if (sourceCont.getLayoutSupport() == null) {
-                    newDrag = true;
+                sourceCont = null;
+                if (inboundResizing) {
+                    if (movingComponents[0] instanceof RADVisualContainer) {
+                        fixedTarget = (RADVisualContainer) movingComponents[0];
+                    }
+                } else {
+                    originalSize = formDesigner.getComponentLayer().getDesignerSize();
                 }
-                else {
-                    oldDrag = true;
+            } else {
+                sourceCont = getSourceContainer();
+                if (sourceCont != null) {
+                    if (sourceCont.getLayoutSupport() == null) {
+                        newDrag = true;
+                    }
+                    else {
+                        oldDrag = true;
+                    }
+                    fixedTarget = sourceCont;
                 }
-                fixedTarget = sourceCont;
             }
 
             if (newDrag) { // new layout support
@@ -3060,9 +3075,9 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     res[LayoutConstants.VERTICAL] = LayoutConstants.DEFAULT;
                 }
 
-                boolean outboundResizing = formDesigner.getLayoutDesigner().startResizing(
+                formDesigner.getLayoutDesigner().startResizing(
                         compIds, originalBounds, hotSpot, res, sourceCont != null);
-                if (!outboundResizing) {
+                if (inboundResizing) {
                     componentsMoving = false;
                     movingBounds[0].x = originalBounds[0].x;
                     movingBounds[0].y = originalBounds[0].y;
@@ -3086,18 +3101,22 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     resizeType);
             }
 
-            super.init();
+            if (!inboundResizing) {
+                super.init();
+            }
         }
 
         @Override
         boolean end(Point p, int modifiers) {
             if (p != null) {
                 if (newDrag) { // new layout support
-                    // make sure the visual component has the current size set 
-                    // (as still being in its container the layout manager tries to
-                    // restore the original size)
-                    showingComponents[0].setSize(movingBounds[0].width, movingBounds[0].height);
-                    doLayout(showingComponents[0]);
+                    if (!inboundResizing) {
+                        // make sure the visual component has the current size set 
+                        // (as still being in its container the layout manager tries to
+                        // restore the original size)
+                        showingComponents[0].setSize(movingBounds[0].width, movingBounds[0].height);
+                        doLayout(showingComponents[0]);
+                    }
 
                     createLayoutUndoableEdit();
                     boolean autoUndo = true;

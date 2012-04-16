@@ -123,7 +123,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     public Scope getCustomScope() {
-        FileObject file = RefactoringUtils.getFileObject(element);
+        FileObject file = WhereUsedPanel.this.element.getFileObject();
         Scope value = null;
         
         if(!enableScope) {

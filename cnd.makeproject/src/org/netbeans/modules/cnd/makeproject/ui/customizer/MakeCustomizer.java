@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
@@ -722,6 +723,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                     (getListData().get(0)).setDefault(true);
                 }
             }
+            CompileOptionsProvider.getDefault().remove((MakeConfiguration) c);
         }
 
         @Override
@@ -757,6 +759,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
             }
             String suggestedName = ConfigurationSupport.makeNameLegal(notifyDescriptor.getInputText());
             String name = ConfigurationSupport.getUniqueName(getConfs(), suggestedName);
+            CompileOptionsProvider.getDefault().rename((MakeConfiguration) c, name);
             c.setName(name);
             return true;
         }

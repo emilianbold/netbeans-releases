@@ -54,7 +54,7 @@ public class UnusedAssignmentOrBranchTest extends NbTestCase {
         super(name);
     }
 
-    public void testSimpleUnusedAssignment() throws Exception {
+    public void testSimpleUnusedInitializer() throws Exception {
         HintTest
                 .create()
                 .input("package test;\n" +
@@ -67,6 +67,22 @@ public class UnusedAssignmentOrBranchTest extends NbTestCase {
                        "}\n")
                 .run(UnusedAssignmentOrBranch.class)
                 .assertWarnings("3:17-3:18:verifier:LBL_UNUSED_ASSIGNMENT_LABEL");
+    }
+
+    public void testSimpleUnusedAssignment() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "     {\n" +
+                       "         int i;\n" +
+                       "         i = 0;\n" +
+                       "         i = 1;\n" +
+                       "         System.err.println(i);\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(UnusedAssignmentOrBranch.class)
+                .assertWarnings("4:13-4:14:verifier:LBL_UNUSED_ASSIGNMENT_LABEL");
     }
 
     public void testNoHighlightingForUnusedVariables() throws Exception {

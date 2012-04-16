@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.html.parser;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -409,7 +406,7 @@ public class ElementsFactory {
 
         @Override
         public void addChildren(Collection<Element> elements) {
-            for(Element e : elements) {
+            for(Element e : new LinkedList<Element>(elements)) {
                 addChild(e);
             }
         }
@@ -428,9 +425,18 @@ public class ElementsFactory {
         }
 
         @Override
-        public void removeChildren(Collection<Element> children) {
-            for(Element e : children) {
-                removeChild(e);
+        public void removeChildren(Collection<Element> toRemove) {
+            if(children == null) {
+                return ;
+            }
+            Iterator<Element> childrenIterator = toRemove.iterator();
+            while(childrenIterator.hasNext()) {
+                Element child = childrenIterator.next();
+                ((ModifiableElement)child).setParent(null);
+                childrenIterator.remove();
+            }
+            if(children().isEmpty()) {
+                children = null;
             }
         }
 
@@ -710,7 +716,7 @@ public class ElementsFactory {
 
         @Override
         public void addChildren(Collection<Element> elements) {
-            for(Element e : elements) {
+            for(Element e : new LinkedList<Element>(elements)) {
                 addChild(e);
             }
         }
@@ -729,9 +735,18 @@ public class ElementsFactory {
         }
 
         @Override
-        public void removeChildren(Collection<Element> children) {
-            for(Element e : children) {
-                removeChild(e);
+        public void removeChildren(Collection<Element> toRemove) {
+            if(children == null) {
+                return ;
+            }
+            Iterator<Element> childrenIterator = toRemove.iterator();
+            while(childrenIterator.hasNext()) {
+                Element child = childrenIterator.next();
+                ((ModifiableElement)child).setParent(null);
+                childrenIterator.remove();
+            }
+            if(children().isEmpty()) {
+                children = null;
             }
         }
 
@@ -805,7 +820,7 @@ public class ElementsFactory {
 
         private CharSequence source;
         private int nameOffset;
-        private byte valueOffset2nameOffsetDiff;
+        private short valueOffset2nameOffsetDiff;
         private byte nameLen;
         private short valueLen;
 
@@ -823,7 +838,7 @@ public class ElementsFactory {
             this.source = source;
 
             this.nameOffset = nameOffset;
-            this.valueOffset2nameOffsetDiff = (byte) (valueOffset - nameOffset);
+            this.valueOffset2nameOffsetDiff = (short) (valueOffset - nameOffset);
 
             this.nameLen = nameLen;
             this.valueLen = valueLen;
@@ -851,6 +866,9 @@ public class ElementsFactory {
 
         @Override
         public boolean isValueQuoted() {
+            if(value() == null) {
+                return false;
+            }
             if (valueLen < 2) {
                 return false;
             } else {
@@ -862,6 +880,9 @@ public class ElementsFactory {
 
         @Override
         public CharSequence unquotedValue() {
+            if(value() == null) {
+                return null;
+            }
             return isValueQuoted() ? value().subSequence(1, value().length() - 1) : value();
         }
 
@@ -884,7 +905,9 @@ public class ElementsFactory {
 
         @Override
         public int to() {
-            return valueOffset() + value().length();
+            return value() != null
+                    ? valueOffset() + valueLen
+                    : nameOffset() + nameLen;
         }
 
         @Override

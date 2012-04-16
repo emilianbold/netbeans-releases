@@ -90,6 +90,8 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 
 /** A web module implementation on top of project.
  *
@@ -486,16 +488,31 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public synchronized MetadataModel<WebAppMetadata> getMetadataModel() {
         if (webAppMetadataModel == null) {
             FileObject ddFO = getDeploymentDescriptor();
+            final FileObject webInf = getWebInf(true);
+            if (ddFO == null && webInf != null) {
+                webInf.addFileChangeListener(new FileChangeAdapter() {
+                    @Override
+                    public void fileDataCreated(FileEvent fe) {
+                        if (FILE_DD.equals(fe.getFile().getNameExt())) {
+                            webInf.removeFileChangeListener(this);
+                            resetMetadataModel();
+                        }
+                    }
+                });
+            }
             File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
             MetadataUnit metadataUnit = MetadataUnit.create(
                 cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
                 cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
                 cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                // XXX: add listening on deplymentDescriptor
                 ddFile);
             webAppMetadataModel = WebAppMetadataModelFactory.createMetadataModel(metadataUnit, true);
         }
         return webAppMetadataModel;
+    }
+    
+    private synchronized void resetMetadataModel() {
+        webAppMetadataModel = null;
     }
     
     /**

@@ -46,18 +46,14 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
-import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.debugger.gdb2.options.GdbProfile;
 import org.openide.util.lookup.ServiceProvider;
-
 
 /*
  * Specific version of NativeDebuggerInfo.
  */
 
 public final class GdbDebuggerInfo extends NativeDebuggerInfo {
-
-    private DbgProfile gdbProfile = null;
     private String targetCommand = null;
 
     private GdbDebuggerInfo() {
@@ -65,22 +61,15 @@ public final class GdbDebuggerInfo extends NativeDebuggerInfo {
     } 
 
     @Override
-    public DbgProfile getDbgProfile() {
-	if (gdbProfile == null)
-	    gdbProfile = (DbgProfile) getConfiguration().getAuxObject(GdbProfile.PROFILE_ID);
-	return gdbProfile;
-    }
-
-    @Override
-    public void setDbgProfile(DbgProfile profile) {
-	gdbProfile = profile;
-    }
-
-    @Override
     public String getID() { 
 	// See META-INF/services
 	// SHOULD this be "netbeans-" or something like "sun-" or what?
 	return "netbeans-GdbDebuggerInfo";	// NOI18N
+    }
+
+    @Override
+    protected String getDbgProfileId() {
+        return GdbProfile.PROFILE_ID;
     }
 
     public static GdbDebuggerInfo create() {

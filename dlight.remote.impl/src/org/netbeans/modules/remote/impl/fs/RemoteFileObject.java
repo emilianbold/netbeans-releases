@@ -42,16 +42,17 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectStreamException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileAttributeEvent;
@@ -68,37 +69,38 @@ import org.openide.filesystems.FileRenameEvent;
  */
 public final class RemoteFileObject extends FileObject implements Serializable {
 
+    static final long serialVersionUID = 1931650016889811086L;
     private final RemoteFileSystem fileSystem;
-    private RemoteFileObjectBase delegate;
+    private RemoteFileObjectBase implementor;
     
     /*package*/ RemoteFileObject(RemoteFileSystem fileSystem) {
         this.fileSystem = fileSystem;
     }
     
-    /*package*/ void setImplementor(RemoteFileObjectBase delegate) {    
+    /*package*/ void setImplementor(RemoteFileObjectBase implementor) {
         boolean assertions = false;
         assert (assertions = true);
         if (assertions) {
             // important consistency checks
-            RemoteFileObject newWrapper = delegate.getOwnerFileObject();
+            RemoteFileObject newWrapper = implementor.getOwnerFileObject();
             // new impl should have its wrapper set to this
             if (newWrapper != null && newWrapper != this) {
                 RemoteLogger.assertTrue(false, "RFS inconsistency in {0}: delegate wrapper differs", this); // can't print neither this nor delegate since both are in ctors
             }
             // if replacing delegates, check that old one is invalid
-            if (this.delegate != null && this.delegate.isValid()) {
+            if (this.implementor != null && this.implementor.isValid()) {
                 RemoteLogger.assertTrue(false, "RFS inconsistency in {0}: replacing valid delegate", this); // can't print neither this nor delegate since both are in ctors
             }
         }
-        this.delegate = delegate;
+        this.implementor = implementor;
     }
 
     public RemoteFileObjectBase getImplementor() {
-        if (delegate == null) {
-            String errMsg = "Null delegate: " + getPath(); // NOI18N
+        if (implementor == null) {
+            String errMsg = "Null delegate"; // path is not avaliable! // NOI18N
             RemoteLogger.getInstance().log(Level.WARNING, errMsg, new NullPointerException(errMsg));
         }
-        return delegate;
+        return implementor;
     }
     
     @Override
@@ -112,7 +114,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
 
     // <editor-fold desc="Moved from RemoteFileObjectFile.">
     
-    private ThreadLocal<AtomicInteger> magic = new ThreadLocal<AtomicInteger>() {
+    transient private ThreadLocal<AtomicInteger> magic = new ThreadLocal<AtomicInteger>() {
 
         @Override
         protected AtomicInteger initialValue() {
@@ -455,4 +457,29 @@ public final class RemoteFileObject extends FileObject implements Serializable {
         getImplementor().addFileChangeListener(fcl);
     }
     // </editor-fold>
+    
+   /* Java serialization*/ Object writeReplace() throws ObjectStreamException {
+        return new SerializedForm(getExecutionEnvironment(), getPath());
+    }
+    
+    private static class SerializedForm implements Serializable {
+        
+        static final long serialVersionUID = -1;
+        private final ExecutionEnvironment env;
+        private final String remotePath;
+
+        public SerializedForm(ExecutionEnvironment env, String remotePath) {
+            this.env = env;
+            this.remotePath = remotePath;
+        }
+                
+        /* Java serialization*/ Object readResolve() throws ObjectStreamException {
+            RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
+            FileObject fo = fs.findResource(remotePath);
+            if (fo == null) {
+                fo = InvalidFileObjectSupport.getInvalidFileObject(fs, remotePath);
+            }
+            return fo;
+        }
+    }    
 }

@@ -44,11 +44,9 @@
 
 package org.netbeans.modules.form.layoutdesign;
 
-import java.awt.Graphics2D;
-import java.awt.Stroke;
-import java.awt.BasicStroke;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import static org.netbeans.modules.form.layoutdesign.VisualState.GapInfo;
 
 /*
@@ -653,22 +651,31 @@ final class LayoutDragger implements LayoutConstants {
             r.x = resizingGap.paintRect.x;
             r.width = resizingGap.paintRect.width;
         }
-        layoutPainter.paintGapResizing(g, resizingGap, r, false);
+        layoutPainter.paintGapResizing(g, resizingGap, r);
         PositionDef gapPos = bestPositions[dimension];
         if (gapPos.snapped) {
-            paintGapResizingSnap(g, resizingGap, movingSpace.positions[dimension], gapPos.alignment, gapPos.paddingType, false);
+            paintGapResizingSnap(g, resizingGap, movingSpace.positions[dimension],
+                    gapPos.alignment, gapPos.paddingType, false, null);
         }
     }
 
     private static void paintGapResizingSnap(Graphics2D g, GapInfo gapInfo,
             int[] paintPos, int resEdge, PaddingType resPaddingType,
-            boolean atContainerBorder) {
+            boolean atContainerBorder, int[] clipPos) {
         Stroke oldStroke = g.getStroke();
         g.setStroke(dashedStroke);
+        int ortPos1 = gapInfo.ortPositions[LEADING];
+        if (clipPos != null && ortPos1 < clipPos[LEADING]) {
+            ortPos1 = clipPos[LEADING];
+        }
+        ortPos1 -= GL_TIP;
+        int ortPos2 = gapInfo.ortPositions[TRAILING];
+        if (clipPos != null && ortPos2 > clipPos[TRAILING]) {
+            ortPos2 = clipPos[TRAILING];
+        }
+        ortPos2 += GL_TIP;
         int d = resEdge == LEADING ? -1 : 1;
         int start = paintPos[resEdge^1];
-        int ortPos1 = gapInfo.ortPositions[LEADING] - GL_TIP;
-        int ortPos2 = gapInfo.ortPositions[TRAILING] + GL_TIP;
         for (PaddingType p : PaddingType.values()) {
             if (p == PaddingType.INDENT) {
                 continue;
@@ -689,15 +696,33 @@ final class LayoutDragger implements LayoutConstants {
         g.setStroke(oldStroke);
     }
 
-    static void paintGapResizingSnap(Graphics2D g, GapInfo gapInfo) {
-        // TODO set color?
+    static void paintGapResizingSnap(Graphics2D g, GapInfo gapInfo, LayoutComponent gapContainer, VisualState visualState) {
         int edge = gapInfo.resizeTrailing ? TRAILING : LEADING;
         PaddingType pt = gapInfo.gap.getPaddingType();
         boolean atContainerBorder = edge==TRAILING && pt == null
                 && gapInfo.defaultGapSizes.length == 1 && gapInfo.defaultGapSizes[0] > 0;
+
+        Shape clip = visualState.getComponentVisibilityClip(gapContainer);
+        int[] clipPos;
+        if (clip instanceof Rectangle) {
+            Rectangle r = (Rectangle) clip;
+            int c1;
+            int c2;
+            if (gapInfo.dimension == HORIZONTAL) {
+                c1 = r.y;
+                c2 = c1 + r.height;
+            } else {
+                c1 = r.x;
+                c2 = c1 + r.width;
+            }
+            clipPos = new int[] { c1, c2 };
+        } else {
+            clipPos = null;
+        }
+
         paintGapResizingSnap(g, gapInfo,
                 new int[] { gapInfo.position, gapInfo.position+gapInfo.currentSize },
-                edge, pt, atContainerBorder);
+                edge, pt, atContainerBorder, clipPos);
     }
 
     String[] positionCode() {

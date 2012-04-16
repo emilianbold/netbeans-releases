@@ -97,8 +97,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Dafe Simonek
  */
-public final class NavigatorController implements LookupListener,
-                                                    PropertyChangeListener, NodeListener, Runnable {
+public final class NavigatorController implements LookupListener, PropertyChangeListener, NodeListener {
 
     /** Time in ms to wait before propagating current node changes further
      * into navigator UI */
@@ -174,14 +173,14 @@ public final class NavigatorController implements LookupListener,
             return;
         }
         LOG.fine("Entering navigatorTCOpened");
-        curNodesRes = Utilities.actionsGlobalContext().lookup(CUR_NODES);
+        Lookup globalContext = Utilities.actionsGlobalContext();
+        curNodesRes = globalContext.lookup(CUR_NODES);
         curNodesRes.addLookupListener(this);
-        curHintsRes = Utilities.actionsGlobalContext().lookup(CUR_HINTS);
+        curHintsRes = globalContext.lookup(CUR_HINTS);
         curHintsRes.addLookupListener(this);
         panelLookupNodesResult = panelLookup.lookup(CUR_NODES);
         panelLookupNodesResult.addLookupListener(panelLookupListener);
-
-        updateContext();
+        updateContext(globalContext.lookup(NavigatorLookupPanelsPolicy.class), globalContext.lookupAll(NavigatorLookupHint.class));
         closed = false;
     }
 
@@ -256,7 +255,12 @@ public final class NavigatorController implements LookupListener,
         if (!navigatorTC.getTopComponent().equals(WindowManager.getDefault().getRegistry().getActivated())
                 // #117089: allow node change when we are empty
                 || (curNodes == null || curNodes.isEmpty())) {
-            ActNodeSetter nodeSetter = new ActNodeSetter();
+
+            Lookup globalContext = Utilities.actionsGlobalContext();
+            NavigatorLookupPanelsPolicy panelsPolicy = globalContext.lookup(NavigatorLookupPanelsPolicy.class);
+            Collection<? extends NavigatorLookupHint> lkpHints = globalContext.lookupAll(NavigatorLookupHint.class);
+            ActNodeSetter nodeSetter = new ActNodeSetter(panelsPolicy, lkpHints);
+
             if (navigatorTC.allowAsyncUpdate()) {
                 synchronized (NODE_SETTER_LOCK) {
                     if (nodeSetterTask != null) {
@@ -282,8 +286,8 @@ public final class NavigatorController implements LookupListener,
                || Utilities.actionsGlobalContext().lookup(NavigatorLookupHint.class) != null;
     }
 
-    private void updateContext () {
-        updateContext(false);
+    private void updateContext (NavigatorLookupPanelsPolicy panelsPolicy, Collection<? extends NavigatorLookupHint> lkpHints) {
+        updateContext(false, panelsPolicy, lkpHints);
     }
 
 
@@ -292,7 +296,7 @@ public final class NavigatorController implements LookupListener,
      *
      * @force if true that update is forced even if it means clearing navigator content
      */
-    private void updateContext (final boolean force) {
+    private void updateContext (final boolean force, final NavigatorLookupPanelsPolicy panelsPolicy, final Collection<? extends NavigatorLookupHint> lkpHints) {
         LOG.fine("updateContext entered, force: " + force);
         // #105327: don't allow reentrancy, may happen due to listening to node changes
         if (inUpdate) {
@@ -344,7 +348,7 @@ public final class NavigatorController implements LookupListener,
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
-                final List<NavigatorPanel> providers = obtainProviders(nodes);
+                final List<NavigatorPanel> providers = obtainProviders(nodes, panelsPolicy, lkpHints);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -461,21 +465,28 @@ public final class NavigatorController implements LookupListener,
         navigatorTC.setDisplayName(newTitle);
     }
 
+    /**
+     * Shortcut for test purposes
+     *
+     * @node Nodes collection context, may be empty.
+     */
+    List<NavigatorPanel> obtainProviders(Collection<? extends Node> nodes) {
+        Lookup globalContext = Utilities.actionsGlobalContext();
+        NavigatorLookupPanelsPolicy panelsPolicy = globalContext.lookup(NavigatorLookupPanelsPolicy.class);
+        Collection<? extends NavigatorLookupHint> lkpHints = globalContext.lookupAll(NavigatorLookupHint.class);
+        return obtainProviders(nodes, panelsPolicy, lkpHints);
+    }
+
     /** Searches and return a list of providers which are suitable for given
      * node context. Both Node lookup registered clients and xml layer registered
      * clients are returned.
      *
      * @node Nodes collection context, may be empty.
      */
-    /* package private for tests */ List<NavigatorPanel> obtainProviders (Collection<? extends Node> nodes) {
-        // obtain policy for panels if there is one
-        Lookup globalContext = Utilities.actionsGlobalContext();
-        NavigatorLookupPanelsPolicy panelsPolicy = globalContext.lookup(NavigatorLookupPanelsPolicy.class);
-
+    private List<NavigatorPanel> obtainProviders(Collection<? extends Node> nodes, NavigatorLookupPanelsPolicy panelsPolicy, Collection<? extends NavigatorLookupHint> lkpHints) {
         List<NavigatorPanel> result = null;
 
         // search in global lookup first, they had preference
-        Collection<? extends NavigatorLookupHint> lkpHints = globalContext.lookupAll(NavigatorLookupHint.class);
         for (NavigatorLookupHint curHint : lkpHints) {
             Collection<? extends NavigatorPanel> providers = ProviderRegistry.getInstance().getProviders(curHint.getContentType());
             if (providers != null && !providers.isEmpty()) {
@@ -596,8 +607,10 @@ public final class NavigatorController implements LookupListener,
                     LOG.fine("navigator active, clearing its activated nodes");
                     navigatorTC.getTopComponent().setActivatedNodes(new Node[0]);
                 }
-
-                EventQueue.invokeLater(this);
+                Lookup globalContext = Utilities.actionsGlobalContext();
+                NavigatorLookupPanelsPolicy panelsPolicy = globalContext.lookup(NavigatorLookupPanelsPolicy.class);
+                Collection<? extends NavigatorLookupHint> lkpHints = globalContext.lookupAll(NavigatorLookupHint.class);
+                EventQueue.invokeLater(getUpdateRunnable(panelsPolicy, lkpHints));
             }
         } else if (NavigatorDisplayer.PROP_PANEL_SELECTION.equals(evt.getPropertyName())) {
             activatePanel((NavigatorPanel) evt.getNewValue());
@@ -615,7 +628,10 @@ public final class NavigatorController implements LookupListener,
         }
         LOG.fine("invokeLater on updateContext from node destroyed reaction...");
         // #122257: update content later to fight possible deadlocks
-        EventQueue.invokeLater(this);
+        Lookup globalContext = Utilities.actionsGlobalContext();
+        NavigatorLookupPanelsPolicy panelsPolicy = globalContext.lookup(NavigatorLookupPanelsPolicy.class);
+        Collection<? extends NavigatorLookupHint> lkpHints = globalContext.lookupAll(NavigatorLookupHint.class);
+        EventQueue.invokeLater(getUpdateRunnable(panelsPolicy, lkpHints));
     }
 
     public void childrenAdded(NodeMemberEvent ev) {
@@ -631,8 +647,13 @@ public final class NavigatorController implements LookupListener,
     }
 
     /** Runnable implementation - forces update */
-    public void run() {
-        updateContext(true);
+    public Runnable getUpdateRunnable(final NavigatorLookupPanelsPolicy panelsPolicy, final Collection<? extends NavigatorLookupHint> lkpHints) {
+        return new Runnable() {
+            @Override
+            public void run() {
+                updateContext(false, panelsPolicy, lkpHints);
+            }
+        };
     }
 
     /** Remembers given panel for current context type */
@@ -777,17 +798,24 @@ public final class NavigatorController implements LookupListener,
      * data context changes if selected nodes changes too fast.
      * Listens to own finish for cleanup */
     private class ActNodeSetter implements Runnable, TaskListener {
+        private NavigatorLookupPanelsPolicy panelsPolicy;
+        private Collection<? extends NavigatorLookupHint> lkpHints;
+
+        public ActNodeSetter(NavigatorLookupPanelsPolicy panelsPolicy, Collection<? extends NavigatorLookupHint> lkpHints) {
+            this.panelsPolicy = panelsPolicy;
+            this.lkpHints = lkpHints;
+        }
 
         public void run() {
             // technique to share one runnable impl between RP and Swing,
             // to save one inner class
             if (RequestProcessor.getDefault().isRequestProcessorThread()) {
                 LOG.fine("invokeLater on updateContext from ActNodeSetter");
-                SwingUtilities.invokeLater(this);
+                SwingUtilities.invokeLater(getUpdateRunnable(panelsPolicy, lkpHints));
             } else {
                 // AWT thread
                 LOG.fine("Calling updateContext from ActNodeSetter");
-                updateContext();
+                updateContext(panelsPolicy, lkpHints);
             }
         }
 

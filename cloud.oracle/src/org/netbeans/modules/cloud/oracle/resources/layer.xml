@@ -29,15 +29,6 @@
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
             
-    <!-- START: This registration is here temporarily - its proper home is weblogic module -->
-            <folder name="WebLogic9">
-                <file name="WhitelistVerifier.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.cloud.oracle.serverplugin.WebLogicVerifier"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
-                </file>
-            </folder>
-    <!-- END: -->
-            
             <folder name="Oracle Public Cloud">
                 
                 <!-- 
@@ -78,6 +69,7 @@
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleVerifierImpl"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
                 </file>
+                
                 <!--
                     A factory that creates objects that provide optional 
                     functionality for the plugin, i.e. starting/stopping the

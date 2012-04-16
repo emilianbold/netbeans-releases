@@ -82,6 +82,8 @@ import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -91,6 +93,8 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.analysis.spi.Analyzer.CustomizerContext;
+import org.netbeans.modules.java.hints.analysis.AnalyzerImpl;
 import org.netbeans.modules.java.hints.spiimpl.RulesManager;
 import org.netbeans.modules.java.hints.spiimpl.refactoring.Configuration;
 import org.netbeans.modules.java.hints.spiimpl.refactoring.ConfigurationRenderer;
@@ -147,7 +151,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                     @Override
                     public void run() {
                         HintsPanel.this.removeAll();
-                        HintsPanel.this.init(filter, true, true);
+                        HintsPanel.this.init(filter, true, false, false, true);
                         buttonsPanel.setVisible(false);
                         searchPanel.setVisible(false);
                         configurationsPanel.setVisible(false);
@@ -162,26 +166,49 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
     public HintsPanel(Configuration preselected, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
-        init(null, false, true);
+        init(null, false, true, true, true);
         configCombo.setSelectedItem(preselected);
     }
-    public HintsPanel(HintMetadata preselected, ClassPathBasedHintWrapper cpBased) {
+    public HintsPanel(HintMetadata preselected, @NullAllowed final CustomizerContext<?, ?> cc, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
-        init(null, false, false);
+        init(null, false, false, cc == null, false);
         select(preselected);
         configurationsPanel.setVisible(false);
+        
+        if (cc != null) {
+            errorTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
+                @Override public void valueChanged(TreeSelectionEvent e) {
+                    HintMetadata hm = getSelectedHint();
+
+                    if (hm != null) {
+                        cc.setSelectedId(AnalyzerImpl.ID_JAVA_HINTS_PREFIX + hm.id);
+                    }
+                }
+            });
+        }
     }
-    
+
+    public HintsPanel(Preferences configurations, ClassPathBasedHintWrapper cpBased) {
+        this.cpBased = cpBased;
+        init(null, false, false, false, true);
+        setOverlayPreferences(configurations);
+        configurationsPanel.setVisible(false);
+    }
+
+    public void setOverlayPreferences(Preferences configurations) {
+        logic.setOverlayPreferences(configurations);
+    }
+
     public boolean hasNewHints() {
         return hasNewHints;
     }
     
 
-    private void init(@NullAllowed OptionsFilter filter, boolean allHints, boolean showCheckBoxes) {
+    private void init(@NullAllowed OptionsFilter filter, boolean inOptionsDialog, boolean useConfigCombo, boolean showOkCancel, boolean showCheckBoxes) {
         initComponents();
         scriptScrollPane.setVisible(false);
         org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter f = null;
-        if (!allHints && filter==null) {
+        if (!inOptionsDialog && filter==null) {
             f = new org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter(
                     searchTextField.getDocument(), new Runnable() {
         
@@ -194,7 +221,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         configCombo.setModel(new ConfigurationsComboModel(true));
         configCombo.setRenderer(new ConfigurationRenderer());
-        if (allHints) {
+        if (useConfigCombo || inOptionsDialog) {
             configCombo.setSelectedItem(null);
         }
         
@@ -249,7 +276,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
         toProblemCheckBox.setVisible(false);
         
-        errorTreeModel = constructTM(allHints?filterCustom(RulesManager.getInstance().readHints(null, null, null).keySet()):Utilities.getBatchSupportedHints(cpBased).keySet(), allHints);
+        errorTreeModel = constructTM(inOptionsDialog?filterCustom(RulesManager.getInstance().readHints(null, null, null).keySet()):Utilities.getBatchSupportedHints(cpBased).keySet(), inOptionsDialog);
 
         if (filter != null) {
              ((OptionsFilter) filter).installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
@@ -268,15 +295,17 @@ public final class HintsPanel extends javax.swing.JPanel   {
             toSelect = null;
         }
         
-        boolean editEnabled = !allHints && FileUtil.getConfigFile("org-netbeans-modules-java-hints/templates/HintSample.hint")!=null;
+        boolean editEnabled = useConfigCombo && FileUtil.getConfigFile("org-netbeans-modules-java-hints/templates/HintSample.hint")!=null;
         newButton.setVisible(editEnabled);
         importButton.setVisible(false);
         exportButton.setVisible(false);
         editScriptButton.setVisible(editEnabled);
         editingButtons.setVisible(false);
         
-        severityComboBox.setVisible(allHints);
-        severityLabel.setVisible(allHints);
+        severityComboBox.setVisible(useConfigCombo || inOptionsDialog);
+        severityLabel.setVisible(useConfigCombo || inOptionsDialog);
+        okButton.setVisible(showOkCancel);
+        cancelButton.setVisible(showOkCancel);
         validate();
     }
     
@@ -1109,7 +1138,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         return defaultTreeModel;
     }
 
-    void select(HintMetadata hm) {
+    public void select(HintMetadata hm) {
         if (errorTree == null) {
             //lazy init:
             toSelect = hm;
@@ -1117,6 +1146,8 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         
 	TreePath path = hint2Path.get(hm);
+
+        if (path == null) return ;
 	
         errorTree.setSelectionPath(path);
 	errorTree.scrollPathToVisible(path);
