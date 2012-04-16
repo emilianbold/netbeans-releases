@@ -58,11 +58,14 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
@@ -125,7 +128,7 @@ final class JavaMoveCodeElementAction extends BaseAction {
                                                     }
                                                     boolean insideBlock = tp.getLeaf().getKind() == Tree.Kind.BLOCK;
                                                     if (downward) {
-                                                        int destinationOffset = findDestinationOffset(controller, doc, currentBounds[1] + 1, insideBlock);
+                                                        int destinationOffset = findDestinationOffset(controller, doc, currentBounds[1], insideBlock);
                                                         if (destinationOffset < 0) {
                                                             target.getToolkit().beep();
                                                             return;
@@ -229,6 +232,13 @@ final class JavaMoveCodeElementAction extends BaseAction {
                 return -1;
             }
             int destinationOffset = downward ? getLineEnd(doc, offset) : getLineStart(doc, offset);
+            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(cInfo.getTokenHierarchy(), destinationOffset);
+            if (ts != null && (ts.moveNext() || ts.movePrevious())) {
+                if (ts.offset() < destinationOffset && ts.token().id() != JavaTokenId.WHITESPACE) {
+                    offset = downward ? ts.offset() + ts.token().length() : ts.offset();
+                    continue;
+                }
+            }
             TreePath destinationPath = tu.pathFor(destinationOffset);
             Tree leaf = destinationPath.getLeaf();
             if (insideBlock) {
@@ -288,7 +298,7 @@ final class JavaMoveCodeElementAction extends BaseAction {
         String name = (String) getValue(Action.NAME);
         if (name != null) {
             try {
-                return NbBundle.getBundle(JavaMoveCodeElementAction.class).getString(name);
+                return NbBundle.getMessage(JavaMoveCodeElementAction.class, name);
             } catch (MissingResourceException mre) {
             }
         }
