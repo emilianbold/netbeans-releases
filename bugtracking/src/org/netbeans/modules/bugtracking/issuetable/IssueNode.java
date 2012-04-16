@@ -85,6 +85,7 @@ public abstract class IssueNode<I> extends AbstractNode {
 
     private String htmlDisplayName;
     private Action preferedAction = new AbstractAction() {
+        @Override
         public void actionPerformed(ActionEvent e) {
             issue.open(true);
         }
@@ -105,6 +106,7 @@ public abstract class IssueNode<I> extends AbstractNode {
         initProperties();
         refreshHtmlDisplayName();
         IssueCacheUtils.addCacheListener(issue, new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if(IssueNode.this.issue.getIssue() != evt.getSource()) {
                     return;
@@ -167,6 +169,7 @@ public abstract class IssueNode<I> extends AbstractNode {
     void fireSeenValueChanged(final boolean oldValue, final boolean newValue) {
         if(oldValue != newValue) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     firePropertyChange(LABEL_NAME_SEEN, oldValue, newValue);
                     Property[] properties = getProperties();
@@ -186,6 +189,7 @@ public abstract class IssueNode<I> extends AbstractNode {
     protected void fireDataChanged() {
         // table sortes isn't thread safe
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 Property[] properties = getProperties();
                 for (Property p : properties) {
@@ -220,6 +224,7 @@ public abstract class IssueNode<I> extends AbstractNode {
         public Issue getIssue() {
             return IssueNode.this.issue.getIssue();
         }
+        @Override
         public int compareTo(IssueNode<I>.IssueProperty<T> o) {
             return toString().compareTo(o.toString());
         }
@@ -257,6 +262,7 @@ public abstract class IssueNode<I> extends AbstractNode {
                   "", // NOI18N
                   NbBundle.getMessage(IssueNode.class, "CTL_Issue_Seen_Desc")); // NOI18N
         }
+        @Override
         public Boolean getValue() {
             return IssueCacheUtils.wasSeen(issue);
         }
@@ -280,6 +286,7 @@ public abstract class IssueNode<I> extends AbstractNode {
                   NbBundle.getMessage(IssueNode.class, "CTL_Issue_Recent"), // NOI18N
                   NbBundle.getMessage(IssueNode.class, "CTL_Issue_Recent_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             return IssueCacheUtils.getRecentChanges(APIAccessor.IMPL.getImpl(getIssue()));
         }
