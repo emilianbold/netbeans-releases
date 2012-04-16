@@ -447,7 +447,7 @@ public interface VCSHistoryProvider {
         /**
          * Creates a new HistoryEvent
          * 
-         * @param source {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
+         * @param source {@link VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * @param files the files which history has changed
          */
         public HistoryEvent(VCSHistoryProvider source, VCSFileProxy[] files) {
@@ -458,7 +458,7 @@ public interface VCSHistoryProvider {
         /**
          * Creates a new HistoryEvent
          * 
-         * @param source {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
+         * @param source {@link VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * @param files the files which history has changed
          */        
         public VCSFileProxy[] getFiles() {
