@@ -96,10 +96,10 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         loc (cboEditorSearchType, "Editor_Search_Type");
 
         cbUseCodeFolding.setMnemonic(NbBundle.getMessage (GeneralEditorPanel.class, "MNEMONIC_Use_Folding").charAt(0));
-        cboRemoveTrailingWhitespace.setRenderer(new OptionComboboxRenderer(cboRemoveTrailingWhitespace.getRenderer())); //NOI18N
-        cboRemoveTrailingWhitespace.setModel(new DefaultComboBoxModel(new Object [] { "RTW_never", "RTW_always", "RTW_modified-lines" })); //NOI18N
-        cboEditorSearchType.setRenderer(new OptionComboboxRenderer(cboEditorSearchType.getRenderer())); //NOI18N
-        cboEditorSearchType.setModel(new DefaultComboBoxModel(new Object [] { "EST_default", "EST_closing"})); //NOI18N
+        cboRemoveTrailingWhitespace.setRenderer(new RemoveTrailingWhitespaceRenderer(cboRemoveTrailingWhitespace.getRenderer()));
+        cboRemoveTrailingWhitespace.setModel(new DefaultComboBoxModel(new Object [] { "never", "always", "modified-lines" })); //NOI18N
+        cboEditorSearchType.setRenderer(new EditorSearchTypeRenderer(cboEditorSearchType.getRenderer()));
+        cboEditorSearchType.setModel(new DefaultComboBoxModel(new Object [] { "default", "closing"})); //NOI18N
         cboEditorSearchType.setToolTipText(NbBundle.getMessage(GeneralEditorPanel.class, "Editor_Search_Type_Tooltip"));
     }
     
@@ -454,11 +454,11 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         cbFoldTags.setEnabled(useCodeFolding);
     }
 
-    private static final class OptionComboboxRenderer implements ListCellRenderer {
+    private static final class RemoveTrailingWhitespaceRenderer implements ListCellRenderer {
 
         private final ListCellRenderer defaultRenderer;
 
-        public OptionComboboxRenderer(ListCellRenderer defaultRenderer) {
+        public RemoveTrailingWhitespaceRenderer(ListCellRenderer defaultRenderer) {
             this.defaultRenderer = defaultRenderer;
         }
 
@@ -466,10 +466,31 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             return defaultRenderer.getListCellRendererComponent(
                     list,
-                    NbBundle.getMessage(GeneralEditorPanel.class, (String) value),
+                    NbBundle.getMessage(GeneralEditorPanel.class, "RTW_" + value), //NOI18N
                     index,
                     isSelected,
                     cellHasFocus);
         }
-    } 
+
+    } // End of RemoveTrailingWhitespaceRendererRenderer class
+    
+    private static final class EditorSearchTypeRenderer implements ListCellRenderer {
+
+        private final ListCellRenderer defaultRenderer;
+
+        public EditorSearchTypeRenderer(ListCellRenderer defaultRenderer) {
+            this.defaultRenderer = defaultRenderer;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            return defaultRenderer.getListCellRendererComponent(
+                    list,
+                    NbBundle.getMessage(GeneralEditorPanel.class, "EST_" + value), //NOI18N
+                    index,
+                    isSelected,
+                    cellHasFocus);
+        }
+
+    }
 }
