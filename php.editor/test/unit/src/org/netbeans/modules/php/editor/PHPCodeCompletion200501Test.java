@@ -39,63 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.plain;
+package org.netbeans.modules.php.editor;
 
-import java.util.Collection;
+import java.io.File;
 import java.util.Collections;
-import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author marekfukala
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class CommentElement implements Element {
+public class PHPCodeCompletion200501Test extends PHPCodeCompletionTestBase {
 
-    private CharSequence source;
-    private int offset;
-    private int length;
-    
-    public CommentElement(CharSequence doc, int offset, int length) {
-        this.source = doc;
-        this.offset = offset;
-        this.length = length;
+    public PHPCodeCompletion200501Test(String testName) {
+        super(testName);
     }
-    
-    @Override
-    public int from() {
-        return offset;
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test200501/test200501.php", "$item->^getFoo();", false);
     }
 
     @Override
-    public int to() {
-        return offset + length;
-    }
-    @Override
-    public CharSequence image() {
-        return source.subSequence(from(), to());
-    }
-
-    @Override
-    public CharSequence id() {
-        return type().name();
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test200501/"))
+            })
+        );
     }
 
-    @Override
-    public Collection<ProblemDescription> problems() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Node parent() {
-        return null;
-    }
-
-    @Override
-    public ElementType type() {
-        return ElementType.COMMENT;
-    }
-    
 }
