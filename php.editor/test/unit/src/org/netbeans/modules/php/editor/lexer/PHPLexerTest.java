@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.lexer;
@@ -163,7 +163,7 @@ public class PHPLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_ECHO, "echo");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
-    
+
     public void testPHPCommnet6() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?\n/*\nRevision 1.6  2007/01/07 18:41:01 it can be * /\n another text\n*/echo?>", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
@@ -241,7 +241,7 @@ public class PHPLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_NUMBER, "10");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
-    
+
     public void testPHPDocumentor4() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/**\n This File is free software; you can redistribute it and/or modify\n */?>", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
@@ -250,7 +250,7 @@ public class PHPLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_END, "*/");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
-    
+
     public void testPHPDocumentor5() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/**\n This File is free software; \n*   <dd> \"/^word.* /\" => REGEX(^word.*)\n */?>", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
@@ -261,7 +261,7 @@ public class PHPLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_END, "*/");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
-    
+
     // not termitnated doc
     public void testPHPDocumentor6() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/**\n This File is free software;", PHPTokenId.language());
@@ -273,7 +273,7 @@ public class PHPLexerTest extends PHPLexerTestBase {
         //PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_END, "*/");
         //PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
-    
+
     public void testShortOpenTag() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<? echo \"ahoj\" ?>", PHPTokenId.language());
 
@@ -285,12 +285,12 @@ public class PHPLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
-    
+
     public void testInlineHtml() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<html>\n    <head>\n        <title></title>\n    </head>\n    <body>\n        <?php\n          \n        ?>\n    </body>\n</html>", PHPTokenId.language());
         PHPLexerUtils.printTokenSequence(ts, "testInlineHtml"); ts.moveStart();
     }
-    
+
     public void testHeroDoc() throws Exception {
         performTest("heredoc00");
         performTest("heredoc01");
@@ -299,8 +299,12 @@ public class PHPLexerTest extends PHPLexerTestBase {
     public void testIssue138261 () throws Exception {
         performTest("issue138261");
     }
-       
+
     public void testIssue144337 () throws Exception {
         performTest("issue144337");
+    }
+
+    public void testIssue198572() throws Exception {
+        performTest("issue198572");
     }
 }

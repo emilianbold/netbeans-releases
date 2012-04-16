@@ -243,4 +243,8 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testNowDoc_06() throws Exception {
         checkErrors("testfiles/parser/nowdoc_06.php");
     }
+
+    public void testIssue198572() throws Exception {
+        checkErrors("testfiles/parser/issue198572.php");
+    }
 }
