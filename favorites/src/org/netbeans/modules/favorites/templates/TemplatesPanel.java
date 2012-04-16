@@ -56,7 +56,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -121,6 +123,15 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     private static final String TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE = "SystemFileSystem.localizingBundle"; // NOI18N
     private static final String TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE = "javax.script.ScriptEngine"; // NOI18N
     private static final String TEMPLATE_CATEGORY_ATTRIBUTE = "templateCategory"; // NOI18N
+    
+    /** The root templates folder. */
+    private static final String TEMPLATES_FOLDER = "Templates"; // NOI18N
+    
+    /** Paths of folders, where templates should not have the script engine set. */
+    private static final Set<String> FOLDERS_WITH_NO_SCRIPT_ENGINE = new HashSet<String>(
+            Arrays.asList(new String[] {
+                TEMPLATES_FOLDER+"/Licenses",       // NOI18N
+            }));
 
     /** Creates new form TemplatesPanel */
     public TemplatesPanel () {
@@ -233,7 +244,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
         private boolean acceptTemplate (DataObject d) {
             if (d instanceof DataFolder &&
-                "Templates/Properties".equals(d.getPrimaryFile().getPath())) {
+                (TEMPLATES_FOLDER+"/Properties").equals(d.getPrimaryFile().getPath())) {
                 
                 return false;
             }
@@ -524,7 +535,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void settingsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settingsButtonActionPerformed
-        FileObject dir = FileUtil.getConfigFile("Templates/Properties");
+        FileObject dir = FileUtil.getConfigFile(TEMPLATES_FOLDER+"/Properties");
         if (dir == null) {
             settingsButton.setEnabled(false);
             return ;
@@ -965,18 +976,24 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         try {
             template = sourceDO.copy (folder);
             DataObject templateSample = null;
-            for (DataObject d : folder.getChildren ()) {
-                if (d.isTemplate ()) {
-                    templateSample = d;
-                    break;
+            boolean shouldSetScriptEngine = !FOLDERS_WITH_NO_SCRIPT_ENGINE.contains(
+                    folder.getPrimaryFile().getPath());
+            if (shouldSetScriptEngine) {
+                for (DataObject d : folder.getChildren ()) {
+                    if (d.isTemplate ()) {
+                        templateSample = d;
+                        break;
+                    }
                 }
             }
             template.setTemplate(true);
-            if (templateSample == null) {
-                // a fallback if no template sample found
-                template.getPrimaryFile ().setAttribute (TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE, "freemarker"); // NOI18N
-            } else {
-                setTemplateAttributes (template.getPrimaryFile (), templateSample.getPrimaryFile ());
+            if (shouldSetScriptEngine) {
+                if (templateSample == null) {
+                    // a fallback if no template sample found
+                    template.getPrimaryFile ().setAttribute (TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE, "freemarker"); // NOI18N
+                } else {
+                    setTemplateAttributes (template.getPrimaryFile (), templateSample.getPrimaryFile ());
+                }
             }
         } catch (IOException ioe) {
             Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
@@ -1084,7 +1101,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
     static FileObject getTemplatesRoot () {
         if (templatesRoot == null) {
-            templatesRoot = FileUtil.getConfigFile("Templates"); // NOI18N
+            templatesRoot = FileUtil.getConfigFile(TEMPLATES_FOLDER); // NOI18N
         }
         return templatesRoot;
     }
