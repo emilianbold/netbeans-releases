@@ -153,6 +153,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public static final String MI_WATCHPOINT_SCOPE = "watchpoint-scope"; //NOI18N
     public static final String MI_SYSCALL_ENTRY = "syscall-entry"; //NOI18N
     public static final String MI_SYSCALL_RETURN = "syscall-return"; //NOI18N
+    public static final String MI_NUMCHILD = "numchild"; //NOI18N
 
     /**
      * Utility class to help us deal with 'frame' or 'source file'
@@ -2370,60 +2371,66 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 				  MIRecord miRecord,
 				  int level) {
         MITList results = miRecord.results();
+        
+        parent.setNumChild(results.getConstValue(MI_NUMCHILD));
+        
         MITList children_list = (MITList) results.valueOf("children"); // NOI18N
 
         // iterate through children list
 	List<GdbVariable> children = new ArrayList<GdbVariable>();
-        int childIdx = 0;
-        for (MITListItem childresult : children_list) {
-            final MITList childResList = ((MIResult)childresult).value().asTuple();
+        if (children_list != null) {
+            int childIdx = 0;
+            for (MITListItem childresult : children_list) {
+                final MITList childResList = ((MIResult)childresult).value().asTuple();
 
-            // full qualified name,
-            // e.g. "var31.public.proc.private.p_proc_heap"
-            String qname = childResList.getConstValue("name"); // NOI18N
-            // display name,
-            // e.g. "p_proc_heap"
-            String exp = childResList.getConstValue(MI_EXP);
+                // full qualified name,
+                // e.g. "var31.public.proc.private.p_proc_heap"
+                String qname = childResList.getConstValue("name"); // NOI18N
+                // display name,
+                // e.g. "p_proc_heap"
+                String exp = childResList.getConstValue(MI_EXP);
 
-            if (exp.equals("private") || exp.equals("public") || // NOI18N
-					exp.equals("protected")) { // NOI18N
-                getMIChildren(parent, qname, level+1);
-            } else {
-                if (parent.isDynamic() && parent.getDisplayHint() == GdbVariable.DisplayHint.MAP) {
-                    // in pretty maps even element is a key, odd is a value
-                    exp = (childIdx % 2 == 0) ? Catalog.format("Map_Key", childIdx / 2) : Catalog.format("Map_Value", childIdx / 2); // NOI18N
-                    childIdx++;
+                if (exp.equals("private") || exp.equals("public") || // NOI18N
+                                            exp.equals("protected")) { // NOI18N
+                    getMIChildren(parent, qname, level+1);
                 } else {
-                    // Show array name and index instead of only index, IZ 192123
-                    try {
-                        Integer.parseInt(exp);
-                        exp = parent.getVariableName() + '[' + exp + ']';
-                    } catch (Exception e) {
-                        // do nothing
+                    if (parent.isDynamic() && parent.getDisplayHint() == GdbVariable.DisplayHint.MAP) {
+                        // in pretty maps even element is a key, odd is a value
+                        exp = (childIdx % 2 == 0) ? Catalog.format("Map_Key", childIdx / 2) : Catalog.format("Map_Value", childIdx / 2); // NOI18N
+                        childIdx++;
+                    } else {
+                        // Show array name and index instead of only index, IZ 192123
+                        try {
+                            Integer.parseInt(exp);
+                            exp = parent.getVariableName() + '[' + exp + ']';
+                        } catch (Exception e) {
+                            // do nothing
+                        }
                     }
+                    GdbVariable childvar = new GdbVariable(this, parent.getUpdater(),
+                            parent, exp, null, null, parent.isWatch());
+
+                    String value = childResList.getConstValue("value"); // NOI18N
+
+                    value = processValue(value);
+                    childvar.setAsText(value);
+
+                    childvar.populateFields(childResList);
+
+                    variableBag.add(childvar);
+                    children.add(childvar);
+                    attrMIVar(childvar, false);
                 }
-                GdbVariable childvar = new GdbVariable(this, parent.getUpdater(),
-                        parent, exp, null, null, parent.isWatch());
-                
-                String value = childResList.getConstValue("value"); // NOI18N
-                
-                value = processValue(value);
-                childvar.setAsText(value);
-                
-                childvar.populateFields(childResList);
-                
-                variableBag.add(childvar);
-		children.add(childvar);
-                attrMIVar(childvar, false);
             }
-	}
+        }
 
 	// make a pull to update children's value
 	GdbVariable[] vars = new GdbVariable[children.size()];
-	if (level == 0)
+	if (level == 0) {
 	    parent.setChildren(children.toArray(vars), true);
-	else
+        } else {
 	    parent.addChildren(children.toArray(vars), true);
+        }
 
 	// make a pull to update children's value
 	// parent.setChildren(childrenvar, true); 
