@@ -459,7 +459,7 @@ public interface VCSHistoryProvider {
     
     /**
      * Implement and pass over to a {@link HistoryEntry} in case you want 
-     * {@link HistoryEntry#getParentProvider()} to return relevant values.
+     * {@link HistoryEntry#getParentEntry(java.io.File)} to return relevant values.
      * 
      * @since 1.30
      */
