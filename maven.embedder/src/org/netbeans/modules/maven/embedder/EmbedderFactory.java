@@ -108,7 +108,7 @@ public final class EmbedderFactory {
         return NbPreferences.root().node("org/netbeans/modules/maven");
     }
 
-    public static File getMavenHome() {
+    public static @NonNull File getMavenHome() {
         String str =  getPreferences().get(PROP_COMMANDLINE_PATH, null);
         if (str != null) {
             return FileUtil.normalizeFile(new File(str));
@@ -118,7 +118,13 @@ public final class EmbedderFactory {
     }
 
     public static void setMavenHome(File path) {
-        if (path == null || path.equals(getDefaultMavenHome())) {
+        File oldValue = getMavenHome();
+        File defValue = getDefaultMavenHome();
+        if (oldValue.equals(path) || path == null && oldValue.equals(defValue)) {
+            //no change happened, prevent resetting the embedders
+            return;
+        }
+        if (path == null || path.equals(defValue)) {
             getPreferences().remove(PROP_COMMANDLINE_PATH);
         } else {
             getPreferences().put(PROP_COMMANDLINE_PATH, FileUtil.normalizeFile(path).getAbsolutePath());
