@@ -151,6 +151,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         
     }
     
+    @Override
     public ExplorerManager getExplorerManager () {
         if (manager == null) {
             manager = new ExplorerManager ();
@@ -183,6 +184,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
     
     private class SelectionListener implements PropertyChangeListener {
+        @Override
         public void propertyChange (java.beans.PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName ())) {
                 final Node [] nodes = (Node []) evt.getNewValue ();
@@ -191,6 +193,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 addButton.setEnabled (nodes != null && nodes.length == 1);
                 duplicateButton.setEnabled (nodes != null && nodes.length == 1 && nodes [0].isLeaf ());
                 SwingUtilities.invokeLater (new Runnable () {
+                    @Override
                     public void run () {
                         moveUpButton.setEnabled (isMoveUpEnabled (nodes));
                         moveDownButton.setEnabled (isMoveDownEnabled (nodes));
@@ -210,6 +213,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         moveDownButton.setEnabled (false);
         addButton.setEnabled (false);
         SwingUtilities.invokeLater (new Runnable () {
+            @Override
             public void run () {
                 Node[] nodes = templatesRootNode.getChildren ().getNodes(true);
                 if (nodes.length > 0) {
@@ -221,6 +225,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                     }
                 }
                 SwingUtilities.invokeLater (new Runnable () {
+                    @Override
                     public void run () {
                         view.requestFocus ();
                     }
@@ -238,6 +243,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
     
     private static final class TemplateFilter implements DataFilter {
+        @Override
         public boolean acceptDataObject (DataObject obj) {
             return acceptTemplate (obj);
         }
@@ -461,6 +467,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
         final Node [] nodes = manager.getSelectedNodes ();
         rp.post(new Runnable() {
+            @Override
             public void run() {
                 DataFolder df = doNewFolder (nodes);
                 assert df != null : "New DataFolder can not be created under "+Arrays.toString(nodes);
@@ -477,6 +484,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 assert newSubfolder != null : "Node for subfolder found in nodes: " + Arrays.asList (targerNode.getChildren ().getNodes ());
                 if (newSubfolder != null) {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             try {
                                 manager.setSelectedNodes (new Node [] { newSubfolder });
@@ -927,6 +935,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         }
 
         private static final class TemplateCategotyComparator implements Comparator<Node> {
+            @Override
             public int compare (Node o1, Node o2) {
                 return o1.getDisplayName ().compareToIgnoreCase (o2.getDisplayName ());
             }
@@ -942,7 +951,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
     
     static private DataFolder getTargetFolder (Node [] nodes) {
-        DataFolder folder = null;
+        DataFolder folder;
         if (nodes == null || nodes.length == 0) {
             folder = DataFolder.findFolder (getTemplatesRoot ());
         } else {
@@ -1076,6 +1085,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 if (duplicateNode != null) {
                     final Node finalNode = duplicateNode;
                     SwingUtilities.invokeLater (new Runnable () {
+                        @Override
                         public void run () {
                             try {
                                 manager.setSelectedNodes (new Node [] { finalNode });
@@ -1232,18 +1242,22 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     
     // action
     private static class AddAction extends NodeAction {
+        @Override
         protected void performAction (Node[] activatedNodes) {
             doAdd (activatedNodes);
         }
 
+        @Override
         protected boolean enable (Node[] activatedNodes) {
             return activatedNodes != null && activatedNodes.length == 1;
         }
 
+        @Override
         public String getName () {
             return NbBundle.getBundle(TemplatesPanel.class).getString("BTN_TemplatesPanel_Add"); // NOI18N
         }
 
+        @Override
         public HelpCtx getHelpCtx () {
             return null;
         }
@@ -1255,18 +1269,22 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
     
     private static class NewFolderAction extends NodeAction {
+        @Override
         protected void performAction (Node[] activatedNodes) {
             doNewFolder (activatedNodes);
         }
 
+        @Override
         protected boolean enable (Node[] activatedNodes) {
             return activatedNodes != null && activatedNodes.length == 1;
         }
 
+        @Override
         public String getName () {
             return NbBundle.getBundle(TemplatesPanel.class).getString("BTN_TemplatesPanel_NewFolder"); // NOI18N
         }
 
+        @Override
         public HelpCtx getHelpCtx () {
             return null;
         }
