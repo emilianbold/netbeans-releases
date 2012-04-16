@@ -45,11 +45,14 @@ package org.netbeans.modules.maven.navigator;
 import java.util.Collection;
 import javax.swing.JComponent;
 import org.netbeans.modules.maven.api.Constants;
+import static org.netbeans.modules.maven.navigator.Bundle.*;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -73,12 +76,13 @@ public class POMInheritanceNavigator implements NavigatorPanel {
 
     @Override
     public String getDisplayName() {
-        return org.openide.util.NbBundle.getMessage(POMInheritanceNavigator.class, "POM_NAME");
+        return NbBundle.getMessage(POMInheritanceNavigator.class, "POM_NAME");
     }
 
     @Override
+    @Messages("POM_HINT=View what parent POMs your POM inherits from.")
     public String getDisplayHint() {
-        return org.openide.util.NbBundle.getMessage(POMInheritanceNavigator.class, "POM_HINT");
+        return POM_HINT();
     }
 
     @Override
