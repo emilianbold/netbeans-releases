@@ -47,11 +47,14 @@ package org.netbeans.core.netigso;
 import java.util.logging.Level;
 import org.netbeans.core.startup.*;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.logging.Logger;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.openide.filesystems.FileUtil;
 import org.osgi.framework.Bundle;
 
 public class NetigsoReloadTest extends NetigsoHid {
@@ -101,8 +104,13 @@ public class NetigsoReloadTest extends NetigsoHid {
         assertEquals("version 1.1", "1.1.0", b.getVersion().toString());
 
         LOG.info("deleting old version and replacing the JAR");
-        assertTrue("Delete is OK", withoutA.delete());
-        assertTrue("Rename is OK", withActivator.renameTo(withoutA));
+        
+        FileOutputStream os = new FileOutputStream(withoutA);
+        FileInputStream is = new FileInputStream(withActivator);
+        FileUtil.copy(is, os);
+        is.close();
+        os.close();
+        
         LOG.log(Level.INFO, "jar {0} replaced, redeploying", withoutA);
         TestModuleDeployer.deployTestModule(withoutA);
         LOG.info("Deployed new module");
