@@ -459,7 +459,7 @@ public interface VCSHistoryProvider {
     
     /**
      * Implement and pass over to a {@link HistoryEntry} in case you want 
-     * {@link HistoryEntry#getParentProvider()} to return relevant values.
+     * {@link HistoryEntry#getParentEntry(java.io.File)} to return relevant values.
      * 
      * @since 1.30
      */
@@ -525,7 +525,7 @@ public interface VCSHistoryProvider {
         /**
          * Creates a new HistoryEvent
          * 
-         * @param source {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
+         * @param source {@link VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * @param files the files which history has changed
          * 
          * @since 1.29
@@ -549,7 +549,7 @@ public interface VCSHistoryProvider {
         /**
          * Returns the {@link VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * 
-         * @return {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
+         * @return {@link VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * 
          * @since 1.29
          */
