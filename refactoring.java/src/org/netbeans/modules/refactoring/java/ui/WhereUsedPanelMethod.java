@@ -54,6 +54,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
@@ -281,23 +282,31 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
     }
 
     @SuppressWarnings("serial")
-    private static class ComboBoxRenderer extends JLabel implements ListCellRenderer {
+    private static class ComboBoxRenderer extends JLabel implements ListCellRenderer, UIResource {
 
-        ComboBoxRenderer() {
-            setName("ComboBox.listRenderer"); // NOI18N
-            setOpaque(false);
+        public ComboBoxRenderer() {
+            setOpaque(true);
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof String) {
-                setText((String)value);
-            } else {
-                Pair<Pair<String, Icon>, TreePathHandle> selectedPair = (Pair<Pair<String, Icon>, TreePathHandle>) value;
-                setText(selectedPair.first.first);
-                setIcon(selectedPair.first.second);
+        public Component getListCellRendererComponent(
+                JList list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus) {
+            // #89393: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+
+            if (value != null) {
+                if (value instanceof String) {
+                    setText((String) value);
+                } else {
+                    Pair<Pair<String, Icon>, TreePathHandle> selectedPair = (Pair<Pair<String, Icon>, TreePathHandle>) value;
+                    setText(selectedPair.first.first);
+                    setIcon(selectedPair.first.second);
+                }
             }
-            setFont(list.getFont());
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
@@ -306,6 +315,13 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
                 setForeground(list.getForeground());
             }
             return this;
+        }
+
+        // #89393: GTK needs name to render cell renderer "natively"
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
         }
     }
 }
