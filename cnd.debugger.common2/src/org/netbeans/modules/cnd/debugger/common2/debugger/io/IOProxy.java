@@ -50,14 +50,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
@@ -126,10 +129,9 @@ public abstract class IOProxy {
         }
     }
 
-    public abstract String getInFilename();
+    abstract String[] getIOFiles();
+    
     protected abstract OutputStream createInStream() throws IOException;
-
-    public abstract String getOutFilename();
     protected abstract InputStream createOutStream() throws IOException;
 
     /** Helper class forwarding input from the io tab to the file */
@@ -270,18 +272,13 @@ public abstract class IOProxy {
         }
 
         @Override
-        public String getInFilename() {
-            return inFile.getAbsolutePath();
+        String[] getIOFiles() {
+            return new String[] {inFile.getAbsolutePath(), outFile.getAbsolutePath()};
         }
 
         @Override
         protected InputStream createOutStream() throws IOException {
             return new FileInputStream(outFile);
-        }
-
-        @Override
-        public String getOutFilename() {
-            return outFile.getAbsolutePath();
         }
 
         @Override
@@ -293,62 +290,86 @@ public abstract class IOProxy {
     }
 
     private static class RemoteIOProxy extends IOProxy {
-        private final String inFilename;
-        private final String outFilename;
+        private final Future<String> inFilename;
+        private final Future<String> outFilename;
         private final ExecutionEnvironment execEnv;
+        private final RequestProcessor RP = new RequestProcessor("Remote fifo creator", 2); //NOI18N
 
         public RemoteIOProxy(ExecutionEnvironment execEnv, Reader ioReader, Writer ioWriter) {
             super(ioReader, ioWriter);
             this.execEnv = execEnv;
-            this.inFilename = createNewFifo(execEnv);
-            this.outFilename = createNewFifo(execEnv);
+            this.inFilename = createNewFifo();
+            this.outFilename = createNewFifo();
         }
-
+        
         @Override
-        public String getInFilename() {
-            return inFilename;
-        }
-
-        @Override
-        protected OutputStream createInStream() throws IOException {
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setCommandLine("cat > " + inFilename); // NOI18N
-            return npb.call().getOutputStream();
-        }
-
-        @Override
-        public String getOutFilename() {
-            return outFilename;
-        }
-
-        @Override
-        protected InputStream createOutStream() throws IOException {
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setCommandLine("cat " + outFilename); // NOI18N
-            return npb.call().getInputStream();
-        }
-
-        private static String createNewFifo(ExecutionEnvironment execEnv) {
-            String tmpDir;
+        String[] getIOFiles() {
             try {
-                tmpDir = HostInfoUtils.getHostInfo(execEnv).getTempDir();
-            } catch (Exception iOException) {
-                tmpDir = "/tmp"; // NOI18N
-            }
-            String name = tmpDir + '/' + FILENAME_PREFIX + "$$" + FILENAME_EXTENSION; // NOI18N
-            CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
-            if (cp.run(execEnv, "sh -c \"mkfifo " + name + ";echo " + name + "\"", null) == 0) { // NOI18N
-                return cp.getOutput().trim();
+                return new String[] {inFilename.get(), outFilename.get()};
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
             }
             return null;
         }
 
         @Override
+        protected OutputStream createInStream() throws IOException {
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            try {
+                npb.setCommandLine("cat > " + inFilename.get()); // NOI18N
+                return npb.call().getOutputStream();
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return null;
+        }
+        
+        @Override
+        protected InputStream createOutStream() throws IOException {
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            try {
+                npb.setCommandLine("cat " + outFilename.get()); // NOI18N
+                return npb.call().getInputStream();
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return null;
+        }
+
+        private Future<String> createNewFifo() {
+            return RP.submit(new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    String tmpDir;
+                    try {
+                        tmpDir = HostInfoUtils.getHostInfo(execEnv).getTempDir();
+                    } catch (Exception iOException) {
+                        tmpDir = "/tmp"; // NOI18N
+                    }
+                    String name = tmpDir + '/' + FILENAME_PREFIX + "$$" + FILENAME_EXTENSION; // NOI18N
+                    ExitStatus status = ProcessUtils.execute(execEnv, "sh", "-c", "mkfifo " + name + ";echo " + name); //NOI18N
+                    if (status.isOK()) {
+                        return status.output;
+                    }
+                    return null;
+                }
+            });
+        }
+
+        @Override
         public void stop() {
             super.stop();
-            // delete files
-            CommonTasksSupport.rmFile(execEnv, inFilename, null);
-            CommonTasksSupport.rmFile(execEnv, outFilename, null);
+            try {
+                // delete files
+                CommonTasksSupport.rmFile(execEnv, inFilename.get(), null);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            try {
+                CommonTasksSupport.rmFile(execEnv, outFilename.get(), null);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 }
