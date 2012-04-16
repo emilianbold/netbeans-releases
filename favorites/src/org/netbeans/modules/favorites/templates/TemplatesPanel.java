@@ -1010,7 +1010,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         return template;
     }
     
-    private static void doAdd (Node [] nodes) {
+    private static void doAdd (final Node [] nodes) {
         JFileChooser chooser = new JFileChooser ();
         chooser.setDialogTitle (NbBundle.getBundle(TemplatesPanel.class).getString("LBL_TemplatesPanel_JFileChooser_Title")); // NOI18N
         chooser.setApproveButtonText (NbBundle.getBundle(TemplatesPanel.class).getString("BTN_TemplatesPanel_JFileChooser_AddButtonName")); // NOI18N
@@ -1018,13 +1018,18 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         chooser.setMultiSelectionEnabled (false);
         int result = chooser.showOpenDialog (null);
         if (JFileChooser.APPROVE_OPTION == result) {
-            File f = chooser.getSelectedFile ();
+            final File f = chooser.getSelectedFile ();
             assert f != null;
             if (! f.isFile()) {
                 NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(TemplatesPanel.class, "MSG_TemplatesPanel_Nonexistent_File", f.toString()));
                 DialogDisplayer.getDefault().notify(msg);
             } else {
-                createTemplateFromFile (f, getTargetFolder (nodes));
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        createTemplateFromFile (f, getTargetFolder (nodes));
+                    }
+                });
             }
         }    
     }
