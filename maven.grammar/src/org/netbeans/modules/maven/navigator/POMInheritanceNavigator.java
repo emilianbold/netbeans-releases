@@ -62,6 +62,7 @@ public class POMInheritanceNavigator implements NavigatorPanel {
     protected Lookup.Result<DataObject> selection;
 
     protected final LookupListener selectionListener = new LookupListener() {
+        @Override
         public void resultChanged(LookupEvent ev) {
             if(selection == null)
                 return;
@@ -70,14 +71,17 @@ public class POMInheritanceNavigator implements NavigatorPanel {
     };
     
 
+    @Override
     public String getDisplayName() {
         return org.openide.util.NbBundle.getMessage(POMInheritanceNavigator.class, "POM_NAME");
     }
 
+    @Override
     public String getDisplayHint() {
         return org.openide.util.NbBundle.getMessage(POMInheritanceNavigator.class, "POM_HINT");
     }
 
+    @Override
     public JComponent getComponent() {
         return getNavigatorUI();
     }
@@ -89,13 +93,15 @@ public class POMInheritanceNavigator implements NavigatorPanel {
         return component;
     }
 
+    @Override
     public void panelActivated(Lookup context) {
         getNavigatorUI().showWaitNode();
-        selection = context.lookup(new Lookup.Template<DataObject>(DataObject.class));
+        selection = context.lookupResult(DataObject.class);
         selection.addLookupListener(selectionListener);
         selectionListener.resultChanged(null);
     }
     
+    @Override
     public void panelDeactivated() {
         getNavigatorUI().showWaitNode();
         if(selection != null) {
@@ -105,6 +111,7 @@ public class POMInheritanceNavigator implements NavigatorPanel {
         getNavigatorUI().release();
     }
 
+    @Override
     public Lookup getLookup() {
         return Lookup.EMPTY;
     }
