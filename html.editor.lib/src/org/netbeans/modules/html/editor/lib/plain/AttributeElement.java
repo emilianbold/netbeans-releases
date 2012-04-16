@@ -58,10 +58,10 @@ public class AttributeElement implements Attribute {
     private CharSequence source;
     private int nameOffset;
     private short valueOffset2nameOffsetDiff;
-    private byte nameLen;
+    private short nameLen;
     private short valueLen;
 
-    public AttributeElement(CharSequence source, int nameOffset, byte nameLen) {
+    public AttributeElement(CharSequence source, int nameOffset, short nameLen) {
         this.source = source;
 
         this.nameOffset = nameOffset;
@@ -71,7 +71,7 @@ public class AttributeElement implements Attribute {
         this.valueLen = -1;
     }
 
-    public AttributeElement(CharSequence source, int nameOffset, int valueOffset, byte nameLen, short valueLen) {
+    public AttributeElement(CharSequence source, int nameOffset, int valueOffset, short nameLen, short valueLen) {
         this.source = source;
 
         this.nameOffset = nameOffset;
@@ -176,7 +176,7 @@ public class AttributeElement implements Attribute {
 
         public String value;
 
-        public AttributeElementWithJoinedValue(CharSequence source, int nameOffset, byte nameLen, int valueOffset, String value) {
+        public AttributeElementWithJoinedValue(CharSequence source, int nameOffset, short nameLen, int valueOffset, String value) {
             super(source, nameOffset, valueOffset, nameLen, (short) value.length());
             this.value = value;
         }
