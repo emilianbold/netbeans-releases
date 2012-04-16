@@ -68,12 +68,10 @@
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="warningLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="operationsPanel" max="32767" attributes="0"/>
-                      <Component id="problemsPanel" max="32767" attributes="0"/>
-                  </Group>
-                  <Component id="spaceHolderPanel" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Component id="operationsPanel" max="32767" attributes="0"/>
+                  <Component id="problemsPanel" max="32767" attributes="0"/>
+                  <Component id="spaceHolderPanel" max="32767" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="itemScrollPane" pref="315" max="32767" attributes="0"/>
@@ -278,7 +276,7 @@
                   <Component id="checkAllButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="uncheckAllButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
