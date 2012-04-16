@@ -264,13 +264,17 @@ public final class HintsControllerImpl {
     private static final Map<Reference<Fix>, Iterable<? extends Fix>> fix2Subfixes = new HashMap<Reference<Fix>, Iterable<? extends Fix>>();
 
     public static void attachSubfixes(Fix fix, Iterable<? extends Fix> subfixes) {
-        fix2Subfixes.put(new CleaningReference(fix), subfixes);
+        synchronized (fix2Subfixes) {
+            fix2Subfixes.put(new CleaningReference(fix), subfixes);
+        }
     }
 
     public static Iterable<? extends Fix> getSubfixes(Fix fix) {
-        Iterable<? extends Fix> ret = fix2Subfixes.get(new CleaningReference(fix));
+        synchronized (fix2Subfixes) {
+            Iterable<? extends Fix> ret = fix2Subfixes.get(new CleaningReference(fix));
 
-        return ret != null ? ret : Collections.<Fix>emptyList();
+            return ret != null ? ret : Collections.<Fix>emptyList();
+        }
     }
 
     private static final class CleaningReference extends WeakReference<Fix> implements Runnable {
@@ -284,12 +288,14 @@ public final class HintsControllerImpl {
 
         @Override
         public void run() {
-            for (Iterator<Entry<Reference<Fix>, Iterable<? extends Fix>>> it = fix2Subfixes.entrySet().iterator(); it.hasNext();) {
-                Entry<Reference<Fix>, Iterable<? extends Fix>> e = it.next();
+            synchronized (fix2Subfixes) {
+                for (Iterator<Entry<Reference<Fix>, Iterable<? extends Fix>>> it = fix2Subfixes.entrySet().iterator(); it.hasNext();) {
+                    Entry<Reference<Fix>, Iterable<? extends Fix>> e = it.next();
 
-                if (e.getKey() == this) {
-                    it.remove();
-                    return;
+                    if (e.getKey() == this) {
+                        it.remove();
+                        return;
+                    }
                 }
             }
         }
