@@ -727,6 +727,12 @@
         <condition property="main-class-available">
             <isset property="javafx.main.class"/>
         </condition>
+        <condition property="vmargs-available">
+            <and>
+                <isset property="run.jvmargs"/>
+                <not><equals arg1="${run.jvmargs}" arg2=""/></not>
+            </and>
+        </condition>
         <condition property="preloader-available">
             <and>
                 <isset property="javafx.preloader.enabled"/>
@@ -825,6 +831,7 @@
         </condition>
 
         <echo message="main-class-available = ${main-class-available}" level="verbose"/>
+        <echo message="vmargs-available = ${vmargs-available}" level="verbose"/>
         <echo message="preloader-available = ${preloader-available}" level="verbose"/>
         <echo message="app-with-preloader = ${app-with-preloader}" level="verbose"/>
         <echo message="app-with-preloader-without-project = ${app-with-preloader-without-project}" level="verbose"/>
@@ -1740,6 +1747,10 @@
             </condition>
             <basename property="dist.filename" file="${dist.jar}" suffix=".jar"/>
             <length file="${dist.jar}" property="dist.jar.size" />
+            <local name="vmargs-token"/>
+            <condition property="vmargs-token" value="java-vm-args=&quot;${run.jvmargs}&quot; " else="">
+                <isset property="vmargs-available"/>
+            </condition>
             <filterchain id="jnlp.template.filter">
                 <replacetokens>
                     <token key="NAME" value="${dist.filename}"/>
@@ -1753,6 +1764,7 @@
                     <token key="OFFLINE" value="${offline-allowed-token}"/>
                     <token key="UPDATEMODE" value="${update-mode-background-token}"/>
                     <token key="ICON" value="${icon-token}"/>
+                    <token key="VMARGS" value="${vmargs-token}"/>
                 </replacetokens>
             </filterchain>
             <copy file="${basedir}${file.separator}nbproject${file.separator}templates${file.separator}FXSwingTemplateApplication.jnlp" 
