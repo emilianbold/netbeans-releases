@@ -81,4 +81,21 @@ public class ElementsIteratorTest extends NbTestCase {
         
     }
     
+    //Bug 211222 - AssertionError at org.netbeans.modules.html.editor.lib.api.elements.ElementsIterator.tag
+    public void testIssue211222() {
+        //attribute name length > 127bytes
+        StringBuilder code = new StringBuilder();
+        code.append("<div ");
+        for(int i = 0; i < Byte.MAX_VALUE + 10; i++) {
+            code.append("a");
+        }
+        
+        HtmlSource source = new HtmlSource(code);
+        ElementsIterator itr = new ElementsIterator(source);
+        
+        assertTrue(itr.hasNext());
+        assertNotNull(itr.next());
+        
+    }
+    
 }

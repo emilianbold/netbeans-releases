@@ -530,7 +530,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
             if(attributeNameLength > Byte.MAX_VALUE) {
                 LOGGER.warning(String.format("Attribute name '%s' of node '%s' is longer than Byte.MAX_VALUE", attributeName, node));
             }
-            byte attributeNameLengthAsByte = (byte)attributeNameLength;
+            short attributeNameLengthAsShort = (short)attributeNameLength;
             
             int attributeValueLength = value.length();
             if(attributeValueLength > Short.MAX_VALUE) {
@@ -541,7 +541,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
             Attribute attr = factory.createAttribute(
                     attrInfo.nameOffset,
                     attrInfo.valueOffset,
-                    attributeNameLengthAsByte,
+                    attributeNameLengthAsShort,
                     attributeValueLengthAsShort);
                     
             mot.setAttribute(attr);

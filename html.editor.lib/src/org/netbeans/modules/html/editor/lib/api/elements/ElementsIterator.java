@@ -146,11 +146,11 @@ public class ElementsIterator implements Iterator<Element> {
 
             if (values == null) {
                 //attribute has no value
-                assert key.token.length() < Byte.MAX_VALUE;
+                assert key.token.length() < Short.MAX_VALUE;
                 Attribute ta = new AttributeElement(
                         sourceCode,
                         key.offset,
-                        (byte)key.token.length());
+                        (short)key.token.length());
                 attributes.add(ta);
             } else {
                 if (values.size() == 1) {
@@ -163,7 +163,7 @@ public class ElementsIterator implements Iterator<Element> {
                             sourceCode,
                             key.offset,
                             ti.offset,
-                            (byte)key.token.length(),
+                            (short)key.token.length(),
                             (short)ti.token.length());
 
                     attributes.add(ta);
@@ -180,7 +180,7 @@ public class ElementsIterator implements Iterator<Element> {
                     Attribute ta = new AttributeElement.AttributeElementWithJoinedValue(
                             sourceCode,
                             key.offset,
-                            (byte)key.token.length(),
+                            (short)key.token.length(),
                             firstValuePart.offset,
                             joinedValue.toString().intern());
 
