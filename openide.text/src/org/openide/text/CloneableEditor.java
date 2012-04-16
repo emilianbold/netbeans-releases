@@ -624,9 +624,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     + " Name:" + CloneableEditor.this.getName()
                     + " kit:" + kit);
                 }
-                if (support.cesEnv().isValid()) {
-                    assert doc != null;
-                }
                 kit = k;
                 initialized = true;
                 if (LOG.isLoggable(Level.FINE)) {
@@ -644,6 +641,11 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     + " Thread:" + Thread.currentThread().getName()
                     + " [" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
                     + " Name:" + CloneableEditor.this.getName());
+                }
+                // It appears that the doc can be null - likely when CES.closeDocument()
+                // gets called by another thread.
+                if (doc == null) {
+                    phase = Integer.MAX_VALUE; // Stop any further processing
                 }
                 notifyAll();
             }
