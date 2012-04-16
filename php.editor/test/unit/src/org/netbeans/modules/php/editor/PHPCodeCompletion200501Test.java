@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,25 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor;
 
-package org.netbeans.modules.versioning.spi.testvcs;
-
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TestVCSVisibilityQuery extends VCSVisibilityQuery {
+public class PHPCodeCompletion200501Test extends PHPCodeCompletionTestBase {
 
-    public static final String INVISIBLE_FILE_SUFFIX = "invisible";
+    public PHPCodeCompletion200501Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test200501/test200501.php", "$item->^getFoo();", false);
+    }
 
     @Override
-    public boolean isVisible(VCSFileProxy file) {
-        return !file.getName().endsWith(INVISIBLE_FILE_SUFFIX);
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test200501/"))
+            })
+        );
     }
 
 }

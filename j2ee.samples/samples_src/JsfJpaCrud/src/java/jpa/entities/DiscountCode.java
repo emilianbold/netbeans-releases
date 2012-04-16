@@ -114,7 +114,7 @@ public class DiscountCode implements Serializable {
 
     @Override
     public String toString() {
-        return "jpa.entities.DiscountCode[discountCode=" + discountCode + "]";
+        return discountCode.toString();
     }
 
 }

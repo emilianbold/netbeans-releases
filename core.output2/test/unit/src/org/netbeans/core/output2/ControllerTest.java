@@ -39,63 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.plain;
+package org.netbeans.core.output2;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.SwingUtilities;
+import org.netbeans.junit.NbTestCase;
+import org.openide.windows.IOProvider;
 
 /**
  *
- * @author marekfukala
+ * @author jhavlin
  */
-public class CommentElement implements Element {
+public class ControllerTest extends NbTestCase {
 
-    private CharSequence source;
-    private int offset;
-    private int length;
-    
-    public CommentElement(CharSequence doc, int offset, int length) {
-        this.source = doc;
-        this.offset = offset;
-        this.length = length;
-    }
-    
-    @Override
-    public int from() {
-        return offset;
+    public ControllerTest(String name) {
+        super(name);
     }
 
-    @Override
-    public int to() {
-        return offset + length;
+    public void testUpdaterRemovesUnavailableTabs() throws InterruptedException,
+            InvocationTargetException {
+        Controller c = new Controller();
+        final Controller.CoalescedNameUpdater updater =
+                c.new CoalescedNameUpdater();
+        final NbIO io = (NbIO) IOProvider.getDefault().getIO(
+                "test", true);                                          //NOI18N
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                OutputTab ot = new OutputTab(io);
+                updater.add(ot);
+                assertTrue(updater.contains(ot));
+                updater.run();
+                assertFalse(updater.contains(ot));
+            }
+        });
     }
-    @Override
-    public CharSequence image() {
-        return source.subSequence(from(), to());
-    }
-
-    @Override
-    public CharSequence id() {
-        return type().name();
-    }
-
-    @Override
-    public Collection<ProblemDescription> problems() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Node parent() {
-        return null;
-    }
-
-    @Override
-    public ElementType type() {
-        return ElementType.COMMENT;
-    }
-    
 }

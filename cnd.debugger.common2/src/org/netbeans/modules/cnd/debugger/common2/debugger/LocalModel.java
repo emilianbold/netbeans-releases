@@ -147,7 +147,7 @@ public final class LocalModel extends VariableModel
     @Override
     public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
         if (node instanceof WarningMessage) {
-            return  NO_CODEMODEL_WARNING.getMessage();
+            return  ((WarningMessage) node).getMessage();
         } else{
             return super.getDisplayName(original, node);
         }
