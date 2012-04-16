@@ -749,10 +749,21 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
         
         firstBreakpointId = ATTACH_ID;
-        send(cmdString);
+        MICommand cmd = new MiCommandImpl(cmdString) {
+            @Override
+            protected void onDone(MIRecord record) {
+                attachDone();
+                finish();
+            }
+        };
+        gdb.sendCommand(cmd);
     }
     
     private void attachDone() {
+        firstBreakpointId = null;
+        if (state().isProcess) {
+            return;
+        }
         state().isProcess = true;
         stateChanged();
         session().setSessionState(state());
@@ -3171,7 +3182,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // detect first stop (in _start or main)
         if (firstBreakpointId != null) {
             if (ATTACH_ID.equals(firstBreakpointId)) {
-                firstBreakpointId = null;
                 attachDone();
                 return;
             }
