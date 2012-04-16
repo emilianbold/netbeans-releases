@@ -66,6 +66,7 @@ import org.netbeans.modules.maven.embedder.impl.ExtensionModule;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -84,6 +85,17 @@ public final class EmbedderFactory {
     private static final Object PROJECT_LOCK = new Object();
     private static MavenEmbedder online;
     private static final Object ONLINE_LOCK = new Object();
+    
+    private static final RequestProcessor RP = new RequestProcessor("Maven Embedder warmup");
+    
+    private static final RequestProcessor.Task warmupTask = RP.create(new Runnable() {
+            @Override
+            public void run() {
+                //#211158 after being reset, recreate the instance for followup usage. 
+                //makes the performance stats of the project embedder after resetting more predictable
+                getProjectEmbedder();
+            }
+        });
 
     private EmbedderFactory() {
     }
@@ -98,6 +110,8 @@ public final class EmbedderFactory {
         synchronized (ONLINE_LOCK) {
             online = null;
         }
+        //just delay a bit in case both MavenSettings.setDefaultOptions and Embedderfactory.setMavenHome are called..
+        RP.post(warmupTask, 100);
     }
 
     public static File getDefaultMavenHome() {
