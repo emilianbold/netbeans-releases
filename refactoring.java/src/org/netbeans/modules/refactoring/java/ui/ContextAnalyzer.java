@@ -301,15 +301,11 @@ public final class ContextAnalyzer {
         private boolean selection;
         
         public TextComponentTask(EditorCookie ec) {
-            this(ec,false);
-        }
-        
-        public TextComponentTask(EditorCookie ec, boolean selection) {
-            this.selection = selection;
             this.textC = ec.getOpenedPanes()[0];
             this.caret = textC.getCaretPosition();
             this.start = textC.getSelectionStart();
             this.end = textC.getSelectionEnd();
+            this.selection = start != end && (start != -1 || end != -1);
             assert caret != -1;
             assert start != -1;
             assert end != -1;
