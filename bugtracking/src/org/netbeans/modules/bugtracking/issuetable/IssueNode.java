@@ -269,9 +269,9 @@ public abstract class IssueNode<I> extends AbstractNode {
         @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
-            if(IssueNode.this.wasSeen()) return 1;
-            if(IssueCacheUtils.wasSeen(APIAccessor.IMPL.getImpl(p.getIssue()))) return -1;
-            return 0;
+            Boolean b1 = IssueNode.this.wasSeen();
+            Boolean b2 = IssueCacheUtils.wasSeen(APIAccessor.IMPL.getImpl(p.getIssue()));
+            return b1.compareTo(b2);
         }
 
     }
