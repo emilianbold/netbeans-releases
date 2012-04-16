@@ -148,7 +148,9 @@ public class TplPhpEmbeddingProvider extends EmbeddingProvider {
         //do nothing
     }
 
-    @MimeRegistration(service=TaskFactory.class, mimeType="text/x-tpl")
+    // XXX - Provider is turned off since it brings many troubles with PHP/HTML embedding clashing and the
+    // real advantage of the i.e. PHP CC was almost zero since the PHP cannot be embedded into another language
+//    @MimeRegistration(service=TaskFactory.class, mimeType="text/x-tpl")
     public static final class Factory extends TaskFactory {
 
         @Override

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.spi.testvcs;
+package org.netbeans.modules.versioning.core.spi.testvcs;
 
 import java.awt.event.ActionEvent;
 import java.util.Date;

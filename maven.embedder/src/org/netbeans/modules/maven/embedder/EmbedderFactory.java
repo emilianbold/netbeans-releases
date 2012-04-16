@@ -66,6 +66,7 @@ import org.netbeans.modules.maven.embedder.impl.ExtensionModule;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -84,6 +85,17 @@ public final class EmbedderFactory {
     private static final Object PROJECT_LOCK = new Object();
     private static MavenEmbedder online;
     private static final Object ONLINE_LOCK = new Object();
+    
+    private static final RequestProcessor RP = new RequestProcessor("Maven Embedder warmup");
+    
+    private static final RequestProcessor.Task warmupTask = RP.create(new Runnable() {
+            @Override
+            public void run() {
+                //#211158 after being reset, recreate the instance for followup usage. 
+                //makes the performance stats of the project embedder after resetting more predictable
+                getProjectEmbedder();
+            }
+        });
 
     private EmbedderFactory() {
     }
@@ -98,6 +110,8 @@ public final class EmbedderFactory {
         synchronized (ONLINE_LOCK) {
             online = null;
         }
+        //just delay a bit in case both MavenSettings.setDefaultOptions and Embedderfactory.setMavenHome are called..
+        RP.post(warmupTask, 100);
     }
 
     public static File getDefaultMavenHome() {
@@ -108,7 +122,7 @@ public final class EmbedderFactory {
         return NbPreferences.root().node("org/netbeans/modules/maven");
     }
 
-    public static File getMavenHome() {
+    public static @NonNull File getMavenHome() {
         String str =  getPreferences().get(PROP_COMMANDLINE_PATH, null);
         if (str != null) {
             return FileUtil.normalizeFile(new File(str));
@@ -118,7 +132,13 @@ public final class EmbedderFactory {
     }
 
     public static void setMavenHome(File path) {
-        if (path == null || path.equals(getDefaultMavenHome())) {
+        File oldValue = getMavenHome();
+        File defValue = getDefaultMavenHome();
+        if (oldValue.equals(path) || path == null && oldValue.equals(defValue)) {
+            //no change happened, prevent resetting the embedders
+            return;
+        }
+        if (path == null || path.equals(defValue)) {
             getPreferences().remove(PROP_COMMANDLINE_PATH);
         } else {
             getPreferences().put(PROP_COMMANDLINE_PATH, FileUtil.normalizeFile(path).getAbsolutePath());

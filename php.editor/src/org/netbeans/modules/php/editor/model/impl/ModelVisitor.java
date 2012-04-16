@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.security.Policy;
 import java.util.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -71,6 +72,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathV
 import org.netbeans.modules.php.project.api.PhpEditorExtender;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -732,6 +734,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             VariableNameImpl varArray = findVariable(scope, (Variable)expression);
             VariableNameImpl varValue = findVariable(scope, (Variable)value);
             if (varArray != null && varValue != null) {
+                processVarComment(varArray.getName(), scope);
                 varValue.setTypeResolutionKind(VariableNameImpl.TypeResolutionKind.MERGE_ASSIGNMENTS);
                 Collection<? extends String> typeNames = varArray.getArrayAccessTypeNames(node.getStartOffset());
                 for (String tpName : typeNames) {
@@ -1291,28 +1294,55 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private void handleVarComments() {
         Set<String> varCommentNames = varTypeComments.keySet();
         for (String name : varCommentNames) {
-            List<PhpDocTypeTagInfo> varComments = varTypeComments.get(name); //varComments.size() varTypeComments.size()
-            if (varComments != null) {
-                for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
-                    VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
-                    VariableNameImpl varInstance = null;
-                    if (varScope instanceof Scope) {
-                        Scope scp = (Scope) varScope;
-                        varInstance = (VariableNameImpl) ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), name));
-                        if (varInstance == null) {
-                            varInstance = new VariableNameImpl(scp, name, scp.getFile(), phpDocTypeTagInfo.getRange(), scp instanceof NamespaceScopeImpl);
-                        }
-                    }
-                    if (varInstance != null) {
-                        ASTNode conditionalNode = findConditionalStatement(getPath());
-                        VarAssignmentImpl vAssignment = new VarAssignmentImpl(varInstance,
-                                (Scope) varScope, conditionalNode != null, getBlockRange(varScope), phpDocTypeTagInfo.getRange(), phpDocTypeTagInfo.getTypeName());
-                        varInstance.addElement(vAssignment);
-                    }
-                    //scan(phpDocTypeTagInfo.getTypeTag());
-                    occurencesBuilder.prepare(phpDocTypeTagInfo.getTypeTag(), varScope);
+            handleVarComment(name);
+        }
+    }
 
+    private void handleVarComment(final String name) {
+        Parameters.notNull("name", name); //NOI18N
+        List<PhpDocTypeTagInfo> varComments = varTypeComments.get(name); //varComments.size() varTypeComments.size()
+        if (varComments != null) {
+            for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
+                VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
+                handleVarAssignment(name, varScope, phpDocTypeTagInfo);
+            }
+        }
+    }
+
+    private void handleVarAssignment(final String name, final VariableScope varScope, final PhpDocTypeTagInfo phpDocTypeTagInfo) {
+        VariableNameImpl varInstance = null;
+        if (varScope instanceof Scope) {
+            Scope scp = (Scope) varScope;
+            varInstance = (VariableNameImpl) ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), name));
+            if (varInstance == null) {
+                varInstance = new VariableNameImpl(scp, name, scp.getFile(), phpDocTypeTagInfo.getRange(), scp instanceof NamespaceScopeImpl);
+            }
+        }
+        if (varInstance != null) {
+            ASTNode conditionalNode = findConditionalStatement(getPath());
+            VarAssignmentImpl vAssignment = new VarAssignmentImpl(varInstance,
+                    (Scope) varScope, conditionalNode != null, getBlockRange(varScope), phpDocTypeTagInfo.getRange(), phpDocTypeTagInfo.getTypeName());
+            varInstance.addElement(vAssignment);
+        }
+        //scan(phpDocTypeTagInfo.getTypeTag());
+        occurencesBuilder.prepare(phpDocTypeTagInfo.getTypeTag(), varScope);
+    }
+
+    private void processVarComment(final String variableName, final Scope variableScope) {
+        Parameters.notNull("variableName", variableName); //NOI18N
+        Parameters.notNull("variableScope", variableScope); //NOI18N
+        List<PhpDocTypeTagInfo> varComments = varTypeComments.get(variableName);
+        if (varComments != null) {
+            List<PhpDocTypeTagInfo> commentsToRemove = new LinkedList<PhpDocTypeTagInfo>();
+            for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
+                VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
+                if (varScope.equals(variableScope)) {
+                    handleVarAssignment(variableName, varScope, phpDocTypeTagInfo);
+                    commentsToRemove.add(phpDocTypeTagInfo);
                 }
+            }
+            for (PhpDocTypeTagInfo phpDocTypeTagInfo : commentsToRemove) {
+                varComments.remove(phpDocTypeTagInfo);
             }
         }
     }

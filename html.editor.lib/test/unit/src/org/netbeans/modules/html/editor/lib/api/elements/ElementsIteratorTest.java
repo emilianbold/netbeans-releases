@@ -39,63 +39,63 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.plain;
+package org.netbeans.modules.html.editor.lib.api.elements;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 
 /**
  *
  * @author marekfukala
  */
-public class CommentElement implements Element {
+public class ElementsIteratorTest extends NbTestCase {
 
-    private CharSequence source;
-    private int offset;
-    private int length;
+    public ElementsIteratorTest(String name) {
+        super(name);
+    }
+
+    //Bug 211134 - AssertionError: element length must be positive!
+    public void testIssue211134() {
+        //if the comment element is longer than Short.MAX_VALUE (32k)
+        //the cast to short will cause the AE
+        //Such situation may happen if one starts to type comment
+        //delimiter at the beginning of a longer file so the whole
+        //file is lexed as comment until the end delimiter is written.
+        
+        StringBuilder code = new StringBuilder();
+        code.append("<!--");
+        for(int i = 0; i < Short.MAX_VALUE; i++) {
+            code.append("X");
+        }
+        
+        HtmlSource source = new HtmlSource(code);
+        ElementsIterator itr = new ElementsIterator(source);
+        
+        assertTrue(itr.hasNext());
+        
+        Element e = itr.next();
+        assertNotNull(e);
+        assertEquals(ElementType.COMMENT, e.type());
+        assertEquals(0, e.from());
+        assertEquals(code.length(), e.to());
+        
+    }
     
-    public CommentElement(CharSequence doc, int offset, int length) {
-        this.source = doc;
-        this.offset = offset;
-        this.length = length;
-    }
-    
-    @Override
-    public int from() {
-        return offset;
-    }
-
-    @Override
-    public int to() {
-        return offset + length;
-    }
-    @Override
-    public CharSequence image() {
-        return source.subSequence(from(), to());
-    }
-
-    @Override
-    public CharSequence id() {
-        return type().name();
-    }
-
-    @Override
-    public Collection<ProblemDescription> problems() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Node parent() {
-        return null;
-    }
-
-    @Override
-    public ElementType type() {
-        return ElementType.COMMENT;
+    //Bug 211222 - AssertionError at org.netbeans.modules.html.editor.lib.api.elements.ElementsIterator.tag
+    public void testIssue211222() {
+        //attribute name length > 127bytes
+        StringBuilder code = new StringBuilder();
+        code.append("<div ");
+        for(int i = 0; i < Byte.MAX_VALUE + 10; i++) {
+            code.append("a");
+        }
+        
+        HtmlSource source = new HtmlSource(code);
+        ElementsIterator itr = new ElementsIterator(source);
+        
+        assertTrue(itr.hasNext());
+        assertNotNull(itr.next());
+        
     }
     
 }

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +56,7 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.Pair;
 
 /**
  *
@@ -64,6 +67,8 @@ public class HtmlStructureScanner implements StructureScanner {
     private static final Logger LOGGER = Logger.getLogger(HtmlStructureScanner.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     private static final long MAX_SNAPSHOT_SIZE = 4 * 1024 * 1024;
+    
+    private Reference<Pair<ParserResult, List<HtmlStructureItem>>> cache;
 
     private boolean isOfSupportedSize(ParserResult info) {
         Snapshot snapshot = info.getSnapshot();
@@ -73,6 +78,18 @@ public class HtmlStructureScanner implements StructureScanner {
 
     @Override
     public List<? extends StructureItem> scan(final ParserResult info) {
+        //temporary workaround for 
+        //Bug 211139 - HtmlStructureScanner.scan() called twice with the same ParserResult 
+        //so it is easier to debug
+        if(cache != null) {
+            Pair<ParserResult, List<HtmlStructureItem>> pair = cache.get();
+            if(pair != null) {
+                if(info == pair.getA()) {
+                    return pair.getB();
+                }
+            }
+        }
+        
         if (!isOfSupportedSize(info)) {
             return Collections.emptyList();
         }
@@ -85,10 +102,16 @@ public class HtmlStructureScanner implements StructureScanner {
             LOGGER.log(Level.FINE, root.toString());
         }
 
+        
         //return the root children
-        List<StructureItem> elements = new ArrayList<StructureItem>(1);
-        elements.addAll(new HtmlStructureItem(new HtmlElementHandle(root, info.getSnapshot().getSource().getFileObject()), info.getSnapshot()).getNestedItems());
-
+        HtmlElementHandle rootHandle = new HtmlElementHandle(root, info.getSnapshot().getSource().getFileObject());
+        HtmlStructureItem rootSI = new HtmlStructureItem(rootHandle, info.getSnapshot());
+        List<StructureItem> elements = new ArrayList<StructureItem>(rootSI.getNestedItems());
+        
+        //cache
+        Pair<ParserResult, List<HtmlStructureItem>> pair = new Pair(info, elements);
+        cache = new WeakReference<Pair<ParserResult, List<HtmlStructureItem>>>(pair);
+        
         return elements;
 
     }
@@ -184,6 +207,7 @@ public class HtmlStructureScanner implements StructureScanner {
         private List<StructureItem> items = null;
 
         private HtmlStructureItem(HtmlElementHandle handle, Snapshot snapshot) {
+            System.out.println("created HtmlStructureItem for " + handle);
             this.handle = handle;
             this.snapshot = snapshot;
         }

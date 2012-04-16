@@ -1,9 +1,9 @@
-Name: Jira  Connector Commons Core
-Version: 3.0.0
+Name: Jira  Connector
+Version: 3.0.4
 License: EPL-v10
 OSR: 11720
 Origin: http://confluence.atlassian.com/display/IDEPLUGIN/
-Description: Java connector commons core library
+Description: Java connector for Jira issue tracking system
 
 Eclipse Public License - v 1.0
 

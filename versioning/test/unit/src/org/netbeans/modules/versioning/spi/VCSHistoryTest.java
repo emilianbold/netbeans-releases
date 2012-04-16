@@ -58,9 +58,9 @@ import org.netbeans.modules.versioning.spi.testvcs.TestVCSHistoryProvider;
 import org.openide.util.Lookup;
 
 /**
- * Versioning SPI unit tests of VCSInterceptor.
+ * Versioning SPI unit tests of VCSHistoryProvider.
  * 
- * @author Maros Sandor
+ * @author Tomas Stupka
  */
 public class VCSHistoryTest extends NbTestCase {
     
@@ -275,32 +275,6 @@ public class VCSHistoryTest extends NbTestCase {
         }
         fail("exception should be raised on readonly entry");
     }
-
-//    public void testHistoryNodesProperlySetup() throws IOException {
-//        File f1 = new File(dataRootDir, "workdir/root-test-versioned/file1" + TestVCSHistoryProvider.FILE_PROVIDES_REVISIONS_SUFFIX);
-//        f1.createNewFile();
-//        VCSFileProxy proxy1 = VCSFileProxy.createFileProxy(f1);
-//        File f2 = new File(dataRootDir, "workdir/root-test-versioned/file2" + TestVCSHistoryProvider.FILE_PROVIDES_REVISIONS_SUFFIX);
-//        f2.createNewFile();
-//        VCSFileProxy proxy2 = VCSFileProxy.createFileProxy(f2);
-//        VCSSystemProvider.VersioningSystem pvs = Utils.getOwner(proxy1);
-//        assertNotNull(pvs);
-//        org.netbeans.modules.versioning.core.spi.VCSHistoryProvider php = pvs.getVCSHistoryProvider();
-//        assertNotNull(php);
-//
-//        org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEntry[] phistory = php.getHistory(new VCSFileProxy[] {proxy1, proxy2}, null);
-//        assertNotNull(phistory);
-//        assertTrue(phistory.length > 0);
-//
-//        Node node = HistoryTestKit.createHistoryNode(phistory[0]);
-//        assertNotNull(node.getLookup().lookup(HistoryEntry.class));
-//
-//        Collection<? extends File> fos = node.getLookup().lookupAll(File.class);
-//        assertNotNull(fos);
-//        assertTrue(fos.size() >= 2);
-//        assertTrue(fos.contains(f1));
-//        assertTrue(fos.contains(f2));
-//    }
 
     private void deleteRecursively(File f) {
         if(f.isFile()) {
