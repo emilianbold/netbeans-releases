@@ -120,7 +120,7 @@ public class ElementsIterator implements Iterator<Element> {
     private void comment() {
         current = new CommentElement(sourceCode,
                 start,
-                (short)(ts.offset() + ts.token().length() - start));
+                ts.offset() + ts.token().length() - start);
     }
 
     private void declaration() {
@@ -296,7 +296,7 @@ public class ElementsIterator implements Iterator<Element> {
     private ArrayList<TokenInfo> attr_keys = null;
     private ArrayList<List<TokenInfo>> attr_values = null;
     private Iterator<TokenSequence<HTMLTokenId>> sequences;
-    private AbstractElement current;
+    private Element current;
     private boolean eof;
     private AtomicReference<Element> lastFoundElement;
     private String root_element, doctype_public_id, doctype_file, doctype_name;
