@@ -69,6 +69,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.GuardedDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.openide.util.NbBundle;
@@ -232,6 +233,9 @@ final class JavaMoveCodeElementAction extends BaseAction {
                 return -1;
             }
             int destinationOffset = downward ? getLineEnd(doc, offset) : getLineStart(doc, offset);
+            if (doc instanceof GuardedDocument && ((GuardedDocument)doc).isPosGuarded(destinationOffset)) {
+                return -1;
+            }
             TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(cInfo.getTokenHierarchy(), destinationOffset);
             if (ts != null && (ts.moveNext() || ts.movePrevious())) {
                 if (ts.offset() < destinationOffset && ts.token().id() != JavaTokenId.WHITESPACE) {
