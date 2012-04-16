@@ -135,7 +135,7 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(11, 46, 0, 0);
         add(jLabel1, gridBagConstraints);
 
@@ -153,7 +153,7 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(lbl_usagesof, gridBagConstraints);
 
