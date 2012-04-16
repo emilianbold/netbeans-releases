@@ -11,12 +11,6 @@ ant bootstrap
 # performance project
 cd "$performance"
 
-rm -rf build/test/unit
-rm -rf build/test/qa-functional
-
-ant clean -Dnetbeans.dest.dir=$netbeans_dest
-ant -Dnetbeans.dest.dir=$netbeans_dest
-
 ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
 ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
 ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
@@ -49,8 +43,6 @@ rm -rf "$WORKSPACE"/fod/tmpdir
 
 
 cd "$performance"
-
-rm -rf build/test/unit
 
 ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -DSuspendSupport.disabled=true-Drepeat=3 -Dorg.netbeans.editor.linewrap=true
 
