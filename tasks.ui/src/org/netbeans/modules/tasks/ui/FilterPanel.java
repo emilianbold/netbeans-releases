@@ -178,7 +178,7 @@ public class FilterPanel extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent e) {
                 if (openedTaskFilter != null) {
                     int hits = DashboardViewer.getInstance().removeTaskFilter(openedTaskFilter);
-                    if (DashboardViewer.getInstance().getAppliedFilters().isEmpty()) {
+                    if (DashboardViewer.getInstance().getAppliedTaskFilters().isEmpty()) {
                         clear();
                     } else {
                         setHitsCount(hits);

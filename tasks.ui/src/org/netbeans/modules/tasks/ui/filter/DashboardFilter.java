@@ -41,15 +41,13 @@
  */
 package org.netbeans.modules.tasks.ui.filter;
 
-import org.netbeans.modules.bugtracking.api.Issue;
-
 /**
  *
  * @author jpeska
  */
-public interface TaskFilter {
+public interface DashboardFilter<T> {
 
-    public boolean isInFilter(Issue task);
+    public boolean isInFilter(T entry);
 
     public boolean expandNodes();
 }
