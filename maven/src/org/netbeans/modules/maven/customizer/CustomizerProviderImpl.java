@@ -204,6 +204,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             mapps.put(config.getId(), reader.read(new StringReader(config.getRawMappingsAsString())));
             c = ModelHandle.createCustomConfiguration(config.getId());
             c.setActivatedProfiles(config.getActivatedProfiles());
+            c.setProperties(config.getProperties());
             c.setShared(true);
             configs.add(c);
             if (act.equals(config)) {
@@ -214,6 +215,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             mapps.put(config.getId(), reader.read(new StringReader(config.getRawMappingsAsString())));
             c = ModelHandle.createCustomConfiguration(config.getId());
             c.setActivatedProfiles(config.getActivatedProfiles());
+            c.setProperties(config.getProperties());            
             c.setShared(false);
             configs.add(c);
             if (act.equals(config)) {
@@ -324,6 +326,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 if (!mdlConf.isDefault() && !mdlConf.isProfileBased()) {
                     M2Configuration c = new M2Configuration(mdlConf.getId(), project);
                     c.setActivatedProfiles(mdlConf.getActivatedProfiles());
+                    c.setProperties(mdlConf.getProperties());
                     if (mdlConf.isShared()) {
                         shared.add(c);
                     } else {

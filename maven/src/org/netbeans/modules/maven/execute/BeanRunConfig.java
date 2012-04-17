@@ -232,6 +232,19 @@ public class BeanRunConfig implements RunConfig {
             mp = null;
         }
     }
+    
+    @Override public final void addProperties(Map<String, String> props) {
+         if (properties == null) {
+            properties = new LinkedHashMap<String,String>();
+            if (parent != null) {
+                properties.putAll(parent.getProperties());
+            }
+        }
+        properties.putAll(props);
+        synchronized (this) {
+            mp = null;
+        }         
+    }
 
     @Override
     public final boolean isShowDebug() {
