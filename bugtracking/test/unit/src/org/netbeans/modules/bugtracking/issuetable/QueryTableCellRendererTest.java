@@ -261,7 +261,7 @@ public class QueryTableCellRendererTest {
         }
 
         @Override
-        public BugtrackingController getController() {
+        public QueryController getController() {
             fail("implement me!!!");
             return null;
         }

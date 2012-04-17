@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,65 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking;
 
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.QueryController;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.openide.nodes.Node;
+package org.netbeans.modules.bugtracking.spi;
+
+import javax.swing.JComponent;
+import org.openide.util.HelpCtx;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
+public abstract class QueryController {
 
-    @Override
-    public String getDisplayName(TestQuery q) {
-        return q.getDisplayName();
+    public enum QueryMode {
+        SHOW_ALL,
+        SHOW_NEW_OR_CHANGED
     }
 
-    @Override
-    public String getTooltip(TestQuery q) {
-        return q.getTooltip();
-    }
-
-    @Override
-    public QueryController getController(TestQuery q) {
-        return q.getController();
-    }
-
-    @Override
-    public boolean isSaved(TestQuery q) {
-        return q.isSaved();
-    }
-
-    @Override
-    public Collection<TestIssue> getIssues(TestQuery q) {
-        return q.getIssues();
-    }
-
-    @Override
-    public boolean contains(TestQuery q, String id) {
-        return q.contains(id);
-    }
-
-    @Override
-    public void removePropertyChangeListener(TestQuery q, PropertyChangeListener listener) {
-        q.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(TestQuery q, PropertyChangeListener listener) {
-        q.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public void setContext(TestQuery q, Node[] nodes) {
-        q.setContext(nodes);
-    }
+    public abstract void setMode(QueryMode mode);
     
+    /**
+     * Returns a visual component representing the bugtracking entity this controller is meant for
+     * e.g. Repository, Query, ...
+     * @return a visual component representing a bugtracking entity
+     */
+    public abstract JComponent getComponent() ;
+    
+    /**
+     * Returns the help context associated with this controllers visual component
+     * @return
+     */
+    public abstract HelpCtx getHelpCtx();
+
+    /**
+     * Called when this controller was openened
+     */
+    public void opened() {
+
+    }
+
+    /**
+     * Called when this controller was closed
+     */
+    public void closed() {
+
+    }
+
 }

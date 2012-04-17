@@ -127,7 +127,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
+public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
     private QueryPanel panel;
 
     private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
@@ -191,17 +191,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.queryTextField.addActionListener(this);
         panel.assigneeTextField.addActionListener(this);
         panel.reporterTextField.addActionListener(this);
-        panel.idTextField.getDocument().addDocumentListener(this);
-
-        panel.createdFromTextField.getDocument().addDocumentListener(this);
-        panel.createdToTextField.getDocument().addDocumentListener(this);
-        panel.updatedFromTextField.getDocument().addDocumentListener(this);
-        panel.updatedToTextField.getDocument().addDocumentListener(this);
-        panel.dueFromTextField.getDocument().addDocumentListener(this);
-        panel.dueToTextField.getDocument().addDocumentListener(this);
-
-        panel.ratioMinTextField.getDocument().addDocumentListener(this);
-        panel.ratioMaxTextField.getDocument().addDocumentListener(this);
 
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 
@@ -644,13 +633,19 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     @Override
-    public boolean isValid() {
-        return true;
-    }
-
-    @Override
-    public void applyChanges() {
-
+    public void setMode(QueryMode mode) {
+        Filter filter;
+        switch(mode) {
+            case SHOW_ALL:
+                filter = issueTable.getAllFilter();
+                break;
+            case SHOW_NEW_OR_CHANGED:
+                filter = issueTable.getNewOrChangedFilter();
+                break;
+            default: 
+                throw new IllegalStateException("Unsupported mode " + mode);
+        }
+        selectFilter(filter);
     }
 
     protected void enableFields(boolean bl) {
@@ -671,23 +666,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     @Override
-    public void insertUpdate(DocumentEvent e) {
-        documentChanged(e);
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-        documentChanged(e);
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-        documentChanged(e);
-    }
-
-    @Override
     public void itemStateChanged(ItemEvent e) {
-        fireDataChanged();
         if(e.getSource() == panel.filterComboBox) {
             onFilterChange((Filter)e.getItem());
         }
@@ -698,7 +677,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(e.getSource() == panel.projectList) {
             onProjectChanged(e);
         }
-        fireDataChanged();            // XXX do we need this ???
     }
 
     @Override
@@ -942,8 +920,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         } else if (document == panel.ratioMinTextField.getDocument()) {
             validateLongField(panel.ratioMinTextField);
         }
-
-        fireDataChanged();
     }
 
     private void validateDateField(JTextField txt) {

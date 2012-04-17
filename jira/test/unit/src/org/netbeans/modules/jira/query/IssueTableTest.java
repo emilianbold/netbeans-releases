@@ -104,7 +104,7 @@ public class IssueTableTest extends IssuetableTestFactory {
     public IssueTable getTable(Query q) {
         try {
             JiraQuery jiraQuery = queries.get(q.getDisplayName());
-            BugtrackingController c = jiraQuery.getController();
+            QueryController c = jiraQuery.getController();
             Field f = c.getClass().getDeclaredField("issueTable");
             f.setAccessible(true);
             return (IssueTable) f.get(c);

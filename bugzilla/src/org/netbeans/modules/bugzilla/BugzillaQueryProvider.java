@@ -39,11 +39,9 @@ package org.netbeans.modules.bugzilla;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.netbeans.modules.bugzilla.kenai.KenaiQuery;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -66,7 +64,7 @@ public class BugzillaQueryProvider extends KenaiQueryProvider<BugzillaQuery, Bug
     }
 
     @Override
-    public BugtrackingController getController(BugzillaQuery query) {
+    public QueryController getController(BugzillaQuery query) {
         return query.getController();
     }
 
@@ -108,12 +106,6 @@ public class BugzillaQueryProvider extends KenaiQueryProvider<BugzillaQuery, Bug
      * Kenai
      ************************************************************************************/
     
-    @Override
-    public void setFilter(BugzillaQuery query, Filter filter) {
-        BugzillaQuery bq = (BugzillaQuery) query;
-        bq.getController().selectFilter(filter);
-    }
-
     @Override
     public boolean needsLogin(BugzillaQuery query) {
         BugzillaRepository repository = query.getRepository();

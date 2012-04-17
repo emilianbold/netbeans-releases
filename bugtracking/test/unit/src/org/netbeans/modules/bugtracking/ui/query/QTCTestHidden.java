@@ -59,6 +59,7 @@ import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -285,7 +286,11 @@ public class QTCTestHidden extends NbTestCase {
         private static int c = 0;
         private final int i;
 
-        private BugtrackingController controler = new BugtrackingController() {
+        private QueryController controler = new QueryController() {
+            @Override
+            public void setMode(QueryMode mode) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
             private JPanel panel = new JPanel();
             @Override
             public JComponent getComponent() {
@@ -295,12 +300,6 @@ public class QTCTestHidden extends NbTestCase {
             public HelpCtx getHelpCtx() {
                 return null;
             }
-            @Override
-            public boolean isValid() {
-                return true;
-            }
-            @Override
-            public void applyChanges() throws IOException {}
         };
         private boolean saved;
 
@@ -317,7 +316,7 @@ public class QTCTestHidden extends NbTestCase {
             return "query"+i;
         }
         @Override
-        public BugtrackingController getController() {
+        public QueryController getController() {
             return controler;
         }
         @Override

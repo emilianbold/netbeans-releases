@@ -43,8 +43,7 @@ package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.openide.nodes.Node;
 
 /**
@@ -57,7 +56,7 @@ public abstract class TestQuery {
 
     public abstract String getTooltip();
 
-    public abstract BugtrackingController getController();
+    public abstract QueryController getController();
 
     public abstract boolean isSaved();
 

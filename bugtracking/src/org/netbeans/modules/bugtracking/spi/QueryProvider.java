@@ -96,7 +96,7 @@ public abstract class QueryProvider<Q, I> {
      * XXX we don't need this. use get component instead and get rid of the BugtrackingController
      * @return
      */
-    public abstract BugtrackingController getController(Q q);
+    public abstract QueryController getController(Q q);
 
     /**
      * Returns true if query is saved

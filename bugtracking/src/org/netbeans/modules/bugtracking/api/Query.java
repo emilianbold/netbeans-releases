@@ -71,6 +71,12 @@ public final class Query {
      */
     public final static String EVENT_QUERY_REMOVED = QueryProvider.EVENT_QUERY_REMOVED;
 
+    public enum QueryMode {
+        SHOW_ALL,
+        SHOW_NEW_OR_CHANGED,
+        EDIT
+    }
+    
     private QueryImpl impl;
 
     Query(QueryImpl impl) {
@@ -102,8 +108,8 @@ public final class Query {
         impl.refresh(synchronously);
     }
 
-    public void open(final boolean suggestedSelectionOnly) {
-        impl.open(suggestedSelectionOnly);
+    public void open(QueryMode mode) {
+        impl.open(false, mode);
     }
     
     /**

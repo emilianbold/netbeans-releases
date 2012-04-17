@@ -43,13 +43,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -126,7 +124,17 @@ public final class QueryImpl<Q, I>  {
         QueryAction.openQuery(null, repository);
     }
     
-    public void open(final boolean suggestedSelectionOnly) {
+    public void open(final boolean suggestedSelectionOnly, Query.QueryMode mode) {
+        switch(mode) {
+            case SHOW_ALL:
+                queryProvider.getController(data).setMode(QueryController.QueryMode.SHOW_ALL);
+                break;
+            case SHOW_NEW_OR_CHANGED:
+                queryProvider.getController(data).setMode(QueryController.QueryMode.SHOW_NEW_OR_CHANGED);
+                break;
+            default:
+                throw new IllegalStateException("Unsupported mode " + mode);
+        }
         QueryAction.openQuery(this, repository, suggestedSelectionOnly);
     }
     
@@ -159,7 +167,7 @@ public final class QueryImpl<Q, I>  {
         return queryProvider.getDisplayName(data);
     }
 
-    public BugtrackingController getController() {
+    public QueryController getController() {
         return queryProvider.getController(data);
     }
 
@@ -173,11 +181,6 @@ public final class QueryImpl<Q, I>  {
 
     public void setContext(Node[] context) {
         queryProvider.setContext(data, context);
-    }
-
-    public void setFilter(Filter filter) {
-        assert KenaiQueryProvider.class.isAssignableFrom(queryProvider.getClass());
-        ((KenaiQueryProvider<Q, I>)queryProvider).setFilter(data, filter);
     }
 
     public boolean needsLogin() {
