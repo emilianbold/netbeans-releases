@@ -52,6 +52,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -67,11 +68,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  * Wizard to create a new Groovy file.
  */
-public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
 
@@ -131,12 +133,21 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
     }
     
     public Set<FileObject> instantiate() throws IOException {
+        assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
+        return null;
+    }
+
+    @Override
+    public Set instantiate(ProgressHandle handle) throws IOException {
+        handle.start();
+        handle.progress(NbBundle.getMessage(GroovyFileWizardIterator.class, "LBL_NewGroovyFileWizardIterator_WizardProgress_CreatingFile"));
+
         FileObject dir = Templates.getTargetFolder(wiz);
         String targetName = Templates.getTargetName(wiz);
-        
+
         DataFolder df = DataFolder.findFolder(dir);
         FileObject template = Templates.getTemplate(wiz);
-        
+
         DataObject dTemplate = DataObject.find(template);
         String pkgName = getPackageName(dir);
         DataObject dobj = null;
@@ -145,14 +156,15 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         } else {
             dobj = dTemplate.createFromTemplate(df, targetName, Collections.singletonMap("package", pkgName)); // NOI18N
         }
-                
+
         FileObject createdFile = dobj.getPrimaryFile();
-        
+
         initExtender();
         if (extender != null && !extender.isGroovyEnabled()) {
             extender.enableGroovy();
         }
-        
+
+        handle.finish();
         return Collections.singleton(createdFile);
     }
     
