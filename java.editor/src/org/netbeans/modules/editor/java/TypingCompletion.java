@@ -194,7 +194,7 @@ class TypingCompletion {
         // Restore javaTS position
         javaTS.moveIndex(index);
         javaTS.moveNext();
-        if (isForLoopSemicolon(javaTS) || posWithinAnyQuote(context, javaTS)) {
+        if (isForLoopOrTryWithResourcesSemicolon(javaTS) || posWithinAnyQuote(context, javaTS)) {
             return -1;
         }
         context.setText("", 0); // NOI18N
@@ -306,7 +306,7 @@ class TypingCompletion {
         return false;
     }
 
-    private static boolean isForLoopSemicolon(TokenSequence<JavaTokenId> ts) {
+    private static boolean isForLoopOrTryWithResourcesSemicolon(TokenSequence<JavaTokenId> ts) {
         int parenDepth = 0; // parenthesis depth
         int braceDepth = 0; // brace depth
         boolean semicolonFound = false; // next semicolon
@@ -315,7 +315,7 @@ class TypingCompletion {
             while (ts.movePrevious()) {
                 switch (ts.token().id()) {
                     case LPAREN:
-                        if (parenDepth == 0) { // could be a 'for ('
+                        if (parenDepth == 0) { // could be a 'for (' or 'try ('
                             while (ts.movePrevious()) {
                                 switch (ts.token().id()) {
                                     case WHITESPACE:
@@ -324,6 +324,7 @@ class TypingCompletion {
                                     case LINE_COMMENT:
                                         break; // skip
                                     case FOR:
+                                    case TRY:
                                         return true;
                                     default:
                                         return false;

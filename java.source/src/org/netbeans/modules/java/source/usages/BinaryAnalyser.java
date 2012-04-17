@@ -357,6 +357,7 @@ public class BinaryAnalyser {
         }
     }
     
+    @NonNull
     private Pair<LongHashMap<String>,Set<String>> getTimeStamps() throws IOException {
         if (timeStamps == null) {
             final LongHashMap<String> map = new LongHashMap<String>();
@@ -1044,13 +1045,18 @@ public class BinaryAnalyser {
 
     private class DeletedContinuation extends Continuation {
         
-        public DeletedContinuation() {
-            markChanged();  //Always dirty
+        public DeletedContinuation() throws IOException {
+            final Pair<LongHashMap<String>, Set<String>> ts = getTimeStamps();
+            if (!ts.first.isEmpty()) {
+                markChanged();
+            }
         }
 
         @Override
         protected Result doExecute() throws IOException {
-            writer.clear();
+            if (hasChanges()) {
+                writer.clear();
+            }
             return Result.FINISHED;
         }
 

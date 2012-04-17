@@ -79,8 +79,10 @@ public class MakefileUtils {
             try {
                 DataObject dataObject = DataObject.find(makefile);
                 MakefileTargetProvider targetProvider = dataObject.getLookup().lookup(MakefileTargetProvider.class);
-                Set<String> targets = targetProvider.getRunnableTargets();
-                return targets.contains("test") || targets.contains("build-tests"); // NOI18N
+                if (targetProvider != null) {
+                    Set<String> targets = targetProvider.getRunnableTargets();
+                    return targets.contains("test") || targets.contains("build-tests"); // NOI18N
+                }
             } catch (DataObjectNotFoundException ex) {
             } catch (IOException ex) {}        
         }

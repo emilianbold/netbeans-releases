@@ -53,6 +53,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JEditorPane;
@@ -118,6 +120,10 @@ final class CallHierarchyTasks {
     
     static void resolveRoot(TreePathHandle selection, boolean isCallerGraph, Task<Call> rootCallback) {
         JavaSource js = JavaSource.forFileObject(selection.getFileObject());
+        if (js==null) {
+            Logger.getLogger(CallHierarchyTasks.class.getName()).log(Level.INFO, "Cannot get JavaSource for " + selection.getFileObject().getPath());
+            return;
+        }
         postResolveRoot(js, new RootResolver(selection, isCallerGraph), rootCallback);
     }
     

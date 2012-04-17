@@ -788,9 +788,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
         next.setEnabled(!problem.isFatal() && !isPreviewRequired());
         dialog.getRootPane().setDefaultButton(forcePreview ? previewButton : next);
+        next.setVisible(true);
         if (currentState == PRE_CHECK) {
             Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, "CTL_Next"));
-            next.setVisible(true);
             back.setVisible(false);
             if (!rui.hasParameters()) {
                 next.setVisible(false);

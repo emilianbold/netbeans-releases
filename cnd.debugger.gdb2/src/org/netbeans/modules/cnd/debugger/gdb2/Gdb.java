@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public class Gdb {
@@ -1052,8 +1053,13 @@ public class Gdb {
                     final String line = interceptedLines.removeFirst();
 
                     processingQueue.post(new Runnable() {
+                        @Override
                         public void run() {
-                            miProxy.processLine(line);
+                            try {
+                                miProxy.processLine(line);
+                            } catch (Exception e) {
+                                Exceptions.printStackTrace(new Exception("when processing line: " + line, e)); //NOI18N
+                            }
                         }
                     });
                 }

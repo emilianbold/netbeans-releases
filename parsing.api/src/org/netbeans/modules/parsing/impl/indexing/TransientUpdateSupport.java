@@ -39,25 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.astnodes;
+package org.netbeans.modules.parsing.impl.indexing;
 
 /**
- * Holds an anonymous object variable (object creation encapsulated by braces).
- * <pre>e.g.<pre>
- * (new Object())
- * (new Object)
- * 
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ *
+ * @author Tomas Zezula
  */
-public class AnonymousObjectVariable extends Variable {
-
-    public AnonymousObjectVariable(int start, int end, ClassInstanceCreation classInstanceCreation) {
-        super(start, end, classInstanceCreation);
+public final class TransientUpdateSupport {
+    
+    private static final ThreadLocal<Boolean> transientUpdate =
+            new ThreadLocal<Boolean>();
+    
+    private TransientUpdateSupport() {}
+    
+    public static boolean isTransientUpdate() {
+        return transientUpdate.get() == Boolean.TRUE;
     }
-
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
+    
+    public static void setTransientUpdate(final boolean state) {
+        transientUpdate.set(state);
     }
-
+    
 }
