@@ -58,6 +58,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.FocusManager;
@@ -326,6 +327,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
         synchronized (CUR_NODES_LOCK) {
             // detach node listeners
             Iterator<? extends NodeListener> curL = weakNodesL.iterator();
+            LOG.log(Level.FINE, "Removing {0} node listener(s)", curNodes.size());
             for (Iterator<? extends Node> curNode = curNodes.iterator(); curNode.hasNext(); ) {
                 curNode.next().removeNodeListener(curL.next());
             }
