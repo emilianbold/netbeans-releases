@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 public final class ConsoleWindowAction extends CallableSystemAction {
 
@@ -56,7 +56,7 @@ public final class ConsoleWindowAction extends CallableSystemAction {
 
     // interface CallableSystemAction
     public void performAction() {
-	DebuggerManager.get().enableConsoleWindow();
+	NativeDebuggerManager.get().enableConsoleWindow();
     }
 
     // interface SystemAction

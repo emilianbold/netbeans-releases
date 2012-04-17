@@ -12,6 +12,8 @@
     <mapID target="php_process" url="process.html"/>
     <mapID target="org.netbeans.modules.php.help.about" url="help-about.html"/>
     <mapID target="php_projects" url="php-projects.html"/>
+    <mapID target="xdebug_setup" url="xdebug-setup.html"/>
+    <mapID target="php_hudson" url="hudson-php.html"/>
     <!-- TOC Editor help -->
     <mapID target="php_editor" url="editor/editor-about.html"/>
     <mapID target="php_syntax_highlighting" url="editor/syntax-highlighting.html"/>
@@ -42,7 +44,7 @@
     <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerIgnorePath" url="csh/customize-project-include-path.html"/>
     <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpUnit" url="csh/customize-project-phpunit.html"/>
     <mapID target="org.netbeans.modules.php.phpdoc.ui.customizer.PhpDocPanel" url="csh/customize-project-phpdoc.html"/>
-
+    <mapID target="org.netbeans.modules.php.apigen.ui.customizer.ApiGen" url="csh/customize-project-apigen.html" />
     
     <!-- CSH for the Find Usages dialog -->
     <mapID target="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI" url="csh/findUsages-CSH.html"/>
@@ -53,9 +55,9 @@
     <!-- CSH for the Delete dialog, includes help for Usages window -->
     <mapID target="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI" url="csh/safe-delete.html"/>
 
- <!--CSH for PHP source editor-->
+    <!--CSH for PHP source editor-->
     <mapID target="text.x-php5" url="csh/about_source_editor.html" />
-        <!-- CSH for PHP Options -->
+    <!-- CSH for PHP Options -->
     <mapID target="org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController" url="options-csh/general.html" />
     <mapID target="org.netbeans.modules.php.project.ui.options.PhpDebuggerPanelController" url="options-csh/debugging.html" />
     <mapID target="org.netbeans.modules.php.project.phpunit.PhpUnit" url="options-csh/unit-testing.html" />
@@ -64,4 +66,8 @@
     <mapID target="org.netbeans.modules.php.symfony2.options.Symfony2Options" url="options-csh/symfony2.html" />
     <mapID target="org.netbeans.modules.php.zend.ui.options.ZendOptions" url="options-csh/zend.html" />
     <mapID target="org.netbeans.modules.php.smarty.ui.options.SmartyOptions" url="options-csh/smarty.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.options.PhpAnnotationsPanelController" url="options-csh/annotations.html"/>
+    <mapID target="org.netbeans.modules.php.apigen.ui.options.Options" url="options-csh/apigen.html"/>
+    <mapID target="org.netbeans.modules.php.doctrine2.Options" url="options-csh/doctrine.html"/>
+    <mapID target="org.netbeans.modules.hudson.php.ui.options.Options" url="options-csh/hudson.html"/>
 </map>

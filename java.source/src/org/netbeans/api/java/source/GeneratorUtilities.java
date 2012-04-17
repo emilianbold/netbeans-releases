@@ -120,6 +120,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.tools.JavaFileObject;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -127,10 +128,13 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.query.CommentSet.RelativePosition;
 import org.netbeans.modules.java.source.save.DiffContext;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
@@ -159,6 +163,32 @@ public final class GeneratorUtilities {
     }
 
     /**
+     * Create a new CompilationUnitTree from a template.
+     *
+     * @param sourceRoot a source root under which the new file is created
+     * @param path a relative path to file separated by '/'
+     * @param kind the kind of Element to use for the template, can be null or
+     * CLASS, INTERFACE, ANNOTATION_TYPE, ENUM, PACKAGE
+     * @return new CompilationUnitTree created from a template
+     * @throws IOException when an exception occurs while creating the template
+     * @since 0.101
+     */
+    public CompilationUnitTree createFromTemplate(FileObject sourceRoot, String path, ElementKind kind) throws IOException {
+        String[] nameComponent = FileObjects.getFolderAndBaseName(path, '/');
+        JavaFileObject sourceFile = FileObjects.templateFileObject(sourceRoot, nameComponent[0], nameComponent[1]);
+        FileObject template = FileUtil.getConfigFile(copy.template(kind));
+        FileObject targetFile = copy.doCreateFromTemplate(template, sourceFile);
+        CompilationUnitTree templateCUT = copy.impl.getJavacTask().parse(FileObjects.nbFileObject(targetFile, targetFile.getParent())).iterator().next();
+        CompilationUnitTree importComments = GeneratorUtilities.get(copy).importComments(templateCUT, templateCUT);
+        CompilationUnitTree result = copy.getTreeMaker().CompilationUnit(importComments.getPackageAnnotations(),
+                sourceRoot,
+                path,
+                importComments.getImports(),
+                importComments.getTypeDecls());
+        return result;
+    }
+
+    /**
      * Inserts a member to a class. Using the rules specified in the {@link CodeStyle}
      * it finds the proper place for the member and calls {@link TreeMaker.insertClassMember}
      *
@@ -183,7 +213,7 @@ public final class GeneratorUtilities {
         CodeStyle codeStyle = DiffContext.getCodeStyle(copy);
         if (codeStyle.getClassMemberInsertionPoint() == CodeStyle.InsertionPoint.CARET_LOCATION) {
             JTextComponent jtc = EditorRegistry.lastFocusedComponent();
-            if (jtc.getDocument() == doc)
+            if (jtc != null && jtc.getDocument() == doc)
                 caretPos = jtc.getCaretPosition();
         }
         ClassMemberComparator comparator = caretPos < 0 ? new ClassMemberComparator(codeStyle) : null;
@@ -559,7 +589,20 @@ public final class GeneratorUtilities {
     public CompilationUnitTree addImports(CompilationUnitTree cut, Set<? extends Element> toImport) {
         assert cut != null && toImport != null && toImport.size() > 0;
 
-        ArrayList<Element> elementsToImport = new ArrayList<Element>(toImport);
+        ArrayList<Element> elementsToImport = new ArrayList<Element>(toImport.size());
+        Set<String> staticImportNames = new HashSet<String>();
+        for (Element e : toImport) {
+            switch (e.getKind()) {
+                case METHOD:
+                case ENUM_CONSTANT:
+                case FIELD:
+                    StringBuilder name = new StringBuilder(((TypeElement)e.getEnclosingElement()).getQualifiedName()).append('.').append(e.getSimpleName());
+                    if (!staticImportNames.add(name.toString()))
+                        break;
+                default:
+                    elementsToImport.add(e);
+            }
+        }
 
         Trees trees = copy.getTrees();
         Elements elements = copy.getElements();
@@ -571,9 +614,11 @@ public final class GeneratorUtilities {
         int treshold = cs.countForUsingStarImport();
         int staticTreshold = cs.countForUsingStaticStarImport();        
         Map<PackageElement, Integer> pkgCounts = new LinkedHashMap<PackageElement, Integer>();
-        pkgCounts.put(elements.getPackageElement("java.lang"), -2); //NOI18N
+        PackageElement pkg = elements.getPackageElement("java.lang"); //NOI18N
+        if (pkg != null)
+            pkgCounts.put(pkg, -2);
         ExpressionTree packageName = cut.getPackageName();
-        PackageElement pkg = packageName != null ? (PackageElement)trees.getElement(TreePath.getPath(cut, packageName)) : null;
+        pkg = packageName != null ? (PackageElement)trees.getElement(TreePath.getPath(cut, packageName)) : null;
         if (pkg == null && packageName != null)
             pkg = elements.getPackageElement(elements.getName(packageName.toString()));
         if (pkg == null)
@@ -688,8 +733,9 @@ public final class GeneratorUtilities {
                         }
                     }
                 }
-                importScope.importAll(((Symbol)entry.getKey()).members());
             }
+            if (entry.getValue() < 0 && entry.getKey() instanceof Symbol)
+                importScope.importAll(((Symbol)entry.getKey()).members());
         }
 
         // sort the elements to import
@@ -782,6 +828,14 @@ public final class GeneratorUtilities {
 
     static <T extends Tree> T importComments(CompilationInfo info, T original, CompilationUnitTree cut) {
         try {
+            CommentSetImpl comments = CommentHandlerService.instance(info.impl.getJavacTask().getContext()).getComments(original);
+
+            if (comments.areCommentsMapped()) {
+                //optimalization, if comments are already mapped, do not even try to
+                //map them again, would not be attached anyway:
+                return original;
+            }
+            
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
             TreePath tp = TreePath.getPath(cut, original);

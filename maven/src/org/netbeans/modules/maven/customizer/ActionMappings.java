@@ -193,7 +193,10 @@ public class ActionMappings extends javax.swing.JPanel {
         titles.put(ActionProvider.COMMAND_RUN_SINGLE + ".deploy", NbBundle.getMessage(ActionMappings.class, "COM_Run_file_deploy"));
         titles.put(ActionProvider.COMMAND_TEST, NbBundle.getMessage(ActionMappings.class, "COM_Test_project"));
         titles.put(ActionProvider.COMMAND_TEST_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Test_file"));
-        titles.put("profile", NbBundle.getMessage(ActionMappings.class, "COM_Profile_project"));
+        titles.put(ActionProvider.COMMAND_PROFILE, NbBundle.getMessage(ActionMappings.class, "COM_Profile_project"));
+        titles.put(ActionProvider.COMMAND_PROFILE_SINGLE + ".main", NbBundle.getMessage(ActionMappings.class, "COM_Profile_file_main"));
+        titles.put(ActionProvider.COMMAND_PROFILE_SINGLE + ".deploy", NbBundle.getMessage(ActionMappings.class, "COM_Profile_file_deploy"));
+        titles.put(ActionProvider.COMMAND_PROFILE_TEST_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Profile_test"));
         titles.put("javadoc", NbBundle.getMessage(ActionMappings.class, "COM_Javadoc_project"));
         titles.put(ActionProviderImpl.BUILD_WITH_DEPENDENCIES, NbBundle.getMessage(ActionMappings.class, "COM_Build_WithDeps_project"));
 
@@ -582,7 +585,11 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                 addSingleAction(ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy", model); //NOI18N
             }
             addSingleAction(ActionProvider.COMMAND_DEBUG_TEST_SINGLE, model);
-            addSingleAction("profile", model); //NOI18N
+            addSingleAction(ActionProvider.COMMAND_PROFILE, model);
+            addSingleAction(ActionProvider.COMMAND_PROFILE_SINGLE + ".main", model); // NOI18N
+            if (isWar) {
+                addSingleAction(ActionProvider.COMMAND_PROFILE_SINGLE + ".deploy", model); //NOI18N
+            }
             addSingleAction("javadoc", model); //NOI18N
         }
         for (NetbeansActionMapping elem : getActionMappings().getActions()) {
@@ -707,7 +714,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         Map<String,String> props = new LinkedHashMap<String,String>();
         while (tok != null) {
             String[] prp = StringUtils.split(tok, "=", 2); //NOI18N
-            if (prp.length == 2) {
+            if (prp.length >= 1 ) {
                 String key = prp[0];
                 //in case the user adds -D by mistake, remove it to get a parsable xml file.
                 if (key.startsWith("-D")) { //NOI18N
@@ -716,7 +723,12 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                 if (key.startsWith("-")) { //NOI18N
                     key = key.substring(1);
                 }
-                props.put(key, prp[1]);
+                if (key.endsWith("=")) {
+                    key = key.substring(0, key.length() - 1);
+                }
+                if (key.trim().length() > 0) {
+                    props.put(key, prp.length > 1 ? prp[1] : "");
+                }
             }
             tok = split.nextPair();
         }

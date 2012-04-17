@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.cnd.api.project;
 
-import org.netbeans.modules.cnd.utils.FSPath;
 import java.util.List;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileObject;
 
 public interface NativeFileItem {
@@ -54,10 +54,34 @@ public interface NativeFileItem {
     }
     
     public enum LanguageFlavor {
-    	UNKNOWN,
-        C, C89, C99,
-        CPP, CPP11,
-        F77, F90, F95
+    	UNKNOWN(0),
+        C(1), C89(2), C99(3),
+        CPP(4), CPP11(8),
+        F77(5), F90(6), F95(7),
+        DEFAULT(9);
+        private final int flavor;
+        
+        private LanguageFlavor(int flavor) {
+            this.flavor = flavor;
+        }
+        public int toExternal(){
+            return flavor;
+        }
+        public static LanguageFlavor fromExternal(int i) {
+            switch (i) {
+                case 0: return UNKNOWN;
+                case 1: return C;
+                case 2: return C89;
+                case 3: return C99;
+                case 4: return CPP;
+                case 5: return F77;
+                case 6: return F90;
+                case 7: return F95;
+                case 8: return CPP11;
+                case 9: return DEFAULT;
+                default: return UNKNOWN;
+            }
+        }
     }
     
     /**

@@ -889,6 +889,18 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug207843.cpp", 12, 11, "bug207843.cpp", 12, 5);
     }    
     
+    public void testBug210186() throws Exception {
+        // Bug 210186 - Unresolved variable like expression declaration
+        performTest("bug210186.cpp", 7, 17, "bug210186.cpp", 7, 5);
+    }
+
+    public void testBug211265() throws Exception {
+        // Bug 211265 -  Typedef has priority on local class
+        performTest("bug211265.cpp", 21, 6, "bug211265.cpp", 15, 5);
+        performTest("bug211265.cpp", 22, 10, "bug211265.cpp", 16, 9);
+        performTest("bug211265.cpp", 10, 9, "bug211265.cpp", 3, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

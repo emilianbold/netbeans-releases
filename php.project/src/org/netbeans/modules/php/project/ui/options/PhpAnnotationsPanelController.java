@@ -46,6 +46,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.annotations.UserAnnotations;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
@@ -89,6 +90,11 @@ public class PhpAnnotationsPanelController extends BaseOptionsPanelController {
             panel = new PhpAnnotationsPanel();
         }
         return panel;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.php.project.ui.options.PhpAnnotationsPanelController"); // NOI18N
     }
 
 }

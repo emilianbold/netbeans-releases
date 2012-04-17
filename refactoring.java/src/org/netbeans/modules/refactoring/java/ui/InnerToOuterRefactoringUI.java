@@ -139,7 +139,7 @@ public class InnerToOuterRefactoringUI implements RefactoringUI, JavaRefactoring
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(InnerToOuterRefactoringUI.class.getName());
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.InnerToOuterRefactoringUI"); // NOI18N
     }
     
     // --- PRIVATE HELPER METHODS ----------------------------------------------

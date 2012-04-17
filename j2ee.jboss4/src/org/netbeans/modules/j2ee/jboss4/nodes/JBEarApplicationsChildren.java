@@ -48,11 +48,16 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.MBeanServerConnection;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
+import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.JBRemoteAction;
+import org.netbeans.modules.j2ee.jboss4.JBoss5ProfileServiceProxy;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -66,6 +71,8 @@ import org.openide.util.RequestProcessor;
  * @author Michal Mocnak
  */
 public class JBEarApplicationsChildren extends Children.Keys implements Refreshable {
+
+    private static final Logger LOGGER = Logger.getLogger(JBEarApplicationsChildren.class.getName());
 
     private final JBAbilitiesSupport abilitiesSupport;
 
@@ -83,51 +90,52 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
             Vector keys = new Vector();
 
             public void run() {
-                ClassLoader orig = Thread.currentThread().getContextClassLoader();
                 try {
-                    // Query to the jboss4 server
-                    ObjectName searchPattern;
-                    String propertyName;
-                    if (abilitiesSupport.isRemoteManagementSupported()
-                            && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
-                        searchPattern = new ObjectName("jboss.management.local:j2eeType=J2EEApplication,*"); // NOI18N
-                        propertyName = "name"; // NOI18N
-                    } else {
-                        searchPattern = new ObjectName("jboss.j2ee:service=EARDeployment,*"); // NOI18N
-                        propertyName = "url"; // NOI18N
-                    }
+                    lookup.lookup(JBDeploymentManager.class).invokeRemoteAction(new JBRemoteAction<Void>() {
 
-                    Object server = Util.getRMIServer(lookup);
-                    Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
-
-                    Method method = server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
-                    method = Util.fixJava4071957(method);
-                    Set managedObj = (Set) method.invoke(server, new Object[] {searchPattern, null});
-
-                    // Query results processing
-                    for (Iterator it = managedObj.iterator(); it.hasNext();) {
-                        try {
-                            ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
-                            String name = elem.getKeyProperty(propertyName);
-
+                        @Override
+                        public Void action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                            // Query to the jboss4 server
+                            ObjectName searchPattern;
+                            String propertyName;
                             if (abilitiesSupport.isRemoteManagementSupported()
                                     && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
-                                if (name.endsWith(".sar") || name.endsWith(".deployer")) { // NOI18N
-                                    continue;
-                                }
+                                searchPattern = new ObjectName("jboss.management.local:j2eeType=J2EEApplication,*"); // NOI18N
+                                propertyName = "name"; // NOI18N
                             } else {
-                                name = name.substring(1, name.length() - 1); // NOI18N
+                                searchPattern = new ObjectName("jboss.j2ee:service=EARDeployment,*"); // NOI18N
+                                propertyName = "url"; // NOI18N
                             }
 
-                            keys.add(new JBEarApplicationNode(name, lookup));
-                        } catch (Exception ex) {
-                            Logger.getLogger("global").log(Level.INFO, null, ex);
+                            Method method = connection.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
+                            method = Util.fixJava4071957(method);
+                            Set managedObj = (Set) method.invoke(connection, new Object[] {searchPattern, null});
+
+                            // Query results processing
+                            for (Iterator it = managedObj.iterator(); it.hasNext();) {
+                                try {
+                                    ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
+                                    String name = elem.getKeyProperty(propertyName);
+
+                                    if (abilitiesSupport.isRemoteManagementSupported()
+                                            && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
+                                        if (name.endsWith(".sar") || name.endsWith(".deployer")) { // NOI18N
+                                            continue;
+                                        }
+                                    } else {
+                                        name = name.substring(1, name.length() - 1); // NOI18N
+                                    }
+
+                                    keys.add(new JBEarApplicationNode(name, lookup));
+                                } catch (Exception ex) {
+                                    LOGGER.log(Level.INFO, null, ex);
+                                }
+                            }
+                            return null;
                         }
-                    }
-                } catch (Exception ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
-                } finally {
-                    Thread.currentThread().setContextClassLoader(orig);
+                    });
+                } catch (ExecutionException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
                 }
 
                 setKeys(keys);

@@ -332,7 +332,7 @@ public class BugzillaRepository {
         }
         QueryParameter[] additionalParams = getSimpleSearchParameters();
         for (QueryParameter qp : additionalParams) {
-            url.append(qp.get());
+            url.append(qp.get(true));
         }
         PerformQueryCommand queryCmd = new PerformQueryCommand(this, url.toString(), collector);
         getExecutor().execute(queryCmd);
@@ -389,9 +389,17 @@ public class BugzillaRepository {
         return queries;
     }
 
+    public void ensureCredentials() {
+        setCredentials(info.getUsername(), info.getPassword(), info.getHttpUsername(), info.getHttpPassword(), true);
+    }
+    
     public void setCredentials(String user, char[] password, String httpUser, char[] httpPassword) {
+        setCredentials(user, password, httpUser, httpPassword, false);
+    }
+    
+    private void setCredentials(String user, char[] password, String httpUser, char[] httpPassword, boolean keepConfiguration) {
         MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
-        resetRepository(false);
+        resetRepository(keepConfiguration);
     }
 
     protected void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean shortLoginEnabled) {

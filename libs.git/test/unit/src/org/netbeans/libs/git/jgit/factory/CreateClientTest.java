@@ -43,9 +43,16 @@ package org.netbeans.libs.git.jgit.factory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
+import org.eclipse.jgit.lib.ConfigConstants;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
+import org.netbeans.libs.git.ApiUtils;
+import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.GitRepository;
+import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 
 /**
  *
@@ -77,9 +84,46 @@ public class CreateClientTest extends AbstractGitTestCase {
             GitRepository.getInstance(newLocation).createClient();
             fail("Should fail");
         } catch (GitException ex) {
-            assertEquals("It seems the config file for the repository at [" + newLocation.getAbsolutePath() + "] is corrupted.\nEnsure it ends with empty line.", ex.getMessage());
+            assertEquals("java.io.IOException: Unknown repository format", ex.getMessage());
         }
         write(new File(gitFolder, "config"), read(new File(gitFolder, "config")) + "\n");
+    }
+    
+    /**
+     * Submodules have .git folder elsewhere, they use GIT_LINK mechanism to access it
+     */
+    public void testClientForSubmodule () throws Exception {
+        File subRepo = new File(workDir, "subrepo");
+        subRepo.mkdirs();
+        File newFile = new File(subRepo, "file");
+        newFile.createNewFile();
+        File[] roots = new File[] { newFile };
+        
+        GitClient client = GitRepository.getInstance(subRepo).createClient();
+        client.init(NULL_PROGRESS_MONITOR);
+        client.add(roots, NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { newFile }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, subRepo, newFile, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
+        Repository repo = getRepository(client);
+        StoredConfig config = repo.getConfig();
+        config.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_WORKTREE, subRepo.getAbsolutePath());
+        config.save();
+
+        File gitFolder = new File(subRepo, ".git");
+        File newLocation = new File(workDir.getParentFile(), "newFolder");
+        newLocation.mkdirs();
+        gitFolder.renameTo(new File(newLocation, ".git"));
+        gitFolder = new File(newLocation, ".git");
+        File gitFile = new File(subRepo, ".git");
+        write(gitFile, "gitdir: " + gitFolder.getAbsolutePath());
+        
+        ApiUtils.clearRepositoryPool();
+        client = GitRepository.getInstance(subRepo).createClient();
+        repo = getRepository(client);
+        assertEquals(subRepo, repo.getWorkTree());
+        assertEquals(gitFolder, repo.getDirectory());
+        statuses = client.getStatus(new File[] { newFile }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, subRepo, newFile, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
     }
     
 }

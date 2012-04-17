@@ -60,7 +60,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
-import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTMethod;
 import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.api.elements.KeywordElement;
@@ -439,7 +439,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         private final boolean isGDK;
 
-        private final AstMethodElement methodElement;
+        private final ASTMethod methodElement;
 
         private final boolean nameOnly;
 
@@ -451,7 +451,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
             // This is an artificial, new ElementHandle which has no real
             // equivalent in the AST. It's used to match the one passed to super.document()
-            methodElement = new AstMethodElement(null, new ASTNode(), clz, method, isGDK);
+            methodElement = new ASTMethod(null, new ASTNode(), clz, method, isGDK);
         }
 
         public MetaMethod getMethod() {

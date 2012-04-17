@@ -288,7 +288,7 @@ made subject to such option by the copyright holder.
 
     <target name="javadoc" depends="build-init,-javadoc-init">
         <mkdir dir="${netbeans.javadoc.dir}/${code.name.base.dashes}"/>
-        <javadoc destdir="${netbeans.javadoc.dir}/${code.name.base.dashes}" packagenames="${module.javadoc.packages}" source="${javac.source}" windowtitle="${javadoc.title}" encoding="UTF-8">
+        <javadoc destdir="${netbeans.javadoc.dir}/${code.name.base.dashes}" packagenames="${module.javadoc.packages}" source="${javac.source}" windowtitle="${javadoc.title}" encoding="UTF-8" charset="UTF-8">
             <classpath refid="processor.cp"/> <!-- #157320 -->
             <sourcepath location="${src.dir}"/>
             <doctitle>${javadoc.title}</doctitle>

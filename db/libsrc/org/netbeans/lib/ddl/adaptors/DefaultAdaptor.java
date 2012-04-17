@@ -4089,4 +4089,16 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable {
     public boolean autoCommitFailureClosesAllResultSets() throws SQLException {
         return false;
     }
+    
+    //
+    // JDK7
+    // 
+
+    public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+        return null;
+    }
+
+    public boolean generatedKeyAlwaysReturned() throws SQLException {
+        return false;
+    }
 }

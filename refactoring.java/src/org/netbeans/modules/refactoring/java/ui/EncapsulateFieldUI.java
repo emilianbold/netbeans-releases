@@ -177,7 +177,7 @@ public final class EncapsulateFieldUI implements RefactoringUI, JavaRefactoringU
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(EncapsulateFieldUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.EncapsulateFieldUI"); // NOI18N
     }
     
     /**
@@ -214,7 +214,7 @@ public final class EncapsulateFieldUI implements RefactoringUI, JavaRefactoringU
     @Override
     public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (ec!=null) {
+        if (ec == null) {
             return EncapsulateFieldUI.create(info, handles);
         }
         JEditorPane textC = ec.getOpenedPanes()[0];
@@ -236,13 +236,13 @@ public final class EncapsulateFieldUI implements RefactoringUI, JavaRefactoringU
             el = info.getElementUtilities().enclosingTypeElement(el);
         }
         Collection<TreePathHandle> h = new ArrayList<TreePathHandle>();
-        Element last = null;
         for (Element e : ElementFilter.fieldsIn(el.getEnclosedElements())) {
             SourcePositions sourcePositions = info.getTrees().getSourcePositions();
             Tree leaf = info.getTrees().getPath(e).getLeaf();
             long start = sourcePositions.getStartPosition(info.getCompilationUnit(), leaf);
             long end = sourcePositions.getEndPosition(info.getCompilationUnit(), leaf);
-            if (start >= startOffset && end <= endOffset) {
+            if ((start <= endOffset && start >= startOffset) ||
+                    (end <= endOffset && end >= startOffset)){
                 h.add(TreePathHandle.create(e, info));
             }
         }

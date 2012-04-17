@@ -488,12 +488,12 @@ public class TraceXRef extends TraceModel {
                 }
                 return;
             }
-            if (UIDProviderIml.isSelfUID(UIDs.get(target))) {
-                // skip all locals
-                return;
-            }
             if (CsmKindUtilities.isParameter(target)) {
                 // skip parameters
+                return;
+            }
+            if (UIDProviderIml.isSelfUID(UIDs.get(target))) {
+                // skip all locals
                 return;
             }
             String skind;

@@ -110,6 +110,22 @@ is the proper place.
   <changes>
     <change>
         <api name="palette_api"/>
+        <summary>Deprecating ModuleInstall</summary>
+        <version major="1" minor="31"/>
+        <date day="1" month="4" year="2012"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" deprecation="yes"/>
+        <description>Deprecating <a href="@TOP@/org/netbeans/spi/palette/PaletteModule.html">
+          PaletteModule</a> - it should not
+          be part of the API to begin with. Now it is registered with
+          <a href="@org-openide-windows@/org/openide/windows/OnShowing.html">OnShowing</a>
+          annotation and thus implements <code>Runnable</code>.
+        </description>
+        <class package="org.netbeans.spi.palette" name="PaletteModule"/>
+        <issue number="200636"/>
+    </change>      
+    <change>
+        <api name="palette_api"/>
         <summary>Initial version released</summary>
         <version major="1" minor="0"/>
         <date day="21" month="7" year="2005"/>

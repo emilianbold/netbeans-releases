@@ -89,20 +89,26 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
     private MoveRefactoring refactoring;
     private String targetPkgName = "";
     private boolean disable;
+    private final boolean needsByPass;
     private TreePathHandle javaClass;
     private FileObject targetFolder;
     private PasteType pasteType;
     private final String sourceName;
 
     public MoveClassUI(DataObject javaObject) {
-        this(javaObject, null, null);
+        this(javaObject, null, null, false);
+    }
+
+    public MoveClassUI(DataObject javaObject, FileObject targetFolder, PasteType pasteType) {
+        this(javaObject, targetFolder, pasteType, false);
     }
     
     public MoveClassUI(TreePathHandle javaClass, String sourceName) {
         this(javaClass, null, null, sourceName);
     }
 
-    public MoveClassUI(DataObject javaObject, FileObject targetFolder, PasteType pasteType) {
+    public MoveClassUI(DataObject javaObject, FileObject targetFolder, PasteType pasteType, boolean needsByPass) {
+        this.needsByPass = needsByPass;
         this.disable = targetFolder != null;
         this.targetFolder = targetFolder;
         this.javaObject = javaObject;
@@ -113,6 +119,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
     }
 
     public MoveClassUI(TreePathHandle javaClass, FileObject targetFolder, PasteType pasteType, String sourceName) {
+        this.needsByPass = false;
         this.disable = targetFolder != null;
         this.javaClass = javaClass;
         this.sourceName = sourceName;
@@ -165,6 +172,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
                     target);
 
             panel.setCombosEnabled(!disable);
+            panel.setRefactoringBypassRequired(needsByPass);
         }
         return panel;
     }
@@ -219,12 +227,12 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(MoveClassUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.MoveClassUI"); // NOI18N
     }
 
     @Override
     public boolean isRefactoringBypassRequired() {
-        return panel != null && panel.isRefactoringBypassRequired();
+        return needsByPass || panel != null && panel.isRefactoringBypassRequired();
     }
 
     @Override
@@ -253,6 +261,19 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
                 Set<FileObject> s = new HashSet<FileObject>();
                 s.addAll(Arrays.asList(files));
                 return new MoveClassesUI(s, tar, paste);
+            }
+            if(handles.length < 1) {
+                if(tar != null) {
+                    try {
+                        assert files.length > 0;
+                        return new MoveClassUI(DataObject.find(files[0]), tar, paste, true);
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
             }
 
             EditorCookie ec = lookup.lookup(EditorCookie.class);

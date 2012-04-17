@@ -381,8 +381,7 @@ class LayoutRegion implements LayoutConstants {
         int p1L = pos1[LEADING] - margin;
         int p1T = pos1[TRAILING] + margin;
         return (p1T > p2L && p1L < p2T)
-                || (p1L == p1T && (p1L == p2L || p1T == p2T))
-                || (p2L == p2T && (p2L == p1L || p2T == p1T));
+                || (p1L == p2L && (p1L == p1T || p2L == p2T)); // 0 size at leading edge (trailing is exclusive)
     }
 
     static boolean overlap(LayoutRegion r1, LayoutRegion r2) {

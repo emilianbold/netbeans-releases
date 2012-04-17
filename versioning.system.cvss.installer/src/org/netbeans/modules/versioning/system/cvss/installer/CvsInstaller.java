@@ -230,14 +230,17 @@ public final class CvsInstaller extends VersioningSystem {
             }
             assert !EventQueue.isDispatchThread();
             for (UpdateUnit u : UpdateManager.getDefault().getUpdateUnits()) {
-                if (INSTALLER_CODENAME.equals(u.getCodeName()) && u.getInstalled() != null) {
+                if (INSTALLER_CODENAME.equals(u.getCodeName()) && u.getInstalled() != null && !u.isPending()) {
                     OperationContainer<OperationSupport> container = OperationContainer.createForUninstall();
                     if (container.canBeAdded(u, u.getInstalled())) {
                         container.add(u, u.getInstalled());
                         try {
+                            LOG.log(Level.INFO, "doFinish: uninstalling"); //NOI18N
                             OperationSupport support = container.getSupport();
                             Restarter restarter = support.doOperation(null);
+                            LOG.log(Level.INFO, "doFinish: uninstalled"); //NOI18N
                             if (restarter != null) {
+                                LOG.log(Level.INFO, "doFinish: restart scheduled"); //NOI18N
                                 support.doRestartLater(restarter);
                             }
                         } catch (OperationException ex) {
@@ -289,6 +292,7 @@ public final class CvsInstaller extends VersioningSystem {
                         OperationContainer<InstallSupport> container = OperationContainer.createForInstall();
                         if (container.canBeAdded(u, element)) {
                             container.add(u, element);
+                            LOG.log(Level.INFO, "installCvsSupport: installing CVS"); //NOI18N
                             return PluginManager.openInstallWizard(container);
                         }
                     }

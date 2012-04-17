@@ -44,6 +44,7 @@ package org.netbeans.api.search;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.search.BasicSearchProvider;
+import org.netbeans.modules.search.ResultView;
 import org.netbeans.modules.search.SearchPanel;
 import org.netbeans.spi.search.provider.SearchProvider;
 
@@ -124,6 +125,9 @@ public final class SearchControl {
         SearchPanel current = SearchPanel.getCurrentlyShown();
         if (current != null) {
             current.close();
+        }
+        if (ResultView.getInstance().isFocused()) {
+            ResultView.getInstance().markCurrentTabAsReusable();
         }
         new SearchPanel(replaceMode, presenter).showDialog();
     }

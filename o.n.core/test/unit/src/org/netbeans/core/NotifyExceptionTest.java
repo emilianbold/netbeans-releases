@@ -46,12 +46,15 @@ package org.netbeans.core;
 
 import java.awt.Dialog;
 import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.startup.TopLogging;
 import org.netbeans.junit.*;
 import org.openide.DialogDescriptor;
@@ -70,6 +73,11 @@ import org.openide.windows.WindowManager;
  * @author Stanislav Aubrecht
  */
 public class NotifyExceptionTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NotifyExceptionTest.class);
+    }
+
     static {
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
     }

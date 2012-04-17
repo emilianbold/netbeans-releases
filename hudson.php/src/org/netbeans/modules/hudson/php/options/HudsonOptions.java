@@ -117,12 +117,9 @@ public final class HudsonOptions {
     public String getJobConfig() {
         String config = getPreferences().get(JOB_CONFIG, null);
         if (config == null) {
-            File configFile = InstalledFileLocator.getDefault().locate("hudson/config.xml", "org.netbeans.modules.hudson.php", false);  // NOI18N
+            String configFile = getDefaultJobConfig();
             if (configFile != null) {
-                config = configFile.getAbsolutePath();
-                setJobConfig(config);
-            } else {
-                LOGGER.info("Hudson job config should be bundled with the IDE");
+                setJobConfig(configFile);
             }
         }
         return config;
@@ -130,6 +127,15 @@ public final class HudsonOptions {
 
     public void setJobConfig(String jobConfig) {
         getPreferences().put(JOB_CONFIG, jobConfig);
+    }
+
+    public String getDefaultJobConfig() {
+        File configFile = InstalledFileLocator.getDefault().locate("hudson/config.xml", "org.netbeans.modules.hudson.php", false);  // NOI18N
+        if (configFile == null) {
+            LOGGER.info("Hudson job config should be bundled with the IDE");
+            return null;
+        }
+        return configFile.getAbsolutePath();
     }
 
     private Preferences getPreferences() {

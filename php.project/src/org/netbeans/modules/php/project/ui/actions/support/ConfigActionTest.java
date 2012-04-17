@@ -181,7 +181,10 @@ class ConfigActionTest extends ConfigAction {
             ConfigFiles configFiles = PhpUnit.getConfigFiles(project, false);
 
             PhpUnitTestGroupsFetcher testGroupsFetcher = new PhpUnitTestGroupsFetcher(project);
-            testGroupsFetcher.fetch(phpUnit.getWorkingDirectory(configFiles, FileUtil.toFile(info.getWorkingDirectory())));
+            boolean success = testGroupsFetcher.fetch(phpUnit.getWorkingDirectory(configFiles, FileUtil.toFile(info.getWorkingDirectory())), configFiles);
+            if (!success) {
+                return;
+            }
             if (testGroupsFetcher.wasInterrupted()) {
                 return;
             }

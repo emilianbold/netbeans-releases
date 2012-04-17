@@ -86,6 +86,7 @@ class SearchExecutor extends GitProgressSupport {
     private final Date from;
     private final Date to;
     static final int DEFAULT_LIMIT = 10;
+    static final int UNLIMITTED = -1;
     private final SearchCriteria sc;
 
     public SearchExecutor (SearchHistoryPanel master) {
@@ -98,7 +99,8 @@ class SearchExecutor extends GitProgressSupport {
         toRevision = to == null ? criteria.getTo() : null;
         username = criteria.getUsername();
         message = criteria.getCommitMessage();
-        limitRevisions = criteria.getLimit();
+        int limit = criteria.getLimit();
+        limitRevisions = limit <= 0 ? UNLIMITTED : limit;
         showMerges = criteria.isIncludeMerges();
 
         sc = new SearchCriteria();

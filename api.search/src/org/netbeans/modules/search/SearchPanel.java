@@ -50,6 +50,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
@@ -103,6 +104,8 @@ public class SearchPanel extends JPanel implements FocusListener,
      * Selected Search presenter
      */
     private Presenter selectedPresenter = null;
+
+    private boolean preferScopeSelection = false;
 
     /**
      * Panel that can show form with settings for several search providers.
@@ -252,13 +255,13 @@ public class SearchPanel extends JPanel implements FocusListener,
         this.setDialogDescriptor(dialogDescriptor);
 
         dialog.pack();
+        setCurrentlyShown(this);
         dialog.setVisible(
                 true);
         dialog.requestFocus();
         this.requestFocusInWindow();
         updateHelp();
         updateUsability();
-        setCurrentlyShown(this);
         if (selectedPresenter == null) {
             chooseLastUsedPresenter();
         }
@@ -330,6 +333,7 @@ public class SearchPanel extends JPanel implements FocusListener,
 
     private void cancel() {
         close();
+        ResultView.getInstance().clearReusableTab();
     }
 
     /**
@@ -395,6 +399,23 @@ public class SearchPanel extends JPanel implements FocusListener,
     private void updateUsability() {
         okButton.setEnabled(selectedPresenter.isUsable(
                 dialogDescr.getNotificationLineSupport()));
+    }
+
+    public boolean isPreferScopeSelection() {
+        return preferScopeSelection;
+    }
+
+    public void setPreferScopeSelection(boolean preferScopeSelection) {
+        this.preferScopeSelection = preferScopeSelection;
+    }
+
+    public static boolean isOpenedForSelection() {
+        SearchPanel sp = getCurrentlyShown();
+        if (sp == null) {
+            return false;
+        } else {
+            return sp.isPreferScopeSelection();
+        }
     }
 
     /**

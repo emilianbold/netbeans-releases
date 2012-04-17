@@ -119,7 +119,7 @@ public class CsmCompletionUtils {
     }
 
     public static boolean isAutoInsertIncludeDirectives() {
-        String mimeType = MIMENames.CPLUSPLUS_MIME_TYPE; // now all settings are from C++
+        String mimeType = MIMENames.SOURCES_MIME_TYPE; // now all settings are from C++
         Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
         return prefs.getBoolean(CPP_AUTO_INSERT_INCLUDE_DIRECTIVES, true);
     }

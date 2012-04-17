@@ -41,13 +41,11 @@
  */
 
 package org.netbeans.modules.debugger.jpda.ui;
-import org.netbeans.jellytools.actions.Action;
 
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
-
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -56,7 +54,7 @@ import org.netbeans.jemmy.EventTool;
 
 /**
  *
- * @author Filip Zamboj
+ * @author Filip Zamboj, Jiri Kovalsky
  */
 public class DebuggingBreakpointsActionsTest extends DebuggerTestCase{
 
@@ -86,7 +84,6 @@ public class DebuggingBreakpointsActionsTest extends DebuggerTestCase{
     public void testToggleBreakpoints() {        
         Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
         new OpenAction().performAPI(beanNode); // NOI18N
-        assertTrue(Utilities.verifyPopup(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName), new String[] {Utilities.unsetMainProjectAction}));
         new EventTool().waitNoEvent(1000);
         EditorOperator eo = new EditorOperator("MemoryView.java");
         //place breakpoint
@@ -94,34 +91,15 @@ public class DebuggingBreakpointsActionsTest extends DebuggerTestCase{
         assertTrue("Breakpoint annotation is not displayed", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
     }
 
-    static int lastLineNumber = 0;
-
-
-
     public void testRemoveBreakpoint() {
         
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            assertTrue(Utilities.verifyPopup(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName), new String[] {Utilities.unsetMainProjectAction}));
-            new EventTool().waitNoEvent(1000);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            Utilities.toggleBreakpoint(eo, 80);
-            //remove breakpoint
-            Utilities.toggleBreakpoint(eo, 80, false);
-            assertFalse("Breakpoint annotation is not removed from line 80", Utilities.checkAnnotation(eo, 80, "Breakpoint"));        
+        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+        new OpenAction().performAPI(beanNode); // NOI18N
+        new EventTool().waitNoEvent(1000);
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        Utilities.toggleBreakpoint(eo, 80);
+        //remove breakpoint
+        Utilities.toggleBreakpoint(eo, 80, false);
+        assertFalse("Breakpoint annotation is not removed from line 80", Utilities.checkAnnotation(eo, 80, "Breakpoint"));        
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

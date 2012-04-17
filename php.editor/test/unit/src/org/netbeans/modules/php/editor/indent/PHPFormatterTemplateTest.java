@@ -56,7 +56,7 @@ import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
-import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -67,7 +67,7 @@ import org.openide.util.Lookup;
  *
  * @author Petr Pisl
  */
-public class PHPFormatterTemplateTest extends PHPTestBase {
+public class PHPFormatterTemplateTest extends PHPCodeCompletionTestBase {
     private String FORMAT_START_MARK = "/*FORMAT_START*/"; //NOI18N
     private String FORMAT_END_MARK = "/*FORMAT_END*/"; //NOI18N
 

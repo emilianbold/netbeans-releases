@@ -112,15 +112,15 @@ public final class LibraryManager {
         return res;
     }
 
-    public Collection<CsmProject> getProjectsByLibrary(LibProjectImpl library) {
+    public Collection<ProjectBase> getProjectsByLibrary(LibProjectImpl library) {
         //getDependentProjects();
         LibraryKey libraryKey = new LibraryKey(library.getFileSystem(), library.getPath().toString());
         LibraryEntry entry = librariesEntries.get(libraryKey);
         if (entry == null) {
-            return Collections.<CsmProject>emptyList();
+            return Collections.<ProjectBase>emptyList();
         } else {
             Collection<CsmUID<CsmProject>> uids = entry.getDependentProjects();
-            Collection<CsmProject> projects = new ArrayList<CsmProject>(uids.size());
+            List<ProjectBase> projects = new ArrayList<ProjectBase>(uids.size());
             for (CsmUID<CsmProject> uid : uids) {
                 ProjectBase project = (ProjectBase) uid.getObject();
                 if (project != null && ! project.isDisposing() && project.isValid()) {                    
@@ -165,6 +165,7 @@ public final class LibraryManager {
         Set<ProjectBase> antiLoop = new HashSet<ProjectBase>();
         ProjectBase res = searchInProjectFiles(baseProject, resolvedPath, antiLoop);
         if (res != null) {
+            baseProject.prepareIncludeStorage(res);
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Projects", curFile, resolvedPath, res, baseProject);//NOI18N
             }
@@ -174,6 +175,7 @@ public final class LibraryManager {
         antiLoop.clear();
         res = searchInProjectRoots(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath), antiLoop);
         if (res != null) {
+            baseProject.prepareIncludeStorage(res);
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Projects roots", curFile, resolvedPath, res, baseProject);//NOI18N
             }
@@ -182,6 +184,7 @@ public final class LibraryManager {
         List<CsmProject> libraries = baseProject.getLibraries();        
         res = searchInProjectFilesArtificial(libraries, resolvedPath, antiLoop);
         if (res != null) {
+            baseProject.prepareIncludeStorage(res);
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Libraries", curFile, resolvedPath, res, baseProject);//NOI18N
             }
@@ -219,6 +222,7 @@ public final class LibraryManager {
                 }
             }
         }
+        baseProject.prepareIncludeStorage(res);
         return res;
     }
 
@@ -365,9 +369,13 @@ public final class LibraryManager {
         return entry;
     }
 
-    public void onProjectPropertyChanged(CsmUID<CsmProject> project) {
+    public void onProjectPropertyChanged(ProjectBase project) {
+        CsmUID<CsmProject> uid = project.getUID();
         for (LibraryEntry entry : librariesEntries.values()) {
-            entry.removeProject(project);
+            Boolean removed = entry.removeProject(uid);
+            if (removed != null) {
+                project.invalidateLibraryStorage(entry.libraryUID);
+            }
         }
     }
 
@@ -541,8 +549,8 @@ public final class LibraryManager {
             dependentProjects.put(project, Boolean.TRUE);
         }
 
-        private void removeProject(CsmUID<CsmProject> project) {
-            dependentProjects.remove(project);
+        private Boolean removeProject(CsmUID<CsmProject> project) {
+            return dependentProjects.remove(project);
         }
 
         @Override
@@ -573,7 +581,7 @@ public final class LibraryManager {
                     printOut.printf("Library was NOT restored from repository\n");// NOI18N
                 } else if (library instanceof ProjectBase) {
                     printOut.printf("[%d] disposing=%s\n", ind, ((ProjectBase)library).isDisposing());// NOI18N
-                    ((ProjectBase)library).traceFileContainer(printOut);
+                    ProjectBase.dumpFileContainer(library, printOut);
                 } else {
                     printOut.printf("Library's project has unexpected class type %s\n", library.getClass().getName());// NOI18N
                 }

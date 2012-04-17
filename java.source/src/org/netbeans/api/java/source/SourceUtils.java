@@ -347,6 +347,7 @@ public class SourceUtils {
             int lastDot = qName.lastIndexOf('.');
             Element element = null;
             if ((element = info.getElements().getTypeElement(qName)) != null) {
+                clashing = false;
                 String simple = qName.substring(lastDot < 0 ? 0 : lastDot + 1);
                 if (sqName.length() > 0)
                     sqName.insert(0, '.');
@@ -360,7 +361,7 @@ public class SourceUtils {
                         //either a clash or already imported:
                         if (qName.contentEquals(((TypeElement)e).getQualifiedName())) {
                             return sqName.toString();
-                        } else if (fqn == qName) {
+                        } else {
                             clashing = true;
                         }
                         matchFound = true;
@@ -373,9 +374,10 @@ public class SourceUtils {
                             //either a clash or already imported:
                             if (qName.contentEquals(e.getQualifiedName())) {
                                 return sqName.toString();
-                            } else if (fqn == qName) {
+                            } else {
                                 clashing = true;
                             }
+                            matchFound = true;
                             break;
                         }
                     }

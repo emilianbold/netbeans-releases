@@ -50,20 +50,21 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.builds.ImportUtils;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -130,7 +131,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
     private static NativeExecutionService prepare(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
         //Save file
         saveNode(node);
-        DataObject dataObject = node.getCookie(DataObject.class);
+        DataObject dataObject = node.getLookup().lookup(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         FileObject buildDirFileObject = getBuildDirectory(node,PredefinedToolKind.QMakeTool);
         if (buildDirFileObject == null) {
@@ -179,7 +180,11 @@ public class QMakeAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        traceExecutable(executable, buildDir, argsFlat, execEnv.toString(), envMap);
+        
+        MacroMap mm = MacroMap.forExecEnv(execEnv);
+        mm.putAll(envMap);
+        
+        traceExecutable(executable, buildDir, argsFlat, execEnv.toString(), mm.toMap());
 
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, syncWorker);
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
@@ -187,7 +192,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
                 unbufferOutput(false).
                 addNativeProcessListener(processChangeListener);
 
-        npb.getEnvironment().putAll(envMap);
+        npb.getEnvironment().putAll(mm);
         npb.redirectError();
         List<String> list = ImportUtils.parseArgs(argsFlat.toString());
         list = ImportUtils.normalizeParameters(list);

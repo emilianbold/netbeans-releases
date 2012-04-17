@@ -70,7 +70,7 @@ public class NetBeansStartupArgs implements LateBoundPrerequisitesChecker {
             mode = StartupExtender.StartMode.NORMAL;
         } else if (ActionProvider.COMMAND_DEBUG.equals(actionName)) {
             mode = StartupExtender.StartMode.DEBUG;
-        } else if ("profile".equals(actionName)) {
+        } else if (ActionProvider.COMMAND_PROFILE.equals(actionName)) {
             mode = StartupExtender.StartMode.PROFILE;
         } else {
             return true;

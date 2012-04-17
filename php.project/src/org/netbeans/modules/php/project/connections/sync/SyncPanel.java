@@ -138,7 +138,7 @@ public final class SyncPanel extends JPanel {
     private Boolean rememberShowSummary = null;
 
 
-    SyncPanel(PhpProject project, String remoteConfigurationName, List<SyncItem> items, RemoteClient remoteClient, boolean showSummary) {
+    SyncPanel(PhpProject project, String remoteConfigurationName, List<SyncItem> items, RemoteClient remoteClient, boolean forProject, boolean firstRun) {
         assert SwingUtilities.isEventDispatchThread();
         assert items != null;
 
@@ -151,12 +151,12 @@ public final class SyncPanel extends JPanel {
 
         initComponents();
         viewCheckBoxes = getViewCheckBoxes();
-        initViewButtons();
+        initViewCheckBoxes();
         initTable();
         initOperationButtons();
         initDiffButton();
-        initInfos();
-        initShowSummaryCheckBox(showSummary);
+        initInfos(forProject, firstRun);
+        initShowSummaryCheckBox(forProject);
     }
 
     private JCheckBox createViewCheckBox() {
@@ -170,7 +170,7 @@ public final class SyncPanel extends JPanel {
         "# {1} - remote configuration name",
         "SyncPanel.title=Remote Synchronization for {0}: {1}"
     })
-    public boolean open(boolean firstRun) {
+    public boolean open() {
         assert SwingUtilities.isEventDispatchThread();
         descriptor = new DialogDescriptor(
                 this,
@@ -185,7 +185,6 @@ public final class SyncPanel extends JPanel {
         descriptor.setClosingOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
         validateItems();
         updateSyncInfo();
-        firstRunInfoLabel.setVisible(firstRun);
         boolean okPressed;
         try {
             dialog.setVisible(true);
@@ -218,7 +217,7 @@ public final class SyncPanel extends JPanel {
         "SyncPanel.view.warning=W&arning",
         "SyncPanel.view.error=E&rror"
     })
-    private void initViewButtons() {
+    private void initViewCheckBoxes() {
         // operations
         initViewCheckBox(viewNoopCheckBox, SyncItem.Operation.NOOP);
         initViewCheckBox(viewDownloadCheckBox, EnumSet.of(SyncItem.Operation.DOWNLOAD, SyncItem.Operation.DOWNLOAD_REVIEW));
@@ -347,10 +346,25 @@ public final class SyncPanel extends JPanel {
         diffButton.addActionListener(new DiffActionListener());
     }
 
-    private void initInfos() {
-        firstRunInfoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
+    @NbBundle.Messages({
+        "SyncPanel.info.firstRun=Running for the first time for this project and this configuration, more user actions could be needed.",
+        "SyncPanel.info.individualFiles=Run synchronization on Source Files for more accurate result."
+    })
+    private void initInfos(boolean forProject, boolean firstRun) {
+        infoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
         warningLabel.setIcon(ImageUtilities.loadImageIcon(WARNING_ICON_PATH, false));
         syncInfoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
+        // info message
+        if (forProject) {
+            if (firstRun) {
+                infoLabel.setText(Bundle.SyncPanel_info_firstRun());
+            } else {
+                infoLabel.setVisible(false);
+            }
+        } else {
+            // individual files
+            infoLabel.setText(Bundle.SyncPanel_info_individualFiles());
+        }
     }
 
     private void initShowSummaryCheckBox(boolean showSummary) {
@@ -556,7 +570,7 @@ public final class SyncPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        firstRunInfoLabel = new JLabel();
+        infoLabel = new JLabel();
         warningLabel = new JLabel();
         viewLabel = new JLabel();
         viewNoopCheckBox = createViewCheckBox();
@@ -580,7 +594,7 @@ public final class SyncPanel extends JPanel {
         resetButton = new JButton();
         showSummaryCheckBox = new JCheckBox();
 
-        Mnemonics.setLocalizedText(firstRunInfoLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.firstRunInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(infoLabel, "INFO"); // NOI18N
         itemTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         Mnemonics.setLocalizedText(warningLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.warningLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(viewLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.viewLabel.text")); // NOI18N
@@ -612,17 +626,17 @@ public final class SyncPanel extends JPanel {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.TRAILING).addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
 
-                        .addGap(0, 0, Short.MAX_VALUE).addComponent(showSummaryCheckBox)).addComponent(itemScrollPane, Alignment.LEADING).addGroup(Alignment.LEADING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE).addComponent(showSummaryCheckBox)).addComponent(itemScrollPane).addGroup(layout.createSequentialGroup()
 
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING, false).addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                                 .addComponent(operationLabel)
 
-                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(diffButton).addGap(18, 18, 18).addComponent(noopButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton)).addComponent(firstRunInfoLabel).addComponent(syncInfoLabel).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(diffButton).addGap(18, 18, 18).addComponent(noopButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton)).addComponent(infoLabel).addComponent(syncInfoLabel).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup()
                                 .addComponent(viewLabel)
 
                                 .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
@@ -641,7 +655,7 @@ public final class SyncPanel extends JPanel {
                                         .addGap(18, 18, 18)
                                         .addComponent(viewDeleteCheckBox)
                                         .addGap(18, 18, 18)
-                                        .addComponent(viewSymlinkCheckBox))))).addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
+                                        .addComponent(viewSymlinkCheckBox))))).addGap(0, 91, Short.MAX_VALUE))).addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {deleteButton, downloadButton, noopButton, resetButton, uploadButton});
@@ -649,9 +663,9 @@ public final class SyncPanel extends JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(firstRunInfoLabel)
+                .addComponent(infoLabel)
 
-                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewLabel).addComponent(viewNoopCheckBox).addComponent(viewDownloadCheckBox).addComponent(viewUploadCheckBox).addComponent(viewDeleteCheckBox).addComponent(viewSymlinkCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewFileDirCollisionCheckBox).addComponent(viewFileConflictCheckBox).addComponent(viewWarningCheckBox).addComponent(viewErrorCheckBox)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewLabel).addComponent(viewNoopCheckBox).addComponent(viewDownloadCheckBox).addComponent(viewUploadCheckBox).addComponent(viewDeleteCheckBox).addComponent(viewSymlinkCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewFileDirCollisionCheckBox).addComponent(viewFileConflictCheckBox).addComponent(viewWarningCheckBox).addComponent(viewErrorCheckBox)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                         .addComponent(syncInfoLabel)
 
                         .addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteButton).addComponent(resetButton).addComponent(operationLabel))).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
@@ -664,7 +678,7 @@ public final class SyncPanel extends JPanel {
     private JButton deleteButton;
     private JButton diffButton;
     private JButton downloadButton;
-    private JLabel firstRunInfoLabel;
+    private JLabel infoLabel;
     private JScrollPane itemScrollPane;
     private JTable itemTable;
     private JButton noopButton;

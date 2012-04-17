@@ -157,7 +157,7 @@ abstract class BusyIcon implements Icon {
         private final Method paintMethod;
         private int currentFrame = 0;
         private static final int POINTS = 8;
-        private static final int HEIGHT = 14;
+        private static final int HEIGHT = 16;
 
         private SwingXBusyIcon( Object painter, Method paint, Method setFrame ) {
             super( HEIGHT, HEIGHT );

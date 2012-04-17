@@ -110,6 +110,13 @@ public final class LibProjectImpl extends ProjectBase {
     }
 
     @Override
+    public Collection<ProjectBase> getDependentProjects() {
+        // TODO: looks like not very safe way to get dependencies
+        // see issue #211061
+        return LibraryManager.getInstance().getProjectsByLibrary(this);
+    }
+
+    @Override
     protected Collection<Key> getLibrariesKeys() {
         return Collections.<Key>emptySet();
     }
@@ -141,7 +148,7 @@ public final class LibProjectImpl extends ProjectBase {
     }
 
     @Override
-    public void onFilePropertyChanged(List<NativeFileItem> nativeFiles) {
+    public void onFilePropertyChanged(List<NativeFileItem> nativeFiles, boolean invalidateLibs) {
     }
 
     @Override

@@ -296,7 +296,7 @@ public abstract class VariableModel extends ModelListenerSupport
             return;
 	} else if (node instanceof WatchVariable || node instanceof Watch) {
             WatchVariable w = (WatchVariable) node;
-	    NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 
             // replace this node
             debugger.replaceWatch(w.getNativeWatch(), name);
@@ -461,7 +461,7 @@ public abstract class VariableModel extends ModelListenerSupport
 	}
 
 	public void actionPerformed(ActionEvent e) {
-	    NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    if (node instanceof Variable) {
 		Variable v = (Variable) node;
 		if (v.isArrayBrowsable()) {
@@ -482,7 +482,7 @@ public abstract class VariableModel extends ModelListenerSupport
 
 	// interface BooleanStateAction
 	public boolean getBooleanState() {
-	    NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    if (debugger instanceof NativeDebugger) {
 		setEnabled(true);
 		return debugger.isDynamicType();
@@ -503,7 +503,7 @@ public abstract class VariableModel extends ModelListenerSupport
 	}
 
 	public void actionPerformed(ActionEvent e) {
-	    NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    debugger.setDynamicType(!getBooleanState());
         }
     }
@@ -517,7 +517,7 @@ public abstract class VariableModel extends ModelListenerSupport
 
 	// override BooleanStateAction
 	public boolean getBooleanState() {
-	    NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    if (debugger instanceof NativeDebugger) {
 		setEnabled(true);
 		return debugger.isInheritedMembers();
@@ -539,7 +539,7 @@ public abstract class VariableModel extends ModelListenerSupport
 	}
 
 	public void actionPerformed(ActionEvent e) {
-	    NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    debugger.setInheritedMembers(!getBooleanState());
         }
     }
@@ -553,7 +553,7 @@ public abstract class VariableModel extends ModelListenerSupport
 
 	// override BooleanStateAction
 	public boolean getBooleanState() {
-	    NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    if (debugger instanceof NativeDebugger) {
 		setEnabled(true);
 		return debugger.isStaticMembers();
@@ -575,7 +575,7 @@ public abstract class VariableModel extends ModelListenerSupport
 	}
 
 	public void actionPerformed(ActionEvent e) {
-	    NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    debugger.setStaticMembers(!getBooleanState());
         }
     }
@@ -640,7 +640,7 @@ public abstract class VariableModel extends ModelListenerSupport
 
 	    public void menuSelected (MenuEvent e) {
 		JMenu menu = (JMenu)e.getSource();
-		NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+		NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 		String format_array[] = debugger.formatChoices();
 
 		if (debugger != null) {

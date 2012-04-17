@@ -48,13 +48,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -255,7 +255,7 @@ public class CompositeComponentModel extends JsfPageModel {
 
         @Override
         public JsfPageModel getModel(HtmlParserResult result) {
-            AstNode node = result.root(LibraryUtils.COMPOSITE_LIBRARY_NS); //NOI18N
+            Node node = result.root(LibraryUtils.COMPOSITE_LIBRARY_NS); //NOI18N
             if(node == null) {
                 return null; //no composite library declaration
             }
@@ -271,36 +271,37 @@ public class CompositeComponentModel extends JsfPageModel {
             final boolean[] hasInterface = new boolean[1];
             final boolean[] hasImplementation = new boolean[1];
 
-            AstNodeUtils.visitChildren(node, new AstNodeVisitor() {
+            ElementUtils.visitChildren(node, new ElementVisitor() {
 
                 @Override
-                public void visit(AstNode node) {
-                    if (node.getNameWithoutPrefix().equals(INTERFACE_TAG_NAME)) {
+                public void visit(Element node) {
+                    OpenTag openTag = (OpenTag)node;
+                    if(LexerUtils.equals(INTERFACE_TAG_NAME, openTag.unqualifiedName(), true, true)) {
                         hasInterface[0] = true;
-                        for (AstNode child : node.children()) {
-                            if (child.getNameWithoutPrefix().equals(COMPOSITE_ATTRIBUTE_TAG_NAME)) {
+                        for (Element child : openTag.children(ElementType.OPEN_TAG)) {
+                            OpenTag openTagInner = (OpenTag)child;
+                            if(LexerUtils.equals(COMPOSITE_ATTRIBUTE_TAG_NAME, openTagInner.unqualifiedName(), true, true)) {
                                 //found composite:attribute tag
                                 Map<String, String> attrs = new HashMap<String, String>();
-                                for (String attrKey : child.getAttributeKeys()) {
-                                    attrs.put(attrKey, child.getAttribute(attrKey).unquotedValue());
+                                for (Attribute attr : openTagInner.attributes()) {
+                                    String value = attr.unquotedValue() == null ? null : attr.unquotedValue().toString();
+                                    attrs.put(attr.unqualifiedName().toString(), 
+                                            value);
                                 }
                                 interfaceAttrs.add(attrs);
                             }
                         }
-                    } else if (node.getNameWithoutPrefix().equals(IMPLEMENTATION_TAG_NAME)) {
+                    } else if (LexerUtils.equals(IMPLEMENTATION_TAG_NAME, openTag.unqualifiedName(), true, true)) {
                         hasImplementation[0] = true;
                     }
                 }
-            });
+
+            }, ElementType.OPEN_TAG);
 
             //#176807 - The component file itself doesn't have to declare the interface or
             //implementation, it can be done in another referred page
 //            if (hasInterface[0]) {
             return new CompositeComponentModel(file, interfaceAttrs, hasImplementation[0]);
-//            }
-
-//            return null;
-
         }
 
         @Override

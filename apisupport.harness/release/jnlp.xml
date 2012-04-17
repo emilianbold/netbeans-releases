@@ -434,6 +434,20 @@ made subject to such option by the copyright holder.
             <reference refid="cluster.path.id"/>
         </antcall>
     </target>
+    
+    <target name="-profile-check" if="netbeans.home">
+        <condition property="profiler.configured">
+            <or>
+                <contains string="${run.jvmargs.ide}" substring="-agentpath:" casesensitive="true"/>
+                <contains string="${run.jvmargs.ide}" substring="-javaagent:" casesensitive="true"/>
+            </or>
+        </condition>
+    </target>
+    
+    <target name="profile" depends="-profile-check,build-jnlp-local" description="Executes this suite as JNLP application under profiler" if="profiler.configured" unless="profiler.info.jvmargs.agent">
+        <startprofiler/>
+        <antcall target="run"/>
+    </target>
 
     <target name="-check-for-jnlp-userdir">
         <property name="jnlp.userdir" location="${user.home}/.nbapp-${app.name}"/>

@@ -115,19 +115,24 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     }
     
     @Override
+    @NonNull
     public BinaryAnalyser getBinaryAnalyser () {
-        // TODO - run in tx ?
         return new BinaryAnalyser (new PIWriter(), this.cacheRoot);
     }
     
     @Override
-    public SourceAnalyzerFactory.StorableAnalyzer getSourceAnalyser () {        
-        Writer writer = new PIWriter();
+    @NonNull
+    public SourceAnalyzerFactory.StorableAnalyzer getSourceAnalyser () {                
         final TransactionContext txCtx = TransactionContext.get();
-        assert  txCtx != null;
+        assert  txCtx != null;        
+        final PersistentIndexTransaction pit = txCtx.get(PersistentIndexTransaction.class);
+        assert pit != null;
         
-        PersistentIndexTransaction pit = txCtx.get(PersistentIndexTransaction.class);
-        pit.addIndexWriter(writer);
+        Writer writer = pit.getIndexWriter();
+        if (writer == null) {        
+            writer = new PIWriter();
+            pit.setIndexWriter(writer);
+        }
         return SourceAnalyzerFactory.createStorableAnalyzer(writer);        
     }
 
@@ -167,7 +172,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             index.query(names, DocumentUtil.sourceNameConvertor(), DocumentUtil.sourceNameFieldSelector(), cancel.get(), q);
             return names.isEmpty() ? null : names.iterator().next();
         } catch (IOException e) {
-            return this.<String,IOException>handleException(null,e);
+            return this.<String,IOException>handleException(null ,e, root);
         }
     }
     
@@ -247,7 +252,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 throw new IllegalArgumentException(element.toString());
             }
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null, ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
     
@@ -281,7 +286,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 }
             });
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null,ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
     
@@ -328,7 +333,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 }
             });
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null, ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
     
@@ -368,7 +373,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 }
             });
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null, ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
     
@@ -394,7 +399,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 }
             });
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null, ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
         
@@ -435,15 +440,17 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     }
     
     private class PIWriter implements Writer {
+        
+        PIWriter() {
+            if (index instanceof Runnable) {
+                ((Runnable)index).run();
+            }
+        }
+        
         @Override
         public void clear() throws IOException {
             resetPkgCache();
             index.clear();
-        }
-        @Override
-        public void deleteEnclosedAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
-            resetPkgCache();
-            index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(true), false);
         }
 
         @Override

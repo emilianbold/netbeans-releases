@@ -82,6 +82,7 @@ public class Backout implements PropertyChangeListener {
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(Backout.class, "ACSN_BackoutForm_Action_Cancel")); // NOI18N
         okButton.setEnabled(false);
         panel.addPropertyChangeListener(this);
+        panel.loadRevisions();
     } 
     
     public boolean showDialog() {

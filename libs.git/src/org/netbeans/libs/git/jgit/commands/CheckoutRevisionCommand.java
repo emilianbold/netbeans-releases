@@ -47,8 +47,10 @@ import java.util.Collection;
 import java.util.List;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheCheckout;
+import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.errors.CheckoutConflictException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefUpdate;
@@ -107,7 +109,16 @@ public class CheckoutRevisionCommand extends GitCommand {
                 dco = headTree == null ? new DirCacheCheckout(repository, cache, commit.getTree()) : new DirCacheCheckout(repository, headTree, cache, commit.getTree());
                 dco.setFailOnConflict(failOnConflict);
                 dco.checkout();
+                
                 File workDir = repository.getWorkTree();
+                for (String path : dco.getUpdated().keySet()) {
+                    // work-around for submodule roots
+                    DirCacheEntry e = cache.getEntry(path);
+                    if (FileMode.GITLINK.equals(e.getRawMode())) {
+                        new File(workDir, path).mkdirs();
+                    }
+                }
+                
                 notify(workDir, dco.getRemoved());
                 notify(workDir, dco.getConflicts());
                 notify(workDir, dco.getUpdated().keySet());

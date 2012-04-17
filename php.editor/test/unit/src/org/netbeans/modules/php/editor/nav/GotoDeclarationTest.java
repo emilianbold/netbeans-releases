@@ -744,6 +744,102 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "$this->controlPrototype->class(self::CS^S_CLASS);", "const ^CSS_CLASS = 'datepicker';");
     }
 
+    public void testIssue147517_01() throws Exception {
+        checkDeclaration(getTestPath(), "require_once 'driv^er.php';", "^<?php//driver");
+    }
+
+    public void testIssue147517_02() throws Exception {
+        checkDeclaration(getTestPath(), "require ('man^ager.php');", "^<?php//manager");
+    }
+
+    public void testIssue147517_03() throws Exception {
+        checkDeclaration(getTestPath(), "include 'facto^ry.php';", "^<?php//factory");
+    }
+
+    public void testIssue147517_04() throws Exception {
+        checkDeclaration(getTestPath(), "include_once ( 'con^tainer.php');", "^<?php//container");
+    }
+
+    public void testIssue203073_01() throws Exception {
+        checkDeclaration(getTestPath(), "class Yours extends Second^Parent {", "use Full\\Name\\Space\\FirstParent as ^SecondParent;");
+    }
+
+    public void testIssue203073_02() throws Exception {
+        checkDeclaration(getTestPath(), "class Yours1 extends First^Parent {", "class ^FirstParent {");
+    }
+
+    public void testIssue203814_01() throws Exception {
+        checkDeclaration(getTestPath(), "self::$first->fMe^thod();", "public function ^fMethod()");
+    }
+
+    public void testIssue203814_02() throws Exception {
+        checkDeclaration(getTestPath(), "static::$first->fMe^thod();", "public function ^fMethod()");
+    }
+
+    public void testIssue203814_03() throws Exception {
+        checkDeclaration(getTestPath(), "Second::$first->fMe^thod();", "public function ^fMethod()");
+    }
+
+    public void testIssue207346_01() throws Exception {
+        checkDeclaration(getTestPath(), "$this->invalid^LinkMode = 10;", "public $^invalidLinkMode;");
+    }
+
+    public void testIssue207346_02() throws Exception {
+        checkDeclaration(getTestPath(), "$this->invalid^LinkMode;", "public $^invalidLinkMode;");
+    }
+
+    public void testIssue208851() throws Exception {
+        checkDeclaration(getTestPath(), "parent::some^Func();", "function ^someFunc() {}");
+    }
+
+    public void testIssue207615_01() throws Exception {
+        checkDeclaration(getTestPath(), "self::$_v^ar;", "protected static $^_var = true;");
+    }
+
+    public void testIssue207615_02() throws Exception {
+        checkDeclaration(getTestPath(), "return static::$_v^ar;", "protected static $^_var = true;");
+    }
+
+    public void testConstants_01() throws Exception {
+        checkDeclaration(getTestPath(), "parent::C^ON;", "const ^CON = 1;");
+    }
+
+    public void testConstants_02() throws Exception {
+        checkDeclaration(getTestPath(), "self::C^ON;", "const ^CON = 1;");
+    }
+
+    public void testConstants_03() throws Exception {
+        checkDeclaration(getTestPath(), "static::C^ON;", "const ^CON = 1;");
+    }
+
+    public void testStaticAccessWithNsAlias_01() throws Exception {
+        checkDeclaration(getTestPath(), "parent::O^MG;", "const ^OMG = 1;");
+    }
+
+    public void testStaticAccessWithNsAlias_02() throws Exception {
+        checkDeclaration(getTestPath(), "self::O^MG;", "const ^OMG = 1;");
+    }
+
+    public void testStaticAccessWithNsAlias_03() throws Exception {
+        checkDeclaration(getTestPath(), "static::O^MG;", "const ^OMG = 1;");
+    }
+
+    public void testStaticAccessWithNsAlias_04() throws Exception {
+        checkDeclaration(getTestPath(), "parent::$static^Field;", "public static $^staticField = 2;");
+    }
+
+    public void testStaticAccessWithNsAlias_05() throws Exception {
+        checkDeclaration(getTestPath(), "self::$static^Field;", "public static $^staticField = 2;");
+    }
+
+    public void testStaticAccessWithNsAlias_06() throws Exception {
+        checkDeclaration(getTestPath(), "static::$static^Field;", "public static $^staticField = 2;");
+    }
+
+    public void testStaticAccessWithNsAlias_07() throws Exception {
+        checkDeclaration(getTestPath(), "parent::some^Func();", "static function ^someFunc() {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

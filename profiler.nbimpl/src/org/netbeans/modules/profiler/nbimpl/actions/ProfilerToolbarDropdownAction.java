@@ -72,7 +72,7 @@ public class ProfilerToolbarDropdownAction implements Action, Presenter.Toolbar 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public ProfilerToolbarDropdownAction() {
-        defaultAction = AntActions.profileMainProject();
+        defaultAction = AntActions.profileMainProjectAction();
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------

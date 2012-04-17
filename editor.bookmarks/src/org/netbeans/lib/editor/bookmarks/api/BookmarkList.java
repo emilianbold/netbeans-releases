@@ -50,21 +50,30 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
+import org.netbeans.modules.editor.bookmarks.BookmarkHistory;
+import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
+import org.netbeans.modules.editor.bookmarks.BookmarkManager;
+import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
+import org.netbeans.modules.editor.bookmarks.FileBookmarks;
 import org.openide.cookies.EditorCookie.Observable;
 import org.openide.loaders.DataObject;
 import org.openide.util.WeakSet;
 
 
 /**
- * Services around document bookmarks.
+ * Management of bookmarks for a single document (file).
+ * <br/>
+ * Bookmarks are sorted by increasing offsets.
  *
  * @author Miloslav Metelka
  * @version 1.00
@@ -81,31 +90,46 @@ public final class BookmarkList {
         return bookmarkList;
     }
 
-    private static final String
-                            PROP_BOOKMARKS = "bookmarks";
+    private static final String PROP_BOOKMARKS = "bookmarks";
 
-    private static Set<Observable>
-                            observedObservables = new WeakSet<Observable> ();
+    private static Set<Observable> observedObservables = new WeakSet<Observable> ();
+
     /**
      * Document for which the bookmark list was created.
      */
-    private Document        document;
+    private Document document;
     
     /**
-     * List of bookmark instances.
+     * List of bookmark instances sorted by offset.
      */
-    private List            bookmarks;
-
-    private final PropertyChangeSupport 
-                            propertyChangeSupport = new PropertyChangeSupport (this);
+    private List<Bookmark> bookmarks;
+    
+    private Map<BookmarkInfo, Bookmark> info2bookmark;
+    
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport (this);
     
     private BookmarkList (Document document) {
         if (document == null) {
             throw new NullPointerException ("Document cannot be null"); // NOI18N
         }
         this.document = document;
-        this.bookmarks = new ArrayList ();
-        BookmarksPersistence.loadBookmarks (this);
+        this.bookmarks = new ArrayList<Bookmark> ();
+        this.info2bookmark = new HashMap<BookmarkInfo, Bookmark>();
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            FileBookmarks fileBookmarks = lockedBookmarkManager.getFileBookmarks(document);
+            if (fileBookmarks != null) {
+                for (BookmarkInfo bookmarkInfo : fileBookmarks.getBookmarks()) {
+                    try {
+                        addBookmarkForInfo(bookmarkInfo, -1);
+                    } catch (IndexOutOfBoundsException ex) {
+                        // line does not exists now (some external changes)
+                    }
+                }
+            }
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
         
         DataObject dataObject = NbEditorUtilities.getDataObject (document);
         if (dataObject != null) {
@@ -129,7 +153,7 @@ public final class BookmarkList {
     }
     
     /**
-     * Returns list of all bookmarks.
+     * Returns list of all bookmarks sorted by increasing offsets.
      * 
      * @return list of all bookmarks
      */
@@ -137,27 +161,6 @@ public final class BookmarkList {
         return Collections.<Bookmark> unmodifiableList (bookmarks);
     }
     
-//    /**
-//     * Total count of bookmarks managed by this bookmark list.
-//     *
-//     * @return &gt;=0 total count of bookmarks.
-//     */
-//    public int getBookmarkCount () {
-//        return bookmarks.size ();
-//    }
-//    
-//    /**
-//     * Get bookmark at the specified index.
-//     * <br>
-//     * The bookmarks are ordered by increasing offset.
-//     *
-//     * @param index index of the bookmark in the list of bookmarks.
-//     * @return non-null bookmark instance.
-//     */
-//    public Bookmark getBookmark (int index) {
-//        return (Bookmark) bookmarks.get (index);
-//    }
-
     /**
      * Get the first bookmark
      * that has the offset greater than the specified offset.
@@ -179,7 +182,7 @@ public final class BookmarkList {
     
     /**
      * Get the first bookmark in backward direction
-     * that has the line index lower than the specified line index.
+     * that has the offset lower than the specified offset.
      *
      * @param offset &gt;=0 offset for searching of the previous bookmark.
      *  The offset <code>Integer.MAX_VALUE</code> searches for the last bookmark.
@@ -262,10 +265,10 @@ public final class BookmarkList {
     }
     
     /**
-     * Create bookmark if it did not exist before at the line containing
+     * Create an unnamed bookmark if it did not exist before at the line containing
      * the given offset.
      * <br>
-     * Drop the existing bookmark if it was already present for the line
+     * Drop an existing bookmark if it was already present for the line
      * containing the given offset.
      *
      * @param offset offset on a line in the document for which the presence of bookmark
@@ -278,24 +281,33 @@ public final class BookmarkList {
      */
     public Bookmark toggleLineBookmark (int offset) {
         checkOffsetInDocument (offset);
-        Element lineRoot = document.getDefaultRootElement ();
-        int lineIndex = lineRoot.getElementIndex (offset);
+        int lineIndex = BookmarkUtils.offset2LineIndex(document, offset);
         Bookmark bookmark = null;
-        if (lineIndex < lineRoot.getElementCount ()) {
-            Element lineElem = lineRoot.getElement (lineIndex);
-            int lineStartOffset = lineElem.getStartOffset ();
-            bookmark = getNextBookmark (lineStartOffset);
-            if (bookmark != null &&
-                bookmark.getOffset () < lineElem.getEndOffset () // inside line
-            ) { // remove the existing bookmark
-                removeBookmark (bookmark);
-            } else { // add bookmark
-                bookmark = addBookmark  (lineStartOffset);
-            }
-            // Save the bookmarks
-            BookmarksPersistence.saveBookmarks (this);
+        
+        Element lineElem = document.getDefaultRootElement().getElement(lineIndex);
+        int lineStartOffset = lineElem.getStartOffset();
+        bookmark = getNextBookmark (lineStartOffset);
+        if (bookmark != null &&
+            bookmark.getOffset () < lineElem.getEndOffset () // inside line
+        ) { // remove the existing bookmark
+            removeBookmark (bookmark);
+        } else { // add bookmark
+            bookmark = addBookmark(lineStartOffset);
         }
+        // Save the bookmarks
         return bookmark;
+    }
+    
+    void updateBookmarkLineIndexes() {
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            for (Bookmark b : bookmarks) {
+                BookmarkInfo info = b.info();
+                lockedBookmarkManager.updateLineIndex(info, b.getLineNumber());
+            }
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
     }
     
     /**
@@ -307,12 +319,10 @@ public final class BookmarkList {
     public synchronized boolean removeBookmark (Bookmark bookmark) {
         boolean removed = bookmarks.remove (bookmark);
         if (removed) {
+            info2bookmark.remove(bookmark.info());
             bookmark.release();
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    propertyChangeSupport.firePropertyChange (PROP_BOOKMARKS, null, null);
-                }
-            });
+            BookmarkUtils.removeBookmarkUnderLock(bookmark.info());
+            fireChange();
         }
         return removed;
     }
@@ -321,36 +331,72 @@ public final class BookmarkList {
     public synchronized void removeAllBookmarks (){
         if (!bookmarks.isEmpty()) {
             for (int i = 0; i < bookmarks.size (); i++){
-                Bookmark bookmark = (Bookmark) bookmarks.get (i);
+                Bookmark bookmark = bookmarks.get (i);
                 bookmark.release();
             }
             bookmarks.clear();
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    propertyChangeSupport.firePropertyChange (PROP_BOOKMARKS, null, null);
-                }
-            });
+            info2bookmark.clear();
+            BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+            try {
+                lockedBookmarkManager.removeBookmarks(new ArrayList<BookmarkInfo>(info2bookmark.keySet()));
+            } finally {
+                lockedBookmarkManager.unlock();
+            }
+            fireChange();
         }
     }
     
     /**
-     * Add bookmark to this list.
-     * <br>
+     * Add an unnamed bookmark to this bookmark list on given line.
+     * @param offset offset where the bookmark will be created.
      */
-    public synchronized Bookmark addBookmark (int lineOffset) {
-        // Compute the index from increased offset to ensure to add the bookmark
-        // after all the possible bookmarks with the same offset
-        Bookmark bookmark = new Bookmark (this, lineOffset);
+    public synchronized Bookmark addBookmark (int offset) {
+        Bookmark bookmark = null;
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            FileBookmarks fileBookmarks = lockedBookmarkManager.getFileBookmarks(document);
+            if (fileBookmarks != null) {
+                int id = fileBookmarks.getProjectBookmarks().generateBookmarkId();
+                BookmarkInfo info = BookmarkInfo.create(id, "", offset, "", fileBookmarks);
+                bookmark = addBookmarkForInfo(info, offset);
+                fileBookmarks.add(info);
+                lockedBookmarkManager.addBookmarkNotify(info);
+                BookmarkHistory.get().add(info);
+                fireChange();
+            }
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
+        return bookmark;
+    }
+
+    private @NonNull Bookmark addBookmarkForInfo(BookmarkInfo bookmarkInfo, int offset) {
+        int lineIndex = bookmarkInfo.getLineIndex();
+        if (offset == -1) {
+            offset = BookmarkUtils.lineIndex2Offset(document, lineIndex);
+        } else {
+            lineIndex = BookmarkUtils.offset2LineIndex(document, offset);
+            bookmarkInfo.setLineIndex(lineIndex);
+        }
+        Bookmark bookmark = new Bookmark (this, bookmarkInfo, offset);
         bookmarks.add (bookmark);
-        Collections.sort (bookmarks, breakpointsComparator);
+        Collections.sort (bookmarks, bookmarksComparator);
+        info2bookmark.put(bookmarkInfo, bookmark);
+        return bookmark;
+    }
+
+    Bookmark getBookmark(BookmarkInfo info) {
+        return info2bookmark.get(info);
+    }
+
+    private void fireChange() {
         SwingUtilities.invokeLater (new Runnable () {
             public void run() {
                 propertyChangeSupport.firePropertyChange (PROP_BOOKMARKS, null, null);
             }
         });
-        return bookmark;
     }
-
+    
     private void checkOffsetNonNegative(int offset) {
         if (offset < 0) {
             throw new IndexOutOfBoundsException("offset=" + offset + " < 0"); // NOI18N
@@ -382,8 +428,7 @@ public final class BookmarkList {
     
     // innerclassses ...........................................................
     
-    private static PropertyChangeListener 
-                            documentModifiedListener = new PropertyChangeListener () {
+    private static PropertyChangeListener documentModifiedListener = new PropertyChangeListener () {
 
         public void propertyChange (PropertyChangeEvent evt) {
             if ("modified".equals (evt.getPropertyName ()) &&
@@ -393,15 +438,15 @@ public final class BookmarkList {
                 Document document = observable.getDocument ();
                 if (document != null) {
                     // Document is being saved
-                    BookmarkList bookmarkList = BookmarkList.get (document);
-                    BookmarksPersistence.saveBookmarks (bookmarkList);
+                    BookmarkList.get(document).updateBookmarkLineIndexes();
                 }
             }
         }
     };
     
-    private static final Comparator<Bookmark> breakpointsComparator = new Comparator<Bookmark> () {
+    private static final Comparator<Bookmark> bookmarksComparator = new Comparator<Bookmark> () {
 
+        @Override
         public int compare (Bookmark bookmark1, Bookmark bookmark2) {
             return bookmark1.getOffset () - bookmark2.getOffset ();
         }

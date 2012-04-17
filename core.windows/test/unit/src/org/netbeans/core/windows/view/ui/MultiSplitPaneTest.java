@@ -44,8 +44,11 @@
 
 package org.netbeans.core.windows.view.ui;
 
+import java.awt.GraphicsEnvironment;
 import javax.swing.JSplitPane;
 import javax.swing.JWindow;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -54,6 +57,10 @@ import org.netbeans.junit.NbTestCase;
  * @author Stanislav Aubrecht
  */
 public class MultiSplitPaneTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(MultiSplitPaneTest.class);
+    }
 
     private static int DIVIDER_SIZE = 10;
     private MultiSplitPane split;

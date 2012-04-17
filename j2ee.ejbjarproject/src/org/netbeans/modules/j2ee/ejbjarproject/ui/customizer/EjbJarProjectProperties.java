@@ -64,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
@@ -76,6 +77,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.MutexException;
@@ -110,6 +112,7 @@ import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 
 /** Helper class. Defines constants for properties. Knows the proper
@@ -281,6 +284,8 @@ final public class EjbJarProjectProperties {
     private static final Integer BOOLEAN_KIND_TF = new Integer( 0 );
     private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
     private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
+
+    private final List<ActionListener> optionListeners = new CopyOnWriteArrayList<ActionListener>();
 
     EjbJarProject getProject() {
         return project;
@@ -724,6 +729,21 @@ final public class EjbJarProjectProperties {
     }
     
     
+    @NonNull
+    Iterable<? extends ActionListener> getOptionListeners() {
+        return optionListeners;
+    }
+
+    void addOptionListener(@NonNull final ActionListener al) {
+        Parameters.notNull("al", al);   //NOI18N
+        optionListeners.add(al);
+    }
+
+    void removeOptionListener(@NonNull final ActionListener al) {
+        Parameters.notNull("al", al);   //NOI18N
+        optionListeners.remove(al);
+    }
+     
     private static class CallbackImpl implements J2EEProjectProperties.Callback {
 
         private EjbJarProject project;

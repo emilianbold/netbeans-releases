@@ -86,8 +86,8 @@ public class HostUpdates {
     }
 
     /** test method */
-    /*package*/ static List<FileDownloadInfo> testGetUpdates(ExecutionEnvironment env) {
-        HostUpdates hu = get(env, false, null);
+    /*package*/ static List<FileDownloadInfo> testGetUpdates(ExecutionEnvironment env, File privProjectStorageDir) {
+        HostUpdates hu = get(env, false, privProjectStorageDir);
         if (hu != null) {
             return new ArrayList<FileDownloadInfo>(hu.infos);
         }

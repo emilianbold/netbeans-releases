@@ -167,7 +167,7 @@ public class IntroduceParameterUI implements RefactoringUI, JavaRefactoringUIFac
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(IntroduceParameterUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.IntroduceParameterUI"); // NOI18N
     }
     
     private static final Set<TypeKind> NOT_ACCEPTED_TYPES = EnumSet.of(TypeKind.ERROR, TypeKind.NONE, TypeKind.OTHER, TypeKind.VOID, TypeKind.EXECUTABLE);

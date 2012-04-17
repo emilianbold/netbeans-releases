@@ -216,28 +216,13 @@ public class BusinessMethodExposed extends EJBVerificationRule {
             addInterfaces(info, result, te.getInterfaces());
         }
     }
-    
-    private boolean isEligibleMethod(ExecutableElement method){
+
+    private static boolean isEligibleMethod(ExecutableElement method){
         // if ThrownTypes, Parameters, ReturnType are unknown
         // then don't offer the hint, see issue #195061
-        return method.getModifiers().contains(Modifier.PUBLIC) 
+        return method.getModifiers().contains(Modifier.PUBLIC)
                 && !method.getModifiers().contains(Modifier.STATIC)
-                && isContainingKnownClasses(method);
+                && HintsUtils.isContainingKnownClasses(method);
     }
-
-    private boolean isContainingKnownClasses(ExecutableElement method) {
-        if (method.getReturnType().getKind() == TypeKind.ERROR)
-            return false;
-
-        for (TypeMirror type : method.getThrownTypes()) {
-            if (type.getKind() == TypeKind.ERROR)
-                return false;
-        }
-
-        for (VariableElement variableElement : method.getParameters()) {
-            if (variableElement.asType().getKind() == TypeKind.ERROR)
-                return false;
-        }
-        return true;
-    }
+    
 }

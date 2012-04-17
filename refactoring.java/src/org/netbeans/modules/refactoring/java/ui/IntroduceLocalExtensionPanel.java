@@ -120,7 +120,8 @@ public class IntroduceLocalExtensionPanel extends javax.swing.JPanel implements 
     }
     
     public FileObject getRootFolder() {
-        return ((SourceGroup) rootComboBox.getSelectedItem()).getRootFolder();
+        SourceGroup sourceGroup = (SourceGroup) rootComboBox.getSelectedItem();
+        return sourceGroup != null ? sourceGroup.getRootFolder() : null;
     }
     
     public boolean getWrap() {
@@ -372,10 +373,12 @@ public class IntroduceLocalExtensionPanel extends javax.swing.JPanel implements 
         project = (Project) projectsComboBox.getSelectedItem();
         updateRoots();
         updatePackages();
+        fireChange();
     }//GEN-LAST:event_projectsComboBoxItemStateChanged
 
     private void rootComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rootComboBoxItemStateChanged
         updatePackages();
+        fireChange();
     }//GEN-LAST:event_rootComboBoxItemStateChanged
 
     private void chkReplaceItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkReplaceItemStateChanged

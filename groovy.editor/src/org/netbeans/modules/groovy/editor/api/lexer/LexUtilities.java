@@ -88,18 +88,21 @@ public class LexUtilities {
      *
      */
     private static final Set<TokenId> INDENT_WORDS = new HashSet<TokenId>();
-
-    private static final List<GroovyTokenId> WHITESPACES_AND_COMMENTS = Arrays.asList(
-            GroovyTokenId.WHITESPACE,
-            GroovyTokenId.NLS,
-            GroovyTokenId.EOL,
-            GroovyTokenId.LINE_COMMENT,
-            GroovyTokenId.BLOCK_COMMENT);
+    private static final Set<TokenId> WHITESPACES_AND_COMMENTS = new HashSet<TokenId>();
 
     static {
+        WHITESPACES_AND_COMMENTS.add(GroovyTokenId.WHITESPACE);
+        WHITESPACES_AND_COMMENTS.add(GroovyTokenId.NLS);
+        WHITESPACES_AND_COMMENTS.add(GroovyTokenId.EOL);
+        WHITESPACES_AND_COMMENTS.add(GroovyTokenId.LINE_COMMENT);
+        WHITESPACES_AND_COMMENTS.add(GroovyTokenId.BLOCK_COMMENT);
+
         END_PAIRS.add(GroovyTokenId.LBRACE);
+
         INDENT_WORDS.addAll(END_PAIRS);
         INDENT_WORDS.add(GroovyTokenId.COLON);
+        INDENT_WORDS.add(GroovyTokenId.LITERAL_case);
+        INDENT_WORDS.add(GroovyTokenId.LITERAL_default);
     }
 
     @CheckForNull
@@ -1016,11 +1019,11 @@ public class LexUtilities {
         return lexOffset;
     }
     
-    public static Token<?extends GroovyTokenId> findPreviousNonWsNonComment(TokenSequence<?extends GroovyTokenId> ts) {
+    public static Token<?extends GroovyTokenId> findPreviousNonWsNonComment(TokenSequence<? extends GroovyTokenId> ts) {
         return findPrevious(ts, WHITESPACES_AND_COMMENTS);
     }
     
-    private static Token<?extends GroovyTokenId> findPrevious(TokenSequence<?extends GroovyTokenId> ts, List<GroovyTokenId> ignores) {
+    private static Token<?extends GroovyTokenId> findPrevious(TokenSequence<?extends GroovyTokenId> ts, Set<TokenId> ignores) {
         ts.movePrevious();
         if (ignores.contains(ts.token().id())) {
             while (ts.movePrevious() && ignores.contains(ts.token().id())) {}

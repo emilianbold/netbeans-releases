@@ -44,12 +44,11 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -58,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -91,8 +91,10 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        boolean isLambda = false;
         if (name.length() == 0 && !global) {
             name = QualifiedNameCache.getManager().getString("lambda"); // NOI18N
+            isLambda = true;
         }        
         if (name.length() == 0) {
             throw new AstRendererException((FileImpl) file, startOffset, "Empty function name."); // NOI18N
@@ -104,7 +106,12 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
-        FunctionDDImpl<T> functionDDImpl = new FunctionDDImpl<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        FunctionDDImpl<T> functionDDImpl;
+        if (isLambda) {
+            functionDDImpl = new LambdaFunction<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        } else {
+            functionDDImpl = new FunctionDDImpl<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        }
         temporaryRepositoryRegistration(global, functionDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();

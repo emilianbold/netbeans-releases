@@ -68,6 +68,7 @@ public class Context {
     private final Resolver3 resolver;
     private CsmNamespace containingNamespace;
     private CsmClass containingClass;
+    private CsmFunctionDefinition containingFunction;
     private boolean contextFound = false;
 
     Context(CsmFile file, int origOffset, Resolver3 resolver) {
@@ -88,6 +89,13 @@ public class Context {
             findContext(origOffset);
         }
         return containingClass;
+    }
+
+    CsmFunctionDefinition getContainingFunction() {
+        if( ! contextFound ) {
+            findContext(origOffset);
+        }
+        return containingFunction;
     }
 
     private void findContext(int offset) {
@@ -121,9 +129,11 @@ public class Context {
                     findContext(CsmSelect.getClassMembers(containingClass, filter), filter, offset);
                 }
             } else if( decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                    decl.getKind() == CsmDeclaration.Kind.FUNCTION_LAMBDA ||
                     decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
                 CsmFunctionDefinition fd = (CsmFunctionDefinition) decl;
                 if( fd.getStartOffset() < offset && offset < fd.getEndOffset()  ) {
+                    containingFunction = fd;
                     CsmNamespace ns = BaseUtilitiesProviderImpl.getImpl()._getFunctionNamespace(fd);
                     if( ns != null && ! ns.isGlobal() ) {
                         containingNamespace = ns;

@@ -301,7 +301,10 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         if (this.scopeRef == null) {
             // restore container from it's UID if not directly initialized
             this.scopeRef = this.scopeRef != null ? this.scopeRef : UIDCsmConverter.UIDtoScope(this.scopeUID);
-            assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
+            
+            // there could be a situation when scope is already disposed
+            // i.e. like in  #191610 -  unresolved reference to class declared with outer scope
+//            assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID + " when dispose " + this;
         }
     }
 

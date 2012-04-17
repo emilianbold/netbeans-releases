@@ -3882,9 +3882,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (!controller.getElementUtilities().isSynthetic(ee)) {
                         List<? extends VariableElement> parameters = ee.getParameters();
                         for (Map.Entry<ExecutableElement, boolean[]> entry : ctors2generate.entrySet()) {
-                            int size = entry.getKey().getParameters().size();
+                            List<? extends VariableElement> params = entry.getKey() != null ? entry.getKey().getParameters() : Collections.<VariableElement>emptyList();
+                            int size = params.size();
                             if (size >= 0 && parameters.size() == size) {
-                                Iterator<? extends VariableElement> proposed = entry.getKey().getParameters().iterator();
+                                Iterator<? extends VariableElement> proposed = params.iterator();
                                 Iterator<? extends VariableElement> original = parameters.iterator();                        
                                 boolean same = true;
                                 while (same && proposed.hasNext() && original.hasNext())
@@ -3900,7 +3901,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     while (same && proposed.hasNext() && original.hasNext())
                                         same &= controller.getTypes().isSameType(proposed.next().asType(), original.next().asType());
                                     if (same) {
-                                        proposed = entry.getKey().getParameters().iterator();
+                                        proposed = params.iterator();
                                         while (same && proposed.hasNext() && original.hasNext())
                                             same &= controller.getTypes().isSameType(proposed.next().asType(), original.next().asType());
                                         if (same)

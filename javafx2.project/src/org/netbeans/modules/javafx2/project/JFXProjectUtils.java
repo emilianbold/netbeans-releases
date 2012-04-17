@@ -253,6 +253,20 @@ public final class JFXProjectUtils {
         return JFXProjectProperties.isTrue(ep.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED));
     }
 
+     /**
+     * Checks if the project is a Swing project with JFX support enabled
+     * @param prj the project to check
+     * @return true if project supports FX in Swing
+     */
+    public static boolean isFXinSwingProject(@NonNull final Project prj) {
+        final J2SEPropertyEvaluator ep = prj.getLookup().lookup(J2SEPropertyEvaluator.class);
+        if (ep == null) {
+            return false;
+        }
+        return JFXProjectProperties.isTrue(ep.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))
+                && JFXProjectProperties.isTrue(ep.evaluator().getProperty(JFXProjectProperties.JAVAFX_SWING));
+    }
+
     /**
      * Checks what Run model is selected in current configuration of JFX Run Project Property panel
      * @param prj the project to check

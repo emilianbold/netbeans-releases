@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
-import org.netbeans.modules.cnd.makeproject.api.support.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -69,6 +68,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.xml.LineSeparatorDetector;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.support.*;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -383,7 +383,11 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     }
 
     private byte[] convertLineSeparator(ByteArrayOutputStream in, final String path) {
-        String lineSeparator = new LineSeparatorDetector(dir.getFileObject(path), dir).getInitialSeparator();
+        return convertLineSeparator(in, dir.getFileObject(path), dir);
+    }
+
+    public static byte[] convertLineSeparator(ByteArrayOutputStream in, FileObject fo, FileObject dir) {
+        String lineSeparator = new LineSeparatorDetector(fo, dir).getInitialSeparator();
         byte[] data = in.toByteArray();
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(data), "UTF-8")); // NOI18N

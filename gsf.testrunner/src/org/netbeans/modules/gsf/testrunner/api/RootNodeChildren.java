@@ -83,6 +83,8 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
         super();
         this.filterMask = filterMask;
         this.session = session;
+        live = true;                      //PENDING
+        setKeys(suiteNodes);
     }
     
     /**

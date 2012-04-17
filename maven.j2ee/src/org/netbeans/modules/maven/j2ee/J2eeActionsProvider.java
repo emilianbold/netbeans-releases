@@ -60,6 +60,8 @@ public class J2eeActionsProvider extends AbstractMavenActionsProvider {
     private ArrayList<String> supported;
     private static final String ACT_RUN = ActionProvider.COMMAND_RUN_SINGLE + ".deploy";
     private static final String ACT_DEBUG = ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy";
+    private static final String ACT_PROFILE = ActionProvider.COMMAND_PROFILE_SINGLE + ".deploy";
+    
     /** Creates a new instance of J2eeActionsProvider */
     public J2eeActionsProvider() {
         supported = new ArrayList<String>();
@@ -80,11 +82,13 @@ public class J2eeActionsProvider extends AbstractMavenActionsProvider {
     @Override
     public boolean isActionEnable(String action, Project project, Lookup lookup) {
         if (ACT_DEBUG.equals(action) ||
-            ACT_RUN.equals(action)) {
+            ACT_RUN.equals(action) ||
+            ACT_PROFILE.equals(action)) {
             //only enable for doc root fileobjects..
             return true;
         } else if (ActionProvider.COMMAND_RUN.equals(action) || 
-                   ActionProvider.COMMAND_DEBUG.equals(action)) {
+                   ActionProvider.COMMAND_DEBUG.equals(action) ||
+                   ActionProvider.COMMAND_PROFILE.equals(action)) {
             //performance, don't read the xml file to figure enablement..
             NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
             return supported.contains(mp.getPackagingType());

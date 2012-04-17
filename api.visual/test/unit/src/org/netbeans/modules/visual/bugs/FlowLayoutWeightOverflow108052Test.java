@@ -52,11 +52,17 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.LayerWidget;
 
 import java.awt.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * @author David Kaspar
  */
 public class FlowLayoutWeightOverflow108052Test extends VisualTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(FlowLayoutWeightOverflow108052Test.class);
+    }
 
     public FlowLayoutWeightOverflow108052Test (String testName) {
         super (testName);

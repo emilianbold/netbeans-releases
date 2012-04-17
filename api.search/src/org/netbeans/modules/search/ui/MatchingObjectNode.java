@@ -43,15 +43,20 @@ package org.netbeans.modules.search.ui;
 
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.search.MatchingObject;
+import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
 import org.openide.cookies.EditCookie;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -70,7 +75,10 @@ public class MatchingObjectNode extends AbstractNode {
 
     private MatchingObject matchingObject;
     private Node original;
+    private OrigNodeListener origNodeListener;
     private boolean valid = true;
+    private PropertyChangeListener validityListener;
+    private PropertyChangeListener selectionListener;
     PropertySet[] propertySets;
 
     public MatchingObjectNode(Node original,
@@ -89,27 +97,18 @@ public class MatchingObjectNode extends AbstractNode {
         if (matchingObject.isObjectValid()) {
             this.original = original;
             setValidOriginal();
+            origNodeListener = new OrigNodeListener();
+            original.addNodeListener(origNodeListener);
         } else {
             setInvalidOriginal();
         }
-        matchingObject.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                if (!matchingObject.isObjectValid() && valid) {
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            setInvalidOriginal();
-                        }
-                    });
-                } else {
-                    fireIconChange();
-                    ResultsOutlineSupport.toggleParentSelected(
-                            MatchingObjectNode.this);
-                }
-            }
-        });
-        original.addNodeListener(new OrigNodeListener());
+        validityListener = new ValidityListener(matchingObject);
+        matchingObject.addPropertyChangeListener(
+                MatchingObject.PROP_INVALIDITY_STATUS,
+                validityListener);
+        selectionListener = new SelectionListener();
+        matchingObject.addPropertyChangeListener(MatchingObject.PROP_SELECTED,
+                selectionListener);
     }
 
     @Override
@@ -117,8 +116,25 @@ public class MatchingObjectNode extends AbstractNode {
         if (valid) {
             return original.getIcon(type);
         } else {
-            return ImageUtilities.loadImage(
-                    "org/netbeans/modules/search/res/invalid.png");     //NOI18N
+            String img;
+            InvalidityStatus is = matchingObject.getInvalidityStatus();
+            switch (is == null ? InvalidityStatus.DELETED : is) {
+                case DELETED:
+                    img = "org/netbeans/modules/search/res/invalid.png";//NOI18N
+                    break;
+                default:
+                    img = "org/netbeans/modules/search/res/warning.gif";//NOI18N
+            }
+            return ImageUtilities.loadImage(img);
+        }
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        if (!context) {
+            return new Action[] {new OpenNodeAction(), new CopyPathAction()};
+        } else {
+            return new Action[0];
         }
     }
 
@@ -153,7 +169,16 @@ public class MatchingObjectNode extends AbstractNode {
     }
 
     private void setInvalidOriginal() {
-        valid = false;
+        if (valid) {
+            valid = false;
+        } else {
+            fireIconChange();
+            return; // already invalid
+        }
+        if (origNodeListener != null) {
+            original.removeNodeListener(origNodeListener);
+            origNodeListener = null;
+        }
         original = new AbstractNode(Children.LEAF);
         original.setDisplayName(matchingObject.getFileObject().getNameExt());
         fireIconChange();
@@ -164,6 +189,22 @@ public class MatchingObjectNode extends AbstractNode {
     @Override
     public boolean canDestroy() {
         return false;
+    }
+
+    public void clean() {
+        if (original != null && origNodeListener != null && valid) {
+            original.removeNodeListener(origNodeListener);
+        }
+        if (validityListener != null) {
+            matchingObject.removePropertyChangeListener(
+                    MatchingObject.PROP_INVALIDITY_STATUS, validityListener);
+            validityListener = null;
+        }
+        if (selectionListener != null) {
+            matchingObject.removePropertyChangeListener(
+                    MatchingObject.PROP_SELECTED, selectionListener);
+            selectionListener = null;
+        }
     }
 
     @Override
@@ -244,7 +285,6 @@ public class MatchingObjectNode extends AbstractNode {
                 @Override
                 public void run() {
                     setInvalidOriginal();
-                    original.removeNodeListener(OrigNodeListener.this);
                 }
             });
         }
@@ -257,6 +297,10 @@ public class MatchingObjectNode extends AbstractNode {
 
     private class OpenNodeAction extends AbstractAction {
 
+        public OpenNodeAction() {
+            super(UiUtils.getText("LBL_EditAction"));                   //NOI18N
+        }
+
         @Override
         public void actionPerformed(ActionEvent e) {
             EditCookie editCookie = original.getLookup().lookup(
@@ -264,6 +308,69 @@ public class MatchingObjectNode extends AbstractNode {
             if (editCookie != null) {
                 editCookie.edit();
             }
+        }
+    }
+
+    private class CopyPathAction extends AbstractAction {
+
+        public CopyPathAction() {
+            super(UiUtils.getText("LBL_CopyFilePathAction"));           //NOI18N
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            File f = FileUtil.toFile(
+                    matchingObject.getFileObject());
+            if (f != null) {
+                String path = f.getPath();
+                Toolkit toolkit = Toolkit.getDefaultToolkit();
+                if (toolkit != null) {
+                    Clipboard clipboard = toolkit.getSystemClipboard();
+                    if (clipboard != null) {
+                        StringSelection strSel = new StringSelection(path);
+                        clipboard.setContents(strSel, null);
+                    }
+                }
+            }
+        }
+    }
+
+    private class ValidityListener implements PropertyChangeListener {
+
+        private final MatchingObject matchingObject;
+
+        public ValidityListener(MatchingObject matchingObject) {
+            this.matchingObject = matchingObject;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent e) {
+            if (matchingObject.getInvalidityStatus()
+                    == MatchingObject.InvalidityStatus.DELETED) {
+                matchingObject.removePropertyChangeListener(
+                        MatchingObject.PROP_INVALIDITY_STATUS,
+                        this);
+            }
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    setInvalidOriginal();
+                }
+            });
+        }
+    }
+
+    private class SelectionListener implements PropertyChangeListener {
+
+        public SelectionListener() {
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent e) {
+
+            fireIconChange();
+            ResultsOutlineSupport.toggleParentSelected(
+                    MatchingObjectNode.this);
         }
     }
 }

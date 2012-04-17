@@ -132,6 +132,7 @@ public final class ApiGenPreferences {
             return ApiGenScript.DEFAULT_SOURCE_CODE;
         }
     };
+    public static final Property<Boolean> HAS_CONFIG = new Property<Boolean>("hasConfig"); // NOI18N
 
     // package private
     static final Property<Object> TARGET = new Property<Object>("target"); // NOI18N

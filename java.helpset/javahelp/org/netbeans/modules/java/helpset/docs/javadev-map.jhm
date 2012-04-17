@@ -394,6 +394,7 @@
 <mapID target="org.netbeans.modules.refactoring.java.ui.InnerToOuterRefactoringUI" url="refactor/csh/move-inner_db.html" /> 
 <!--Usages window-->
 <mapID target="org.netbeans.modules.refactoring.java.ui.RefactoringPanelContainer.find-usages" url="refactor/csh/usagesWindow.html" />
+<mapID target="org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer.find-usages" url="refactor/csh/usagesWindow.html" />
 <!--Refactoring window: -->
 <mapID target="org.netbeans.modules.refactoring.java.ui.RefactoringPanelContainer.refactoring-preview" url="refactor/csh/previewWindow.html" />
 <!--Inspect and Transform window: -->
@@ -410,9 +411,8 @@
 <mapID target="org.netbeans.modules.java.hints.jackpot.refactoring.InvertBooleanRefactoringUI" url="refactor/csh/invert-boolean_db.html" />
 <!--Move Members dialog box: -->
 <mapID target="org.netbeans.modules.refactoring.java.ui.MoveMembersUI" url="refactor/csh/move-members_db.html" />
-
-
-
+<!--Introduce Local Extension dialog box: -->
+<mapID target="org.netbeans.modules.refactoring.java.ui.IntroduceLocalExtensionUI" url="refactor/csh/intro-local-extension_db.html" />
 
 
 
@@ -526,10 +526,10 @@
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="persistence/csh/persist_new_entityclass_db1.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="persistence/csh/persist_new_entityclass_db2.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="persistence/csh/db_persist_addentityclass.html" />
-    <!-- JPA controllers from entity classes wizard -->
-    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller" url="persistence/csh/persist_jpacontrollerfromentity_panel1.html" />
-    <!-- need new id here for 2nd panel in wizard #208130 -->
-    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller" url="persistence/csh/persist_jpacontrollerfromentity_panel2.html" />
+    <!-- JPA controllers from entity classes wizard 1st panel -->
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller$PersistenceClientEntitySelection" url="persistence/csh/persist_jpacontrollerfromentity_panel1.html" />
+    <!-- JPA controllers from entity classes wizard 2nd panel -->
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerSetupPanel" url="persistence/csh/persist_jpacontrollerfromentity_panel2.html" />
 
    
    
@@ -574,9 +574,12 @@
 <mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
 
     <!--Create Tests dialog box-->
-    <mapID target="org.netbeans.modules.junit.JUnitCfgOfCreate" url="junit/junit_csh_creatingtests.html" />  
+    <mapID target="org.netbeans.modules.junit.JUnitCfgOfCreate" url="junit/junit_csh_creatingtests.html" />
+    <mapID target="org.netbeans.modules.gsf.testrunner.CommonTestsCfgOfCreate" url="junit/junit_csh_creatingtests.html" />
+    
     <!--JUnit Test Results Window -->
     <mapID target="org.netbeans.modules.junit.output.ResultWindow" url="junit/junit_resultswindow.html" /> 
+    <mapID target="org.netbeans.modules.gsf.testrunner.api.ResultWindow" url="junit/junit_resultswindow.html" /> 
     <!--JUnit New Test Problem window -->
     <!-- This help id appears when using New File wizard to create a new JUnit test and there is a problem, specifically a missing test folder -->
     <mapID target="org.netbeans.modules.junit.wizards.StepProblemMessage" url="junit/junit_creatingtests.html" /> 
@@ -588,7 +591,9 @@
     <mapID target="org.netbeans.modules.junit.wizards.SimpleTest" url="junit/junit_csh_simpletest.html" />  
     <!-- New JUnit Test Suite - New File wizard -->
     <mapID target="org.netbeans.modules.junit.wizards.TestSuite" url="junit/junit_csh_testsuite.html" />  
-
+    
+    <!-- New TestNG Test Case - New File wizard -->
+    <mapID target="new_ngtestcase_wizard" url="junit/testng_csh_newtestcase.html" />
 
 
 

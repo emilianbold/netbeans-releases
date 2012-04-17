@@ -43,14 +43,16 @@
  */
 package org.netbeans.modules.php.project.classpath;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -62,10 +64,36 @@ import org.openide.util.WeakSet;
 @org.openide.util.lookup.ServiceProvider(service = ClassPathProvider.class, position = 200)
 public class IncludePathClassPathProvider implements ClassPathProvider {
 
+    private static final boolean RUNNING_IN_TEST = Boolean.getBoolean("nb.php.test.run"); // NOI18N
+
     // @GuardedBy(PROJECT_INCLUDES_LOCK)
     private static final Set<ClassPath> PROJECT_INCLUDES = new WeakSet<ClassPath>();
     private static final ReadWriteLock PROJECT_INCLUDES_LOCK = new ReentrantReadWriteLock();
 
+    // @GuardedBy(INCLUDE_PATH_CP_LOCK)
+    static ClassPath globalIncludePathClassPath = null;
+    private static final ReadWriteLock INCLUDE_PATH_CP_LOCK = new ReentrantReadWriteLock();
+    private static final Lock INCLUDE_PATH_CP_READ_LOCK = INCLUDE_PATH_CP_LOCK.readLock();
+    static final Lock INCLUDE_PATH_CP_WRITE_LOCK = INCLUDE_PATH_CP_LOCK.writeLock();
+
+    private static final PropertyChangeListener INCLUDE_PATH_LISTENER = new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PhpOptions.PROP_PHP_GLOBAL_INCLUDE_PATH.equals(evt.getPropertyName())) {
+                INCLUDE_PATH_CP_WRITE_LOCK.lock();
+                try {
+                    globalIncludePathClassPath = null;
+                } finally {
+                    INCLUDE_PATH_CP_WRITE_LOCK.unlock();
+                }
+            }
+        }
+    };
+
+
+    public IncludePathClassPathProvider() {
+        PhpOptions.getInstance().addPropertyChangeListener(INCLUDE_PATH_LISTENER);
+    }
 
     public static void addProjectIncludePath(final ClassPath classPath) {
         runUnderWriteLock(new Runnable() {
@@ -76,7 +104,7 @@ public class IncludePathClassPathProvider implements ClassPathProvider {
         });
     }
 
-    public static synchronized void removeProjectIncludePath(final ClassPath classPath) {
+    public static void removeProjectIncludePath(final ClassPath classPath) {
         runUnderWriteLock(new Runnable() {
             @Override
             public void run() {
@@ -85,27 +113,56 @@ public class IncludePathClassPathProvider implements ClassPathProvider {
         });
     }
 
+    public static ClassPath findProjectIncludePath(FileObject file) {
+        PROJECT_INCLUDES_LOCK.readLock().lock();
+        try {
+            for (ClassPath classPath : PROJECT_INCLUDES) {
+                if (classPath.contains(file)) {
+                    return classPath;
+                }
+            }
+        } finally {
+            PROJECT_INCLUDES_LOCK.readLock().unlock();
+        }
+        return null;
+    }
+
     @Override
     public ClassPath findClassPath(FileObject file, String type) {
-        if (!FileUtils.isPhpFile(file)) {
+        if (!PhpSourcePath.BOOT_CP.equals(type)) {
             return null;
         }
-        FileType fileType = PhpSourcePath.getFileType(file);
-        if (fileType == FileType.UNKNOWN) {
-            PROJECT_INCLUDES_LOCK.readLock().lock();
-            try {
-                for (ClassPath classPath : PROJECT_INCLUDES) {
-                    if (classPath.contains(file)) {
-                        return classPath;
-                    }
-                }
-            } finally {
-                PROJECT_INCLUDES_LOCK.readLock().unlock();
-            }
+        ClassPath cp = findProjectIncludePath(file);
+        if (cp != null) {
+            return cp;
         }
-        // not found, then return CP for include path
-        List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
-        return ClassPathSupport.createClassPath(includePath.toArray(new FileObject[includePath.size()]));
+        if (RUNNING_IN_TEST) {
+            return null;
+        }
+        // not found, then return CP for global include path
+        return getGlobalIncludePathClassPath();
+    }
+
+    private static ClassPath getGlobalIncludePathClassPath() {
+        INCLUDE_PATH_CP_READ_LOCK.lock();
+        try {
+            if (globalIncludePathClassPath == null) {
+                INCLUDE_PATH_CP_READ_LOCK.unlock();
+                INCLUDE_PATH_CP_WRITE_LOCK.lock();
+                try {
+                    if (globalIncludePathClassPath == null) {
+                        List<FileObject> includePath = PhpSourcePath.getIncludePath(null);
+                        globalIncludePathClassPath = ClassPathSupport.createClassPath(includePath.toArray(new FileObject[includePath.size()]));
+                    }
+                } finally {
+                    INCLUDE_PATH_CP_READ_LOCK.lock();
+                    INCLUDE_PATH_CP_WRITE_LOCK.unlock();
+                }
+            }
+            return globalIncludePathClassPath;
+        } finally {
+            INCLUDE_PATH_CP_READ_LOCK.unlock();
+        }
     }
 
     private static void runUnderWriteLock(Runnable runnable) {

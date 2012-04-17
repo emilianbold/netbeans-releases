@@ -101,6 +101,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  * All development project type supporting REST framework should provide
@@ -612,17 +614,11 @@ public abstract class RestSupport {
     public abstract boolean isRestSupportOn();
 
     public void setProjectProperty(String name, String value) {
-        if (getAntProjectHelper() == null) {
-            return;
-        }
-        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.setProperty(name, value);
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        try {
-            ProjectManager.getDefault().saveProject(getProject());
-        } catch(IOException ioe) {
-            Logger.getLogger(this.getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
-        }
+        setProjectProperty(name, value, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+    }
+    
+    public void setPrivateProjectProperty(String name, String value) {
+        setProjectProperty(name, value, AntProjectHelper.PRIVATE_PROPERTIES_PATH );
     }
 
     public String getProjectProperty(String name) {
@@ -632,22 +628,35 @@ public abstract class RestSupport {
         return helper.getStandardPropertyEvaluator().getProperty(name);
     }
 
-    public void removeProjectProperties(String[] propertyNames) {
+    public void removeProjectProperties(final String[] propertyNames) {
         if (getAntProjectHelper() == null) {
             return;
-        }
-        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        for (String name : propertyNames) {
-            ep.remove(name);
-        }
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        }   
         try {
-            ProjectManager.getDefault().saveProject(getProject());
-        } catch(IOException ioe) {
-            Logger.getLogger(this.getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            @Override
+            public Object run() throws IOException {
+                // and save the project
+                try {
+                    removeProperty(propertyNames, 
+                            AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    removeProperty(propertyNames,
+                            AntProjectHelper.PRIVATE_PROPERTIES_PATH );
+                    ProjectManager.getDefault().saveProject(getProject());
+                } 
+                catch(IOException ioe) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
+                }
+                return null;
+            }
+        });
         }
+        catch (MutexException e) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
+        } 
+        
     }
-    
+
     protected boolean ignorePlatformRestLibrary() {
         String v = getProjectProperty(IGNORE_PLATFORM_RESTLIB);
         Boolean ignore = v != null ? Boolean.valueOf(v) : true;
@@ -874,6 +883,43 @@ public abstract class RestSupport {
             }
         }
         return false;
+    }
+    
+    private void setProjectProperty(final String name, final String value, 
+            final String propertyPath) 
+    {
+        if (getAntProjectHelper() == null) {
+            return;
+        }
+        try {
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            @Override
+            public Object run() throws IOException {
+                // and save the project
+                try {
+                    EditableProperties ep = helper.getProperties(propertyPath);
+                    ep.setProperty(name, value);
+                    helper.putProperties(propertyPath, ep);
+                    ProjectManager.getDefault().saveProject(getProject());  
+                } 
+                catch(IOException ioe) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
+                }
+                return null;
+            }
+        });
+        }
+        catch (MutexException e) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
+        }        
+    }
+    
+    private void removeProperty( String[] propertyNames , String propertiesPath ) {
+        EditableProperties ep = helper.getProperties(propertiesPath);
+        for (String name : propertyNames) {
+            ep.remove(name);
+        }
+        helper.putProperties(propertiesPath, ep);
     }
 
 }

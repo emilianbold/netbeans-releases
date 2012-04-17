@@ -48,7 +48,7 @@ import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 
 /**
@@ -86,12 +86,12 @@ abstract class NativeActionsProvider
 	if (ctx != null)
 	    return ctx.lookupFirst(null, NativeDebugger.class);
 	else {
-	    NativeDebugger nd = DebuggerManager.get().currentDebugger();
+	    NativeDebugger nd = NativeDebuggerManager.get().currentDebugger();
 	    return (nd != null) ? nd : null;
 	}
     }
 
-    protected DebuggerManager manager() {
-	return DebuggerManager.get();
+    protected NativeDebuggerManager manager() {
+	return NativeDebuggerManager.get();
     }
 }

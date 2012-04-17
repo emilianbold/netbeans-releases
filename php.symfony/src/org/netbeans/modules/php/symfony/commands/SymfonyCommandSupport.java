@@ -64,11 +64,11 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
-import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
 import org.netbeans.modules.php.symfony.SymfonyScript;
@@ -136,6 +136,8 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         for (String param : symfonyScript.getParameters()) {
             externalProcessBuilder = externalProcessBuilder.addArgument(param);
         }
+        externalProcessBuilder = externalProcessBuilder
+                .addArgument("--color"); // NOI18N
         return externalProcessBuilder;
     }
 

@@ -45,14 +45,19 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.dircache.DirCacheEntry;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
+import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -136,5 +141,47 @@ public class CatTest extends AbstractGitTestCase {
         assertFile(f, getGoldenFile());
 
         assertFalse(client.catFile(f, Constants.HEAD, new FileOutputStream(f), NULL_PROGRESS_MONITOR));
+    }
+    public void testLineEndingsWindows () throws Exception {
+        if (!isWindows()) {
+            return;
+        }
+        // lets turn autocrlf on
+        Thread.sleep(1100);
+        StoredConfig cfg = repository.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
+        cfg.save();
+        
+        File f = new File(workDir, "f");
+        write(f, "a\r\nb\r\n");
+        File[] roots = new File[] { f };
+        
+        GitClient client = getClient(workDir);
+        runExternally(workDir, Arrays.asList("git.cmd", "add", "f"));
+        List<String> res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList("A  f"), res);
+        DirCacheEntry e1 = repository.readDirCache().getEntry("f");
+        runExternally(workDir, Arrays.asList("git.cmd", "commit", "-m", "hello"));
+        
+        write(f, "a\r\nb\r\nc\r\n");
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList(" M f"), res);
+        runExternally(workDir, Arrays.asList("git.cmd", "add", "f"));
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList("M  f"), res);
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR), workDir, f, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
+        
+        FileOutputStream fo = new FileOutputStream(f);
+        client.catFile(f, "HEAD", fo, NULL_PROGRESS_MONITOR);
+        fo.close();
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR), workDir, f, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, false);
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList("MM f"), res);
+
+        client.reset("HEAD", GitClient.ResetType.MIXED, NULL_PROGRESS_MONITOR);
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR), workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertEquals(e1.getObjectId(), repository.readDirCache().getEntry("f").getObjectId());
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(0, res.size());
     }
 }

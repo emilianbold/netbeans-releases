@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -306,7 +307,6 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     }
 
     private static final class ExecLogReader {
-        private static final boolean TRACE = false;
         private final String root;
         private final String fileName;
         private List<SourceFileProperties> result;
@@ -409,12 +409,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                                     addSources(tool, params, storage);
                                 } catch (Throwable ex) {
                                     // ExecSource constructor can throw IllegalArgumentException for non source exec
-                                    if (TRACE) {
-                                        ex.printStackTrace(System.err);
-                                        System.err.println("\tTool:"+tool); //NOI18N
-                                        for(String p : params) {
-                                            System.err.println("\t"+p); //NOI18N
-                                        }
+                                    DwarfSource.LOG.log(Level.INFO, "Tool:"+tool, ex);
+                                    for(String p : params) {
+                                        DwarfSource.LOG.log(Level.INFO, "\t{0}", p); //NOI18N
                                     }
                                 }
                                 tool = null;
@@ -429,7 +426,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     }
                     in.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
+                    DwarfSource.LOG.log(Level.INFO, "Cannot read file "+fileName, ex);
                 }
             }
         }
@@ -442,8 +439,8 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         }
         
         private void addSources(String tool, List<String> args, CompileLineStorage storage) {
-            String compiler = null;
-            ItemProperties.LanguageKind language = null;
+            String compiler;
+            ItemProperties.LanguageKind language;
             String compilePath = null;
             if (tool.lastIndexOf('/') > 0) { //NOI18N
                 compiler = tool.substring(tool.lastIndexOf('/')+1); //NOI18N
@@ -495,7 +492,6 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 String fullName;
                 String sourceName;
                 List<String> userIncludes = new ArrayList<String>(aUserIncludes.size());
-                Map<String, String> userMacros = new HashMap<String, String>(aUserMacros.size());
                 for(String s : aUserIncludes){
                     if (s.startsWith("/") && pathMapper != null) { // NOI18N
                         String mapped = pathMapper.getLocalPath(s);
@@ -505,7 +501,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     }
                     userIncludes.add(PathCache.getString(s));
                 }
-                userMacros = new HashMap<String, String>(aUserMacros.size());
+                Map<String, String> userMacros = new HashMap<String, String>(aUserMacros.size());
                 for(Map.Entry<String,String> e : aUserMacros.entrySet()){
                     if (e.getValue() == null) {
                         userMacros.put(PathCache.getString(e.getKey()), null);
@@ -548,6 +544,17 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     res.language = language;
                     res.userIncludes = userIncludes;
                     res.userMacros = userMacros;
+                    for(String lang : languageArtifacts) {
+                        if ("c89".equals(lang)) { //NOI18N
+                            res.standard = ItemProperties.LanguageStandard.C89;
+                        } else if ("c99".equals(lang)) { //NOI18N
+                            res.standard = ItemProperties.LanguageStandard.C89;
+                        } else if ("c++98".equals(lang)) { //NOI18N
+                            res.standard = ItemProperties.LanguageStandard.CPP;
+                        } else if ("c++11".equals(lang)) { //NOI18N
+                            res.standard = ItemProperties.LanguageStandard.CPP11;
+                        } 
+                    }
                     if (storage != null) {
                         StringBuilder buf = new StringBuilder();
                         for (int i = 2; i < args.size(); i++) {
@@ -573,6 +580,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private String fullName;
         private String compiler;
         private ItemProperties.LanguageKind language;
+        private LanguageStandard standard = LanguageStandard.Unknown;
         private List<String> userIncludes;
         private List<String> systemIncludes = Collections.<String>emptyList();
         private Map<String, String> userMacros;
@@ -641,7 +649,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
 
         @Override
         public LanguageStandard getLanguageStandard() {
-            return LanguageStandard.Unknown;
+            return standard;
         }
     }
 }

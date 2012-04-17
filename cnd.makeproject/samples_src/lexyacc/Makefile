@@ -83,7 +83,8 @@ RANLIB=ranlib
 build: .build-post
 
 .build-pre:
-# Add your pre 'build' code here...
+	if [ `uname` = SunOS ]; then T=`mktemp`; dos2unix token.l $$T; mv $$T token.l; dos2unix token.y $$T; mv $$T token.y; fi
+        # Add your pre 'build' code here...
 
 .build-post: .build-impl
 # Add your post 'build' code here...

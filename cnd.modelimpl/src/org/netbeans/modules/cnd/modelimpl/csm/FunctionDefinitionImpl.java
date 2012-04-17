@@ -143,7 +143,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     @Override
     public CsmFunction getDeclaration() {
         CsmFunction declaration = _getDeclaration();
-        if (declaration == null || FunctionImplEx.isFakeFunction(declaration)) {
+        if (declaration == null || FunctionImplEx.isFakeFunction(declaration) || !CsmBaseUtilities.isValid(declaration)) {
             int newCount = FileImpl.getParseCount();
             if (newCount == parseCount) {
                 return declaration;

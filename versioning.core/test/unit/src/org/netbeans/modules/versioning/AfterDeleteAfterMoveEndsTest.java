@@ -56,7 +56,7 @@ import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
-import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
+import org.netbeans.modules.versioning.core.spi.testvcs.TestVCS;
 import org.openide.filesystems.FileChangeAdapter;
 
 import org.openide.filesystems.FileObject;

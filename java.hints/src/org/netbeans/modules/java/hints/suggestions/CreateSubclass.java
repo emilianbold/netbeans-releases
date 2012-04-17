@@ -41,35 +41,40 @@
  */
 package org.netbeans.modules.java.hints.suggestions;
 
+import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.EnumSet;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.JTextComponent;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -77,23 +82,22 @@ import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.codegen.ConstructorGenerator;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
-import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.TriggerTreeKind;
-import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.Hint.Kind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -187,41 +191,32 @@ public class CreateSubclass {
 
                 EditorRegistry.addPropertyChangeListener(this);
 
-                FileObject pack = FileUtil.createFolder(targetSourceRoot, packageName.replace('.', '/')); // NOI18N
-                FileObject classTemplate = FileUtil.getConfigFile("Templates/Classes/Class.java"); // NOI18N
-
-                if (classTemplate != null) {
-                    DataObject classTemplateDO = DataObject.find(classTemplate);
-                    DataObject od = classTemplateDO.createFromTemplate(DataFolder.findFolder(pack), simpleName);
-
-                    target = od.getPrimaryFile();
-                } else {
-                    target = FileUtil.createData(pack, simpleName + ".java"); //NOI18N
-                }
-
-                final boolean fromTemplate = classTemplate != null;
-                final JavaSource js = JavaSource.forFileObject(target);
-                js.runModificationTask(new Task<WorkingCopy>() {
+                final String path = packageName.replace('.', '/') + '/' + simpleName + ".java"; //NOI18N
+                target = targetSourceRoot.getFileObject(path);
+                final JavaSource js = target != null ? JavaSource.forFileObject(target) : JavaSource.create(ClasspathInfo.create(targetSourceRoot));
+                final ModificationResult result = js.runModificationTask(new Task<WorkingCopy>() {
 
                     @Override
                     public void run(WorkingCopy parameter) throws Exception {
                         parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-
-                        TreeMaker make = parameter.getTreeMaker();
-                        CompilationUnitTree cut = parameter.getCompilationUnit();
                         TypeElement superTypeElement = superType.resolve(parameter);
-                        ExpressionTree pack = fromTemplate ? cut.getPackageName() : make.Identifier(packageName);
-                        ClassTree source = fromTemplate
-                                ? (ClassTree) cut.getTypeDecls().get(0)
-                                : make.Class(make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
-                                simpleName,
-                                Collections.<TypeParameterTree>emptyList(),
-                                null,
-                                Collections.<Tree>emptyList(),
-                                Collections.<Tree>emptyList());
                         if (superTypeElement != null) {
+                            TreeMaker make = parameter.getTreeMaker();
+                            CompilationUnitTree cut = parameter.getFileObject() != null
+                                    ? parameter.getCompilationUnit()
+                                    : GeneratorUtilities.get(parameter).createFromTemplate(targetSourceRoot, path, ElementKind.CLASS);
+                            ClassTree source = (ClassTree) cut.getTypeDecls().get(0);
                             if (superTypeElement.getKind() == ElementKind.CLASS) {
-                                source = make.Class(source.getModifiers(), source.getSimpleName(), source.getTypeParameters(), make.Type(superTypeElement.asType()), source.getImplementsClause(), source.getMembers());
+                                Element el = parameter.getTrees().getElement(TreePath.getPath(cut, source));
+                                if (el instanceof TypeElement) {
+                                    TypeMirror sup = ((TypeElement)el).getSuperclass();
+                                    if (!parameter.getTypes().isSubtype(superTypeElement.asType(), sup)) {
+                                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CreateSubclass.class, "ERR_IncompatibleSupertype", el.getSimpleName())); //NOI18N
+                                        Toolkit.getDefaultToolkit().beep();
+                                        return;
+                                    }
+                                }
+                                parameter.rewrite(source, make.Class(source.getModifiers(), simpleName, source.getTypeParameters(), make.Type(superTypeElement.asType()), source.getImplementsClause(), source.getMembers()));
                                 for (ExecutableElement ctor : ElementFilter.constructorsIn(superTypeElement.getEnclosedElements())) {
                                     if (!ctor.getParameters().isEmpty()) {
                                         hasNonDefaultConstructor = true;
@@ -229,17 +224,29 @@ public class CreateSubclass {
                                     }
                                 }
                             } else {
-                                source = make.Class(source.getModifiers(), source.getSimpleName(), source.getTypeParameters(), source.getExtendsClause(), Collections.singletonList(make.Type(superTypeElement.asType())), source.getMembers());
+                                List<? extends Tree> impls = source.getImplementsClause();
+                                List<Tree> newImpls = new ArrayList<Tree>(impls.size() + 1);
+                                newImpls.addAll(impls);
+                                newImpls.add(make.Type(superTypeElement.asType()));
+                                parameter.rewrite(source, make.Class(source.getModifiers(), source.getSimpleName(), source.getTypeParameters(), source.getExtendsClause(), newImpls, source.getMembers()));
+                            }
+                            if (parameter.getFileObject() == null) {
+                                parameter.rewrite(null, cut);
                             }
                         }
-                        parameter.rewrite(cut, make.CompilationUnit(pack, cut.getImports(), Collections.singletonList(source), cut.getSourceFile()));
                     }
-                }).commit();
+                });
+                result.commit();
 
                 if (!hasNonDefaultConstructor && !isAbstract) {
                     EditorRegistry.removePropertyChangeListener(CreateSubclassFix.this);
                 }
-                return new ChangeInfo(target, null, null);
+                
+                if (target == null) {
+                    Iterator<File> it = result.getNewFiles().iterator();
+                    target = it.hasNext() ? FileUtil.toFileObject(it.next()) : null;
+                }
+                return target != null ? new ChangeInfo(target, null, null) : null;
             } finally {
                 IndexingController.getDefault().exitProtectedMode(null);
             }

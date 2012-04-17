@@ -235,10 +235,10 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void sourcesBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sourcesBrowseButtonActionPerformed
-        File newLocation = Utils.browseLocationAction(this, LastUsedFolders.getSources(), NbBundle.getMessage(ProjectFolder.class, "LBL_SelectProjectFolder"));
+        File newLocation = Utils.browseLocationAction(LastUsedFolders.EXISTING_SOURCES,
+                NbBundle.getMessage(ProjectFolder.class, "LBL_SelectProjectFolder"));
         if (newLocation != null) {
             sourcesTextField.setText(newLocation.getAbsolutePath());
-            LastUsedFolders.setSources(newLocation);
         }
     }//GEN-LAST:event_sourcesBrowseButtonActionPerformed
 

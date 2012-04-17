@@ -104,7 +104,7 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
 
         if ((ActionProvider.COMMAND_RUN.equals(actionName) ||
                 ActionProvider.COMMAND_DEBUG.equals(actionName) ||
-                "profile".equals(actionName))) {
+                ActionProvider.COMMAND_PROFILE.equals(actionName))) {
             String mc = null;
             for (Map.Entry<? extends String,? extends String> entry : config.getProperties().entrySet()) {
                 if (entry.getValue().contains("${packageClassName}")) { //NOI18N

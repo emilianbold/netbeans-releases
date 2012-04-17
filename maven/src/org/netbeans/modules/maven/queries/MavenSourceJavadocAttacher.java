@@ -41,7 +41,6 @@ package org.netbeans.modules.maven.queries;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -55,7 +54,6 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
@@ -120,13 +118,8 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
                     ProgressTransferListener.setAggregateHandle(hndl);
                     try {
                         hndl.start();
-                        List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
                         // XXX should this be limited to _defined.getRepoId()?
-                        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
-                            if (info.isRemoteDownloadable()) {
-                                repos.add(EmbedderFactory.createRemoteRepository(online, info.getRepositoryUrl(), info.getId()));
-                            }
-                        }
+                        List<ArtifactRepository> repos = RepositoryPreferences.getInstance().remoteRepositories(online);
                         online.resolve(art, repos, online.getLocalRepository());
                         File result = art.getFile();
                         if (result.isFile()) {

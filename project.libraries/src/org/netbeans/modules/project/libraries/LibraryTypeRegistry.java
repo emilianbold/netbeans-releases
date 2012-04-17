@@ -44,6 +44,8 @@
 package org.netbeans.modules.project.libraries;
 
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.util.ChangeSupport;
@@ -55,6 +57,7 @@ import org.openide.util.lookup.Lookups;
 public final class LibraryTypeRegistry {
 
     private static final String REGISTRY = "org-netbeans-api-project-libraries/LibraryTypeProviders";              //NOI18N
+    private static final Logger LOG = Logger.getLogger(LibraryTypeRegistry.class.getName());
 
     private static LibraryTypeRegistry instance;
 
@@ -76,6 +79,7 @@ public final class LibraryTypeRegistry {
     public LibraryTypeProvider[] getLibraryTypeProviders () {
         assert result != null;
         final Collection<? extends LibraryTypeProvider> instances = result.allInstances();
+        LOG.log(Level.FINE, "found providers: {0}", instances);
         return instances.toArray(new LibraryTypeProvider[instances.size()]);
     }
 

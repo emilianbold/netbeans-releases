@@ -84,13 +84,13 @@ public final class SessionFilter extends ModelListenerSupport
     // interface TreeModelFilter etc
     public void addModelListener(ModelListener l)  {
 	if (super.addModelListenerHelp(l))
-	    DebuggerManager.get().registerSessionModel(this);
+	    NativeDebuggerManager.get().registerSessionModel(this);
     }
 
     // interface TreeModelFilter etc
     public void removeModelListener(ModelListener l)  {
 	if (super.removeModelListenerHelp(l))
-	    DebuggerManager.get().registerSessionModel(null);
+	    NativeDebuggerManager.get().registerSessionModel(null);
     }
 
     /**

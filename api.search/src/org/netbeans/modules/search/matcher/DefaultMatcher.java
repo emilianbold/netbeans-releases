@@ -158,4 +158,10 @@ public class DefaultMatcher extends AbstractMatcher {
 
         return false;
     }
+
+    @Override
+    public void setStrict(boolean strict) {
+        super.setStrict(strict);
+        realMatcher.setStrict(strict);
+    }
 }

@@ -44,56 +44,26 @@
 
 package org.netbeans.modules.debugger.ui.actions;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.Action;
-
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-import org.openide.util.NbBundle;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Martin Entlicher
  */
-public class DebugProjectAction implements Action {
-    
-    private Action delegate;
-    
-    /** Creates a new instance of DebugMainProjectAction */
-    public DebugProjectAction() {
-        delegate = ProjectSensitiveActions.projectCommandAction(
+public class DebugProjectAction {
+
+    @ActionID(id = "org.netbeans.modules.debugger.ui.actions.DebugProjectAction", category = "Debug")
+    @ActionRegistration(lazy = false, displayName = "#LBL_DebugProjectActionOnProject_Name")
+    @Messages("LBL_DebugProjectActionOnProject_Name=Debug")
+    public static Action instance() {
+        return ProjectSensitiveActions.projectCommandAction(
                 ActionProvider.COMMAND_DEBUG,
-                NbBundle.getMessage(DebugMainProjectAction.class, "LBL_DebugProjectActionOnProject_Name" ), null); // NOI18N
+                Bundle.LBL_DebugProjectActionOnProject_Name(), null);
     }
     
-    public Object getValue(String arg0) {
-        return delegate.getValue(arg0);
-    }
-
-    public void putValue(String arg0, Object arg1) {
-        delegate.putValue(arg0, arg1);
-    }
-
-    public void setEnabled(boolean arg0) {
-        delegate.setEnabled(arg0);
-    }
-
-    public boolean isEnabled() {
-        return delegate.isEnabled();
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener arg0) {
-        delegate.addPropertyChangeListener(arg0);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener arg0) {
-        delegate.removePropertyChangeListener(arg0);
-    }
-
-    public void actionPerformed(ActionEvent arg0) {
-        delegate.actionPerformed(arg0);
-    }
-
 }

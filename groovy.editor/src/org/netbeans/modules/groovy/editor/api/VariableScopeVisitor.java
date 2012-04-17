@@ -157,11 +157,14 @@ public final class VariableScopeVisitor extends TypeVisitor {
             }
         } else if (leaf instanceof ClassNode) {
             ClassNode clazz = (ClassNode) leaf;
-            VariableExpression variable = expression.getVariableExpression();
-            if (!variable.isDynamicTyped()) {
-                if (clazz.getName().equals(variable.getType().getName())) {
-                    FakeASTNode fakeNode = new FakeASTNode(expression, clazz.getNameWithoutPackage());
-                    occurrences.add(fakeNode);
+
+            if (!expression.isMultipleAssignmentDeclaration()) {
+                VariableExpression variable = expression.getVariableExpression();
+                if (!variable.isDynamicTyped()) {
+                    if (clazz.getName().equals(variable.getType().getName())) {
+                        FakeASTNode fakeNode = new FakeASTNode(expression, clazz.getNameWithoutPackage());
+                        occurrences.add(fakeNode);
+                    }
                 }
             }
         } else if (leaf instanceof MethodNode) {

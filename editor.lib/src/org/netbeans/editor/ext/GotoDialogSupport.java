@@ -100,13 +100,13 @@ public class GotoDialogSupport implements ActionListener {
                     actionPerformed(
                             new ActionEvent(gotoButtons[0], 0, null));
                 }
-                if (!Character.isDigit(evt.getKeyChar()) && !Character.isISOControl(evt.getKeyChar())) {
-                    evt.consume();
-                    Component c = evt.getComponent();
-                    if (c != null) {
-                        c.getToolkit().beep();
-                    }
-                }
+//                if (!Character.isDigit(evt.getKeyChar()) && !Character.isISOControl(evt.getKeyChar())) {
+//                    evt.consume();
+//                    Component c = evt.getComponent();
+//                    if (c != null) {
+//                        c.getToolkit().beep();
+//                    }
+//                }
             }
         });
         
@@ -186,7 +186,7 @@ public class GotoDialogSupport implements ActionListener {
                         if (blocker!=null){
                             blocker.stopBlocking(false);
                         }
-                        Utilities.returnFocus();
+//                        Utilities.returnFocus();
                     }
                 });
             }
@@ -206,6 +206,15 @@ public class GotoDialogSupport implements ActionListener {
         }
     }
     
+    /**
+     * Get text value of the 
+     * @return text value of goto field.
+     * @since
+     */
+    protected final String getGotoValueText() {
+        return gotoPanel.getValue();
+    }
+    
     /** Perform the goto operation.
      * @return whether the dialog should be made invisible or not
      */
@@ -213,8 +222,7 @@ public class GotoDialogSupport implements ActionListener {
         JTextComponent c = EditorRegistry.lastFocusedComponent();
         if (c != null) {
             try {
-                int line = Integer.parseInt(
-                        (String)gotoPanel.getValue());
+                int line = Integer.parseInt(getGotoValueText());
 
                 //issue 188976
                 if (line==0)

@@ -2171,6 +2171,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     if(file.exists() && file.isDirectory()) {
                         setSelected(new File[] {file});
                         fileChooser.approveSelection();
+                        if (file.getParentFile() == null) {
+                            // this will hopefully prevent popup to take inappropriate action
+                            evt.consume();
+                        }
                     }
                 }
                 

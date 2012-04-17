@@ -45,6 +45,7 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.Toolkit;
+import java.io.CharConversionException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -54,8 +55,11 @@ import java.util.logging.LogRecord;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
@@ -65,6 +69,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.xml.XMLUtil;
 
 /** Action sensitive to current project
  * 
@@ -83,7 +88,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
      *
      */
     public ProjectAction(String command, String namePattern, Icon icon, Lookup lookup) {
-        this( command, null, namePattern, null, icon, lookup );
+        this( command, null, namePattern, namePattern, icon, lookup );
     }
 
     public ProjectAction(String command, String namePattern, String popupPattern, Icon icon, Lookup lookup) {
@@ -91,7 +96,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
     }
     
     public ProjectAction( ProjectActionPerformer performer, String namePattern, Icon icon, Lookup lookup) {
-        this( null, performer, namePattern, null, icon, lookup );
+        this( null, performer, namePattern, namePattern, icon, lookup );
     }
 
     private ProjectAction( ProjectActionPerformer performer, String namePattern, String popupPattern, Icon icon, Lookup lookup) {
@@ -194,7 +199,34 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         final String presenterName = ActionsUtil.formatProjectSensitiveName( namePattern, projects );
         final String popupName;
         if (popupPattern != null) {
-            popupName = ActionsUtil.formatProjectSensitiveName(popupPattern, projects);
+            String n = ActionsUtil.formatProjectSensitiveName(popupPattern, projects);
+            if (command != null && !command.equals(ActionProvider.COMMAND_DELETE) && !command.equals(ActionProvider.COMMAND_RENAME) && !command.equals(ActionProvider.COMMAND_MOVE) && !command.equals(ActionProvider.COMMAND_COPY)) { // otherwise enabled on CloseProject, Delete, etc.; TBD if wanted on performer-based actions
+                if (projects.length == 1) { // ignore multiselections for now
+                    Project main = OpenProjectList.getDefault().getMainProject();
+                    if (main != null && main != projects[0]) { // otherwise pointless since ActiveConfigAction combo already showing config
+                        ProjectConfigurationProvider<?> actualProvider = projects[0].getLookup().lookup(ProjectConfigurationProvider.class);
+                        if (actualProvider != null) {
+                            ProjectConfigurationProvider<?> mainProvider = main.getLookup().lookup(ProjectConfigurationProvider.class);
+                            if (mainProvider != null) {
+                                ProjectConfiguration actualConfig = actualProvider.getActiveConfiguration(); // XXX PM.mutex?
+                                ProjectConfiguration mainConfig = mainProvider.getActiveConfiguration(); // ditto
+                                String labelActual = actualConfig.getDisplayName();
+                                if (!labelActual.equals(mainConfig.getDisplayName())) {
+                                    try {
+                                        if (!n.startsWith("<html>")) {
+                                            n = "<html>" + XMLUtil.toElementContent(n);
+                                        }
+                                        n += " <i><font color='!controlShadow'>@" + XMLUtil.toElementContent(labelActual);
+                                    } catch (CharConversionException x) {
+                                        // ignore
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            popupName = n;
         } else {
             popupName = null;
         }

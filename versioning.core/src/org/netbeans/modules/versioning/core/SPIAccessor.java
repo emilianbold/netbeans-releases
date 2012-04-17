@@ -47,6 +47,8 @@ import org.netbeans.modules.versioning.core.spi.VCSContext;
 
 import java.util.*;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEntry;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -71,4 +73,8 @@ public abstract class SPIAccessor {
     
     public abstract VCSContext createContextForFiles(Set<VCSFileProxy> files, Set<? extends FileObject> originalFiles);
     
+    public abstract Object[] getLookupObjects(VCSHistoryProvider.HistoryEntry entry);
+
+    public abstract void setLookupObjects(HistoryEntry entry, Object[] lookupObjects);
+
 }

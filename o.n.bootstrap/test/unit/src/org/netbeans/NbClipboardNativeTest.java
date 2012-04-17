@@ -44,6 +44,7 @@
 
 package org.netbeans;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -52,12 +53,12 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -73,6 +74,11 @@ import org.openide.util.datatransfer.TransferListener;
  * @see "#30923"
  */
 public class NbClipboardNativeTest extends NbTestCase implements ClipboardListener {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NbClipboardNativeTest.class);
+    }
+
     private NbClipboard ec;
     private int listenerCalls;
     private Logger LOG;

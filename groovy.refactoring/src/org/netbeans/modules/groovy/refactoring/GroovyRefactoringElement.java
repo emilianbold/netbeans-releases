@@ -46,7 +46,7 @@ import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.netbeans.modules.groovy.editor.api.elements.AstElement;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.openide.filesystems.FileObject;
 
@@ -54,7 +54,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author martin
  */
-public class GroovyRefactoringElement extends AstElement {
+public class GroovyRefactoringElement extends ASTElement {
 
     private final ModuleNode root;
     private final FileObject fileObject;
