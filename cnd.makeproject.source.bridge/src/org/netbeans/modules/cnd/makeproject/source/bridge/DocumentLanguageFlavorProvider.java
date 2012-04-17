@@ -123,6 +123,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 language = CppTokenId.languageC();
                 filter = CndLexerUtilities.getGccCFilter();
                 break;
+            case C_HEADER:
             case CPP:
                 language = CppTokenId.languageCpp();
                 if (nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11) {
@@ -130,10 +131,6 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 } else {
                     filter = CndLexerUtilities.getGccCppFilter();
                 }
-                break;
-            case C_HEADER:
-                language = CppTokenId.languageC();
-                filter = CndLexerUtilities.getGccCFilter();
                 break;
             case FORTRAN:
             case OTHER:
