@@ -50,10 +50,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -135,10 +137,8 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
         MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
         Artifact projectArtifact = embedder.createArtifact(groupId, artifactId, version,  "jar");
         try {
-            DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
-            dpbr.setLocalRepository(embedder.getLocalRepository());
+            ProjectBuildingRequest dpbr = embedder.createMavenExecutionRequest().getProjectBuildingRequest();
             dpbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-            dpbr.setSystemProperties(embedder.getSystemProperties());
             
             dpbr.setProcessPlugins(false);
             dpbr.setResolveDependencies(true);
