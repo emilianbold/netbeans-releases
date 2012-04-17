@@ -71,6 +71,7 @@ import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.TransientUpdateSupport;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
@@ -270,11 +271,11 @@ public final class QuerySupport {
                                     LOG.log(Level.WARNING, null, ex);
                                 }
                             }
-                            LayeredDocumentIndex.setTransientUpdate(true);
+                            TransientUpdateSupport.setTransientUpdate(true);
                             try {
                                 RepositoryUpdater.getDefault().enforcedFileListUpdate(root,list);
                             } finally {
-                                LayeredDocumentIndex.setTransientUpdate(false);
+                                TransientUpdateSupport.setTransientUpdate(false);
                             }
                         }
                     }

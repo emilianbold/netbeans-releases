@@ -289,9 +289,9 @@ made subject to such option by the copyright holder.
         </code>
     </codetemplate>
 
-    <codetemplate abbreviation="bcom">
+    <codetemplate abbreviation="bcom" descriptionId="CT_bcom">
         <code>
-<![CDATA[/*${cursor}*/]]>
+<![CDATA[${no-format}/*${selection}${cursor}*/]]>
         </code>
     </codetemplate>
 

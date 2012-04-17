@@ -727,6 +727,12 @@
         <condition property="main-class-available">
             <isset property="javafx.main.class"/>
         </condition>
+        <condition property="vmargs-available">
+            <and>
+                <isset property="run.jvmargs"/>
+                <not><equals arg1="${run.jvmargs}" arg2=""/></not>
+            </and>
+        </condition>
         <condition property="preloader-available">
             <and>
                 <isset property="javafx.preloader.enabled"/>
@@ -825,6 +831,7 @@
         </condition>
 
         <echo message="main-class-available = ${main-class-available}" level="verbose"/>
+        <echo message="vmargs-available = ${vmargs-available}" level="verbose"/>
         <echo message="preloader-available = ${preloader-available}" level="verbose"/>
         <echo message="app-with-preloader = ${app-with-preloader}" level="verbose"/>
         <echo message="app-with-preloader-without-project = ${app-with-preloader-without-project}" level="verbose"/>
@@ -1740,6 +1747,42 @@
             </condition>
             <basename property="dist.filename" file="${dist.jar}" suffix=".jar"/>
             <length file="${dist.jar}" property="dist.jar.size" />
+            <local name="vmargs-token"/>
+            <condition property="vmargs-token" value="java-vm-args=&quot;${run.jvmargs}&quot; " else="">
+                <isset property="vmargs-available"/>
+            </condition>
+            <local name="applet-params-token"/>
+            <local name="application-args-token"/>
+            <script language="javascript">
+                <![CDATA[
+                    var JFXPAR = "javafx.param";
+                    var JFXPARN = "name";
+                    var JFXPARV = "value";
+
+                    var params = "";
+                    var args = "";
+                    var keys = project.getProperties().keys();
+                    while(keys.hasMoreElements()) {
+                        var pn = keys.nextElement();
+                        if(pn.substr(0,JFXPAR.length) == JFXPAR && pn.indexOf(JFXPARN) == (pn.length()-JFXPARN.length)) {
+                            var propn = project.getProperty(pn);
+                            if(propn != null && propn.length() > 0) {
+                                var pv = pn.substr(0,pn.indexOf(JFXPARN)) + JFXPARV;
+                                var propv = project.getProperty(pv);
+                                if(propv != null && propv.length() > 0) {
+                                    params += "\n        <param name=\"" + propn + "\" value=\"" + propv + "\"/>";
+                                    args += "\n        <argument>" + propn + "=" + propv + "</argument>";
+                                } else {
+                                    params += "\n        <param name=\"" + propn + "\" value=\"\"/>";
+                                    args += "\n        <argument>" + propn + "</argument>";
+                                }
+                            }
+                        }
+                    }
+                    project.setProperty("applet-params-token", params);
+                    project.setProperty("application-args-token", args);
+                ]]>
+            </script>
             <filterchain id="jnlp.template.filter">
                 <replacetokens>
                     <token key="NAME" value="${dist.filename}"/>
@@ -1753,6 +1796,9 @@
                     <token key="OFFLINE" value="${offline-allowed-token}"/>
                     <token key="UPDATEMODE" value="${update-mode-background-token}"/>
                     <token key="ICON" value="${icon-token}"/>
+                    <token key="VMARGS" value="${vmargs-token}"/>
+                    <token key="PARAMETERS" value="${applet-params-token}"/>
+                    <token key="ARGUMENTS" value="${application-args-token}"/>
                 </replacetokens>
             </filterchain>
             <copy file="${basedir}${file.separator}nbproject${file.separator}templates${file.separator}FXSwingTemplateApplication.jnlp" 

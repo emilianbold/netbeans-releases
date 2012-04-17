@@ -145,7 +145,7 @@ public class JavaFixUtilities {
      * @return an editor fix that performs the required transformation
      */
     public static Fix rewriteFix(HintContext ctx, String displayName, TreePath what, final String to) {
-        return rewriteFix(ctx.getInfo(), displayName, what, to, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), Collections.<String, TypeMirror>emptyMap(), Collections.<String, String>emptyMap());
+        return rewriteFix(ctx.getInfo(), displayName, what, to, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), ctx.getConstraints(), Collections.<String, String>emptyMap());
     }
 
     static Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, final String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, final Map<String, String> parameterNames, Map<String, TypeMirror> constraints, Map<String, String> options, String... imports) {
@@ -593,38 +593,39 @@ public class JavaFixUtilities {
         public Number visitMemberSelect(MemberSelectTree node, Void p) {
             Element e = info.getTrees().getElement(getCurrentPath());
 
-            if (e == null || (e.getKind() == ElementKind.CLASS && ((TypeElement) e).asType().getKind() == TypeKind.ERROR)) {
-                MemberSelectTree nue = node;
-                String selectedName = node.getIdentifier().toString();
+            if (e != null && (e.getKind() != ElementKind.CLASS || ((TypeElement) e).asType().getKind() != TypeKind.ERROR)) {
+                //check correct dependency:
+                checkDependency(info, e, canShowUI);
 
-                if (selectedName.startsWith("$") && parameterNames.get(selectedName) != null) {
-                    nue = make.MemberSelect(node.getExpression(), parameterNames.get(selectedName));
+                if (isStaticElement(e) && !inImport) {
+                    rewrite(node, make.QualIdent(e));
+
+                    return null;
                 }
+            }
+            
+            MemberSelectTree nue = node;
+            String selectedName = node.getIdentifier().toString();
 
-                if (nue.getExpression().getKind() == Kind.IDENTIFIER) {
-                    String name = ((IdentifierTree) nue.getExpression()).getName().toString();
+            if (selectedName.startsWith("$") && parameterNames.get(selectedName) != null) {
+                nue = make.MemberSelect(node.getExpression(), parameterNames.get(selectedName));
+            }
 
-                    if (name.startsWith("$") && parameters.get(name) == null) {
-                        //XXX: unbound variable, use identifier instead of member select - may cause problems?
-                        rewrite(node, make.Identifier(nue.getIdentifier()));
-                        return null;
-                    }
+            if (nue.getExpression().getKind() == Kind.IDENTIFIER) {
+                String name = ((IdentifierTree) nue.getExpression()).getName().toString();
+
+                if (name.startsWith("$") && parameters.get(name) == null) {
+                    //XXX: unbound variable, use identifier instead of member select - may cause problems?
+                    rewrite(node, make.Identifier(nue.getIdentifier()));
+                    return null;
                 }
+            }
 
+            if (nue != node) {
                 rewrite(node, nue);
-                return super.visitMemberSelect(node, p);
             }
-
-            //check correct dependency:
-            checkDependency(info, e, canShowUI);
-
-            if (isStaticElement(e) && !inImport) {
-                rewrite(node, make.QualIdent(e));
-
-                return null;
-            } else {
-                return super.visitMemberSelect(node, p);
-            }
+            
+            return super.visitMemberSelect(node, p);
         }
 
         @Override
