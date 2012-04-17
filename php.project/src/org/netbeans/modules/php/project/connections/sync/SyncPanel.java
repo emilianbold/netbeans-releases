@@ -358,11 +358,11 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     private void initOperationButton(JButton button, SyncItem.Operation operation) {
         button.setText(null);
         button.setIcon(operation.getIcon());
-        button.setToolTipText(operation.getTitle());
+        button.setToolTipText(operation.getToolTip());
         button.addActionListener(new OperationButtonListener(operation));
     }
 
-    @NbBundle.Messages("SyncPanel.resetButton.toolTip=Reset the file to the original state (any changes will be discarded!)")
+    @NbBundle.Messages("SyncPanel.resetButton.toolTip=Reset to suggested operation (discards Diff changes)")
     private void initResetButton() {
         resetButton.setText(null);
         resetButton.setIcon(ImageUtilities.loadImageIcon(RESET_ICON_PATH, false));
@@ -370,7 +370,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         resetButton.addActionListener(new OperationButtonListener(null));
     }
 
-    @NbBundle.Messages("SyncPanel.diffButton.toolTip=View differences between remote and local file")
+    @NbBundle.Messages("SyncPanel.diffButton.toolTip=Review differences between remote and local file")
     private void initDiffButton() {
         diffButton.setText(null);
         diffButton.setIcon(ImageUtilities.loadImageIcon(DIFF_ICON_PATH, false));
