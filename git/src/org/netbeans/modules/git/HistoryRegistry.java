@@ -84,6 +84,7 @@ public class HistoryRegistry {
         crit.setTo(to);
         crit.setFiles(files);
         crit.setFollowRenames(true);
+        crit.setIncludeMerges(false);
         GitRevisionInfo[] history = client.log(crit, pm);
         if (!pm.isCanceled() && history.length > 0) {
             for (File f : files) {
