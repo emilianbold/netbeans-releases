@@ -41,32 +41,26 @@
  */
 package org.netbeans.modules.tasks.ui.filter;
 
-import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 
 /**
  *
  * @author jpeska
  */
-public class DisplayTextTaskFilter implements DashboardFilter<Issue> {
-
-    private String summaryParam;
-
-    public DisplayTextTaskFilter(String summaryParam) {
-        this.summaryParam = summaryParam;
-    }
+public class OpenedRepositoryFilter implements DashboardFilter<RepositoryNode> {
 
     @Override
-    public boolean isInFilter(Issue task) {
-        return task.getDisplayName().toLowerCase().contains(summaryParam.toLowerCase());
+    public boolean isInFilter(RepositoryNode entry) {
+        return entry.isOpened();
     }
 
     @Override
     public boolean expandNodes() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean showHitCount() {
-        return true;
+        return false;
     }
 }
