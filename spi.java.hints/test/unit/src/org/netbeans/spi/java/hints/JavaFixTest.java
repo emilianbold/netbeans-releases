@@ -559,6 +559,37 @@ public class JavaFixTest extends TestBase {
                            "    }\n" +
 		           "}\n");
     }
+    
+    public void testMultipleStatementsWrapComments() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        if (1 == 1) {\n" +
+                           "            System.err.println();\n" +
+                           "            System.err.println(\"a\");\n" +
+                           "            \n" +
+                           "            \n" +
+                           "            //C\n" +
+                           "            System.err.println(\"b\");\n" +
+                           "        }\n" +
+                           "    }\n" +
+                           "}\n",
+                           "if ($cond) { System.err.println(); $stmts$;} => while ($cond) { $stmts$;}",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        while (1 == 1) {\n" +
+                           "            System.err.println(\"a\");\n" +
+                           "            \n" +
+                           "            \n" +
+                           "            //C\n" +
+                           "            System.err.println(\"b\");\n" +
+                           "        }\n" +
+                           "    }\n" +
+		           "}\n");
+    }
 
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);
