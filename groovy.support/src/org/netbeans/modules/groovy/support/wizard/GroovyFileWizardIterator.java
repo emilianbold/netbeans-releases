@@ -53,11 +53,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.*;
 import org.netbeans.modules.groovy.support.GroovyProjectExtender;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -132,6 +128,7 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
         return res;
     }
     
+    @Override
     public Set<FileObject> instantiate() throws IOException {
         assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
         return null;
@@ -150,7 +147,7 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
 
         DataObject dTemplate = DataObject.find(template);
         String pkgName = getPackageName(dir);
-        DataObject dobj = null;
+        DataObject dobj;
         if (pkgName == null) {
             dobj = dTemplate.createFromTemplate(df, targetName);
         } else {
@@ -168,6 +165,7 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
         return Collections.singleton(createdFile);
     }
     
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -196,38 +194,47 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
             }
         }
     }
+    @Override
     public void uninitialize (WizardDescriptor wiz) {
         this.wiz = null;
         panels = null;
     }
     
+    @Override
     public String name() {
         //return "" + (index + 1) + " of " + panels.length;
         return ""; // NOI18N
     }
     
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
+    @Override
     public void nextPanel() {
         if (!hasNext()) throw new NoSuchElementException();
         index++;
     }
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) throw new NoSuchElementException();
         index--;
     }
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
     
+    @Override
     public final void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
     
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
