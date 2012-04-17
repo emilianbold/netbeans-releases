@@ -407,7 +407,8 @@ public class CacheTest extends NbTestCase {
         public void attachPatch(File file, String description) {throw new UnsupportedOperationException("Not supported yet.");}
         public BugtrackingController getController() {throw new UnsupportedOperationException("Not supported yet.");}
         public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
-
+        public String[] getSubtasks() {throw new UnsupportedOperationException("Not supported yet.");}
+        
         @Override
         public void setContext(Node[] nodes) {
             throw new UnsupportedOperationException("Not supported yet.");
@@ -579,7 +580,7 @@ public class CacheTest extends NbTestCase {
         public void setContext(CTestIssue data, Node[] nodes) {
             data.setContext(nodes);
         }
-
+        public String[] getSubtasks(CTestIssue data) {throw new UnsupportedOperationException("Not supported yet.");}
     }
 
     private void emptyStorage() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {

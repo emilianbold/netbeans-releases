@@ -280,6 +280,7 @@ public class RecentIssuesTest extends NbTestCase {
         public void removePropertyChangeListener(PropertyChangeListener listener) {throw new UnsupportedOperationException("Not supported yet.");}
         public void addPropertyChangeListener(PropertyChangeListener listener) {throw new UnsupportedOperationException("Not supported yet.");}
         public TestIssue createFor(String id) {throw new UnsupportedOperationException("Not supported yet.");}
+        public String[] getSubtasks() {throw new UnsupportedOperationException("Not supported yet.");}
     }
 
     private class RITestConector extends BugtrackingConnector {

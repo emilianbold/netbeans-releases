@@ -659,7 +659,7 @@ public class BugzillaIssue {
         a.setValues(ccs);
     }
 
-    List<String> getFieldValues(IssueField f) {
+    public List<String> getFieldValues(IssueField f) {
         if(f.isSingleAttribute()) {
             TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
             if(a != null) {

@@ -413,6 +413,11 @@ public class QueryTableCellRendererTest {
         public TestIssue createFor(String id) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        
+        @Override
+        public String[] getSubtasks() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }        
     }
 
     private class RendererRepository extends TestRepository {

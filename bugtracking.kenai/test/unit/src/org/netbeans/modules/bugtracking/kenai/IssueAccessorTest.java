@@ -297,6 +297,11 @@ public class IssueAccessorTest extends NbTestCase {
         public TestIssue createFor(String id) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        
+        @Override
+        public String[] getSubtasks() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }        
     }
 
     private static class TestIssueController extends BugtrackingController {

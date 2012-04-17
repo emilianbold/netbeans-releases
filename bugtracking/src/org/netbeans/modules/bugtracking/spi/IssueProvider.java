@@ -79,7 +79,20 @@ public abstract class IssueProvider<I> {
      * @return
      */
     public abstract String getID(I data);
+    
+    /**
+     * Returns the ID-s of all issues where this one could be consideret 
+     * being superordinated to them. 
+     * e.g. the blocks/depends relationship in Bugzilla, or subtask/parenttask in JIRA
+     * 
+     * 
+     * @param data
+     * @return 
+     */
+    public abstract String[] getSubtasks(I data);
 
+    
+    
     /**
      * Returns this issues summary
      * @return
