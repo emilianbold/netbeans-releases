@@ -2,6 +2,7 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao;
 
 import java.awt.Component;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -36,6 +37,7 @@ public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeList
     private Project entityProject;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private List<String> entityClasses;
+    protected static AtomicBoolean afterFinishAction = new AtomicBoolean(false);
     
     public EjbFacadeWizardPanel2(Project project, WizardDescriptor wizardDescriptor) {
         this.project = project;
@@ -93,8 +95,13 @@ public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeList
                     EjbFacadeWizardIterator.EJB_STATELESS));
             return false;
         }
-        wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, ""); // NOI18N
-        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
+
+        if (!afterFinishAction.get()) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, ""); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
+        } else {
+            afterFinishAction.set(false);
+        }
         return true;
     }
 
