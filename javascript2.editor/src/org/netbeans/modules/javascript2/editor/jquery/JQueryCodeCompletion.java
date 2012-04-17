@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.jquery;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
@@ -83,7 +84,7 @@ public class JQueryCodeCompletion {
             case GLOBAL:
             case EXPRESSION:
                 if (isJQuery(parserResult, tsOffset)) {
-                    addGlobalContext(result, parserResult, prefix, tsOffset);
+                    addSelectors(result, parserResult, prefix, tsOffset);
                 }
                 break;
         }
@@ -114,8 +115,102 @@ public class JQueryCodeCompletion {
         return (lastToken.id() == JsTokenId.IDENTIFIER && "$".equals(lastToken.text().toString()))
                 || (!ts.movePrevious() && "$".equals(token.text().toString()));
     }
+    
+    private enum SelectorKind {
+        TAG, TAG_ATTRIBUTE, CLASS, ID, TAG_ATTRIBUTE_COMPARATION, AFTER_COLON
+    }
+    
+    private class SelectorItem {
+        private final String displayText;
+        private final String insertTemplate;
+        private final String helpId;
+        private final String helpText;
 
-    private void addGlobalContext(final List<CompletionProposal> result, final ParserResult parserResult, final String prefix, final int offset) {
+        public SelectorItem(String displayText) {
+            this(displayText, displayText, null, null);
+        }
+        
+        public SelectorItem(String displayText, String insertTemplate) {
+            this(displayText, insertTemplate, null, null);
+        }
+        
+        public SelectorItem(String displayText, String insertTemplate, String helpId, String helpText) {
+            this.displayText = displayText;
+            this.insertTemplate = insertTemplate;
+            this.helpId = helpId;
+            this.helpText = helpText;
+        }
+        
+        public String getDisplayText() {
+            return displayText;
+        }
+        
+        public String getInsertTemplate() {
+            return insertTemplate;
+        }
+        
+        public String getHelpId() {
+            return helpId;
+        }
+        
+        public String getHelpText() {
+            return helpText;
+        }
+        
+    }
+    
+    private class SelectorContext {
+        String prefix;
+        Collection<SelectorKind> kinds;
+        int prefixIndex;
+
+        public SelectorContext(String prefix, int prefixIndex, Collection<SelectorKind> kinds) {
+            this.prefix = prefix;
+            this.kinds = kinds;
+            this.prefixIndex = prefixIndex;
+        }
+        
+    }
+    
+    private static HashMap<String, List<SelectorKind>> contextMap = new HashMap<String, List<SelectorKind>>();    
+    private static HashMap<String, SelectorItem> afterColonList = new HashMap<String, SelectorItem>();
+    
+    private void fillContextMap() {
+        contextMap.put(" (", Arrays.asList(SelectorKind.TAG, SelectorKind.ID));
+        contextMap.put("#", Arrays.asList(SelectorKind.ID));
+        contextMap.put(".", Arrays.asList(SelectorKind.CLASS));
+        contextMap.put("[", Arrays.asList(SelectorKind.TAG_ATTRIBUTE));
+        contextMap.put(":", Arrays.asList(SelectorKind.AFTER_COLON));
+    }
+  
+    private SelectorContext findSelectorContext(String text) {
+        int index = text.length() - 1;
+        StringBuilder prefix = new StringBuilder();
+        while (index > -1) {
+            char c = text.charAt(index);
+            switch (c) {
+                case ' ':
+                case '(':
+                    return new SelectorContext(prefix.toString(), index, Arrays.asList(SelectorKind.TAG, SelectorKind.ID));
+                case '#':
+                    return new SelectorContext(prefix.toString(), index, Arrays.asList(SelectorKind.ID));
+                case '.':
+                    return new SelectorContext(prefix.toString(), index, Arrays.asList(SelectorKind.CLASS));
+                case '[':
+                    return new SelectorContext(prefix.toString(), index, Arrays.asList(SelectorKind.TAG_ATTRIBUTE));
+                case ':':
+                    return new SelectorContext(prefix.toString(), index, Arrays.asList(SelectorKind.AFTER_COLON));
+            }
+            prefix.insert(0, c);
+            index--;
+        }
+        if (index < 0) {
+            return new SelectorContext(prefix.toString(), 0, Arrays.asList(SelectorKind.TAG, SelectorKind.ID));
+        }
+        return null;
+    }
+    
+    private void addSelectors(final List<CompletionProposal> result, final ParserResult parserResult, final String prefix, final int offset) {
         /*
          * basic selectors: 
          * $(document); // Activate jQuery for object
@@ -136,62 +231,52 @@ public class JQueryCodeCompletion {
         if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END)) {
             wrapup = "'";
         }
-        int docOffset = parserResult.getSnapshot().getOriginalOffset(offset) - prefix.length();
-        String hash = "#";  // NOI18N
-        if (prefix.isEmpty()) {
-            // offer all tags
-            Collection<HtmlTag> tags = getHtmlTags("");
-            for (HtmlTag htmlTag : tags) {
-                result.add(JQueryCompletionItem.create(htmlTag, docOffset, wrapup));
-            }
-            // and all tag ids
-            Collection<String> tagIds = getTagIds("", parserResult);
-            for (String tagId : tagIds) {
-                result.add(JQueryCompletionItem.createCSSItem(hash + tagId, docOffset, wrapup));
-            }
-        } else {
-            // find what is already there
-            if (prefix.startsWith(hash)) {
-                // provide tag ids
-                String tagIdPrefix = prefix.substring(1);
-                Collection<String> tagIds = getTagIds(tagIdPrefix, parserResult);
-                for(String tagId : tagIds) {
-                    result.add(JQueryCompletionItem.createCSSItem(hash + tagId, docOffset, wrapup));
-                }
-            } else {
-                int index = prefix.indexOf('.');
-                if (index > -1) {
-                    // provide classes for the tag like p.first
-                    String classPrefix = prefix.substring(index + 1);
-                    Collection<String> classes = getCSSClasses(classPrefix, parserResult);
-                    int anchorOffset = docOffset + prefix.length() - classPrefix.length();
-                    for(String cl : classes) {
-                        result.add(JQueryCompletionItem.createCSSItem(cl, anchorOffset, wrapup));
-                    }
-                } else {
-                    index = prefix.indexOf('[');
-                    if (index > -1) {
-                        if (prefix.indexOf('=') == -1) {
-                            // provide attributes
-                            String tagName = prefix.substring(0, index);
-                            String attributePrefix = prefix.substring(index + 1);
-                            int anchorOffset = docOffset + prefix.length() - attributePrefix.length();
-                            Collection<HtmlTagAttribute> attributes = getHtmlAttributes(tagName, attributePrefix);
-                            for (HtmlTagAttribute htmlTagAttribute : attributes) {
-                                result.add(JQueryCompletionItem.create(htmlTagAttribute, anchorOffset, ""));
-                            }
-                        }
-                    } else {
-                        // there is a prefix, we will expect that this is a tag name prefix
-                        Collection<HtmlTag> tags = getHtmlTags(prefix);
+        if(contextMap.isEmpty()) {
+            fillContextMap();
+        }
+        
+        SelectorContext context = findSelectorContext(prefix);
+        
+        if (context != null) {
+            int docOffset = parserResult.getSnapshot().getOriginalOffset(offset) - prefix.length();
+            for (SelectorKind selectorKind : context.kinds) {
+                switch (selectorKind) {
+                    case TAG:
+                        Collection<HtmlTag> tags = getHtmlTags(context.prefix);
                         for (HtmlTag htmlTag : tags) {
                             result.add(JQueryCompletionItem.create(htmlTag, docOffset, wrapup));
                         }
-                        Collection<String> tagIds = getTagIds(prefix, parserResult);
-                        for (String tagId : tagIds) {
-                            result.add(JQueryCompletionItem.createCSSItem(hash + tagId, docOffset, wrapup));
+                        break;
+                    case TAG_ATTRIBUTE:
+                        // provide attributes
+                        String tagName = prefix.substring(0, context.prefixIndex);
+                        String attributePrefix = prefix.substring(context.prefixIndex + 1);
+                        int anchorOffset = docOffset + prefix.length() - context.prefix.length();
+                        Collection<HtmlTagAttribute> attributes = getHtmlAttributes(tagName, attributePrefix);
+                        for (HtmlTagAttribute htmlTagAttribute : attributes) {
+                            result.add(JQueryCompletionItem.create(htmlTagAttribute, anchorOffset, ""));
                         }
-                    }
+                        break;
+                    case ID:
+                        Collection<String> tagIds = getTagIds(context.prefix, parserResult);
+                        for (String tagId : tagIds) {
+                            result.add(JQueryCompletionItem.createCSSItem("#" + tagId, docOffset, wrapup));
+                        }
+                        break;
+                    case CLASS:
+                        Collection<String> classes = getCSSClasses(context.prefix, parserResult);
+                        anchorOffset = docOffset + prefix.length() - context.prefix.length();
+                        for (String cl : classes) {
+                            result.add(JQueryCompletionItem.createCSSItem(cl, anchorOffset, wrapup));
+                        }
+                        break;
+                    case AFTER_COLON:
+                        for (String name : afterColonList.keySet()) {
+                            if (name.startsWith(context.prefix)) {
+                                SelectorItem item = afterColonList.get(name);
+                                result.add(JQueryCompletionItem.createCSSItem(":" + item.displayText, docOffset, wrapup));
+                            }
+                        }
                 }
             }
         }

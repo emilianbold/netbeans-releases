@@ -5,4 +5,7 @@ $(taska).text("fadsfads");
 $(my)
 $('#myIdTable')
 $('div.notMe')
+$('.notMe')
+$('div[title]')
+$('div[title="hello"]')
 

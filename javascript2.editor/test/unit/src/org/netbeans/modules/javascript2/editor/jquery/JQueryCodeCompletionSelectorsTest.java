@@ -46,7 +46,6 @@ import java.util.Collections;
 import java.util.Map;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
@@ -93,6 +92,17 @@ public class JQueryCodeCompletionSelectorsTest extends JsTestBase {
         checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('div.^notMe')", false);
     }
 
+    public void testSelectorClass02() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('.^notMe')", false);
+    }
+    
+    public void testSelectorTagAttr01() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('div[t^itle]')", false);
+    }
+    
+    public void testSelectorTagAttr02() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('div[t^itle=\"hello\"]')", false);
+    }
         
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
