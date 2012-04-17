@@ -75,6 +75,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -419,6 +420,7 @@ public class JavaFixUtilities {
 
             Tree parsed = Utilities.parseAndAttribute(wc, to, scope);
             Map<Tree, Tree> rewriteFromTo = new IdentityHashMap<Tree, Tree>();
+            Tree original;
 
             if (Utilities.isFakeBlock(parsed)) {
                 TreePath parent = tp.getParentPath();
@@ -437,9 +439,9 @@ public class JavaFixUtilities {
                         }
                     }
 
-                    rewriteFromTo.put(parent.getLeaf(), wc.getTreeMaker().Block(newStatements, ((BlockTree) parent.getLeaf()).isStatic()));
+                    rewriteFromTo.put(original = parent.getLeaf(), wc.getTreeMaker().Block(newStatements, ((BlockTree) parent.getLeaf()).isStatic()));
                 } else {
-                    rewriteFromTo.put(tp.getLeaf(), wc.getTreeMaker().Block(statements, false));
+                    rewriteFromTo.put(original = tp.getLeaf(), wc.getTreeMaker().Block(statements, false));
                 }
             } else if (Utilities.isFakeClass(parsed)) {
                 TreePath parent = tp.getParentPath();
@@ -461,7 +463,7 @@ public class JavaFixUtilities {
                     }
                 }
 
-                rewriteFromTo.put(parent.getLeaf(), wc.getTreeMaker().Class(ct.getModifiers(), ct.getSimpleName(), ct.getTypeParameters(), ct.getExtendsClause(), ct.getImplementsClause(), newMembers));
+                rewriteFromTo.put(original = parent.getLeaf(), wc.getTreeMaker().Class(ct.getModifiers(), ct.getSimpleName(), ct.getTypeParameters(), ct.getExtendsClause(), ct.getImplementsClause(), newMembers));
             } else if (tp.getLeaf().getKind() == Kind.BLOCK && parametersMulti.containsKey("$$1$") && parsed.getKind() != Kind.BLOCK && StatementTree.class.isAssignableFrom(parsed.getKind().asInterface())) {
                 List<StatementTree> newStatements = new LinkedList<StatementTree>();
 
@@ -471,7 +473,7 @@ public class JavaFixUtilities {
 
                 parsed = wc.getTreeMaker().Block(newStatements, ((BlockTree) tp.getLeaf()).isStatic());
 
-                rewriteFromTo.put(tp.getLeaf(), parsed);
+                rewriteFromTo.put(original = tp.getLeaf(), parsed);
             } else {
                 while (   tp.getParentPath().getLeaf().getKind() == Kind.PARENTHESIZED
                        && tp.getLeaf().getKind() != parsed.getKind()
@@ -480,7 +482,7 @@ public class JavaFixUtilities {
                        && !requiresParenthesis(parsed, tp.getParentPath().getLeaf(), tp.getParentPath().getParentPath().getLeaf())
                        && requiresParenthesis(tp.getLeaf(), tp.getParentPath().getLeaf(), tp.getParentPath().getParentPath().getLeaf()))
                     tp = tp.getParentPath();
-                rewriteFromTo.put(tp.getLeaf(), parsed);
+                rewriteFromTo.put(original = tp.getLeaf(), parsed);
             }
 
             //prevent generating QualIdents inside import clauses - might be better to solve that inside ImportAnalysis2,
@@ -495,7 +497,16 @@ public class JavaFixUtilities {
                 w = w.getParentPath();
             }
 
-            new ReplaceParameters(wc, ctx.isCanShowUI(), inImport, parameters, parametersMulti, parameterNames, rewriteFromTo).scan(new TreePath(tp.getParentPath(), parsed), null);
+            final Set<Tree> originalTrees = Collections.newSetFromMap(new IdentityHashMap<Tree, Boolean>());
+            
+            new TreeScanner<Void, Void>() {
+                @Override public Void scan(Tree tree, Void p) {
+                    originalTrees.add(tree);
+                    return super.scan(tree, p);
+                }
+            }.scan(original, null);
+            
+            new ReplaceParameters(wc, ctx.isCanShowUI(), inImport, parameters, parametersMulti, parameterNames, rewriteFromTo, originalTrees).scan(new TreePath(tp.getParentPath(), parsed), null);
 
             if (inPackage) {
                 String newPackage = wc.getTreeUtilities().translate(wc.getCompilationUnit().getPackageName(), new IdentityHashMap<Tree, Tree>(rewriteFromTo))./*XXX: not correct*/toString();
@@ -528,8 +539,9 @@ public class JavaFixUtilities {
         private final Map<String, Collection<TreePath>> parametersMulti;
         private final Map<String, String> parameterNames;
         private final Map<Tree, Tree> rewriteFromTo;
+        private final Set<Tree> originalTrees;
 
-        public ReplaceParameters(WorkingCopy wc, boolean canShowUI, boolean inImport, Map<String, TreePath> parameters, Map<String, Collection<TreePath>> parametersMulti, Map<String, String> parameterNames, Map<Tree, Tree> rewriteFromTo) {
+        public ReplaceParameters(WorkingCopy wc, boolean canShowUI, boolean inImport, Map<String, TreePath> parameters, Map<String, Collection<TreePath>> parametersMulti, Map<String, String> parameterNames, Map<Tree, Tree> rewriteFromTo, Set<Tree> originalTrees) {
             this.parameters = parameters;
             this.info = wc;
             this.make = wc.getTreeMaker();
@@ -538,6 +550,7 @@ public class JavaFixUtilities {
             this.parametersMulti = parametersMulti;
             this.parameterNames = parameterNames;
             this.rewriteFromTo = rewriteFromTo;
+            this.originalTrees = originalTrees;
         }
 
         @Override
@@ -947,6 +960,7 @@ public class JavaFixUtilities {
         }
 
         private void rewrite(Tree from, Tree to) {
+            if (originalTrees.contains(from)) return ;
             rewriteFromTo.put(from, to);
         }
     }
