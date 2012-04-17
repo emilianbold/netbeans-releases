@@ -75,5 +75,7 @@ public abstract class SPIAccessor {
     public abstract String getNewFileContent(SimpleRefactoringElementImplementation impl);
     public abstract boolean hasChangesInGuardedBlocks(RefactoringElementsBag bag);
     public abstract boolean hasChangesInReadOnlyFiles(RefactoringElementsBag bag);
+    public abstract void check(Transaction commit, boolean undo);
+    public abstract void sum(Transaction commit);
     
 }

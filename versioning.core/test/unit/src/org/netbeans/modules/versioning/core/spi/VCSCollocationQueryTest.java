@@ -49,8 +49,8 @@ import org.openide.filesystems.FileStateInvalidException;
 import java.io.File;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
-import org.netbeans.modules.versioning.spi.testvcs.TestVCSCollocationQuery;
+import org.netbeans.modules.versioning.core.spi.testvcs.TestVCS;
+import org.netbeans.modules.versioning.core.spi.testvcs.TestVCSCollocationQuery;
 import org.openide.util.test.MockLookup;
 
 /**

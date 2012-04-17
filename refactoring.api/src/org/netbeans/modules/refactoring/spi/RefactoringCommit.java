@@ -96,20 +96,42 @@ import org.openide.util.Exceptions;
         this.results = results;
     }
     
+     void check(boolean undo) {
+         if (!commited) {
+             return;
+         }
+         for (BackupFacility2.Handle id : ids) {
+             try {
+                 Collection<String> checkChecksum = id.checkChecksum(undo);
+                 if (!checkChecksum.isEmpty()) {
+                     throw undo ? new CannotUndoRefactoring(checkChecksum) : new CannotRedoRefactoring(checkChecksum);
+                 };
+             } catch (IOException ex) {
+                 Exceptions.printStackTrace(ex);
+             }
+         }
+     }
+     
+     void sum() {
+         if (!commited) {
+             return;
+         }
+         for (BackupFacility2.Handle id : ids) {
+            try {
+                id.storeChecksum();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+         }
+     }
+     
+    
     public void commit() {
         try {
             if (commited) {
-                 for (BackupFacility2.Handle id : ids) {
-                    Collection<String> checkChecksum = id.checkChecksum(false);
-                    if (!checkChecksum.isEmpty()) {
-                        throw new CannotRedoRefactoring(checkChecksum);
-                    }
-                 }
-                
                 for (BackupFacility2.Handle id:ids) {
                     try {
                         id.restore();
-                        id.storeChecksum();
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -138,16 +160,9 @@ import org.openide.util.Exceptions;
      private boolean newFilesStored = false;
 
      public void rollback() {
-         try {
              for (BackupFacility2.Handle id : ids) {
-                 Collection<String> checkChecksum = id.checkChecksum(true);
-                 if (!checkChecksum.isEmpty()) {
-                     throw new CannotUndoRefactoring(checkChecksum);
-                 }
-
                  try {
                      id.restore();
-                     id.storeChecksum();
                  } catch (IOException ex) {
                      throw new RuntimeException(ex);
                  }
@@ -168,9 +183,6 @@ import org.openide.util.Exceptions;
                  }
                  newFilesStored |= localStored;
              }
-         } catch (IOException ex) {
-             Exceptions.printStackTrace(ex);
-         }
 
      }
 

@@ -45,24 +45,22 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmFriend;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider.NativeProjectImpl;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
+import org.openide.filesystems.FileObject;
 
 /**
  * 
  * @author Vladimir Voskresensky
  */
 public class ModelImplTest extends ModelImplBaseTestCase {
+
     public ModelImplTest(String testName) {
         super(testName);
     }
@@ -74,11 +72,40 @@ public class ModelImplTest extends ModelImplBaseTestCase {
     }
     
     public static void dumpProjectContainers(PrintStream printStream, ProjectBase project, boolean dumpFiles) {
-        ProjectBase.dumpProjectClassifierContainer(project, printStream);
-        ProjectBase.dumpProjectDeclarationContainer(project, printStream);
-        if (dumpFiles) {
-            ProjectBase.dumpFileContainer(project, new PrintWriter(printStream));
-            ProjectBase.dumpProjectGrapthContainer(project, printStream);
+        ProjectBase.dumpProjectContainers(printStream, project, dumpFiles);
+    }
+
+    public static void fireFileAdded(final CsmProject project, FileObject sourceFileObject) {
+        assertNotNull(project);
+        Object platform = project.getPlatformProject();
+        if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
+            NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
+            nativeProject.fireFileAdded(sourceFileObject);
+        }
+    }
+
+    public static void fireFileChanged(final CsmProject project, FileObject sourceFileObject) {
+        assertNotNull(project);
+        Object platform = project.getPlatformProject();
+        if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
+            NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
+            nativeProject.fireFileChanged(sourceFileObject);
+        } else {
+            assertTrue("can not send fireFileChanged using project " + platform, false);
+        }
+    }
+
+    public static void fireFileChanged(CsmFile file) {
+        FileObject fileObject = file.getFileObject();
+        assertNotNull("no file object for " + file, fileObject);
+        CsmProject project = file.getProject();
+        fireFileChanged(project, fileObject);
+    }
+
+    public static void reparseProject(CsmProject firstPrj) {
+        if (firstPrj instanceof ProjectBase) {
+            ((ProjectBase)firstPrj).scheduleReparse();
+            TraceModelBase.waitProjectParsed(((ProjectBase)firstPrj), true);
         }
     }
 }

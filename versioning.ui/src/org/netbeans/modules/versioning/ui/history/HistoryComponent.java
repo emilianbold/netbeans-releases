@@ -215,11 +215,11 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                         for (Node n : activatedNodes) {
                             activatedNodesContent.remove(n);
                         }
+                    } 
                         activatedNodes = newSelection;
                         for (Node n : activatedNodes) {
                             activatedNodesContent.add(n);
                         }
-                    }
                     if(newSelection != null) {
                         getToolbar().modeCombo.setEnabled(newSelection.length == 1);
                         getToolbar().modeLabel.setEnabled(newSelection.length == 1);
@@ -697,7 +697,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         return new HelpCtx("org.netbeans.modules.localhistory.ui.view.LHHistoryTab");   // NO18N
     }
 
-    public static abstract class Filter implements QuickFilter {
+    static abstract class Filter implements QuickFilter {
         public boolean filtersProperty(Property property) {
             return false;
         }
@@ -705,7 +705,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         protected HistoryEntry getEntry(Object value) {
             if(value instanceof Node) {
                 return getHistoryEntry((Node)value);
-        }
+            }
             return null;
         }
  
@@ -886,7 +886,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         }
     };    
     
-    public enum CompareMode {
+    enum CompareMode {
         TOPARENT(NbBundle.getMessage(HistoryComponent.class, "LBL_DiffToParent")),   // NOI18N
         TOCURRENT(NbBundle.getMessage(HistoryComponent.class, "LBL_DiffToCurrent")); // NOI18N
         private final String displayName;

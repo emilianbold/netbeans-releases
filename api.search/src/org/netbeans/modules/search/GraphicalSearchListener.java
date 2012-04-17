@@ -217,7 +217,7 @@ class GraphicalSearchListener<R> extends SearchListener {
     @Override
     public void fileSkipped(FileObject fileObject,
             SearchFilterDefinition filter, String message) {
-        LOG.log(Level.INFO, "{0} skipped {1} {2}", new Object[]{ //NOI18N
+        LOG.log(Level.FINE, "{0} skipped {1} {2}", new Object[]{ //NOI18N
                     fileObject.getPath(),
                     filter != null ? filter.getClass().getName() : "", //NOI18N
                     message != null ? message : ""});                   //NOI18N

@@ -86,7 +86,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.openide.util.CharSequences;
-import org.openide.util.Exceptions;
 
 /**
  * prototype implementation of service
@@ -340,7 +339,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             // TODO FileBuffer should provide method isValid()
             // Do nothing, it seems temporary file.
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            APTUtils.LOG.log(Level.INFO, ex.getMessage());
         }
         return false;
     }

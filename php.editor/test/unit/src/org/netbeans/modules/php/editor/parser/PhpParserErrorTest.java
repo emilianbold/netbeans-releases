@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.php.editor.PHPTestBase;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PhpParserErrorTest extends CslTestBase {
+public class PhpParserErrorTest extends PHPTestBase {
 
     public PhpParserErrorTest(String testName) {
         super(testName);
@@ -131,7 +131,7 @@ public class PhpParserErrorTest extends CslTestBase {
     public void testTraits_06() throws Exception {
         checkErrors("testfiles/traits_06.php");
     }
-    
+
     public void testTraits_07() throws Exception {
         checkErrors("testfiles/traits_07.php");
     }
@@ -218,5 +218,33 @@ public class PhpParserErrorTest extends CslTestBase {
 
     public void testCfunction() throws Exception {
         checkErrors("testfiles/parser/cfunction.php");
+    }
+
+    public void testNowDoc_01() throws Exception {
+        checkErrors("testfiles/parser/nowdoc_01.php");
+    }
+
+    public void testNowDoc_02() throws Exception {
+        checkErrors("testfiles/parser/nowdoc_02.php");
+    }
+
+    public void testNowDoc_03() throws Exception {
+        checkErrors("testfiles/parser/nowdoc_03.php");
+    }
+
+    public void testNowDoc_04() throws Exception {
+        checkErrors("testfiles/parser/nowdoc_04.php");
+    }
+
+    public void testNowDoc_05() throws Exception {
+        checkErrors("testfiles/parser/nowdoc_05.php");
+    }
+
+    public void testNowDoc_06() throws Exception {
+        checkErrors("testfiles/parser/nowdoc_06.php");
+    }
+
+    public void testIssue198572() throws Exception {
+        checkErrors("testfiles/parser/issue198572.php");
     }
 }

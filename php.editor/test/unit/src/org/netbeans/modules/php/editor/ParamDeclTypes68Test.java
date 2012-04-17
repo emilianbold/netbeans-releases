@@ -56,7 +56,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author tomslot
  */
-public class ParamDeclTypes68Test extends PHPTestBase {
+public class ParamDeclTypes68Test extends PHPCodeCompletionTestBase {
 
     public ParamDeclTypes68Test(String testName) {
         super(testName);

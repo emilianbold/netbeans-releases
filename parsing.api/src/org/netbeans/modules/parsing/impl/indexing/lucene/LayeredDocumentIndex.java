@@ -57,7 +57,7 @@ import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
 import org.openide.util.Exceptions;
-
+import static org.netbeans.modules.parsing.impl.indexing.TransientUpdateSupport.isTransientUpdate;
 /**
  *
  * @author Tomas Zezula
@@ -65,7 +65,6 @@ import org.openide.util.Exceptions;
 public final class LayeredDocumentIndex implements DocumentIndex {
     
     private final DocumentIndex base;
-    private static final ThreadLocal<Boolean> transientUpdate = new ThreadLocal<Boolean>();
     
     private final Set<String> filter = new HashSet<String>();
     //@GuardedBy("this")
@@ -75,14 +74,6 @@ public final class LayeredDocumentIndex implements DocumentIndex {
     LayeredDocumentIndex(@NonNull final DocumentIndex base) {
         assert base != null;
         this.base = base;
-    }
-    
-    public static void setTransientUpdate(final boolean tu) {
-        transientUpdate.set(tu);
-    }
-    
-    public static boolean isTransientUpdate() {
-        return transientUpdate.get() == Boolean.TRUE;
     }
 
     @Override
@@ -115,10 +106,7 @@ public final class LayeredDocumentIndex implements DocumentIndex {
         try {
             base.close();
         } finally {
-            final Pair<DocumentIndex,Set<String>> ovl = getOverlayIfExists();
-            if (ovl.first != null) {
-                ovl.first.close();
-            }
+            clearOverlay();
         }
     }
 

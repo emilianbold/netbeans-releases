@@ -5,6 +5,8 @@
 package org.netbeans.modules.parsing.impl;
 
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -21,8 +23,10 @@ public class Installer extends ModuleInstall {
         RepositoryUpdater.getDefault().start(false);
 
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+            @Override
             public void run () {
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         Schedulers.init();
                     }
@@ -35,6 +39,8 @@ public class Installer extends ModuleInstall {
     public boolean closing () {
         final boolean ret = super.closing();
         RepositoryUpdater.getDefault().stop();
+        LuceneIndexFactory.getDefault().close();
+        DocumentBasedIndexManager.getDefault().close();
         return ret;
     }
 

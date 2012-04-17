@@ -2734,6 +2734,12 @@ T_LNUMBER:scalar
         Scalar s = new Scalar(startleft, endright, scalar, Scalar.Type.STRING);
         RESULT = s;
 :}
+
+| T_START_NOWDOC:start T_END_NOWDOC:end
+{:
+        Scalar s = new Scalar(startleft, endright, "", Scalar.Type.STRING); //NOI18N
+        RESULT = s;
+:}
 ;
 
 static_scalar ::=  /* compile-time evaluated scalars */

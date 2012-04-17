@@ -65,6 +65,8 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionResult;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.*;
+import org.openide.windows.Mode;
+import org.openide.windows.WindowManager;
 
 /**
  * This class gets informed about started and finished JUnit test sessions
@@ -384,9 +386,11 @@ public final class Manager {
                     @Override
                     public void run() {
                         final ResultWindow window = ResultWindow.getInstance();
-                        if (window.isOpened()) {
+                        Mode mode = WindowManager.getDefault().findMode(window);
+                        boolean isInSlidingMode = mode != null && mode.getName().contains("SlidingSide");   //NOI18N
+                        if (window.isOpened() && !isInSlidingMode) {
                             window.promote();
-                        } else {
+                        } else if (!window.isOpened() || (window.isOpened() && !window.isShowing() && isInSlidingMode)) {
                             Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/testResults.png"));   //NOI18N
                             String projectname = ProjectUtils.getInformation(session.getProject()).getDisplayName();
                             

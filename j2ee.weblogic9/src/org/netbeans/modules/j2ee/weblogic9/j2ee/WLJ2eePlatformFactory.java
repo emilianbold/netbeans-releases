@@ -357,7 +357,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         if (middleware != null) {
             File modules = getMiddlewareModules(middleware);
             if (modules.exists() && modules.isDirectory()) {
-                FilenameFilter filter = null;
                 Version serverVersion = null;
                 if (j2eePlatform != null) {
                     serverVersion = j2eePlatform.dm.getServerVersion();
@@ -365,15 +364,15 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     serverVersion = WLPluginProperties.getServerVersion(serverRoot);
                 }
                 if (JAX_RS_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
-                    filter = new FilenameFilter() {
+                    FilenameFilter filter = new FilenameFilter() {
                         @Override
                         public boolean accept(File dir, String name) {
                             return JERSEY_PATTERN.matcher(name).matches();
                         }
                     };
-                }
-                for (File jerseyFile : modules.listFiles(filter)) {
-                    list.add(Util.fileToUrl(jerseyFile));
+                    for (File jerseyFile : modules.listFiles(filter)) {
+                        list.add(Util.fileToUrl(jerseyFile));
+                    }
                 }
             }
         }

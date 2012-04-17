@@ -43,15 +43,20 @@ package org.netbeans.modules.search.ui;
 
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
 import org.openide.cookies.EditCookie;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -121,6 +126,15 @@ public class MatchingObjectNode extends AbstractNode {
                     img = "org/netbeans/modules/search/res/warning.gif";//NOI18N
             }
             return ImageUtilities.loadImage(img);
+        }
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        if (!context) {
+            return new Action[] {new OpenNodeAction(), new CopyPathAction()};
+        } else {
+            return new Action[0];
         }
     }
 
@@ -283,12 +297,40 @@ public class MatchingObjectNode extends AbstractNode {
 
     private class OpenNodeAction extends AbstractAction {
 
+        public OpenNodeAction() {
+            super(UiUtils.getText("LBL_EditAction"));                   //NOI18N
+        }
+
         @Override
         public void actionPerformed(ActionEvent e) {
             EditCookie editCookie = original.getLookup().lookup(
                     EditCookie.class);
             if (editCookie != null) {
                 editCookie.edit();
+            }
+        }
+    }
+
+    private class CopyPathAction extends AbstractAction {
+
+        public CopyPathAction() {
+            super(UiUtils.getText("LBL_CopyFilePathAction"));           //NOI18N
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            File f = FileUtil.toFile(
+                    matchingObject.getFileObject());
+            if (f != null) {
+                String path = f.getPath();
+                Toolkit toolkit = Toolkit.getDefaultToolkit();
+                if (toolkit != null) {
+                    Clipboard clipboard = toolkit.getSystemClipboard();
+                    if (clipboard != null) {
+                        StringSelection strSel = new StringSelection(path);
+                        clipboard.setContents(strSel, null);
+                    }
+                }
             }
         }
     }

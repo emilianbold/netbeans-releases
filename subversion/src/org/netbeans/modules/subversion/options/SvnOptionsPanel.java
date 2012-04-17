@@ -61,7 +61,7 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         initComponents();
         if(Utilities.isWindows()) {
             jLabel5.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel5.windows.text"));
-            jLabel11.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel11.windows.text"));
+            jLabel11.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel11.text"));
         } else {
             jLabel5.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel5.unix.text"));
             jLabel11.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel11.unix.text"));

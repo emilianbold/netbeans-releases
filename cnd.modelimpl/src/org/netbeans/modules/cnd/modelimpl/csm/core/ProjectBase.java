@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -661,47 +662,52 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return;
         }
         boolean notify = false;
-        synchronized (fileCreateLock) {
-            if (status == Status.Initial || status == Status.Restored) {
-                try {
-                    setStatus((status == Status.Initial) ? Status.AddingFiles : Status.Validating);
-                    long time = 0;
-                    if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
-                        System.err.println("suspend queue");
-                        ParserQueue.instance().suspend();
-                        if (TraceFlags.TIMING) {
-                            time = System.currentTimeMillis();
-                        }
-                    }
-                    ParserQueue.instance().onStartAddingProjectFiles(this);
-                    registerProjectListeners();
-                    NativeProject nativeProject = ModelSupport.getNativeProject(platformProject);
-                    if (nativeProject != null) {
-                        try {
+        try {
+            synchronized (fileCreateLock) {
+                if (status == Status.Initial || status == Status.Restored) {
+                    try {
+                        setStatus((status == Status.Initial) ? Status.AddingFiles : Status.Validating);
+                        long time = 0;
+                        if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
+                            System.err.println("suspend queue");
                             ParserQueue.instance().suspend();
-                            createProjectFilesIfNeed(nativeProject);
-                        } finally {
+                            if (TraceFlags.TIMING) {
+                                time = System.currentTimeMillis();
+                            }
+                        }
+                        ParserQueue.instance().onStartAddingProjectFiles(this);
+                        notify = true;
+                        registerProjectListeners();
+                        NativeProject nativeProject = ModelSupport.getNativeProject(platformProject);
+                        if (nativeProject != null) {
+                            try {
+                                ParserQueue.instance().suspend();
+                                createProjectFilesIfNeed(nativeProject);
+                            } finally {
+                                ParserQueue.instance().resume();
+                            }
+                        }
+                        if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
+                            if (TraceFlags.TIMING) {
+                                time = System.currentTimeMillis() - time;
+                                System.err.println("getting files from project system + put in queue took " + time + "ms");
+                            }
+                            System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before resuming queue");
+                            sleep(TraceFlags.SUSPEND_PARSE_TIME * 1000);
+                        }
+                    } finally {
+                        if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
+                            System.err.println("woke up after sleep");
                             ParserQueue.instance().resume();
                         }
+                        setStatus(Status.Ready);
                     }
-                    if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
-                        if (TraceFlags.TIMING) {
-                            time = System.currentTimeMillis() - time;
-                            System.err.println("getting files from project system + put in queue took " + time + "ms");
-                        }
-                        System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before resuming queue");
-                        sleep(TraceFlags.SUSPEND_PARSE_TIME * 1000);
-                        System.err.println("woke up after sleep");
-                        ParserQueue.instance().resume();
-                    }
-                    notify = true;
-                } finally {
-                    setStatus(Status.Ready);
                 }
             }
-        }
-        if (notify) {
-            ParserQueue.instance().onEndAddingProjectFiles(this);
+        } finally {
+            if (notify) {
+                ParserQueue.instance().onEndAddingProjectFiles(this);
+            }
         }
     }
     
@@ -1519,7 +1525,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     if (thisProjectUpdateResult && startProject != this) {
                         // we found the "best from the bests" for the current lib
                         // have to be considered as the best in start project lib storage as well
-                        assert startProjectUpdateResult : " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject;
+                        if (!startProjectUpdateResult) {
+                            CndUtils.assertTrueInConsole(false, " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject);
+                        }
                     }
                     if (thisProjectUpdateResult) {
                         // TODO: think over, what if we aready changed entry,
@@ -1560,6 +1568,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private void putIncludedFileStorage(ProjectBase includedProject) {
         includedFileContainer.putStorage(includedProject);
+    }
+
+    void invalidateLibraryStorage(CsmUID<CsmProject> libraryUID) {
+        includedFileContainer.invalidateIncludeStorage(libraryUID);
     }
 
     void prepareIncludeStorage(ProjectBase includedProject) {
@@ -2077,7 +2089,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public abstract void onFilePropertyChanged(NativeFileItem nativeFile);
 
-    public abstract void onFilePropertyChanged(List<NativeFileItem> items);
+    public abstract void onFilePropertyChanged(List<NativeFileItem> items, boolean invalidateLibs);
 
     protected abstract ParserQueue.Position getIncludedFileParserQueuePosition();
 
@@ -3244,7 +3256,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public static void dumpProjectContainers(PrintStream printStream, CsmProject prj, boolean dumpFiles) {
         ProjectBase project = (ProjectBase) prj;
-        dumpProjectClassifierContainer(project, printStream);
+        dumpProjectClassifierContainer(project, printStream, !dumpFiles);
         dumpProjectDeclarationContainer(project, printStream);
         if (dumpFiles) {
             ProjectBase.dumpFileContainer(project, new PrintWriter(printStream));
@@ -3283,24 +3295,33 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    /*package*/static void dumpProjectClassifierContainer(ProjectBase project, PrintStream printStream) {
-        printStream.println("\n========== Dumping Dump Project Classifiers");//NOI18N
+    /*package*/static void dumpProjectClassifierContainer(ProjectBase project, PrintStream printStream, boolean offsetString) {
         ClassifierContainer container = project.getClassifierSorage();
-        for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTestClassifiers().entrySet()) {
-            printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
-            if (entry.getValue() == null) {
-                printStream.println("null");//NOI18N
-            } else {
-                printStream.println(entry.getValue().getUniqueName());
+        for (int phase = 0; phase < 3; phase++) {
+            Map<CharSequence, CsmClassifier> map = null;
+            switch (phase) {
+                case 0:
+                    printStream.println("\n========== Dumping Dump Project Classifiers");//NOI18N
+                    map = container.getTestClassifiers();
+                    break;
+                case 1:
+                    printStream.println("\n========== Dumping Dump Project Short Classifiers");//NOI18N
+                    map = container.getTestShortClassifiers();
+                    break;
+                case 2:
+                    printStream.println("\n========== Dumping Dump Project Typedefs");//NOI18N
+                    map = container.getTestTypedefs();
+                    break;
             }
-        }
-        printStream.println("\n========== Dumping Dump Project Typedefs");//NOI18N
-        for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTestTypedefs().entrySet()) {
-            printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
-            if (entry.getValue() == null) {
-                printStream.println("null");//NOI18N
-            } else {
-                printStream.println(entry.getValue().getUniqueName());
+            for (Map.Entry<CharSequence, CsmClassifier> entry : map.entrySet()) {
+                printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
+                CsmClassifier value = entry.getValue();
+                if (value == null) {
+                    printStream.println("null");//NOI18N
+                } else {
+                    String pos = offsetString ? CsmTracer.getOffsetString(value, true) : "";//NOI18N
+                    printStream.printf("%s %s\n", value.getUniqueName(), pos);//NOI18N
+                }
             }
         }
     }

@@ -3829,7 +3829,8 @@ public class Reformatter implements ReformatTask {
                             String sub = currWSPos >= 0 ? text.substring(currWSPos, i) : null;
                             if (!s.equals(sub))
                                 addDiff(new Diff(currWSPos >= 0 ? offset + currWSPos : offset + i, offset + i, s));
-                            col = getCol(s);
+                            if (cs.wrapOneLineComments())
+                                col = getCol(lineStartString);
                             firstLine = false;
                         } else if (currWSPos >= 0) {
                             if (!noFormat) {

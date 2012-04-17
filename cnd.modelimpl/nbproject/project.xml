@@ -307,6 +307,7 @@
                 <friend>com.sun.tools.ide.remote.projectui</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.modelui</friend>
+                <friend>org.netbeans.modules.cnd.highlight</friend>
                 <package>org.netbeans.modules.cnd.modelimpl.csm</package>
                 <package>org.netbeans.modules.cnd.modelimpl.csm.core</package>
                 <package>org.netbeans.modules.cnd.modelimpl.parser.apt</package>

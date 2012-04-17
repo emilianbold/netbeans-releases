@@ -56,7 +56,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author tomslot
  */
-public class MagicMethod68Test extends PHPTestBase {
+public class MagicMethod68Test extends PHPCodeCompletionTestBase {
 
     public MagicMethod68Test(String testName) {
         super(testName);

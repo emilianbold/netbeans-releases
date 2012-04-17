@@ -45,6 +45,7 @@ package org.netbeans.modules.versioning.ui.history;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.io.File;
 import java.io.IOException;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
@@ -65,7 +66,7 @@ import org.openide.util.lookup.Lookups;
  * @author Tomas Stupka
  *
  */
-public class RevisionNode extends AbstractNode implements Comparable {
+class RevisionNode extends AbstractNode implements Comparable {
     
     static final String PROPERTY_NAME_LABEL = "label";                          // NOI18N        
     static final String PROPERTY_NAME_USER = "user";                            // NOI18N        
@@ -82,7 +83,18 @@ public class RevisionNode extends AbstractNode implements Comparable {
     }        
          
     static RevisionNode create(HistoryEntry entry) {
-        return new RevisionNode(entry, Lookups.fixed(new Object [] { entry }));
+        List<Object> lookup = new LinkedList<Object>();
+        VCSFileProxy[] proxies = entry.getFiles();
+        for (VCSFileProxy proxy : proxies) {
+            lookup.add(proxy);
+            File f = proxy.toFile();
+            if(f != null) {
+                lookup.add(f);
+            }
+        }
+        lookup.addAll(Arrays.asList(entry.getLookupObjects()));
+        lookup.add(entry);
+        return new RevisionNode(entry, Lookups.fixed(lookup.toArray(new Object[lookup.size()])));
     }
     
     private static Children createChildren(HistoryEntry entry) {
@@ -317,10 +329,22 @@ public class RevisionNode extends AbstractNode implements Comparable {
         private final VCSFileProxy file;
         
         FileNode(HistoryEntry entry, VCSFileProxy file) {
-            super(Children.LEAF, Lookups.fixed(new Object [] { file, entry }));                        
+            super(Children.LEAF, createLookup(file, entry)); 
             this.entry = entry;
             this.file = file;
         }
+    
+        private static Lookup createLookup(VCSFileProxy proxy, HistoryEntry entry) {
+            List<Object> lookup = new LinkedList<Object>();
+            lookup.add(proxy);
+            File f = proxy.toFile();
+            if(f != null) {
+                lookup.add(f);
+            }
+            lookup.add(entry);
+            lookup.addAll(Arrays.asList(entry.getLookupObjects()));
+            return Lookups.fixed(lookup.toArray(new Object[lookup.size()]));
+        }        
     
         @Override
         public Action[] getActions(boolean context) {

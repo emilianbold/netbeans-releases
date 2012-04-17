@@ -87,10 +87,16 @@ public class TreePath {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for(Element node : path()) {
+        List<Element> p = path();
+        for(int i = p.size() - 1; i >= 0; i-- ) {
+            Element node = p.get(i);
             Node parent = node.parent();
             int myIndex = parent == null ? 0 : indexInSimilarNodes(node.parent(), node);
-            sb.append(node.id()).append("[").append(node.type()).append("]( ").append(myIndex).append(")/");
+            sb.append(node.id());
+            if(myIndex > 0) {
+                sb.append("(").append(myIndex).append(")");
+            }
+            sb.append('/');
         }
         return sb.toString();
     }

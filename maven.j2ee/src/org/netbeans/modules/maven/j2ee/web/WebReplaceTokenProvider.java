@@ -223,7 +223,8 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
     @Override
     public String convert(String action, Lookup lookup) {
         if (ActionProvider.COMMAND_RUN_SINGLE.equals(action) ||
-            ActionProvider.COMMAND_DEBUG_SINGLE.equals(action)) {
+            ActionProvider.COMMAND_DEBUG_SINGLE.equals(action) || 
+            ActionProvider.COMMAND_PROFILE_SINGLE.equals(action)) {
 
             FileObject[] fos = extractFileObjectsfromLookup(lookup);
             if (fos.length > 0) {

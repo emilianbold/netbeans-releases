@@ -44,16 +44,53 @@ package org.netbeans.modules.html.editor.lib.plain;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
 
 /**
  *
  * @author marekfukala
  */
-public class CommentElement extends AbstractElement{
+public class CommentElement implements Element {
 
-    public CommentElement(CharSequence doc, int offset, short length) {
-        super(doc, offset, length);
+    private CharSequence source;
+    private int offset;
+    private int length;
+    
+    public CommentElement(CharSequence doc, int offset, int length) {
+        this.source = doc;
+        this.offset = offset;
+        this.length = length;
+    }
+    
+    @Override
+    public int from() {
+        return offset;
+    }
+
+    @Override
+    public int to() {
+        return offset + length;
+    }
+    @Override
+    public CharSequence image() {
+        return source.subSequence(from(), to());
+    }
+
+    @Override
+    public CharSequence id() {
+        return type().name();
+    }
+
+    @Override
+    public Collection<ProblemDescription> problems() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Node parent() {
+        return null;
     }
 
     @Override

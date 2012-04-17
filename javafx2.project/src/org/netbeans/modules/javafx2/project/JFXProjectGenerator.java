@@ -122,7 +122,7 @@ public class JFXProjectGenerator {
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
-                h[0] = createProject(dirFO, name, "src", null, mainClass, manifestFile, //NOI18N
+                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, //NOI18N
                         librariesDefinition, platformName, preloader, type);
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 createJfxExtension(p, dirFO, type);
@@ -273,7 +273,7 @@ public class JFXProjectGenerator {
 //                h[0] = createProject(dirFO, name, "src", "test", preloaderClassName, // NOI18N
 //                        JavaFXProjectWizardIterator.MANIFEST_FILE, librariesDefinition,
 //                        platformName, null, WizardType.PRELOADER);
-                h[0] = createProject(dirFO, name, "src", null, preloaderClassName, // NOI18N
+                h[0] = createProject(dirFO, name, "src", "test", preloaderClassName, // NOI18N
                         JavaFXProjectWizardIterator.MANIFEST_FILE, librariesDefinition,
                         platformName, null, WizardType.PRELOADER);
                 
