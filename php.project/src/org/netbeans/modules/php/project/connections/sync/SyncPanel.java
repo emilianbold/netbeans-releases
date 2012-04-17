@@ -117,6 +117,13 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     static final TableCellRenderer DEFAULT_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
     static final TableCellRenderer ERROR_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
 
+    // @GuardedBy(AWT)
+    private static final List<SyncItem.Operation> OPERATIONS = Arrays.asList(
+                SyncItem.Operation.NOOP,
+                SyncItem.Operation.DOWNLOAD,
+                SyncItem.Operation.UPLOAD,
+                SyncItem.Operation.DELETE);
+
     final RemoteClient remoteClient;
     // @GuardedBy(AWT)
     final List<SyncItem> allItems;
@@ -337,7 +344,12 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         itemTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2
+                if (e.getClickCount() == 1) {
+                    // cycle operations?
+                    if (itemTable.getSelectedColumn() == 2) {
+                        cycleOperations();
+                    }
+                } else if (e.getClickCount() == 2
                         && diffButton.isEnabled()) {
                     openDiffPanel();
                 }
@@ -448,6 +460,32 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         return displayedItems.get(itemTable.getSelectedRow());
     }
 
+    void reselectItem(SyncItem syncItem) {
+        int index = displayedItems.indexOf(syncItem); // XXX performance?
+        if (index != -1) {
+            itemTable.getSelectionModel().addSelectionInterval(index, index);
+        }
+    }
+
+    List<SyncItem> getSelectedItems() {
+        assert SwingUtilities.isEventDispatchThread();
+        int[] selectedRows = itemTable.getSelectedRows();
+        assert selectedRows.length > 0;
+        List<SyncItem> selectedItems = new ArrayList<SyncItem>(selectedRows.length);
+        for (int index : selectedRows) {
+            SyncItem syncItem = displayedItems.get(index);
+            selectedItems.add(syncItem);
+        }
+        return selectedItems;
+    }
+
+    void reselectItems(List<SyncItem> selectedItems) {
+        assert SwingUtilities.isEventDispatchThread();
+        for (SyncItem item : selectedItems) {
+            reselectItem(item);
+        }
+    }
+
     @NbBundle.Messages({
         "SyncPanel.error.operations=Synchronization not possible. Resolve conflicts first.",
         "SyncPanel.warn.operations=Synchronization possible but warnings should be reviewed first."
@@ -552,15 +590,29 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
                 // need to redraw table
                 updateDisplayedItems();
                 // reselect the row?
-                int index = displayedItems.indexOf(syncItem); // XXX performance?
-                if (index != -1) {
-                    itemTable.getSelectionModel().setSelectionInterval(index, index);
-                }
+                reselectItem(syncItem);
             }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Error while saving document", ex);
             setError(Bundle.SyncPanel_error_documentSave());
         }
+    }
+
+    void cycleOperations() {
+        List<SyncItem> selectedItems = getSelectedItems();
+        SyncItem syncItem = getSelectedItem();
+        int index = OPERATIONS.indexOf(syncItem.getOperation());
+        if (index != -1) {
+            if (index == OPERATIONS.size() - 1) {
+                index = 0;
+            } else {
+                index++;
+            }
+            syncItem.setOperation(OPERATIONS.get(index));
+            // need to redraw table
+            updateDisplayedItems();
+        }
+        reselectItems(selectedItems);
     }
 
     void setViewCheckBoxesSelected(boolean selected) {
@@ -949,12 +1001,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         @Override
         public void actionPerformed(ActionEvent e) {
             assert SwingUtilities.isEventDispatchThread();
-            int[] selectedRows = itemTable.getSelectedRows();
-            assert selectedRows.length > 0;
-            List<SyncItem> selectedItems = new ArrayList<SyncItem>(selectedRows.length);
-            for (int index : selectedRows) {
-                SyncItem syncItem = displayedItems.get(index);
-                selectedItems.add(syncItem);
+            List<SyncItem> selectedItems = getSelectedItems();
+            for (SyncItem syncItem : selectedItems) {
                 if (operation == null) {
                     syncItem.resetOperation();
                 } else {
@@ -964,12 +1012,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             // need to redraw table
             updateDisplayedItems();
             // reselect the rows?
-            for (SyncItem item : selectedItems) {
-                int index = displayedItems.indexOf(item); // XXX performance?
-                if (index != -1) {
-                    itemTable.getSelectionModel().addSelectionInterval(index, index);
-                }
-            }
+            reselectItems(selectedItems);
         }
 
     }
