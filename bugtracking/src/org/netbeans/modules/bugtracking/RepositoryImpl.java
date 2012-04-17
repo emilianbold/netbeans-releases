@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.*;
+import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
@@ -160,8 +161,19 @@ public class RepositoryImpl<R, Q, I> {
      * @param id
      * @return
      */
-    public IssueImpl getIssueImpl(String id) {
-        return getIssue(repositoryProvider.getIssue(r, id));
+    public Collection<IssueImpl> getIssueImpls(String... ids) {
+        I[] is = repositoryProvider.getIssues(r, ids);
+        if(is == null || is.length == 0) {
+            return Collections.emptyList();
+        }
+        List<IssueImpl> ret = new ArrayList<IssueImpl>(is.length);
+        for (I i : is) {
+            IssueImpl impl = getIssue(i);
+            if(impl != null) {
+                ret.add(impl);
+            }
+        }
+        return ret;
     }
     
     R getData() {

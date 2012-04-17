@@ -48,6 +48,7 @@ import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.Collection;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -161,9 +162,8 @@ public class IssueAction extends SystemAction {
                 UIUtils.setWaitCursor(true);
                 final IssueTopComponent tc = IssueTopComponent.find(issueId);
                 final boolean tcOpened = tc.isOpened();
-                final IssueImpl[] issue = new IssueImpl[1];
-                issue[0] = tc.getIssue();
-                if (issue[0] == null) {
+                final IssueImpl issue = tc.getIssue();
+                if (issue == null) {
                     tc.initNoIssue(issueId);
                 }
                 if(!tcOpened) {
@@ -175,10 +175,10 @@ public class IssueAction extends SystemAction {
                     public void run() {
                         ProgressHandle handle = null;
                         try {
-                            if (issue[0] != null) {
+                            if (issue != null) {
                                 handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueAction.class, "LBL_REFRESING_ISSUE", new Object[]{issueId}));
                                 handle.start();
-                                issue[0].refresh();
+                                issue.refresh();
                             } else {
                                 handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueAction.class, "LBL_OPENING_ISSUE", new Object[]{issueId}));
                                 handle.start();
@@ -198,22 +198,22 @@ public class IssueAction extends SystemAction {
                                 } else {
                                     repository = repositoryParam;
                                 }
-
-                                issue[0] = repository.getIssueImpl(issueId);
-                                if(issue[0] == null) {
+                                final Collection<IssueImpl> impls = repository.getIssueImpls(issueId);
+                                if(impls == null || impls.isEmpty()) {
                                     // lets hope the repository was able to handle this
                                     // because whatever happend, there is nothing else
                                     // we can do at this point
                                     handleTC();
                                     return;
                                 }
+                                final IssueImpl impl = impls.iterator().next();
                                 SwingUtilities.invokeLater(new Runnable() {
                                     @Override
                                     public void run() {
-                                        tc.setIssue(issue[0]);
+                                        tc.setIssue(impl);
                                     }
                                 });
-                                IssueCacheUtils.setSeen(issue[0], true);
+                                IssueCacheUtils.setSeen(impl, true);
                             }
                         } finally {
                             if(handle != null) handle.finish();

@@ -454,7 +454,7 @@ public class CacheTest extends NbTestCase {
             return Lookups.singleton(cache);
         }
 
-        public TestIssue getIssue(String id) {throw new UnsupportedOperationException("Not supported yet.");}
+        public TestIssue[] getIssues(String[] id) {throw new UnsupportedOperationException("Not supported yet.");}
         public void remove() {throw new UnsupportedOperationException("Not supported yet.");}
         public RepositoryController getController() {throw new UnsupportedOperationException("Not supported yet.");}
         public TestQuery createQuery() {throw new UnsupportedOperationException("Not supported yet.");}
