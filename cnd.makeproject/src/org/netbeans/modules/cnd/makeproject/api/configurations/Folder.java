@@ -276,6 +276,10 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
     }
 
+    public String getDiskName() {
+        return CndPathUtilitities.getBaseName(getAbsolutePath());
+    }
+    
     public void attachListeners() {
         if (configurationDescriptor == null) {
             CndUtils.assertTrueInConsole(false, "null configurationDescriptor for " + this.name);
@@ -399,7 +403,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public String getDisplayName() {
-        return displayName;
+        // This is dirty fix for #201152. Do not see other way to do this,
+        // as Folders instances are always updated and it is impossible
+        // to provide them with the right name.
+        if (!isDiskFolder() || getRoot() == null) {
+            return displayName;
+        } else {
+            return getDiskName();
+        }
     }
 
     public void setDisplayName(String displayName) {

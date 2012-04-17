@@ -52,11 +52,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.swing.*;
+import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.tasks.ui.actions.CreateTaskAction;
-import org.netbeans.modules.tasks.ui.actions.SearchRepositoryAction;
+import org.netbeans.modules.tasks.ui.actions.*;
+import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.netbeans.modules.tasks.ui.utils.Utils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -64,28 +66,32 @@ import org.openide.util.NbBundle;
  *
  * @author jpeska
  */
-public class RepositoryNode extends AbstractRepositoryNode implements PropertyChangeListener {
+public class RepositoryNode extends TreeListNode implements PropertyChangeListener, Comparable<RepositoryNode> {
 
+    private final Repository repository;
+    private List<QueryNode> queryNodes;
+    private List<QueryNode> filteredQueryNodes;
+    private boolean loaded;
     private JPanel panel;
     private TreeLabel lblName;
-    private LinkButton btnClose;
     private final Object LOCK = new Object();
     private LinkButton btnRefresh;
     private LinkButton btnSearch;
     private LinkButton btnCreateTask;
-    private CloseRepositoryNodeAction repositoryAction;
-    private static ImageIcon iconClose = null;
-    private static ImageIcon iconCloseOver = null;
+    private boolean opened;
+    private CloseRepositoryNodeAction closeRepositoryAction;
+    private OpenRepositoryNodeAction openRepositoryAction;
 
     public RepositoryNode(Repository repository) {
-        super(true, repository);
-        loadIcons();
-        repository.addPropertyChangeListener(this);
+        this(repository, true, true);
     }
 
-    public RepositoryNode(Repository repository, boolean loaded) {
-        super(true, repository, loaded);
-        loadIcons();
+    public RepositoryNode(Repository repository, boolean loaded, boolean opened) {
+        super(true, null);
+        this.repository = repository;
+        this.loaded = loaded;
+        this.opened = opened;
+        updateNodes();
         repository.addPropertyChangeListener(this);
     }
 
@@ -120,12 +126,6 @@ public class RepositoryNode extends AbstractRepositoryNode implements PropertyCh
                 panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
                 panel.add(new JLabel(), new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
-                btnClose = new LinkButton(iconClose, getRepositoryAction());
-                btnClose.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Close")); //NOI18N
-                btnClose.setRolloverEnabled(true);
-                btnClose.setRolloverIcon(iconCloseOver); // NOI18N
-                panel.add(btnClose, new GridBagConstraints(9, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
-
                 btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new DummyAction()); //NOI18N
                 btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
                 panel.add(btnRefresh, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
@@ -138,15 +138,100 @@ public class RepositoryNode extends AbstractRepositoryNode implements PropertyCh
                 btnCreateTask.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateTask")); //NOI18N
                 panel.add(btnCreateTask, new GridBagConstraints(6, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
             }
+            lblName.setText(Utils.getRepositoryDisplayText(this));
             lblName.setForeground(foreground);
-            if (DashboardViewer.getInstance().containsActiveTask(this)) {
-                lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
-            } else {
-                lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
-            }
-            btnClose.setForeground(foreground, isSelected);
             return panel;
         }
+    }
+
+    final void updateNodes() {
+        AppliedFilters appliedFilters = DashboardViewer.getInstance().getAppliedTaskFilters();
+        queryNodes = new ArrayList<QueryNode>();
+        filteredQueryNodes = new ArrayList<QueryNode>();
+        for (Query query : repository.getQueries()) {
+            QueryNode queryNode = new QueryNode(query, this, !loaded);
+            queryNodes.add(queryNode);
+            if (appliedFilters.isEmpty() || !queryNode.getFilteredTaskNodes().isEmpty()) {
+                filteredQueryNodes.add(queryNode);
+            }
+        }
+    }
+
+    public final Repository getRepository() {
+        return repository;
+    }
+
+    public boolean isOpened() {
+        return opened;
+    }
+
+    public void setOpened(boolean opened) {
+        this.opened = opened;
+    }
+
+    @Override
+    public final Action[] getPopupActions() {
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(getCategoryAction());
+        actions.addAll(Actions.getRepositoryPopupActions(this));
+        return actions.toArray(new Action[actions.size()]);
+    }
+
+    public List<QueryNode> getQueryNodes() {
+        return queryNodes;
+    }
+
+    public List<QueryNode> getFilteredQueryNodes() {
+        return filteredQueryNodes;
+    }
+
+    public void setFilteredQueryNodes(List<QueryNode> filteredQueryNodes) {
+        this.filteredQueryNodes = filteredQueryNodes;
+    }
+
+    public int getFilterHits() {
+        int hits = 0;
+        for (QueryNode queryNode : filteredQueryNodes) {
+            hits += queryNode.getTotalTaskCount();
+        }
+        return hits;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RepositoryNode other = (RepositoryNode) obj;
+        return repository.getDisplayName().equalsIgnoreCase(other.repository.getDisplayName());
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 37 * hash + (this.repository != null ? this.repository.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public int compareTo(RepositoryNode toCompare) {
+        return repository.getDisplayName().compareToIgnoreCase(toCompare.repository.getDisplayName());
+    }
+
+    @Override
+    public String toString() {
+        return repository.getDisplayName();
+    }
+
+    public boolean isLoaded() {
+        return loaded;
+    }
+
+    public void setLoaded(boolean loaded) {
+        this.loaded = loaded;
     }
 
     @Override
@@ -167,25 +252,23 @@ public class RepositoryNode extends AbstractRepositoryNode implements PropertyCh
         }
     }
 
-    @Override
-    protected Action getRepositoryAction() {
-        if (repositoryAction == null) {
-            repositoryAction = new CloseRepositoryNodeAction(this);
-        }
-        return repositoryAction;
-    }
-
-    @Override
     void updateContent() {
         updateNodes();
         fireContentChanged();
         refreshChildren();
     }
 
-    private void loadIcons() {
-        if (iconClose == null) {
-            iconClose = ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/close.png", true); //NOI18N
-            iconCloseOver = ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/close_over.png", true); //NOI18N
+    private Action getCategoryAction() {
+        if (opened) {
+            if (closeRepositoryAction == null) {
+                closeRepositoryAction = new CloseRepositoryNodeAction(this);
+            }
+            return closeRepositoryAction;
+        } else {
+            if (openRepositoryAction == null) {
+                openRepositoryAction = new OpenRepositoryNodeAction(this);
+            }
+            return openRepositoryAction;
         }
     }
 }

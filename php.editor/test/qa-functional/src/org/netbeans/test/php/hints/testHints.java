@@ -53,7 +53,7 @@ import org.netbeans.test.php.GeneralPHP;
  */
 public class testHints extends GeneralPHP {
 
-    static final String TEST_PHP_NAME = "PhpProject_cc_0004";
+    static final String TEST_PHP_NAME = "PhpProject_hints_0001";
 
     public testHints(String arg0) {
         super(arg0);
@@ -63,6 +63,9 @@ public class testHints extends GeneralPHP {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(testHints.class).addTest(
                 "CreateApplication",
+                "testImmutableVariable",
+                "testImmutableVariableSimple",
+                "testUnusedUse",
                 "testClassExpr",
                 "testBinaryNotationIncorrect",
                 "testBinaryNotationCorrect",
@@ -142,7 +145,7 @@ public class testHints extends GeneralPHP {
         Object[] oo = file.getAnnotations();
         int numberOfErrors = 0;
         for (Object o : oo) {
-            if (EditorOperator.getAnnotationShortDescription(o).toString().contains("Syntax error: unexpected: 2")) {
+            if (EditorOperator.getAnnotationShortDescription(o).toString().contains("error")) {
                 numberOfErrors++;
             }
         }
@@ -181,6 +184,61 @@ public class testHints extends GeneralPHP {
             }
         }
         assertEquals("Incorrect number of error hints", 3, numberOfErrors);
+        endTest();
+    }
+
+    public void testImmutableVariableSimple() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "Immutable");
+        startTest();
+        file.setCaretPosition("*/", false);
+        new EventTool().waitNoEvent(1000);
+        TypeCode(file, "\n $foo=1;\n $foo=2;");
+        new EventTool().waitNoEvent(2000);
+        Object[] oo = file.getAnnotations();
+        int numberOfErrors = 0;
+        for (Object o : oo) {
+            if (EditorOperator.getAnnotationShortDescription(o).toString().contains("Too many assignments")) {
+                numberOfErrors++;
+            }
+            assertEquals("Incorrect number of Immutable hints", 2, numberOfErrors);
+        }
+        endTest();
+    }
+
+    public void testImmutableVariable() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "Immutable2");
+        startTest();
+        file.setCaretPosition("*/", false);
+        new EventTool().waitNoEvent(1000);
+        TypeCode(file, "\n for($i=0;$i<10;$i=$i+1){}");
+        new EventTool().waitNoEvent(1000);
+        Object[] oo = file.getAnnotations();
+        int numberOfErrors = 0;
+        for (Object o : oo) {
+            if (EditorOperator.getAnnotationShortDescription(o).toString().contains("Too many assignments")) {
+                numberOfErrors++;
+            }
+            assertEquals("Incorrect number of Immutable hints", 0, numberOfErrors);
+        }
+        endTest();
+    }
+
+    public void testUnusedUse() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "UnusedUse");
+        SetPhpVersion(TEST_PHP_NAME, 4);
+        startTest();
+        file.setCaretPosition("*/", false);
+        new EventTool().waitNoEvent(1000);
+        TypeCode(file, "\n use \\Foo\\Bar\\Baz;");
+        new EventTool().waitNoEvent(2000);
+        Object[] oo = file.getAnnotations();
+        int numberOfErrors = 0;
+        for (Object o : oo) {
+            if (EditorOperator.getAnnotationShortDescription(o).toString().contains("Unused Use Statement")) {
+                numberOfErrors++;
+            }
+            assertEquals("Incorrect number of Unused Use Statement hints", 1, numberOfErrors);
+        }
         endTest();
     }
 }

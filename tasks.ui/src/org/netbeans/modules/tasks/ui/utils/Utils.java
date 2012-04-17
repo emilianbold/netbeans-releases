@@ -47,6 +47,9 @@ import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Issue.Status;
 import org.netbeans.modules.tasks.ui.DashboardTopComponent;
+import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
+import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
+import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 
 /**
  *
@@ -55,6 +58,30 @@ import org.netbeans.modules.tasks.ui.DashboardTopComponent;
 public class Utils {
 
     private final static int VISIBLE_START_CHARS = 5;
+
+    public static String getCategoryDisplayText(CategoryNode categoryNode) {
+        String categoryName = categoryNode.getCategory().getName();
+        boolean containsActiveTask = DashboardViewer.getInstance().containsActiveTask(categoryNode);
+        return getTopLvlDisplayText(containsActiveTask, categoryName, categoryNode.isOpened());
+    }
+
+
+    public static String getRepositoryDisplayText(RepositoryNode repositoryNode) {
+        String repositoryName = repositoryNode.getRepository().getDisplayName();
+        boolean containsActiveTask = DashboardViewer.getInstance().containsActiveTask(repositoryNode);
+        return getTopLvlDisplayText(containsActiveTask, repositoryName, repositoryNode.isOpened());
+    }
+
+    private static String getTopLvlDisplayText(boolean containsActiveTask, String name, boolean isOpened) {
+        String displayName;
+        String activeText = containsActiveTask ? "<b>" + name + "</b>" : name; //NOI18N
+        if (!isOpened) {
+            displayName = "<html><strike>" + activeText + "</strike><html>"; //NOI18N
+        } else {
+            displayName = "<html>" + activeText + "<html>";
+        }
+        return displayName;
+    }
 
     public static String getTaskPlainDisplayText(Issue task, JComponent component, int maxWidth) {
         return computeFitText(component, maxWidth, task.getDisplayName(), false);

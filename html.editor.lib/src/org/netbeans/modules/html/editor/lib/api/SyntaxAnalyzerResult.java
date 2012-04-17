@@ -43,12 +43,17 @@ package org.netbeans.modules.html.editor.lib.api;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.html.editor.lib.ElementsParserCache;
 import org.netbeans.modules.html.editor.lib.EmptyResult;
 import org.netbeans.modules.html.editor.lib.HtmlSourceVersionQuery;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
 import org.netbeans.modules.html.editor.lib.html4parser.IteratorOfElements;
 import org.netbeans.modules.html.editor.lib.html4parser.XmlSyntaxTreeBuilder;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -62,7 +67,6 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class SyntaxAnalyzerResult {
 
-    private static final String NAMESPACE_PROPERTY = "namespace"; //NOI18N
     /**
      * special namespace which can be used for obtaining a parse tree of tags
      * with undeclared namespace.
@@ -78,6 +82,7 @@ public class SyntaxAnalyzerResult {
     private Set<String> allPrefixes;
     private UndeclaredContentResolver resolver;
     private HtmlSource source;
+    private ElementsParserCache elementsParserCache;
 
     SyntaxAnalyzerResult(HtmlSource source) {
         this(source, null);
@@ -93,7 +98,25 @@ public class SyntaxAnalyzerResult {
     }
 
     public Iterator<Element> getElementsIterator() {
-        return new ElementsIterator(source);
+        return getElementsParserCache().createElementsIterator();
+    }
+
+    private synchronized ElementsParserCache getElementsParserCache() {
+        if (elementsParserCache == null) {
+            CharSequence sourceCode = source.getSourceCode();
+            Snapshot snapshot = source.getSnapshot();
+            TokenHierarchy hi;
+            if (snapshot != null) {
+                //use the snapshot's token hierarchy (cached) if possible
+                hi = snapshot.getTokenHierarchy();
+            } else {
+                hi = TokenHierarchy.create(sourceCode, HTMLTokenId.language());
+            }
+            TokenSequence<HTMLTokenId> tokenSequence = hi.tokenSequence(HTMLTokenId.language());
+            elementsParserCache = new ElementsParserCache(source.getSourceCode(), tokenSequence);
+        }
+        
+        return elementsParserCache;
     }
 
     /**
@@ -186,7 +209,7 @@ public class SyntaxAnalyzerResult {
                 ? getAllDeclaredNamespaces().get(version.getDefaultNamespace())
                 : null;
 
-        Iterator<Element> original = new ElementsIterator(source);
+        Iterator<Element> original = getElementsIterator();
         Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
             @Override
             public boolean accepts(Element node) {
@@ -232,8 +255,8 @@ public class SyntaxAnalyzerResult {
 
         //create a new html source with the cleared areas
         HtmlSource newSource = new HtmlSource(
-                source.getSourceCode(), 
-                source.getSnapshot(), 
+                source.getSourceCode(),
+                source.getSnapshot(),
                 source.getSourceFileObject());
 
         //add the syntax elements to the lookup since the old html4 parser needs them
@@ -264,7 +287,7 @@ public class SyntaxAnalyzerResult {
             return new EmptyResult(getSource());
         }
 
-        Iterator<Element> original = new ElementsIterator(source);
+        Iterator<Element> original = getElementsIterator();
         Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
             @Override
             public boolean accepts(Element node) {
@@ -298,7 +321,7 @@ public class SyntaxAnalyzerResult {
      * done, just the tag elements are transformed to the tree structure.
      */
     public ParseResult parsePlain() {
-        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, new ElementsIterator(source));
+        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, getElementsIterator());
         return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
     }
 
@@ -312,7 +335,7 @@ public class SyntaxAnalyzerResult {
     private ParseResult doParseUndeclaredEmbeddedCode() throws ParseException {
         final Collection<String> prefixes = getAllDeclaredPrefixes();
 
-        Iterator<Element> original = new ElementsIterator(source);
+        Iterator<Element> original = getElementsIterator();
         Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
             @Override
             public boolean accepts(Element node) {
@@ -353,7 +376,7 @@ public class SyntaxAnalyzerResult {
         //2. the prefixed tags and attributes <f:if ...
         List<MaskedArea> ignoredAreas = new ArrayList<MaskedArea>();
 
-        Iterator<Element> itr = new ElementsIterator(source);
+        Iterator<Element> itr = getElementsIterator();
         while (itr.hasNext()) {
             Element e = itr.next();
             if (e.type() == ElementType.OPEN_TAG || e.type() == ElementType.CLOSE_TAG) {
@@ -367,7 +390,7 @@ public class SyntaxAnalyzerResult {
                         for (Attribute a : ot.attributes()) {
                             if (LexerUtils.startsWith(a.name(), "xmlns:", true, false)) { //NOI18N
                                 CharSequence value = a.value();
-                                if(value != null) {
+                                if (value != null) {
                                     ignoredAreas.add(new MaskedArea(a.nameOffset(), a.valueOffset() + value.length()));
                                 }
                             }
@@ -379,7 +402,7 @@ public class SyntaxAnalyzerResult {
                 }
             }
         }
-        
+
         int[] positions = new int[ignoredAreas.size()];
         int[] lens = new int[ignoredAreas.size()];
         for (int i = 0; i < positions.length; i++) {
@@ -408,7 +431,7 @@ public class SyntaxAnalyzerResult {
             //so limit the doctype search so we do not iterate over the whole file
             //if there's no doctype
             int limitCountdown = 20;
-            Iterator<Element> elementsIterator = new ElementsIterator(source);
+            Iterator<Element> elementsIterator = getElementsIterator();
             while (elementsIterator.hasNext()) {
                 if (limitCountdown-- == 0) {
                     break;
@@ -468,7 +491,7 @@ public class SyntaxAnalyzerResult {
     public String getHtmlTagDefaultNamespace() {
         //typically the html root element is at the beginning of the file
         int limitCountdown = 100;
-        Iterator<Element> elementsIterator = new ElementsIterator(source);
+        Iterator<Element> elementsIterator = getElementsIterator();
         while (elementsIterator.hasNext()) {
             if (limitCountdown-- == 0) {
                 break;
@@ -478,9 +501,9 @@ public class SyntaxAnalyzerResult {
                 //look for the xmlns attribute only in the first tag
                 OpenTag tag = (OpenTag) se;
                 Attribute xmlns = tag.getAttribute("xmlns");
-                if(xmlns != null) {
+                if (xmlns != null) {
                     CharSequence value = xmlns.unquotedValue();
-                    if(value != null) {
+                    if (value != null) {
                         return value.toString();
                     }
                 }
@@ -503,7 +526,7 @@ public class SyntaxAnalyzerResult {
                 namespaces.putAll(resolver.getUndeclaredNamespaces(getSource()));
             }
 
-            ElementsIterator iterator = new ElementsIterator(source);
+            Iterator<Element> iterator = getElementsIterator();
             while (iterator.hasNext()) {
                 Element se = iterator.next();
                 if (se.type() == ElementType.OPEN_TAG) {
@@ -595,6 +618,4 @@ public class SyntaxAnalyzerResult {
     //it seems to be better (more memory/but much faster) to create a clone of the source
     //sequence w/ the specifed areas being ws-paced than doing this dynamically.
     private static final char REPLACE_CHAR = ' '; //ws //NOI18N
-
-
 }

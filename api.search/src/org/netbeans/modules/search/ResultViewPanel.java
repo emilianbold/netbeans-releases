@@ -61,12 +61,13 @@ import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 /**
  *
  * @author kaktus
  */
-class ResultViewPanel extends JPanel{
+class ResultViewPanel extends JPanel implements Lookup.Provider {
 
     private static final String STOP_ICON =
             "org/netbeans/modules/search/res/stop.png"; //NOI18N
@@ -90,6 +91,8 @@ class ResultViewPanel extends JPanel{
     private JButton btnStop = new JButton();
     private SearchTask searchTask;
     private GraphicalSearchListener searchListener = null;
+    private final JComponent visualComponent;
+    private final Lookup lookup;
 
     /** */
     private volatile boolean searchInProgress = false;
@@ -109,7 +112,11 @@ class ResultViewPanel extends JPanel{
                 new BoxLayout(resultsPanel, BoxLayout.PAGE_AXIS));
         SearchResultsDisplayer<?> disp =
                 searchComposition.getSearchResultsDisplayer();
-        resultsPanel.add(disp.getVisualComponent());
+        visualComponent = disp.getVisualComponent();
+        lookup = (visualComponent instanceof Lookup.Provider)
+                ? ((Lookup.Provider) visualComponent).getLookup()
+                : Lookup.EMPTY;
+        resultsPanel.add(visualComponent);
         add(resultsPanel, CARD_NAME_RESULTS);
         showInfo(UiUtils.getText("TEXT_WAITING_FOR_PREVIOUS"));         //NOI18N
     }
@@ -215,5 +222,10 @@ class ResultViewPanel extends JPanel{
 
     SearchComposition<?> getSearchComposition() {
         return this.searchComposition;
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
     }
 }
