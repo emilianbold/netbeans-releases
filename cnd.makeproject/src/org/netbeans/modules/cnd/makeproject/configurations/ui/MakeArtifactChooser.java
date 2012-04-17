@@ -239,7 +239,7 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
 	    // FIXUP: need to check for this for managed projects only
             if (master instanceof MakeProject) {
                 MakeProject mprj = (MakeProject) master;
-                if (mprj.getActiveConfiguration().getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE) {
+                if (mprj.getActiveConfiguration() != null && mprj.getActiveConfiguration().getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE) {
                     if ( ProjectUtils.hasSubprojectCycles( master, selectedProject ) ) {
                         DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
                             getString("ADD_CYCLIC_ERROR"),  // NOI18N
