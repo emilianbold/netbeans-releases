@@ -531,7 +531,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
 //        return selectedTestingFramework.toString().equals(TESTNG_TEST_FRAMEWORK) ? TESTNG_TEST_FRAMEWORK : JUNIT_TEST_FRAMEWORK;
 //    }
     
-    private String getTestingFrameworkFolder() {
+    private String getTestingFrameworkSuffix() {
         Object tf = cboxFramework.getSelectedItem();
         if(tf == null) {
             return "";
@@ -542,7 +542,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             testngFramework = provider.getTestngFramework();
             break;
         }
-        return tf.toString().equals(testngFramework) ? "testng." : ""; //NOI18N
+        return tf.toString().equals(testngFramework) ? "NG" : ""; //NOI18N
     }
     
     private void fireFrameworkChanged() {
@@ -553,7 +553,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             ClassPath cp = ClassPath.getClassPath(fileObj, ClassPath.SOURCE);
             String className = cp.getResourceName(fileObj, '.', false);
 
-            String prefilledName = getTestingFrameworkFolder() + className + TEST_CLASS_SUFFIX;
+            String prefilledName = className + getTestingFrameworkSuffix() + TEST_CLASS_SUFFIX;
             tfClassName.setText(prefilledName);
             tfClassName.setDefaultText(prefilledName);
             tfClassName.setCaretPosition(prefilledName.length());
@@ -1047,7 +1047,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             lblClassToTestValue.setText(className);
             
             if (tfClassName != null) {
-                String prefilledName = getTestingFrameworkFolder() + className + TEST_CLASS_SUFFIX;
+                String prefilledName = className + getTestingFrameworkSuffix() + TEST_CLASS_SUFFIX;
                 tfClassName.setText(prefilledName);
                 tfClassName.setDefaultText(prefilledName);
                 tfClassName.setCaretPosition(prefilledName.length());
