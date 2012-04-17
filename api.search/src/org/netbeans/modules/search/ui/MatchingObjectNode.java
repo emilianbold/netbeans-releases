@@ -45,12 +45,17 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.search.MatchingObject;
@@ -65,6 +70,7 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ImageUtilities;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -92,7 +98,8 @@ public class MatchingObjectNode extends AbstractNode {
             org.openide.nodes.Children children,
             final MatchingObject matchingObject,
             ReplaceCheckableNode checkableNode) {
-        super(children, Lookups.fixed(matchingObject, checkableNode));
+        super(children, Lookups.fixed(matchingObject, checkableNode,
+                matchingObject.getFileObject()));
         this.matchingObject = matchingObject;
         if (matchingObject.isObjectValid()) {
             this.original = original;
@@ -109,6 +116,21 @@ public class MatchingObjectNode extends AbstractNode {
         selectionListener = new SelectionListener();
         matchingObject.addPropertyChangeListener(MatchingObject.PROP_SELECTED,
                 selectionListener);
+    }
+
+    @Override
+    public PasteType getDropType(Transferable t, int action, int index) {
+        return null;
+    }
+
+    @Override
+    protected void createPasteTypes(Transferable t, List<PasteType> s) {
+        return;
+    }
+
+    @Override
+    public Transferable drag() throws IOException {
+        return UiUtils.DISABLE_TRANSFER;
     }
 
     @Override
