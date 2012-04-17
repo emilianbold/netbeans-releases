@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -56,6 +56,7 @@ import static org.netbeans.installer.utils.StringUtils.BACK_SLASH;
 import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
+import org.netbeans.installer.utils.applications.WebLogicUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
@@ -271,11 +272,19 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         if(installer.getAbsolutePath().endsWith(".exe")) {
             /////////////////////////for exe////////////////////////////
             LogManager.log("Installing JDK with exe installer");
+            String logPath = logFile.getAbsolutePath();
+            String locationPath = location.getAbsolutePath();
+            if (logPath.contains(" ")) {
+                logPath = convertPathNamesToShort(logPath);
+            }
+            if (locationPath.contains(" ")) {
+                locationPath = convertPathNamesToShort(locationPath);
+            }
             final String loggingOption = (logFile!=null) ?
-                "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" ":
+                "/log " + BACK_SLASH + QUOTE  +  logPath + BACK_SLASH + QUOTE +" ":
                 EMPTY_STRING;
             String installLocationOption = "/qn /norestart INSTALLDIR=" +
-                    BACK_SLASH + QUOTE + location.getAbsolutePath() + BACK_SLASH + QUOTE;
+                    BACK_SLASH + QUOTE + locationPath + BACK_SLASH + QUOTE;
             commands = new String [] {
                 installer.getAbsolutePath(),
                 "/s",
@@ -352,6 +361,27 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
     }
     
+    
+    private static String convertPathNamesToShort(String path){
+        File pathConverter = new File(SystemUtils.getTempDirectory(), "pathConverter.cmd");
+        String result = path;
+        List <String> commands = new ArrayList <String> (); 
+        commands.add("@echo off");
+        commands.add("set JPATH=" + path);
+        commands.add("for %%i in (\"%JPATH%\") do set JPATH=%%~fsi");
+        commands.add("echo %JPATH%");
+        try{
+            FileUtils.writeStringList(pathConverter, commands);
+            ExecutionResults res=SystemUtils.executeCommand(pathConverter.getAbsolutePath());        
+            FileUtils.deleteFile(pathConverter);
+            result = res.getStdOut().trim();
+        } catch(IOException ioe) {
+            LogManager.log(ErrorLevel.WARNING, 
+                    "Failed to convert " + path + " to a path with short names only." +
+                     "\n Exception is thrown " + ioe);
+        }
+        return result;
+    }    
     
     private ExecutionResults runJDKInstallerUnix(File location, File installer, Progress progress) throws InstallationException {
         File yesFile = null;
