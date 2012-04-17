@@ -49,6 +49,7 @@ import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.event.*;
+import java.lang.ref.WeakReference;
 import javax.swing.*;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -135,6 +136,8 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
         return doProcessShortcut( kev );
     }
 
+    private static WeakReference<Component> lastSource;
+
     static boolean doProcessShortcut( KeyEvent kev ) {
         boolean isCtrlTab = kev.getKeyCode() == KeyEvent.VK_TAB &&
                 kev.getModifiers() == InputEvent.CTRL_MASK;
@@ -148,6 +151,9 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             return true;
         }
         if ((isCtrlTab || isCtrlShiftTab)) { // && !KeyboardPopupSwitcher.isShown()
+            if( kev.getID() == KeyEvent.KEY_PRESSED ) {
+                lastSource = new WeakReference<Component>(kev.getComponent());
+            }
             if( !Switches.isCtrlTabWindowSwitchingInJTableEnabled() ) {
                 Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
                 if( c instanceof JTabbedPane || c instanceof JTable ) {
@@ -158,6 +164,14 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             if (KeyboardPopupSwitcher.isAlive()) {
                 KeyboardPopupSwitcher.processInterruption(kev);
             } else {
+                if( kev.getID() == KeyEvent.KEY_RELEASED ) {
+                    Component currentSource = kev.getComponent();
+                    if( null != currentSource && null != lastSource && !currentSource.equals( lastSource.get() ) ) {
+                        //If the previous Ctrl+Tab event just transfered focus from JTable or JTabbedPane
+                        //the KeyboardFocusManager will resend this event to the new focus owner.
+                        return false;
+                    }
+                }
                 AbstractAction rva = new RecentViewListAction();
                 rva.actionPerformed(new ActionEvent(kev.getSource(),
                         ActionEvent.ACTION_PERFORMED, "C-TAB", kev.getModifiers()));
