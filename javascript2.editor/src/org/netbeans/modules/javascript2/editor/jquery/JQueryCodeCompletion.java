@@ -176,11 +176,21 @@ public class JQueryCodeCompletion {
     private static HashMap<String, SelectorItem> afterColonList = new HashMap<String, SelectorItem>();
     
     private void fillContextMap() {
-        contextMap.put(" (", Arrays.asList(SelectorKind.TAG, SelectorKind.ID));
+        contextMap.put(" (", Arrays.asList(SelectorKind.TAG, SelectorKind.ID, SelectorKind.CLASS, SelectorKind.AFTER_COLON));
         contextMap.put("#", Arrays.asList(SelectorKind.ID));
         contextMap.put(".", Arrays.asList(SelectorKind.CLASS));
         contextMap.put("[", Arrays.asList(SelectorKind.TAG_ATTRIBUTE));
         contextMap.put(":", Arrays.asList(SelectorKind.AFTER_COLON));
+    }
+    
+    private void fillAfterColonList() {
+        SelectorItem item;
+        item = new SelectorItem("animated"); afterColonList.put(item.displayText, item);  //NOI18N
+        item = new SelectorItem("button"); afterColonList.put(item.displayText, item);  //NOI18N
+        item = new SelectorItem("checkbox"); afterColonList.put(item.displayText, item);  //NOI18N
+        item = new SelectorItem("checked"); afterColonList.put(item.displayText, item);  //NOI18N
+        item = new SelectorItem("contains()", "contains(${cursor})"); afterColonList.put(item.displayText, item);  //NOI18N
+        item = new SelectorItem("disabled"); afterColonList.put(item.displayText, item);  //NOI18N
     }
   
     private SelectorContext findSelectorContext(String text) {
@@ -191,7 +201,7 @@ public class JQueryCodeCompletion {
             switch (c) {
                 case ' ':
                 case '(':
-                    return new SelectorContext(prefix.toString(), index, Arrays.asList(SelectorKind.TAG, SelectorKind.ID));
+                    return new SelectorContext(prefix.toString(), index, Arrays.asList(SelectorKind.TAG, SelectorKind.ID, SelectorKind.CLASS));
                 case '#':
                     return new SelectorContext(prefix.toString(), index, Arrays.asList(SelectorKind.ID));
                 case '.':
@@ -205,7 +215,7 @@ public class JQueryCodeCompletion {
             index--;
         }
         if (index < 0) {
-            return new SelectorContext(prefix.toString(), 0, Arrays.asList(SelectorKind.TAG, SelectorKind.ID));
+            return new SelectorContext(prefix.toString(), 0, Arrays.asList(SelectorKind.TAG, SelectorKind.ID, SelectorKind.CLASS, SelectorKind.AFTER_COLON));
         }
         return null;
     }
@@ -228,7 +238,7 @@ public class JQueryCodeCompletion {
             return;
         }
         String wrapup = "";
-        if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END)) {
+        if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING_BEGIN)) {
             wrapup = "'";
         }
         if(contextMap.isEmpty()) {
@@ -267,16 +277,21 @@ public class JQueryCodeCompletion {
                         Collection<String> classes = getCSSClasses(context.prefix, parserResult);
                         anchorOffset = docOffset + prefix.length() - context.prefix.length();
                         for (String cl : classes) {
-                            result.add(JQueryCompletionItem.createCSSItem(cl, anchorOffset, wrapup));
+                            result.add(JQueryCompletionItem.createCSSItem("." + cl, anchorOffset, wrapup));
                         }
                         break;
                     case AFTER_COLON:
+                        if(afterColonList.isEmpty()) {
+                            fillAfterColonList();
+                        }
                         for (String name : afterColonList.keySet()) {
                             if (name.startsWith(context.prefix)) {
                                 SelectorItem item = afterColonList.get(name);
-                                result.add(JQueryCompletionItem.createCSSItem(":" + item.displayText, docOffset, wrapup));
+                                anchorOffset = docOffset + ((prefix.isEmpty() || prefix.charAt(0) == ':') ? 0 : 1);
+                                result.add(JQueryCompletionItem.createJQueryItem(":" + item.displayText, anchorOffset, wrapup, item.getInsertTemplate()));
                             }
                         }
+                        break;
                 }
             }
         }
