@@ -48,7 +48,6 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -70,7 +69,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
@@ -137,6 +135,7 @@ public class TemplatesAction extends AbstractAction { // XXX could be ActionList
         }
         
         // ActionListener
+        @Override
         public void actionPerformed (ActionEvent ev) {
             Node [] nodes = tp.getExplorerManager ().getSelectedNodes ();
             assert nodes != null && nodes.length > 0 : "Selected templates cannot be null or empty.";
@@ -160,6 +159,7 @@ public class TemplatesAction extends AbstractAction { // XXX could be ActionList
         }
 
         // PropertyChangeListener
+        @Override
         public void propertyChange (java.beans.PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName ())) {
                 Node [] nodes = (Node []) evt.getNewValue ();
