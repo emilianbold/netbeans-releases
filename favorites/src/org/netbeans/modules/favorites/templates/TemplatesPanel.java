@@ -68,6 +68,8 @@ import javax.swing.ActionMap;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultEditorKit;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -82,8 +84,13 @@ import org.openide.cookies.OpenCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -242,25 +249,99 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         return templatesRootNode;
     }
     
-    private static final class TemplateFilter implements DataFilter {
+    private static final class TemplateFilter implements ChangeableDataFilter, DataFilter.FileBased, FileChangeListener {
+        
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final Set<FileObject> filesWeListenOn = new HashSet<FileObject>();
+        
         @Override
         public boolean acceptDataObject (DataObject obj) {
-            return acceptTemplate (obj);
+            return acceptTemplate (obj.getPrimaryFile());
         }
 
-        private boolean acceptTemplate (DataObject d) {
-            if (d instanceof DataFolder &&
-                (TEMPLATES_FOLDER+"/Properties").equals(d.getPrimaryFile().getPath())) {
+        @Override
+        public boolean acceptFileObject(FileObject fo) {
+            return acceptTemplate(fo);
+        }
+        
+        private boolean acceptTemplate (FileObject fo) {
+            if (fo.isFolder() &&
+                (TEMPLATES_FOLDER+"/Properties").equals(fo.getPath())) {
                 
                 return false;
             }
-            if (d.isTemplate () || d instanceof DataFolder) {
-                Object o = d.getPrimaryFile ().getAttribute ("simple"); // NOI18N
+            boolean attachListener;
+            synchronized (filesWeListenOn) {
+                attachListener = filesWeListenOn.add(fo);
+            }
+            if (attachListener) {
+                FileChangeListener fileChangeListener = FileUtil.weakFileChangeListener(this, fo);
+                fo.addFileChangeListener(fileChangeListener);
+            }
+            if (isTemplate (fo) || fo.isFolder()) {
+                Object o = fo.getAttribute ("simple"); // NOI18N
                 return o == null || Boolean.TRUE.equals (o);
             } else {
                 return false;
             }
         }
+        
+        private static boolean isTemplate(FileObject fo) {
+            Object o = fo.getAttribute(DataObject.PROP_TEMPLATE);
+            boolean ret = false;
+            if (o instanceof Boolean) {
+                ret = ((Boolean) o).booleanValue();
+            }
+            return ret;
+        }
+        
+        private void fireTemplateChanged(FileObject fo) {
+            ChangeEvent che = new ChangeEvent(fo);
+            ChangeListener[] ls;
+            synchronized (listeners) {
+                ls = listeners.toArray(new ChangeListener[] {});
+            }
+            for (ChangeListener chl : ls) {
+                chl.stateChanged(che);
+            }
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+            synchronized (listeners) {
+                listeners.add(listener);
+            }
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+            synchronized (listeners) {
+                listeners.remove(listener);
+            }
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {}
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {}
+
+        @Override
+        public void fileChanged(FileEvent fe) {}
+
+        @Override
+        public void fileDeleted(FileEvent fe) {}
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {}
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            if (DataObject.PROP_TEMPLATE.equals(fe.getName())) {
+                fireTemplateChanged(fe.getFile());
+            }
+        }
+
     }
     
     /** This method is called from within the constructor to
@@ -1027,11 +1108,43 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 rp.post(new Runnable() {
                     @Override
                     public void run() {
-                        createTemplateFromFile (f, getTargetFolder (nodes));
+                        DataObject template = createTemplateFromFile (f, getTargetFolder (nodes));
+                        final Node node = getTemplateNode(template.getPrimaryFile());
+                        if (node != null) {
+                            try {
+                                manager.setSelectedNodes(new Node[] { node });
+                            } catch (PropertyVetoException ex) {}
+                        }
                     }
                 });
             }
         }    
+    }
+    
+    private static Node getTemplateNode(FileObject fo) {
+        FileObject rootFO = getTemplateRootNode().getLookup().lookup(FileObject.class);
+        if (FileUtil.isParentOf(rootFO, fo)) {
+            return getTemplateNode(fo, rootFO);
+        } else {
+            return null;
+        }
+    }
+    
+    private static Node getTemplateNode(FileObject fo, FileObject rootFO) {
+        if (rootFO.equals(fo)) {
+            return getTemplateRootNode();
+        }
+        Node parent = getTemplateNode(fo.getParent(), rootFO);
+        if (parent == null) {
+            return null;
+        }
+        Children ch = parent.getChildren();
+        for (Node node : ch.getNodes(true)) {
+            if (fo.equals(node.getLookup().lookup(FileObject.class))) {
+                return node;
+            }
+        }
+        return null;
     }
     
     private static DataFolder doNewFolder (Node [] nodes) {
