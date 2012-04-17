@@ -201,7 +201,7 @@ public class testCCInDetail extends cc {
 
     public void DetailedCodeCompletionTesting() {
         startTest();
-
+        CreatePHPFile(TEST_PHP_NAME, "PHP File", "Details");
         CCompletionCase[] accTests = {
             new CCompletionCase("*/", "$test=1;\n$test1=$tes;", "$test1=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -1, 2),
             new CCompletionCase("*/", "$test=1;\n$test1=\"a\";\n$newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -2, 3),
@@ -253,7 +253,7 @@ public class testCCInDetail extends cc {
         String sFailed = "";
         int iFailed = 0;
         for (CCompletionCase cc : accTests) {
-            if (!CheckCodeCompletion(cc, "NewEmptyPHP1.php")) {
+            if (!CheckCodeCompletion(cc, "Details.php")) {
                 iFailed++;
                 sFailed = sFailed + "|" + cc.sResult;
             }
