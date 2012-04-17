@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.ide.ergonomics.newproject;
 
-import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.ide.ergonomics.fod.FindComponentModules;
 import org.netbeans.modules.ide.ergonomics.fod.ModulesInstaller;
 import java.awt.Component;
@@ -85,10 +84,11 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
-public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor> {
+public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>, Runnable {
 
     private ContentPanel panel;
     private ProgressHandle handle = null;
@@ -138,11 +138,16 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     }
 
     private void fireChange () {
-        ChangeEvent e = new ChangeEvent (this);
-        List<ChangeListener> templist;
+        Mutex.EVENT.readAccess(this);
+    }
+    
+    @Override
+    public void run() {
+        final List<ChangeListener> templist;
         synchronized (this) {
             templist = new ArrayList<ChangeListener> (listeners);
         }
+        ChangeEvent e = new ChangeEvent (DescriptionStep.this);
         for (ChangeListener l : templist) {
             l.stateChanged (e);
         }
