@@ -47,7 +47,7 @@ import org.netbeans.modules.bugtracking.api.Issue;
  *
  * @author jpeska
  */
-public class EmptyTaskFilter implements TaskFilter {
+public class EmptyTaskFilter implements DashboardFilter<Issue> {
 
     @Override
     public boolean isInFilter(Issue task) {
