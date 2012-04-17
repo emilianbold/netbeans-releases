@@ -636,9 +636,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         uploadButton = new JButton();
         deleteButton = new JButton();
         resetButton = new JButton();
-        Mnemonics.setLocalizedText(showSummaryCheckBox, NbBundle.getMessage(SyncPanel.class, "SyncPanel.showSummaryCheckBox.text")); // NOI18N
-        Mnemonics.setLocalizedText(infoLabel, "INFO"); // NOI18N
-        Mnemonics.setLocalizedText(warningLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.warningLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(showSummaryCheckBox, NbBundle.getMessage(SyncPanel.class, "SyncPanel.showSummaryCheckBox.text"));
+        Mnemonics.setLocalizedText(infoLabel, "INFO");
+        Mnemonics.setLocalizedText(warningLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.warningLabel.text"));
 
         operationsPanel.setBorder(BorderFactory.createTitledBorder(NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationsPanel.title"))); // NOI18N
 
@@ -673,8 +673,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
                 .addGroup(problemsPanelLayout.createParallelGroup(Alignment.TRAILING).addComponent(viewSymlinkCheckBox).addComponent(viewFileConflictCheckBox).addComponent(viewWarningCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addGroup(problemsPanelLayout.createParallelGroup(Alignment.TRAILING).addComponent(viewErrorCheckBox).addComponent(viewFileDirCollisionCheckBox)).addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        Mnemonics.setLocalizedText(uncheckAllButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.uncheckAllButton.text")); // NOI18N
-        Mnemonics.setLocalizedText(checkAllButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.checkAllButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(uncheckAllButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.uncheckAllButton.text"));
+        Mnemonics.setLocalizedText(checkAllButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.checkAllButton.text"));
 
         GroupLayout spaceHolderPanelLayout = new GroupLayout(spaceHolderPanel);
         spaceHolderPanel.setLayout(spaceHolderPanelLayout);
@@ -696,7 +696,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         itemScrollPane.setViewportView(itemTable);
 
         Mnemonics.setLocalizedText(syncInfoLabel, "SYNC INFO LABEL"); // NOI18N
-        Mnemonics.setLocalizedText(operationLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(operationLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationLabel.text"));
 
         diffButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png"))); // NOI18N
         diffButton.setEnabled(false);
