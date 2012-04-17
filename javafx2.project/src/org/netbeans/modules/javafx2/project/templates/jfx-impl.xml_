@@ -1459,7 +1459,6 @@
                 <mapper>
                      <chainedmapper>
                           <flattenmapper/>
-                          <regexpmapper from="(.*)(\.html?)$" to="\1-processed\2"/>
                           <globmapper from="*" to="${jfx.deployment.dir}${file.separator}*" casesensitive="no"/>
                      </chainedmapper>
                 </mapper>
@@ -1726,6 +1725,15 @@
             <condition property="update-mode-background-token" value="background" else="always">
                 <isset property="update-mode-background"/>
             </condition>
+            <local name="html-template-processed-available"/>
+            <condition property="html-template-processed-available">
+                <and>
+                    <isset property="javafx.run.htmltemplate.processed"/>
+                    <not>
+                        <equals arg1="${javafx.run.htmltemplate.processed}" arg2=""/>
+                    </not>
+                </and>
+            </condition>
             <local name="javafx.deploy.icon.basename"/>
             <basename property="javafx.deploy.icon.basename" file="${javafx.deploy.icon}"/>
             <local name="local-icon-filename-available"/>
@@ -1816,8 +1824,8 @@
             <script language="javascript">
                 <![CDATA[
                     var PREF = "file:";
-                    var doCopy = project.getProperty("local-icon-filename-available");
-                    if(doCopy != null) {
+                    var doCopyIcon = project.getProperty("local-icon-filename-available");
+                    if(doCopyIcon != null) {
                         var iconProp = project.getProperty("javafx.deploy.icon");
                         if(iconProp.indexOf(PREF) == 0) {
                             iconProp = iconProp.slice(PREF.length);
@@ -1834,6 +1842,31 @@
                         copyTask.setFile(source);
                         copyTask.setTodir(target);
                         copyTask.setFlatten(true);
+                        copyTask.setFailOnError(false);
+                        copyTask.perform();
+                    }
+                    var doCopyHTMLFrom = project.getProperty("html-template-available");
+                    var doCopyHTMLTo = project.getProperty("html-template-processed-available");
+                    if(doCopyHTMLFrom != null && doCopyHTMLTo != null) {
+                        var htmlFrom = project.getProperty("javafx.run.htmltemplate");
+                        if(htmlFrom.indexOf(PREF) == 0) {
+                            htmlFrom = htmlFrom.slice(PREF.length);
+                        }
+                        while(htmlFrom.charAt(0) == "/") {
+                            htmlFrom = htmlFrom.slice(1);
+                        }
+                        var htmlTo = project.getProperty("javafx.run.htmltemplate.processed");
+                        if(htmlTo.indexOf(PREF) == 0) {
+                            htmlTo = htmlTo.slice(PREF.length);
+                        }
+                        while(htmlTo.charAt(0) == "/") {
+                            htmlTo = htmlTo.slice(1);
+                        }
+                        var copyTask = project.createTask("copy");
+                        var source = new java.io.File(htmlFrom);
+                        var target = new java.io.File(htmlTo);
+                        copyTask.setFile(source);
+                        copyTask.setTofile(target);
                         copyTask.setFailOnError(false);
                         copyTask.perform();
                     }
