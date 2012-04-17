@@ -23,22 +23,22 @@ import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.openide.util.NbBundle.Messages;
 
-@Hint(displayName="DN_${PACKAGE_NAME}.${CLASS_NAME}",
-      description="DESC_${PACKAGE_NAME}.${CLASS_NAME}",
-      category = "general") //NOI18N
-@Messages({"DN_${PACKAGE_NAME}.${CLASS_NAME}=${DISPLAY_NAME}",
-           "DESC_${PACKAGE_NAME}.${CLASS_NAME}=${DESCRIPTION}"})
+@Hint(displayName="#DN_${CLASS_NAME}", description="#DESC_${CLASS_NAME}", category="general")
+@Messages({
+    "DN_${CLASS_NAME}=${DISPLAY_NAME}",
+    "DESC_${CLASS_NAME}=${DESCRIPTION}"
+})
 public class ${CLASS_NAME} {
 
     @TriggerPattern(value = "$str.equals(\"\")", //Specify a pattern as needed
                     constraints = @ConstraintVariableType(variable = "$str", type = "java.lang.String"))
-    @Messages("ERR_${PACKAGE_NAME}.${CLASS_NAME}=${WARNING_MESSAGE}")
+    @Messages("ERR_${CLASS_NAME}=${WARNING_MESSAGE}")
     public static ErrorDescription computeWarning(HintContext ctx) {
 <#if GENERATE_FIX??>
         Fix fix = new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix();
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}(), fix);
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_${CLASS_NAME}(), fix);
 <#else>
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}());
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_${CLASS_NAME}());
 </#if>
     }
 
@@ -50,9 +50,9 @@ public class ${CLASS_NAME} {
         }
 
         @Override
-        @Messages("FIX_${PACKAGE_NAME}.${CLASS_NAME}=${FIX_MESSAGE}")
+        @Messages("FIX_${CLASS_NAME}=${FIX_MESSAGE}")
         protected String getText() {
-            return Bundle.FIX_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}();
+            return Bundle.FIX_${CLASS_NAME}();
         }
 
         @Override
