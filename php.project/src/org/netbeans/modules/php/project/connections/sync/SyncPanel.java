@@ -90,13 +90,14 @@ import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
  * Panel for remote synchronization.
  */
-public final class SyncPanel extends JPanel {
+public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     private static final long serialVersionUID = 1674646546545121L;
 
@@ -168,6 +169,11 @@ public final class SyncPanel extends JPanel {
         viewCheckBox.setSelected(true);
         viewCheckBox.addItemListener(viewListener);
         return viewCheckBox;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.php.project.connections.sync.SyncPanel"); // NOI18N
     }
 
     @NbBundle.Messages({
