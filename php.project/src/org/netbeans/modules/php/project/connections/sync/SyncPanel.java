@@ -907,6 +907,9 @@ public final class SyncPanel extends JPanel {
                         text = Bundle.SyncPanel_localFile_modified_mark(text);
                     }
                 }
+                // add left padding - space just behaves better (on focus, "frame" has the same size as the cell itself)
+                //rendererComponent.setBorder(new CompoundBorder(new EmptyBorder(new Insets(0, 2, 0, 0)), rendererComponent.getBorder()));
+                text = " " + text; // NOI18N
             }
             rendererComponent.setText(text);
             rendererComponent.setIcon(null);
