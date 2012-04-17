@@ -69,6 +69,7 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
@@ -139,11 +140,12 @@ class ArtifactDependencyIndexCreator extends AbstractIndexCreator {
     private MavenProject load(ArtifactInfo ai) {
         try {
             Artifact projectArtifact = embedder.createArtifact(ai.groupId, ai.artifactId, ai.version, ai.packaging != null ? ai.packaging : "jar");
-            DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
-            dpbr.setLocalRepository(embedder.getLocalRepository());
+            ProjectBuildingRequest dpbr = embedder.createMavenExecutionRequest().getProjectBuildingRequest();
+            //mkleint: remote repositories don't matter we use project embedder.
             dpbr.setRemoteRepositories(remoteRepos);
+            dpbr.setProcessPlugins(false);
             dpbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-            dpbr.setSystemProperties(embedder.getSystemProperties());
+
             ProjectBuildingResult res = embedder.buildProject(projectArtifact, dpbr);
             if (res.getProject() != null) {
                 return res.getProject();
