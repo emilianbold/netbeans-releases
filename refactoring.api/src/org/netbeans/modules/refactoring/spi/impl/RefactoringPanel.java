@@ -472,7 +472,8 @@ public class RefactoringPanel extends JPanel {
 
                     @Override
                     public void run() {
-                        ((DefaultTreeModel) tree.getModel()).nodesWereInserted(parentNode, new int[]{childCount-1});
+                        if (tree!=null)
+                            ((DefaultTreeModel) tree.getModel()).nodesWereInserted(parentNode, new int[]{childCount-1});
                     }
                 });
             } catch (InterruptedException ex) {
