@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
@@ -105,6 +106,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
         assert false;
     }
 
+    @RandomlyFails // NB-Core-Build #8151: expected:<1334355608338[ - annotated]> but was:<1334355608338[]>
     public void testAnnotationChanged () throws Exception {
         Lookup.getDefault().lookup(DummyVCS.class).topmostFile = FileUtil.toFile(workDir);
         HashMap<FileObject, String> expectedLabelAnnotations = new HashMap<FileObject, String>();
