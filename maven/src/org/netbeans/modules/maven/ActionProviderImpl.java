@@ -42,10 +42,12 @@
 package org.netbeans.modules.maven;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -354,11 +356,8 @@ public class ActionProviderImpl implements ActionProvider {
             }
 
             if (!showUI) {
-                ModelRunConfig rc = new ModelRunConfig(proj, mapping, mapping.getActionName(), null, Lookup.EMPTY);
-                rc.setShowDebug(MavenSettings.getDefault().isShowDebug());
-                rc.setTaskDisplayName(TXT_Build(proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifactId()));
-
-                setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
+                M2ConfigProvider conf = proj.getLookup().lookup(M2ConfigProvider.class);
+                ModelRunConfig rc = createCustomRunConfig(conf);
                 RunUtils.run(rc);
 
                 return;
@@ -377,10 +376,11 @@ public class ActionProviderImpl implements ActionProvider {
                     maps.getActions().remove(0);
                 }
                 maps.getActions().add(mapping);
+                M2ConfigProvider conf = proj.getLookup().lookup(M2ConfigProvider.class);
                 ActionToGoalUtils.writeMappingsToFileAttributes(proj.getProjectDirectory(), maps);
                 if (pnl.isRememberedAs() != null) {
                     try {
-                        M2ConfigProvider conf = proj.getLookup().lookup(M2ConfigProvider.class);
+
                         String tit = "CUSTOM-" + pnl.isRememberedAs(); //NOI18N
                         mapping.setActionName(tit);
                         mapping.setDisplayName(pnl.isRememberedAs());
@@ -390,17 +390,31 @@ public class ActionProviderImpl implements ActionProvider {
                         ex.printStackTrace();
                     }
                 }
-                ModelRunConfig rc = new ModelRunConfig(proj, mapping, mapping.getActionName(), null, Lookup.EMPTY);
+                ModelRunConfig rc = createCustomRunConfig(conf);
                 rc.setOffline(Boolean.valueOf(pnl.isOffline()));
                 rc.setShowDebug(pnl.isShowDebug());
                 rc.setRecursive(pnl.isRecursive());
                 rc.setUpdateSnapshots(pnl.isUpdateSnapshots());
-                rc.setTaskDisplayName(TXT_Build(proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifactId()));
-
+                
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
                 RunUtils.run(rc);
 
             }
+        }
+
+        private ModelRunConfig createCustomRunConfig(M2ConfigProvider conf) {
+            ModelRunConfig rc = new ModelRunConfig(proj, mapping, mapping.getActionName(), null, Lookup.EMPTY);
+
+            //#171086 also inject profiles from currently selected configuratiin
+            List<String> acts = new ArrayList<String>();
+            acts.addAll(rc.getActivatedProfiles());
+            acts.addAll(conf.getActiveConfiguration().getActivatedProfiles());
+            rc.setActivatedProfiles(acts);
+            Map<String, String> props = new HashMap<String, String>(rc.getProperties());
+            props.putAll(conf.getActiveConfiguration().getProperties());
+            rc.addProperties(props);
+            rc.setTaskDisplayName(TXT_Build(proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifactId()));
+            return rc;
         }
     }
 
