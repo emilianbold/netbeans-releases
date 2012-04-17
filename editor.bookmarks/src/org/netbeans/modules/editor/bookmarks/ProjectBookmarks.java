@@ -107,6 +107,15 @@ public final class ProjectBookmarks {
         return url2FileBookmarks.keySet();
     }
     
+    public boolean containsAnyBookmarks() {
+        for (FileBookmarks fileBookmarks : url2FileBookmarks.values()) {
+            if (fileBookmarks.containsAnyBookmarks()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Collection<FileBookmarks> allFileBookmarks() {
         return url2FileBookmarks.values();
     }

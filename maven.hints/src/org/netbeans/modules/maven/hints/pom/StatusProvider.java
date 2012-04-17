@@ -54,11 +54,14 @@ import javax.swing.text.Document;
 import org.apache.maven.DefaultMaven;
 import org.apache.maven.Maven;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.artifact.repository.MavenArtifactRepository;
+import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
+import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelProblem;
 import org.apache.maven.model.resolution.UnresolvableModelException;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
@@ -89,11 +92,7 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
@@ -245,7 +244,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             try {
                 if (fo.isValid()) {
                     DataObject dobj = DataObject.find(fo);
-                    EditorCookie ed = dobj.getCookie(EditorCookie.class);
+                    EditorCookie ed = dobj.getLookup().lookup(EditorCookie.class);
                     if (ed != null) {
                         JEditorPane[] panes = ed.getOpenedPanes();
                         if (panes != null && panes.length > 0) {
@@ -288,13 +287,15 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         if (pom == null) {
             return;
         }
-        ProjectBuildingRequest req = new DefaultProjectBuildingRequest();
-        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1); // currently enables just <reporting> warning
+        
         MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
+        MavenExecutionRequest meReq = embedder.createMavenExecutionRequest();
+        ProjectBuildingRequest req = meReq.getProjectBuildingRequest();
+        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1); // currently enables just <reporting> warning
         req.setLocalRepository(embedder.getLocalRepository());
         List<ArtifactRepository> remoteRepos = RepositoryPreferences.getInstance().remoteRepositories(embedder);
         req.setRemoteRepositories(remoteRepos);
-        req.setRepositorySession(((DefaultMaven) embedder.lookupComponent(Maven.class)).newRepositorySession(embedder.createMavenExecutionRequest()));
+        req.setRepositorySession(((DefaultMaven) embedder.lookupComponent(Maven.class)).newRepositorySession(meReq));
         List<ModelProblem> problems;
         try {
             problems = embedder.lookupComponent(ProjectBuilder.class).build(pom, req).getProblems();

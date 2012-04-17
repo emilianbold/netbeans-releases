@@ -729,4 +729,18 @@ public class DebuggerOption extends Option {
 			    "0.50",      // NOI18N //default value
 			    true, // is engine option
 			    TEXT_AREA, true, true);  //type
+    
+    public static final DebuggerOption DEBUG_COMMAND =
+	new DebuggerOption( // NOI18N
+			    "debug_command", // NOI18N //name
+			    "", // deault value
+			    false, // is engine option
+			    TEXT_AREA, false);  //type , hasToolTip
+    
+    public static final DebuggerOption DEBUG_DIR =
+	new DebuggerOption( // NOI18N
+			    "debug_dir", // NOI18N //name
+			    "", // deault value
+			    false, // is engine option
+			    DIRECTORY, false);  //type , hasToolTip
 }

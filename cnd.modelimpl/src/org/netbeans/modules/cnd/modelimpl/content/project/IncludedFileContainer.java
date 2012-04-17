@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -70,7 +72,7 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Voskresensky
  */
 public final class IncludedFileContainer {
-    private final Collection<Entry> list;
+    private final List<Entry> list;
     private final ProjectBase srorageListOwner;
 
     public IncludedFileContainer(ProjectBase startProject) {
@@ -102,6 +104,18 @@ public final class IncludedFileContainer {
             factory.writeUID(entry.prjUID, aStream);
             entry.getStorage().write(aStream);
 //            keyFactory.writeKey(entry.storageKey, aStream);
+        }
+    }
+
+    public void invalidateIncludeStorage(CsmUID<CsmProject> libraryUID) {
+        synchronized (list) {
+            for (int i = 0; i < list.size(); i++) {
+                Entry entry = list.get(i);
+                if (entry.prjUID.equals(libraryUID)) {
+                    list.remove(i);
+                    return;
+                }
+            }
         }
     }
 
@@ -270,6 +284,11 @@ public final class IncludedFileContainer {
 //            return container;
             assert storage != null;
             return storage;
+        }
+
+        @Override
+        public String toString() {
+            return "Entry{" + "prjUID=" + prjUID + ", storage=" + storage + '}'; // NOI18N
         }
     }
 }

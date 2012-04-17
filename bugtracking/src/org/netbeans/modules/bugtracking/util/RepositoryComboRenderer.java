@@ -78,13 +78,17 @@ public class RepositoryComboRenderer extends DefaultListCellRenderer {
         } else if (value instanceof Repository) {
             repo = (Repository) value;
             text = repo.getDisplayName();
+        } else if (value instanceof RepositoryImpl) {
+            assert false : "the value provided to the renderer should be a Repository"; // NOI18N
+            repo = ((RepositoryImpl) value).getRepository();
+            text = repo.getDisplayName();
         } else {
             if (value == RepositoryComboSupport.LOADING_REPOSITORIES) {
                 text = loadingReposText;
             } else if (value == RepositoryComboSupport.NO_REPOSITORIES) {
                 text = noRepositories;
             } else {
-                assert (value == RepositoryComboSupport.SELECT_REPOSITORY);
+                assert (value == RepositoryComboSupport.SELECT_REPOSITORY) : value;
                 text = selectRepoText;
             }
         }

@@ -323,8 +323,11 @@ public final class ParserQueue {
     private static ParserQueue instance = new ParserQueue(false);
     private final PriorityQueue<Entry> queue = new PriorityQueue<Entry>();
     private volatile State state;
-    private static final class SuspendLock {}
-    private final Object suspendLock = new SuspendLock();
+    private static final class SuspendLock { 
+        private final AtomicInteger counter = new AtomicInteger(0);
+    }
+    
+    private final SuspendLock suspendLock = new SuspendLock();
 
     // do not need UIDs for ProjectBase in parsing data collection
     private final Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
@@ -527,6 +530,7 @@ public final class ParserQueue {
             System.err.println("ParserQueue: suspending"); // NOI18N
         }
         synchronized (suspendLock) {
+            suspendLock.counter.incrementAndGet();
             state = State.SUSPENDED;
         }
     }
@@ -536,8 +540,10 @@ public final class ParserQueue {
             System.err.println("ParserQueue: resuming"); // NOI18N
         }
         synchronized (suspendLock) {
-            state = State.ON;
-            suspendLock.notifyAll();
+            if (suspendLock.counter.decrementAndGet() == 0) {
+                state = State.ON;
+                suspendLock.notifyAll();
+            }
         }
     }
 
@@ -771,6 +777,7 @@ public final class ParserQueue {
     }
 
     public void onStartAddingProjectFiles(ProjectBase project) {
+        suspend();
         boolean fire;
         synchronized(onStartLevel) {
             AtomicInteger level = onStartLevel.get(project);
@@ -811,6 +818,7 @@ public final class ParserQueue {
                 handleLastProjectFile(project, pd);
             }
         }
+        resume();
     }
 
     /*package*/ void onFileParsingFinished(FileImpl file) {

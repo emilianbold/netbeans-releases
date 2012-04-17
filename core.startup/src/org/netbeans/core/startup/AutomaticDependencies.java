@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -63,6 +63,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.ModuleInstaller;
 import org.netbeans.Util;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
 import org.openide.xml.XMLUtil;
@@ -87,6 +89,7 @@ import org.xml.sax.XMLReader;
  */
 public final class AutomaticDependencies {
     private static final Logger LOG = Logger.getLogger(AutomaticDependencies.class.getName());
+    private static AutomaticDependencies INSTANCE;
 
     private AutomaticDependencies() {}
     
@@ -96,6 +99,46 @@ public final class AutomaticDependencies {
      */
     public static AutomaticDependencies empty() {
         return new AutomaticDependencies();
+    }
+    
+    /** Create default list of transformations.
+     * This is now all handled from declarative configuration files:
+     * in the system filesystem, ModuleAutoDeps/*.xml may be added
+     * according to the DTD "-//NetBeans//DTD Module Automatic Dependencies 1.0//EN".
+     * 
+     * @since 1.39
+     * @return the default list
+     */
+    public static AutomaticDependencies getDefault() {
+        if (INSTANCE != null) {
+            return INSTANCE;
+        }
+        
+        FileObject depsFolder = FileUtil.getConfigFile("ModuleAutoDeps");
+        if (depsFolder != null) {
+            FileObject[] kids = depsFolder.getChildren();
+            List<URL> urls = new ArrayList<URL>(Math.max(kids.length, 1));
+            for (FileObject kid : kids) {
+                if (kid.hasExt("xml")) { // NOI18N
+                    urls.add(kid.toURL());
+                }
+            }
+            try {
+                INSTANCE = AutomaticDependencies.parse(urls.toArray(new URL[urls.size()]));
+            } catch (IOException e) {
+                Util.err.log(Level.WARNING, null, e);
+            } catch (SAXException e) {
+                Util.err.log(Level.WARNING, null, e);
+            }
+        }
+        if (INSTANCE == null) {
+            // Parsing failed, or no files.
+            INSTANCE = AutomaticDependencies.empty();
+        }
+        if (Util.err.isLoggable(Level.FINE)) {
+            Util.err.fine("Auto deps: " + INSTANCE);
+        }
+        return INSTANCE;
     }
     
     /**

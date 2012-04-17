@@ -369,9 +369,13 @@ public final class LibraryManager {
         return entry;
     }
 
-    public void onProjectPropertyChanged(CsmUID<CsmProject> project) {
+    public void onProjectPropertyChanged(ProjectBase project) {
+        CsmUID<CsmProject> uid = project.getUID();
         for (LibraryEntry entry : librariesEntries.values()) {
-            entry.removeProject(project);
+            Boolean removed = entry.removeProject(uid);
+            if (removed != null) {
+                project.invalidateLibraryStorage(entry.libraryUID);
+            }
         }
     }
 
@@ -545,8 +549,8 @@ public final class LibraryManager {
             dependentProjects.put(project, Boolean.TRUE);
         }
 
-        private void removeProject(CsmUID<CsmProject> project) {
-            dependentProjects.remove(project);
+        private Boolean removeProject(CsmUID<CsmProject> project) {
+            return dependentProjects.remove(project);
         }
 
         @Override
@@ -577,7 +581,7 @@ public final class LibraryManager {
                     printOut.printf("Library was NOT restored from repository\n");// NOI18N
                 } else if (library instanceof ProjectBase) {
                     printOut.printf("[%d] disposing=%s\n", ind, ((ProjectBase)library).isDisposing());// NOI18N
-                    ((ProjectBase)library).traceFileContainer(printOut);
+                    ProjectBase.dumpFileContainer(library, printOut);
                 } else {
                     printOut.printf("Library's project has unexpected class type %s\n", library.getClass().getName());// NOI18N
                 }

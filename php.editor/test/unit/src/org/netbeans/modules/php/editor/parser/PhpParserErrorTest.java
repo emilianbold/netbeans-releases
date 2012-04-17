@@ -219,4 +219,32 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testCfunction() throws Exception {
         checkErrors("testfiles/parser/cfunction.php");
     }
+
+    public void testNowDoc_01() throws Exception {
+        checkErrors("testfiles/parser/nowdoc_01.php");
+    }
+
+    public void testNowDoc_02() throws Exception {
+        checkErrors("testfiles/parser/nowdoc_02.php");
+    }
+
+    public void testNowDoc_03() throws Exception {
+        checkErrors("testfiles/parser/nowdoc_03.php");
+    }
+
+    public void testNowDoc_04() throws Exception {
+        checkErrors("testfiles/parser/nowdoc_04.php");
+    }
+
+    public void testNowDoc_05() throws Exception {
+        checkErrors("testfiles/parser/nowdoc_05.php");
+    }
+
+    public void testNowDoc_06() throws Exception {
+        checkErrors("testfiles/parser/nowdoc_06.php");
+    }
+
+    public void testIssue198572() throws Exception {
+        checkErrors("testfiles/parser/issue198572.php");
+    }
 }

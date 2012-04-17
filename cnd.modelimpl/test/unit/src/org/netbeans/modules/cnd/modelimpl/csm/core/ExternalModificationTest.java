@@ -209,19 +209,11 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
     }
     
     private void fireFileChanged(final CsmProject project, FileObject sourceFileObject) {
-        Object platform = project.getPlatformProject();
-        if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
-            NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
-            nativeProject.fireFileChanged(sourceFileObject);
-        }
+        ModelImplTest.fireFileChanged(project, sourceFileObject);
     }
 
     private void fireFileAdded(final CsmProject project, FileObject sourceFileObject) {
-        Object platform = project.getPlatformProject();
-        if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
-            NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
-            nativeProject.fireFileAdded(sourceFileObject);
-        }
+        ModelImplTest.fireFileAdded(project, sourceFileObject);
     }
 
     private void checkDeadBlocks(final CsmProject project, final CsmFile csmFile, String msg, int[][] expectedDeadBlocks) throws BadLocationException {

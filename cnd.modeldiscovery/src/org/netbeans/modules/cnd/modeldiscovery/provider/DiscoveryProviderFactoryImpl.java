@@ -55,7 +55,7 @@ public class DiscoveryProviderFactoryImpl extends DiscoveryProviderFactory {
 
     @Override
     public DiscoveryProvider createProvider(String providerID) {
-        if (AnalyzeModel.MIDEL_FOLDER_PROVIDER_ID.equals(providerID)) {
+        if (AnalyzeModel.MODEL_FOLDER_PROVIDER_ID.equals(providerID)) {
             return new AnalyzeModel();
         }
         return null;

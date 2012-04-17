@@ -117,6 +117,13 @@ public class HtmlElementHandle implements ElementHandle {
         return path.equals(fnPath);
     }
 
+    @Override
+    public String toString() {
+        return new TreePath(node).toString();
+    }
+    
+    
+
     Element node() {
         return node;
     }

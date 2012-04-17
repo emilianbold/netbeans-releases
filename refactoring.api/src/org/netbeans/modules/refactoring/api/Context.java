@@ -53,8 +53,12 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- * Context contains "environment" in which the refactoring was invoked
- * e.g. Java refactoring might put instance of ClasspathInfo here
+ * Context contains "environment" in which the refactoring was invoked.
+ * For example, Java refactoring might put instance of ClasspathInfo here
+ * 
+ * <p>The context acts as a {@code Map<Class,Object>} keyed off the concrete
+ * implementation class of the "values".</p>
+ * 
  * @see AbstractRefactoring
  * @author Jan Becicka
  */
@@ -70,22 +74,25 @@ public final class Context extends Lookup {
     }
 
     /**
-     * Adds value instance into this context
-     * for instance Java impl. puts instance of ClasspathInfo here.
+     * Adds value instance into this context.
+     * For example, Java impl. puts instance of ClasspathInfo here.
      * If there is an instance already set for this context, old
      * value is replaced by new one.
+     * 
+     * @param value the instance the add
      */
     public void add(@NonNull Object value) {
         Parameters.notNull("value", value); // NOI18N
-        Object old = lookup(value.getClass());
-        if (old!=null) {
-            instanceContent.remove(old);
-        }
+        remove(value.getClass());
         instanceContent.add(value);
     }
     
     /**
-     * Removes value instance from this context.
+     * Removes instance from this context.
+     * 
+     * @param clazz the class to remove the instance of
+     * 
+     * @since 1.24
      */
     public void remove(@NonNull Class<?> clazz) {
         Parameters.notNull("clazz", clazz); // NOI18N

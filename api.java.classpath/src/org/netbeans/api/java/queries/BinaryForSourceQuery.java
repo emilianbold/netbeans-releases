@@ -153,10 +153,11 @@ public final class BinaryForSourceQuery {
             }           
             Set<URL> result = new HashSet<URL>();
             for (ClassPath.Entry e : exec.entries()) {
-                FileObject[] roots = SourceForBinaryQuery.findSourceRoots(e.getURL()).getRoots();
+                final URL eurl = e.getURL();
+                FileObject[] roots = SourceForBinaryQuery.findSourceRoots(eurl).getRoots();
                 for (FileObject root : roots) {
                         if (sourceRoot.equals (root.toURL())) {
-                            result.add (e.getURL());
+                            result.add (eurl);
                         }
                 }
             }

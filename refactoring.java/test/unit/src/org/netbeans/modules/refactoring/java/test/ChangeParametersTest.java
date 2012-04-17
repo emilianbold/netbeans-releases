@@ -301,6 +301,24 @@ public class ChangeParametersTest extends RefactoringTestBase {
         performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 0, false, new Problem(false, "ERR_existingConstructor"));
     }
     
+    public void test208694() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public String testMethod() {\n"
+                + "         System.out.println(1);\n"
+                + "         return \"\";\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                + "    public String testMethod() {\n"
+                + "         System.out.println(2);\n"
+                + "         return null;\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = new ParameterInfo[] {};
+        performChangeParameters(EnumSet.of(Modifier.PROTECTED), null, null, paramTable, Javadoc.NONE, 1, false);
+    }
+    
     public void test201140() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A {\n"

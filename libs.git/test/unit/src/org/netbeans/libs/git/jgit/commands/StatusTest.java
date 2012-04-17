@@ -514,16 +514,21 @@ public class StatusTest extends AbstractGitTestCase {
         
         File nested = new File(workDir, "nested");
         nested.mkdirs();
-        File f2 = new File(nested, "f");
-        write(f2, "file");
+        new File(workDir, "emptyFolder").mkdirs();
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size()); // commandline is silent about empty folders
+        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
         GitClient clientNested = getClient(nested);
         clientNested.init(NULL_PROGRESS_MONITOR);
+        File f2 = new File(nested, "f");
+        write(f2, "file");
         clientNested.add(new File[] { f2 }, NULL_PROGRESS_MONITOR);
         clientNested.commit(new File[] { f2 }, "init commit", null, null, NULL_PROGRESS_MONITOR);
         
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
-        assertEquals(1, statuses.size());
+        statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(2, statuses.size()); // on the other hand, nested repository parent should be listed as is on commandline
         assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, nested, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
         
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
@@ -535,6 +540,9 @@ public class StatusTest extends AbstractGitTestCase {
             // tested on linux
             return;
         }
+        StoredConfig cfg = repository.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "false");
+        cfg.save();
         File f = new File(workDir, "f");
         String content = "";
         for (int i = 0; i < 10000; ++i) {
@@ -554,7 +562,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertEquals(0, status.getModified().size());
         
         // lets turn autocrlf on
-        StoredConfig cfg = repository.getConfig();
+        cfg = repository.getConfig();
         cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
         cfg.save();
         

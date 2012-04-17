@@ -51,6 +51,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImplTest;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
@@ -210,13 +211,16 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     }
 
     protected CsmProject getProject(String name) {
+        CsmProject out = null;
         for (TestModelHelper testModelHelper : projectHelpers.values()) {
             CsmProject project = testModelHelper.getProject();
             if (name.contentEquals(project.getName())) {
-                return project;
+                assertTrue("two projects with the same name " + name + " " + out + " and " + project, out == null);
+                out = project;
+                // do not break to allow initialization of all names in TestModelHelpers
             }
         }
-        return null;
+        return out;
     }
 
     protected CsmModel getModel() {
@@ -226,12 +230,28 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         assert false : "no initialized projects";
         return null;
     }
-    
-    protected void closeProject(CsmProject project) {
-        CsmModel model = getModel();
-        if (model instanceof ModelImpl && project instanceof ProjectBase) {
-            ((ModelImpl)model).closeProjectBase((ProjectBase)project, false);
+
+    protected void reopenProject(String name) {
+        for (TestModelHelper testModelHelper : projectHelpers.values()) {
+            if (name.contentEquals(testModelHelper.getProjectName())) {
+                testModelHelper.getProject();
+                return;
+            }
         }
+    }
+
+    protected void reparseProject(CsmProject project) {
+        ModelImplTest.reparseProject(project);
+    }
+
+    protected void closeProject(String name) {
+        for (TestModelHelper testModelHelper : projectHelpers.values()) {
+            if (name.contentEquals(testModelHelper.getProjectName())) {
+                testModelHelper.resetProject();
+                return;
+            }
+        }
+        assertFalse("Project not found or getProject was not called for this name before: " + name, true);
     }
     
     protected int getOffset(File testSourceFile, int lineIndex, int colIndex) throws Exception {

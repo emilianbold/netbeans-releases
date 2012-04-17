@@ -612,7 +612,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                 }
             }
             for (ExecutableElement exMethod : allMethods) {
-                if(!exMethod.getReturnType().equals(method.getReturnType())) {
+                if(!javac.getTypes().isSameType(exMethod.getReturnType(),method.getReturnType())) {
                     p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_existingReturnType", exMethod.getSimpleName(), exMethod.getEnclosingElement().getSimpleName(), method.getReturnType().toString(), exMethod.getReturnType().toString())); // NOI18N
                 }
             }

@@ -154,6 +154,11 @@ import org.openide.util.lookup.Lookups;
  */
 public class HintTest {
 
+    private static final Logger INDEXING_LOGGER = /* RepositoryUpdater.UI_LOGGER */ Logger.getLogger("org.netbeans.ui.indexing");
+    static {
+        INDEXING_LOGGER.setLevel(Level.WARNING);
+    }
+
     private final File workDir;
     private final FileObject sourceRoot;
     private final FileObject buildRoot;
@@ -494,6 +499,10 @@ public class HintTest {
         return new HintsInvoker(info, caret, cancel).computeHints(info, new TreePath(info.getCompilationUnit()), hints, new LinkedList<MessageImpl>());
     }
 
+    FileObject getSourceRoot() {
+        return sourceRoot;
+    }
+
     private static class TempPreferences extends AbstractPreferences {
 
         /*private*/Properties properties;
@@ -798,6 +807,10 @@ public class HintTest {
          * @throws AssertionError if there is not one fix for the given {@link ErrorDescription}
          */
         public AppliedFix applyFix() throws Exception {
+            return applyFix(true);
+        }
+
+        AppliedFix applyFix(boolean saveAll) throws Exception {
             assertTrue("Must be computed", warning.getFixes().isComputed());
 
             List<Fix> fixes = warning.getFixes().getFixes();
@@ -805,7 +818,9 @@ public class HintTest {
             assertEquals(1, fixes.size());
 
             fixes.get(0).implement();
-            LifecycleManager.getDefault().saveAll();
+
+            if (saveAll)
+                LifecycleManager.getDefault().saveAll();
             
             return new AppliedFix();
         }

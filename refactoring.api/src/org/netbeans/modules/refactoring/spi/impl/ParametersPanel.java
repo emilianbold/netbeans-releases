@@ -169,6 +169,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         //cancel.setEnabled(false);
         next.setVisible(!forcePreview);
         validate();
+        Dimension preferredSize = progressPanel.getPreferredSize();
+        progressPanel.setPreferredSize(preferredSize);
     }
 
     @Override

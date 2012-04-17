@@ -114,6 +114,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -144,8 +145,10 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         if (bookmarksView == null) {
             bookmarksView = (BookmarksView) create();
         }
+        bookmarksView.findInitialSelection();
         bookmarksView.open();
         bookmarksView.requestActive();
+        bookmarksView.doInitialSelection();
         return bookmarksView;
     }
     
@@ -172,6 +175,9 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
     
     private transient Timer previewRefreshTimer;
     private transient BookmarkInfo displayedBookmarkInfo;
+    
+    private transient boolean initialSelectionDone;
+    private transient FileObject initialSelectionFileObject;
     
     BookmarksView() {
 //        getActionMap().put("rename", SystemAction.get(RenameAction.class));
@@ -335,40 +341,43 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
             }
             
             List<ProjectBookmarks> loadedProjectBookmarks = lockedBookmarkManager.allLoadedProjectBookmarks();
-            projectNodes = new Node[loadedProjectBookmarks.size()];
-            int i = 0;
+            List<Node> projectNodeList = new ArrayList<Node>(loadedProjectBookmarks.size());
             for (ProjectBookmarks projectBookmarks : loadedProjectBookmarks) {
-                FileObject[] sortedFileObjects = lockedBookmarkManager.getSortedFileObjects(projectBookmarks);
-                ProjectBookmarksChildren children = new ProjectBookmarksChildren(projectBookmarks, sortedFileObjects);
-                LogicalViewProvider lvp = projectBookmarks.getProject().getLookup().lookup(LogicalViewProvider.class);
-                Node prjNode = (lvp != null) ? lvp.createLogicalView() : null;
-                if (prjNode == null) {
-                    prjNode = new AbstractNode(Children.LEAF);
-                    prjNode.setDisplayName(children.getProjectDisplayName());
-                }
-                Node n = new FilterNode(prjNode, children) {
-                    @Override
-                    public boolean canCopy() {
-                        return false;
+                if (projectBookmarks.containsAnyBookmarks()) {
+                    FileObject[] sortedFileObjects = lockedBookmarkManager.getSortedFileObjects(projectBookmarks);
+                    ProjectBookmarksChildren children = new ProjectBookmarksChildren(projectBookmarks, sortedFileObjects);
+                    LogicalViewProvider lvp = projectBookmarks.getProject().getLookup().lookup(LogicalViewProvider.class);
+                    Node prjNode = (lvp != null) ? lvp.createLogicalView() : null;
+                    if (prjNode == null) {
+                        prjNode = new AbstractNode(Children.LEAF);
+                        prjNode.setDisplayName(children.getProjectDisplayName());
                     }
-                    @Override
-                    public boolean canCut() {
-                        return false;
+                    Node n = new FilterNode(prjNode, children) {
+                        @Override
+                        public boolean canCopy() {
+                            return false;
+                        }
+                        @Override
+                        public boolean canCut() {
+                            return false;
+                        }
+                        @Override
+                        public boolean canDestroy() {
+                            return false;
+                        }
+                        @Override
+                        public boolean canRename() {
+                            return false;
+                        }
+                    };
+                    projectNodeList.add(n);
+                    if (projectBookmarks == selectedProjectBookmarks) {
+                        selectedProjectNode = n;
                     }
-                    @Override
-                    public boolean canDestroy() {
-                        return false;
-                    }
-                    @Override
-                    public boolean canRename() {
-                        return false;
-                    }
-                };
-                projectNodes[i++] = n;
-                if (projectBookmarks == selectedProjectBookmarks) {
-                    selectedProjectNode = n;
                 }
             }
+            projectNodes = new Node[projectNodeList.size()];
+            projectNodeList.toArray(projectNodes);
 
             // Sort by project's display name
             Arrays.sort(projectNodes, new Comparator<Node>() {
@@ -386,7 +395,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
             if (selectedProjectNode != null) {
                 for (Node fileNodes : selectedProjectNode.getChildren().snapshot()) {
                     FileBookmarksChildren ch = (FileBookmarksChildren) fileNodes.getChildren();
-                    if (ch.getFileBookmarks() == selectedFileBookmarks) {
+                    if (ch.fileBookmarks == selectedFileBookmarks) {
                         for (Node bookmarkNode : ch.snapshot()) {
                             if (((BookmarkNode)bookmarkNode).getBookmarkInfo() == selectedBookmark) {
                                 try {
@@ -661,6 +670,68 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         }
         return null;
     }
+    
+    private void findInitialSelection() { // Perform initial selection
+        if (!initialSelectionDone) {
+            Lookup lookup = org.openide.util.Utilities.actionsGlobalContext();
+            initialSelectionFileObject = lookup.lookup(FileObject.class);
+        }
+    }
+
+    private void doInitialSelection() { // Perform initial selection
+        if (!initialSelectionDone) {
+            if (treeViewShowing) {
+                Node selectedNode = getTreeSelectedNode();
+                if (selectedNode instanceof BookmarkNode) {
+                    initialSelectionDone = true;
+                } else if (initialSelectionFileObject != null) {
+                    BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+                    try {
+                        ProjectBookmarks projectBookmarks = lockedBookmarkManager.
+                                getProjectBookmarks(initialSelectionFileObject);
+                        Node bNode = findFirstBookmarkNode(projectBookmarks, initialSelectionFileObject);
+                        if (bNode != null) {
+                            initialSelectionDone = true;
+                            initialSelectionFileObject = null;
+                            try {
+                                explorerManager.setSelectedNodes(new Node[] { bNode });
+                            } catch (PropertyVetoException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    } finally {
+                        lockedBookmarkManager.unlock();
+                    }
+                }
+            }
+        }
+    }
+    
+    private Node findFirstBookmarkNode(ProjectBookmarks projectBookmarks, FileObject fo) {
+        FileBookmarks fileBookmarks = projectBookmarks.get(fo.toURL());
+        if (fileBookmarks != null && fileBookmarks.containsAnyBookmarks()) {
+            Node rootContext = explorerManager.getRootContext();
+            if (rootContext != null) {
+                List<Node> projectNodes = rootContext.getChildren().snapshot();
+                for (Node pNode : projectNodes) {
+                    ProjectBookmarksChildren pChildren =
+                            (ProjectBookmarksChildren) pNode.getChildren();
+                    if (pChildren.projectBookmarks == projectBookmarks) {
+                        for (Node fNode : pChildren.snapshot()) {
+                            FileBookmarksChildren fChildren = (FileBookmarksChildren) fNode.getChildren();
+                            if (fChildren.fileBookmarks == fileBookmarks) {
+                                List<Node> bNodes = fChildren.snapshot();
+                                if (!bNodes.isEmpty()) {
+                                    return bNodes.get(0);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
     @Override
     public void paint(Graphics g) {
@@ -745,9 +816,9 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
 
     private static final class ProjectBookmarksChildren extends Children.Keys<FileObject> {
         
-        String projectDisplayName;
+        final String projectDisplayName;
         
-        ProjectBookmarks projectBookmarks;
+        final ProjectBookmarks projectBookmarks;
         
         ProjectBookmarksChildren(ProjectBookmarks projectBookmarks, FileObject[] sortedFileObjects) {
             this.projectBookmarks = projectBookmarks;
@@ -776,7 +847,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
     
     private static final class FileBookmarksChildren extends Children.Array {
         
-        private final FileBookmarks fileBookmarks;
+        final FileBookmarks fileBookmarks;
         
         FileBookmarksChildren(FileBookmarks fileBookmarks, FileObject fo) {
             super(toNodes(fileBookmarks));

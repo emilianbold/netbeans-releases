@@ -45,7 +45,10 @@ package org.netbeans.modules.javafx2.project.ui;
 
 import java.awt.Dialog;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
@@ -64,6 +67,8 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
     private File lastImageFolder = null;
     private JFXProjectProperties jfxProps;
     
+    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
+    
     /**
      * Creates new form JFXDeploymentPanel
      */
@@ -75,9 +80,13 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
             labelInitialRemark.setVisible(false);
             labelInitialRemark.setEnabled(false);
             labelInitialRemarkSwing.setVisible(true);
+            labelInitialRemarkSwing.setEnabled(true);
             labelProperties.setVisible(false);
-            checkBoxUpgradeBackground.setVisible(false);
-            checkBoxNoInternet.setVisible(false);
+            labelProperties.setEnabled(false);
+            labelPropertiesSwing.setVisible(true);
+            labelPropertiesSwing.setEnabled(true);
+            //checkBoxUpgradeBackground.setVisible(false);
+            //checkBoxNoInternet.setVisible(false);
             checkBoxInstallPerm.setVisible(false);
             checkBoxDeskShortcut.setVisible(false);
             checkBoxMenuShortcut.setVisible(false);
@@ -87,8 +96,8 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
             labelDownloadMode.setVisible(false);
             labelDownloadModeMessage.setVisible(false);
             buttonDownloadMode.setVisible(false);
-            checkBoxUpgradeBackground.setEnabled(false);
-            checkBoxNoInternet.setEnabled(false);
+            //checkBoxUpgradeBackground.setEnabled(false);
+            //checkBoxNoInternet.setEnabled(false);
             checkBoxInstallPerm.setEnabled(false);
             checkBoxDeskShortcut.setEnabled(false);
             checkBoxMenuShortcut.setEnabled(false);
@@ -100,10 +109,13 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
             buttonDownloadMode.setEnabled(false);
         } else {
             labelInitialRemark.setVisible(true);
+            labelInitialRemark.setEnabled(true);
             labelInitialRemarkSwing.setVisible(false);
             labelInitialRemarkSwing.setEnabled(false);
-            checkBoxUpgradeBackground.setModel(jfxProps.getBackgroundUpdateCheckModel());
-            checkBoxNoInternet.setModel(jfxProps.getAllowOfflineModel());
+            labelProperties.setVisible(true);
+            labelProperties.setEnabled(true);
+            labelPropertiesSwing.setVisible(false);
+            labelPropertiesSwing.setEnabled(false);
             checkBoxInstallPerm.setModel(jfxProps.getInstallPermanentlyModel());
             checkBoxDeskShortcut.setModel(jfxProps.getAddDesktopShortcutModel());
             checkBoxMenuShortcut.setModel(jfxProps.getAddStartMenuShortcutModel());
@@ -117,6 +129,9 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
                 refreshDownloadModeControls();
             }
         }
+        checkBoxUpgradeBackground.setModel(jfxProps.getBackgroundUpdateCheckModel());
+        checkBoxNoInternet.setModel(jfxProps.getAllowOfflineModel());
+
         textFieldIcon.setDocument(jfxProps.getIconDocumentModel());
         checkBoxUnrestrictedAcc.setSelected(jfxProps.getSigningEnabled());
         labelSigning.setEnabled(jfxProps.getSigningEnabled());
@@ -139,6 +154,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelInitialRemark = new javax.swing.JLabel();
         labelInitialRemarkSwing = new javax.swing.JLabel();
         labelProperties = new javax.swing.JLabel();
+        labelPropertiesSwing = new javax.swing.JLabel();
         checkBoxUpgradeBackground = new javax.swing.JCheckBox();
         checkBoxNoInternet = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
@@ -198,6 +214,15 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         panelTop.add(labelProperties, gridBagConstraints);
         labelProperties.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelProperties.AccessibleContext.accessibleDescription")); // NOI18N
 
+        labelPropertiesSwing.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelPropertiesSwing.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(20, 0, 10, 0);
+        panelTop.add(labelPropertiesSwing, gridBagConstraints);
+
         checkBoxUpgradeBackground.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(checkBoxUpgradeBackground, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.checkBoxUpgradeBackground.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -212,7 +237,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
         checkBoxNoInternet.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(checkBoxNoInternet, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.checkBoxNoInternet.text")); // NOI18N
-        checkBoxNoInternet.setPreferredSize(new java.awt.Dimension(223, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -267,28 +291,25 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
         labelIcon.setLabelFor(textFieldIcon);
         org.openide.awt.Mnemonics.setLocalizedText(labelIcon, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelIcon.text")); // NOI18N
-        labelIcon.setPreferredSize(new java.awt.Dimension(32, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         panelTop.add(labelIcon, gridBagConstraints);
         labelIcon.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.labelIcon.text")); // NOI18N
         labelIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.labelIcon.text")); // NOI18N
 
-        textFieldIcon.setPreferredSize(new java.awt.Dimension(6, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         panelTop.add(textFieldIcon, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonIcon, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.buttonIcon.text")); // NOI18N
-        buttonIcon.setPreferredSize(new java.awt.Dimension(87, 0));
         buttonIcon.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonIconActionPerformed(evt);
@@ -299,13 +320,12 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         panelTop.add(buttonIcon, gridBagConstraints);
         buttonIcon.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.buttonIcon.text")); // NOI18N
         buttonIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.buttonIcon.text")); // NOI18N
 
         labelIconRemark.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelIconRemark.text")); // NOI18N
-        labelIconRemark.setPreferredSize(new java.awt.Dimension(146, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -478,7 +498,11 @@ private void buttonIconActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     chooser.setDialogTitle(NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_Select_Icon_Image")); // NOI18N
     if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
         File file = FileUtil.normalizeFile(chooser.getSelectedFile());
-        textFieldIcon.setText(file.getAbsolutePath());
+        try {
+            textFieldIcon.setText(file.toURI().toURL().toString());
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.WARNING, "File {0} URL could not be retrieved for use as FX icon in JFXDeploymentPanel", file.toString()); // NOI18N
+        }
         lastImageFolder = file.getParentFile();
     }
 }//GEN-LAST:event_buttonIconActionPerformed
@@ -599,6 +623,7 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
     private javax.swing.JLabel labelInitialRemark;
     private javax.swing.JLabel labelInitialRemarkSwing;
     private javax.swing.JLabel labelProperties;
+    private javax.swing.JLabel labelPropertiesSwing;
     private javax.swing.JLabel labelSigning;
     private javax.swing.JLabel labelSigningMessage;
     private javax.swing.JPanel panelBottom;

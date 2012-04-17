@@ -88,7 +88,7 @@ public class AnalyzeModel implements DiscoveryProvider {
     private Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
     public static final String MODEL_FOLDER_KEY = "folder"; // NOI18N
     public static final String PREFER_LOCAL_FILES = "prefer-local"; // NOI18N
-    public static final String MIDEL_FOLDER_PROVIDER_ID = "model-folder"; // NOI18N
+    public static final String MODEL_FOLDER_PROVIDER_ID = "model-folder"; // NOI18N
     protected boolean isStoped = false;
     
     public AnalyzeModel() {
@@ -152,7 +152,7 @@ public class AnalyzeModel implements DiscoveryProvider {
     
     @Override
     public String getID() {
-        return MIDEL_FOLDER_PROVIDER_ID; // NOI18N
+        return MODEL_FOLDER_PROVIDER_ID; // NOI18N
     }
     
     @Override

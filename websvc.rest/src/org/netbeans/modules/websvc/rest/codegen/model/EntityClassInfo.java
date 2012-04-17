@@ -46,6 +46,7 @@ package org.netbeans.modules.websvc.rest.codegen.model;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.*;
+
 import com.sun.source.tree.ClassTree;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,11 +57,14 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -80,6 +84,10 @@ import org.openide.util.Exceptions;
 public class EntityClassInfo {
 
     private static final String JAVAX_PERSISTENCE = "javax.persistence.";//NOI18N
+    
+    private static final String MAPPED_SUPERCLASS = JAVAX_PERSISTENCE+"MappedSuperclass";   // NOI18N
+    
+    private static final String ENTITY = JAVAX_PERSISTENCE+"Entity";    // NOI18N
     
     private static final Set<String> LIFECYCLE_ANNOTATIONS = new HashSet<String>(7);
     static {
@@ -144,11 +152,12 @@ public class EntityClassInfo {
                     type = packageName + "." + name;
 
                     TypeElement classElement = JavaSourceHelper.getTopLevelClassElement(controller);
-
-                    if (useFieldAccess(classElement)) {
-                        extractFields(classElement);
+                    if (useFieldAccess(classElement, controller )) {
+                        extractFields((DeclaredType)classElement.asType() , 
+                                classElement, controller);
                     } else {
-                        extractFieldsFromMethods(classElement);
+                        extractFieldsFromMethods((DeclaredType)classElement.asType(), 
+                                classElement, controller );
                     }
                 }
             }, true);
@@ -157,7 +166,9 @@ public class EntityClassInfo {
         }
     }
 
-    protected void extractFields(TypeElement typeElement) {
+    protected void extractFields(DeclaredType originalEntity, TypeElement typeElement, 
+            CompilationController controller) 
+    {
         List<VariableElement> fields = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
 
         for (VariableElement field : fields) {
@@ -176,15 +187,22 @@ public class EntityClassInfo {
 
             fieldInfos.add(fieldInfo);
             fieldInfo.setName(field.getSimpleName().toString());
-            fieldInfo.setType(field.asType());
+            fieldInfo.setType(controller.getTypes().asMemberOf(originalEntity, field));
 
-            if (fieldInfo.isId()) {
+            if (fieldInfo.isId() && idFieldInfo == null ) {
                 idFieldInfo = fieldInfo;
             }
         }
+        TypeElement superClass = getJPASuperClass(typeElement, controller);
+        if ( superClass == null ){
+            return;
+        }
+        extractFields(originalEntity , superClass , controller );
     }
 
-    protected void extractFieldsFromMethods(TypeElement typeElement) {
+    protected void extractFieldsFromMethods(DeclaredType originalEntity, 
+            TypeElement typeElement, CompilationController controller) 
+    {
         List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
 
         for (ExecutableElement method : methods) {
@@ -209,12 +227,19 @@ public class EntityClassInfo {
             }
 
             fieldInfo.setName(name);
-            fieldInfo.setType(method.getReturnType());
+            TypeMirror methodType = controller.getTypes().asMemberOf(
+                    originalEntity, method);
+            fieldInfo.setType(((ExecutableType)methodType).getReturnType());
 
             if (fieldInfo.isId()) {
                 idFieldInfo = fieldInfo;
             }
         }
+        TypeElement superClass = getJPASuperClass(typeElement, controller);
+        if ( superClass == null ){
+            return;
+        }
+        extractFieldsFromMethods( originalEntity , superClass , controller );
     }
 
     protected void extractPKFields(Project project) {
@@ -261,8 +286,28 @@ public class EntityClassInfo {
             fieldInfo.setType(field.asType());
         }
     }
+    
+    private TypeElement getJPASuperClass(TypeElement typeElement, 
+            CompilationController controller)
+    {
+        TypeMirror superclass = typeElement.getSuperclass();
+        if ( superclass == null ){
+            return null;
+        }
+        Element superElement = controller.getTypes().asElement( superclass );
+        if ( superElement instanceof TypeElement ){
+            if ( hasAnnotation( superElement, controller, MAPPED_SUPERCLASS, 
+                    ENTITY))
+            {
+                return (TypeElement)superElement;
+            }
+        }
+        return null;
+    }
 
-    private boolean useFieldAccess(TypeElement typeElement) {
+    private boolean useFieldAccess(TypeElement typeElement, 
+            CompilationController controller) 
+    {
         List<VariableElement> fields = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
 
         for (VariableElement field : fields) {
@@ -278,6 +323,11 @@ public class EntityClassInfo {
             if (fieldInfo.isPersistent() && fieldInfo.hasPersistenceAnnotation()) {
                 return true;
             }
+        }
+        
+        TypeElement superClass = getJPASuperClass(typeElement, controller);
+        if ( superClass != null ){
+                return useFieldAccess(superClass, controller);
         }
 
         return false;
@@ -371,7 +421,27 @@ public class EntityClassInfo {
         }
         return relatedEntities;
     }
-
+    
+    private boolean hasAnnotation ( Element element, 
+            CompilationController controller, String... annotations )
+    {
+        List<? extends AnnotationMirror> allAnnotationMirrors = 
+            controller.getElements().getAllAnnotationMirrors(element);
+        for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
+            Element annotationElement = annotationMirror.
+                getAnnotationType().asElement();
+            if ( annotationElement instanceof TypeElement ){
+                Name name = ((TypeElement)annotationElement).getQualifiedName();
+                for (String  annotation : annotations) {
+                    if ( name.contentEquals( annotation)){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
     public static class FieldInfo {
 
         private enum Relationship {
@@ -498,7 +568,7 @@ public class EntityClassInfo {
                 }
             }
         }
-
+        
         public boolean isPersistent() {
             return isPersistent;
         }

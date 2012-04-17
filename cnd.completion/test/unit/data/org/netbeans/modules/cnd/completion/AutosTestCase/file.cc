@@ -30,5 +30,13 @@ int main(int argc, char**argv) {
 
     x = ::x;
 
+    int mas[5];
+    int z[] = {5,2};
+    for(int i = 2; i < 7; i++){
+        mas[-2+i+z[i-i]-5] = 0;
+        int g=0;
+        mas[-2+i+z[i-i]-5+foo()] = 0;
+    }
+
     return 0;
 }
