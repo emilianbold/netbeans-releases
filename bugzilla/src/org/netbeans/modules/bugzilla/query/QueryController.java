@@ -70,14 +70,11 @@ import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Util;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
@@ -110,7 +107,8 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
+public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
+
     protected QueryPanel panel;
 
     private static final String CHANGED_NOW = "Now";                            // NOI18N
@@ -312,15 +310,21 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     @Override
-    public boolean isValid() {
-        return true;
+    public void setMode(QueryMode mode) {
+        Filter filter;
+        switch(mode) {
+            case SHOW_ALL:
+                filter = issueTable.getAllFilter();
+                break;
+            case SHOW_NEW_OR_CHANGED:
+                filter = issueTable.getNewOrChangedFilter();
+                break;
+            default: 
+                throw new IllegalStateException("Unsupported mode " + mode);
+        }
+        selectFilter(filter);
     }
-
-    @Override
-    public void applyChanges() {
-
-    }
-
+        
     public String getUrlParameters(boolean encode) {
         if(panel.urlPanel.isVisible()) {
             return panel.urlTextField.getText();
@@ -460,23 +464,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     @Override
-    public void insertUpdate(DocumentEvent e) {
-        fireDataChanged();
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-        fireDataChanged();
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-        fireDataChanged();
-    }
-
-    @Override
     public void itemStateChanged(ItemEvent e) {
-        fireDataChanged();
         if(e.getSource() == panel.filterComboBox) {
             onFilterChange((Filter)e.getItem());
         }
@@ -487,7 +475,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(e.getSource() == panel.productList) {
             onProductChanged(e);
         }
-        fireDataChanged();            // XXX do we need this ???
     }
 
     @Override

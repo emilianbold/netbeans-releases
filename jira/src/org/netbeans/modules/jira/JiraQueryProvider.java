@@ -39,11 +39,9 @@ package org.netbeans.modules.jira;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
-import org.netbeans.modules.jira.kenai.KenaiQuery;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -66,7 +64,7 @@ public class JiraQueryProvider extends KenaiQueryProvider<JiraQuery, NbJiraIssue
     }
 
     @Override
-    public BugtrackingController getController(JiraQuery query) {
+    public QueryController getController(JiraQuery query) {
         return query.getController();
     }
 
@@ -75,6 +73,11 @@ public class JiraQueryProvider extends KenaiQueryProvider<JiraQuery, NbJiraIssue
         return query.isSaved();
     }
 
+    @Override
+    public void remove(JiraQuery q) {
+        q.remove();
+    }
+    
     @Override
     public Collection<NbJiraIssue> getIssues(JiraQuery query) {
         return query.getIssues();
@@ -108,13 +111,6 @@ public class JiraQueryProvider extends KenaiQueryProvider<JiraQuery, NbJiraIssue
      * Kenai
      ********************************************************************************/
     
-    @Override
-    public void setFilter(JiraQuery query, Filter filter) {
-        if(query instanceof JiraQuery) {
-            ((JiraQuery)query).setFilter(filter);
-        }
-    }
-
     @Override
     public boolean needsLogin(JiraQuery query) {
         JiraRepository repository = query.getRepository();

@@ -56,6 +56,7 @@ import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 import org.netbeans.modules.tasks.ui.model.Category;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -272,14 +273,20 @@ public class Actions {
     }
 
     private static class DeleteQueryAction extends AbstractAction {
-
+        private final Query query;
         public DeleteQueryAction(Query query) {
             super("Delete"); //NOI18N
+            this.query = query;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new DummyAction().actionPerformed(e);
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    query.remove();
+                }
+            });
         }
     }
 

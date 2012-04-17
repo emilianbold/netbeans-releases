@@ -55,8 +55,10 @@ import java.awt.Image;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -76,6 +78,7 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.commands.JiraExecutor;
 import org.netbeans.modules.jira.commands.NamedFiltersCommand;
@@ -210,6 +213,30 @@ public class JiraRepository {
         return taskRepository;
     }
 
+    public NbJiraIssue[] getIssues(String[] keys) {
+        final List<NbJiraIssue> ret = new LinkedList<NbJiraIssue>();
+        TaskDataCollector collector = new TaskDataCollector() {
+            @Override
+            public void accept(TaskData taskData) {
+                String id = NbJiraIssue.getID(taskData);
+                try {
+                    NbJiraIssue issue = (NbJiraIssue) getIssueCache().setIssueData(id, taskData);
+                    if(issue != null) {
+                        ret.add(issue);
+                    }
+                } catch (IOException ex) {
+                    Jira.LOG.log(Level.SEVERE, null, ex);
+                }
+            }
+        };
+        GetMultiTaskDataCommand queryCmd = new GetMultiTaskDataCommand(this, new HashSet<String>(Arrays.asList(keys)), collector);
+        getExecutor().execute(queryCmd, true);
+        if(queryCmd.hasFailed()) {
+            return new NbJiraIssue[0];
+        }
+        return ret.toArray(new NbJiraIssue[ret.size()]);
+    }
+    
     public NbJiraIssue getIssue(String key) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
