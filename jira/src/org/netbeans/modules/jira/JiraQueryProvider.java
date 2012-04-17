@@ -74,6 +74,11 @@ public class JiraQueryProvider extends KenaiQueryProvider<JiraQuery, NbJiraIssue
     }
 
     @Override
+    public void remove(JiraQuery q) {
+        q.remove();
+    }
+    
+    @Override
     public Collection<NbJiraIssue> getIssues(JiraQuery query) {
         return query.getIssues();
     }

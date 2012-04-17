@@ -44,7 +44,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
@@ -142,6 +141,10 @@ public final class QueryImpl<Q, I>  {
         return queryProvider.isSaved(data);
     }
 
+    public void remove() {
+        queryProvider.remove(data);
+    }
+    
     public String getTooltip() {
         return queryProvider.getTooltip(data);
     }
@@ -192,4 +195,5 @@ public final class QueryImpl<Q, I>  {
         assert KenaiQueryProvider.class.isAssignableFrom(queryProvider.getClass());
         ((KenaiQueryProvider<Q, I>)queryProvider).refresh(data, synchronously);
     }
+
 }

@@ -207,7 +207,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         }
     }
 
-    private static boolean isNamedFilter(JiraFilter jiraFilter) {
+    static boolean isNamedFilter(JiraFilter jiraFilter) {
         return jiraFilter instanceof NamedFilter;
     }
 

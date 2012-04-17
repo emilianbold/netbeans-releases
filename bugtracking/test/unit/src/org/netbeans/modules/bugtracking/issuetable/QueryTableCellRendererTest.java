@@ -287,6 +287,11 @@ public class QueryTableCellRendererTest {
         public void setContext(Node[] nodes) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }        
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {

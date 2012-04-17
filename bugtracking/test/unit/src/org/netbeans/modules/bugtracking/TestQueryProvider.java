@@ -69,6 +69,11 @@ public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
     }
 
     @Override
+    public void remove(TestQuery q) {
+        q.remove();
+    }
+    
+    @Override
     public boolean isSaved(TestQuery q) {
         return q.isSaved();
     }

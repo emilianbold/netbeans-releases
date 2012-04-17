@@ -69,6 +69,11 @@ public class BugzillaQueryProvider extends KenaiQueryProvider<BugzillaQuery, Bug
     }
 
     @Override
+    public void remove(BugzillaQuery q) {
+        q.remove();
+    }
+    
+    @Override
     public boolean isSaved(BugzillaQuery query) {
         return query.isSaved();
     }

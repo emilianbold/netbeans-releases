@@ -351,6 +351,11 @@ public class QTCTestHidden extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }        
+
     }
     
     @BugtrackingConnector.Registration (

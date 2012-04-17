@@ -104,6 +104,8 @@ public abstract class QueryProvider<Q, I> {
      */
     public abstract boolean isSaved(Q q);
 
+    public abstract void remove(Q q);
+    
     public abstract Collection<I> getIssues(Q q);
 
     /**

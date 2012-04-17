@@ -112,6 +112,10 @@ public final class Query {
         impl.open(false, mode);
     }
     
+    public void remove() {
+        impl.remove();
+    }
+    
     /**
      * @param query
      */

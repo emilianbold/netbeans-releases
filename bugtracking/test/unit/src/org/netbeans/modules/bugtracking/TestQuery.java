@@ -69,5 +69,7 @@ public abstract class TestQuery {
     public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 
     public abstract void setContext(Node[] nodes);
+
+    public abstract void remove();
     
 }
