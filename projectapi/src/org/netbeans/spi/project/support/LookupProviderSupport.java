@@ -127,16 +127,29 @@ public final class LookupProviderSupport {
     private static class SourcesImpl implements Sources, ChangeListener, LookupListener {
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private final Lookup.Result<Sources> delegates;
-        private Collection<Sources> currentDelegates;
+        private Sources[] currentDelegates;
         
+        @SuppressWarnings("LeakingThisInConstructor")
         SourcesImpl(Lookup lookup) {
             delegates = lookup.lookupResult(Sources.class);
+            delegates.addLookupListener(this);
         }
 
         public @Override SourceGroup[] getSourceGroups(String type) {
             assert delegates != null;
+            Sources[] _currentDelegates;
+            synchronized (this) {
+                if (currentDelegates == null) {
+                    Collection<? extends Sources> instances = delegates.allInstances();
+                    currentDelegates = instances.toArray(new Sources[instances.size()]);
+                    for (Sources ns : currentDelegates) {
+                        ns.addChangeListener(this);
+                    }
+                }
+                _currentDelegates = currentDelegates;
+            }
             Collection<SourceGroup> result = new ArrayList<SourceGroup>();
-            for (Sources ns : delegates.allInstances()) {
+            for (Sources ns : _currentDelegates) {
                 SourceGroup[] sourceGroups = ns.getSourceGroups(type);
                 if (sourceGroups != null) {
                     for (SourceGroup sourceGroup : sourceGroups) {
@@ -152,27 +165,11 @@ public final class LookupProviderSupport {
         }
 
         @Override public synchronized void addChangeListener(ChangeListener listener) {
-            if (!changeSupport.hasListeners()) {
-                currentDelegates = new ArrayList<Sources>(delegates.allInstances());
-                for (Sources ns : currentDelegates) {
-                    assert ns != this;
-                    ns.addChangeListener(this);
-                }
-                delegates.addLookupListener(this);
-            }
             changeSupport.addChangeListener(listener);
         }
 
         @Override public synchronized void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
-            if (!changeSupport.hasListeners() && currentDelegates != null) {
-                for (Sources ns : currentDelegates) {
-                    assert ns != this;
-                    ns.removeChangeListener(this);
-                }
-                currentDelegates = null;
-                delegates.removeLookupListener(this);
-            }
         }
 
         public @Override void stateChanged(ChangeEvent e) {
@@ -185,11 +182,7 @@ public final class LookupProviderSupport {
                     for (Sources old : currentDelegates) {
                         old.removeChangeListener(this);
                     }
-                    currentDelegates.clear();
-                    for (Sources ns : delegates.allInstances()) {
-                        ns.addChangeListener(this);
-                        currentDelegates.add(ns);
-                    }
+                    currentDelegates = null;
                 }
             }
             changeSupport.fireChange();
@@ -214,6 +207,7 @@ public final class LookupProviderSupport {
         @SuppressWarnings("VolatileArrayField")
         private volatile String[] actionNamesCache;
 
+        @SuppressWarnings("LeakingThisInConstructor")
         private MergedActionProvider(final Lookup lkp) {
             this.lkpResult = lkp.lookupResult(ActionProvider.class);
             this.lkpResult.addLookupListener(this);

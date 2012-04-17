@@ -254,6 +254,13 @@ public final class NbMavenProject {
     public @NonNull MavenProject getMavenProject() {
         return project.getOriginalMavenProject();
     }
+    
+    /**
+     * a marginally unreliable, non blocking method for figuring if the model is loaded or not.
+     */
+    public boolean isMavenProjectLoaded() {
+        return project.isMavenProjectLoaded();
+    }
 
     public @NonNull MavenProject loadAlternateMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
         return project.loadMavenProject(embedder, activeProfiles, properties);

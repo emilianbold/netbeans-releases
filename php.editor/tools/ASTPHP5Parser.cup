@@ -1037,14 +1037,14 @@ variable_modifiers:modifier class_variable_declaration:decList T_SEMICOLON:end
 	RESULT = fieldsDeclaration;
 :}
 
-| method_modifiers:modifier T_FUNCTION:start string_st:functionName
+| method_modifiers:modifier T_FUNCTION:start is_reference:isReference string_st:functionName
 T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
 method_body:body
 {:
 	int methodStart = modifier == null ? startleft : modifierleft;
 	modifier = modifier == null ? ASTPHP5Parser.PUBLIC : modifier;
 	Identifier functionId = new Identifier(functionNameleft, functionNameright, functionName);
-	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, bodyright, functionId, paramList, body, false);
+	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, bodyright, functionId, paramList, body, isReference.booleanValue());
 	MethodDeclaration methodDeclaration = new MethodDeclaration(methodStart, bodyright, modifier.intValue(), functionDeclaration, true);
 	RESULT = methodDeclaration;
 :}
@@ -2732,6 +2732,12 @@ T_LNUMBER:scalar
 | T_START_NOWDOC:start T_ENCAPSED_AND_WHITESPACE:scalar T_END_NOWDOC:end
 {:
         Scalar s = new Scalar(startleft, endright, scalar, Scalar.Type.STRING);
+        RESULT = s;
+:}
+
+| T_START_NOWDOC:start T_END_NOWDOC:end
+{:
+        Scalar s = new Scalar(startleft, endright, "", Scalar.Type.STRING); //NOI18N
         RESULT = s;
 :}
 ;

@@ -45,24 +45,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
@@ -78,20 +75,21 @@ import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.parser.PHPDocCommentParser;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Radek Matous
  */
 public class DeclarationFinderImpl implements DeclarationFinder {
+
+    private static final RequestProcessor RP = new RequestProcessor(DeclarationFinderImpl.class);
+    private static final Logger LOGGER = Logger.getLogger(DeclarationFinderImpl.class.getName());
+    private static final int RESOLVING_TIMEOUT = 300;
 
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
@@ -100,24 +98,27 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
-        TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
-        final Model[] model = new Model[1];
+        OffsetRange offsetRange = OffsetRange.NONE;
+        Future<ReferenceSpanCrate> crateFuture = RP.submit(new ReferenceSpanCrateFetcher(Source.create(doc)));
         try {
-            ParserManager.parse(Collections.singletonList(Source.create(doc)), new UserTask() {
-
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    PHPParseResult parserResult = (PHPParseResult) resultIterator.getParserResult();
-                    model[0] = parserResult.getModel();
-                }
-            });
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
+            ReferenceSpanCrate crate = crateFuture.get(RESOLVING_TIMEOUT, TimeUnit.MILLISECONDS);
+            if (crate != null) {
+                TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(crate.getTokenHierarchy(), caretOffset);
+                offsetRange = getReferenceSpan(ts, caretOffset, crate.getModel());
+            }
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.FINE, "Resolving of reference span offset range has been interrupted.");
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.SEVERE, "Exception has been thrown during resolving of reference span offset range.", ex);
+        } catch (TimeoutException ex) {
+            LOGGER.log(Level.FINE, "Timeout for resolving reference span offset range has been exceed: {0}", RESOLVING_TIMEOUT);
         }
-        return getReferenceSpan(ts, caretOffset, model[0]);
+        return offsetRange;
     }
 
     public static OffsetRange getReferenceSpan(TokenSequence<PHPTokenId> ts, final int caretOffset, final Model model) {
+        Parameters.notNull("ts", model); //NOI18N
+        Parameters.notNull("model", model); //NOI18N
         return new ReferenceSpanFinder(model).getReferenceSpan(ts, caretOffset);
     }
 
@@ -172,6 +173,54 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         return location;
     }
 
+    private class ReferenceSpanCrate {
+        private Model model;
+        private TokenHierarchy<?> tokenHierarchy;
+
+        public Model getModel() {
+            return model;
+        }
+
+        public TokenHierarchy<?> getTokenHierarchy() {
+            return tokenHierarchy;
+        }
+
+        public void setModel(Model model) {
+            Parameters.notNull("model", model);
+            this.model = model;
+        }
+
+        public void setTokenHierarchy(TokenHierarchy<?> tokenHierarchy) {
+            Parameters.notNull("tokenHierarchy", tokenHierarchy);
+            this.tokenHierarchy = tokenHierarchy;
+        }
+
+    }
+
+    private class ReferenceSpanCrateFetcher implements Callable<ReferenceSpanCrate> {
+        private final Source source;
+
+        public ReferenceSpanCrateFetcher(final Source source) {
+            this.source = source;
+        }
+
+        @Override
+        public ReferenceSpanCrate call() throws Exception {
+            final ReferenceSpanCrate crate = new ReferenceSpanCrate();
+            ParserManager.parse(Collections.singletonList(source), new UserTask() {
+
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    PHPParseResult parserResult = (PHPParseResult) resultIterator.getParserResult();
+                    crate.setModel(parserResult.getModel());
+                    crate.setTokenHierarchy(resultIterator.getSnapshot().getTokenHierarchy());
+                }
+            });
+            return crate;
+        }
+
+    }
+
     private static class ReferenceSpanFinder {
 
         private static final int RECURSION_LIMIT = 100;
@@ -198,7 +247,8 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 }
                 if (id.equals(PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING)) {
                     OffsetRange retval = new OffsetRange(ts.offset(), ts.offset() + token.length());
-                    for (int i = 0; i < 2 && ts.movePrevious(); i++) {
+                    int maxForgingTokens = 4; // REQUIRE_INCLUDE_TOKEN [WS] [OPENING_BRACE] [WS] = include_once ( 'file.php');
+                    for (int i = 0; i < maxForgingTokens && ts.movePrevious(); i++) {
                         token = ts.token();
                         id = token.id();
                         if (id.equals(PHPTokenId.PHP_INCLUDE) || id.equals(PHPTokenId.PHP_INCLUDE_ONCE) || id.equals(PHPTokenId.PHP_REQUIRE) || id.equals(PHPTokenId.PHP_REQUIRE_ONCE)) {

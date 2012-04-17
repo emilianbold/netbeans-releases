@@ -55,4 +55,6 @@ public interface NativeProjectChangeSupport {
     public void fireFileRenamed(String oldPath, NativeFileItem newFileItem);
 
     public void fireFilesPropertiesChanged(List<NativeFileItem> fileItems);
+
+    public void fireFilesPropertiesChanged();
 }

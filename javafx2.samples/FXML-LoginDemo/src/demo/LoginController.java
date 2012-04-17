@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2011 Oracle and/or its affiliates.
+ * Copyright (c) 2008, 2012 Oracle and/or its affiliates.
  * All rights reserved. Use is subject to license terms.
  *
  * This file is available and licensed under the following license:
@@ -31,23 +31,30 @@
  */
 package demo;
 
-import javafx.event.ActionEvent;
+import java.net.URL;
+import java.util.ResourceBundle;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Label;
 
 /**
  * Login Controller.
  */
-public class LoginController {
+public class LoginController implements Initializable {
     @FXML private TextField userId;
     @FXML private PasswordField password;
     @FXML private Label errorMessage;
     
-    @FXML protected void processLogin(ActionEvent event) {
+    @FXML protected void processLogin() {
         if(!App.getInstance().userLogging(userId.getText(), password.getText())){
-            errorMessage.setText("Invalid username or password: " + userId.getText());
+            errorMessage.setText("Username/password combination is invalid.");
         }
     }
+       
+    @Override public void initialize(URL url, ResourceBundle rb) {
+        userId.setPromptText("demo");
+        password.setPromptText("demo");
+}
 }

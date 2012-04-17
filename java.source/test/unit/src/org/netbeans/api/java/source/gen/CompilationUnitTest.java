@@ -39,6 +39,7 @@ import java.io.Writer;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -85,9 +86,151 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        FileObject templates = FileUtil.getConfigFile("Templates/Classes/Class.java");
+        FileObject template = FileUtil.getConfigFile("Templates/Classes/Class.java");
+        if (template != null) template.delete();
+        FileObject template2 = FileUtil.getConfigFile("Templates/Classes/package-info.java");
+        if (template2 != null) template2.delete();
+    }
 
-        if (templates != null) templates.delete();
+    public void testNewCompilationUnitFromTemplate() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+
+        File fakeFile = new File(getWorkDir(), "Fake.java");
+        FileObject fakeFO = FileUtil.createData(fakeFile);
+
+        FileObject emptyJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
+        emptyJava.setAttribute("template", Boolean.TRUE);
+
+        FileObject classJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Class.java");
+        classJava.setAttribute("template", Boolean.TRUE);
+        classJava.setAttribute("verbatim-create-from-template", Boolean.TRUE);
+        Writer w = new OutputStreamWriter(classJava.getOutputStream(), "UTF-8");
+        w.write("/*\n * License\n */\npackage zoo;\n\n/**\n * trida\n */\npublic class Template {\n}");
+        w.close();
+
+        FileObject packageJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/package-info.java");
+        packageJava.setAttribute("template", Boolean.TRUE);
+        packageJava.setAttribute("verbatim-create-from-template", Boolean.TRUE);
+        Writer w2 = new OutputStreamWriter(packageJava.getOutputStream(), "UTF-8");
+        w2.write("/*\n * License\n */\npackage zoo;\n");
+        w2.close();
+
+        FileObject testSourceFO = FileUtil.createData(testFile); assertNotNull(testSourceFO);
+        ClassPath sourcePath = ClassPath.getClassPath(testSourceFO, ClassPath.SOURCE); assertNotNull(sourcePath);
+        FileObject[] roots = sourcePath.getRoots(); assertEquals(1, roots.length);
+        final FileObject sourceRoot = roots[0]; assertNotNull(sourceRoot);
+        ClassPath compilePath = ClassPath.getClassPath(testSourceFO, ClassPath.COMPILE); assertNotNull(compilePath);
+        ClassPath bootPath = ClassPath.getClassPath(testSourceFO, ClassPath.BOOT); assertNotNull(bootPath);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+        JavaSource javaSource = JavaSource.create(cpInfo, fakeFO);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void cancel() {
+            }
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                String path = "zoo/Krtek.java";
+                GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+                CompilationUnitTree newTree = genUtils.createFromTemplate(sourceRoot, path, ElementKind.CLASS);
+                MethodTree nju = make.Method(
+                        make.Modifiers(Collections.<Modifier>emptySet()),
+                        "m",
+                        make.PrimitiveType(TypeKind.VOID), // return type - void
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>emptyList(),
+                        Collections.<ExpressionTree>emptyList(),
+                        make.Block(Collections.<StatementTree>emptyList(), false),
+                        null // default value - not applicable
+                );
+                ClassTree clazz = make.Class(
+                        make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)),
+                        "Krtek",
+                        Collections.<TypeParameterTree>emptyList(),
+                        null,
+                        Collections.<Tree>emptyList(),
+                        Collections.singletonList(nju)
+                );
+                if(newTree.getTypeDecls().isEmpty()) {
+                    newTree = make.addCompUnitTypeDecl(newTree, clazz);
+                } else {
+                    Tree templateClass = newTree.getTypeDecls().get(0);
+                    genUtils.copyComments(templateClass, clazz, true);
+                    genUtils.copyComments(templateClass, clazz, false);
+                    newTree = make.removeCompUnitTypeDecl(newTree, 0);
+                    newTree = make.insertCompUnitTypeDecl(newTree, 0, clazz);
+                }
+                workingCopy.rewrite(null, newTree);
+
+                String packagePath = "zoo/package-info.java";
+                CompilationUnitTree newPackageTree = genUtils.createFromTemplate(sourceRoot, packagePath, ElementKind.PACKAGE);
+                workingCopy.rewrite(null, newPackageTree);
+            }
+        };
+        ModificationResult result = javaSource.runModificationTask(task);
+        result.commit();
+
+        String goldenClass =
+            "/*\n * License\n */\n" +
+            "package zoo;\n" +
+            "\n" +
+            "/**\n * trida\n */\n" +
+            "public class Krtek {\n" +
+            "\n" +
+            "    void m() {\n" +
+            "    }\n" +
+            "}";
+        String res = TestUtilities.copyFileToString(new File(getDataDir().getAbsolutePath() + "/zoo/Krtek.java"));
+        assertEquals(goldenClass, res);
+
+        String goldenPackage =
+            "/*\n * License\n */\n" +
+            "package zoo;\n";
+        res = TestUtilities.copyFileToString(new File(getDataDir().getAbsolutePath() + "/zoo/package-info.java"));
+        assertEquals(goldenPackage, res);
+    }
+
+    public void testNewCompilationUnitFromNonExistingTemplate() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+
+        File fakeFile = new File(getWorkDir(), "Fake.java");
+        FileObject fakeFO = FileUtil.createData(fakeFile);
+
+        FileObject template = FileUtil.getConfigFile("Templates/Classes/Class.java");
+        if (template != null) template.delete();
+        template = FileUtil.getConfigFile("Templates/Classes/Empty.java");
+        if(template != null) template.delete();
+
+        FileObject testSourceFO = FileUtil.createData(testFile); assertNotNull(testSourceFO);
+        ClassPath sourcePath = ClassPath.getClassPath(testSourceFO, ClassPath.SOURCE); assertNotNull(sourcePath);
+        FileObject[] roots = sourcePath.getRoots(); assertEquals(1, roots.length);
+        final FileObject sourceRoot = roots[0]; assertNotNull(sourceRoot);
+        ClassPath compilePath = ClassPath.getClassPath(testSourceFO, ClassPath.COMPILE); assertNotNull(compilePath);
+        ClassPath bootPath = ClassPath.getClassPath(testSourceFO, ClassPath.BOOT); assertNotNull(bootPath);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+        JavaSource javaSource = JavaSource.create(cpInfo, fakeFO);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void cancel() {
+            }
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                String path = "zoo/Krtek.java";
+                GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+                CompilationUnitTree newTree = genUtils.createFromTemplate(sourceRoot, path, ElementKind.CLASS);
+                workingCopy.rewrite(null, newTree);
+            }
+        };
+        ModificationResult result = javaSource.runModificationTask(task);
+        result.commit();
+
+        String res = TestUtilities.copyFileToString(new File(getDataDir().getAbsolutePath() + "/zoo/Krtek.java"));
+        assertEquals(res, "package zoo;\n\n");
     }
 
     public void testNewCompilationUnit() throws Exception {

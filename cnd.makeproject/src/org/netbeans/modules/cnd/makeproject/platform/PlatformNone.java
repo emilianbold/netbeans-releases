@@ -67,9 +67,13 @@ public class PlatformNone extends Platform {
     }
     
     @Override
-    public String getLibraryName(String baseName) {
-        // Use Linux style
-        return "lib" + baseName + ".so"; // NOI18N
+    public String getLibraryNameWithoutExtension(String baseName) {
+        return "lib" + baseName; // NOI18N
+    }
+    
+    @Override
+    public String getLibraryExtension() {
+        return "so"; // NOI18N
     }
     
     @Override

@@ -211,4 +211,15 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument outputDoc = getDocument("indent/output_processingXml.xml");
         assert (compare(formattedDoc, outputDoc));
     }
+    
+    
+    public void testFormat_nestedSameElements() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/input_nestedSame.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("indent/output_nestedSame.xml");
+        assert (compare(formattedDoc, outputDoc));
+    }
 }

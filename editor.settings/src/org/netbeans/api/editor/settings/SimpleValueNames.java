@@ -437,6 +437,16 @@ public final class SimpleValueNames {
      */
     public static final String ON_SAVE_REMOVE_TRAILING_WHITESPACE = "on-save-remove-trailing-whitespace"; //NOI18N
 
+    /**
+     * Determines editor search type.
+     * Values: java.lang.String instances
+     * <ul>
+     * <li>default
+     * <li>closing
+     * </ul>
+     */
+    public static final String EDITOR_SEARCH_TYPE = "editor-search-type"; //NOI18N
+
     @PatchedPublic
     private SimpleValueNames() {
         // to prevent instantialization

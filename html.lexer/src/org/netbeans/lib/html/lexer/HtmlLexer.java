@@ -242,7 +242,12 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     
     private static final int ISA_ARG_UNDERSCORE = 44; //after _ in attribute name
     private static final int ISP_TAG_X_ERROR = 45; //error in tag content
+    
+    private static final int ISI_XML_PI = 47; //inside <? ... ?>
+    private static final int ISI_XML_PI_QM = 48; //after ? in XML PI
 
+    
+    
     static final Set<String> EVENT_HANDLER_NAMES = new HashSet<String>();
     static {
         // See http://www.w3.org/TR/html401/interact/scripts.html
@@ -488,6 +493,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         case '!':
                             lexerState = ISA_SGML_ESCAPE;
                             break;
+                        case '?':
+                            lexerState = ISI_XML_PI;
+                            break;
                         default:
                             input.backup(1);
                             lexerState = ISI_TEXT;
@@ -495,6 +503,24 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     }
                     break;
 
+                case ISI_XML_PI:
+                    if(actChar == '?') {
+                        lexerState = ISI_XML_PI_QM;
+                        break;
+                    }
+                    //else stay in XML PI
+                    break;
+                    
+                case ISI_XML_PI_QM:
+                    if(actChar == '>') {
+                        //XML PI token
+                        lexerState = INIT;
+                        return token(HTMLTokenId.XML_PI);
+                    } else {
+                        lexerState = ISI_XML_PI;
+                        break;
+                    }
+                    
                 case ISA_SLASH:        // DONE
                     if( isAZ( actChar ) ) {   // </'a..Z'
                         lexerState = ISI_ENDTAG;
@@ -1096,6 +1122,10 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             case ISA_SGML_DASH:
             case ISI_TAG_SLASH:
                 return token(HTMLTokenId.TEXT);
+                
+            case ISI_XML_PI:
+            case ISI_XML_PI_QM:
+                return token(HTMLTokenId.XML_PI);
 
             case ISA_REF:
             case ISA_REF_HASH:

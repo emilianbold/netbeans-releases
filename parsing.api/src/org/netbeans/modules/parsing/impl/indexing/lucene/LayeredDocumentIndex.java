@@ -115,10 +115,7 @@ public final class LayeredDocumentIndex implements DocumentIndex {
         try {
             base.close();
         } finally {
-            final Pair<DocumentIndex,Set<String>> ovl = getOverlayIfExists();
-            if (ovl.first != null) {
-                ovl.first.close();
-            }
+            clearOverlay();
         }
     }
 
@@ -180,6 +177,14 @@ public final class LayeredDocumentIndex implements DocumentIndex {
     @Override
     public Collection<? extends String> getDirtyKeys() {
         return base.getDirtyKeys();
+    }
+    
+    public boolean begin() {
+        if (base instanceof Runnable) {
+            ((Runnable)base).run();
+            return true;
+        }
+        return false;
     }
     
     @NonNull

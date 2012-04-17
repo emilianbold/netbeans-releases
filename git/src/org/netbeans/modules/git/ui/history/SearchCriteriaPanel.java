@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.git.ui.history;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.git.GitModuleConfig;
 
 /**
@@ -58,6 +58,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     public SearchCriteriaPanel() {
         initComponents();
         showMergesChkBox.setSelected(GitModuleConfig.getDefault().getShowHistoryMerges());
+        tfLimit.setText(Integer.toString(SearchExecutor.DEFAULT_LIMIT));
     }
 
     public String getFrom() {
@@ -97,6 +98,8 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     public void setLimit (int limit) {
         if (limit > 0) {
             tfLimit.setText(Integer.toString(limit));
+        } else {
+            tfLimit.setText("");
         }
     }
 

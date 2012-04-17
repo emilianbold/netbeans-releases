@@ -44,9 +44,12 @@ package org.netbeans.core.windows.nativeaccess;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import javax.swing.Icon;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -55,6 +58,10 @@ import org.netbeans.junit.NbTestCase;
  */
 public class NativeWindowSystemTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NativeWindowSystemTest.class);
+    }
+
     public NativeWindowSystemTest(String testName) {
         super(testName);
     }            
@@ -74,23 +81,9 @@ public class NativeWindowSystemTest extends NbTestCase {
         
         assertNotNull(nws);
         
-        try {
             nws.isWindowAlphaSupported();
-        } catch( ThreadDeath td ) {
-            throw td;
-        } catch( Throwable e ) {
-            fail( "NativeWindowSystem implementations cannot throw any exceptions" );
-        }
-        
-        try {
             nws.setWindowAlpha(new Frame(), 0.5f);
-        } catch( ThreadDeath td ) {
-            throw td;
-        } catch( Throwable e ) {
-            fail( "NativeWindowSystem implementations cannot throw any exceptions" );
-        }
         
-        try {
             nws.setWindowMask(new Frame(), new Icon() {
                 public void paintIcon(Component arg0, Graphics arg1, int arg2, int arg3) {
                 }
@@ -103,18 +96,6 @@ public class NativeWindowSystemTest extends NbTestCase {
                     return 10;
                 }
             });
-        } catch( ThreadDeath td ) {
-            throw td;
-        } catch( Throwable e ) {
-            fail( "NativeWindowSystem implementations cannot throw any exceptions" );
-        }
-        
-        try {
             nws.setWindowMask(new Frame(), new Area( new Rectangle(0,0,10,10) ) );
-        } catch( ThreadDeath td ) {
-            throw td;
-        } catch( Throwable e ) {
-            fail( "NativeWindowSystem implementations cannot throw any exceptions" );
-        }
     }
 }

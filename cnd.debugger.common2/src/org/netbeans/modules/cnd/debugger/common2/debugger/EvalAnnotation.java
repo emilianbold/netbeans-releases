@@ -131,7 +131,7 @@ public final class EvalAnnotation extends Annotation {
             
             // 6630840
             String expr = getSelectedExpr(ep, offset);
-            if (expr == null && DebuggerOption.BALLOON_EVAL.isEnabled(DebuggerManager.get().globalOptions())) {
+            if (expr == null && DebuggerOption.BALLOON_EVAL.isEnabled(NativeDebuggerManager.get().globalOptions())) {
                 Element lineElem =
                     NbDocument.findLineRootElement(doc).
                     getElement(line.getLineNumber());
@@ -171,7 +171,7 @@ public final class EvalAnnotation extends Annotation {
                 pos = -1;
             }
 
-            NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+            NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
             if (debugger != null) {
                 lastAnnotation = this;
                 debugger.balloonEvaluate(pos, expr);

@@ -107,6 +107,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        
+        <change id="added.SimpleValueNames.EDITOR_SEARCH_TYPE">
+            <summary>Adding SimpleValueNames.EDITOR_SEARCH_TYPE</summary>
+            <version major="1" minor="40"/>
+            <date day="12" month="4" year="2012"/>
+            <author login="mkristofic"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+            <p>
+                Adding new constant <code>SimpleValueNames.EDITOR_SEARCH_TYPE</code>.
+            </p>
+            </description>
+            <issue number="210700"/>
+        </change>
 
         <change id="added.SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE">
             <summary>Adding SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE</summary>

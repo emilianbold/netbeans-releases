@@ -218,7 +218,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         if (isCanceled())
             return null;
 
-        Set<Severity> disabled = Utilities.disableErrors(info.getFileObject());
+        Set<Severity> disabled = org.netbeans.modules.java.hints.spiimpl.Utilities.disableErrors(info.getFileObject());
         List<ErrorDescription> result = new ArrayList<ErrorDescription>(descs.size());
 
         for (ErrorDescription ed : descs) {

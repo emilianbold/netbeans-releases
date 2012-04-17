@@ -95,7 +95,10 @@ public class AbstractClassInstantiationHint extends AbstractRule {
         }
 
         @Override
-        @Messages("AbstractClassInstantiationDesc=Abstract class {0} can not be instantiated")
+        @Messages({
+            "# {0} - Class name",
+            "AbstractClassInstantiationDesc=Abstract class {0} can not be instantiated"
+        })
         public void visit(ClassInstanceCreation node) {
             ASTNodeInfo<ClassInstanceCreation> info = ASTNodeInfo.create(node);
             Set<ClassElement> classes = index.getClasses(NameKind.exact(info.getQualifiedName()));

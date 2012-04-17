@@ -155,14 +155,7 @@
                 <tocitem text="Creating a Multiple Document Interface (MDI) Application" target="gui.mdi" />
                 <tocitem text="Creating Accessible Forms" target="gui.accessibleform" />
                 <tocitem text="Previewing a Form" target="gui.testing" />    
-            </tocitem>    
-            <tocitem text="Swing Application Framework">    
-                <tocitem text="About the Swing Application Framework" target="gui.saf.about" />
-                <tocitem text="Working With the Swing Application Framework" target="gui.saf.working" />
-                <tocitem text="Creating an Application" target="gui.saf.creating" />
-                <tocitem text="About Resources" target="gui.saf.resources" />
-                <tocitem text="About Actions" target="gui.saf.actions" />
-            </tocitem>    
+            </tocitem>      
             <tocitem text="Working with Layout Managers">    
                 <tocitem text="About Layout Managers" target="gui.layouts.about" />
                 <tocitem text="Setting the Layout Manager" target="gui.layouts.setting" />
@@ -245,14 +238,14 @@
             <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
             <tocitem text="Entering Javadoc Comments in Source Code" target="javadoc.accuracy"/>
         </tocitem>
-        <tocitem text="Testing with JUnit">
-            <tocitem text="About JUnit" target="junit_about"></tocitem>
-            <tocitem text="Working with JUnit" target="junit_overview"></tocitem>
-            <tocitem text="JUnit Tasks: Quick Reference" target="junit_quickref"></tocitem>
-            <tocitem text="Creating a JUnit Test" target="junit_creatingtests"></tocitem>
-            <tocitem text="Running a JUnit Test" target="junit_runningtests"></tocitem>
-            <tocitem text="Debugging a JUnit Test" target="junit_debuggingtests"></tocitem>
-            <tocitem text="Configuring JUnit" target="junit_configuring"></tocitem>
+        <tocitem text="Working with Unit Tests">
+            <tocitem text="About Unit Testing" target="junit_about"></tocitem>
+            <tocitem text="Working with Unit Tests" target="junit_overview"></tocitem>
+            <tocitem text="Unit Testing Tasks: Quick Reference" target="junit_quickref"></tocitem>
+            <tocitem text="Creating a Unit Test" target="junit_creatingtests"></tocitem>
+            <tocitem text="Running a Unit Test" target="junit_runningtests"></tocitem>
+            <tocitem text="Debugging a Unit Test" target="junit_debuggingtests"></tocitem>
+            <tocitem text="Configuring Unit Test Settings" target="junit_configuring"></tocitem>
         </tocitem>
         <tocitem text="Resource Bundles">
             <tocitem text="About Resource Bundles" target="propfiles.intro"/>

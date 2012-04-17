@@ -47,10 +47,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=RefactoringPluginFactory.class)
@@ -68,7 +73,24 @@ public class MavenRefactoringPluginFactory implements RefactoringPluginFactory {
         }
         Tree.Kind kind = handle.getKind();
         if (TreeUtilities.CLASS_TREE_KINDS.contains(kind) || kind == Tree.Kind.IDENTIFIER || kind == Tree.Kind.MEMBER_SELECT) {
-            return new MavenRefactoringPlugin((WhereUsedQuery) refactoring, handle);
+            FileObject fo = handle.getFileObject();
+            Project p = FileOwnerQuery.getOwner(fo);
+            if (p == null) {
+                FileObject root = FileUtil.getArchiveFile(fo);
+                if (root != null && root.getNameExt().endsWith("-sources.jar")) {
+                    LOG.log(Level.FINE, "considering usages from {0} in a Maven binary artifact", fo.toURI());
+                    return new MavenRefactoringPlugin((WhereUsedQuery) refactoring, handle);
+                } else {
+                    LOG.log(Level.FINE, "binary file of no particular interest: {0}", fo.toURI());
+                    return null;
+                }
+            } else if (p.getLookup().lookup(NbMavenProject.class) != null) {
+                LOG.log(Level.FINE, "considering usages from {0} in a Maven project", fo.toURI());
+                return new MavenRefactoringPlugin((WhereUsedQuery) refactoring, handle);
+            } else {
+                LOG.log(Level.FINE, "not in a Maven project: {0}", fo.toURI());
+                return null;
+            }
         } else {
             LOG.log(Level.FINE, "ignoring {0} of kind {1}", new Object[] {handle, kind});
             return null;

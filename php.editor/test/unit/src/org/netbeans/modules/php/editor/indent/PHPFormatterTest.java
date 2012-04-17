@@ -46,11 +46,11 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
-import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
 
@@ -58,7 +58,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Pisl
  */
-public class PHPFormatterTest extends PHPTestBase {
+public class PHPFormatterTest extends PHPCodeCompletionTestBase {
     private String FORMAT_START_MARK = "/*FORMAT_START*/"; //NOI18N
     private String FORMAT_END_MARK = "/*FORMAT_END*/"; //NOI18N
 
@@ -1623,5 +1623,5 @@ public class PHPFormatterTest extends PHPTestBase {
     protected void reformatFileContents(String file, IndentPrefs preferences) throws Exception {
         reformatFileContents(file, preferences, 0);
     }
-    
+
 }

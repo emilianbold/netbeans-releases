@@ -57,6 +57,15 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public InnerToOutterTest(String name) {
         super(name);
     }
+
+    public void test208438() throws Exception { // #208438 - [Move Inner To Outer Level] Class javadoc is lost
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t;\n public class A {\n class B {\n }\n\n/** * Klazz F */\nclass F {\n B b; }\n }"));
+        performInnerToOuterTest("outer");
+        verifyContent(src,
+                      new File("t/F.java", "/* * Refactoring License */ package t; /** * Klazz F */ class F { A.B b; private final A outer; F(final A outer) { this.outer = outer; } } "),
+                      new File("t/A.java", "package t; public class A { class B { } }"));
+    }
     
     public void test208791() throws Exception {
         writeFilesAndWaitForScan(src, new File("t/A.java", "package t; public class A { class B { public String outer; } class F extends B { B b; } }"));
@@ -211,7 +220,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                           "import java.awt.event.ActionEvent;\n" +
                                           "import java.awt.event.MouseEvent;\n" +
                                           "import javax.swing.AbstractAction;\n" +
-                                          " /** * * @author junit */\n" +
+//                                          " /** * * @author junit */\n" +
                                           "/**\n" +
                                           " * javadoc comment for F.\n" +
                                           " */\n" +

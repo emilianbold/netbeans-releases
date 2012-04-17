@@ -860,8 +860,9 @@ public class SemanticHighlighter extends JavaParserResultTask {
 //
         @Override
         public Void visitMethod(MethodTree tree, EnumSet<UseTypes> d) {
-            if (info.getTreeUtilities().isSynthetic(getCurrentPath()))
-                return null;
+            if (info.getTreeUtilities().isSynthetic(getCurrentPath())) {
+                return super.visitMethod(tree, d);
+            }
 //            Element decl = pi.getAttribution().getElement(tree);
 //            
 //            if (decl != null) {

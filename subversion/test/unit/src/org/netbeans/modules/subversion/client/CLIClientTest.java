@@ -66,7 +66,6 @@ public class CLIClientTest extends NbTestCase {
         
         suite.addTestSuite(AddTestHidden.class);
         suite.addTestSuite(AvailabilityTest.class);
-        // TODO stabilize test
         suite.addTestSuite(BlameTestHidden.class);
 //        suite.addTestSuite(CancelTest.class);
         suite.addTestSuite(CatTestHidden.class);
@@ -87,7 +86,6 @@ public class CLIClientTest extends NbTestCase {
         suite.addTestSuite(RemoveTestHidden.class);
         suite.addTestSuite(ResolvedTestHidden.class);
         suite.addTestSuite(RevertTestHidden.class);
-        // TODO stabilize test
         suite.addTestSuite(StatusTestHidden.class);
         suite.addTestSuite(TreeConflictsTestHidden.class);
         suite.addTestSuite(SwitchToTestHidden.class);

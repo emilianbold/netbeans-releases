@@ -64,7 +64,6 @@ public class BackoutPanel extends ChangesetPickerPanel {
         super(repo, null);
         this.repoRev = repoRev;
         initComponents();
-        loadRevisions();
     }
 
     public String getCommitMessage() {
@@ -79,6 +78,11 @@ public class BackoutPanel extends ChangesetPickerPanel {
     @Override
     protected HgLogMessage getDisplayedRevision() {
         return repoRev;
+    }
+
+    @Override
+    protected void loadRevisions () {
+        super.loadRevisions();
     }
 
     private void initComponents() {

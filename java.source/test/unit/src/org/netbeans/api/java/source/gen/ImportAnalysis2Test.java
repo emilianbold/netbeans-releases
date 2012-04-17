@@ -53,7 +53,6 @@ import com.sun.source.tree.TypeParameterTree;
 
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.model.JavacElements;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -65,10 +64,11 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -776,6 +776,59 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
         } finally {
             ctx.commit();
         }
+    }
+
+    public void test208490() throws Exception {
+        clearWorkDir();
+        testFile = new File(getWorkDir(), "hierbas/del/litoral/Test.java");
+        assertTrue(testFile.getParentFile().mkdirs());
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import foo.A;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    A l;\n" +
+            "}\n";
+
+        final JavaSource src = getJavaSource(testFile);
+        src.runUserActionTask(new Task<CompilationController>() {
+            @Override public void run(CompilationController parameter) throws Exception {
+                parameter.toPhase(Phase.RESOLVED);
+        src.runModificationTask(new Task<WorkingCopy>() {
+            @Override public void run(WorkingCopy parameter) throws Exception {
+                parameter.toPhase(Phase.RESOLVED);
+                CompilationUnitTree nue = GeneratorUtilities.get(parameter).addImports(parameter.getCompilationUnit(), Collections.singleton(parameter.getElements().getTypeElement("java.util.Collection")));
+                parameter.rewrite(parameter.getCompilationUnit(), nue);
+            }
+        });
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree nueClass = make.Class(make.Modifiers(EnumSet.noneOf(Modifier.class)), "A", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>emptyList());
+                CompilationUnitTree nueCUT = make.CompilationUnit(FileUtil.toFileObject(getWorkDir()), "foo/A.java", Collections.<ImportTree>emptyList(), Collections.singletonList(nueClass));
+                workingCopy.rewrite(null, nueCUT);
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "l", make.QualIdent("foo.A"), null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+            }
+        }, true);
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
     }
 
     String getGoldenPckg() {

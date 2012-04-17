@@ -33,9 +33,10 @@ package org.netbeans.core.windows.view.ui;
 import java.awt.*;
 import javax.swing.JComponent;
 import javax.swing.JMenuBar;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.windows.IDEInitializer;
 import org.netbeans.junit.*;
-import org.openide.windows.*;
 import org.openide.awt.ToolbarPool;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
@@ -51,6 +52,10 @@ import org.openide.util.Lookup;
  * @author David Strupl
  */
 public class CustomMenuBarTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(CustomMenuBarTest.class);
+    }
 
     @Override
     protected void setUp() throws Exception {

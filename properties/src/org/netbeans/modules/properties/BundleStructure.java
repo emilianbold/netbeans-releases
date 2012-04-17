@@ -531,7 +531,9 @@ public class BundleStructure {
         if (index >= 0) {
             comparator.setIndex(index);
         }
-        Collections.sort(keyList, comparator);
+        synchronized (this) {
+            Collections.sort(keyList, comparator);
+        }
         propBundleSupport.fireBundleDataChanged();
     }
 

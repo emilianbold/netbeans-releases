@@ -52,10 +52,10 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.event.SwingPropertyChangeSupport;
 import org.openide.util.Lookup;
 
 
@@ -122,7 +122,7 @@ public abstract class ProfilingPoint {
 
     private final ProfilingPointFactory factory;
     private Lookup.Provider project; // Project for which the Profiling Point is defined
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private PropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport(this, true);
     private ResultsRenderer resultsRenderer;
     private String name; // Name of the Profiling Point, must be unique within a project
     private boolean enabled = true; // Defines if the Profiling Point is currently enabled

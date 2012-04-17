@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -361,7 +362,7 @@ public class AstRenderer {
                     if (renderNSP(token, currentNamespace, container, file)) {
                         break;
                     }
-                    if (renderVariable(token, currentNamespace, container, false)) {
+                    if (renderVariable(token, currentNamespace, container, currentNamespace, false)) {
                         break;
                     }
                     if (renderForwardClassDeclaration(token, currentNamespace, container, file, isRenderingLocalContext())) {
@@ -618,7 +619,8 @@ public class AstRenderer {
             return false;
         }
         processedProjects.add(project);
-        if (project.findDeclaration(uname) != null) {
+        final CsmDeclaration decl = project.findDeclaration(uname);
+        if (decl != null && CsmIncludeResolver.getDefault().isObjectVisible(file, decl)) {
             return true;
         }
         for (CsmProject lib : project.getLibraries()) {
@@ -1207,6 +1209,10 @@ public class AstRenderer {
         return ClassForwardDeclarationImpl.create(ast, file, scope, container, !isRenderingLocalContext());
     }
 
+    protected ForwardClass createForwardClassIfNeeded(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
+        return ClassForwardDeclarationImpl.createForwardClassIfNeeded(ast, file, scope, container, !isRenderingLocalContext());
+    }
+
     protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
         return TypedefImpl.create(ast, file, container, type, name, !isRenderingLocalContext());
     }
@@ -1281,7 +1287,7 @@ public class AstRenderer {
                     if (child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
                             child.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION) {
                         //static variable definition
-                        return renderVariable(ast, currentNamespace, container, false);
+                        return renderVariable(ast, currentNamespace, container, currentNamespace, false);
                     } else {
                         //method forward declaratin
                         try {
@@ -1548,7 +1554,7 @@ public class AstRenderer {
      * @param container1 container to add created variable into (may be null)
      * @param container2 container to add created variable into (may be null)
      */
-    public boolean renderVariable(AST ast, MutableDeclarationsContainer namespaceContainer, MutableDeclarationsContainer container2, boolean functionParameter) {
+    public boolean renderVariable(AST ast, MutableDeclarationsContainer namespaceContainer, MutableDeclarationsContainer container2, CsmScope scope, boolean functionParameter) {
         boolean _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         boolean _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
         AST typeAST = ast.getFirstChild();
@@ -1562,6 +1568,7 @@ public class AstRenderer {
         }
         boolean isThisReference = false;
         CsmClassForwardDeclaration cfdi = null;
+        boolean createForwardClass = false;
         if (tokType != null &&
                 (tokType.getType() == CPPTokenTypes.LITERAL_struct ||
                 tokType.getType() == CPPTokenTypes.LITERAL_union ||
@@ -1576,7 +1583,7 @@ public class AstRenderer {
             }
             if (keyword.getType() != CPPTokenTypes.LITERAL_enum && tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && !isRenderingLocalContext()) {
                 if(namespaceContainer == null && container2 == null && !functionParameter) {
-//                    cfdi = createForwardClassDeclaration(ast, container2, file, null);
+                    createForwardClass = !isRenderingLocalContext();
                 }
             }
             isThisReference = true;
@@ -1669,7 +1676,7 @@ public class AstRenderer {
                                     type = TypeFactory.createType(tokType, file, ptrOperator, 0);
                                 }
                                 if (isVariableLikeFunc(token)) {
-                                    CsmScope scope = (namespaceContainer instanceof CsmNamespace) ? (CsmNamespace) namespaceContainer : null;
+//                                    CsmScope scope = (namespaceContainer instanceof CsmNamespace) ? (CsmNamespace) namespaceContainer : null;
                                     processFunction(token, file, type, namespaceContainer, container2, scope);
                                 } else {
                                     processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false, cfdi);
@@ -1681,6 +1688,9 @@ public class AstRenderer {
                 if (!hasVariables && functionParameter) {
                     // unnamed parameter
                     processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false, cfdi);
+                }
+                if (createForwardClass) {
+                    createForwardClassIfNeeded(ast, container2, file, scope);
                 }
                 return true;
             }
@@ -1879,7 +1889,7 @@ public class AstRenderer {
             }
         }
         AstRendererEx renderer = new AstRendererEx(fileContent);
-        renderer.renderVariable(ast, null, null, true);
+        renderer.renderVariable(ast, null, null, null, true);
         return result;
     }
 
@@ -1941,7 +1951,9 @@ public class AstRenderer {
                             child.getType() == CPPTokenTypes.LITERAL_struct)) {
                         return true;
                     }
-                    return false;
+                    if (child == null || child.getType() != CPPTokenTypes.LITERAL_template) {
+                        return false;
+                    }
                 }
             }
         }

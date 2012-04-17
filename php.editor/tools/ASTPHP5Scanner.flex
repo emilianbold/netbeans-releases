@@ -290,7 +290,7 @@ EXPONENT_DNUM=(({LNUM}|{DNUM})[eE][+-]?{LNUM})
 HNUM="0x"[0-9a-fA-F]+
 BNUM="0b"[01]+
 //LABEL=[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
-LABEL=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_\x7f-\xff]*
+LABEL=([[:letter:]_]|[\u007f-\u00ff])([[:letter:][:digit:]_]|[\u007f-\u00ff])*
 NAMESPACE_SEPARATOR=[\\]
 QUALIFIED_LABEL=({NAMESPACE_SEPARATOR}?{LABEL})+
 WHITESPACE=[ \n\r\t]+
@@ -986,7 +986,7 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 	}
 }
 
-<ST_IN_SCRIPTING>"/*"{WHITESPACE}*"@var"{WHITESPACE}("$"?){LABEL}("["({LABEL} | "\"" | "'")*"]")*{WHITESPACE}{QUALIFIED_LABEL}([|]{QUALIFIED_LABEL})*{WHITESPACE}?"*/" {
+<ST_IN_SCRIPTING>"/*"{WHITESPACE}*"@var"{WHITESPACE}("$"?){LABEL}("["({LABEL} | "\"" | "'")*"]")*{WHITESPACE}{QUALIFIED_LABEL}("[""]")*([|]{QUALIFIED_LABEL}("[""]")*)*{WHITESPACE}?"*/" {
     comment = yytext();
     handleVarComment();
     // if we want to handle the var comment in  ast, then return the T_VAR_Comment symbol
@@ -1093,39 +1093,44 @@ yybegin(ST_DOCBLOCK);
 }
 
 <ST_START_NOWDOC>{LABEL}";"?[\r\n] {
-    int label_len = yylength() - 1;
+    String text = yytext();
+    int length = text.length() - 1;
+    text = text.trim();
 
-    if (yytext().charAt(label_len-1)==';') {
-        label_len--;
+    yypushback(1);
+
+    if (text.endsWith(";")) {
+        text = text.substring(0, text.length() - 1);
+        yypushback(1);
     }
-
-    if (label_len==nowdoc_len && yytext().substring(0,label_len).equals(nowdoc)) {
-        nowdoc=null;
-        nowdoc_len=0;
+    if (text.equals(nowdoc)) {
+        nowdoc = null;
         yybegin(ST_IN_SCRIPTING);
         return createSymbol(ASTPHP5Symbols.T_END_NOWDOC);
     } else {
         yybegin(ST_NOWDOC);
-        yypushback(label_len);
     }
 }
 
 
 <ST_NOWDOC>{NOWDOC_CHARS}*{NEWLINE}+{LABEL}";"?[\n\r] {
-    int label_len = yylength() - 1;
+    String text = yytext();
 
-    if (yytext().charAt(label_len-1)==';') {
-	   label_len--;
+    if (text.charAt(text.length() - 2)== ';') {
+        text = text.substring(0, text.length() - 2);
+        yypushback(1);
+    } else {
+        text = text.substring(0, text.length() - 1);
     }
-    if (label_len > nowdoc_len && yytext().substring(label_len - nowdoc_len,label_len).equals(nowdoc)) {
-        // we need to parse at least last character of the nowdoc label
-        yypushback(3);
+
+    int textLength = text.length();
+    int nowdocLength = nowdoc.length();
+    if (textLength > nowdocLength && text.substring(textLength - nowdocLength, textLength).equals(nowdoc)) {
+        yypushback(2);
         yybegin(ST_END_NOWDOC);
-        // we need to remove the closing label from the symbol value.
-        /*<ST_NOWDOC>{NOWDOC_CHARS}*{NEWLINE}+{LABEL}";"?[\n\r]*/
         Symbol sym = createFullSymbol(ASTPHP5Symbols.T_ENCAPSED_AND_WHITESPACE);
         String value = (String)sym.value;
-        sym.value = value.substring(0, label_len - nowdoc_len);
+        sym.value = value.substring(0, value.length() - nowdocLength + 1);
         return sym;
     }
     yypushback(1);

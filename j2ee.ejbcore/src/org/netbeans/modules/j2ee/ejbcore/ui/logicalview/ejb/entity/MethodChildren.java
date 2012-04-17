@@ -58,6 +58,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.DDEditorNavigator;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
@@ -89,8 +90,8 @@ public class MethodChildren extends ComponentMethodModel {
     private final FileObject ddFile;
     private final Entity entity;
     
-    public MethodChildren(ClasspathInfo cpInfo, EntityMethodController smc, Entity model, Collection<String> interfaces, boolean local, FileObject ddFile) {
-        super(cpInfo, smc.getBeanClass(), interfaces, local ? smc.getLocalHome() : smc.getHome());
+    public MethodChildren(ClasspathInfo cpInfo, EjbJar ejbModule, EntityMethodController smc, Entity model, Collection<String> interfaces, boolean local, FileObject ddFile) {
+        super(cpInfo, ejbModule, smc.getBeanClass(), interfaces, local ? smc.getLocalHome() : smc.getHome());
         controller = smc;
         this.local = local;
         this.ddFile = ddFile;

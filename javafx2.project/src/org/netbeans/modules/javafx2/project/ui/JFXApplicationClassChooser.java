@@ -63,7 +63,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -83,12 +85,15 @@ public class JFXApplicationClassChooser extends javax.swing.JPanel {
     private final PropertyEvaluator evaluator;
     private final Project project;
     private ChangeListener changeListener;
+    private final boolean isFXinSwing;
 
     /** Creates new form JFXApplicationClassChooser */
     public JFXApplicationClassChooser(final @NonNull Project p, final @NonNull PropertyEvaluator pe) {
         this.evaluator = pe;
         this.project = p;
+        this.isFXinSwing = JFXProjectUtils.isFXinSwingProject(p);
         initComponents();
+        if(!SourceUtils.isScanInProgress()) labelScanning.setVisible(false);
         listAppClasses.setCellRenderer(new AppClassRenderer());
         initClassesView();
         initClassesModel();
@@ -107,6 +112,7 @@ public class JFXApplicationClassChooser extends javax.swing.JPanel {
         labelAppClasses = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         listAppClasses = new javax.swing.JList();
+        labelScanning = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(380, 300));
         setLayout(new java.awt.GridBagLayout());
@@ -116,7 +122,6 @@ public class JFXApplicationClassChooser extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 2, 10);
@@ -129,18 +134,27 @@ public class JFXApplicationClassChooser extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
         add(jScrollPane1, gridBagConstraints);
+
+        labelScanning.setFont(labelScanning.getFont().deriveFont((labelScanning.getFont().getStyle() | java.awt.Font.ITALIC), labelScanning.getFont().getSize()+1));
+        labelScanning.setText(org.openide.util.NbBundle.getMessage(JFXApplicationClassChooser.class, "LBL_ChooseMainClass_SCANNING_MESSAGE")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 10, 0, 0);
+        add(labelScanning, gridBagConstraints);
+        labelScanning.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXApplicationClassChooser.class, "LBL_ChooseMainClass_SCANNING_MESSAGE")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel labelAppClasses;
+    private javax.swing.JLabel labelScanning;
     private javax.swing.JList listAppClasses;
     // End of variables declaration//GEN-END:variables
 
@@ -211,13 +225,13 @@ public class JFXApplicationClassChooser extends javax.swing.JPanel {
             @Override
             public void run() {
 
-                final Set<String> appClassNames = JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Application"); //NOI18N
+                final Set<String> appClassNames = JFXProjectUtils.getAppClassNames(classpathMap, isFXinSwing ? "java.lang.Object" : "javafx.application.Application"); //NOI18N
                 
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         listAppClasses.setListData(appClassNames.toArray());
-                        String appClassName = evaluator.getProperty(JFXProjectProperties.MAIN_CLASS);
+                        String appClassName = evaluator.getProperty(isFXinSwing ? ProjectProperties.MAIN_CLASS : JFXProjectProperties.MAIN_CLASS);
                         if (appClassName != null && appClassNames.contains(appClassName)) {
                             listAppClasses.setSelectedValue(appClassName, true);
                         }

@@ -475,6 +475,18 @@ public class DiscoveryUtils {
                         languageArtifacts.add(lang);
                     }
                 }
+            } else if (option.equals("-std=c89")){ // NOI18N
+                languageArtifacts.add("c89"); // NOI18N
+            } else if (option.equals("-xc99") || // NOI18N
+                       option.equals("-std=c99")){ // NOI18N
+                languageArtifacts.add("c99"); // NOI18N
+            } else if (option.equals("-std=c++0x") || // NOI18N
+                       option.equals("-std=c++11") || // NOI18N
+                       option.equals("-std=gnu++0x") || // NOI18N
+                       option.equals("-std=gnu++11")){ // NOI18N
+                languageArtifacts.add("c++11"); // NOI18N
+            } else if (option.equals("-std=c++98")){ // NOI18N
+                languageArtifacts.add("c++98"); // NOI18N
             } else if (option.equals("-xMF")){ // NOI18N
                 // ignore dependency output file
                 if (st.hasNext()){

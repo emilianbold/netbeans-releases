@@ -385,7 +385,22 @@ bool NbLauncher::findUserDir(const char *str) {
 
 bool NbLauncher::findCacheDir(const char *str) {
     logMsg("NbLauncher::findCacheDir()");
-    if (strncmp(str, DEFAULT_CACHEDIR_ROOT_TOKEN, strlen(DEFAULT_CACHEDIR_ROOT_TOKEN)) == 0) {
+    if (strncmp(str, HOME_TOKEN, strlen(HOME_TOKEN)) == 0) {
+        if (userHome.empty()) {
+            char *userProfile = getenv(ENV_USER_PROFILE);
+            if (userProfile) {
+                userHome = userProfile;
+            } else {
+
+                if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DESKTOP_NAME, userHome)) {
+                    return false;
+                }
+                userHome.erase(userHome.rfind('\\'));
+            }
+            logMsg("User home: %s", userHome.c_str());
+        }
+        cacheDir = userHome + (str + strlen(HOME_TOKEN));
+    } else if (strncmp(str, DEFAULT_CACHEDIR_ROOT_TOKEN, strlen(DEFAULT_CACHEDIR_ROOT_TOKEN)) == 0) {
         if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DEFAULT_CACHEDIR_ROOT, defCacheDirRoot)) {
             return false;
         }

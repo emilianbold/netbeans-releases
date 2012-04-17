@@ -138,10 +138,20 @@ public final class ServerRegistry implements java.io.Serializable {
 
             LOGGER.log(Level.FINE, "Loading server instances"); // NOI18N
             dir = FileUtil.getConfigFile(DIR_INSTALLED_SERVERS);
-            dir.addFileChangeListener(instanceL = new InstanceInstallListener(dir));
-            ch = dir.getChildren();
-            for (int i = 0; i < ch.length; i++) {
-                addInstance(ch[i]);
+            if (dir == null) {
+                try {
+                    FileObject root = FileUtil.getConfigRoot();
+                    dir = FileUtil.createFolder(root, DIR_INSTALLED_SERVERS);
+                } catch (IOException ex) {
+                    LOGGER.log(Level.WARNING, "Could not create DIR_INSTALLED_SERVERS folder");
+                }
+            }
+            if (dir != null) {
+                dir.addFileChangeListener(instanceL = new InstanceInstallListener(dir));
+                ch = dir.getChildren();
+                for (int i = 0; i < ch.length; i++) {
+                    addInstance(ch[i]);
+                }
             }
 
             LOGGER.log(Level.FINE, "Finish initializing plugins"); // NOI18N

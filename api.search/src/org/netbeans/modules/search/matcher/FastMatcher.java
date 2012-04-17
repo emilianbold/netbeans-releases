@@ -308,7 +308,7 @@ public class FastMatcher extends AbstractMatcher {
             }
             // Decode the file into a char buffer
             Charset charset = FileEncodingQuery.getEncoding(fo);
-            CharsetDecoder decoder = charset.newDecoder();
+            CharsetDecoder decoder = prepareDecoder(charset);
             decoder.onUnmappableCharacter(CodingErrorAction.IGNORE);
             CharBuffer cb = decoder.decode(bb);
 
@@ -340,7 +340,7 @@ public class FastMatcher extends AbstractMatcher {
             SearchListener listener) {
 
         Charset charset = FileEncodingQuery.getEncoding(fileObject);
-        CharsetDecoder decoder = charset.newDecoder();
+        CharsetDecoder decoder = prepareDecoder(charset);
 
         LongCharSequence longSequence = null;
         try {
@@ -464,7 +464,7 @@ public class FastMatcher extends AbstractMatcher {
          * Reset the character sequence - to read the file from the beginning.
          */
         public void reset() {
-            currentDecoder = charset.newDecoder();
+            currentDecoder = prepareDecoder(charset);
             currentDecoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
             readBytes = 0;
             currentBuffer.clear();
@@ -484,7 +484,7 @@ public class FastMatcher extends AbstractMatcher {
             long bytesRead = 0;
             MappedByteBuffer mappedByteBuffer = null;
             CharBuffer charBuffer = CharBuffer.allocate(SIZE_LIMIT);
-            CharsetDecoder decoder = charset.newDecoder();
+            CharsetDecoder decoder = prepareDecoder(charset);
             decoder.onUnmappableCharacter(CodingErrorAction.IGNORE);
 
             try {

@@ -1,6 +1,33 @@
-/**
- * Copyright (c) 2008, 2011 Oracle and/or its affiliates.
+/*
+ * Copyright (c) 2008, 2012 Oracle and/or its affiliates.
  * All rights reserved. Use is subject to license terms.
+ *
+ * This file is available and licensed under the following license:
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *  - Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  - Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the distribution.
+ *  - Neither the name of Oracle Corporation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package mouseevents;
 
@@ -15,7 +42,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.ListView;
 import javafx.scene.effect.InnerShadow;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.*;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.RadialGradient;
+import javafx.scene.paint.Stop;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.RectangleBuilder;
@@ -60,11 +92,11 @@ public class MouseEvents extends Application {
         primaryStage.setResizable(false);
         primaryStage.setScene(new Scene(root, 500,500));
         // create circle with method listed below: paramethers: name of the circle, color of the circle, radius
-        Circle circleSmall = createCircle("Blue circle", Color.DODGERBLUE, 25);
+        final Circle circleSmall = createCircle("Blue circle", Color.DODGERBLUE, 25);
         circleSmall.setTranslateX(200);
         circleSmall.setTranslateY(80);
         // and a second, bigger circle
-        Circle circleBig = createCircle("Orange circle", Color.CORAL, 40);
+        final Circle circleBig = createCircle("Orange circle", Color.CORAL, 40);
         circleBig.setTranslateX(300);
         circleBig.setTranslateY(150);
         // we can set mouse event to any node, also on the rectangle
@@ -72,6 +104,39 @@ public class MouseEvents extends Application {
             public void handle(MouseEvent me) {
                 //log mouse move to console, method listed below
                 showOnConsole("Mouse moved, x: " + me.getX() + ", y: " + me.getY() );
+            }
+        });
+
+        rectangle.setOnScroll(new EventHandler<ScrollEvent>() {
+            @Override public void handle(ScrollEvent event) {
+                double translateX = event.getDeltaX();
+                double translateY = event.getDeltaY();
+
+                // reduce the deltas for the circles to stay in the screen
+                for (Circle c : new Circle[] { circleSmall, circleBig }) {
+                    if (c.getTranslateX() + translateX + c.getRadius() > 450) {
+                        translateX = 450 - c.getTranslateX() - c.getRadius();
+                    }
+                    if (c.getTranslateX() + translateX - c.getRadius() < 0) {
+                        translateX = - c.getTranslateX() + c.getRadius();
+                    }
+                    if (c.getTranslateY() + translateY + c.getRadius() > 300) {
+                        translateY = 300 - c.getTranslateY() - c.getRadius();
+                    }
+                    if (c.getTranslateY() + translateY - c.getRadius() < 0) {
+                        translateY = - c.getTranslateY() + c.getRadius();
+                    }
+                }
+
+                // move the circles
+                for (Circle c : new Circle[] { circleSmall, circleBig }) {
+                    c.setTranslateX(c.getTranslateX() + translateX);
+                    c.setTranslateY(c.getTranslateY() + translateY);
+                }
+
+                // log event
+                showOnConsole("Scrolled, deltaX: " + event.getDeltaX() +
+                        ", deltaY: " + event.getDeltaY());
             }
         });
         // show all the circle , rectangle and console
@@ -137,17 +202,6 @@ public class MouseEvents extends Application {
         circle.setOnMouseReleased(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent me) {
                 showOnConsole("Mouse released above " +name);
-            }
-        });
-        circle.impl_setOnMouseWheelRotated(new EventHandler<MouseEvent>() {
-            public void handle(MouseEvent me) {
-                //limit radius to <10, 60>
-                double newRadius = circle.getRadius()+me.impl_getWheelRotation();
-                if ((newRadius <= 60) && (newRadius >= 10)) {
-                  //set new radius
-                  circle.setRadius(newRadius);
-                }
-                showOnConsole("Mouse wheel rotated above " + name + ", with wheel rotation: " + me.impl_getWheelRotation() );
             }
         });
 

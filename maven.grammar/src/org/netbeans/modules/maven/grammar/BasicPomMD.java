@@ -200,7 +200,18 @@ public class BasicPomMD implements MultiViewDescription {
         @Override public void run() {
             Artifact artifact = lookup.lookup(Artifact.class);
             assert artifact != null;
-            final NBVersionInfo info = new NBVersionInfo(artifact.getRepository() != null ? artifact.getRepository().getId() : null, artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), "pom", null, null, null, null);
+            NBVersionInfo originfo = lookup.lookup(NBVersionInfo.class);
+            //in some cases the artifact.getRepository() will be null..
+            // eg. NbVersionInfo -> artifact -> NBVersionInfo looses the repository id information.
+            String repoId = null;
+            if (originfo != null) {
+                repoId = originfo.getRepoId();
+            }
+            if (repoId == null) {
+                repoId = artifact.getRepository() != null ? artifact.getRepository().getId() : null;
+            }
+
+            NBVersionInfo info = new NBVersionInfo(repoId, artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), "pom", null, null, null, null);
             try {
                 File pom = RepositoryUtil.downloadArtifact(info);
                 FileObject pomFO = FileUtil.toFileObject(pom);

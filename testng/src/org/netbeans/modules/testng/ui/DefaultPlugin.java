@@ -197,6 +197,9 @@ public final class DefaultPlugin extends TestNGPlugin {
         }
         
         String baseResName = srcCp.getResourceName(fileObj, '/', false);
+        if(baseResName == null) {
+            return null;
+        }
         String testResName = !fileObj.isFolder()
                              ? getTestResName(baseResName, fileObj.getExt())
                              : getSuiteResName(baseResName);
@@ -441,8 +444,8 @@ public final class DefaultPlugin extends TestNGPlugin {
      * @return created test files
      */
     @Messages({"MSG_StatusBar_CreateTest_Begin=Creating tests ...", 
-        "PROP_testng_testClassTemplate=Templates/TestNG/TestNGTestClass.java", 
-        "PROP_testng_testSuiteTemplate=Templates/TestNG/TestNGSuite.xml"})
+        "PROP_testng_testClassTemplate=Templates/UnitTests/EmptyTestNGTest.java",
+        "PROP_testng_testSuiteTemplate=Templates/UnitTests/TestNGSuite.xml"})
     @Override
     protected FileObject[] createTests(
                                 final FileObject[] filesToTest,
@@ -905,7 +908,6 @@ public final class DefaultPlugin extends TestNGPlugin {
                             suiteTemplParams);
                     testFile = testDataObj.getPrimaryFile();
                 }
-                System.out.println("testFile= " + testFile.getPath());
                 
                 try {
                     if (testDataObj == null) {

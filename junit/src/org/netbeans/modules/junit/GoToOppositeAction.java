@@ -343,12 +343,14 @@ public final class GoToOppositeAction implements TestLocator {
     
     public boolean appliesTo(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
-        JUnitPlugin plugin = TestUtil.getPluginForProject(project);
-        if (plugin instanceof DefaultPlugin) {
-            Location loc = new Location(fo);
-            Location test = ((DefaultPlugin) plugin).getTestLocation(loc);
-            Location tested = ((DefaultPlugin) plugin).getTestedLocation(loc);
-            return TestUtil.isJavaFile(fo) && (test != null || tested != null);
+        if (project != null) {
+            JUnitPlugin plugin = TestUtil.getPluginForProject(project);
+            if (plugin instanceof DefaultPlugin) {
+                Location loc = new Location(fo);
+                Location test = ((DefaultPlugin) plugin).getTestLocation(loc);
+                Location tested = ((DefaultPlugin) plugin).getTestedLocation(loc);
+                return TestUtil.isJavaFile(fo) && (test != null || tested != null);
+            }
         }
         return TestUtil.isJavaFile(fo);
     }

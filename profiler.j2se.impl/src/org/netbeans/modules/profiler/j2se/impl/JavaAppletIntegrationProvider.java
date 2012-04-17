@@ -155,24 +155,26 @@ public class JavaAppletIntegrationProvider extends AbstractIntegrationProvider {
 
         // Step 2
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
-            String args = IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(
-                    targetOS, getTargetJava(), attachSettings.isRemote(), attachSettings.getPort());
-            if (args.indexOf(' ') != -1) args = "\"" + args + "\""; // NOI18N  Bugfix #173041
+            String args = IntegrationUtils.getProfilerAgentCommandLineArgs(
+                    targetOS, getTargetJava(), attachSettings.isRemote(), attachSettings.getPort(), false);
+//            if (args.indexOf(' ') != -1) args = "\"" + args + "\""; // NOI18N  Bugfix #173041
             hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualDirectStep2WindowsMessage(args));
         } else if (IntegrationUtils.PLATFORM_MAC_OS.equals(targetOS)) {
             hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualDirectStep2MacMessage(
-                            IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(
+                            IntegrationUtils.getProfilerAgentCommandLineArgs(
                                 targetOS,
                                 getTargetJava(),
                                 attachSettings.isRemote(),
-                                attachSettings.getPort())));
+                                attachSettings.getPort(),
+                                false)));
         } else {
             hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualDirectStep2UnixesMessage(
-                            IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(
+                            IntegrationUtils.getProfilerAgentCommandLineArgs(
                                 targetOS,
                                 getTargetJava(),
                                 attachSettings.isRemote(),
-                                attachSettings.getPort())));
+                                attachSettings.getPort(),
+                                false)));
         }
 
         // Step 3

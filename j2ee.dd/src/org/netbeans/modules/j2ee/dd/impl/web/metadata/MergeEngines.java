@@ -153,6 +153,10 @@ public class MergeEngines {
                 for (Servlet s : servlets) {
                     String name = s.getServletName();
                     String clazz = s.getServletClass();
+                    if (clazz == null || clazz.trim().length() == 0) {
+                        // ignore servlets which do not have a proper servlet class
+                        continue;
+                    }
                     List<String> urlMappings = findUrlMappingsForServlet(mappings, name);
                     res.add(ServletInfoAccessor.getDefault().createServletInfo(name, clazz, urlMappings));
                 }

@@ -44,7 +44,6 @@ package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -55,12 +54,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.DefaultMaven;
 import org.apache.maven.Maven;
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
+import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.cli.MavenCli;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.DefaultMavenExecutionResult;
@@ -92,14 +93,12 @@ import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.embedder.impl.NbWorkspaceReader;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
 import org.sonatype.aether.repository.Authentication;
-import org.sonatype.aether.repository.WorkspaceReader;
-import org.sonatype.aether.repository.WorkspaceRepository;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 import org.sonatype.aether.util.repository.DefaultAuthenticationSelector;
 import org.sonatype.aether.util.repository.DefaultMirrorSelector;
@@ -217,7 +216,15 @@ public final class MavenEmbedder {
         return repositorySystem.createProjectArtifact(groupId, artifactId, version);
     }
 
-
+    /**
+     * 
+     * @param sources
+     * @param remoteRepositories - these instances need to be properly mirrored and proxied. Either by creating via EmbedderFactory.createRemoteRepository()
+     *              or by using instances from MavenProject
+     * @param localRepository
+     * @throws ArtifactResolutionException
+     * @throws ArtifactNotFoundException 
+     */
     public void resolve(Artifact sources, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository) throws ArtifactResolutionException, ArtifactNotFoundException {
         setUpLegacySupport();
         ArtifactResolutionRequest req = new ArtifactResolutionRequest();
@@ -225,9 +232,11 @@ public final class MavenEmbedder {
         req.setRemoteRepositories(remoteRepositories);
         req.setArtifact(sources);
         req.setOffline(isOffline());
-        // XXX need to somehow use ProgressTransferListener.activeListener() here; CreateLibraryAction's use of ProgressTransferListener.cancellable() also probably a no-op until setAggregateHandle called
-        repositorySystem.resolve(req);
+        ArtifactResolutionResult result = repositorySystem.resolve(req);
         // XXX check result for exceptions and throw them now?
+        for (Exception ex : result.getExceptions()) {
+            LOG.log(Level.FINE, null, ex);
+        }
     }
 
     //TODO possibly rename.. build sounds like something else..
@@ -321,7 +330,10 @@ public final class MavenEmbedder {
         SettingsDecryptionResult decryptionResult = settingsDecrypter.decrypt(new DefaultSettingsDecryptionRequest(_settings));
         DefaultProxySelector proxySelector = new DefaultProxySelector();
         for (Proxy p : decryptionResult.getProxies()) {
-            proxySelector.add(new org.sonatype.aether.repository.Proxy(null, p.getHost(), p.getPort(), new Authentication(p.getUsername(), p.getPassword())), p.getNonProxyHosts());
+            if (p.isActive()) {
+               //#null -> getProtocol() #209499
+               proxySelector.add(new org.sonatype.aether.repository.Proxy(p.getProtocol(), p.getHost(), p.getPort(), new Authentication(p.getUsername(), p.getPassword())), p.getNonProxyHosts());
+            }
         }
         session.setProxySelector(proxySelector);
         DefaultAuthenticationSelector authenticationSelector = new DefaultAuthenticationSelector();
@@ -331,6 +343,8 @@ public final class MavenEmbedder {
         session.setAuthenticationSelector(authenticationSelector);
         DefaultMavenExecutionRequest mavenExecutionRequest = new DefaultMavenExecutionRequest();
         mavenExecutionRequest.setOffline(isOffline());
+        mavenExecutionRequest.setTransferListener(ProgressTransferListener.activeListener());
+        session.setTransferListener(ProgressTransferListener.activeListener());
         lookupComponent(LegacySupport.class).setSession(new MavenSession(getPlexus(), session, mavenExecutionRequest, new DefaultMavenExecutionResult()));
     }
 

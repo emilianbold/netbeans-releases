@@ -55,6 +55,7 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.history.HistoryAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.FileUtils;
@@ -73,6 +74,7 @@ public class HistoryProvider implements VCSHistoryProvider {
     
     private final List<VCSHistoryProvider.HistoryChangeListener> listeners = new LinkedList<VCSHistoryProvider.HistoryChangeListener>();
     private static final Logger LOG = Logger.getLogger(HistoryProvider.class.getName());
+    private Action[] actions;
 
     @Override
     public void addHistoryChangeListener(VCSHistoryProvider.HistoryChangeListener l) {
@@ -147,7 +149,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                     username, 
                     h.getRevision(), 
                     h.getRevision().length() > 7 ? h.getRevision().substring(0, 7) : h.getRevision(), 
-                    createActions(h.getRevision(), files), 
+                    getActions(), 
                     new RevisionProviderImpl(h.getRevision()));
             ret.add(e);
         }
@@ -251,25 +253,28 @@ public class HistoryProvider implements VCSHistoryProvider {
         
     }
 
-    private Action[] createActions(final String revision, final File... files) {
-        return new Action[] {
-        new AbstractAction(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_View")) { // NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                view(revision, false, files);
-            }
-
-        },
-        new AbstractAction(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                view(revision, true, files);
-            }
-        }};
+    private synchronized Action[] getActions() {
+        if(actions == null) {
+            actions = new Action[] {
+                new HistoryAction(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_View")) {
+                    @Override
+                    protected void perform(HistoryEntry entry, Set<File> files) {
+                        view(entry.getRevision(), false, files);
+                    }
+                },
+                new HistoryAction(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_ShowAnnotations")) {
+                    @Override
+                    protected void perform(HistoryEntry entry, Set<File> files) {
+                        view(entry.getRevision(), true, files);
+                    }
+                }
+            };
+        }
+        return actions;
     }
     
-    private void view(final String revision, final boolean showAnnotations, final File... files) {
-        final File root = Git.getInstance().getRepositoryRoot(files[0]);
+    private void view(final String revision, final boolean showAnnotations, final Set<File> files) {
+        final File root = Git.getInstance().getRepositoryRoot(files.iterator().next());
         new GitProgressSupport() {
             @Override
             protected void perform () {

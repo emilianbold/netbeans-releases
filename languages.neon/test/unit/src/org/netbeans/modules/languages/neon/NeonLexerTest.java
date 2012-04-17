@@ -139,6 +139,22 @@ public class NeonLexerTest extends NeonTestBase {
         performTest("issue208274");
     }
 
+    public void testIssue210049_01() throws Exception {
+        performTest("issue210049_01");
+    }
+
+    public void testIssue210049_02() throws Exception {
+        performTest("issue210049_02");
+    }
+
+    public void testIssue210049_03() throws Exception {
+        performTest("issue210049_03");
+    }
+
+    public void testHashInCommonUse() throws Exception {
+        performTest("hashInCommonUse");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = NeonLexerUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/" + filename + ".neon"));

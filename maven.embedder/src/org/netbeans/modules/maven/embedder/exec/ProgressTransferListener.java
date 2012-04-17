@@ -49,11 +49,11 @@ import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import static org.netbeans.modules.maven.embedder.exec.Bundle.*;
 import org.openide.util.Cancellable;
+import org.openide.util.NbBundle.Messages;
 import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.transfer.TransferResource;
-import org.openide.util.NbBundle.Messages;
 
 public class ProgressTransferListener implements TransferListener {
 
@@ -73,7 +73,7 @@ public class ProgressTransferListener implements TransferListener {
     private int pomCount;
     private final Stack<ProgressContributor> contribStack = new Stack<ProgressContributor>();
     private AggregateProgressHandle handle;
-    private AtomicBoolean cancel;
+    public AtomicBoolean cancel;
     private static final int POM_MAX = 20;
 
     public static void setAggregateHandle(AggregateProgressHandle hndl) {
@@ -120,8 +120,11 @@ public class ProgressTransferListener implements TransferListener {
     }
     
     @Messages({
+        "# {0} - downloaded resource name",
         "TXT_Download=Downloading {0}",
+        "# {0} - uploaded resource name",
         "TXT_Uploading=Uploading {0}",
+        "# {0} - transferred resource name",
         "TXT_Started={0} - Transfer Started..."
     })
     @Override
@@ -175,7 +178,10 @@ public class ProgressTransferListener implements TransferListener {
     }
 
     @Messages({
+        "# {0} - transferring resource name",
         "TXT_Transferring={0} - Transferring...",
+        "# {0} - transferring resource name",
+        "# {1} - transferred amount",
         "TXT_Transferred={0} - Transferred {1}"
     })
     @Override
@@ -214,7 +220,7 @@ public class ProgressTransferListener implements TransferListener {
 
     @Override
     public void transferFailed(TransferEvent te) {
-        if (contrib == null) {
+         if (contrib == null) {
             return;
         }
         contrib.finish();

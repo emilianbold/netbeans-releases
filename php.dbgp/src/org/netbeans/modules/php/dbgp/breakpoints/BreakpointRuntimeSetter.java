@@ -174,8 +174,6 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
         public void perform( AbstractBreakpoint breakpoint, SessionId id,
                 DebugSession session )
         {
-            assert session != null : "Session can't be null!"; //NOI18N
-            assert breakpoint != null : "Breakpoint can't be null!"; //NOI18N
             if (session != null && breakpoint != null) {
                 BrkpntUpdateCommand command = new BrkpntUpdateCommand(
                         session.getTransactionId() , breakpoint.getBreakpointId() );
@@ -183,7 +181,7 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
                 command.setState( state );
                 session.sendCommandLater(command);
             } else {
-                LOGGER.log(Level.WARNING, "Session and Breakpoint can't be null! Session: {0} || Breakpoint: {1}", new Object[]{session, breakpoint});
+                LOGGER.log(Level.FINE, "Session and Breakpoint can't be null! Session: {0} || Breakpoint: {1}", new Object[]{session, breakpoint});
             }
         }
     }

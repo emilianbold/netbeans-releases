@@ -45,9 +45,16 @@
 package org.netbeans.modules.cnd.dwarfdump;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfAbbriviationTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfAbbriviationTableEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
@@ -55,23 +62,17 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfNameLookupTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.FORM;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfAbbriviationTableSection;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfAttribute;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection;
+import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfMacroInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfNameLookupTableSection;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.TreeSet;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.FORM;
-import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfRelaDebugInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 
@@ -448,7 +449,7 @@ public class CompilationUnit {
         return macrosTable;
     }
     
-    private DwarfNameLookupTable getPubnamesTable() {
+    private DwarfNameLookupTable getPubnamesTable() throws IOException {
         if (pubnamesTable == null) {
             initPubnamesTable();
         }
@@ -566,7 +567,7 @@ public class CompilationUnit {
         macrosTable = macroInfoSection.getMacinfoTable(macroInfoOffset);
     }
     
-    private void initPubnamesTable() {
+    private void initPubnamesTable() throws IOException {
         DwarfNameLookupTableSection dwarfNameLookupTableSection = (DwarfNameLookupTableSection)reader.getSection(SECTIONS.DEBUG_PUBNAMES); 
         
         if (dwarfNameLookupTableSection != null) {
@@ -715,7 +716,7 @@ public class CompilationUnit {
             dump(out);
             return st.toString();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Dwarf.LOG.log(Level.INFO, "File "+reader.getFileName(), ex); // NOI18N
             return ""; // NOI18N
         }
     }

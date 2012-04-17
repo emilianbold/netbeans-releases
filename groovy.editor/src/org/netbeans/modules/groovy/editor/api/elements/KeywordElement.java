@@ -61,12 +61,13 @@ public class KeywordElement extends GroovyElement {
         this.name = name;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public ElementKind getKind() {
         return ElementKind.KEYWORD;
     }
-
 }

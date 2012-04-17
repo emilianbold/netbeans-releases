@@ -453,9 +453,9 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
-        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dylib: ${OBJECTFILES}\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+": ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
-        golden.append("\t${LINK.cc} -dynamiclib -install_name libXxx.dylib -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx.dylib -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("\t${LINK.cc} -dynamiclib -install_name libXxx." + MakeConfiguration.CND_DLIB_EXT_MACRO + " -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx." + MakeConfiguration.CND_DLIB_EXT_MACRO + " -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_GNU_MacOSX", "GNU", PlatformTypes.PLATFORM_MACOSX, golden.toString());
     }
 
@@ -466,9 +466,9 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc \n");
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t$(COMPILE.cc) -g -KPIC  -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
-        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.so: ${OBJECTFILES}\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+": ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
-        golden.append("\t${LINK.cc} -G -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx.so -KPIC -norunpath -h libXxx.so ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("\t${LINK.cc} -G -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx." + MakeConfiguration.CND_DLIB_EXT_MACRO + " -KPIC -norunpath -h libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+" ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_SunStudio_Solaris_Intel", "SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
@@ -480,9 +480,9 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
-        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.so: ${OBJECTFILES}\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+": ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
-        golden.append("\t${LINK.cc} -G -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("\t${LINK.cc} -G -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx." + MakeConfiguration.CND_DLIB_EXT_MACRO + " -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_GNU_Solaris_Intel", "GNU", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
@@ -494,9 +494,9 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF $@.d -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
-        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll: ${OBJECTFILES}\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+": ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
-        golden.append("\t${LINK.cc} -shared -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx.dll ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("\t${LINK.cc} -shared -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx." + MakeConfiguration.CND_DLIB_EXT_MACRO + " ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_MinGW_Windows", "MinGW", PlatformTypes.PLATFORM_WINDOWS, golden.toString());
     }
 
@@ -508,9 +508,9 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF $@.d -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
-        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll: ${OBJECTFILES}\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+": ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
-        golden.append("\t${LINK.cc} -mno-cygwin -shared -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx.dll ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("\t${LINK.cc} -mno-cygwin -shared -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx." + MakeConfiguration.CND_DLIB_EXT_MACRO + " ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_Cygwin_Windows", "Cygwin", PlatformTypes.PLATFORM_WINDOWS, golden.toString());
     }
 }

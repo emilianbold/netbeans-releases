@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -77,6 +78,7 @@ import org.netbeans.modules.profiler.utilities.trees.NodeFilter;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -176,9 +178,11 @@ public class RootSelectorTree extends JPanel {
         this.cancellHandler = cancellable;
     }
 
-    private AtomicBoolean isActive = new AtomicBoolean(true);
+    final private AtomicBoolean isActive = new AtomicBoolean(true);
+    final private Semaphore selectionSemaphore = new Semaphore(1);
     public void setSelection(final SourceCodeSelection[] selection) {
-        new SwingWorker(false) {
+        new SwingWorker(selectionSemaphore) {
+            volatile private ProgressDisplayer pd = null;
             
             protected void doInBackground() {
                 isActive.set(true);
@@ -197,13 +201,11 @@ public class RootSelectorTree extends JPanel {
                         cl.countDown();
                     }
                 });
-                progress.showProgress(Bundle.MSG_ApplyingSelection(), new ProgressDisplayer.ProgressController() {
+                final SwingWorker worker = this;
+                pd = progress.showProgress(Bundle.MSG_ApplyingSelection(), new ProgressDisplayer.ProgressController() {
                     @Override
                     public boolean cancel() {
-                        isActive.set(false);
-                        if (cancellHandler != null) {
-                            cancellHandler.cancel();
-                        }
+                        worker.cancel();
                         return true;
                     }
                 });
@@ -216,7 +218,7 @@ public class RootSelectorTree extends JPanel {
             }
             
             protected void done() {
-                progress.close();
+                closeProgress();
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -225,13 +227,29 @@ public class RootSelectorTree extends JPanel {
                 });
                 tree.treeDidChange();
             }
+            
+            
+            
+            private void closeProgress() {
+                if (pd != null && pd.isOpened()) {
+                    pd.close();
+                    pd = null;
+                }                
+            }
 
             @Override
             protected int getWarmup() {
                 return 50;
             }
-            
-            
+
+            @Override
+            protected void cancelled() {
+                isActive.set(false);
+                closeProgress();
+                if (cancellHandler != null) {
+                    cancellHandler.cancel();
+                }
+            }
         }.execute();
     }
 
@@ -401,6 +419,7 @@ public class RootSelectorTree extends JPanel {
         repaint();
     }
 
+    final private Semaphore lazyOpeningSemaphore = new Semaphore(1);
     private void addTreeLazyOpening() {
         tree.addTreeWillExpandListener(new TreeWillExpandListener() {
 
@@ -429,7 +448,7 @@ public class RootSelectorTree extends JPanel {
 
                     openingSubtree = true;
 
-                    new SwingWorker() {
+                    new SwingWorker(lazyOpeningSemaphore) {
 
                         @Override
                         protected void doInBackground() {
@@ -559,7 +578,7 @@ public class RootSelectorTree extends JPanel {
             return;
         }
         if (searchInProgress.compareAndSet(false, true)) {
-            new SwingWorker(true) {
+            new SwingWorker() {
                 volatile private TreePath rsltPath;
                 volatile private ProgressDisplayer pd;
                 @Override

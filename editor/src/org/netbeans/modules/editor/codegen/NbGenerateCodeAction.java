@@ -186,7 +186,7 @@ public class NbGenerateCodeAction extends BaseAction {
     public static final class GlobalAction extends MainMenuAction {
         public GlobalAction() {
             super();
-            setMenu();
+            postSetMenu();
         }
         
         protected String getMenuItemText() {

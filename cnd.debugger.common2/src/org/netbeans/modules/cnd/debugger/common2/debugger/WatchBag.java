@@ -54,7 +54,7 @@ public class WatchBag {
     private ArrayList<NativeWatch> watches = new ArrayList<NativeWatch>();
 
     private ModelChangeDelegator watchUpdater() {
-	return DebuggerManager.get().watchUpdater();
+	return NativeDebuggerManager.get().watchUpdater();
     }
 
     public NativeWatch[] getWatches() {
@@ -79,7 +79,7 @@ public class WatchBag {
 	// 	for (WatchVariable w : subWatches)
 	// will run into ConcurrentModificationException's
 	
-	NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+	NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 
 	for (NativeWatch w : getWatches()) {
 	    WatchVariable dw = w.findByDebugger(debugger);

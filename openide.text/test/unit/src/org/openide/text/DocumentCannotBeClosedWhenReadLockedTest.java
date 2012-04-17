@@ -47,8 +47,11 @@ package org.openide.text;
 
 
 
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import javax.swing.text.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.junit.*;
 import org.openide.util.Exceptions;
@@ -59,6 +62,11 @@ import org.openide.util.Exceptions;
  * @author  Petr Nejedly, Jaroslav Tulach
  */
 public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase implements CloneableEditorSupport.Env {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(DocumentCannotBeClosedWhenReadLockedTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

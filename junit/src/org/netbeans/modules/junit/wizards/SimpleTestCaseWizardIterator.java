@@ -227,6 +227,10 @@ public class SimpleTestCaseWizardIterator
                            Boolean.valueOf(settings.isGenerateSetUp()));
         wizard.putProperty(GuiUtils.CHK_TEARDOWN,
                            Boolean.valueOf(settings.isGenerateTearDown()));
+        wizard.putProperty(GuiUtils.CHK_BEFORE_CLASS,
+                           Boolean.valueOf(settings.isGenerateClassSetUp()));
+        wizard.putProperty(GuiUtils.CHK_AFTER_CLASS,
+                           Boolean.valueOf(settings.isGenerateClassTearDown()));
         wizard.putProperty(GuiUtils.CHK_METHOD_BODIES,
                            Boolean.valueOf(settings.isBodyContent()));
         wizard.putProperty(GuiUtils.CHK_JAVADOC,
@@ -250,6 +254,10 @@ public class SimpleTestCaseWizardIterator
                 Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_SETUP)));
         settings.setGenerateTearDown(
                 Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_TEARDOWN)));
+        settings.setGenerateClassSetUp(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_BEFORE_CLASS)));
+        settings.setGenerateClassTearDown(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_AFTER_CLASS)));
         settings.setBodyContent(
                 Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_METHOD_BODIES)));
         settings.setJavaDoc(

@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import org.netbeans.modules.cnd.antlr.Parser;
-import org.netbeans.modules.cnd.antlr.RecognitionException;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.collections.AST;
@@ -93,7 +92,6 @@ import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.content.file.FakeIncludePair;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.modelimpl.parser.ParserProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
@@ -392,7 +390,7 @@ public final class FileImpl implements CsmFile,
 
     public Collection<APTPreprocHandler> getPreprocHandlers() {
         final ProjectBase projectImpl = getProjectImpl(true);
-        return projectImpl == null ? Collections.<APTPreprocHandler>emptyList() : projectImpl.getPreprocHandlers(this.getAbsolutePath());
+        return projectImpl == null ? Collections.<APTPreprocHandler>emptyList() : projectImpl.getPreprocHandlers(this);
     }
 
     public Collection<PreprocessorStatePair> getPreprocStatePairs() {
@@ -400,7 +398,20 @@ public final class FileImpl implements CsmFile,
         if (projectImpl == null) {
             return Collections.<PreprocessorStatePair>emptyList();
         }
-        return projectImpl.getPreprocessorStatePairs(this.getAbsolutePath());
+        return projectImpl.getPreprocessorStatePairs(this);
+    }
+
+    public Collection<APTPreprocHandler> getFileContainerOwnPreprocHandlersToDump() {
+        final ProjectBase projectImpl = getProjectImpl(true);
+        return projectImpl == null ? Collections.<APTPreprocHandler>emptyList() : projectImpl.getFileContainerPreprocHandlersToDump(this.getAbsolutePath());
+    }
+
+    public Collection<PreprocessorStatePair> getFileContainerOwnPreprocessorStatePairsToDump() {
+        ProjectBase projectImpl = getProjectImpl(true);
+        if (projectImpl == null) {
+            return Collections.<PreprocessorStatePair>emptyList();
+        }
+        return projectImpl.getFileContainerStatePairsToDump(this.getAbsolutePath());
     }
 
     private PreprocessorStatePair getContextPreprocStatePair(int startContext, int endContext) {
@@ -408,7 +419,7 @@ public final class FileImpl implements CsmFile,
         if (projectImpl == null) {
             return null;
         }
-        Collection<PreprocessorStatePair> preprocStatePairs = projectImpl.getPreprocessorStatePairs(this.getAbsolutePath());
+        Collection<PreprocessorStatePair> preprocStatePairs = projectImpl.getPreprocessorStatePairs(this);
         // select the best based on context offsets
         for (PreprocessorStatePair statePair : preprocStatePairs) {
             if (statePair.pcState.isInActiveBlock(startContext, endContext)) {
@@ -599,9 +610,9 @@ public final class FileImpl implements CsmFile,
                 }
                 RepositoryUtils.put(this);
             } else {
-                if (tryPartialReparse) {
+                // if was request for partial reparse and file state was not modified during parse
+                if (tryPartialReparse && newSignature != null) {
                     assert oldSignature != null;
-                    assert newSignature != null;
                     DeepReparsingUtils.finishPartialReparse(this, oldSignature, newSignature);
                 }
             }
@@ -970,7 +981,7 @@ public final class FileImpl implements CsmFile,
     
     /** for debugging/tracing purposes only */
     public AST debugParse() {
-        Collection<APTPreprocHandler> handlers = getPreprocHandlers();
+        Collection<APTPreprocHandler> handlers = getFileContainerOwnPreprocHandlersToDump();
         if (handlers.isEmpty()) {
             return null;
         }
@@ -1039,6 +1050,9 @@ public final class FileImpl implements CsmFile,
         AtomicReference<APTFileCacheEntry> cacheEntry = new AtomicReference<APTFileCacheEntry>(null);
         AtomicReference<FilePreprocessorConditionState.Builder> pcBuilder = new AtomicReference<FilePreprocessorConditionState.Builder>(null);
         TokenStream tokenStream = createParsingTokenStreamForHandler(preprocHandler, false, cacheEntry, pcBuilder);
+        if (tokenStream == null) {
+            return false;
+        }
         APTLanguageFilter languageFilter = getLanguageFilter(ppState);
         tsCache.addNewPair(pcBuilder.get(), tokenStream, languageFilter);
         // remember walk info
@@ -2072,13 +2086,13 @@ public final class FileImpl implements CsmFile,
 
     public void dumpPPStates(PrintWriter printOut) {
         int i = 0;
-        final Collection<PreprocessorStatePair> preprocStatePairs = this.getPreprocStatePairs();
+        final Collection<PreprocessorStatePair> preprocStatePairs = this.getFileContainerOwnPreprocessorStatePairsToDump();
         printOut.printf("Has %d ppStatePairs:\n", preprocStatePairs.size());// NOI18N 
         for (PreprocessorStatePair pair : preprocStatePairs) {
             printOut.printf("----------------Pair[%d]------------------------\n", ++i);// NOI18N 
             printOut.printf("pc=%s\nstate=%s\n", pair.pcState, pair.state);// NOI18N 
         }
-        Collection<APTPreprocHandler> preprocHandlers = this.getPreprocHandlers();
+        Collection<APTPreprocHandler> preprocHandlers = this.getFileContainerOwnPreprocHandlersToDump();
         printOut.printf("Converted into %d Handlers:\n", preprocHandlers.size());// NOI18N 
         i = 0;
         for (APTPreprocHandler ppHandler : preprocHandlers) {
@@ -2086,7 +2100,36 @@ public final class FileImpl implements CsmFile,
             printOut.printf("handler=%s\n", ppHandler);// NOI18N 
         }
     }
-    
+
+    public void dumpIncludePPStates(PrintWriter printOut) {
+        int i = 0;
+        final Collection<PreprocessorStatePair> preprocStatePairs = this.getFileContainerOwnPreprocessorStatePairsToDump();
+        printOut.printf("Has %d OWNED ppStatePairs:\n", preprocStatePairs.size());// NOI18N
+        for (PreprocessorStatePair pair : preprocStatePairs) {
+            printOut.printf("----------------Own Pair[%d]------------------------\n", ++i);// NOI18N
+            printOut.printf("pc=%s\nstate=%s\n", pair.pcState, pair.state);// NOI18N
+        }
+        Collection<CsmProject> projects = CsmModelAccessor.getModel().projects();
+        i = 0;
+        for (CsmProject csmProject : projects) {
+            if (csmProject instanceof ProjectBase) {
+                ProjectBase prj = (ProjectBase) csmProject;
+                Map<CsmUID<CsmProject> , Collection<PreprocessorStatePair>> includedStates = prj.getIncludedPreprocStatePairs(this);
+                if (includedStates.size() > 1) {
+                    printOut.printf("ALARM! the same file %s is included as library of %d projects\n", this.getAbsolutePath(), includedStates.size()); // NOI18N
+                }
+                for (Map.Entry<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> entry : includedStates.entrySet()) {
+                    Collection<PreprocessorStatePair> pairs = entry.getValue();
+                    printOut.printf("in project %s included %s\n", prj, UIDUtilities.getProjectName(entry.getKey()));// NOI18N
+                    for (PreprocessorStatePair pair : pairs) {
+                        printOut.printf("----------------Included Pair[%d]------------------------\n", ++i);// NOI18N
+                        printOut.printf("with pc=%s\nstate=%s\n", pair.pcState, pair.state);// NOI18N
+                    }
+                }
+            }
+        }
+    }
+
     static String toYesNo(boolean b) {
         return b ? "yes" : "no"; // NOI18N
     }

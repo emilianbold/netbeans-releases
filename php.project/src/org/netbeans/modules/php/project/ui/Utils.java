@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.project.ui;
 
-import java.awt.Component;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +51,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
 import org.netbeans.api.project.ProjectUtils;
@@ -65,6 +63,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
 import org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -117,48 +116,67 @@ public final class Utils {
     /**
      * @return the selected file or <code>null</code>.
      */
-    public static File browseFileAction(final Component parent, File currentDirectory, String title) {
-        return browseAction(parent, currentDirectory, title, JFileChooser.FILES_ONLY);
+    public static File browseFileAction(String dirKey, String title) {
+        return browseAction(dirKey, title, true, null);
+    }
+
+    /**
+     * @return the selected file or <code>null</code>.
+     */
+    public static File browseFileAction(String dirKey, String title, File workDir) {
+        return browseAction(dirKey, title, true, workDir);
     }
 
     /**
      * @return the selected folder or <code>null</code>.
      */
-    public static File browseLocationAction(final Component parent, File currentDirectory, String title) {
-        return browseAction(parent, currentDirectory, title, JFileChooser.DIRECTORIES_ONLY);
+    public static File browseLocationAction(String dirKey, String title) {
+        return browseAction(dirKey, title, false, null);
     }
 
-    private static File browseAction(final Component parent, File currentDirectory, String title, int mode) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(title);
-        chooser.setFileSelectionMode(mode);
-        if (currentDirectory != null
-                && currentDirectory.exists()) {
-            chooser.setSelectedFile(currentDirectory);
+    /**
+     * @return the selected folder or <code>null</code>.
+     */
+    public static File browseLocationAction(String dirKey, String title, File workDir) {
+        return browseAction(dirKey, title, false, workDir);
+    }
+
+    private static File browseAction(String dirKey, String title, boolean filesOnly, File workDir) {
+        FileChooserBuilder builder = new FileChooserBuilder(dirKey)
+                .setTitle(title);
+        if (workDir != null) {
+            builder.setDefaultWorkingDirectory(workDir)
+                    .forceUseOfDefaultWorkingDirectory(true);
         }
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
-            return FileUtil.normalizeFile(chooser.getSelectedFile());
+        if (filesOnly) {
+            builder.setFilesOnly(true);
+        } else {
+            builder.setDirectoriesOnly(true);
+        }
+        File selectedFile = builder.showOpenDialog();
+        if (selectedFile != null) {
+            return FileUtil.normalizeFile(selectedFile);
         }
         return null;
     }
 
-    /**
-     * @return the selected folder or <code>null</code>.
-     */
-    public static File browseLocalServerAction(final Component parent, final JComboBox localServerComboBox,
-            final MutableComboBoxModel localServerComboBoxModel, File preselected, String newSubfolderName, String title) {
-        if (preselected == null) {
-            LocalServer ls = (LocalServer) localServerComboBox.getSelectedItem();
-            if (ls.getDocumentRoot() != null && ls.getDocumentRoot().length() > 0) {
-                preselected = new File(ls.getDocumentRoot());
-            }
+    public static void browseLocalServerAction(final JComboBox localServerComboBox,
+            final MutableComboBoxModel localServerComboBoxModel, String newSubfolderName, String title, String dirKey) {
+        File preselected = null;
+        LocalServer ls = (LocalServer) localServerComboBox.getSelectedItem();
+        if (ls.getDocumentRoot() != null && ls.getDocumentRoot().length() > 0) {
+            preselected = new File(ls.getDocumentRoot());
         }
-        File newLocation = browseLocationAction(parent, preselected, title);
+        File newLocation = new FileChooserBuilder(dirKey)
+                .setTitle(title)
+                .setDirectoriesOnly(true)
+                .setDefaultWorkingDirectory(preselected)
+                .showOpenDialog();
         if (newLocation == null) {
-            return null;
+            return;
         }
 
-        File file = null;
+        File file;
         if (newSubfolderName == null) {
             file = newLocation;
         } else {
@@ -175,41 +193,17 @@ public final class Utils {
         LocalServer localServer = new LocalServer(newLocation.getAbsolutePath(), projectLocation);
         localServerComboBoxModel.addElement(localServer);
         localServerComboBox.setSelectedItem(localServer);
-        return newLocation;
-    }
-
-    public static void browsePhpInterpreter(Component parent, JTextField textField) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectPhpInterpreter"));
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setCurrentDirectory(LastUsedFolders.getOptionsPhpInterpreter());
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
-            File phpInterpreter = FileUtil.normalizeFile(chooser.getSelectedFile());
-            LastUsedFolders.setOptionsPhpInterpreter(phpInterpreter);
-            textField.setText(phpInterpreter.getAbsolutePath());
-        }
-    }
-
-    public static void browsePhpUnit(Component parent, JTextField textField) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectPhpUnit"));
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setCurrentDirectory(LastUsedFolders.getOptionsPhpUnit());
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
-            File phpUnit = FileUtil.normalizeFile(chooser.getSelectedFile());
-            LastUsedFolders.setOptionsPhpUnit(phpUnit);
-            textField.setText(phpUnit.getAbsolutePath());
-        }
     }
 
     public static void browseTestSources(JTextField textField, PhpProject phpProject) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectUnitTestFolder", ProjectUtils.getInformation(phpProject).getDisplayName()));
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setCurrentDirectory(FileUtil.toFile(phpProject.getProjectDirectory()));
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(textField.getParent())) {
-            File testsDirectory = FileUtil.normalizeFile(chooser.getSelectedFile());
-            textField.setText(testsDirectory.getAbsolutePath());
+        File selectedFile = new FileChooserBuilder(LastUsedFolders.TEST_DIR)
+                .setTitle(NbBundle.getMessage(Utils.class, "LBL_SelectUnitTestFolder", ProjectUtils.getInformation(phpProject).getDisplayName()))
+                .setDirectoriesOnly(true)
+                .setDefaultWorkingDirectory(FileUtil.toFile(phpProject.getProjectDirectory()))
+                .forceUseOfDefaultWorkingDirectory(true)
+                .showOpenDialog();
+        if (selectedFile != null) {
+            textField.setText(FileUtil.normalizeFile(selectedFile).getAbsolutePath());
         }
     }
 

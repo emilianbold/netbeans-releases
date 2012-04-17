@@ -222,7 +222,7 @@ public class Customer implements Serializable {
 
     @Override
     public String toString() {
-        return "jpa.entities.Customer[customerId=" + customerId + "]";
+        return customerId.toString();
     }
 
 }

@@ -105,10 +105,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     private TopComponent persistenceShowingTC;
     
     /** exclusive invocation of runnables */
-    private Exclusive exclusive = new Exclusive();
-
-    /** timer to ensure exclusive runnables are really invoked in all circumstances */
-    private javax.swing.Timer paintedTimer = new javax.swing.Timer(5000, exclusive);
+    private Exclusive exclusive;
 
     /** flag that prevents calling Exclusive.run on each main window repaint */
     private boolean exclusivesCompleted = false;
@@ -137,7 +134,6 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             }
             defaultInstance = this;
         }
-        paintedTimer.setRepeats(false);
     }
     
     /** Singleton accessor, returns instance of window manager implementation */
@@ -451,6 +447,16 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         assertEventDispatchThread();
 
         getCentral().userClosedMode( mode );
+    }
+
+    /**
+     * @return the exclusive
+     */
+    private Exclusive getExclusive() {
+        if (exclusive == null) {
+            exclusive = new Exclusive();
+        }
+        return exclusive;
     }
     
     private static class WrapMode implements Mode {
@@ -900,12 +906,12 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         // mainWindow.paint is not called during startup
         if (visible) {
             if (!exclusivesCompleted) {
-                paintedTimer.restart();
+                getExclusive().restart();
             } else {
                 FloatingWindowTransparencyManager.getDefault().start();
             }
         } else {
-            paintedTimer.stop();
+            getExclusive().stop();
             exclusivesCompleted = false;
         }
     }
@@ -1379,7 +1385,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     @Override
     public void invokeWhenUIReady(Runnable run) {
-        exclusive.register(run);
+        getExclusive().register(run);
     }
     
     @Override
@@ -1436,16 +1442,15 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     public final void mainWindowPainted () {
         if (!exclusivesCompleted && WindowManagerImpl.getInstance().isVisible()) {
             exclusivesCompleted = true;
-            paintedTimer.stop();
-
-            exclusive.register(new Runnable() {
+            getExclusive().stop();
+            getExclusive().register(new Runnable() {
                 @Override
                 public void run() {
                     FloatingWindowTransparencyManager.getDefault().start();
                 }
             });
 
-            SwingUtilities.invokeLater(exclusive);
+            SwingUtilities.invokeLater(getExclusive());
         }
     }
 
@@ -1454,7 +1459,25 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      */
     private static final class Exclusive implements Runnable, ActionListener {
         /** lists of runnables to run */
-        private ArrayList<Runnable> arr = new ArrayList<Runnable>();
+        private ArrayList<Runnable> arr;
+        /**
+         * timer to ensure exclusive runnables are really invoked in all
+         * circumstances
+         */
+        private javax.swing.Timer paintedTimer;
+
+        public Exclusive() {
+            arr = new ArrayList<Runnable>();
+            paintedTimer = new javax.swing.Timer(5000, this);
+            paintedTimer.setRepeats(false);
+        }
+        
+        final void stop() {
+            paintedTimer.stop();
+        }
+        final void restart() {
+            paintedTimer.restart();
+        }
 
         /** Registers given runnable and ensures that it is run when UI 
          * of the system is ready.

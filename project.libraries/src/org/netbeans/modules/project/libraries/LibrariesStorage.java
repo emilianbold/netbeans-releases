@@ -541,9 +541,18 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     private void logBrokenLibraryDescripor(
         @NonNull FileObject descriptorFile,
         @NonNull Exception cause){
+        Level level = Level.WARNING;
+        if (cause instanceof LibraryDeclarationHandlerImpl.UnknownLibraryTypeException) {
+            if (((LibraryDeclarationHandlerImpl.UnknownLibraryTypeException) cause).type.equals("j2se")) {
+                // possibly in a unit test, be quiet
+                level = Level.FINE;
+            } else {
+                //log unknown library type as INFO common with FoD
+                level = Level.INFO;
+            }
+        }
         LOG.log(
-            //log unknown library type as INFO common with FoD
-            cause instanceof LibraryDeclarationHandlerImpl.UnknownLibraryTypeException ? Level.INFO : Level.WARNING,
+            level,
             "Cannot load library from file {0}, reason: {1}",   //NOI18N
             new Object[] {
                 FileUtil.getFileDisplayName(descriptorFile),

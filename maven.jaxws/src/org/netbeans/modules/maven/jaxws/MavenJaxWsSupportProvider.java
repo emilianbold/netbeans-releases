@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -84,6 +85,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
     private PropertyChangeListener pcl;
     private NbMavenProject mp;
     private Project prj;
+    private volatile String serverInstance; 
     //private MetadataModel<WebservicesMetadata> wsModel;
 
     MavenJaxWsSupportProvider(final Project prj, final JAXWSLightSupport jaxWsSupport) {
@@ -99,6 +101,9 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
                 if (model != null) {
                     registerAnnotationListener(model);
                 }
+                J2eeModuleProvider provider = WSUtils.getModuleProvider(prj);
+                serverInstance = provider== null ? null : 
+                    provider.getServerInstanceID();
                 //wsModel = model;
             }
 
@@ -169,7 +174,23 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
         WSUtils.updateClients(prj, jaxWsSupport);
         List<JaxWsService> services = jaxWsSupport.getServices();
         if (services.size() > 0) {
-            MavenModelUtils.reactOnServerChanges(prj);
+            J2eeModuleProvider provider = prj.getLookup().lookup( 
+                    J2eeModuleProvider.class);
+            String serverInstanceID = provider== null ? null : 
+                provider.getServerInstanceID();
+            boolean instanceChanged = false;
+            if ( serverInstanceID == null ){
+                if ( serverInstance != null ){
+                    instanceChanged = true;
+                }
+            }
+            else if (!serverInstanceID.equals( serverInstance)){
+                instanceChanged = true;
+            }
+            if ( instanceChanged ){
+                serverInstance = serverInstanceID;
+                MavenModelUtils.reactOnServerChanges(prj);
+            }
             if (WSUtils.isWeb(prj)) {
                 for (JaxWsService s : services) {
                     if (s.isServiceProvider()) {

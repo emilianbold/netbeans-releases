@@ -106,7 +106,7 @@ class AssignComments extends TreeScanner<Void, Void> {
             boolean oldMapComments = mapComments;
             try {
                 mapComments |= tree == commentMapTarget;
-                if ((commentMapTarget != null) && info.getTreeUtilities().isSynthetic(new TreePath(new TreePath(info.getCompilationUnit()), tree)))
+                if ((commentMapTarget != null) && info.getTreeUtilities().isSynthetic(new TreePath(new TreePath(unit), tree)))
                     return null;
                 if (commentMapTarget != null) {
                     mapComments2(tree, true);
@@ -343,7 +343,8 @@ class AssignComments extends TreeScanner<Void, Void> {
 
     private void attachComments(Iterable<? extends Token<JavaTokenId>> foundComments, Tree tree, CommentHandler ch, CommentSet.RelativePosition positioning) {
         if (foundComments == null || !foundComments.iterator().hasNext() || !mapComments) return;
-        CommentSet set = createCommentSet(ch, tree);
+        CommentSetImpl set = (CommentSetImpl) createCommentSet(ch, tree);
+        if (set.areCommentsMapped()) return ;
         for (Token<JavaTokenId> comment : foundComments) {
             attachComment(positioning, set, comment);
         }

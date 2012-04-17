@@ -162,10 +162,13 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.css.editor</friend>
-                <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.css.lib</friend>
+                <friend>org.netbeans.modules.css.visual</friend>
+                <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.editor.lib</friend>
+                <friend>org.netbeans.modules.html.parser</friend>
+                <friend>org.netbeans.modules.html.validation</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>

@@ -105,6 +105,9 @@ class GdbVariable extends Variable {
 
     public void setInScope(boolean inScope) {
 	this.inScope = inScope;
+        if (!inScope) {
+            setNumChild("0"); //NOI18N
+        }
     }
 
     public boolean isInScope() {
@@ -325,7 +328,7 @@ class GdbVariable extends Variable {
         setMIName(results.getConstValue("name")); // NOI18N
         setType(results.getConstValue("type")); // NOI18N
         
-        String numchild_l = results.getConstValue("numchild"); // NOI18N
+        String numchild_l = results.getConstValue(GdbDebuggerImpl.MI_NUMCHILD);
         MIValue dynamicVal = results.valueOf("dynamic"); //NOI18N
         if (dynamicVal != null) {
             setDynamic(dynamicVal.asConst().value());

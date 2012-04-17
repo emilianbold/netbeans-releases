@@ -227,7 +227,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             try {
                 assertTrue("must have undo", urm.canUndo());
                 checkModifiedObjects(1);
-                if (!parse1.await(2000, TimeUnit.SECONDS)) {
+                if (!parse1.await(20, TimeUnit.SECONDS)) {
                     if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
                     }

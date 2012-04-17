@@ -144,11 +144,7 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
             dpbr.setResolveDependencies(true);
             ArrayList<ArtifactRepository> remoteRepos = new ArrayList<ArtifactRepository>();
 //for project embedder doens't matter            
-//            for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
-//                if (!info.isLocal()) {
-//                    remoteRepos.add(new MavenArtifactRepository(info.getId(), info.getRepositoryUrl(), new DefaultRepositoryLayout(), new ArtifactRepositoryPolicy(), new ArtifactRepositoryPolicy()));
-//                }
-//            }
+//            remoteRepos = RepositoryPreferences.getInstance().remoteRepositories();
             dpbr.setRemoteRepositories(remoteRepos);
             
             ProjectBuildingResult res = embedder.buildProject(projectArtifact, dpbr);

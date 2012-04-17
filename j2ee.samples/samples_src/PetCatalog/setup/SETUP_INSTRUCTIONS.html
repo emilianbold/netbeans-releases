@@ -133,11 +133,17 @@ mysql> FLUSH PRIVILEGES;</pre>
                     <li>In the dialog that displays, type in <code>petcatalog</code>. Select the
                         'Grant Full Access to' option, then select <code>root@localhost</code> from
                         the drop-down field.
-
+                        
                         <br>
                         <img src="../setup-images/create-mysql-db-dialog.png"
                              class="margin-around b-all" alt="Create MySQL Database dialog"
-                             title="Right-click the server node and choose Create Database to create a new database instance"></li>
+                             title="Right-click the server node and choose Create Database to create a new database instance">
+
+                        <br>
+                        <strong>NOTE: </strong>Database name needs to be the same as in the glassfish-resource.xml.
+                        Only then the JDBC driver could be deployed correctly.
+
+                    </li>
 
                     <li>Click OK. When you do so, an empty database named <code>petcatalog</code> is
                         created, and a connection to the database is automatically established.
@@ -164,9 +170,9 @@ mysql> FLUSH PRIVILEGES;</pre>
 
             <h3 id="connPool">Configuring a Connection Pool and JDBC Resource on GlassFish</h3>
 
-            <p>The <code>sun-resources.xml</code> file, included in the sample application, is a
+            <p>The <code>glassfish-resources.xml</code> file, included in the sample application, is a
                 GlassFish-specific deployment descriptor. If you open the file in the editor (from
-                the Projects window, Server Resources &gt; <code>sun-resources.xml</code>), you can
+                the Projects window, Server Resources &gt; <code>glassfish-resources.xml</code>), you can
                 see that the file instructs the GlassFish server to create a connection pool named
                 <code>petCatalogPool</code> using the '<code>root</code>' / '<code>nbuser</code>'
                 combination and <code>jdbc:mysql://localhost:3306/petcatalog</code> connection you
@@ -207,7 +213,7 @@ mysql> FLUSH PRIVILEGES;</pre>
 &lt;/jdbc-connection-pool&gt;</pre>
             </div>
 
-            <p>The <code>sun-resources.xml</code> file also instructs the GlassFish server
+            <p>The <code>glassfish-resources.xml</code> file also instructs the GlassFish server
                 to configure a data source that uses the <code>petCatalogPool</code> connection
                 pool and sets its JNDI name to '<code>jdbc/petcatalog</code>':</p>
 

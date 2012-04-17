@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.ClassNode;
 import org.netbeans.modules.cnd.classview.model.EnumNode;
@@ -71,6 +72,7 @@ import org.netbeans.modules.cnd.classview.model.FriendFunctionNode;
 import org.netbeans.modules.cnd.classview.model.GlobalFuncNode;
 import org.netbeans.modules.cnd.classview.model.MemberNode;
 import org.netbeans.modules.cnd.classview.model.TypedefNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /**
@@ -207,8 +209,13 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
                         node = new MemberNode((CsmMember) member);
                     } else if (CsmKindUtilities.isClassForwardDeclaration(member)) {
                         CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) member;
-                        if (fd.getCsmClass() != null) {
-                            node = new ForwardClassNode(fd, new ClassifierKeyArray(updater, fd, fd.getCsmClass()));
+                        CsmClass csmClass = fd.getCsmClass();
+                        if (csmClass != null) {
+                            if (CsmClassifierResolver.getDefault().isForwardClass(csmClass)) {
+                                node = new ForwardClassNode(fd, Children.LEAF);
+                            } else {
+                                node = new ForwardClassNode(fd, new ClassifierKeyArray(updater, fd, csmClass));
+                            }
                         } else {
                             node = new MemberNode((CsmMember) member);
                         }

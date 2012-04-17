@@ -70,6 +70,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -82,6 +84,11 @@ import org.openide.nodes.Sheet;
  * successfully changes the property value.
  */
 public class ComboTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ComboTest.class);
+    }
+
     private static boolean setup=false;
     
     static {

@@ -173,7 +173,6 @@ public class ExtKit extends BaseKit {
     
     private static FindAction findActionDef = new FindAction();
     private static ReplaceAction replaceActionDef = new ReplaceAction();
-    private static GotoAction gotoActionDef = new GotoAction();
 
     private static final String editorBundleHash = "org.netbeans.editor.Bundle#";
 
@@ -220,7 +219,6 @@ public class ExtKit extends BaseKit {
         ArrayList<Action> actions = new ArrayList<Action>();
 
         actions.add(new ExtDefaultKeyTypedAction());
-        actions.add(gotoActionDef);
 // XXX: remove
 //        if (!ExtCaret.NO_HIGHLIGHT_BRACE_LAYER) {
 //            actions.add(new MatchBraceAction(matchBraceAction, false));
@@ -533,6 +531,10 @@ public class ExtKit extends BaseKit {
 
     }
 
+    @EditorActionRegistration(
+            name = gotoAction,
+            shortDescription = editorBundleHash + "goto_trimmed"
+    )
     public static class GotoAction extends BaseKitLocalizedAction {
 
         static final long serialVersionUID =8425585413146373256L;

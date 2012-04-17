@@ -586,4 +586,32 @@ public class FileUtilTest extends NbTestCase {
         assertEquals("FileUtil.refreshAll should not be called concurrently.", 0, maxConcurrency.get());
         assertEquals("FileUtil.refreshAll not called.", 2, calledCounter.get());
     }
+    
+    public void testUrlForArchiveOrDirDirDeletedRace () throws IOException {
+        final File workDir = getWorkDir();
+        final File dir = new File(workDir, "testWorkDir");  //NOI18N
+        dir.mkdir();
+        final Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                if ("urlForArchiveOrDir:toURI:entry".equals(record.getMessage()) && //NOI18N
+                    dir.exists()) {
+                    dir.delete();
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        final Logger log = Logger.getLogger(FileUtil.class.getName());
+        log.setLevel(Level.FINEST);
+        log.addHandler(handler);
+        final URL result = FileUtil.urlForArchiveOrDir(dir);
+        assertNotNull(result);
+        assertTrue(result.toExternalForm().endsWith("/"));  //NOI18N
+    }
 }

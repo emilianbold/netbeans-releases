@@ -44,20 +44,20 @@
 package org.netbeans.modules.profiler.j2se;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.profiler.common.SessionSettings;
 import org.netbeans.modules.profiler.projectsupport.utilities.AppletSupport;
 import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 import org.netbeans.spi.project.support.ant.*;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import java.io.*;
 import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
@@ -65,6 +65,7 @@ import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportP
 import org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.modules.InstalledFileLocator;
 
 
 /**
@@ -74,7 +75,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 @ProjectServiceProvider(service=ProjectProfilingSupportProvider.class, 
                         projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject",position=550)}) // NOI18N
 public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSupportProvider {
-    //~ Inner Classes ------------------------------------------------------------------------------------------------------------
+    final private static Logger LOG = Logger.getLogger(J2SEProjectProfilingSupportProvider.class.getName());
 
     private static class MyPropertyProvider implements PropertyProvider {
         //~ Instance fields ------------------------------------------------------------------------------------------------------
@@ -100,12 +101,6 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
         }
     }
 
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants                                                                                                                   // -----
-    public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.profiler.j2se"); // NOI18N
-
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
     private String mainClassSetManually = null; // used for case when the main class is not set in project and user is prompted for it
 
@@ -120,16 +115,12 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
     }
 
     @Override
-    public JavaPlatform getProjectJavaPlatform() {
+    public JavaPlatform resolveProjectJavaPlatform() {
         PropertyEvaluator props = getProjectProperties(getProject());
         String platformName = props.getProperty("platform.active"); // NOI18N
 
         if (platformName == null) {
             return null; // not provided for some reason
-        }
-
-        if (platformName.equals("default_platform")) { // NOI18N
-            return JavaPlatform.getDefaultPlatform(); 
         }
 
         return JavaPlatform.getJavaPlatformById(platformName);
@@ -167,7 +158,7 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
     }
 
     @Override
-    public void configurePropertiesForProfiling(final Properties props, final FileObject profiledClassFile) {
+    public void configurePropertiesForProfiling(final Map<String, String> props, final FileObject profiledClassFile) {
         if (profiledClassFile == null) {
             if (mainClassSetManually != null) {
                 props.put("main.class", mainClassSetManually); // NOI18N
@@ -182,7 +173,7 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
             if (src != null) {
                 Project project = getProject();
                 if (src.isApplet()) {
-                    String jvmargs = props.getProperty("run.jvmargs"); // NOI18N
+                    String jvmargs = props.get("run.jvmargs"); // NOI18N
 
                     URL url = null;
 
@@ -198,11 +189,11 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
                         AppletSupport.generateSecurityPolicy(project.getProjectDirectory(), buildFolder);
 
                         if ((jvmargs == null) || (jvmargs.length() == 0)) {
-                            props.setProperty("run.jvmargs",
+                            props.put("run.jvmargs",
                                               "-Djava.security.policy=" + FileUtil.toFile(buildFolder).getPath() + File.separator
                                               + "applet.policy"); //NOI18N
                         } else {
-                            props.setProperty("run.jvmargs",
+                            props.put("run.jvmargs",
                                               jvmargs + " -Djava.security.policy=" + FileUtil.toFile(buildFolder).getPath()
                                               + File.separator + "applet.policy"); //NOI18N
                         }
@@ -218,16 +209,16 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
                         return; // TODO: fail?
                     }
 
-                    props.setProperty("applet.url", url.toString()); // NOI18N
+                    props.put("applet.url", url.toString()); // NOI18N
                 } else {
                     final String profiledClass = src.getTopLevelClass().getQualifiedName();
-                    props.setProperty("profile.class", profiledClass); //NOI18N
+                    props.put("profile.class", profiledClass); //NOI18N
                 }
 
                 // 2. include it in javac.includes so that the compile-single picks it up
                 final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(ProjectUtilities.getSourceRoots(project),
                                                                                          profiledClassFile), profiledClassFile);
-                props.setProperty("javac.includes", clazz); //NOI18N
+                props.put("javac.includes", clazz); //NOI18N
             }
         }
     }
@@ -252,6 +243,8 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
 
         String jvmArgs = pp.getProperty("run.jvmargs"); // NOI18N
         ss.setJVMArgs((jvmArgs != null) ? jvmArgs : ""); // NOI18N
+        
+        super.setupProjectSessionSettings(ss);
     }
 
     @Override
@@ -294,7 +287,7 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
                                 is.close();
                             }
                         } catch (IOException e) {
-                            err.notify(ErrorManager.INFORMATIONAL, e);
+                            LOG.log(Level.INFO, null, e);
                         }
                     }
 
@@ -308,7 +301,7 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
                                 is.close();
                             }
                         } catch (IOException e) {
-                            err.notify(ErrorManager.INFORMATIONAL, e);
+                            LOG.log(Level.INFO, null, e);
                         }
                     }
 
@@ -322,7 +315,7 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
                                 is.close();
                             }
                         } catch (IOException e) {
-                            err.notify(ErrorManager.INFORMATIONAL, e);
+                            LOG.log(Level.INFO, null, e);
                         }
                     }
 
@@ -352,7 +345,7 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
                                 is.close();
                             }
                         } catch (IOException e) {
-                            err.notify(ErrorManager.INFORMATIONAL, e);
+                            LOG.log(Level.INFO, null, e);
                         }
                     }
                 }

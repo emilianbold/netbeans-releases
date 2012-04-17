@@ -140,7 +140,7 @@ final public class HistoryTopComponent extends TopComponent {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.localhistory.ui.view.LocalHistoryTopComponent");
+        return new HelpCtx("org.netbeans.modules.localhistory.ui.view.LHHistoryTab");
     }
 
 }
