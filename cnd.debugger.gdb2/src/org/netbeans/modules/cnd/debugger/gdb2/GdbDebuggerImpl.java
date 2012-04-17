@@ -954,7 +954,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     /**
-     * Handle the oputput of "info proc".
+     * Handle the output of "info proc".
      */
     static int extractPid1(MIRecord record) {
 	StringTokenizer st =
@@ -2800,7 +2800,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         
         synchronized (autos) {
                 autos.clear();
-                autos.addAll(res);
+                if (res == null) {
+                    autos.add(null);
+                } else {
+                    autos.addAll(res);
+                }
         }
         
         return autoNames;
