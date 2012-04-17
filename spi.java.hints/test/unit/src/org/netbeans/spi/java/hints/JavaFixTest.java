@@ -50,7 +50,10 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -59,6 +62,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.java.hints.spiimpl.TestBase;
 import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
+import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompilerUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.LifecycleManager;
@@ -454,6 +458,18 @@ public class JavaFixTest extends TestBase {
                            "    { java.io.File f = null; boolean b = foo.Bar.isDirectory(f); }\n" +
 		           "}\n");
     }
+    
+    public void testRewriteIdent2IdentMemberSelectPattern() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private boolean b; private void t() { boolean c = b; }\n" +
+                           "}\n",
+                           "$0{test.Test}.b => !$0.b",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private boolean b; private void t() { boolean c = !b; }\n" +
+		           "}\n");
+    }
 
     public void testCarefulRewriteInImports() throws Exception {
         performRewriteTest("package test;\n" +
@@ -549,8 +565,15 @@ public class JavaFixTest extends TestBase {
 
         final String[] split = rule.split("=>");
         assertEquals(2, split.length);
+        Map<String, TypeMirror> variablesToTypesTM = new HashMap<String, TypeMirror>();
+        String plainRule = PatternCompilerUtilities.parseOutTypesFromPattern(info, split[0], variablesToTypesTM);
+        Map<String, String> variablesToTypes = new HashMap<String, String>();
+        for (Entry<String, TypeMirror> e : variablesToTypesTM.entrySet()) {
+            if (e.getValue() == null) continue;
+            variablesToTypes.put(e.getKey(), e.getValue().toString());
+        }
         HintDescription hd = HintDescriptionFactory.create()
-                                                   .setTrigger(PatternDescription.create(split[0], Collections.<String, String>emptyMap()))
+                                                   .setTrigger(PatternDescription.create(plainRule, variablesToTypes))
                                                    .setWorker(new HintDescription.Worker() {
             @Override public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
                 return Collections.singletonList(ErrorDescriptionFactory.forName(ctx, ctx.getPath(), "", JavaFixUtilities.rewriteFix(ctx, "", ctx.getPath(), split[1])));

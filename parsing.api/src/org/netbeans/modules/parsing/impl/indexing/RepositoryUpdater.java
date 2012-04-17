@@ -2792,7 +2792,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         try {
                             indexResult=index(resources, crawler.getAllResources(), root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, usedIterables);
                             if (indexResult) {
-                                crawler.storeTimestamps();
+                                final boolean permanentUpdate = !TransientUpdateSupport.isTransientUpdate();
+                                assert permanentUpdate || (forceRefresh && !files.isEmpty());
+                                if (permanentUpdate) {
+                                    crawler.storeTimestamps();
+                                }
                                 return true;
                             }
                         } finally {
