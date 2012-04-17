@@ -730,16 +730,22 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         super.visit(node);
         Expression expression = node.getExpression();
         Expression value = node.getValue();
-        if ((expression instanceof Variable) && (value instanceof Variable)) {
-            VariableNameImpl varArray = findVariable(scope, (Variable)expression);
-            VariableNameImpl varValue = findVariable(scope, (Variable)value);
-            if (varArray != null && varValue != null) {
-                processVarComment(varArray.getName(), scope);
-                varValue.setTypeResolutionKind(VariableNameImpl.TypeResolutionKind.MERGE_ASSIGNMENTS);
-                Collection<? extends String> typeNames = varArray.getArrayAccessTypeNames(node.getStartOffset());
-                for (String tpName : typeNames) {
-                    new VarAssignmentImpl(varValue, scope, true, getBlockRange(scope),
-                            new OffsetRange(value.getStartOffset(), value.getEndOffset()), tpName);
+        if (value instanceof Variable) {
+            VariableNameImpl varValue = findVariable(scope, (Variable) value);
+            varValue.setTypeResolutionKind(VariableNameImpl.TypeResolutionKind.MERGE_ASSIGNMENTS);
+            if (expression instanceof Variable) {
+                VariableNameImpl varArray = findVariable(scope, (Variable)expression);
+                if (varArray != null && varValue != null) {
+                    processVarComment(varArray.getName(), scope);
+                    Collection<? extends String> typeNames = varArray.getArrayAccessTypeNames(node.getStartOffset());
+                    for (String tpName : typeNames) {
+                        new VarAssignmentImpl(varValue, scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), tpName);
+                    }
+                }
+            } else {
+                String varType = VariousUtils.extractVariableTypeFromExpression(expression, getAssignmentMap(scope, (Variable) value));
+                if (varType != null && varValue != null) {
+                    new VarAssignmentImpl(varValue, scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), varType);
                 }
             }
         }
