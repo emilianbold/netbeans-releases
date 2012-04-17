@@ -196,7 +196,6 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
             if (unusedVariable != null) {
                 unusedScopeVariables.remove(unusedVariable);
             }
-            return;
         }
 
         @Override
