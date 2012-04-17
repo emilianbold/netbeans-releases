@@ -57,7 +57,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -67,6 +69,8 @@ import javax.swing.ActionMap;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultEditorKit;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -81,8 +85,13 @@ import org.openide.cookies.OpenCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -122,6 +131,15 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     private static final String TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE = "SystemFileSystem.localizingBundle"; // NOI18N
     private static final String TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE = "javax.script.ScriptEngine"; // NOI18N
     private static final String TEMPLATE_CATEGORY_ATTRIBUTE = "templateCategory"; // NOI18N
+    
+    /** The root templates folder. */
+    private static final String TEMPLATES_FOLDER = "Templates"; // NOI18N
+    
+    /** Paths of folders, where templates should not have the script engine set. */
+    private static final Set<String> FOLDERS_WITH_NO_SCRIPT_ENGINE = new HashSet<String>(
+            Arrays.asList(new String[] {
+                TEMPLATES_FOLDER+"/Licenses",       // NOI18N
+            }));
 
     /** Creates new form TemplatesPanel */
     public TemplatesPanel () {
@@ -227,24 +245,99 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         return templatesRootNode;
     }
     
-    private static final class TemplateFilter implements DataFilter {
-        @Override public boolean acceptDataObject(DataObject obj) {
-            return acceptTemplate (obj);
+    private static final class TemplateFilter implements ChangeableDataFilter, DataFilter.FileBased, FileChangeListener {
+        
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final Set<FileObject> filesWeListenOn = new HashSet<FileObject>();
+        
+        @Override
+        public boolean acceptDataObject (DataObject obj) {
+            return acceptTemplate (obj.getPrimaryFile());
         }
 
-        private boolean acceptTemplate (DataObject d) {
-            if (d instanceof DataFolder &&
-                "Templates/Properties".equals(d.getPrimaryFile().getPath())) {
+        @Override
+        public boolean acceptFileObject(FileObject fo) {
+            return acceptTemplate(fo);
+        }
+        
+        private boolean acceptTemplate (FileObject fo) {
+            if (fo.isFolder() &&
+                (TEMPLATES_FOLDER+"/Properties").equals(fo.getPath())) {
                 
                 return false;
             }
-            if (d.isTemplate () || d instanceof DataFolder) {
-                Object o = d.getPrimaryFile ().getAttribute ("simple"); // NOI18N
+            boolean attachListener;
+            synchronized (filesWeListenOn) {
+                attachListener = filesWeListenOn.add(fo);
+            }
+            if (attachListener) {
+                FileChangeListener fileChangeListener = FileUtil.weakFileChangeListener(this, fo);
+                fo.addFileChangeListener(fileChangeListener);
+            }
+            if (isTemplate (fo) || fo.isFolder()) {
+                Object o = fo.getAttribute ("simple"); // NOI18N
                 return o == null || Boolean.TRUE.equals (o);
             } else {
                 return false;
             }
         }
+        
+        private static boolean isTemplate(FileObject fo) {
+            Object o = fo.getAttribute(DataObject.PROP_TEMPLATE);
+            boolean ret = false;
+            if (o instanceof Boolean) {
+                ret = ((Boolean) o).booleanValue();
+            }
+            return ret;
+        }
+        
+        private void fireTemplateChanged(FileObject fo) {
+            ChangeEvent che = new ChangeEvent(fo);
+            ChangeListener[] ls;
+            synchronized (listeners) {
+                ls = listeners.toArray(new ChangeListener[] {});
+            }
+            for (ChangeListener chl : ls) {
+                chl.stateChanged(che);
+            }
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+            synchronized (listeners) {
+                listeners.add(listener);
+            }
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+            synchronized (listeners) {
+                listeners.remove(listener);
+            }
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {}
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {}
+
+        @Override
+        public void fileChanged(FileEvent fe) {}
+
+        @Override
+        public void fileDeleted(FileEvent fe) {}
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {}
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            if (DataObject.PROP_TEMPLATE.equals(fe.getName())) {
+                fireTemplateChanged(fe.getFile());
+            }
+        }
+
     }
     
     /** This method is called from within the constructor to
@@ -525,7 +618,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void settingsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settingsButtonActionPerformed
-        FileObject dir = FileUtil.getConfigFile("Templates/Properties");
+        FileObject dir = FileUtil.getConfigFile(TEMPLATES_FOLDER+"/Properties");
         if (dir == null) {
             settingsButton.setEnabled(false);
             return ;
@@ -964,18 +1057,24 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         try {
             template = sourceDO.copy (folder);
             DataObject templateSample = null;
-            for (DataObject d : folder.getChildren ()) {
-                if (d.isTemplate ()) {
-                    templateSample = d;
-                    break;
+            boolean shouldSetScriptEngine = !FOLDERS_WITH_NO_SCRIPT_ENGINE.contains(
+                    folder.getPrimaryFile().getPath());
+            if (shouldSetScriptEngine) {
+                for (DataObject d : folder.getChildren ()) {
+                    if (d.isTemplate ()) {
+                        templateSample = d;
+                        break;
+                    }
                 }
             }
             template.setTemplate(true);
-            if (templateSample == null) {
-                // a fallback if no template sample found
-                template.getPrimaryFile ().setAttribute (TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE, "freemarker"); // NOI18N
-            } else {
-                setTemplateAttributes (template.getPrimaryFile (), templateSample.getPrimaryFile ());
+            if (shouldSetScriptEngine) {
+                if (templateSample == null) {
+                    // a fallback if no template sample found
+                    template.getPrimaryFile ().setAttribute (TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE, "freemarker"); // NOI18N
+                } else {
+                    setTemplateAttributes (template.getPrimaryFile (), templateSample.getPrimaryFile ());
+                }
             }
         } catch (IOException ioe) {
             Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
@@ -983,7 +1082,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         return template;
     }
     
-    private static void doAdd (Node [] nodes) {
+    private static void doAdd (final Node [] nodes) {
         JFileChooser chooser = new JFileChooser ();
         chooser.setDialogTitle(NbBundle.getMessage(TemplatesPanel.class, "LBL_TemplatesPanel_JFileChooser_Title"));
         chooser.setApproveButtonText(NbBundle.getMessage(TemplatesPanel.class, "BTN_TemplatesPanel_JFileChooser_AddButtonName"));
@@ -991,15 +1090,52 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         chooser.setMultiSelectionEnabled (false);
         int result = chooser.showOpenDialog (null);
         if (JFileChooser.APPROVE_OPTION == result) {
-            File f = chooser.getSelectedFile ();
+            final File f = chooser.getSelectedFile ();
             assert f != null;
             if (! f.isFile()) {
                 NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(TemplatesPanel.class, "MSG_TemplatesPanel_Nonexistent_File", f.toString()));
                 DialogDisplayer.getDefault().notify(msg);
             } else {
-                createTemplateFromFile (f, getTargetFolder (nodes));
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        DataObject template = createTemplateFromFile (f, getTargetFolder (nodes));
+                        final Node node = getTemplateNode(template.getPrimaryFile());
+                        if (node != null) {
+                            try {
+                                manager.setSelectedNodes(new Node[] { node });
+                            } catch (PropertyVetoException ex) {}
+                        }
+                    }
+                });
             }
         }    
+    }
+    
+    private static Node getTemplateNode(FileObject fo) {
+        FileObject rootFO = getTemplateRootNode().getLookup().lookup(FileObject.class);
+        if (FileUtil.isParentOf(rootFO, fo)) {
+            return getTemplateNode(fo, rootFO);
+        } else {
+            return null;
+        }
+    }
+    
+    private static Node getTemplateNode(FileObject fo, FileObject rootFO) {
+        if (rootFO.equals(fo)) {
+            return getTemplateRootNode();
+        }
+        Node parent = getTemplateNode(fo.getParent(), rootFO);
+        if (parent == null) {
+            return null;
+        }
+        Children ch = parent.getChildren();
+        for (Node node : ch.getNodes(true)) {
+            if (fo.equals(node.getLookup().lookup(FileObject.class))) {
+                return node;
+            }
+        }
+        return null;
     }
     
     private static DataFolder doNewFolder (Node [] nodes) {
@@ -1083,7 +1219,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
     static FileObject getTemplatesRoot () {
         if (templatesRoot == null) {
-            templatesRoot = FileUtil.getConfigFile("Templates"); // NOI18N
+            templatesRoot = FileUtil.getConfigFile(TEMPLATES_FOLDER); // NOI18N
         }
         return templatesRoot;
     }

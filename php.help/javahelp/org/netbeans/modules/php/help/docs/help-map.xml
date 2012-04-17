@@ -12,6 +12,8 @@
     <mapID target="php_process" url="process.html"/>
     <mapID target="org.netbeans.modules.php.help.about" url="help-about.html"/>
     <mapID target="php_projects" url="php-projects.html"/>
+    <mapID target="xdebug_setup" url="xdebug-setup.html"/>
+    <mapID target="php_hudson" url="hudson-php.html"/>
     <!-- TOC Editor help -->
     <mapID target="php_editor" url="editor/editor-about.html"/>
     <mapID target="php_syntax_highlighting" url="editor/syntax-highlighting.html"/>
@@ -67,4 +69,5 @@
     <mapID target="org.netbeans.modules.php.project.ui.options.PhpAnnotationsPanelController" url="options-csh/annotations.html"/>
     <mapID target="org.netbeans.modules.php.apigen.ui.options.Options" url="options-csh/apigen.html"/>
     <mapID target="org.netbeans.modules.php.doctrine2.Options" url="options-csh/doctrine.html"/>
+    <mapID target="org.netbeans.modules.hudson.php.ui.options.Options" url="options-csh/hudson.html"/>
 </map>
