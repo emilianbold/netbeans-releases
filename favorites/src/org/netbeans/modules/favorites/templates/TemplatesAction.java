@@ -176,8 +176,7 @@ public class TemplatesAction extends AbstractAction { // XXX could be ActionList
                         DataObject dobj = n.getLookup().lookup(DataObject.class);
                         assert dobj != null : "DataObject for node " + n;
                         FileObject fo = dobj.getPrimaryFile ();
-                        File f = FileUtil.toFile (fo);
-                        res = f != null || fo.getSize () > 0;
+                        res = fo.canRevert() || fo.getSize () > 0;
                     }
 
                     i++;
