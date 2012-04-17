@@ -22,7 +22,18 @@
             ApiGen. You must have ApiGen installed. You must configure NetBeans
             IDE for PHP to use ApiGen, in Tools &gt; Options &gt; PHP &gt; ApiGen (On MacOS,
             this is NetBeans Preferences &gt; PHP &gt; ApiGen).</p>
-
+        <h3>Manual Configuration or Configuration File</h3>
+        <p>Select either to configure ApiGen manually, in this dialog, or to use a configuration
+            file. If you select a configuration file, enter the path to an ApiGen configuration
+            file in the Configuration field.</p> 
+        <p>The configuration file contains parameters that are passed when you run ApiGen. You can set options in the configuration file that are not available in this dialog. For a full list of options, see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://apigen.org/#usage">
+                <param name="text" value="<html><u>ApiGen documentation</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.</p>
+            <h3>Manual Configuration</h3>
+            <p>You can set the following parameters in this dialog:</p>
         <ul>
             <li><b>Target Directory:</b> The directory containing the generated
                 ApiGen documentation.
@@ -31,12 +42,10 @@
 
                 </ul></li>
             <li><b>Title:</b> The title of the generated documentation.</li>
-            <li><strong>Configuration.</strong> Optional. The path to an ApiGen configuration
-                file. The configuration file contains parameters that are passed 
-                when you run ApiGen. 
+            <li><strong>Configuration.</strong> Optional. 
                 <ul class="note"><li>Any parameters you define elsewhere in this
                         dialog override parameters defined in a configuration file.</li></ul>
-                
+
             </li>
             <li><strong>Charsets.</strong> Character set of source files. You can specify a
                 comma-separated list of character sets if your PHP project uses more than one 
@@ -65,11 +74,11 @@
         <dl> 
             <dt><a name="seealso">See Also</a></dt>
             <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                <param name="content" value="http://apigen.org/##usage">
-                <param name="text" value="<html><u>ApiGen documentation</u></html>">
-                <param name="textFontSize" value="medium">
-                <param name="textColor" value="blue">
-            </object></dd>
+                    <param name="content" value="http://apigen.org/#usage">
+                    <param name="text" value="<html><u>ApiGen documentation</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></dd>
             <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="https://blogs.oracle.com/netbeansphp/entry/apigen_support_added">
                     <param name="text" value="<html><u>ApiGen Support Added</u></html>">
