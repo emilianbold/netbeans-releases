@@ -50,11 +50,13 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.apisupport.project.api.BasicWizardPanel;
 import static org.netbeans.modules.apisupport.project.ui.platform.Bundle.*;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -101,11 +103,17 @@ public final class NbPlatformCustomizer extends JPanel {
     }
     
     @Messages({
+        "PROGRESS_checking_for_upgrade=Checking for old harnesses to upgrade",
         "CTL_Close=&Close",
         "CTL_NbPlatformManager_Title=NetBeans Platform Manager"
     })
     public static void showCustomizer() {
-        HarnessUpgrader.checkForUpgrade();
+        final AtomicBoolean canceled = new AtomicBoolean();
+        ProgressUtils.runOffEventDispatchThread(new Runnable() { // #207451
+            @Override public void run() {
+                HarnessUpgrader.checkForUpgrade();
+            }
+        }, PROGRESS_checking_for_upgrade(), canceled, false);
         NbPlatformCustomizer customizer = new NbPlatformCustomizer();
         JButton closeButton = new JButton();
         Mnemonics.setLocalizedText(closeButton, CTL_Close());
