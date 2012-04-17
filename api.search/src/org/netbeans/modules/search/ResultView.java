@@ -65,13 +65,17 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -110,6 +114,7 @@ public final class ResultView extends TopComponent {
     private JPanel emptyPanel;
     private JTabbedPane tabs;
     private WeakReference<ResultViewPanel> tabToReuse;
+    private CurrentLookupProvider lookupProvider = new CurrentLookupProvider();
 
     /**
      * Returns a singleton of this class.
@@ -146,6 +151,12 @@ public final class ResultView extends TopComponent {
         emptyPanel = new JPanel();
         emptyPanel.setOpaque(true);
         tabs = TabbedPaneFactory.createCloseButtonTabbedPane();
+        tabs.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                updateLookup();
+            }
+        });
         tabs.setMinimumSize(new Dimension(0, 0));
         tabs.addMouseListener(popL);
         tabs.addPropertyChangeListener(closeL);
@@ -161,6 +172,7 @@ public final class ResultView extends TopComponent {
             emptyPanel.setBackground(SystemColor.text);
         }
         contentCards.show(this, CARD_NAME_EMPTY);
+        associateLookup(Lookups.proxy(lookupProvider));
     }
 
     @Deprecated
@@ -527,5 +539,24 @@ public final class ResultView extends TopComponent {
      */
     public synchronized void clearReusableTab() {
         setTabToReuse(null);
+    }
+
+    private void updateLookup() {
+        ResultViewPanel rvp = getCurrentResultViewPanel();
+        lookupProvider.setLookup(rvp == null ? Lookup.EMPTY : rvp.getLookup());
+        getLookup().lookup(Object.class); //refresh lookup
+    }
+
+    private static class CurrentLookupProvider implements Lookup.Provider {
+        private Lookup currentLookup = Lookup.EMPTY;
+
+        public void setLookup(Lookup lookup) {
+            this.currentLookup = lookup;
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return currentLookup;
+        }
     }
 }

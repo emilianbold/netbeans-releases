@@ -128,7 +128,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
     private static final String CONFIG_DELIMITER = "<=>";                       // NOI18N
 
-    private static final Comparator<IssueProperty> NodeComparator = new Comparator<IssueProperty>() {
+    private static final Comparator<IssueProperty> nodeComparator = new Comparator<IssueProperty>() {
         @Override
         public int compare(IssueProperty p1, IssueProperty p2) {
             Integer sk1 = (Integer) p1.getValue("sortkey"); // NOI18N
@@ -161,7 +161,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         
         initFilters();
 
-        sorter.setColumnComparator(Node.Property.class, NodeComparator);
+        sorter.setColumnComparator(Node.Property.class, nodeComparator);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
         table.setRowHeight(table.getRowHeight() * 6 / 5);

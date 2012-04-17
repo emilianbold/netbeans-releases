@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.refactoring.java.test;
 
-import org.netbeans.modules.refactoring.java.api.InvertBooleanRefactoring;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -56,6 +55,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.errors.TaskCache;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.java.api.InvertBooleanRefactoring;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -95,6 +95,18 @@ public class InvertBooleanTest extends RefTestBase {
                       new File("META-INF/upgrade/test.Test.hint", "new test.Test($1, $2) :: $1 instanceof int && $2 instanceof java.util.List<java.lang.String> => test.Test.create($1, $2);;")*/
                      );
     }
+    
+    public void testInvertField3() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("test/Test.java", "package test;\n public class Test {\n public boolean b = true; public boolean crazyOtherMethod() { return b; }\n}")
+                                 );
+
+        performFieldTest("b");
+
+        assertContent(src,
+                      new File("test/Test.java", "package test;\n public class Test {\n public boolean b = false; public boolean crazyOtherMethod() { return !b; }\n}"));
+    }
+    
     
     public void test210971() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -150,7 +162,7 @@ public class InvertBooleanTest extends RefTestBase {
                      );
     }
 
-    private void performFieldTest() throws Exception {
+    private void performFieldTest(final String newName) throws Exception {
         final InvertBooleanRefactoring[] r = new InvertBooleanRefactoring[1];
         FileObject testFile = src.getFileObject("test/Test.java");
 
@@ -164,7 +176,7 @@ public class InvertBooleanTest extends RefTestBase {
 
                 TreePath tp = TreePath.getPath(cut, var);
                 r[0] = new InvertBooleanRefactoring(TreePathHandle.create(tp, parameter));
-                r[0].setNewName("c");
+                r[0].setNewName(newName);
             }
         }, true);
 
@@ -176,6 +188,10 @@ public class InvertBooleanTest extends RefTestBase {
         IndexingManager.getDefault().refreshIndex(src.getURL(), null);
         SourceUtils.waitScanFinished();
         assertEquals(false, TaskCache.getDefault().isInError(src, true));
+    }
+
+    private void performFieldTest() throws Exception {
+        performFieldTest("c");
     }
 
     private void performMethodTest() throws Exception {

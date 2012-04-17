@@ -42,13 +42,16 @@
 package org.netbeans.modules.search.ui;
 
 import java.awt.Image;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -400,6 +403,10 @@ public class ResultsOutlineSupport {
         public Action[] getActions(boolean context) {
             return new Action[0];
         }
+
+        @Override
+        protected void createPasteTypes(Transferable t, List<PasteType> s) {
+        }
     }
 
     private void expandOnlyChilds(Node parent) {
@@ -606,7 +613,8 @@ public class ResultsOutlineSupport {
             super(pathItem.getFolder().getNodeDelegate(),
                     new FolderTreeChildren(pathItem),
                     Lookups.fixed(pathItem,
-                    new ReplaceCheckableNode(pathItem, replacing)));
+                    new ReplaceCheckableNode(pathItem, replacing),
+                    pathItem.getFolder().getPrimaryFile()));
             pathItem.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -628,6 +636,11 @@ public class ResultsOutlineSupport {
         @Override
         public PasteType getDropType(Transferable t, int action, int index) {
             return null;
+        }
+
+        @Override
+        public Transferable drag() throws IOException {
+            return UiUtils.DISABLE_TRANSFER;
         }
 
         @Override

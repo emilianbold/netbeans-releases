@@ -46,8 +46,10 @@
 package org.netbeans.modules.search;
 
 import java.awt.Toolkit;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.CharConversionException;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
@@ -74,6 +76,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -642,6 +645,10 @@ public final class TextDetail implements Selectable {
                                                          Integer.toString(line)
                                                         });
             }
+        }
+
+        @Override
+        protected void createPasteTypes(Transferable t, List<PasteType> s) {
         }
         
     } // End of DetailNode class.

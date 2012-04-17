@@ -43,49 +43,48 @@ package org.netbeans.modules.tasks.ui.filter;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.bugtracking.api.Issue;
 
 /**
  *
  * @author jpeska
  */
-public class AppliedFilters {
+public class AppliedFilters<T> {
 
-    private List<TaskFilter> filters;
+    private List<DashboardFilter<T>> filters;
 
     public AppliedFilters() {
-        filters = new ArrayList<TaskFilter>();
+        filters = new ArrayList<DashboardFilter<T>>();
     }
 
-    public void addFilter(TaskFilter filter) {
+    public void addFilter(DashboardFilter<T> filter) {
         if (!filters.contains(filter)) {
             filters.add(filter);
         }
     }
 
-    public void removeFilter(TaskFilter filter) {
+    public void removeFilter(DashboardFilter<T> filter) {
         filters.remove(filter);
     }
 
-    public List<TaskFilter> getFilters() {
-        return new ArrayList<TaskFilter>(filters);
+    public List<DashboardFilter> getFilters() {
+        return new ArrayList<DashboardFilter>(filters);
     }
 
     public boolean isEmpty() {
         return filters.isEmpty();
     }
 
-    public boolean isInFilter(Issue task) {
-        for (TaskFilter filter : filters) {
-            if (!filter.isInFilter(task)) {
+    public boolean isInFilter(T entry) {
+        for (DashboardFilter<T> filter : filters) {
+            if (!filter.isInFilter(entry)) {
                 return false;
             }
         }
         return true;
     }
 
-    public boolean expandNodes() {
-        for (TaskFilter filter : filters) {
+      public boolean expandNodes() {
+        for (DashboardFilter filter : filters) {
             if (filter.expandNodes()) {
                 return true;
             }
