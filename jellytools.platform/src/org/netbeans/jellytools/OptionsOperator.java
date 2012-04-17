@@ -385,8 +385,8 @@ public class OptionsOperator extends NbDialogOperator {
     
     /** Selects Java category. */
     public void selectJava() {
-        selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.options.java.resources.Bundle",
-                                               "OptionsCategory_Name_Java"));
+        selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.options.java.Bundle",
+                                               "OpenIDE-Module-Display-Category"));
     }
 
     /** Selects Fonts & Colors category. */

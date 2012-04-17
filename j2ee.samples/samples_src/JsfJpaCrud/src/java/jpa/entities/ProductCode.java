@@ -129,7 +129,7 @@ public class ProductCode implements Serializable {
 
     @Override
     public String toString() {
-        return "jpa.entities.ProductCode[prodCode=" + prodCode + "]";
+        return prodCode.toString();
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,48 +34,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.spi.testvcs;
 
+package org.netbeans.modules.versioning.core.spi.testvcs;
 
-import javax.swing.*;
-import java.awt.Image;
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.core.spi.VCSAnnotator.ActionDestination;
-import org.netbeans.modules.versioning.core.spi.VCSContext;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 
 /**
- * Annotator for TestVCS.
- * 
- * @author Maros Sandor
+ *
+ * @author Tomas Stupka
  */
-public class TestVCSAnnotator extends VCSAnnotator {
-    
-    public TestVCSAnnotator() {
+public class TestVCSVisibilityQuery extends VCSVisibilityQuery {
+
+    public static final String INVISIBLE_FILE_SUFFIX = "invisible";
+
+    @Override
+    public boolean isVisible(VCSFileProxy file) {
+        return !file.getName().endsWith(INVISIBLE_FILE_SUFFIX);
     }
 
-    public String annotateName(String name, VCSContext context) {
-        if (name.equals("annotate-me")) {
-            return "annotated";
-        }
-        return name;
-    }
-
-    public Image annotateIcon(Image icon, VCSContext context) {
-        return icon;
-    }
-
-    public Action[] getActions(VCSContext context, ActionDestination destination) {
-        return new Action[] {
-            new DummyAction()
-        };
-    }
-    
-    private static class DummyAction extends AbstractAction {
-
-        public void actionPerformed(ActionEvent e) {
-            // do nothing
-        }
-    }
 }

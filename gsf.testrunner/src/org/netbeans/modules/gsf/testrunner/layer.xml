@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <!-- actions -->
     <folder name="Actions">
@@ -33,6 +33,14 @@
         </folder>
         <folder name="Components">
             <file name="gsf-testrunner-results.settings" url="gsf-testrunner-results.settings"/>
+        </folder>
+    </folder>
+
+    <folder name="Templates">
+        <folder name="UnitTests">
+            <attr name="displayName" bundlevalue="org.netbeans.modules.gsf.testrunner.Bundle#UnitTests_displayname"/>
+            <attr name="position" intvalue="1200"/>
+            
         </folder>
     </folder>
 

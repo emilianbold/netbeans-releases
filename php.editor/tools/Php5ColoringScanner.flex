@@ -271,7 +271,7 @@ EXPONENT_DNUM=(({LNUM}|{DNUM})[eE][+-]?{LNUM})
 HNUM="0x"[0-9a-fA-F]+
 BNUM="0b"[01]+
 //LABEL=[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
-LABEL=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_\x7f-\xff]*
+LABEL=([[:letter:]_]|[\u007f-\u00ff])([[:letter:][:digit:]_]|[\u007f-\u00ff])*
 WHITESPACE=[ \n\r\t]+
 TABS_AND_SPACES=[ \t]*
 TOKENS=[:,.\[\]()|\^&+-//*=%!~$<>?@]

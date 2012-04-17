@@ -52,6 +52,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1368,11 +1369,14 @@ public final class Mutex extends Object {
         }
 
         final AtomicReference<Union2<T,Throwable>> res = new AtomicReference<Union2<T,Throwable>>();
-
+        final AtomicBoolean started = new AtomicBoolean(); // #210991
+        final AtomicBoolean finished = new AtomicBoolean();
+        final AtomicBoolean invoked = new AtomicBoolean();
         try {
             class AWTWorker implements Runnable {
                 @Override
                 public void run() {
+                    started.set(true);
                     try {
                         res.set(Union2.<T,Throwable>createFirst(run.run()));
                     } catch (Exception e) {
@@ -1384,11 +1388,13 @@ public final class Mutex extends Object {
                         // #20467
                         res.set(Union2.<T,Throwable>createSecond(e));
                     }
+                    finished.set(true);
                 }
             }
-            
+
             AWTWorker w = new AWTWorker();
             EventQueue.invokeAndWait(w);
+            invoked.set(true);
         } catch (InterruptedException e) {
             res.set(Union2.<T,Throwable>createSecond(e));
         } catch (InvocationTargetException e) {
@@ -1397,7 +1403,7 @@ public final class Mutex extends Object {
 
         Union2<T,Throwable> _res = res.get();
         if (_res == null) {
-            throw new IllegalStateException("#210991: got neither a result nor an exception");
+            throw new IllegalStateException("#210991: got neither a result nor an exception; started=" + started + " finished=" + finished + " invoked=" + invoked);
         } else if (_res.hasFirst()) {
             return _res.first();
         } else {

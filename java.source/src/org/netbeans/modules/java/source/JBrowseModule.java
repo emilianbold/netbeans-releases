@@ -59,7 +59,8 @@ public class JBrowseModule extends ModuleInstall {
     }
     
     
-    public @Override void close () {
+    @Override
+    public void close () {
         super.close();
         ClassIndexManager.getDefault().close();
     }        

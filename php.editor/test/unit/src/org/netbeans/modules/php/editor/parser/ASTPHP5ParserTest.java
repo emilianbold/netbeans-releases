@@ -444,6 +444,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("php53/issue170712");
     }
 
+    public void testIssue200501() throws Exception {
+        performTest("varcomment/issue200501");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -727,8 +727,6 @@ final class NbInstaller extends ModuleInstaller {
     }
 
     
-    private AutomaticDependencies autoDepsHandler = null;
-    
     /** Overridden to perform automatic API upgrades.
      * That is, should do nothing on new modules, but for older ones will
      * automatically make them depend on things they need.
@@ -748,33 +746,7 @@ final class NbInstaller extends ModuleInstaller {
             // Skip them all - useful for unit tests.
             return;
         }
-        if (autoDepsHandler == null) {
-            FileObject depsFolder = FileUtil.getConfigFile("ModuleAutoDeps");
-            if (depsFolder != null) {
-                FileObject[] kids = depsFolder.getChildren();
-                List<URL> urls = new ArrayList<URL>(Math.max(kids.length, 1));
-                for (FileObject kid : kids) {
-                    if (kid.hasExt("xml")) { // NOI18N
-                        urls.add(kid.toURL());
-                    }
-                }
-                try {
-                    autoDepsHandler = AutomaticDependencies.parse(urls.toArray(new URL[urls.size()]));
-                } catch (IOException e) {
-                    Util.err.log(Level.WARNING, null, e);
-                } catch (SAXException e) {
-                    Util.err.log(Level.WARNING, null, e);
-                }
-            }
-            if (autoDepsHandler == null) {
-                // Parsing failed, or no files.
-                autoDepsHandler = AutomaticDependencies.empty();
-            }
-            if (Util.err.isLoggable(Level.FINE)) {
-                Util.err.fine("Auto deps: " + autoDepsHandler);
-            }
-        }
-        AutomaticDependencies.Report rep = autoDepsHandler.refineDependenciesAndReport(m.getCodeNameBase(), dependencies);
+        AutomaticDependencies.Report rep = AutomaticDependencies.getDefault().refineDependenciesAndReport(m.getCodeNameBase(), dependencies);
         if (rep.isModified()) {
             Util.err.warning(rep.toString());
         }

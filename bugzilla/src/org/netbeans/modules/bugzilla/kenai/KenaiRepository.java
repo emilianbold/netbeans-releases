@@ -207,10 +207,6 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         authenticate(null);
     }
 
-    protected void setCredentials(String user, char[] password) {
-        super.setCredentials(user, password, null, null);
-    }
-
     @Override
     public void refreshAllQueries() {
         super.refreshAllQueries(false);
@@ -226,7 +222,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         String user = pa.getUserName();
         char[] password = pa.getPassword();
 
-        setCredentials(user, password);
+        setCredentials(user, password, null, null);
 
         return true;
     }
@@ -314,7 +310,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
                 psswd = new char[0];                                            // NOI18N
             }
 
-            setCredentials(user, psswd);
+            setCredentials(user, psswd, null, null);
 
             synchronized(KenaiRepository.this) {
                 if(evt.getNewValue() != null) {

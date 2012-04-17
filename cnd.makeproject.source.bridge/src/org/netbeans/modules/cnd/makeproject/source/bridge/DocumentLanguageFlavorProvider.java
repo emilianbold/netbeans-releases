@@ -83,7 +83,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         }
         // check if it should have C++11 flavor
         Language<?> language = (Language<?>) doc.getProperty(Language.class);
-        if (language != CppTokenId.languageCpp()) {
+        if (language != CppTokenId.languageCpp() && language != CppTokenId.languageC()) {
             return;
         }
         // fast check using NativeFileItemSet
@@ -91,15 +91,9 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         if (nfis != null && !nfis.isEmpty()) {
             for (NativeFileItem nativeFileItem : nfis.getItems()) {
                 doc.putProperty(ListenerImpl.class, new ListenerImpl(doc, dob, nativeFileItem));
-                if (nativeFileItem.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11) {
-                    InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
-                    Filter<?> filter = CndLexerUtilities.getGccCpp11Filter();
-                    lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
-                }
-                break;
+                setLanguage(nativeFileItem, doc);
+                return;
             }
-            // there is non empty set and file is not c++11
-            return;
         }
         FileObject primaryFile = dob.getPrimaryFile();
         if (primaryFile == null) {
@@ -117,12 +111,36 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         if (nfi == null) {
             return;
         }
-        if (nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11) {
-            InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
-            Filter<?> filter = CndLexerUtilities.getGccCpp11Filter();
-            lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
-        }
+        setLanguage(nfi, doc);
         doc.putProperty(ListenerImpl.class, new ListenerImpl(doc, dob, nfi));
+    }
+
+    private static void setLanguage(NativeFileItem nfi, StyledDocument doc) {
+        Language<?> language = null;
+        Filter<?> filter = null;
+        switch (nfi.getLanguage()) {
+            case C:
+                language = CppTokenId.languageC();
+                filter = CndLexerUtilities.getGccCFilter();
+                break;
+            case C_HEADER:
+            case CPP:
+                language = CppTokenId.languageCpp();
+                if (nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11) {
+                    filter = CndLexerUtilities.getGccCpp11Filter();
+                } else {
+                    filter = CndLexerUtilities.getGccCppFilter();
+                }
+                break;
+            case FORTRAN:
+            case OTHER:
+                return;
+        }
+        assert language != null;
+        assert filter != null;
+        doc.putProperty(Language.class, language);
+        InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
+        lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
     }
 
     private final static class ListenerImpl implements NativeProjectItemsListener, PropertyChangeListener {
@@ -142,7 +160,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             this.languageFlavor = nativeFileItem.getLanguageFlavor();
             nativeProject.addProjectItemsListener(ListenerImpl.this);
             EditorRegistry.addPropertyChangeListener(ListenerImpl.this);
-            if (TRACE) System.err.println(path + " created Listener " + System.identityHashCode(this));
+            if (TRACE) System.err.println(path + " created Listener " + System.identityHashCode(ListenerImpl.this));
         }
 
         @Override
@@ -210,18 +228,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 if (TRACE) System.err.println(path + " Item Listener " + System.identityHashCode(this));
                 LanguageFlavor newFlavor = fileItem.getLanguageFlavor();
                 if (!languageFlavor.equals(newFlavor)) {
-                    Language<?> language = (Language<?>) doc.getProperty(Language.class);
-                    if (language != CppTokenId.languageCpp()) {
-                        return;
-                    }
-                    InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
-                    Filter<?> filter;
-                    if (newFlavor == NativeFileItem.LanguageFlavor.CPP11) {
-                        filter = CndLexerUtilities.getGccCpp11Filter();
-                    } else {
-                        filter = CndLexerUtilities.getGccCppFilter();
-                    }
-                    lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
+                    setLanguage(fileItem, doc);
                     languageFlavor = newFlavor;
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override

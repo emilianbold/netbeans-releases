@@ -203,7 +203,7 @@ public class Manufacturer implements Serializable {
 
     @Override
     public String toString() {
-        return "jpa.entities.Manufacturer[manufacturerId=" + manufacturerId + "]";
+        return manufacturerId.toString();
     }
 
 }

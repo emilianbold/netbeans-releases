@@ -91,4 +91,18 @@ final class AccessorImpl extends SPIAccessor {
     public boolean hasChangesInReadOnlyFiles(RefactoringElementsBag bag) {
         return bag.hasReadOnly;
     }
+
+    @Override
+    public void check(Transaction commit, boolean undo) {
+        if (commit instanceof RefactoringCommit) {
+            ((RefactoringCommit) commit).check(undo);
+        }
+    }
+
+    @Override
+    public void sum(Transaction commit) {
+        if (commit instanceof RefactoringCommit) {
+            ((RefactoringCommit) commit).sum();
+        }
+    }
 }

@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
@@ -394,6 +395,11 @@ public class ResultsOutlineSupport {
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
     }
 
     private void expandOnlyChilds(Node parent) {
@@ -622,6 +628,11 @@ public class ResultsOutlineSupport {
         @Override
         public PasteType getDropType(Transferable t, int action, int index) {
             return null;
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
         }
     }
 

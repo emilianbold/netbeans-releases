@@ -923,7 +923,7 @@ public final class PatchedHtmlRenderer {
         boolean useUIManager = false;
 
         for (int i = pos; i < tagEnd; i++) {
-            if (ch[i] == 'c') {
+            if (ch[i] == 'c' && i + 6 < ch.length) {
                 colorPos = i + 6;
 
                 if ((ch[colorPos] == '\'') || (ch[colorPos] == '"')) {

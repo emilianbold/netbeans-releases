@@ -94,8 +94,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
 
     private static final String DOCUMENT_SAVE_ENCODING = "Document_Save_Encoding";
     private static final String UTF_8_ENCODING = "UTF-8";
-    // only to be ever user from unit tests:
-    public static boolean showConfirmationDialog = true;
+    
     /** SaveCookie for this support instance. The cookie is adding/removing
      * data object's cookie set depending on if modification flag was set/unset.
      * It also invokes beforeSave() method on the HtmlDataObject to give it
@@ -185,38 +184,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
     }
 
-    @Override
-    public void open() {
-        String encoding = ((HtmlDataObject) getDataObject()).getFileEncoding();
-        String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
-        if (encoding != null && !isSupportedEncoding(encoding)) {
-            if(!showConfirmationDialog) {
-                return ; //simulate "No" pressed in the dialog if opened
-            }
-//            if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
-//                feqEncoding = UTF_8_ENCODING;
-//            }
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(HtmlEditorSupport.class, "MSG_unsupportedEncodingLoad", //NOI18N
-                    new Object[]{getDataObject().getPrimaryFile().getNameExt(),
-                        encoding,
-                        feqEncoding}),
-                    NotifyDescriptor.YES_NO_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-            if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
-                return; // do not open the file
-            }
-        }
-
-//        if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
-//            feqEncoding = UTF_8_ENCODING;
-//        }
-
-        super.open();
-    }
-
-    /**
+     /**
      * @inheritDoc
      */
     @Override

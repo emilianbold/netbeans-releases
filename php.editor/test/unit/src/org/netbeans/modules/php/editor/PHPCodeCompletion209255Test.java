@@ -39,41 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.spi.testvcs;
+package org.netbeans.modules.php.editor;
 
 import java.io.File;
-import java.net.URI;
-import org.netbeans.spi.queries.CollocationQueryImplementation2;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TestVCSCollocationQuery implements CollocationQueryImplementation2 {
+public class PHPCodeCompletion209255Test extends PHPCodeCompletionTestBase {
 
-    public static String COLLOCATED_FILENAME_SUFFIX = "_iscollocated";
-    @Override
-    public boolean areCollocated(URI file1, URI file2) {
-        String name1 = file1.getPath();
-        String name2 = file2.getPath();
-        
-        return name1.endsWith(COLLOCATED_FILENAME_SUFFIX) && name2.endsWith(COLLOCATED_FILENAME_SUFFIX);
+    public PHPCodeCompletion209255Test(String testName) {
+        super(testName);
     }
 
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test209255/test209255.php", "global ^    //CC", false);
+    }
+
     @Override
-    public URI findRoot(URI uri) {
-        File root = getRoot(new File(uri));
-        return root != null ? root.toURI() : null;
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test209255/"))
+            })
+        );
     }
-    
-    private File getRoot(File file) {
-        File topmost = null;
-        for (; file != null; file = file.getParentFile()) {
-            if (file.getName().endsWith(TestVCS.VERSIONED_FOLDER_SUFFIX)) {
-                topmost = file;
-            }
-        }
-        return topmost;
-    }
-    
+
 }
