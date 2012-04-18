@@ -170,6 +170,23 @@ public class ErrorManagerDelegatesToLoggingTest extends NbTestCase {
         if (!stackTrace.contains(msg)) fail("\'"+msg+"\' not found: "+stackTrace);
     }
     
+    public void testAnnotateExceptionWithCNFECause() {
+        Throwable e = new NoClassDefFoundError();
+        e.initCause(new ClassNotFoundException());
+        String msg = "some annotation";
+    
+        ErrorManager.getDefault().annotate(e, ErrorManager.EXCEPTION, msg, null, null, null);
+        ErrorManager.getDefault().notify(e);
+
+        assertTrue(MyHandler.lastThrowable == e || MyHandler.lastThrowable.getCause() == e);
+        
+        StringWriter w = new StringWriter();
+        MyHandler.lastThrowable.printStackTrace(new PrintWriter(w));
+        String stackTrace = w.toString();
+
+        if (!stackTrace.contains(msg)) fail("\'"+msg+"\' not found: "+stackTrace);
+    }
+    
     
     //
     // Manager to delegate to
