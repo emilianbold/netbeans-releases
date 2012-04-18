@@ -430,7 +430,7 @@ public final class RepositoryPreferences {
         for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
             // XXX should there be a String preferredId parameter to limit the remote repositories used in case we have a "reference" ID somehow?
             if (!info.isLocal()) {
-                remotes.add(EmbedderFactory.createRemoteRepository(embedder, info.getRepositoryUrl(), info.getId()));
+                remotes.add(embedder.createRemoteRepository(info.getRepositoryUrl(), info.getId()));
             }
             // XXX do we care to handle mirrors specially?
         }
