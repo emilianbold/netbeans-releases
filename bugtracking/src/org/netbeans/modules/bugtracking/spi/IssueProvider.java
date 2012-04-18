@@ -46,7 +46,7 @@ import java.io.File;
 import org.openide.nodes.Node;
 
 /**
- * Represents a bugtracking IssueProvider
+ * Provides access to a bugtracking Issue
  *
  * @author Tomas Stupka
  */
