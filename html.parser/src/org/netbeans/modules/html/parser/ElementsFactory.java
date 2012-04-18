@@ -79,7 +79,7 @@ public class ElementsFactory {
         return new Root(source, null);
     }
 
-    CommonAttribute createAttribute(int nameOffset, int valueOffset, short nameLen, short valueLen) {
+    CommonAttribute createAttribute(int nameOffset, int valueOffset, short nameLen, int valueLen) {
         return new CommonAttribute(source, nameOffset, valueOffset, nameLen, valueLen);
     }
 
@@ -822,7 +822,7 @@ public class ElementsFactory {
         private int nameOffset;
         private short valueOffset2nameOffsetDiff;
         private short nameLen;
-        private short valueLen;
+        private int valueLen;
 
         public CommonAttribute(CharSequence source, int nameOffset, short nameLen) {
             this.source = source;
@@ -834,7 +834,7 @@ public class ElementsFactory {
             this.valueLen = -1;
         }
 
-        public CommonAttribute(CharSequence source, int nameOffset, int valueOffset, short nameLen, short valueLen) {
+        public CommonAttribute(CharSequence source, int nameOffset, int valueOffset, short nameLen, int valueLen) {
             this.source = source;
 
             this.nameOffset = nameOffset;
