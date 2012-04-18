@@ -50,6 +50,7 @@ import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.CreateCategoryAction;
@@ -594,7 +595,7 @@ public final class DashboardViewer {
     }
 
     private Repository getRepository(String repositoryId) {
-        List<Repository> repositories = new ArrayList<Repository>(Util.getRepositories());
+        List<Repository> repositories = new ArrayList<Repository>(RepositoryManager.getInstance().getRepositories());
         for (Repository repository : repositories) {
             if (repository.getId().equals(repositoryId)) {
                 return repository;
@@ -604,7 +605,7 @@ public final class DashboardViewer {
     }
 
     private void loadRepositories() {
-        List<Repository> allRepositories = new ArrayList<Repository>(Util.getRepositories());
+        List<Repository> allRepositories = new ArrayList<Repository>(RepositoryManager.getInstance().getRepositories());
         List<String> ids = DashboardStorage.getInstance().readClosedRepositories();
         final List<RepositoryNode> repoNodes = new ArrayList<RepositoryNode>(allRepositories.size());
 
