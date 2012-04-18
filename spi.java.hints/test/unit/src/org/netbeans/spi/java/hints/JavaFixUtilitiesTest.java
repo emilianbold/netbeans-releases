@@ -503,6 +503,25 @@ public class JavaFixUtilitiesTest extends TestBase {
                                     "public class Test {\n" +
                                     "}\n");
     }
+    
+    public void testRemoveFromParentExpressionStatement206116() throws Exception {
+        performRemoveFromParentTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        System.err.println();\n" +
+                           "        System.err.println(\"a\");\n" +
+                           "    }\n" +
+                           "}\n",
+                           "System.err.println()",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        System.err.println(\"a\");\n" +
+                           "    }\n" +
+		           "}\n");
+    }
 
     public void testUnresolvableTarget() throws Exception {
         performRewriteTest("package test;\n" +
