@@ -142,7 +142,6 @@ public class GotoOppositeAction extends CallableSystemAction {
     }
     
     @Override
-    @NbBundle.Messages("LBL_PickExpression=Go to Test")
     public void performAction() {
         int caretOffsetHolder[] = { -1 };
         final FileObject fo = getApplicableFileObject(caretOffsetHolder);
@@ -220,17 +219,19 @@ public class GotoOppositeAction extends CallableSystemAction {
                             lock.release();
                         }
                     });
-            } else {
+                } else {
                     LocationResult opposite = locator.findOpposite(fo, caretOffset);
 
                     if (opposite != null) {
                         locationResults.put(opposite, opposite.getFileObject().getName());
                     }
+                    lock.release();
                 }
             }
         }
     }
 
+    @NbBundle.Messages("LBL_PickExpression=Go to Test")
     private void showPopup(FileObject fo) {
         JTextComponent pane;
         Point l = new Point(-1, -1);
