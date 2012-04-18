@@ -74,7 +74,12 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
         ElementHandle element = new SimpleElement(name, ElementKind.RULE);
         return new CssCompletionItem(element, anchorOffset, surround);
     }
-    
+
+    static CompletionProposal createJQueryItem(String name, int anchorOffset, String surround, String codeTemplate) {
+        ElementHandle element = new SimpleElement(name, ElementKind.RULE);
+        return new JQuerySimpleItem(element, anchorOffset, surround, codeTemplate);
+    }
+
     public JQueryCompletionItem(final ElementHandle element, final int anchorOffset) {
         this.anchorOffset = anchorOffset;
         this.element = element;
@@ -144,7 +149,10 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
             this.surround = surround;
         }
 
-        
+        public String getSurround() {
+            return surround;
+        }
+
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             formatter.reset();
@@ -165,13 +173,12 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
                 return surround + getName() + surround;
             }
         }
-        
-        
-        
     }
     
     public static class CssCompletionItem extends HTMLTagCompletionItem {
+        
         private static ImageIcon cssIcon = null;
+        
         public CssCompletionItem(ElementHandle element, int anchorOffset, String surround) {
             super(element, anchorOffset, surround);
         }
@@ -185,6 +192,39 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
         }
         
     }
+    
+    public static class JQuerySimpleItem extends HTMLTagCompletionItem {
+        
+        private static ImageIcon jQIcon = null;
+        private final String template;
+        
+        public JQuerySimpleItem(ElementHandle element, int anchorOffset, String surround) {
+            this(element, anchorOffset, surround, null);
+        }
+        
+        public JQuerySimpleItem(ElementHandle element, int anchorOffset, String surround, String template) {
+            super(element, anchorOffset, surround);
+            this.template = (template != null && !template.isEmpty() ? ":" + template : null);
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            if (getSurround().isEmpty()) {
+                return template;
+            } else {
+                return getSurround() + template + getSurround();
+            }
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            if (jQIcon == null) {
+                jQIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/jquery/resources/jquery_16_2.png")); //NOI18N
+            }
+            return jQIcon;
+        }
+    }
+    
     public static class SimpleElement implements ElementHandle {
 
         private final String name;
@@ -235,6 +275,5 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
         public OffsetRange getOffsetRange(ParserResult result) {
             return OffsetRange.NONE;
         }
-    
     }
 }

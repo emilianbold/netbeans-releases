@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.jquery;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.HashMap;
@@ -64,6 +65,7 @@ import org.netbeans.modules.javascript2.editor.CompletionContextFinder;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 /**
@@ -120,7 +122,7 @@ public class JQueryCodeCompletion {
         TAG, TAG_ATTRIBUTE, CLASS, ID, TAG_ATTRIBUTE_COMPARATION, AFTER_COLON
     }
     
-    private class SelectorItem {
+    protected static class SelectorItem {
         private final String displayText;
         private final String insertTemplate;
         private final String helpId;
@@ -173,14 +175,23 @@ public class JQueryCodeCompletion {
     }
     
     private static HashMap<String, List<SelectorKind>> contextMap = new HashMap<String, List<SelectorKind>>();    
-    private static HashMap<String, SelectorItem> afterColonList = new HashMap<String, SelectorItem>();
+    private static Collection< SelectorItem> afterColonList = Collections.emptyList();
     
     private void fillContextMap() {
-        contextMap.put(" (", Arrays.asList(SelectorKind.TAG, SelectorKind.ID));
+        contextMap.put(" (", Arrays.asList(SelectorKind.TAG, SelectorKind.ID, SelectorKind.CLASS, SelectorKind.AFTER_COLON));
         contextMap.put("#", Arrays.asList(SelectorKind.ID));
         contextMap.put(".", Arrays.asList(SelectorKind.CLASS));
         contextMap.put("[", Arrays.asList(SelectorKind.TAG_ATTRIBUTE));
         contextMap.put(":", Arrays.asList(SelectorKind.AFTER_COLON));
+    }
+    
+    private static String HELP_LOCATION = "docs/jquery-api.xml";
+    private void fillAfterColonList() {
+        SelectorItem item;
+        File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
+        if(apiFile != null) {
+            afterColonList = SelectorsLoader.getSelectors(apiFile);
+        }
     }
   
     private SelectorContext findSelectorContext(String text) {
@@ -191,7 +202,8 @@ public class JQueryCodeCompletion {
             switch (c) {
                 case ' ':
                 case '(':
-                    return new SelectorContext(prefix.toString(), index, Arrays.asList(SelectorKind.TAG, SelectorKind.ID));
+                case ',':
+                    return new SelectorContext(prefix.toString(), index, Arrays.asList(SelectorKind.TAG, SelectorKind.ID, SelectorKind.CLASS));
                 case '#':
                     return new SelectorContext(prefix.toString(), index, Arrays.asList(SelectorKind.ID));
                 case '.':
@@ -205,7 +217,7 @@ public class JQueryCodeCompletion {
             index--;
         }
         if (index < 0) {
-            return new SelectorContext(prefix.toString(), 0, Arrays.asList(SelectorKind.TAG, SelectorKind.ID));
+            return new SelectorContext(prefix.toString(), 0, Arrays.asList(SelectorKind.TAG, SelectorKind.ID, SelectorKind.CLASS, SelectorKind.AFTER_COLON));
         }
         return null;
     }
@@ -228,7 +240,7 @@ public class JQueryCodeCompletion {
             return;
         }
         String wrapup = "";
-        if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END)) {
+        if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING_BEGIN)) {
             wrapup = "'";
         }
         if(contextMap.isEmpty()) {
@@ -267,16 +279,20 @@ public class JQueryCodeCompletion {
                         Collection<String> classes = getCSSClasses(context.prefix, parserResult);
                         anchorOffset = docOffset + prefix.length() - context.prefix.length();
                         for (String cl : classes) {
-                            result.add(JQueryCompletionItem.createCSSItem(cl, anchorOffset, wrapup));
+                            result.add(JQueryCompletionItem.createCSSItem("." + cl, anchorOffset, wrapup));
                         }
                         break;
                     case AFTER_COLON:
-                        for (String name : afterColonList.keySet()) {
-                            if (name.startsWith(context.prefix)) {
-                                SelectorItem item = afterColonList.get(name);
-                                result.add(JQueryCompletionItem.createCSSItem(":" + item.displayText, docOffset, wrapup));
+                        if(afterColonList.isEmpty()) {
+                            fillAfterColonList();
+                        }
+                        for (SelectorItem selector : afterColonList) {
+                            if (selector.getDisplayText().startsWith(context.prefix)) {
+                                anchorOffset = docOffset + ((prefix.isEmpty() || prefix.charAt(0) == ':') ? 0 : 1);
+                                result.add(JQueryCompletionItem.createJQueryItem(":" + selector.displayText, anchorOffset, wrapup, selector.getInsertTemplate()));
                             }
                         }
+                        break;
                 }
             }
         }
