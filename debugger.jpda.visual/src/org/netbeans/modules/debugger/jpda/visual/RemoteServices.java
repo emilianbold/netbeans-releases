@@ -591,7 +591,7 @@ public class RemoteServices {
                 else i++;
                 int ii = lname.lastIndexOf('$', i);
                 if (ii > i) i = ii + 1;
-                System.err.println("  getAttachableListeners() '"+name.substring(3)+"' should equal to '"+lname.substring(i)+"', lname = "+lname+", i = "+i);
+                //System.err.println("  getAttachableListeners() '"+name.substring(3)+"' should equal to '"+lname.substring(i)+"', lname = "+lname+", i = "+i);
                 if (!name.substring(3).equals(lname.substring(i))) {
                     // addXXXListener() method name does not match XXXListener simple class name.
                     // TODO: Perhaps check removeXXXListener method instead of this.

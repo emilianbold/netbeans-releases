@@ -625,7 +625,7 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
         
         private ReferenceType[] selectListenerClass(JavaComponentInfo ci, Collection<LoggingEventListener> listenersToRemove) {
             List<ReferenceType> attachableListeners = RemoteServices.getAttachableListeners(ci);
-            System.err.println("Attachable Listeners = "+attachableListeners);
+            //System.err.println("Attachable Listeners = "+attachableListeners);
             Set<LoggingEventListener> currentLoggingListeners = null;
             synchronized (loggingListeners) {
                 Set<LoggingEventListener> listeners = loggingListeners.get(ci.getComponent());
@@ -780,7 +780,7 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
         
         private String selectListenerClass(JavaComponentInfo ci) {
             List<ReferenceType> attachableListeners = RemoteServices.getAttachableListeners(ci);
-            System.err.println("Attachable Listeners = "+attachableListeners);
+            //System.err.println("Attachable Listeners = "+attachableListeners);
             String[] listData = new String[attachableListeners.size()];
             for (int i = 0; i < listData.length; i++) {
                 listData[i] = attachableListeners.get(i).name();
