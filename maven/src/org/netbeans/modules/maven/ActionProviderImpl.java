@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -185,8 +185,17 @@ public class ActionProviderImpl implements ActionProvider {
         return false;
     }
 
+    private boolean usingTestNG() {
+        for (Artifact a : proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifacts()) {
+            if ("org.testng".equals(a.getGroupId()) && "testng".equals(a.getArtifactId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     boolean runSingleMethodEnabled() {
-        return RunUtils.hasTestCompileOnSaveEnabled(proj) || (usingSurefire28() && usingJUnit4());
+        return RunUtils.hasTestCompileOnSaveEnabled(proj) || (usingSurefire28() && (usingJUnit4() || usingTestNG()));
     }
 
     @Messages("run_single_method_disabled=Surefire 2.8+ with JUnit 4 needed to run a single test method without Compile on Save.")

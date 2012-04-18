@@ -75,10 +75,10 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
     static {
         Set<Action> s = new HashSet<Action>();
         s.add(Action.CREATE_TEST);
-        s.add(Action.RUN_FAILED);
-        s.add(Action.RUN_TESTMETHOD);
-        s.add(Action.RUN_TESTSUITE);
-        s.add(Action.DEBUG_TESTSUITE);
+//        s.add(Action.RUN_FAILED);
+//        s.add(Action.RUN_TESTMETHOD);
+//        s.add(Action.RUN_TESTSUITE);
+//        s.add(Action.DEBUG_TESTSUITE);
         SUPPORTED_ACTIONS = Collections.unmodifiableSet(s);
     }
 
