@@ -41,18 +41,22 @@
  */
 package org.netbeans.modules.html.editor.lib;
 
+import java.io.IOException;
+import java.util.Iterator;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author marekfukala
  */
-public class ElementsParserTest extends NbTestCase {
+public class ElementsParserTest extends CslTestBase {
 
     public ElementsParserTest(String name) {
         super(name);
@@ -143,4 +147,39 @@ public class ElementsParserTest extends NbTestCase {
         
     }
     
+      public void testPerformance() throws IOException {
+        FileObject file = getTestFile("testfiles/huge.html");
+        String content = file.asText();
+        
+        TokenHierarchy hi = TokenHierarchy.create(content, HTMLTokenId.language());
+        ElementsParser parser = new ElementsParser(content, hi.tokenSequence(HTMLTokenId.language()), 0);
+        
+        long start = System.currentTimeMillis();
+        while(parser.hasNext()) {
+            parser.next();
+        }
+        long end = System.currentTimeMillis();
+        
+        float diff1 = end - start;
+        System.out.println("first iteration took " + diff1 + "ms.");
+        
+        //~2500ms
+        
+        //second attempt
+        
+        parser = new ElementsParser(content, hi.tokenSequence(HTMLTokenId.language()), 0);
+        start = System.currentTimeMillis();
+        while(parser.hasNext()) {
+            parser.next();
+        }
+        end = System.currentTimeMillis();
+        
+        float diff2 = end - start;
+        System.out.println("second iteration took " + diff2 + "ms.");
+        
+        //~600ms
+        
+        float ratio = diff1 / diff2;
+        System.out.println("first / second ratio = " + ratio);
+    }
 }

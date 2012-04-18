@@ -47,7 +47,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.common.Profiler;
+import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
 import org.openide.filesystems.FileUtil;
 

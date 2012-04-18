@@ -718,11 +718,16 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (folderConfiguration.getCCCompilerConfiguration().isCppStandardChanged()) {
                 folderConfiguration.getCCCompilerConfiguration().getCppStandard().setDirty(false);
                 cFiles = true;
-            }            
+            }
         } else if (item != null) {
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
             if (itemConfiguration == null) {
                 return;
+            }
+            if (itemConfiguration.isToolDirty()) {
+                itemConfiguration.setToolDirty(false);
+                ccFiles = true;
+                cFiles = true;
             }
             if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                 cIncludeDirectories = itemConfiguration.getCCompilerConfiguration().getIncludeDirectories();

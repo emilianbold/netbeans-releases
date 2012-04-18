@@ -43,6 +43,8 @@ package org.netbeans.modules.html.editor.lib.api;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -67,6 +69,8 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class SyntaxAnalyzerResult {
 
+    private static final Logger LOG = Logger.getLogger(SyntaxAnalyzerResult.class.getSimpleName());
+    
     /**
      * special namespace which can be used for obtaining a parse tree of tags
      * with undeclared namespace.
@@ -128,13 +132,19 @@ public class SyntaxAnalyzerResult {
     }
 
     public HtmlVersion getHtmlVersion() {
-        HtmlVersion detected = getDetectedHtmlVersion();
-        HtmlVersion found = HtmlSourceVersionQuery.getSourceCodeVersion(this, detected);
-        if (found != null) {
-            return found;
+        long start = System.currentTimeMillis();
+        try {
+            HtmlVersion detected = getDetectedHtmlVersion();
+            HtmlVersion found = HtmlSourceVersionQuery.getSourceCodeVersion(this, detected);
+            if (found != null) {
+                return found;
+            }
+            return detected != null ? detected
+                    : mayBeXhtml() ? HtmlVersion.getDefaultXhtmlVersion() : HtmlVersion.getDefaultVersion(); //fallback if nothing can be determined
+        } finally {
+            long end = System.currentTimeMillis();
+            log(String.format("getHtmlVersion() took %s ms.", (end-start)));
         }
-        return detected != null ? detected
-                : mayBeXhtml() ? HtmlVersion.getDefaultXhtmlVersion() : HtmlVersion.getDefaultVersion(); //fallback if nothing can be determined
     }
 
     public HtmlModel getHtmlModel() {
@@ -366,52 +376,58 @@ public class SyntaxAnalyzerResult {
     }
 
     private MaskedAreas findMaskedAreas(TagsFilter filter) {
-        //html5 parser:
-        //since the nu.validator.htmlparser parser cannot properly handle the
-        //'foreign' namespace content it needs to be filtered from the source
-        //before running the parser on the input charsequence
-        //
-        //so following content needs to be filtere out:
-        //1. xmlns non default declarations <html xmlns:f="http:/...
-        //2. the prefixed tags and attributes <f:if ...
-        List<MaskedArea> ignoredAreas = new ArrayList<MaskedArea>();
+        long start = System.currentTimeMillis();
+        try {
+            //html5 parser:
+            //since the nu.validator.htmlparser parser cannot properly handle the
+            //'foreign' namespace content it needs to be filtered from the source
+            //before running the parser on the input charsequence
+            //
+            //so following content needs to be filtere out:
+            //1. xmlns non default declarations <html xmlns:f="http:/...
+            //2. the prefixed tags and attributes <f:if ...
+            List<MaskedArea> ignoredAreas = new ArrayList<MaskedArea>();
 
-        Iterator<Element> itr = getElementsIterator();
-        while (itr.hasNext()) {
-            Element e = itr.next();
-            if (e.type() == ElementType.OPEN_TAG || e.type() == ElementType.CLOSE_TAG) {
-                Named tag = (Named) e;
-                CharSequence tagNamePrefix = tag.namespacePrefix();
+            Iterator<Element> itr = getElementsIterator();
+            while (itr.hasNext()) {
+                Element e = itr.next();
+                if (e.type() == ElementType.OPEN_TAG || e.type() == ElementType.CLOSE_TAG) {
+                    Named tag = (Named) e;
+                    CharSequence tagNamePrefix = tag.namespacePrefix();
 
-                if (filter.accepts(tag, tagNamePrefix)) {
-                    //check for the xmlns attributes
-                    if (e.type() == ElementType.OPEN_TAG) {
-                        OpenTag ot = (OpenTag) tag;
-                        for (Attribute a : ot.attributes()) {
-                            if (LexerUtils.startsWith(a.name(), "xmlns:", true, false)) { //NOI18N
-                                CharSequence value = a.value();
-                                if (value != null) {
-                                    ignoredAreas.add(new MaskedArea(a.nameOffset(), a.valueOffset() + value.length()));
+                    if (filter.accepts(tag, tagNamePrefix)) {
+                        //check for the xmlns attributes
+                        if (e.type() == ElementType.OPEN_TAG) {
+                            OpenTag ot = (OpenTag) tag;
+                            for (Attribute a : ot.attributes()) {
+                                if (LexerUtils.startsWith(a.name(), "xmlns:", true, false)) { //NOI18N
+                                    CharSequence value = a.value();
+                                    if (value != null) {
+                                        ignoredAreas.add(new MaskedArea(a.nameOffset(), a.valueOffset() + value.length()));
+                                    }
                                 }
                             }
                         }
-                    }
 
-                } else {
-                    ignoredAreas.add(new MaskedArea(e.from(), e.to()));
+                    } else {
+                        ignoredAreas.add(new MaskedArea(e.from(), e.to()));
+                    }
                 }
             }
-        }
 
-        int[] positions = new int[ignoredAreas.size()];
-        int[] lens = new int[ignoredAreas.size()];
-        for (int i = 0; i < positions.length; i++) {
-            SyntaxAnalyzerResult.MaskedArea ia = ignoredAreas.get(i);
-            positions[i] = ia.from;
-            lens[i] = ia.to - ia.from;
-        }
+            int[] positions = new int[ignoredAreas.size()];
+            int[] lens = new int[ignoredAreas.size()];
+            for (int i = 0; i < positions.length; i++) {
+                SyntaxAnalyzerResult.MaskedArea ia = ignoredAreas.get(i);
+                positions[i] = ia.from;
+                lens[i] = ia.to - ia.from;
+            }
 
-        return new MaskedAreas(positions, lens);
+            return new MaskedAreas(positions, lens);
+        } finally {
+            long end = System.currentTimeMillis();
+            log(String.format("findMaskedAreas() took %s ms.", (end-start)));
+        }
 
     }
 
@@ -425,30 +441,36 @@ public class SyntaxAnalyzerResult {
     }
 
     public synchronized Declaration getDoctypeDeclaration() {
-        if (declaration == null) {
-            Declaration declarationElement = null;
-            //typically the doctype is at the very first line of the document
-            //so limit the doctype search so we do not iterate over the whole file
-            //if there's no doctype
-            int limitCountdown = 20;
-            Iterator<Element> elementsIterator = getElementsIterator();
-            while (elementsIterator.hasNext()) {
-                if (limitCountdown-- == 0) {
-                    break;
-                }
-                Element e = elementsIterator.next();
-                if (e.type() == ElementType.DECLARATION) {
-                    Declaration decl = (Declaration) e;
-                    if (isValidDoctype(decl)) {
-                        declarationElement = (Declaration) e;
+        long start = System.currentTimeMillis();
+        try {
+            if (declaration == null) {
+                Declaration declarationElement = null;
+                //typically the doctype is at the very first line of the document
+                //so limit the doctype search so we do not iterate over the whole file
+                //if there's no doctype
+                int limitCountdown = 20;
+                Iterator<Element> elementsIterator = getElementsIterator();
+                while (elementsIterator.hasNext()) {
+                    if (limitCountdown-- == 0) {
+                        break;
                     }
-                    break;
+                    Element e = elementsIterator.next();
+                    if (e.type() == ElementType.DECLARATION) {
+                        Declaration decl = (Declaration) e;
+                        if (isValidDoctype(decl)) {
+                            declarationElement = (Declaration) e;
+                        }
+                        break;
+                    }
                 }
-            }
-            declaration = new AtomicReference<Declaration>(declarationElement);
+                declaration = new AtomicReference<Declaration>(declarationElement);
 
+            }
+            return declaration.get();
+        } finally {
+            long end = System.currentTimeMillis();
+            log(String.format("getDoctypeDeclaration() took %s ms.", (end-start)));
         }
-        return declaration.get();
     }
 
     private static boolean isValidDoctype(Declaration decl) {
@@ -489,27 +511,33 @@ public class SyntaxAnalyzerResult {
     }
 
     public String getHtmlTagDefaultNamespace() {
-        //typically the html root element is at the beginning of the file
-        int limitCountdown = 100;
-        Iterator<Element> elementsIterator = getElementsIterator();
-        while (elementsIterator.hasNext()) {
-            if (limitCountdown-- == 0) {
-                break;
-            }
-            Element se = elementsIterator.next();
-            if (se.type() == ElementType.OPEN_TAG) {
-                //look for the xmlns attribute only in the first tag
-                OpenTag tag = (OpenTag) se;
-                Attribute xmlns = tag.getAttribute("xmlns");
-                if (xmlns != null) {
-                    CharSequence value = xmlns.unquotedValue();
-                    if (value != null) {
-                        return value.toString();
+        long start = System.currentTimeMillis();
+            try {
+            //typically the html root element is at the beginning of the file
+            int limitCountdown = 100;
+            Iterator<Element> elementsIterator = getElementsIterator();
+            while (elementsIterator.hasNext()) {
+                if (limitCountdown-- == 0) {
+                    break;
+                }
+                Element se = elementsIterator.next();
+                if (se.type() == ElementType.OPEN_TAG) {
+                    //look for the xmlns attribute only in the first tag
+                    OpenTag tag = (OpenTag) se;
+                    Attribute xmlns = tag.getAttribute("xmlns");
+                    if (xmlns != null) {
+                        CharSequence value = xmlns.unquotedValue();
+                        if (value != null) {
+                            return value.toString();
+                        }
                     }
                 }
             }
+            return null;
+        } finally {
+            long end = System.currentTimeMillis();
+            log(String.format("getHtmlTagDefaultNamespace() took %s ms.", (end-start)));
         }
-        return null;
     }
 
     /**
@@ -518,39 +546,42 @@ public class SyntaxAnalyzerResult {
      * list are sorted according to their occurrences in the document.
      */
     public synchronized Map<String, Collection<String>> getAllDeclaredNamespaces() {
-        if (namespaces == null) {
-            this.namespaces = new HashMap<String, Collection<String>>();
+        long start = System.currentTimeMillis();
+        try {
+            if (namespaces == null) {
+                this.namespaces = new HashMap<String, Collection<String>>();
 
-            //add the artificial namespaces to prefix map to the physically declared results
-            if (resolver != null) {
-                namespaces.putAll(resolver.getUndeclaredNamespaces(getSource()));
-            }
+                //add the artificial namespaces to prefix map to the physically declared results
+                if (resolver != null) {
+                    namespaces.putAll(resolver.getUndeclaredNamespaces(getSource()));
+                }
 
-            Iterator<Element> iterator = getElementsIterator();
-            while (iterator.hasNext()) {
-                Element se = iterator.next();
-                if (se.type() == ElementType.OPEN_TAG) {
-                    OpenTag tag = (OpenTag) se;
-                    for (Attribute attr : tag.attributes()) {
-                        String attrName = attr.name().toString();
-                        if (attrName.startsWith("xmlns")) { //NOI18N
-                            int colonIndex = attrName.indexOf(':'); //NOI18N
-                            String nsPrefix = colonIndex == -1 ? null : attrName.substring(colonIndex + 1);
-                            CharSequence value = attr.unquotedValue();
-                            if (value != null) {
-                                String key = value.toString();
-                                //do not overwrite already existing entry
-                                Collection<String> prefixes = namespaces.get(key);
-                                if (prefixes == null) {
-                                    prefixes = new LinkedList<String>();
-                                    prefixes.add(nsPrefix);
-                                    namespaces.put(key, prefixes);
-                                } else {
-                                    //already existing list of prefixes for the namespace
-                                    if (prefixes.contains(key)) {
-                                        //just relax
-                                    } else {
+                Iterator<Element> iterator = getElementsIterator();
+                while (iterator.hasNext()) {
+                    Element se = iterator.next();
+                    if (se.type() == ElementType.OPEN_TAG) {
+                        OpenTag tag = (OpenTag) se;
+                        for (Attribute attr : tag.attributes()) {
+                            String attrName = attr.name().toString();
+                            if (attrName.startsWith("xmlns")) { //NOI18N
+                                int colonIndex = attrName.indexOf(':'); //NOI18N
+                                String nsPrefix = colonIndex == -1 ? null : attrName.substring(colonIndex + 1);
+                                CharSequence value = attr.unquotedValue();
+                                if (value != null) {
+                                    String key = value.toString();
+                                    //do not overwrite already existing entry
+                                    Collection<String> prefixes = namespaces.get(key);
+                                    if (prefixes == null) {
+                                        prefixes = new LinkedList<String>();
                                         prefixes.add(nsPrefix);
+                                        namespaces.put(key, prefixes);
+                                    } else {
+                                        //already existing list of prefixes for the namespace
+                                        if (prefixes.contains(key)) {
+                                            //just relax
+                                        } else {
+                                            prefixes.add(nsPrefix);
+                                        }
                                     }
                                 }
                             }
@@ -558,9 +589,17 @@ public class SyntaxAnalyzerResult {
                     }
                 }
             }
-        }
 
-        return namespaces;
+            return namespaces;
+        
+        } finally {
+            long end = System.currentTimeMillis();
+            log(String.format("getAllDeclaredNamespaces() took %s ms.", (end-start)));
+        }
+    }
+    
+    private void log(String message) {
+        LOG.log(Level.FINE, new StringBuilder().append("HtmlSource(").append(source.hashCode()).append("):").append(message).toString());
     }
 
     private static interface TagsFilter {
