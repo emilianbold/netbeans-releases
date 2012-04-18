@@ -110,12 +110,6 @@ public final class ModuleActions implements ActionProvider, ExecProject {
     private static final String RUN_ARGS_IDE = "run.args.ide";    // NOI18N
     private static final String TEST_USERDIR_LOCK_PROP_VALUE = "--test-userdir-lock-with-invalid-arg";    // NOI18N
 
-    static final Set<String> bkgActions = new HashSet<String>(Arrays.asList(
-        COMMAND_RUN_SINGLE,
-        COMMAND_DEBUG_SINGLE,
-        COMMAND_PROFILE_SINGLE
-    ));
-
     private static final String COMMAND_NBM = "nbm";
     private static final String MODULE_ACTIONS_TYPE = "org-netbeans-modules-apisupport-project";
     private static final String MODULE_ACTIONS_PATH = "Projects/" + MODULE_ACTIONS_TYPE + "/Actions";
@@ -524,10 +518,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                 }
             }
         };
-        if (bkgActions.contains(command)) {
-            RP.post(runnable);
-        } else
-            runnable.run();
+        RP.post(runnable);
     }
     
     private String[] setupProfileTestSingle(Properties p, TestSources testSources) {
