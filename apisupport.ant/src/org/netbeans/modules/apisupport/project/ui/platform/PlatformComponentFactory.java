@@ -46,6 +46,7 @@ package org.netbeans.modules.apisupport.project.ui.platform;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -76,6 +77,7 @@ import org.netbeans.modules.apisupport.project.universe.SourceRootsProvider;
 import org.netbeans.modules.apisupport.project.universe.SourceRootsSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  * Factory for creating miscellaneous UI components, their models and renderers
@@ -435,13 +437,26 @@ public final class PlatformComponentFactory {
      * <p>Can be used in conjuction with {@link URLListRenderer}</p>
      */
     static final class JavadocRootsModel extends AbstractListModel {
+
+        private static final RequestProcessor RP = new RequestProcessor(JavadocRootsModel.class);
         
         private JavadocRootsProvider jrp;
         private URL[] javadocRoots;
         
-        JavadocRootsModel(JavadocRootsProvider jrp) {
+        JavadocRootsModel(final JavadocRootsProvider jrp) {
             this.jrp = jrp;
-            this.javadocRoots = jrp.getJavadocRoots();
+            javadocRoots = new URL[0];
+            RP.post(new Runnable() { // #207451: can load core.kit project
+                @Override public void run() {
+                    final URL[] roots = jrp.getJavadocRoots();
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override public void run() {
+                            javadocRoots = roots;
+                            fireContentsChanged(this, 0, javadocRoots.length);
+                        }
+                    });
+                }
+            });
         }
         
         public Object getElementAt(int index) {
