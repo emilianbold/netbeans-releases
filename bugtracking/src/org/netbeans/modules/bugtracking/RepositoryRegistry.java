@@ -56,6 +56,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -71,7 +72,7 @@ public class RepositoryRegistry {
      * A repository was created or removed, where old value is a Collection of all repositories 
      * before the change and new value a Collection of all repositories after the change.
      */
-    public final static String EVENT_REPOSITORIES_CHANGED = "bugtracking.repositories.changed"; // NOI18N
+    public final static String EVENT_REPOSITORIES_CHANGED = RepositoryRegistry.EVENT_REPOSITORIES_CHANGED; // NOI18N
     
     private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
