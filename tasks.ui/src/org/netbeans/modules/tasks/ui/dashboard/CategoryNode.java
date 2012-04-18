@@ -153,7 +153,7 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
             TaskNode taskNode = new TaskNode(issue, this);
             taskNode.setCategory(category);
             taskNodes.add(taskNode);
-            if (appliedTaskFilters.isInFilter(category)) {
+            if (appliedTaskFilters.isInFilter(issue)) {
                 filteredTaskNodes.add(taskNode);
             }
         }

@@ -58,4 +58,9 @@ public class EmptyTaskFilter implements DashboardFilter<Issue> {
     public boolean expandNodes() {
         return false;
     }
+
+    @Override
+    public boolean showHitCount() {
+        return false;
+    }
 }

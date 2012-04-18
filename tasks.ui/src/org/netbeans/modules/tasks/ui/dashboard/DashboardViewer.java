@@ -468,59 +468,67 @@ public final class DashboardViewer {
         if (oldFilter != null) {
             appliedTaskFilters.removeFilter(oldFilter);
         }
-        return applyTaskFilter(newFilter);
+        return applyTaskFilter(newFilter, true);
     }
 
-    public int applyTaskFilter(DashboardFilter<Issue> taskFilter) {
+    public int applyTaskFilter(DashboardFilter<Issue> taskFilter, boolean refresh) {
         appliedTaskFilters.addFilter(taskFilter);
-        taskHits = 0;
-        refreshContent();
-        return taskHits;
+        return manageApplyFilter(refresh);
     }
 
-    public int removeTaskFilter(DashboardFilter<Issue> taskFilter) {
+    public int removeTaskFilter(DashboardFilter<Issue> taskFilter, boolean refresh) {
         appliedTaskFilters.removeFilter(taskFilter);
-        taskHits = 0;
-        persistExpanded = !taskFilter.expandNodes();
-        refreshContent();
-        persistExpanded = true;
-        return taskHits;
+        return manageRemoveFilter(refresh, !taskFilter.expandNodes());
     }
 
-    public int applyCategoryFilter(DashboardFilter<CategoryNode> categoryFilter) {
+    public int applyCategoryFilter(DashboardFilter<CategoryNode> categoryFilter, boolean refresh) {
         appliedCategoryFilters.addFilter(categoryFilter);
-        taskHits = 0;
-        refreshContent();
-        return taskHits;
+        return manageApplyFilter(refresh);
     }
 
-    public int removeCategoryFilter(DashboardFilter<CategoryNode> categoryFilter) {
+    public int removeCategoryFilter(DashboardFilter<CategoryNode> categoryFilter, boolean refresh) {
         appliedCategoryFilters.removeFilter(categoryFilter);
-        taskHits = 0;
-        persistExpanded = !categoryFilter.expandNodes();
-        refreshContent();
-        persistExpanded = true;
-        return taskHits;
+        return manageRemoveFilter(refresh, !categoryFilter.expandNodes());
     }
 
-    public int applyRepositoryFilter(DashboardFilter<RepositoryNode> repositoryFilter) {
+    public int applyRepositoryFilter(DashboardFilter<RepositoryNode> repositoryFilter, boolean refresh) {
         appliedRepositoryFilters.addFilter(repositoryFilter);
-        taskHits = 0;
-        refreshContent();
-        return taskHits;
+        return manageApplyFilter(refresh);
     }
 
-    public int removeRepositoryFilter(DashboardFilter<RepositoryNode> repositoryFilter) {
+    public int removeRepositoryFilter(DashboardFilter<RepositoryNode> repositoryFilter, boolean refresh) {
         appliedRepositoryFilters.removeFilter(repositoryFilter);
-        taskHits = 0;
-        persistExpanded = !repositoryFilter.expandNodes();
-        refreshContent();
-        persistExpanded = true;
-        return taskHits;
+        return manageRemoveFilter(refresh, !repositoryFilter.expandNodes());
+    }
+
+    private int manageRemoveFilter(boolean refresh, boolean wasForceExpand) {
+        if (refresh) {
+            taskHits = 0;
+            persistExpanded = !wasForceExpand;
+            refreshContent();
+            persistExpanded = true;
+            return taskHits;
+        } else {
+            return -1;
+        }
+    }
+
+    private int manageApplyFilter(boolean refresh) {
+        if (refresh) {
+            taskHits = 0;
+            refreshContent();
+            return taskHits;
+        } else {
+            return -1;
+        }
     }
 
     public boolean expandNodes() {
         return appliedTaskFilters.expandNodes() || appliedCategoryFilters.expandNodes() || appliedRepositoryFilters.expandNodes();
+    }
+
+    public boolean showHitCount() {
+        return appliedTaskFilters.showHitCount() || appliedCategoryFilters.showHitCount() || appliedRepositoryFilters.showHitCount();
     }
 
     public boolean isNodeExpanded(TreeListNode node) {
