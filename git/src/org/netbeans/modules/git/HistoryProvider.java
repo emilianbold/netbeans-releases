@@ -331,7 +331,12 @@ public class HistoryProvider implements VCSHistoryProvider {
                 try {
                     GitClient client = Git.getInstance().getClient(repository);
                     if (info.getParents().length == 1) {
-                        parent = client.getPreviousRevision(file, info.getRevision(), GitUtils.NULL_PROGRESS_MONITOR);
+                        File historyFile = info.getModifiedFiles().containsKey(file)
+                                ? file
+                                : HistoryRegistry.getInstance().getHistoryFile(repository, file, info.getRevision(), false);
+                        if (historyFile != null) {
+                            parent = client.getPreviousRevision(historyFile, info.getRevision(), GitUtils.NULL_PROGRESS_MONITOR);
+                        }
                     } else if (info.getParents().length > 1) {
                         parent = client.getCommonAncestor(info.getParents(), GitUtils.NULL_PROGRESS_MONITOR);
                     }

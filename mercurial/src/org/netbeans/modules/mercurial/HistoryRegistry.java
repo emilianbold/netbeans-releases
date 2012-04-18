@@ -93,6 +93,19 @@ public class HistoryRegistry {
         }
         return history;
     }
+
+    HgLogMessage getLog (File repository, File file, String changesetId) {
+        List<HgLogMessage> knownLogs = logs.get(file);
+        if (knownLogs != null) {
+            for (HgLogMessage logMessage : knownLogs) {
+                if (logMessage.getCSetShortID().equals(changesetId)) {
+                    return logMessage;
+                }
+            }
+        }
+        HgLogMessage[] history = HgCommand.getRevisionInfo(repository, Collections.singletonList(changesetId), OutputLogger.getLogger(repository.getAbsolutePath()));
+        return history == null || history.length == 0 ? null : history[0];
+    }
     
     public synchronized File getHistoryFile(final File repository, final File originalFile, final String revision, final boolean dryTry) {
         long t = System.currentTimeMillis();
