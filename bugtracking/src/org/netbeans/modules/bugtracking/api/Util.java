@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
-import java.util.ArrayList;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
-import java.util.Collection;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 
