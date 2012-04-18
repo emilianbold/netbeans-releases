@@ -83,12 +83,4 @@ public final class Util {
         IssueAction.createIssue(repository.getImpl());
     }
     
-    private static Collection<Repository> toRepositories(Collection<RepositoryImpl> impls) {
-        Collection<Repository> ret = new ArrayList<Repository>(impls.size());
-        for (RepositoryImpl impl : impls) {
-            ret.add(impl.getRepository());
-        }
-        return ret;
-    }
-    
 }
