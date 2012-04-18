@@ -82,7 +82,7 @@ public class ElementsParser implements Iterator<Element> {
     //eof parser state constants
     
     public static final String UNEXPECTED_SYMBOL_IN_OPEN_TAG = "unexpected_symbol_in_open_tag"; //NOI18N
-    private static final SharedTextElement SHARED_TEXT_ELEMENT = new SharedTextElement();
+
     private CharSequence sourceCode;
     private TokenSequence<HTMLTokenId> ts;
     
@@ -150,11 +150,7 @@ public class ElementsParser implements Iterator<Element> {
     }
 
     private void text() {
-        //Memory consumption optimalization: Since noone seems to use the text elements
-        //there's no need to create a separate instance for each piece of text in the source.
-        //Instead a shared instance is used, but of course none of the information
-        //provided are valid
-        current = SHARED_TEXT_ELEMENT;
+        current = new TextElement(start, ts.offset() + ts.token().length());
     }
 
     private void entityReference() {
