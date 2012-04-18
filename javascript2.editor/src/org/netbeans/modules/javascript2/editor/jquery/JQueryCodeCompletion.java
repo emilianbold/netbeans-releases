@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.jquery;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.HashMap;
@@ -64,6 +65,7 @@ import org.netbeans.modules.javascript2.editor.CompletionContextFinder;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 /**
@@ -120,7 +122,7 @@ public class JQueryCodeCompletion {
         TAG, TAG_ATTRIBUTE, CLASS, ID, TAG_ATTRIBUTE_COMPARATION, AFTER_COLON
     }
     
-    private class SelectorItem {
+    protected static class SelectorItem {
         private final String displayText;
         private final String insertTemplate;
         private final String helpId;
@@ -173,7 +175,7 @@ public class JQueryCodeCompletion {
     }
     
     private static HashMap<String, List<SelectorKind>> contextMap = new HashMap<String, List<SelectorKind>>();    
-    private static HashMap<String, SelectorItem> afterColonList = new HashMap<String, SelectorItem>();
+    private static Collection< SelectorItem> afterColonList = Collections.emptyList();
     
     private void fillContextMap() {
         contextMap.put(" (", Arrays.asList(SelectorKind.TAG, SelectorKind.ID, SelectorKind.CLASS, SelectorKind.AFTER_COLON));
@@ -183,14 +185,13 @@ public class JQueryCodeCompletion {
         contextMap.put(":", Arrays.asList(SelectorKind.AFTER_COLON));
     }
     
+    private static String HELP_LOCATION = "docs/jquery-api.xml";
     private void fillAfterColonList() {
         SelectorItem item;
-        item = new SelectorItem("animated"); afterColonList.put(item.displayText, item);  //NOI18N
-        item = new SelectorItem("button"); afterColonList.put(item.displayText, item);  //NOI18N
-        item = new SelectorItem("checkbox"); afterColonList.put(item.displayText, item);  //NOI18N
-        item = new SelectorItem("checked"); afterColonList.put(item.displayText, item);  //NOI18N
-        item = new SelectorItem("contains()", "contains(${cursor})"); afterColonList.put(item.displayText, item);  //NOI18N
-        item = new SelectorItem("disabled"); afterColonList.put(item.displayText, item);  //NOI18N
+        File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
+        if(apiFile != null) {
+            afterColonList = SelectorsLoader.getSelectors(apiFile);
+        }
     }
   
     private SelectorContext findSelectorContext(String text) {
@@ -201,6 +202,7 @@ public class JQueryCodeCompletion {
             switch (c) {
                 case ' ':
                 case '(':
+                case ',':
                     return new SelectorContext(prefix.toString(), index, Arrays.asList(SelectorKind.TAG, SelectorKind.ID, SelectorKind.CLASS));
                 case '#':
                     return new SelectorContext(prefix.toString(), index, Arrays.asList(SelectorKind.ID));
@@ -284,11 +286,10 @@ public class JQueryCodeCompletion {
                         if(afterColonList.isEmpty()) {
                             fillAfterColonList();
                         }
-                        for (String name : afterColonList.keySet()) {
-                            if (name.startsWith(context.prefix)) {
-                                SelectorItem item = afterColonList.get(name);
+                        for (SelectorItem selector : afterColonList) {
+                            if (selector.getDisplayText().startsWith(context.prefix)) {
                                 anchorOffset = docOffset + ((prefix.isEmpty() || prefix.charAt(0) == ':') ? 0 : 1);
-                                result.add(JQueryCompletionItem.createJQueryItem(":" + item.displayText, anchorOffset, wrapup, item.getInsertTemplate()));
+                                result.add(JQueryCompletionItem.createJQueryItem(":" + selector.displayText, anchorOffset, wrapup, selector.getInsertTemplate()));
                             }
                         }
                         break;
