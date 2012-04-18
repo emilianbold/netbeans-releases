@@ -98,6 +98,11 @@ public class HookIssue extends TestIssue {
     public boolean isNew() {
         return false;
     }
+    
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
 
     @Override
     public boolean refresh() {

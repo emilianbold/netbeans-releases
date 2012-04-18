@@ -384,6 +384,9 @@ public class CacheTest extends NbTestCase {
         public boolean isNew() {
             return false;
         }
+        public boolean isFinished() {
+            return false;
+        }
         public boolean refresh() {
             return true;
         }
@@ -544,6 +547,11 @@ public class CacheTest extends NbTestCase {
         @Override
         public boolean isNew(CTestIssue data) {
             return data.isNew();
+        }
+        
+        @Override
+        public boolean isFinished(CTestIssue data) {
+            return data.isFinished();
         }
 
         @Override
