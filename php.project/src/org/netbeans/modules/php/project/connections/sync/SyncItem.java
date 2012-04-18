@@ -76,36 +76,46 @@ public final class SyncItem {
 
 
     @NbBundle.Messages({
-        "Operation.noop.titleWithMnemonic=No o&peration",
+        "Operation.noop.titleWithMnemonic=No O&peration",
+        "Operation.noop.toolTip=Set No Operation",
         "Operation.download.titleWithMnemonic=&Download",
-        "Operation.downloadReview.titleWithMnemonic=Download &with review",
+        "Operation.download.toolTip=Set Download",
+        "Operation.downloadReview.titleWithMnemonic=Download &with Review",
         "Operation.upload.titleWithMnemonic=&Upload",
-        "Operation.uploadReview.titleWithMnemonic=Upload w&ith review",
+        "Operation.upload.toolTip=Set Upload",
+        "Operation.uploadReview.titleWithMnemonic=Upload w&ith Review",
         "Operation.delete.titleWithMnemonic=D&elete",
-        "Operation.symlink.titleWithMnemonic=S&ymbolic link",
-        "Operation.fileDirCollision.titleWithMnemonic=File &vs. directory collision",
-        "Operation.fileConflict.titleWithMnemonic=File c&onflict"
+        "Operation.delete.toolTip=Set Delete",
+        "Operation.symlink.titleWithMnemonic=S&ymbolic Link",
+        "Operation.fileDirCollision.titleWithMnemonic=File &vs. Directory Collision",
+        "Operation.fileConflict.titleWithMnemonic=File C&onflict"
     })
     public static enum Operation {
 
-        NOOP(Bundle.Operation_noop_titleWithMnemonic(), NOOP_ICON_PATH, false),
-        DOWNLOAD(Bundle.Operation_download_titleWithMnemonic(), DOWNLOAD_ICON_PATH, true),
+        NOOP(Bundle.Operation_noop_titleWithMnemonic(), Bundle.Operation_noop_toolTip(), NOOP_ICON_PATH, false),
+        DOWNLOAD(Bundle.Operation_download_titleWithMnemonic(), Bundle.Operation_download_toolTip(), DOWNLOAD_ICON_PATH, true),
         DOWNLOAD_REVIEW(Bundle.Operation_downloadReview_titleWithMnemonic(), DOWNLOAD_REVIEW_ICON_PATH, true),
-        UPLOAD(Bundle.Operation_upload_titleWithMnemonic(), UPLOAD_ICON_PATH, true),
+        UPLOAD(Bundle.Operation_upload_titleWithMnemonic(), Bundle.Operation_upload_toolTip(), UPLOAD_ICON_PATH, true),
         UPLOAD_REVIEW(Bundle.Operation_uploadReview_titleWithMnemonic(), UPLOAD_REVIEW_ICON_PATH, true),
-        DELETE(Bundle.Operation_delete_titleWithMnemonic(), DELETE_ICON_PATH, false),
+        DELETE(Bundle.Operation_delete_titleWithMnemonic(), Bundle.Operation_delete_toolTip(), DELETE_ICON_PATH, false),
         SYMLINK(Bundle.Operation_symlink_titleWithMnemonic(), SYMLINK_ICON_PATH, false),
         FILE_DIR_COLLISION(Bundle.Operation_fileDirCollision_titleWithMnemonic(), FILE_DIR_COLLISION_ICON_PATH, false),
         FILE_CONFLICT(Bundle.Operation_fileConflict_titleWithMnemonic(), FILE_CONFLICT_ICON_PATH, false);
 
 
         private final String titleWithMnemonic;
+        private final String toolTip;
         private final String iconPath;
         private final boolean progress;
 
 
         private Operation(String titleWithMnemonic, String iconPath, boolean progress) {
+            this(titleWithMnemonic, null, iconPath, progress);
+        }
+
+        private Operation(String titleWithMnemonic, String toolTip, String iconPath, boolean progress) {
             this.titleWithMnemonic = titleWithMnemonic;
+            this.toolTip = toolTip;
             this.iconPath = iconPath;
             this.progress = progress;
         }
@@ -116,6 +126,10 @@ public final class SyncItem {
 
         public String getTitleWithMnemonic() {
             return titleWithMnemonic;
+        }
+
+        public String getToolTip() {
+            return toolTip;
         }
 
         public Icon getIcon() {
