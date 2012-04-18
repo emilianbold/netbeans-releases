@@ -59,7 +59,7 @@ public class AttributeElement implements Attribute {
     private int nameOffset;
     private short valueOffset2nameOffsetDiff;
     private short nameLen;
-    private short valueLen;
+    private int valueLen;
 
     public AttributeElement(CharSequence source, int nameOffset, short nameLen) {
         this.source = source;
@@ -71,7 +71,7 @@ public class AttributeElement implements Attribute {
         this.valueLen = -1;
     }
 
-    public AttributeElement(CharSequence source, int nameOffset, int valueOffset, short nameLen, short valueLen) {
+    public AttributeElement(CharSequence source, int nameOffset, int valueOffset, short nameLen, int valueLen) {
         this.source = source;
 
         this.nameOffset = nameOffset;

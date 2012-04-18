@@ -526,23 +526,15 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
             appendQuotation(value, attrInfo.valueQuotationType);
             
             String attributeName = attributes.getLocalName(i);
-            int attributeNameLength = attributeName.length();
-            if(attributeNameLength > Byte.MAX_VALUE) {
-                LOGGER.warning(String.format("Attribute name '%s' of node '%s' is longer than Byte.MAX_VALUE", attributeName, node));
-            }
-            short attributeNameLengthAsShort = (short)attributeNameLength;
             
+            int attributeNameLength = attributeName.length();
             int attributeValueLength = value.length();
-            if(attributeValueLength > Short.MAX_VALUE) {
-                LOGGER.warning(String.format("Attribute value of attribute '%s' of node '%s' is longer than Short.MAX_VALUE", attributeName, node));
-            }
-            short attributeValueLengthAsShort = (short)attributeValueLength;
             
             Attribute attr = factory.createAttribute(
                     attrInfo.nameOffset,
                     attrInfo.valueOffset,
-                    attributeNameLengthAsShort,
-                    attributeValueLengthAsShort);
+                    (short)attributeNameLength,
+                    attributeValueLength);
                     
             mot.setAttribute(attr);
         }
