@@ -56,7 +56,9 @@ import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -65,7 +67,7 @@ import org.openide.util.NbBundle;
  * @author jhavlin
  */
 public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
-        implements ExplorerManager.Provider {
+        implements ExplorerManager.Provider, Lookup.Provider {
 
     private static final String CUSTOMIZER_ICON =
             "org/netbeans/modules/search/res/refresh.png";              //NOI18N
@@ -77,6 +79,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     protected JButton btnModifySearch = new JButton();
     protected JButton btnStop = new JButton();
     private final Presenter searchProviderPresenter;
+    private Lookup lookup;
 
     /**
      * Creates new form AbstractSearchResultsPanel
@@ -87,6 +90,8 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         this.searchProviderPresenter = searchProviderPresenter;
         initComponents();
         explorerManager = new ExplorerManager();
+        lookup = ExplorerUtils.createLookup(explorerManager,
+                ResultView.getInstance().getActionMap());
         this.addHierarchyListener(new HierarchyListener() {
             @Override
             public synchronized void hierarchyChanged(HierarchyEvent e) {
@@ -237,5 +242,10 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
      */
     protected AbstractButton[] createButtons() {
         return new AbstractButton[] {};
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
     }
 }

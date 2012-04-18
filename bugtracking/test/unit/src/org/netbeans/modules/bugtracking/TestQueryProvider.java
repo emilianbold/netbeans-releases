@@ -43,7 +43,7 @@ package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.openide.nodes.Node;
 
@@ -64,10 +64,15 @@ public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
     }
 
     @Override
-    public BugtrackingController getController(TestQuery q) {
+    public QueryController getController(TestQuery q) {
         return q.getController();
     }
 
+    @Override
+    public void remove(TestQuery q) {
+        q.remove();
+    }
+    
     @Override
     public boolean isSaved(TestQuery q) {
         return q.isSaved();

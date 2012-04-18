@@ -110,7 +110,7 @@ public class BugzillaExecutor {
                 repository.ensureCredentials();
             }
             
-            Bugzilla.LOG.log(Level.FINE, "execute {0}", cmd);
+            Bugzilla.LOG.log(Level.FINE, "execute {0}", cmd); // NOI18N
             cmd.execute();
 
             if(cmd instanceof PerformQueryCommand) {
@@ -221,7 +221,7 @@ public class BugzillaExecutor {
     }
 
     static void notifyErrorMessage(String msg) {
-        if("true".equals(System.getProperty("netbeans.t9y.throwOnClientError", "false"))) {
+        if("true".equals(System.getProperty("netbeans.t9y.throwOnClientError", "false"))) { // NOI18N
             Bugzilla.LOG.info(msg);
             throw new AssertionError(msg);
         }

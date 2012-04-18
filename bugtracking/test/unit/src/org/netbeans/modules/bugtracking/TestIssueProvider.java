@@ -55,6 +55,11 @@ import org.openide.nodes.Node;
 public class TestIssueProvider extends IssueProvider<TestIssue> {
 
     @Override
+    public String[] getSubtasks(TestIssue data) {
+        return data.getSubtasks();
+    }
+
+    @Override
     public String getDisplayName(TestIssue data) {
         return data.getDisplayName();
     }

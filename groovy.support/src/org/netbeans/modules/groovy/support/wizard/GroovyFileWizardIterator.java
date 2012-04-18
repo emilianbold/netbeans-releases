@@ -52,11 +52,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.*;
 import org.netbeans.modules.groovy.support.GroovyProjectExtender;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -67,11 +64,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  * Wizard to create a new Groovy file.
  */
-public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
 
@@ -130,32 +128,44 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         return res;
     }
     
+    @Override
     public Set<FileObject> instantiate() throws IOException {
+        assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
+        return null;
+    }
+
+    @Override
+    public Set instantiate(ProgressHandle handle) throws IOException {
+        handle.start();
+        handle.progress(NbBundle.getMessage(GroovyFileWizardIterator.class, "LBL_NewGroovyFileWizardIterator_WizardProgress_CreatingFile"));
+
         FileObject dir = Templates.getTargetFolder(wiz);
         String targetName = Templates.getTargetName(wiz);
-        
+
         DataFolder df = DataFolder.findFolder(dir);
         FileObject template = Templates.getTemplate(wiz);
-        
+
         DataObject dTemplate = DataObject.find(template);
         String pkgName = getPackageName(dir);
-        DataObject dobj = null;
+        DataObject dobj;
         if (pkgName == null) {
             dobj = dTemplate.createFromTemplate(df, targetName);
         } else {
             dobj = dTemplate.createFromTemplate(df, targetName, Collections.singletonMap("package", pkgName)); // NOI18N
         }
-                
+
         FileObject createdFile = dobj.getPrimaryFile();
-        
+
         initExtender();
         if (extender != null && !extender.isGroovyEnabled()) {
             extender.enableGroovy();
         }
-        
+
+        handle.finish();
         return Collections.singleton(createdFile);
     }
     
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -184,38 +194,47 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
             }
         }
     }
+    @Override
     public void uninitialize (WizardDescriptor wiz) {
         this.wiz = null;
         panels = null;
     }
     
+    @Override
     public String name() {
         //return "" + (index + 1) + " of " + panels.length;
         return ""; // NOI18N
     }
     
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
+    @Override
     public void nextPanel() {
         if (!hasNext()) throw new NoSuchElementException();
         index++;
     }
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) throw new NoSuchElementException();
         index--;
     }
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
     
+    @Override
     public final void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
     
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }

@@ -79,7 +79,6 @@ import javax.swing.UIManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
@@ -99,6 +98,7 @@ import static javax.swing.SwingConstants.WEST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.*;
 
@@ -252,7 +252,7 @@ public final class QueryTopComponent extends TopComponent
                     rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository.getRepository());
                 }
             }
-            BugtrackingController c = getController(query);
+            QueryController c = getController(query);
             panel.setComponent(c.getComponent());
             this.query.addPropertyChangeListener(this);
             findInQuerySupport.setQuery(query);
@@ -296,7 +296,7 @@ public final class QueryTopComponent extends TopComponent
         LogUtils.logBugtrackingUsage(repo, "ISSUE_QUERY"); // NOI18N
     }
 
-    private BugtrackingController getController(QueryImpl query) {
+    private QueryController getController(QueryImpl query) {
         return query.getController();
     }
 
@@ -536,7 +536,7 @@ public final class QueryTopComponent extends TopComponent
 
                     updateSavedQueriesIntern(repo);
 
-                    final BugtrackingController addController = getController(query);
+                    final QueryController addController = getController(query);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {

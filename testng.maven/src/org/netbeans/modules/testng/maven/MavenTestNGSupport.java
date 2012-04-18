@@ -92,7 +92,7 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
         if (ng == null) {
             Project p = FileOwnerQuery.getOwner(createdFile);
             FileObject pom = p.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-            ModelUtils.addDependency(pom, "org.testng", "testng", "6.3.1", null, "test", null, true);
+            ModelUtils.addDependency(pom, "org.testng", "testng", "6.4", null, "test", null, true);
             MavenModelUtils.addProfile(pom, "target/nb-private/testng-suite.xml"); //NOI18N
         }
     }

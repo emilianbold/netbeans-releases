@@ -261,7 +261,7 @@ public class QueryTableCellRendererTest {
         }
 
         @Override
-        public BugtrackingController getController() {
+        public QueryController getController() {
             fail("implement me!!!");
             return null;
         }
@@ -287,6 +287,11 @@ public class QueryTableCellRendererTest {
         public void setContext(Node[] nodes) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }        
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -413,6 +418,11 @@ public class QueryTableCellRendererTest {
         public TestIssue createFor(String id) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        
+        @Override
+        public String[] getSubtasks() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }        
     }
 
     private class RendererRepository extends TestRepository {
@@ -474,7 +484,7 @@ public class QueryTableCellRendererTest {
         }
         
         @Override
-        public TestIssue getIssue(String id) {
+        public TestIssue[] getIssues(String[] id) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override

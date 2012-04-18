@@ -412,7 +412,9 @@ public final class Watcher extends AnnotationProvider {
         for (Item<Notifier> item : Lookup.getDefault().lookupResult(Notifier.class).allItems()) {
             try {
                 final Notifier notifier = item.getInstance();
-                NotifierAccessor.getDefault().start(notifier);
+                if (notifier != null) {
+                    NotifierAccessor.getDefault().start(notifier);
+                }
                 return notifier;
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "Notifier {0} refused to be initialized", item.getType()); // NOI18N

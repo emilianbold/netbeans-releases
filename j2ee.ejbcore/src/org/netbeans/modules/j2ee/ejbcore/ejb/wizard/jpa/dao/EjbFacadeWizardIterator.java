@@ -175,6 +175,7 @@ import org.openide.util.NbBundle;
     @Override
     public Set instantiate(ProgressHandle handle) throws IOException {
         try {
+            EjbFacadeWizardPanel2.afterFinishAction.set(true);
             return instantiateWProgress(handle);
         } finally {
             handle.finish();
@@ -352,7 +353,7 @@ import org.openide.util.NbBundle;
             if (overrideExisting) {
                 existingFO.delete();
             } else {
-                throw new IOException("file alerady exists exception: "+existingFO);
+                throw new IOException("File already exists exception: " + existingFO.getPath());
             }
         }
         final FileObject facade = GenerationUtils.createClass(targetFolder, entitySimpleName + FACADE_SUFFIX, null);

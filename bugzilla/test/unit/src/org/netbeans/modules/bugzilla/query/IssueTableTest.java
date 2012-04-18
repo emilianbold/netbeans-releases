@@ -118,7 +118,7 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
     public IssueTable getTable(Query q) {
         try {
             BugzillaQuery bugzillaQuery = queries.get(q.getDisplayName());
-            BugtrackingController c = bugzillaQuery.getController();
+            QueryController c = bugzillaQuery.getController();
             Field f = c.getClass().getDeclaredField("issueTable");
             f.setAccessible(true);
             return (IssueTable) f.get(c);

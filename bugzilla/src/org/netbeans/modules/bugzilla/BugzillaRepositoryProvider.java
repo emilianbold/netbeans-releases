@@ -39,6 +39,7 @@ package org.netbeans.modules.bugzilla;
 
 import java.awt.Image;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
@@ -95,8 +96,8 @@ public class BugzillaRepositoryProvider extends KenaiRepositoryProvider<Bugzilla
     }
 
     @Override
-    public BugzillaIssue getIssue(BugzillaRepository r, String id) {
-        return r.getIssue(id);
+    public BugzillaIssue[] getIssues(BugzillaRepository r, String... id) {
+        return r.getIssues(id);
     }
 
     @Override

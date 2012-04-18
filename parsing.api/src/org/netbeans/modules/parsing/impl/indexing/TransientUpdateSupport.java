@@ -39,30 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.actions;
-
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.tasks.ui.dashboard.AbstractRepositoryNode;
-import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+package org.netbeans.modules.parsing.impl.indexing;
 
 /**
  *
- * @author jpeska
+ * @author Tomas Zezula
  */
-class RemoveRepositoryAction extends AbstractAction {
-
-    private final AbstractRepositoryNode repositoryNode;
-
-    public RemoveRepositoryAction(AbstractRepositoryNode repositoryNode) {
-        super(NbBundle.getMessage(Actions.class, "CTL_Remove")); //NOI18N
-        this.repositoryNode = repositoryNode;
+public final class TransientUpdateSupport {
+    
+    private static final ThreadLocal<Boolean> transientUpdate =
+            new ThreadLocal<Boolean>();
+    
+    private TransientUpdateSupport() {}
+    
+    public static boolean isTransientUpdate() {
+        return transientUpdate.get() == Boolean.TRUE;
     }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        DashboardViewer.getInstance().removeRepository(repositoryNode);
+    
+    public static void setTransientUpdate(final boolean state) {
+        transientUpdate.set(state);
     }
+    
 }
