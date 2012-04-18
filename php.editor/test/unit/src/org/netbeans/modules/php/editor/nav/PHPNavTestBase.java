@@ -105,7 +105,7 @@ public abstract class PHPNavTestBase extends PHPTestBase {
             f.delete();
         }
 
-        Logger.global.setFilter(new Filter() {
+        Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).setFilter(new Filter() {
             public boolean isLoggable(LogRecord record) {
                 Throwable t = record.getThrown();
 
