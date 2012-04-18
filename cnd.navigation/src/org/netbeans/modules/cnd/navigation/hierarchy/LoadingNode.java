@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,73 +34,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.navigation.hierarchy.HierarchyTopComponent.InclideContextFinder;
-import org.openide.cookies.EditorCookie;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
+import java.awt.Image;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
 
-public final class ShowIncludeHierarchyAction extends CookieAction {
-    
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        CsmFile file = ContextUtils.findFile(activatedNodes);
-        if (file != null){
-            HierarchyTopComponent view = HierarchyTopComponent.findInstance();
-            if (!view.isOpened()) {
-                view.open();
-            }
-            view.setFile(new InclideContextFinder(activatedNodes), false);
-            view.requestActive();
-        }
+
+public final class LoadingNode extends AbstractNode {
+
+    public LoadingNode() {
+        super(Children.LEAF);
+        setName("dummy"); // NOI18N
+        setDisplayName(NbBundle.getMessage(LoadingNode.class, "Loading")); // NOI18N
     }
     
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes != null && activatedNodes.length > 0) {
-            return true;
-        }
-        return false;
+    public Image getIcon(int param) {
+        return ImageUtilities.loadImage("org/netbeans/modules/cnd/navigation/includeview/resources/waitNode.gif"); // NOI18N
     }
-    
-    @Override
-    protected int mode() {
-        return CookieAction.MODE_EXACTLY_ONE;
-    }
-    
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(getClass(), "CTL_ShowIncludeAction"); // NOI18N
-    }
-    
-    @Override
-    protected Class<?>[] cookieClasses() {
-        return new Class[] {
-            EditorCookie.class
-        };
-    }
-    
-    @Override
-    protected void initialize() {
-        super.initialize();
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-    
 }
-
