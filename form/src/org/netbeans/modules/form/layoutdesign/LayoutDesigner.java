@@ -1567,12 +1567,16 @@ public final class LayoutDesigner implements LayoutConstants {
         }
         if (paintGaps) {
             layoutPainter.paintGaps(g, selectedComponents, selectedGap);
-            if (lastWheelGap != null && paintWheelGapSnap && selectedGap != null) {
-                if (selectedGap.gap == lastWheelGap) {
-                    LayoutDragger.paintGapResizingSnap(g, selectedGap,
-                            selectedComponents.size() == 1 ? selectedComponents.get(0) : null,
-                            visualState);
+            if (lastWheelGap != null && paintWheelGapSnap
+                    && selectedGap != null && selectedGap.gap == lastWheelGap) {
+                LayoutComponent gapContainer = null;
+                for (LayoutComponent comp : selectedComponents) {
+                    if (comp.isLayoutContainer()) {
+                        gapContainer = comp;
+                        break;
+                    }
                 }
+                LayoutDragger.paintGapResizingSnap(g, selectedGap, gapContainer, visualState);
             }
         }
         layoutPainter.paintComponents(g, selectedComponents, paintAlignment);

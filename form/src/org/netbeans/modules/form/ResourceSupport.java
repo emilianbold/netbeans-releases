@@ -914,8 +914,6 @@ public class ResourceSupport {
 
     private boolean isExcludedProperty1(FormProperty prop) {
         if (!Boolean.TRUE.equals(prop.getValue(EXCLUSION_DETERMINED))) {
-            if (getResourceService() == null)
-                return false;
 
             prop.setValue(EXCLUSION_DETERMINED, true);
             Object propOwner = prop.getPropertyContext().getOwner();
@@ -925,12 +923,8 @@ public class ResourceSupport {
             } else if (propOwner instanceof FormProperty) {
                 type = ((FormProperty)propOwner).getValueType();
             }
-            boolean excl;
-            if (type != null) {
-                excl = resourceService.isExcludedProperty(type, prop.getName());
-            } else {
-                excl = false;
-            }
+            boolean excl = java.awt.Component.class.isAssignableFrom(type)
+                           && "name".equals(prop.getName()); // NOI18N
             prop.setValue(EXCLUDE_FROM_RESOURCING, excl);
             return excl;
         }
@@ -1304,6 +1298,13 @@ public class ResourceSupport {
                             col = collectNestedResourceProperties(prop, valueType, col);
                     }
                 }
+            }
+        }
+
+        // check accessibility properties
+        for (FormProperty prop : metacomp.getKnownAccessibilityProperties()) {
+            if (prop.isChanged() && isResourceableProperty(prop) && !isExcludedProperty0(prop)) {
+                col = collectNestedResourceProperties(prop, valueType, col);
             }
         }
 
