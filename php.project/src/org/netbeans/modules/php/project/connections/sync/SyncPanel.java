@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.project.connections.sync;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -67,10 +68,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -84,10 +88,10 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.sync.diff.DiffPanel;
+import org.netbeans.modules.php.project.ui.HintArea;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -132,8 +136,10 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     // @GuardedBy(AWT)
     final FileTableModel tableModel;
 
+
     private final PhpProject project;
     private final String remoteConfigurationName;
+    private final String defaultInfoMessage;
     // @GuardedBy(AWT)
     private final List<ViewCheckBox> viewCheckBoxes;
     // @GuardedBy(AWT)
@@ -141,8 +147,6 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     // @GuardedBy(AWT)
     private DialogDescriptor descriptor = null;
-    // @GuardedBy(AWT)
-    private NotificationLineSupport notificationLineSupport = null;
     // @GuardedBy(AWT)
     private Boolean rememberShowSummary = null;
     // @GuardedBy(AWT)
@@ -159,6 +163,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         displayedItems = new ArrayList<SyncItem>(items);
         this.remoteClient = remoteClient;
         tableModel = new FileTableModel(displayedItems);
+        defaultInfoMessage = getDefaultInfoMessage(forProject, firstRun);
 
         initComponents();
         viewCheckBoxes = getViewCheckBoxes();
@@ -167,7 +172,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         initTable();
         initOperationButtons();
         initDiffButton();
-        initInfos(forProject, firstRun);
+        initMessages();
         initShowSummaryCheckBox(forProject);
     }
 
@@ -202,7 +207,6 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
                 DialogDescriptor.DEFAULT_ALIGN,
                 null,
                 null);
-        notificationLineSupport = descriptor.createNotificationLineSupport();
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         okButton.addActionListener(new OkActionListener(dialog));
         descriptor.setClosingOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
@@ -390,25 +394,29 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         diffButton.addActionListener(new DiffActionListener());
     }
 
-    @NbBundle.Messages({
-        "SyncPanel.info.firstRun=Running for the first time for this project and this configuration, more user actions could be needed.",
-        "SyncPanel.info.individualFiles=Run synchronization on Source Files for more accurate result."
-    })
-    private void initInfos(boolean forProject, boolean firstRun) {
-        infoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
-        warningLabel.setIcon(ImageUtilities.loadImageIcon(WARNING_ICON_PATH, false));
+    private void initMessages() {
+        // sync info
         syncInfoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
-        // info message
+        // set message
+        messagesTextPane.setText(defaultInfoMessage);
+    }
+
+    @NbBundle.Messages({
+        "SyncPanel.info.firstRun=<strong>First time for this project and configuration - more user actions may be needed.</strong><br>",
+        "SyncPanel.info.individualFiles=<strong>Run synchronization on Source Files for more accurate result.</strong><br>",
+        "SyncPanel.info.experimental=Note that Remote Synchronization is experimental. Review all suggested operations before proceeding. Note that remote timestamps may not be correct."
+    })
+    private String getDefaultInfoMessage(boolean forProject, boolean firstRun) {
+        String msg = Bundle.SyncPanel_info_experimental();
         if (forProject) {
             if (firstRun) {
-                infoLabel.setText(Bundle.SyncPanel_info_firstRun());
-            } else {
-                infoLabel.setVisible(false);
+                msg = Bundle.SyncPanel_info_firstRun() + msg;
             }
         } else {
             // individual files
-            infoLabel.setText(Bundle.SyncPanel_info_individualFiles());
+            msg = Bundle.SyncPanel_info_individualFiles() + msg;
         }
+        return msg;
     }
 
     private void initShowSummaryCheckBox(boolean showSummary) {
@@ -511,21 +519,32 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     }
 
     void setError(String error) {
-        notificationLineSupport.setErrorMessage(error);
+        String msg = getImgTag(ERROR_ICON_PATH) + getColoredText(error, UIManager.getColor("nb.errorForeground")) + "<br>" + defaultInfoMessage; // NOI18N
+        messagesTextPane.setText(msg);
         descriptor.setValid(false);
         okButton.setEnabled(false);
     }
 
     void setWarning(String warning) {
-        notificationLineSupport.setWarningMessage(warning);
+        String msg = getImgTag(WARNING_ICON_PATH) + getColoredText(warning, UIManager.getColor("nb.warningForeground")) + "<br>" + defaultInfoMessage; // NOI18N
+        messagesTextPane.setText(msg);
         descriptor.setValid(true);
         okButton.setEnabled(true);
     }
 
     void clearError() {
-        notificationLineSupport.clearMessages();
+        messagesTextPane.setText(defaultInfoMessage);
         descriptor.setValid(true);
         okButton.setEnabled(true);
+    }
+
+    private String getImgTag(String src) {
+        return "<img src=\"" + SyncPanel.class.getClassLoader().getResource(src).toExternalForm() + "\">&nbsp;"; // NOI18N
+    }
+
+    private String getColoredText(String text, Color color) {
+        String colorText = "rgb(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ")"; // NOI18N
+        return "<span style=\"color: " + colorText + ";\">" + text + "</span>"; // NOI18N
     }
 
     @NbBundle.Messages({
@@ -662,8 +681,6 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     private void initComponents() {
 
         showSummaryCheckBox = new JCheckBox();
-        infoLabel = new JLabel();
-        warningLabel = new JLabel();
         operationsPanel = new JPanel();
         viewDownloadCheckBox = createViewCheckBox();
         viewUploadCheckBox = createViewCheckBox();
@@ -688,9 +705,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         uploadButton = new JButton();
         deleteButton = new JButton();
         resetButton = new JButton();
-        Mnemonics.setLocalizedText(showSummaryCheckBox, NbBundle.getMessage(SyncPanel.class, "SyncPanel.showSummaryCheckBox.text"));
-        Mnemonics.setLocalizedText(infoLabel, "INFO");
-        Mnemonics.setLocalizedText(warningLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.warningLabel.text"));
+        messagesScrollPane = new JScrollPane();
+        messagesTextPane = new HintArea();
+        Mnemonics.setLocalizedText(showSummaryCheckBox, NbBundle.getMessage(SyncPanel.class, "SyncPanel.showSummaryCheckBox.text")); // NOI18N
 
         operationsPanel.setBorder(BorderFactory.createTitledBorder(NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationsPanel.title"))); // NOI18N
 
@@ -725,8 +742,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
                 .addGroup(problemsPanelLayout.createParallelGroup(Alignment.TRAILING).addComponent(viewSymlinkCheckBox).addComponent(viewFileConflictCheckBox).addComponent(viewWarningCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addGroup(problemsPanelLayout.createParallelGroup(Alignment.TRAILING).addComponent(viewErrorCheckBox).addComponent(viewFileDirCollisionCheckBox)).addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        Mnemonics.setLocalizedText(uncheckAllButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.uncheckAllButton.text"));
-        Mnemonics.setLocalizedText(checkAllButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.checkAllButton.text"));
+        Mnemonics.setLocalizedText(uncheckAllButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.uncheckAllButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(checkAllButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.checkAllButton.text")); // NOI18N
 
         GroupLayout spaceHolderPanelLayout = new GroupLayout(spaceHolderPanel);
         spaceHolderPanel.setLayout(spaceHolderPanelLayout);
@@ -748,7 +765,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         itemScrollPane.setViewportView(itemTable);
 
         Mnemonics.setLocalizedText(syncInfoLabel, "SYNC INFO LABEL"); // NOI18N
-        Mnemonics.setLocalizedText(operationLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationLabel.text"));
+        Mnemonics.setLocalizedText(operationLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationLabel.text")); // NOI18N
 
         diffButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png"))); // NOI18N
         diffButton.setEnabled(false);
@@ -768,20 +785,24 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         Mnemonics.setLocalizedText(resetButton, " "); // NOI18N
         resetButton.setEnabled(false);
 
+        messagesScrollPane.setBorder(null);
+        messagesScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        messagesScrollPane.setViewportView(messagesTextPane);
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(itemScrollPane).addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
 
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(syncInfoLabel).addGroup(layout.createSequentialGroup()
                                 .addComponent(operationLabel)
 
-                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(diffButton).addGap(18, 18, 18).addComponent(noopButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton)).addComponent(infoLabel).addComponent(syncInfoLabel).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addGap(0, 91, Short.MAX_VALUE)).addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(diffButton).addGap(18, 18, 18).addComponent(noopButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton))).addGap(0, 0, Short.MAX_VALUE)).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 712, Short.MAX_VALUE).addGroup(layout.createSequentialGroup()
 
-                        .addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED, 0, GroupLayout.PREFERRED_SIZE).addComponent(spaceHolderPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))).addContainerGap())
+                        .addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED, 0, GroupLayout.PREFERRED_SIZE).addComponent(spaceHolderPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addComponent(messagesScrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {deleteButton, downloadButton, noopButton, resetButton, uploadButton});
@@ -789,9 +810,11 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(infoLabel)
 
-                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.LEADING, false).addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(spaceHolderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addComponent(syncInfoLabel).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteButton).addComponent(resetButton).addComponent(operationLabel)))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING, false).addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(spaceHolderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.TRAILING).addGroup(layout.createSequentialGroup()
+                        .addComponent(syncInfoLabel)
+
+                        .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.TRAILING).addComponent(operationLabel).addComponent(diffButton))).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteButton).addComponent(resetButton))).addGap(18, 18, 18).addComponent(messagesScrollPane, GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -800,9 +823,10 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     private JButton deleteButton;
     private JButton diffButton;
     private JButton downloadButton;
-    private JLabel infoLabel;
     private JScrollPane itemScrollPane;
     private JTable itemTable;
+    private JScrollPane messagesScrollPane;
+    private JTextPane messagesTextPane;
     private JButton noopButton;
     private JLabel operationLabel;
     private JPanel operationsPanel;
@@ -822,7 +846,6 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     private JCheckBox viewSymlinkCheckBox;
     private JCheckBox viewUploadCheckBox;
     private JCheckBox viewWarningCheckBox;
-    private JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
