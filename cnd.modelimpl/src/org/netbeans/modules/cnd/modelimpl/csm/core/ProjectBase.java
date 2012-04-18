@@ -106,6 +106,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer.FileEntry;
+import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer.Storage;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
@@ -139,6 +140,7 @@ import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -882,7 +884,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 worker.createProjectFilesIfNeed(sources, true, readOnlyRemovedFilesSet, validator);
                 worker.createProjectFilesIfNeed(headers, false, readOnlyRemovedFilesSet, validator);
             }
-
+            if (validator != null && false) {
+                // update all opened libraries using our storages associated with libs
+                for (CsmProject lib : this.getLibraries()) {
+                    ProjectBase libProject = (ProjectBase)lib;
+                    libProject.mergeFileContainerFromStorage(this);
+                }
+            }
         } finally {
             disposeLock.readLock().unlock();
             if (TraceFlags.TIMING) {
@@ -1574,6 +1582,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         includedFileContainer.invalidateIncludeStorage(libraryUID);
     }
 
+    IncludedFileContainer.Storage getIncludedLibraryStorage(ProjectBase includedProject) {
+        return includedFileContainer.getStorageForProject(includedProject);
+    }
+
     void prepareIncludeStorage(ProjectBase includedProject) {
         includedFileContainer.prepareIncludeStorage(includedProject);
     }
@@ -1615,6 +1627,25 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         return out;
+    }
+
+    private void mergeFileContainerFromStorage(ProjectBase startPrj) {
+        Storage storage = startPrj.getIncludedLibraryStorage(this);
+        // we are library and were asked to update own file container
+        // based on storage kept in dependent project (i.e. when project was opened)
+        Map<CharSequence, FileEntry> internalMap = storage.getInternalMap();
+        try {
+            for (Map.Entry<CharSequence, FileEntry> storageEntry : internalMap.entrySet()) {
+                CharSequence key = storageEntry.getKey();
+                this.onFileIncluded(startPrj, key, null, null, ProjectBase.GATHERING_MACROS, true);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    public void mergeFromStorage(Storage storage) {
+
     }
 
     private boolean updateFileEntryBasedOnIncludedStatePair(
